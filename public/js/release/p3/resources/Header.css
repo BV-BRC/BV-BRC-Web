@@ -1,0 +1,66 @@
+
+.patric .HeaderBar {
+	width: 100%;
+	border: 0px;
+	margin:0px;
+	padding: 0px;
+	top: 0px;
+	z-index: 100;
+	overflow: visible;
+	box-shadow: 4px 0px 4px;
+	border-bottom: 1px solid #333;
+}
+.TopMenuBar {
+	width: 100%;
+	height: 13px;
+	font-size: .75em;
+	background: black;
+	color: #efefef;
+	text-align: right;
+	margin:0px;
+	padding-right: 4px;
+	padding:2px;
+}
+.TopMenuBar > SPAN {
+	margin-right: 8px;
+	cursor: pointer;
+}
+.P3Header {
+	width: 100%;
+	height: 25px;
+	background: #3a69b9;
+	padding:0px;
+	margin-top:0px;
+	border-top: 1px solid #999;
+}
+.P3Header .logo {
+	font-size:1.3em;
+	color: #fff;
+	font-weight: 900;
+	margin-left: 8px;
+}
+.claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
+.topMenuButton {
+	background: inherit;
+	color: white;
+	cursor: pointer;
+	border: 0px;
+	box-shadow: 0 0 0;
+}
+.P3Header .logo:hover,
+.topMenuButton:hover{
+	color: orange;
+}
+.P3Header A,
+.P3Header A:visited {
+	text-decoration:none;
+};
+.patric .TopMenuBar *:focus{
+    outline: 0;
+}
+.patric .dijitTooltipDialogPopup {
+	margin-top: -10px;
+}
+.patric .dijitTooltipBelow {
+	padding-top: 13px;
+}

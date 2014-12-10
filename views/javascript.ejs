@@ -1,0 +1,30 @@
+
+                <script>
+                        var dojoConfig = {
+                                parseOnLoad: false
+                        }
+                </script>
+                <% if (request&&request.production){ %>
+                        <script src="/js/release/dojo/dojo.js"></script>
+                        <script>
+                        require(<%- JSON.stringify(request.productionLayers) %>, function(){
+                <% } else { %>
+                        <script src="/js/dojo/dojo.js"></script>
+                        <script>
+                <% } %>
+
+                        require(["<%= request.applicationModule %>"],function(App){
+
+                                appOpts=<%- JSON.stringify(request.applicationOptions || {}) %>
+                                appOpts.workspaceAPI = "http://p3.theseed.org/services/Workspace";
+                                appOpts.dataAPI = "http://localhost:3001";
+                                appOpts.authorizationToken = "un=reviewer|tokenid=07F6F4EC-7EF7-11E4-BD80-FDA042A49C03|expiry=1449592018|client_id=reviewer|token_type=Bearer|SigningSubject=http://rast.nmpdr.org/goauth/keys/E087E220-F8B1-11E3-9175-BD9D42A49C03|sig=7f5f5fa25c5e004a9f3a2767d169049541c9073acfe28b7a5f456c86d649a2faa47d5401b3c01012613b666a17cc0d1ffae57614f9d37ad088f4d949098d4aa969aaa5194a0eec06fa584fd129e2eda29680d68874657c150d11fc4ab93604f364a4be7a8443d45a4016789ea475aa42a16440c8f879a558ff2ea0063fc6f4a7";
+                                appOpts.user= {id: "reviewer"};
+
+                                window.App = new App(appOpts);
+
+                        });
+                <% if (request&&request.production){ %>
+                        });
+                <% } %>
+                </script>

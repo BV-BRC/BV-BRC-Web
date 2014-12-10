@@ -1,0 +1,17 @@
+.patric .dgrid-cell {
+	font-size: .75em;
+}
+.patric .dgrid-header-row {
+}
+.dgrid-column-genomeStatus {
+	width:75px;
+}
+.idColumn {
+	width: 60px;
+}
+.dgrid-column-collectionDate {
+	width: 45px;
+}
+.dgrid-column-isolationCountry {
+	width: 80px;
+}

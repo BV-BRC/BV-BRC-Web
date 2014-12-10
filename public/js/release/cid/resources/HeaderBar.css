@@ -1,0 +1,164 @@
+.HeaderBar {
+	width: 100%;
+	border: 0px;
+	margin:0px;
+	padding: 0px;
+	top: 0px;
+	z-index: 100;
+	overflow: visible;
+}
+.patric .HeaderBar {
+	overflow: visible;
+}
+.claro .dijitContentPane.footer {
+	padding: 0px;
+}
+.HeaderBar .fixedBar {
+	border: 0px;
+	border-top: 0px solid blue;
+	background: #fff;
+	overflow: visible;
+	width: 100%;
+}
+.HeaderBar .logo {
+	display:inline-block;
+	width: 10%;
+	margin: 0px;
+	padding: 2px;
+	font-size: 1.5em;
+	font-weight: 900;
+	color: white;
+	vertical-align:top;
+	cursor: pointer;
+}
+.HeaderBar .fixedBar > div {
+	width: 1024px;
+	margin: auto;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.HeaderMenu {
+	display:inline-block;
+	width: 88%;
+	margin: 0px;
+	padding:2px;
+	position: relative;
+	text-align: right;
+}
+.MenuTop {
+	display: inline-block;
+	list-style-type: none;
+	text-align: left;
+	margin-before: 0px;
+	margin-after: 0px;
+	padding-start: 0px;
+	-webkit-margin-before: 0px;
+	-webkit-margin-after: 0px;
+	-webkit-padding-start: 0px;
+	overflow: visible;
+	margin-left: 0px;
+	vertical-align: middle;
+	font-size: 1.2em;
+	margin-bottom: 0px;	
+}
+.MenuHead .MultiButton {
+	color: white;
+	font-family: arial;
+	font-weight: 900;
+	text-align: center;
+	margin-top: 0px;
+	margin-left: 0px;
+	margin: auto;
+}
+.MenuHead .MultiButton:hover {
+	color: green;
+}
+.MenuHead .MultiButton.depressed {
+	color: black;
+}
+.MenuWrapper {
+	margin-left: 0px;
+	
+	display:inline-block;
+	background: inherit;
+	text-align: left;
+	overflow: visible;
+}
+UL.MenuTop > LI:first-child {
+	cursor: pointer;
+	margin-left: 20px;
+	padding-bottom:5px;
+	margin-bottom:-5px;
+	
+}
+.MenuPopup {
+	border: 2px solid #72b932;
+	border-top: 3px solid #72b932; 
+	border-radius: 4px;
+	background: #fff;
+	text-align: left;
+	list-style-type: none;
+	margin:0px;
+	margin-top:5px;
+	overflow:visible;
+	z-index:2;
+	display:none;
+	text-align: left;
+	margin-before: 0px;
+	margin-after: 0px;
+	padding-start: 0px;
+	-webkit-margin-before: 0px;
+	-webkit-margin-after: 0px;
+	-webkit-padding-start: 0px;
+	margin-top: 5px;
+	overflow: visible;
+	float:left;
+}
+.PopupConnector {
+	content:"";
+	position: absolute;
+	height:12px;
+	width:50px;
+	background-size: 8px 12px;
+	background-image: url("/js/cid/resources/icons/green/play_18x24.png");
+	background-position: top center;
+	background-repeat: no-repeat;
+	border: 0px;
+	margin-top:-10px;
+	z-index:1;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	transform: rotate(-90deg);
+	box-shadow: 0px 0px 0px;
+	position:absolute;
+}
+.MenuSectionLabel {
+	width: 250px;
+	font-size:.75em;
+	font-weight: 600;
+	background: #ddd;
+	margin-bottom: 2px;
+}
+.MenuSectionLabel:2th-child {
+	margin-top: 0px;
+	padding:2px;
+}
+LI.MenuItem {
+	list-style-type: none;
+	padding-left: 4px;
+	font-size: .75em;
+	margin-bottom:2px;
+	padding-right: 4px;
+}
+LI.MenuItem a {
+	padding-left: 8px;
+}
+.MenuItem .MenuTable a:before {
+}
+.MenuPopup:hover,
+.MenuTop:hover .MenuPopup {
+	display: inline-block;
+	position: absolute;	
+}

@@ -1,0 +1,9 @@
+{
+	"name": "p3",
+	"version":"1.0",
+	"directories": {
+		"lib": "."
+	},
+	"main": "main",
+	"dojoBuild": "p3.profile.js"
+}

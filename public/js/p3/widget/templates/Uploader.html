@@ -1,0 +1,23 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+	<div style='width:400px'>
+		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+			<option value="auto">Auto Detect</option>
+			<option value="fasta">FASTA</option>			
+		</select>
+		<input type="file" data-dojo-attach-point="fileInput" multiple="true" data-dojo-attach-event="onchange:onFileSelectionChange" />	
+	</div>
+		<div class="workingMessage" style="width:400px;" data-dojo-attach-point="workingMessage">
+		</div>
+
+		<div class="errorMessage">
+			<div style="font-weight:900;font-size:1.1em;">Error Creating Folder:</div>
+			<p data-dojo-attach-point="errorMessage">Error</p>
+		</div>
+		
+		<div style="margin:4px;margin-top:8px;text-align:right;">
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Create Folder</div>
+		</div>	
+</form>
+
