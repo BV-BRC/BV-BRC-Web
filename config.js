@@ -8,4 +8,4 @@ var defaults =  {
 	}
 }
 
-module.exports = nconf.argv().env().file("./p3-www.conf").defaults(defaults);
+module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
