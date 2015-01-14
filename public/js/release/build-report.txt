@@ -1,4 +1,4 @@
-Build started: Wed Dec 10 2014 10:44:14 GMT-0500 (EST)
+Build started: Wed Jan 14 2015 13:00:24 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -67,7 +67,6 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/secure/capability
 	module: dojox/secure/fromJson
 	module: dojox/secure/sandbox
-	module: dojox/socket/Reconnect
 	module: dojox/sql/_base
 	module: dojox/sql/_crypto
 	module: dojox/storage/AirDBStorageProvider
@@ -127,9 +126,9 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.765s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:7.495s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:8.47s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:3.715s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:9.314s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.048s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1287,9 +1286,6 @@ info(107) Package Version:
 	package: put-selector; version: 0.3.6
 	package: xstyle; version: 0.2.1
 	package: rql; version: 0.3.3
-warn(205) Module not tagged as pure AMD yet it contains AMD API applications.
-	module: dojox/editor/plugins/ResizeTableColumn
-	module: dojox/editor/plugins/SpellCheck
 warn(216) dojo/has plugin resource could not be resolved during build-time.
 	plugin resource id: dom-addeventlistener?:./aspect; reference module id: dojo/on
 	plugin resource id: host-browser?dom-addeventlistener?:../on:; reference module id: dojo/request/watch
@@ -1622,9 +1618,9 @@ p3/layer/panels:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.765s)
+Done (compile time:3.715s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.765s)
+Done (compile time:3.715s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1747,9 +1743,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.495s)
+Done (compile time:9.314s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.765s)
+Done (compile time:3.715s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1872,7 +1868,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.495s)
+Done (compile time:9.314s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:403: WARNING - unreachable code
 	}else if( 0 ){
@@ -1882,32 +1878,32 @@ core.js.uncompressed.js:1017: WARNING - Suspicious code. This code lacks side-ef
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
 
-core.js.uncompressed.js:11243: WARNING - unreachable code
+core.js.uncompressed.js:11248: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:25588: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:25593: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:27182: WARNING - unreachable code
+core.js.uncompressed.js:27191: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:27221: WARNING - unreachable code
+core.js.uncompressed.js:27230: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:27569: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:27578: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:31505: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:31515: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
 0 error(s), 8 warning(s)
-Done (compile time:8.47s)
+Done (compile time:11.048s)
 
 
 Has Features Detected
@@ -1988,6 +1984,9 @@ Has Features Detected
 
 	// dojox/mobile/Accordion, dojox/mobile/IconItem, dojox/mobile/Overlay, dojox/mobile/SwapView, dojox/mobile/scrollable
 	 'css3-animations':1,
+
+	// xstyle/core/observe
+	 'defineProperty':1,
 
 	// dijit/Dialog, dijit/Menu, dijit/Toolbar, dijit/_Widget, dijit/_WidgetBase, dijit/form/Button, dijit/form/CheckBox, dijit/form/_FormWidget, dijit/layout/AccordionContainer, dijit/layout/StackContainer
 	 'dijit-legacy-requires':1,
@@ -2217,7 +2216,7 @@ Has Features Detected
 	// dojo/dojo
 	 'ie-event-behavior':1,
 
-	// dijit/Viewport, dojo/_base/sniff, dojo/touch, dojo/uacss, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/SearchBox, dojox/mobile/View, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/sniff, dojox/mobile/uacss
+	// dijit/Viewport, dojo/_base/sniff, dojo/touch, dojo/uacss, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/ComboBox, dojox/mobile/SearchBox, dojox/mobile/View, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/sniff, dojox/mobile/uacss
 	 'ios':1,
 
 	// dojox/mobile/View, dojox/mobile/uacss
@@ -2282,6 +2281,9 @@ Has Features Detected
 
 	// dojo/request/handlers, dojo/request/xhr
 	 'native-xhr2-blob':1,
+
+	// xstyle/core/observe
+	 'observe':1,
 
 	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby
 	 'opera':1,
@@ -2352,5 +2354,5 @@ Has Features Detected
 
 Process finished normally
 	errors: 0
-	warnings: 67
-	build time: 87.887 seconds
+	warnings: 65
+	build time: 94.229 seconds

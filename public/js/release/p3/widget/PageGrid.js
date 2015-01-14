@@ -95,7 +95,7 @@ function(
                 },
                 createStore: function(dataModel){
                         console.log("Create Store for ", dataModel, " at ", this.apiServer);
-                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"rownum", headers:{
+                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"document_id", headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
                                 'X-Requested-With':null

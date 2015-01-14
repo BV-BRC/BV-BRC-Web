@@ -1,40 +1,60 @@
-define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], function(put, utils){
+define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils', 'dojo/on', 'dojo/query'], function(put, utils, on){
 	// using delegation, listen for any input changes in the document and 'put' the value  
 	// TODO: add a hook so one could add support for IE8, or maybe this event delegation isn't really that useful
 	var doc = document;
 	var nextId = 1;
 	var hasAddEventListener = !!doc.addEventListener;
-	on(doc, 'change', null, function(event){
+	on(doc, hasAddEventListener ? 'change,keydown' : 'focusout,keydown', function(event){
+		if(event.type == 'keydown' && event.keyCode != 13){
+			return;
+		}
 		var element = event.target;
 		// get the variable computation so we can put the value
-		var variable = element['-x-variable'];
-		if(variable){
-			if(variable.forElement){
-				variable = variable.forElement(element);
-			}
-			if(variable && variable.put){ // if it can be put, we do so
-				var oldType = typeof variable.valueOf();
-				var value = element.value;
+		for(var i = 0, l = inputConnectors.length; i < l; i++){
+			var inputConnector = inputConnectors[i];
+			// we could alternately use the matchesRule
+			if((' ' + element.className + ' ').indexOf(inputConnector.rule.selector.slice(1)) > -1){
+				var definition = inputConnector.definition;
+				var currentValue = definition.valueOf();
+				if(currentValue && currentValue.forRule){
+					currentValue = currentValue.forRule(inputConnector.rule);
+				}
+				if(currentValue && currentValue.forElement){
+					currentValue = currentValue.forElement(element);
+				}
+				var oldType = typeof currentValue;
+				var value = element.type === 'checkbox' ? element.checked : element.value;
 				// do type coercion
 				if(oldType === 'number' && isFinite(value)){
 					value = +value;
 				}
-				variable.put(value);
+				var result = inputConnector.definition.put(value);
+				if(result && result.forRule){
+					result = result.forRule(inputConnector.rule);
+				}
+				if(result && result.forElement){
+					result.forElement(element);
+				}
+				// TODO: should we return here, now that we found a match?
 			}
 		}
 	});
-	function on(target, event, selector, listener){
+/*	sometime we might reimplement this, but for now just relying on dojo/on
+	function on(target, event, rule, listener){
 		// this function can be overriden to provide better event handling
 		hasAddEventListener ?
 			target.addEventListener(event, select, false) :
-			target.attachEvent(event, select);
+			target.attachEvent('on' + event, function(event){
+				event.target = event.srcElement;
+				select(event);
+			});
 		function select(event){
 			// do event delegation
-			if(!selector || matchesSelector.call(event.target, selector)){
+			if(!rule || matchesRule(event.target, rule)){
 				listener(event);
 			}
 		}
-	}
+	}*/
 
 	// elemental section, this code is for property handlers that need to mutate the DOM for elements
 	// that match it's rule
@@ -50,6 +70,7 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], funct
 		testDiv.webkitMatchesSelector || testDiv.mozMatchesSelector ||
 		testDiv.msMatchesSelector || testDiv.oMatchesSelector;
 	var selectorRenderers = [];
+	var inputConnectors = [];
 	var renderQueue = [];
 	var documentQueried;
 	// probably want to inline our own DOM readiness code
@@ -57,7 +78,7 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], funct
 		// TODO: support IE7-8
 		if(/e/.test(doc.readyState||'')){
 			// TODO: fix the issues with sync so this can be run immediately
-			setTimeout(callback, 200);
+			callback();
 		}else{
 			doc.addEventListener('DOMContentLoaded', callback);
 		}
@@ -152,25 +173,38 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], funct
 		for(var i = 0, l = selectorRenderers.length; i < l; i++){
 			var renderer = selectorRenderers[i];
 			if((!selector || (selector == renderer.selector)) &&
-				(matchesSelector ?
-					// use matchesSelector if available
-					// TODO: determine if it is higher specificity that other  same name properties
-					matchesSelector.call(element, renderer.selector) :
-					// else use IE's custom css property inheritance mechanism
-					element.currentStyle[renderer.id])){
+				matchesRule(element, renderer.rule)){
 				renderer.render(element);
 			}
 		}
 	}
+	var matchesRule = matchesSelector?
+		function(element, rule){
+			// use matchesSelector if available
+			return matchesSelector.call(element, rule.selector);
+		} :
+		function(element, rule){
+			// so we can match this rule by checking inherited styles
+			if(!rule.ieId){
+				rule.setStyle(rule.ieId = ('x-ie-' + nextId++), 'true');
+			}
+			// use IE's custom css property inheritance mechanism
+			// TODO: determine if it is higher specificity that other  same name properties
+			return !!element.currentStyle[rule.ieId];
+		};
+
+	function addInputConnector(rule, definition){
+		inputConnectors.push({
+			rule: rule,
+			definition: definition
+		});
+	}
 	function addRenderer(rule, handler){
 		var renderer = {
 			selector: rule.selector,
+			rule: rule,
 			render: handler
 		};
-		if(!matchesSelector){
-			// so we can match this rule by checking inherited styles
-			rule.setStyle(renderer.id = ('x' + nextId++), 'true');
-		}
 		// the main entry point for adding elemental handlers for a selector. The handler
 		// will be called for each element that is created that matches a given selector
 		selectorRenderers.push(renderer);
@@ -194,7 +228,9 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], funct
 	return {
 		ready: domReady,
 		on: on,
+		matchesRule: matchesRule,
 		addRenderer: addRenderer,
+		addInputConnector: addInputConnector,
 		// this should be called for newly created dynamic elements to ensure the proper rules are applied
 		update: update,
 		clearRenderers: function(){

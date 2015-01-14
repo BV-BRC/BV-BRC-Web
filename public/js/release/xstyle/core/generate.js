@@ -3,9 +3,8 @@ define('xstyle/core/generate', [
 	'put-selector/put',
 	'xstyle/core/utils',
 	'xstyle/core/expression',
-	'xstyle/core/base',
-	'xstyle/core/Proxy'
-], function(elemental, put, utils, expressionModule, root, Proxy){
+	'xstyle/core/base'
+], function(elemental, put, utils, expressionModule, root){
 	// this module is responsible for generating elements with xstyle's element generation
 	// syntax and handling data bindings
 	// selection of default children for given elements
@@ -23,6 +22,7 @@ define('xstyle/core/generate', [
 		SELECT: 1
 	};
 	var doc = document;
+	var nextId = 1;
 	function forSelector(generatingSelector, rule){
 		// this is responsible for generation of DOM elements for elements matching generative rules
 		// normalize to array
@@ -30,22 +30,33 @@ define('xstyle/core/generate', [
 		// return a function that can do the generation for each element that matches
 		return function(element, item, beforeElement){
 			var lastElement = element;
-			element._defaultBinding = false;
+			var topElement;
+			if(!('content' in element)){
+				// a starting point for the content, so it can be detected by inheritance
+				element.content = undefined;
+			}
+			// if this has been previously rendered, the content may be in the _contentNode
 			if(beforeElement === undefined){
-				var childNodes = element.childNodes;
-				var childNode = childNodes[0], contentFragment;
-				// move the children out and record the contents in a fragment
+				var childNodes = (element._contentNode || element).childNodes || 0;
+				var childNode = childNodes[0];
+				// move the children out and record the contents in our content fragment
 				if(childNode){
-					contentFragment = doc.createDocumentFragment();
+					var contentFragment = doc.createDocumentFragment();
 					do{
 						contentFragment.appendChild(childNode);
-					}while(childNode = childNodes[0]);
+					}while((childNode = childNodes[0]));
+					// temporarily store it on the element, so it can be accessed as an element-property
+					// TODO: remove it after completion
+					element.content = contentFragment;
 				}
-			}
-			// temporarily store it on the element, so it can be accessed as an element-property
-			// TODO: remove it after completion
-			if(!element.content && contentFragment){
-				element.content = contentFragment;
+				if(element._contentNode){
+					// need to clear the reference node, so we don't recursively try to put stuff in there,
+					// and clean out of the current element
+					element._contentNode = undefined;
+					try{
+						element.innerHTML = '';
+					}catch(e){}
+				}
 			}
 			var indentationLevel = 0;
 			var indentationLevels = [element];
@@ -61,17 +72,32 @@ define('xstyle/core/generate', [
 						if(part.args){
 							if(part.operator == '('){ // a call (or at least parans), for now we are assuming it is a binding
 								var nextPart = generatingSelector[i+1];
-								if(nextPart && nextPart.eachProperty){
-									// apply the class for the next part so we can reference it properly
-									put(lastElement, nextPart.selector);
+								bind(part, nextPart, lastElement, function(element, nextPart, expressionResult){
+									renderContents(element, nextPart, expressionResult, rule);
+								});
+							}else{// brackets, set an attribute
+								var attribute = part.args[0];
+								if(typeof attribute === 'string'){
+									var parts = attribute.split('=');
+									try{
+										lastElement.setAttribute(parts[0], parts[1]);
+									}catch(e){
+										// TODO: for older IE we need to use createElement for input names
+										console.error(e);
+									}
+								}else{
+									var name = attribute[0].replace(/=$/,'');
+									var value = attribute[1];
+									if(value.operator == '('){
+										// a call/binding
+										bind(attribute[1], name, lastElement, function(element, name, expressionResult){
+											renderAttribute(element, name, expressionResult, rule);
+										});
+									}else{
+										// a string literal
+										lastElement.setAttribute(name, value.value);	
+									}
 								}
-								// TODO: make sure we only do this only once
-								var expression = part.getArgs()[0];
-								var expressionResult = expressionModule.evaluate(part.parent, expression);
-								
-								renderExpression(lastElement, nextPart, expressionResult, rule, expression);
-							}else{// brackets
-								put(lastElement, part.toString());
 							}
 						}else{
 							// it is plain rule (not a call), we need to apply the 
@@ -98,7 +124,7 @@ define('xstyle/core/generate', [
 						var nextPart = generatingSelector[i + 1];
 						// parse for the sections of the selector
 						var parts = [];
-						part.replace(/([,\n]+)?([\t ]+)?(\.|#)?([-\w%$|\.\#]+)(?:\[([^\]=]+)=?['"]?([^\]'"]*)['"]?\])?/g, function(){
+						part.replace(/([,\n]+)?([\t ]*)?(\.|#)?([-\w%$|\.\#]+)(?:\[([^\]=]+)=?['"]?([^\]'"]*)['"]?\])?/g, function(){
 							parts.push(arguments);
 						});
 						// now iterate over these
@@ -112,25 +138,21 @@ define('xstyle/core/generate', [
 										nextElement = contentNode;
 									}
 								}
-								if(indentation){
-									if(nextLine){
-										var newIndentationLevel = indentation.length;
-										if(newIndentationLevel > indentationLevel){
-											positionForChildren();
-											// a new child
-											indentationLevels[newIndentationLevel] = nextElement;
-										}else{
-											// returning to an existing parent
-											nextElement = indentationLevels[newIndentationLevel] || nextElement;
-										}
-										indentationLevel = newIndentationLevel;
-									}else{
+								if(nextLine){
+									var newIndentationLevel = indentation ? indentation.length : 0;
+									if(newIndentationLevel > indentationLevel){
 										positionForChildren();
+										// a new child
+										indentationLevels[newIndentationLevel] = nextElement;
+									}else{
+										// returning to an existing parent
+										nextElement = indentationLevels[newIndentationLevel] || nextElement;
 									}
-	//								nextElement = element;
+									indentationLevel = newIndentationLevel;
 								}else{
 									positionForChildren();
 								}
+//								nextElement = element;
 								var selector;
 								if(prefix){// we don't want to modify the current element, we need to create a new one
 									selector = (lastPart && lastPart.args ?
@@ -146,10 +168,9 @@ define('xstyle/core/generate', [
 										nextElement = (function(nextElement, beforeElement, value, tagName){
 											var newElement, placeHolder;
 											// this may be executed async, we need to be ready with a place holder
-											utils.when(target, function(target){
-												if(target.newElement){
-													newElement = target.newElement();
-
+											utils.when(target && target.newElement && target.newElement(), function(targetNewElement){
+												newElement = targetNewElement;
+												if(newElement){
 													// apply the rest of the selector
 													value = value.slice(tagName.length);
 													if(value){
@@ -165,7 +186,7 @@ define('xstyle/core/generate', [
 													var childNode;
 													// now move any children into the new element (or its content node)
 													newElement = newElement._contentNode || newElement;
-													while(childNode = childNodes[0]){
+													while((childNode = childNodes[0])){
 														newElement.appendChild(childNode);
 													}
 												}
@@ -196,6 +217,7 @@ define('xstyle/core/generate', [
 									// set the item property, so the item reference will work
 									nextElement.item = item;
 								}
+								topElement = topElement || nextElement;
 								if(j < parts.length - 1 || (nextElement != lastElement &&
 									// avoid infinite loop if it is a nop selector
 									nextElement != element &&
@@ -214,55 +236,121 @@ define('xstyle/core/generate', [
 					}
 				}catch(e){
 					console.error(e, e.stack);
+					if(lastElement.innerHTML){
+						lastElement.innerHTML = '';
+					}
 					lastElement.appendChild(doc.createTextNode(e));
 				}
 			}
 			// now go back through and make updates to the elements, we do it in reverse
 			// order so we can affect the children first
-			while(elementToUpdate = stackOfElementsToUpdate.pop()){
+			var elementToUpdate;
+			while((elementToUpdate = stackOfElementsToUpdate.pop())){
 				elemental.update(elementToUpdate, stackOfElementsToUpdate.pop());
 			}
-			return lastElement;
+			return topElement;
 		};
 
 	}
 
-	function renderExpression(element, nextPart, expressionResult, rule, expression){
-		var contentProxy = element.content || (element.content = new Proxy());
-		element.xSource = expressionResult;
-		utils.when(expressionResult, function(result){
-			element.xSource = result;
-			// TODO: assess how we could propagate changes categorically
-			if(result.forElement){
-				result = result.forElement(element);
-				// now apply.element should indicate the element that it is actually
-				// keying or varying on
+	function bind(part, nextPart, lastElement, render){
+		var bindingSelector, bindingRule;
+		if(nextPart && nextPart.eachProperty){
+			// apply the class for the next part so we can reference it properly
+			put(lastElement, bindingSelector = nextPart.selector);
+			bindingRule = nextPart;
+		}else{
+			put(lastElement, bindingSelector = part.selector ||
+				(part.selector = '.-xbind-' + nextId++));
+			bindingRule = part;
+		}
+		var expression = part.getArgs()[0];
+		var expressionResult = part.expressionResult;
+		var expressionDefinition = part.expressionDefinition;
+		// make sure we only do this only once
+
+		if(!expressionDefinition){
+			expressionDefinition = part.expressionDefinition =
+				expressionModule.evaluate(part.parent, expression);
+			expressionResult = expressionDefinition.valueOf();
+			elemental.addInputConnector(bindingRule, expressionDefinition);
+			(function(nextPart, bindingSelector, expressionDefinition){
+				part.expressionResult = expressionResult;
+				// setup an invalidation object, to rerender when data changes
+				// TODO: fix this
+				expressionDefinition.depend && expressionDefinition.depend({
+					invalidate: function(invalidated){
+						// TODO: should we use elemental's renderer?
+						// TODO: do we need to closure the scope of any of these variables
+						// TODO: might consider queueing or calling Object.deliverChangeRecords() or
+						// polyfill equivalent here, to ensure all changes are delivered before 
+						// rendering again
+						var elementsToRerender;
+						if(invalidated){
+							if(elemental.matchesRule(invalidated.elements[0], bindingRule)){
+								elementsToRerender = invalidated.elements;
+							}else{
+								elementsToRerender = invalidated.elements[0].querySelectorAll(bindingSelector);
+							}
+						}else{
+							elementsToRerender = document.querySelectorAll(bindingSelector);
+						}
+						for(var i = 0, l = elementsToRerender.length;i < l; i++){
+							render(elementsToRerender[i], nextPart, 
+								expressionDefinition.valueOf());
+						}
+					}
+				});
+			})(nextPart, bindingSelector, expressionDefinition);
+		}
+		render(lastElement, nextPart, expressionResult);
+	}
+
+	function contextualize(value, rule, element, callback){
+		return utils.when(value, function(value){
+			if(value && value.forRule){
+				value = value.forRule(rule);
 			}
-			// We want to contextualize this for the parent (forParent), but
-			// we need to differentiate it from the forParent that rules do that create
-			// a new rule-specific instances (hence the flag)
-			if(result.forParent){
-				// if the result can be specific to a rule, apply that context
-				result = result.forParent(rule, expression, true);
+			if(value && value.forElement){
+				value = value.forElement(element);
 			}
-			contentProxy.setSource(result);
+			callback(value);
 		});
-		if(!('_defaultBinding' in element)){
+	}
+
+	function renderAttribute(element, name, expressionResult, rule){
+		contextualize(expressionResult, rule, element, function(value){
+			element.setAttribute(name, value);
+		});
+	}
+
+	function renderContents(element, nextPart, expressionResult, rule){
+		/*var contentProxy = element.content || (element.content = new Proxy());
+		element.xSource = expressionResult;
+		var context = new Context(element, rule);
+		contentProxy.setValue(expressionResult);*/
+		if(true || !('_defaultBinding' in element)){
 			// if we don't have any handle for content yet, we install this default handling
 			element._defaultBinding = true;
-			var textNode = element.appendChild(doc.createTextNode('Loading'));
-			contentProxy.observe(function(value){
+			if(expressionResult && expressionResult.then && element.tagName !== 'INPUT'){
+				try{
+					element.appendChild(doc.createTextNode('Loading'));
+				}catch(e){
+					// IE can fail on appending text for some elements,
+					// TODO: we might want to only try/catch for IE, for performance
+				}
+			}
+			contextualize(expressionResult, rule, element, function(value){
 				if(element._defaultBinding){ // the default binding can later be disabled
+					cleanup(element);
+					if(element.childNodes.length){
+						// clear out any existing content
+						element.innerHTML = '';
+					}
 					if(value && value.sort){
-						if(textNode){
-							// remove the loading node
-							textNode.parentNode.removeChild(textNode);
-							textNode = null;
-						}
 						if(value.isSequence){
 							forSelector(value, rule)(element);
 						}else{
-							element.innerHTML = '';
 							// if it is an array, we do iterative rendering
 							var eachHandler = nextPart && nextPart.eachProperty &&
 								nextPart.each;
@@ -280,53 +368,67 @@ define('xstyle/core/generate', [
 								};
 							}
 							var rows = [];
+							var handle;
+							if(value.track){
+								value = value.track();
+								// TODO: cleanup routine
+								handle = value.tracking;
+							}
 							value.forEach(function(value){
 								// TODO: do this inside generate
 								rows.push(eachHandler(element, value, null));
 							});
 							if(value.on){
-								value.on('add,delete,update', function(event){
+								var onHandle = value.on('add,delete,update', function(event){
 									var object = event.target;
 									var previousIndex = event.previousIndex;
 									var newIndex = event.index;
 									if(previousIndex > -1){
 										var oldElement = rows[previousIndex];
+										cleanup(oldElement, true);
 										oldElement.parentNode.removeChild(oldElement);
 										rows.splice(previousIndex, 1);
 									}
 									if(newIndex > -1){
 										rows.splice(newIndex, 0, eachHandler(element, object, rows[newIndex] || null));
 									}
-								}, true);
+								});
+							}
+							handle = handle || onHandle;
+							if(handle){
+								element.xcleanup = function(){
+									handle.remove();
+								};
 							}
 						}
 					}else if(value && value.nodeType){
-						if(textNode){
-							// remove the loading node
-							textNode.parentNode.removeChild(textNode);
-							textNode = null;
-						}
 						element.appendChild(value);
 					}else{
 						value = value === undefined ? '' : value;
 						if(element.tagName in inputs){
-							// add the text
-							element.value = value;
-							// we are going to store the variable computation on the element
-							// so that on a change we can quickly do a put on it
-							// we might want to consider changing that in the future, to
-							// reduce memory, but for now this probably has minimal cost
-							element['-x-variable'] = contentProxy;
+							// set the text
+							if(element.type === 'checkbox'){
+								element.checked = value;
+							}else{
+								element.value = value;
+							}
 						}else{
-							// put text in for Loading until we are ready
-							// TODO: we should do this after setting up the observe
-							// in case we synchronously get the data
-							// if not an array, render as plain text
-							textNode.nodeValue = value;
+							// render plain text
+							element.appendChild(doc.createTextNode(value));							
 						}
 					}
 				}
 			});
+		}
+	}
+	function cleanup(element, destroy){
+		if(element.xcleanup){
+			element.xcleanup(destroy);
+		}
+		var descendants = element.getElementsByTagName('*');
+		for(var i = 0, l = descendants.length; i < l; i++){
+			var descendant = descendants[i];
+			descendant.xcleanup && descendant.xcleanup(true);
 		}
 	}
 	function generate(parentElement, selector){

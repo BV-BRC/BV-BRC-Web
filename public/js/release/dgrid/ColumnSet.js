@@ -35,13 +35,6 @@ function(kernel, declare, lang, Deferred, listen, aspect, query, has, miscUtil, 
 		}
 	}
 	
-	function scrollColumnSetTo(grid, columnSetNode, offsetLeft){
-		var id = columnSetNode.getAttribute(colsetidAttr);
-		var scroller = grid._columnSetScrollers[id];
-
-		scroller.scrollLeft = offsetLeft < 0 ? 0 : offsetLeft;
-	}
-
 	function getColumnSetSubRows(subRows, columnSetId){
 		// Builds a subRow collection that only contains columns that correspond to
 		// a given column set id.
@@ -148,7 +141,12 @@ function(kernel, declare, lang, Deferred, listen, aspect, query, has, miscUtil, 
 			});
 			return rows;
 		},
-
+		insertRow: function(){
+			var row = this.inherited(arguments);
+			adjustScrollLeft(this, row);
+			return row;
+		},
+		
 		renderHeader: function(){
 			// summary:
 			//		Setup the headers for the grid
@@ -303,7 +301,13 @@ function(kernel, declare, lang, Deferred, listen, aspect, query, has, miscUtil, 
 			kernel.deprecated("setColumnSets(...)", 'use set("columnSets", ...) instead', "dgrid 0.4");
 			this.set("columnSets", columnSets);
 		},
-
+		
+		_scrollColumnSet: function(nodeOrId, offsetLeft){
+			var id = nodeOrId.tagName ? nodeOrId.getAttribute(colsetidAttr) : nodeOrId;
+			var scroller = this._columnSetScrollers[id];
+			scroller.scrollLeft = offsetLeft < 0 ? 0 : offsetLeft;
+		},
+		
 		_onColumnSetCellFocus: function(event, columnSetNode){
 			var focusedNode = event.target;
 			var columnSetId = columnSetNode.getAttribute(colsetidAttr);
@@ -314,7 +318,7 @@ function(kernel, declare, lang, Deferred, listen, aspect, query, has, miscUtil, 
 
 			if (elementEdge > columnSetNode.offsetWidth ||
 				columnScroller.scrollLeft > focusedNode.offsetLeft) {
-				scrollColumnSetTo(this, columnSetNode, focusedNode.offsetLeft);
+				this._scrollColumnSet(columnSetNode, focusedNode.offsetLeft);
 			}
 		}
 	});

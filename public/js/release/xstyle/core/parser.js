@@ -39,7 +39,7 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 			// TODO: does this ever happen
 			// simple string split
 			parsedArgs = sequence.split(/\s*,\s*/);
-		}else{
+		}else if(sequence){
 			// need to go through the sequence to find comma splits
 			parsedArgs = [];
 			var lastPosition = 0;
@@ -58,6 +58,8 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 					}
 				}
 			}
+		}else{
+			return [];
 		}
 		return parsedArgs;
 	}
@@ -173,7 +175,12 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 							if(!parsed){ // no match for the end of the string
 								error('unterminated string');
 							}
-							var str = parsed[1].replace(/\\/g, ''); // the contents of the string
+							// get the real contents of the string, parsing any backslashes
+							var str = parsed[1].replace(/\\([a-fA-F\d]{0,5}[ a-fA-F\d]?)/g, function(full, unicode){
+								if(unicode){
+									return String.fromCharCode(parseInt(unicode, 16));
+								}
+							});
 							// move the css parser up to the end of the string position
 							cssScan.lastIndex = quoteScan.lastIndex;
 							// push the string on the current value and keep parsing
@@ -199,11 +206,7 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 								if(assignmentOperator == ':' && assignment){
 									first += assignment;
 								}
-								selector = trim((selector + first).replace(/\s+/g, ' ')
-										.replace(/([\.#:])\S+|\w+/g,function(t, operator){
-									// make tag names be lower case 
-									return operator ? t : t.toLowerCase();
-								}));
+								selector = trim((selector + first).replace(/\s+/g, ' '));
 								// check to see if it is a correlator rule, from the build process
 								// add this new rule to the current parent rule
 								addInSequence(newTarget = target.newRule(selector));
@@ -237,7 +240,11 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 									// properties to the correct rule
 									cssRules = styleSheet.cssRules || styleSheet.rules;
 									while((nextRule = cssRules[ruleIndex++])){
-										if(nextRule.selectorText == selector){
+										if((nextRule.selectorText == selector) ||
+											// CSS3 pseudo-elements can be auto-converted from CSS2 psuedo by browsers
+												(nextRule.selectorText &&
+													nextRule.selectorText.replace(/::/g, ':').replace(/'/g, '"') ==
+														selector.replace(/::/g, ':').replace(/'/g, '"'))){
 											// found it
 											newTarget.cssRule = nextRule;
 											break;
@@ -247,8 +254,10 @@ define('xstyle/core/parser', ['xstyle/core/utils'], function(utils){
 								if(!nextRule){
 									// didn't find it
 									newTarget.ruleIndex = ruleIndex = lastRuleIndex;
-									newTarget.styleSheet = styleSheet;
 								}
+								// TODO: this doesn't need to be done when there is a rule, except for old IE,
+								// as most browsers, the style sheet can be retrieved the cssRule
+								newTarget.styleSheet = styleSheet;
 								if(sequence.creating){
 									// in generation, we auto-generate selectors so we can reference them
 									newTarget.selector = '.' + (assignmentOperator == '=' ?

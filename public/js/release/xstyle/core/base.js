@@ -1,12 +1,12 @@
 define('xstyle/core/base', [
 	'xstyle/core/elemental',
 	'xstyle/core/expression',
+	'xstyle/core/Definition',
 	'xstyle/core/utils',
 	'put-selector/put',
 	'xstyle/core/Rule',
-	'dojo/Deferred',
-	'xstyle/core/Proxy'
-], function(elemental, expression, utils, put, Rule, Deferred, Proxy){
+	'dojo/Deferred'
+], function(elemental, expression, Definition, utils, put, Rule, Deferred){
 	// this module defines the base definitions intrisincally available in xstyle stylesheets
 	var testDiv = put('div');
 	var ua = navigator.userAgent;
@@ -14,74 +14,94 @@ define('xstyle/core/base', [
 		ua.indexOf('Firefox') > -1 ? '-moz-' :
 		ua.indexOf('MSIE') > -1 ? '-ms-' :
 		ua.indexOf('Opera') > -1 ? '-o-' : '';
-	function derive(base, mixin){
-		var derived = Object.create(base);
-		for(var i in mixin){
-			derived[i] = mixin[i];
-		}
-		return derived;
-	}
 	// we treat the stylesheet as a 'root' rule; all normal rules are children of it
 	var currentEvent;
 	var root = new Rule();
+	var matchesRule = elemental.matchesRule;
 	root.root = true;
-	function elementProperty(property, rule, inherit, newElement){
+	function elementProperty(property, rule, options){
 		// definition bound to an element's property
-		// TODO: allow it be bound to other names, and use prefixing to not collide with element names
-		return {
-			forElement: function(element, directReference){
-				var contentElement = element;
-				if(newElement){
-					// content needs to start at the parent
-					element = element.parentNode;
-				}
-				if(rule){
-					while(!element.matches(rule.selector)){
+		function contextualValue(rule){
+			return {
+				selectElement: function(element){
+					if(options.newElement){
+						// content needs to start at the parent
 						element = element.parentNode;
-						if(!element){
-							throw new Error('Rule not found');
+					}
+					if(rule && rule.selector){
+						while(!matchesRule(element, rule)){
+							element = element.parentNode;
+							if(!element){
+								throw new Error('Rule not found');
+							}
 						}
 					}
-				}
-				if(inherit){
-					// we find the parent element with an item property, and key off of that 
-					while(!(property in element)){
-						element = element.parentNode;
-						if(!element){
-							throw new Error(property ? (property + ' not found') : ('Property was never defined'));
+					if(options.inherit){
+						// we find the parent element with an item property, and key off of that 
+						while(!(property in element)){
+							element = element.parentNode;
+							if(!element){
+								throw new Error(property ? (property + ' not found') : ('Property was never defined'));
+							}
 						}
 					}
-				}
-				// provide a means for being able to reference the target node,
-				// this primarily used by the generate model to nest content properly
-				if(directReference){
-					element['_' + property + 'Node'] = contentElement;
-				}
-				var value = element[property];
-				if(!value){
-					value = element[property] = new Proxy(null);
-				}else if(!value.observe){
-					value = new Proxy(value);
-				}
-				value.element = element;
-				value.newElement = newElement;
-				return value;
-			},
-			define: function(rule, newProperty){
-				// if we don't already have a property define, we will do so now
-				return elementProperty(property || newProperty, rule, newElement);
-			},
-			put: function(value){
-				rule && elemental.addRenderer(rule, function(element){
-					var proxy = element[property];
-					if(proxy && proxy.put){
-						proxy.put(value);
-					}else{
-						element[property] = new Proxy(value);
+					return element;
+				},
+				forElement: function(element){
+					var contentElement = element;
+					element = this.selectElement(element);
+					// provide a means for being able to reference the target node,
+					// this primarily used by the generate model to nest content properly
+					if(options.newElement){
+						element['_' + property + 'Node'] = contentElement;
 					}
-				});
-			}
+					var value = options.get ? options.get(element, property) : element[property];
+					if(value === undefined && rule){
+						return getVarDefinition(property).valueOf().forRule(rule);
+					}
+					return value;
+				},
+				forRule: options.inherit && function(rule){
+					return contextualValue(rule);
+				}
+			};
+		}
+		var definition = new Definition(function(){
+			return contextualValue(rule);
+		});
+		definition.define = function(rule, newProperty){
+			// if we don't already have a property define, we will do so now
+			return elementProperty(property || newProperty, rule, options);
 		};
+		// don't override content in CSS rules
+		definition.keepCSSValue = true;
+		definition.put = options.inherit ? function(value, rule){
+			return getVarDefinition(property).put(value, rule, property);
+		} :
+		function(value){
+			// TODO: we may want to have forRule for define so that this can
+			// be inherited
+			// for plain element-property, we set the value on the element
+			return {
+				forElement: function(element){
+					if(rule && rule.selector){
+						while(!matchesRule(element, rule)){
+							element = element.parentNode;
+							if(!element){
+								throw new Error('Rule not found');
+							}
+						}
+					}
+					if(options.set){
+						options.set(element, property, value);
+					}else{
+						element[property] = value;
+					}
+					definition.invalidate({elements: [element]});
+				}
+			};
+		};
+		return definition;
 	}
 	function observeExpressionForRule(rule, name, value, callback){
 		return utils.when(expression.evaluate(rule, value), function(result){
@@ -114,47 +134,63 @@ define('xstyle/core/base', [
 			}
 		};
 	}
-	function deriveVar(rule, name, ifExists){
-		// when we beget a var, we basically are making a property that is included in variables
-		// object for the parent object
-		var variables = (rule.variables || (!ifExists && (rule.variables = new Proxy())));
-		var proxy;
-		if(ifExists){
-			proxy = variables && variables._properties[name];
-			if(!proxy){
-				return this;
-			}
-		}else{
-			proxy = variables.property(name);
+	var variableDefinitions = {};
+	function getVarValueForParent(rule, name){
+		var variables = rule.variables;
+		if(variables && name in variables){
+			return variables[name];
 		}
-		var varObject = this;
-		proxy.observe = function(listener){
-			// modify observe to inherit values from parents as well
-			var currentValue;
-			Proxy.prototype.observe.call(proxy, function(value){
-				currentValue = value;
-				listener(value);
-			});
-			if(currentValue === undefined && rule.parent){
-				varObject.forParent(rule.parent, name).observe(function(value){
-					if(currentValue === undefined){
-						listener(value);
-					}
-				});
+		var bases = rule.bases;
+		if(bases){
+			for(var i = 0; i < bases.length; i++){
+				var result = getVarValueForParent(bases[i], name);
+				if(result !== undefined){
+					return result;
+				}
 			}
-		};
-		proxy.valueOf = function(){
-			var value = variables[name];
+		}
+	}
+	function getVarValue(rule, name){
+		do{
+			var value = getVarValueForParent(rule, name);
 			if(value !== undefined){
 				return value;
 			}
-			if(rule.parent){
-				return varObject.forParent(rule.parent, name).valueOf();
-			}
-		};
-		proxy.define = deriveVar;
-		proxy.forParent = deriveVar;
-		return proxy;
+			rule = rule.parent;
+		}while(rule);
+	}
+	function getVarDefinition(name){
+		var variableDefinition = variableDefinitions[name];
+		if(!variableDefinition){
+			variableDefinition = variableDefinitions[name] = new Definition(function(){
+				return {
+					forRule: function(rule){
+						return getVarValue(rule, name);
+					}
+				};
+			});
+			variableDefinition.put = function(value, declaringRule, name){
+				// assignment to a var
+				return {
+					forRule: function(rule){
+						(rule.variables || (rule.variables = {}))[name] = value;
+						var affectedRules = [];
+						function addDerivatives(rule){
+							affectedRules.push(rule);
+							for(var name in rule.rules){
+								addDerivatives(rule.rules[name]);
+							}
+						}
+						while(rule){
+							addDerivatives(rule);
+							rule = rule.parent;
+						}
+						variableDefinition.invalidate({rules: affectedRules});
+					}
+				};
+			};
+		}
+		return variableDefinition;
 	}
 	// the root has it's own intrinsic variables that provide important base and bootstrapping functionality 
 	root.definitions = {
@@ -183,25 +219,53 @@ define('xstyle/core/base', [
 		}),
 		// TODO: add url()
 		// adds support for referencing each item in a list of items when rendering arrays 
-		item: elementProperty('item', null, true),
-		'page-content': new Proxy(),
+		item: elementProperty('item', null, {inherit: true}),
+		pageContent: new Definition(),
 		// adds referencing to the prior contents of an element
-		content: elementProperty('content', null, true, function(target){
-			this.element;
+		content: elementProperty('content', null, {
+			inherit: true,
+			newElement: function(){
+				return this.element;
+			}
 		}),
 		// don't define the property now let it be redefined when it is declared in another
-		// definition
-		'element-property': elementProperty(),
+		// this is a definition that can be redefined to use an element property as a variable
+		elementProperty: elementProperty(null, null, {}),
+		// this is a definition that is tied to the presence or absence of a class on an element
+		elementClass: elementProperty(null, null, {
+			get: function(element, property){
+				return (' ' + element.className + ' ').indexOf(' ' + property + ' ') > -1;
+			},
+			set: function(element, property, value){
+				// check to see if we really need to change anything first
+				if(this.get(element, property) != value){
+					// set the class name
+					if(value){
+						// add the class name
+						element.className += ' ' + property;
+					}else{
+						// remove it
+						element.className = (' ' + element.className + ' ').replace(' ' + property + ' ', '').replace(/^ +| +$/g,'');
+					}
+				}
+			}
+		}),
 		element: {
 			// definition to reference the actual element
 			forElement: function(element){
+				return element;
+			},
+			define: function(rule){
+				// if it is defined, then we go from the definition
 				return {
-					element: element, // indicates the key element
-					observe: function(callback){// handle requests for the data
-						callback(element);
-					},
-					get: function(property){
-						return this.element[property];
+					forElement: function(element){
+						while(!matchesRule(element, rule)){
+							element = element.parentNode;
+							if(!element){
+								throw new Error('Rule not found');
+							}
+						}
+						return element;
 					}
 				};
 			}
@@ -215,38 +279,40 @@ define('xstyle/core/base', [
 			}
 		},
 		each: {
-			forParent: function(rule){
+			put: function(value){
 				return {
-					put: function(value){
+					forRule: function(rule){
 						rule.each = value;
 					}
 				};
 			}
 		},
 		prefix: {
-			forParent: function(rule, name){
+			put: function(value, declaringRule, name){
+				// add a vendor prefix
+				// check to see if the browser supports this feature through vendor prefixing
 				return {
-					put: function(value){
-						// add a vendor prefix
-						// check to see if the browser supports this feature through vendor prefixing
+					forRule: function(rule){
 						if(typeof testDiv.style[vendorPrefix + name] == 'string'){
 							// if so, handle the prefixing right here
 							rule._setStyleFromValue(vendorPrefix + name, value);
 							return true;
 						}
-					}
+					}							
 				};
 			}
 		},
 		// provides CSS variable support
-		'var': derive(new Proxy(), {
-			define: deriveVar,
-			forParent: deriveVar,
-			// referencing variables
-			apply: function(rule, args){
-				return this.forParent(rule, args[0]);
+		'var': {
+			define: function(rule, name){
+				return getVarDefinition(name);
+			},
+			selfResolving: true,
+			apply: function(instance, args){
+				// var(property) call
+				return getVarDefinition(utils.convertCssNameToJs(args[0]));
 			}
-		}),
+		},
 		inline: conditional('inline', 'none'),
 		block: conditional('block', 'none'),
 		visible: conditional('visible', 'hidden'),
@@ -258,45 +324,68 @@ define('xstyle/core/base', [
 				}
 			}
 		},
-		set: expression.contextualized(function(target, value){
-			target.put(value);
-		}),
-		get: expression.resolved(function(value){
-			return value;
-		}),
+		set: {
+			selfExecuting: true,
+			apply: function(target, args){
+				return args[0].put(args[1].valueOf());
+			}
+		},
+		get: {
+			apply: function(target, args){
+				// just return the evaluated argument
+				return args[0];
+			},
+			put: function(value, rule){
+				// evaluate to trigger the expression
+				expression.evaluate(rule, value).valueOf();
+			}
+		},
+		toggle: {
+			selfExecuting: true,
+			apply: function(target, args){
+				return args[0].put(!args[0].valueOf());
+			}
+		},
 		on: {
-			forParent: function(rule, name){
+			put: function(value, declaringRule, name){
+				// add listener
 				return {
-					put: function(value){
-						// add listener
-						elemental.on(document, name.slice(3), rule.selector, function(event){
+					forRule: function(rule){
+						elemental.on(document, 
+								elemental.on.selector(rule.selector, name.charAt(2).toLowerCase() + name.slice(3)),
+								function(event){
 							currentEvent = event;
-							// TODO: might consider this putting in a separate 'realize()' function
-							utils.when(expression.evaluate(rule, value), function(computation){
-								currentEvent = event;
-								if(computation && computation.forElement){
-									computation = computation.forElement(event.target);
-								}
-								if(computation && computation.observe){
-									// trigger observe, if it has one
-									computation = computation.observe(function(){});
-								}
-								computation && computation.stop && computation.stop();
-								computation && computation.remove && computation.remove();
-								currentEvent = null;
-							});
+							// execute the event listener by calling valueOf
+							// note that we could define a flag on the definition to indicate that
+							// we shouldn't cache it, incidently, since their are no dependencies
+							// declared for this definition, it shouldn't end up being cached
+							try{
+								utils.when(expression.evaluate(rule, value).valueOf(), function(result){
+									if(result && result.forRule){
+										result = result.forRule(rule);
+									}
+									if(result && result.forElement){
+										result = result.forElement(event.target);
+									}
+									currentEvent = null;
+								}, function(e){
+									console.error('Error in ' + name + ' event handler, executing ' + value, e);	
+								});
+							}catch(e){
+								console.error('Error in ' + name + ' event handler, executing ' + value, e);
+							}
 						});
 					}
 				};
 			}
 		},
 		title: {
-			forParent: function(rule){
+			put: function(value){
 				return {
-					put: function(value){
+					forRule: function(rule){
 						expression.observe(expression.evaluate(rule, value), function(value){
 							document.title = value;	
-						});	
+						});
 					}
 				};
 			}

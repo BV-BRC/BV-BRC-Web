@@ -1,5 +1,5 @@
-define("xstyle/page", ['xstyle/core/base', 'xstyle/core/Proxy', 'xstyle/core/parser', 'xstyle/main', 'dojo/domReady!'], function(base, Proxy, parse){
-	var contentText = document.getElementsByTagName('pre')[0].innerHTML,
+define("xstyle/page", ['xstyle/core/base', 'xstyle/main', 'dojo/domReady!'], function(base){
+	var contentText = document.getElementsByTagName('textarea')[0].value,
 		body = document.body,
 		entities = {
 			'&lt;': '<',
@@ -12,15 +12,7 @@ define("xstyle/page", ['xstyle/core/base', 'xstyle/core/Proxy', 'xstyle/core/par
 	contentText = contentText.replace(/&\w+;/g, function(entity){
 		return entities[entity];
 	});
-
+	// jshint evil: true
 	var content = eval('(' + contentText + ')');
-	base.definitions['page-content'].setSource(content);
-	//(body['page-content'] || (body['page-content'] = new Proxy())).setSource(content);
-	/*base.newRule('content');
-	
-	parse(contentRule, contentText, {
-			rules: [], 
-			addRule: function(){}
-		});*/
-	
+	base.definitions.pageContent.put(content);
 });

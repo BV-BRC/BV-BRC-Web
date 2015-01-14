@@ -138,6 +138,12 @@ define("dijit/form/ComboBoxMixin", [
 					}
 				});
 			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			this.focusNode.setAttribute("aria-autocomplete", this.autoComplete ? "both" : "list");
 		}
 	});
 });

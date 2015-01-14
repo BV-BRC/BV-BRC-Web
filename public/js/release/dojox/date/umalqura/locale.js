@@ -187,7 +187,7 @@ define("dojox/date/umalqura/locale", ["../..", "dojo/_base/lang", "dojo/_base/ar
 
                var date, date1;
 
-               var result = [1389, 0, 1, 0, 0, 0, 0];  //FIXME: umalqura date for [1970,0,1,0,0,0,0] used in gregorian locale
+               var result = [1389, 9, 22, 0, 0, 0, 0];  //FIXME: umalqura date for [1970,0,1,0,0,0,0] used in gregorian locale
                var amPm = "";
                var mLength = 0;
                var widthList = ["abbr", "wide", "narrow"];
