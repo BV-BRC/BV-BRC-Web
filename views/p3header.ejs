@@ -1,6 +1,6 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
 	<div class="TopMenuBar">
-		<span>NEWS</span> &nbsp; <span> WORKSHOPS </span> &nbsp; <span> ABOUT </span> &nbsp; <span> LOGIN </span>
+		<span>NEWS</span> &nbsp; <span> WORKSHOPS </span> &nbsp; <span> ABOUT </span> &nbsp; <% if (request && request.user) { %> <a href="/logout"><span>LOGOUT</span></a> <% }else{ %><a href="/login" target="_top"><span> LOGIN </span></a><% } %>
 	</div>
 	<div class="P3Header">
 	

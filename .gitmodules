@@ -13,6 +13,7 @@
 [submodule "public/js/dgrid"]
 	path = public/js/dgrid
 	url = git@github.com:SitePen/dgrid.git
+	branch = dev-0.3
 [submodule "public/js/rql"]
 	path = public/js/rql
 	url = git@github.com:persvr/rql.git
