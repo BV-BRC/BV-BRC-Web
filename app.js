@@ -51,7 +51,6 @@ app.use(function(req,res,next){
     req.production = config.get("production") || false;
     req.productionLayers=["p3/layer/core"]
     req.applicationOptions = {version: "3.0"}
-
     next();
 })
 
@@ -85,14 +84,16 @@ app.get("/login",
 
 app.get("/logout", function(req,res,next){
 	req.logOut();
-	res.redirect("/");
+	req.session.destroy(function(err){	
+		res.redirect("/");
+	});
 });
 app.get("/auth/callback", 
 	function(req,res,next){
 		console.log("Authorization Callback");
 		console.log("req.session.userProfile: ", (req.session&&req.session.userProfile)?req.session.userProfile:"No User Profile")
-//                res.render('authcb', { title: 'User Service', request: req});
-		res.redirect("/");
+                res.render('authcb', { title: 'User Service', request: req});
+//		res.redirect("/");
 	}
 );
 
