@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head></head>
+	<body>
+		Login Successful
+	<script>
+		var message=<%- JSON.stringify({userProfile:request.session.userProfile,accessToken: request.session.accessToken}) %>
+		console.log('window.parent: ', window.parent);
+		if (window.opener || window.parent){
+			console.log("Post Parent Message: ", message);
+			(window.opener || window.parent).postMessage(message,"*");
+		}else{
+			window.location="/";
+		}
+	</script>
+	</body>	
+</html>

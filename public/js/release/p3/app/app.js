@@ -26,6 +26,18 @@ define("p3/app/app", [
 			this._containers={};
 			console.log("Launching Application...");
 
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+// Listen to message from child window
+eventer(messageEvent,function(e) {
+  console.log('parent received message!:  ',e.data);
+},false);
+			//on(window,"message", function(msg){
+			//	console.log("window.message: ", msg);
+			//});
+
 			Ready(this,function(){
 				console.log("Instantiate App Widgets");
 				Parser.parse().then(function() {
@@ -42,6 +54,7 @@ define("p3/app/app", [
 
 		listen: function(){
 			var _self = this;
+
 			on(document, "A.DialogButton:click", function(evt){
 				console.log("DialogButton Click", evt);
 				evt.preventDefault();
@@ -53,17 +66,17 @@ define("p3/app/app", [
 				var type = parts[0];
 				var params=parts[1];
 				var w = _self.loadPanel(type,params);
-                Deferred.when(w, function(w){
-                    if (!_self.dialog) {
-                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
-                    }else{
-                            _self.dialog.set('title', w.title);
-                    }
-                    _self.dialog.set('content', '');
-                    domConstruct.place(w.domNode, _self.dialog.containerNode);
-                    _self.dialog.show();
-                    w.startup();
-                });
+		                Deferred.when(w, function(w){
+               			     if (!_self.dialog) {
+		                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
+               			     }else{
+		                            _self.dialog.set('title', w.title);
+               			     }
+		                    _self.dialog.set('content', '');
+       			             domConstruct.place(w.domNode, _self.dialog.containerNode);
+		                    _self.dialog.show();
+               			     w.startup();
+		                });
 
 				console.log("Open Dialog", type);
 			})
@@ -79,6 +92,15 @@ define("p3/app/app", [
 			Topic.subscribe("/navigate",function(msg){
 					Router.go(msg.href);
 			})
+
+			on(document, "A.loginLink:click", function(evt){
+				console.log("Login Link Click", evt);
+				evt.preventDefault();
+				evt.stopPropagation();
+				console.log("Target", evt.target.href);
+				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
+				console.log("end loginLink Lcik");
+			});
 
 			on(document, ".navigationLink:click", function(evt){
 				console.log("NavigationLink Click", evt);

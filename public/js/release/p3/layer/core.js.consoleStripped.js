@@ -755,6 +755,18 @@ define([
 			this._containers={};
 			 0 && console.log("Launching Application...");
 
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+// Listen to message from child window
+eventer(messageEvent,function(e) {
+   0 && console.log('parent received message!:  ',e.data);
+},false);
+			//on(window,"message", function(msg){
+			//	 0 && console.log("window.message: ", msg);
+			//});
+
 			Ready(this,function(){
 				 0 && console.log("Instantiate App Widgets");
 				Parser.parse().then(function() {
@@ -771,6 +783,7 @@ define([
 
 		listen: function(){
 			var _self = this;
+
 			on(document, "A.DialogButton:click", function(evt){
 				 0 && console.log("DialogButton Click", evt);
 				evt.preventDefault();
@@ -782,17 +795,17 @@ define([
 				var type = parts[0];
 				var params=parts[1];
 				var w = _self.loadPanel(type,params);
-                Deferred.when(w, function(w){
-                    if (!_self.dialog) {
-                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
-                    }else{
-                            _self.dialog.set('title', w.title);
-                    }
-                    _self.dialog.set('content', '');
-                    domConstruct.place(w.domNode, _self.dialog.containerNode);
-                    _self.dialog.show();
-                    w.startup();
-                });
+		                Deferred.when(w, function(w){
+               			     if (!_self.dialog) {
+		                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
+               			     }else{
+		                            _self.dialog.set('title', w.title);
+               			     }
+		                    _self.dialog.set('content', '');
+       			             domConstruct.place(w.domNode, _self.dialog.containerNode);
+		                    _self.dialog.show();
+               			     w.startup();
+		                });
 
 				 0 && console.log("Open Dialog", type);
 			})
@@ -808,6 +821,15 @@ define([
 			Topic.subscribe("/navigate",function(msg){
 					Router.go(msg.href);
 			})
+
+			on(document, "A.loginLink:click", function(evt){
+				 0 && console.log("Login Link Click", evt);
+				evt.preventDefault();
+				evt.stopPropagation();
+				 0 && console.log("Target", evt.target.href);
+				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
+				 0 && console.log("end loginLink Lcik");
+			});
 
 			on(document, ".navigationLink:click", function(evt){
 				 0 && console.log("NavigationLink Click", evt);
@@ -25714,22 +25736,28 @@ define([
 	});
 },
 'dgrid/Grid':function(){
-define(["dojo/_base/kernel", "dojo/_base/declare", "dojo/on", "dojo/has", "put-selector/put", "./List", "./util/misc", "dojo/_base/sniff"],
-function(kernel, declare, listen, has, put, List, miscUtil){
-	var contentBoxSizing = has("ie") < 8 && !has("quirks");
-	
-	function appendIfNode(parent, subNode){
-		if(subNode && subNode.nodeType){
+define([
+	'dojo/_base/declare',
+	'dojo/_base/kernel',
+	'dojo/on',
+	'dojo/has',
+	'put-selector/put',
+	'./List',
+	'./util/misc',
+	'dojo/_base/sniff'
+], function (declare, kernel, listen, has, put, List, miscUtil) {
+	function appendIfNode(parent, subNode) {
+		if (subNode && subNode.nodeType) {
 			parent.appendChild(subNode);
 		}
 	}
-	
+
 	function replaceInvalidChars(str) {
 		// Replaces invalid characters for a CSS identifier with hyphen,
 		// as dgrid does for field names / column IDs when adding classes.
-		return miscUtil.escapeCssIdentifier(str, "-");
+		return miscUtil.escapeCssIdentifier(str, '-');
 	}
-	
+
 	var Grid = declare(List, {
 		columns: null,
 		// cellNavigation: Boolean
@@ -25739,56 +25767,58 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 		cellNavigation: true,
 		tabableHeader: true,
 		showHeader: true,
-		column: function(target){
+		column: function (target) {
 			// summary:
 			//		Get the column object by node, or event, or a columnId
-			if(typeof target != "object"){
+			if (typeof target !== 'object') {
 				return this.columns[target];
-			}else{
+			}
+			else {
 				return this.cell(target).column;
 			}
 		},
-		listType: "grid",
-		cell: function(target, columnId){
+		listType: 'grid',
+		cell: function (target, columnId) {
 			// summary:
 			//		Get the cell object by node, or event, id, plus a columnId
-			
-			if(target.column && target.element){ return target; }
-			
-			if(target.target && target.target.nodeType){
+
+			if (target.column && target.element) {
+				return target;
+			}
+
+			if (target.target && target.target.nodeType) {
 				// event
 				target = target.target;
 			}
 			var element;
-			if(target.nodeType){
-				var object;
-				do{
-					if(this._rowIdToObject[target.id]){
+			if (target.nodeType) {
+				do {
+					if (this._rowIdToObject[target.id]) {
 						break;
 					}
 					var colId = target.columnId;
-					if(colId){
+					if (colId) {
 						columnId = colId;
 						element = target;
 						break;
 					}
 					target = target.parentNode;
-				}while(target && target != this.domNode);
+				} while (target && target !== this.domNode);
 			}
-			if(!element && typeof columnId != "undefined"){
+			if (!element && typeof columnId !== 'undefined') {
 				var row = this.row(target),
 					rowElement = row && row.element;
-				if(rowElement){
-					var elements = rowElement.getElementsByTagName("td");
-					for(var i = 0; i < elements.length; i++){
-						if(elements[i].columnId == columnId){
+				if (rowElement) {
+					var elements = rowElement.getElementsByTagName('td');
+					for (var i = 0; i < elements.length; i++) {
+						if (elements[i].columnId === columnId) {
 							element = elements[i];
 							break;
 						}
 					}
 				}
 			}
-			if(target != null){
+			if (target != null) {
 				return {
 					row: row || this.row(target),
 					column: columnId && this.column(columnId),
@@ -25796,170 +25826,190 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 				};
 			}
 		},
-		
-		createRowCells: function(tag, each, subRows, object){
+
+		createRowCells: function (tag, each, subRows, object) {
 			// summary:
 			//		Generates the grid for each row (used by renderHeader and and renderRow)
-			var row = put("table.dgrid-row-table[role=presentation]"),
-				cellNavigation = this.cellNavigation,
+			var row = put('table.dgrid-row-table[role=presentation]'),
 				// IE < 9 needs an explicit tbody; other browsers do not
-				tbody = (has("ie") < 9 || has("quirks")) ? put(row, "tbody") : row,
+				tbody = (has('ie') < 9) ? put(row, 'tbody') : row,
 				tr,
 				si, sl, i, l, // iterators
 				subRow, column, id, extraClasses, className,
-				cell, innerCell, colSpan, rowSpan; // used inside loops
-			
+				cell, colSpan, rowSpan; // used inside loops
+
 			// Allow specification of custom/specific subRows, falling back to
 			// those defined on the instance.
 			subRows = subRows || this.subRows;
-			
-			for(si = 0, sl = subRows.length; si < sl; si++){
+
+			for (si = 0, sl = subRows.length; si < sl; si++) {
 				subRow = subRows[si];
 				// for single-subrow cases in modern browsers, TR can be skipped
 				// http://jsperf.com/table-without-trs
-				tr = put(tbody, "tr");
-				if(subRow.className){
-					put(tr, "." + subRow.className);
+				tr = put(tbody, 'tr');
+				if (subRow.className) {
+					put(tr, '.' + subRow.className);
 				}
 
-				for(i = 0, l = subRow.length; i < l; i++){
+				for (i = 0, l = subRow.length; i < l; i++) {
 					// iterate through the columns
 					column = subRow[i];
 					id = column.id;
 
 					extraClasses = column.field ?
-						".field-" + replaceInvalidChars(column.field) :
-						"";
-					className = typeof column.className === "function" ?
+						'.field-' + replaceInvalidChars(column.field) :
+						'';
+					className = typeof column.className === 'function' ?
 						column.className(object) : column.className;
-					if(className){
-						extraClasses += "." + className;
+					if (className) {
+						extraClasses += '.' + className;
 					}
 
-					cell = put(tag + (
-							".dgrid-cell.dgrid-cell-padding" +
-							(id ? ".dgrid-column-" + replaceInvalidChars(id) : "") +
-							extraClasses.replace(/ +/g, ".")
-						) + "[role=" + (tag === "th" ? "columnheader" : "gridcell") + "]");
+					cell = put(tag +
+						'.dgrid-cell' +
+						(id ? '.dgrid-column-' + replaceInvalidChars(id) : '') +
+						extraClasses.replace(/ +/g, '.') +
+						'[role=' + (tag === 'th' ? 'columnheader' : 'gridcell') + ']');
 					cell.columnId = id;
-					if(contentBoxSizing){
-						// The browser (IE7-) does not support box-sizing: border-box, so we emulate it with a padding div
-						innerCell = put(cell, "!dgrid-cell-padding div.dgrid-cell-padding");// remove the dgrid-cell-padding, and create a child with that class
-						cell.contents = innerCell;
-					}else{
-						innerCell = cell;
-					}
 					colSpan = column.colSpan;
-					if(colSpan){
+					if (colSpan) {
 						cell.colSpan = colSpan;
 					}
 					rowSpan = column.rowSpan;
-					if(rowSpan){
+					if (rowSpan) {
 						cell.rowSpan = rowSpan;
 					}
-					each(innerCell, column);
+					each(cell, column);
 					// add the td to the tr at the end for better performance
 					tr.appendChild(cell);
 				}
 			}
 			return row;
 		},
-		
-		left: function(cell, steps){
-			if(!cell.element){ cell = this.cell(cell); }
-			return this.cell(this._move(cell, -(steps || 1), "dgrid-cell"));
+
+		left: function (cell, steps) {
+			if (!cell.element) {
+				cell = this.cell(cell);
+			}
+			return this.cell(this._move(cell, -(steps || 1), 'dgrid-cell'));
 		},
-		right: function(cell, steps){
-			if(!cell.element){ cell = this.cell(cell); }
-			return this.cell(this._move(cell, steps || 1, "dgrid-cell"));
+		right: function (cell, steps) {
+			if (!cell.element) {
+				cell = this.cell(cell);
+			}
+			return this.cell(this._move(cell, steps || 1, 'dgrid-cell'));
 		},
-		
-		renderRow: function(object, options){
+
+		_defaultRenderCell: function (object, value, td) {
+			// summary:
+			//		Default renderCell implementation.
+			//		NOTE: Called in context of column definition object.
+			// object: Object
+			//		The data item for the row currently being rendered
+			// value: Mixed
+			//		The value of the field applicable to the current cell
+			// td: DOMNode
+			//		The cell element representing the current item/field
+			// options: Object?
+			//		Any additional options passed through from renderRow
+
+			if (this.formatter) {
+				// Support formatter, with or without formatterScope
+				var formatter = this.formatter,
+					formatterScope = this.grid.formatterScope;
+				td.innerHTML = typeof formatter === 'string' && formatterScope ?
+					formatterScope[formatter](value, object) : this.formatter(value, object);
+			}
+			else if (value != null) {
+				td.appendChild(document.createTextNode(value));
+			}
+		},
+
+		renderRow: function (object, options) {
 			var self = this;
-			var row = this.createRowCells("td", function(td, column){
+			var row = this.createRowCells('td', function (td, column) {
 				var data = object;
 				// Support get function or field property (similar to DataGrid)
-				if(column.get){
+				if (column.get) {
 					data = column.get(object);
-				}else if("field" in column && column.field != "_item"){
+				}
+				else if ('field' in column && column.field !== '_item') {
 					data = data[column.field];
 				}
-				
-				if(column.renderCell){
+
+				if (column.renderCell) {
 					// A column can provide a renderCell method to do its own DOM manipulation,
 					// event handling, etc.
 					appendIfNode(td, column.renderCell(object, data, td, options));
-				}else{
-					defaultRenderCell.call(column, object, data, td, options);
+				}
+				else {
+					self._defaultRenderCell.call(column, object, data, td, options);
 				}
 			}, options && options.subRows, object);
 			// row gets a wrapper div for a couple reasons:
-			//	1. So that one can set a fixed height on rows (heights can't be set on <table>'s AFAICT)
-			// 2. So that outline style can be set on a row when it is focused, and Safari's outline style is broken on <table>
-			return put("div[role=row]>", row);
+			// 1. So that one can set a fixed height on rows (heights can't be set on <table>'s AFAICT)
+			// 2. So that outline style can be set on a row when it is focused,
+			// and Safari's outline style is broken on <table>
+			return put('div[role=row]>', row);
 		},
-		renderHeader: function(){
+		renderHeader: function () {
 			// summary:
 			//		Setup the headers for the grid
-			var
-				grid = this,
-				columns = this.columns,
+			var grid = this,
 				headerNode = this.headerNode,
 				i = headerNode.childNodes.length;
-			
-			headerNode.setAttribute("role", "row");
-			
+
+			headerNode.setAttribute('role', 'row');
+
 			// clear out existing header in case we're resetting
-			while(i--){
-				put(headerNode.childNodes[i], "!");
+			while (i--) {
+				put(headerNode.childNodes[i], '!');
 			}
-			
-			var row = this.createRowCells("th", function(th, column){
+
+			var row = this.createRowCells('th', function (th, column) {
 				var contentNode = column.headerNode = th;
-				if(contentBoxSizing){
-					// we're interested in the th, but we're passed the inner div
-					th = th.parentNode;
-				}
 				var field = column.field;
-				if(field){
+				if (field) {
 					th.field = field;
 				}
 				// allow for custom header content manipulation
-				if(column.renderHeaderCell){
+				if (column.renderHeaderCell) {
 					appendIfNode(contentNode, column.renderHeaderCell(contentNode));
-				}else if("label" in column || column.field){
-					contentNode.appendChild(document.createTextNode(
-						"label" in column ? column.label : column.field));
 				}
-				if(column.sortable !== false && field && field != "_item"){
+				else if ('label' in column || column.field) {
+					contentNode.appendChild(document.createTextNode(
+						'label' in column ? column.label : column.field));
+				}
+				if (column.sortable !== false && field && field !== '_item') {
 					th.sortable = true;
-					th.className += " dgrid-sortable";
+					th.className += ' dgrid-sortable';
 				}
 			}, this.subRows && this.subRows.headerRows);
-			this._rowIdToObject[row.id = this.id + "-header"] = this.columns;
+			this._rowIdToObject[row.id = this.id + '-header'] = this.columns;
 			headerNode.appendChild(row);
-			
+
 			// If the columns are sortable, re-sort on clicks.
 			// Use a separate listener property to be managed by renderHeader in case
 			// of subsequent calls.
-			if(this._sortListener){
+			if (this._sortListener) {
 				this._sortListener.remove();
 			}
-			this._sortListener = listen(row, "click,keydown", function(event){
+			this._sortListener = listen(row, 'click,keydown', function (event) {
 				// respond to click, space keypress, or enter keypress
-				if(event.type == "click" || event.keyCode == 32 /* space bar */ || (!has("opera") && event.keyCode == 13) /* enter */){
+				if (event.type === 'click' || event.keyCode === 32 ||
+						(!has('opera') && event.keyCode === 13)) {
 					var target = event.target,
 						field, sort, newSort, eventObj;
-					do{
-						if(target.sortable){
+					do {
+						if (target.sortable) {
 							// If the click is on the same column as the active sort,
 							// reverse sort direction
 							newSort = [{
-								attribute: (field = target.field || target.columnId),
-								descending: (sort = grid._sort[0]) && sort.attribute == field &&
+								property: (field = target.field || target.columnId),
+								descending: (sort = grid.sort[0]) && sort.property === field &&
 									!sort.descending
 							}];
-							
+
 							// Emit an event with the new sort
 							eventObj = {
 								bubbles: true,
@@ -25968,81 +26018,75 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 								parentType: event.type,
 								sort: newSort
 							};
-							
-							if (listen.emit(event.target, "dgrid-sort", eventObj)){
+
+							if (listen.emit(event.target, 'dgrid-sort', eventObj)) {
 								// Stash node subject to DOM manipulations,
 								// to be referenced then removed by sort()
 								grid._sortNode = target;
-								grid.set("sort", newSort);
+								grid.set('sort', newSort);
 							}
-							
+
 							break;
 						}
-					}while((target = target.parentNode) && target != headerNode);
+					} while ((target = target.parentNode) && target !== headerNode);
 				}
 			});
 		},
-		
-		resize: function(){
+
+		resize: function () {
 			// extension of List.resize to allow accounting for
 			// column sizes larger than actual grid area
-			var
-				headerTableNode = this.headerNode.firstChild,
+			var headerTableNode = this.headerNode.firstChild,
 				contentNode = this.contentNode,
 				width;
-			
+
 			this.inherited(arguments);
-			
-			if(!has("ie") || (has("ie") > 7 && !has("quirks"))){
-				// Force contentNode width to match up with header width.
-				// (Old IEs don't have a problem due to how they layout.)
-				
-				contentNode.style.width = ""; // reset first
-				
-				if(contentNode && headerTableNode){
-					if((width = headerTableNode.offsetWidth) != contentNode.offsetWidth){
-						// update size of content node if necessary (to match size of rows)
-						// (if headerTableNode can't be found, there isn't much we can do)
-						contentNode.style.width = width + "px";
-					}
+
+			// Force contentNode width to match up with header width.
+			contentNode.style.width = ''; // reset first
+			if (contentNode && headerTableNode) {
+				if ((width = headerTableNode.offsetWidth) > contentNode.offsetWidth) {
+					// update size of content node if necessary (to match size of rows)
+					// (if headerTableNode can't be found, there isn't much we can do)
+					contentNode.style.width = width + 'px';
 				}
 			}
 		},
-		
-		destroy: function(){
+
+		destroy: function () {
 			// Run _destroyColumns first to perform any column plugin tear-down logic.
 			this._destroyColumns();
-			if(this._sortListener){
+			if (this._sortListener) {
 				this._sortListener.remove();
 			}
-			
+
 			this.inherited(arguments);
 		},
-		
-		_setSort: function(property, descending){
+
+		_setSort: function () {
 			// summary:
 			//		Extension of List.js sort to update sort arrow in UI
-			
-			// Normalize _sort first via inherited logic, then update the sort arrow
+
+			// Normalize sort first via inherited logic, then update the sort arrow
 			this.inherited(arguments);
-			this.updateSortArrow(this._sort);
+			this.updateSortArrow(this.sort);
 		},
-		
-		_findSortArrowParent: function(field){
+
+		_findSortArrowParent: function (field) {
 			// summary:
 			//		Method responsible for finding cell that sort arrow should be
 			//		added under.  Called by updateSortArrow; separated for extensibility.
-			
+
 			var columns = this.columns;
-			for(var i in columns){
+			for (var i in columns) {
 				var column = columns[i];
-				if(column.field == field){
+				if (column.field === field) {
 					return column.headerNode;
 				}
 			}
 		},
-		
-		updateSortArrow: function(sort, updateSort){
+
+		updateSortArrow: function (sort, updateSort) {
 			// summary:
 			//		Method responsible for updating the placement of the arrow in the
 			//		appropriate header cell.  Typically this should not be called (call
@@ -26051,144 +26095,162 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 			//		by reacting to the dgrid-sort event, canceling it, then
 			//		performing logic and calling this manually).
 			// sort: Array
-			//		Standard sort parameter - array of object(s) containing attribute
-			//		and optionally descending property
+			//		Standard sort parameter - array of object(s) containing property name
+			//		and optional descending flag
 			// updateSort: Boolean?
-			//		If true, will update this._sort based on the passed sort array
+			//		If true, will update this.sort based on the passed sort array
 			//		(i.e. to keep it in sync when custom logic is otherwise preventing
 			//		it from being updated); defaults to false
-			
+
 			// Clean up UI from any previous sort
-			if(this._lastSortedArrow){
+			if (this._lastSortedArrow) {
 				// Remove the sort classes from the parent node
-				put(this._lastSortedArrow, "<!dgrid-sort-up!dgrid-sort-down");
+				put(this._lastSortedArrow, '<!dgrid-sort-up!dgrid-sort-down');
 				// Destroy the lastSortedArrow node
-				put(this._lastSortedArrow, "!");
+				put(this._lastSortedArrow, '!');
 				delete this._lastSortedArrow;
 			}
-			
-			if(updateSort){ this._sort = sort; }
-			if(!sort[0]){ return; } // nothing to do if no sort is specified
-			
-			var prop = sort[0].attribute,
+
+			if (updateSort) {
+				this.sort = sort;
+			}
+			if (!sort[0]) {
+				return; // Nothing to do if no sort is specified
+			}
+
+			var prop = sort[0].property,
 				desc = sort[0].descending,
 				// if invoked from header click, target is stashed in _sortNode
 				target = this._sortNode || this._findSortArrowParent(prop),
 				arrowNode;
-			
+
 			delete this._sortNode;
-			
+
 			// Skip this logic if field being sorted isn't actually displayed
-			if(target){
+			if (target) {
 				target = target.contents || target;
 				// Place sort arrow under clicked node, and add up/down sort class
-				arrowNode = this._lastSortedArrow = put("div.dgrid-sort-arrow.ui-icon[role=presentation]");
-				arrowNode.innerHTML = "&nbsp;";
+				arrowNode = this._lastSortedArrow = put('div.dgrid-sort-arrow.ui-icon[role=presentation]');
+				arrowNode.innerHTML = '&nbsp;';
 				target.insertBefore(arrowNode, target.firstChild);
-				put(target, desc ? ".dgrid-sort-down" : ".dgrid-sort-up");
+				put(target, desc ? '.dgrid-sort-down' : '.dgrid-sort-up');
 				// Call resize in case relocation of sort arrow caused any height changes
 				this.resize();
 			}
 		},
-		
-		styleColumn: function(colId, css){
+
+		styleColumn: function (colId, css) {
 			// summary:
 			//		Dynamically creates a stylesheet rule to alter a column's style.
-			
-			return this.addCssRule("#" + miscUtil.escapeCssIdentifier(this.domNode.id) +
-				" .dgrid-column-" + replaceInvalidChars(colId), css);
+
+			return this.addCssRule('#' + miscUtil.escapeCssIdentifier(this.domNode.id) +
+				' .dgrid-column-' + replaceInvalidChars(colId), css);
 		},
-		
+
 		/*=====
-		_configColumn: function(column, columnId, rowColumns, prefix){
+		_configColumn: function (column, rowColumns, prefix) {
 			// summary:
 			//		Method called when normalizing base configuration of a single
 			//		column.  Can be used as an extension point for behavior requiring
 			//		access to columns when a new configuration is applied.
 		},=====*/
-		
-		_configColumns: function(prefix, rowColumns){
+
+		_configColumns: function (prefix, rowColumns) {
 			// configure the current column
 			var subRow = [],
 				isArray = rowColumns instanceof Array;
-			
-			function configColumn(column, columnId){
-				if(typeof column == "string"){
-					rowColumns[columnId] = column = {label:column};
+
+			function configColumn(column, columnId) {
+				if (typeof column === 'string') {
+					rowColumns[columnId] = column = { label: column };
 				}
-				if(!isArray && !column.field){
+				if (!isArray && !column.field) {
 					column.field = columnId;
 				}
 				columnId = column.id = column.id || (isNaN(columnId) ? columnId : (prefix + columnId));
 				// allow further base configuration in subclasses
-				if(this._configColumn){
-					this._configColumn(column, columnId, rowColumns, prefix);
+				if (this._configColumn) {
+					this._configColumn(column, rowColumns, prefix);
 					// Allow the subclasses to modify the column id.
 					columnId = column.id;
 				}
-				if(isArray){ this.columns[columnId] = column; }
+				if (isArray) {
+					this.columns[columnId] = column;
+				}
 
 				// add grid reference to each column object for potential use by plugins
 				column.grid = this;
-				if(typeof column.init === "function"){ column.init(); }
-				
+				if (typeof column.init === 'function') {
+					kernel.deprecated('colum.init',
+						'Column plugins are being phased out in favor of mixins for better extensibility. ' +
+							'column.init may be removed in a future release.');
+					column.init();
+				}
+
 				subRow.push(column); // make sure it can be iterated on
 			}
-			
+
 			miscUtil.each(rowColumns, configColumn, this);
 			return isArray ? rowColumns : subRow;
 		},
-		
-		_destroyColumns: function(){
+
+		_destroyColumns: function () {
 			// summary:
 			//		Iterates existing subRows looking for any column definitions with
 			//		destroy methods (defined by plugins) and calls them.  This is called
 			//		immediately before configuring a new column structure.
-			
+
 			var subRows = this.subRows,
-				// if we have column sets, then we don't need to do anything with the missing subRows, ColumnSet will handle it
+				// If we have column sets, then we don't need to do anything with the missing subRows,
+				// ColumnSet will handle it
 				subRowsLength = subRows && subRows.length,
 				i, j, column, len;
-			
+
 			// First remove rows (since they'll be refreshed after we're done),
 			// so that anything aspected onto removeRow by plugins can run.
 			// (cleanup will end up running again, but with nothing to iterate.)
 			this.cleanup();
-			
-			for(i = 0; i < subRowsLength; i++){
-				for(j = 0, len = subRows[i].length; j < len; j++){
+
+			for (i = 0; i < subRowsLength; i++) {
+				for (j = 0, len = subRows[i].length; j < len; j++) {
 					column = subRows[i][j];
-					if(typeof column.destroy === "function"){ column.destroy(); }
+					if (typeof column.destroy === 'function') {
+						kernel.deprecated('colum.destroy',
+							'Column plugins are being phased out in favor of mixins for better extensibility. ' +
+								'column.destroy may be removed in a future release.');
+						column.destroy();
+					}
 				}
 			}
 		},
-		
-		configStructure: function(){
+
+		configStructure: function () {
 			// configure the columns and subRows
 			var subRows = this.subRows,
 				columns = this._columns = this.columns;
-			
+
 			// Reset this.columns unless it was already passed in as an object
 			this.columns = !columns || columns instanceof Array ? {} : columns;
-			
-			if(subRows){
+
+			if (subRows) {
 				// Process subrows, which will in turn populate the this.columns object
-				for(var i = 0; i < subRows.length; i++){
-					subRows[i] = this._configColumns(i + "-", subRows[i]);
+				for (var i = 0; i < subRows.length; i++) {
+					subRows[i] = this._configColumns(i + '-', subRows[i]);
 				}
-			}else{
-				this.subRows = [this._configColumns("", columns)];
+			}
+			else {
+				this.subRows = [this._configColumns('', columns)];
 			}
 		},
-		
-		_getColumns: function(){
+
+		_getColumns: function () {
 			// _columns preserves what was passed to set("columns"), but if subRows
 			// was set instead, columns contains the "object-ified" version, which
 			// was always accessible in the past, so maintain that accessibility going
 			// forward.
 			return this._columns || this.columns;
 		},
-		_setColumns: function(columns){
+		_setColumns: function (columns) {
 			this._destroyColumns();
 			// reset instance variables
 			this.subRows = null;
@@ -26196,37 +26258,28 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 			// re-run logic
 			this._updateColumns();
 		},
-		
-		_setSubRows: function(subrows){
+
+		_setSubRows: function (subrows) {
 			this._destroyColumns();
 			this.subRows = subrows;
 			this._updateColumns();
 		},
-		
-		setColumns: function(columns){
-			kernel.deprecated("setColumns(...)", 'use set("columns", ...) instead', "dgrid 0.4");
-			this.set("columns", columns);
-		},
-		setSubRows: function(subrows){
-			kernel.deprecated("setSubRows(...)", 'use set("subRows", ...) instead', "dgrid 0.4");
-			this.set("subRows", subrows);
-		},
-		
-		_updateColumns: function(){
+
+		_updateColumns: function () {
 			// summary:
 			//		Called when columns, subRows, or columnSets are reset
-			
+
 			this.configStructure();
 			this.renderHeader();
-			
+
 			this.refresh();
 			// re-render last collection if present
 			this._lastCollection && this.renderArray(this._lastCollection);
-			
+
 			// After re-rendering the header, re-apply the sort arrow if needed.
-			if(this._started){
-				if(this._sort && this._sort.length){
-					this.updateSortArrow(this._sort);
+			if (this._started) {
+				if (this.sort.length) {
+					this.updateSortArrow(this.sort);
 				} else {
 					// Only call resize directly if we didn't call updateSortArrow,
 					// since that calls resize itself when it updates.
@@ -26235,204 +26288,158 @@ function(kernel, declare, listen, has, put, List, miscUtil){
 			}
 		}
 	});
-	
-	function defaultRenderCell(object, data, td, options){
-		if(this.formatter){
-			// Support formatter, with or without formatterScope
-			var formatter = this.formatter,
-				formatterScope = this.grid.formatterScope;
-			td.innerHTML = typeof formatter === "string" && formatterScope ?
-				formatterScope[formatter](data, object) : this.formatter(data, object);
-		}else if(data != null){
-			td.appendChild(document.createTextNode(data)); 
-		}
-	}
-	
-	// expose appendIfNode and default implementation of renderCell,
-	// e.g. for use by column plugins
+
 	Grid.appendIfNode = appendIfNode;
-	Grid.defaultRenderCell = defaultRenderCell;
-	
+
 	return Grid;
 });
 
 },
 'dgrid/List':function(){
-define(["dojo/_base/kernel", "dojo/_base/declare", "dojo/dom", "dojo/on", "dojo/has", "./util/misc", "dojo/has!touch?./TouchScroll", "xstyle/has-class", "put-selector/put", "dojo/_base/sniff", "xstyle/css!./css/dgrid.css"],
-function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put){
-	// Add user agent/feature CSS classes 
-	hasClass("mozilla", "opera", "webkit", "ie", "ie-6", "ie-6-7", "quirks", "no-quirks", "touch");
-	
-	var oddClass = "dgrid-row-odd",
-		evenClass = "dgrid-row-even",
+define([
+	'dojo/_base/declare',
+	'dojo/on',
+	'dojo/has',
+	'./util/misc',
+	'xstyle/has-class',
+	'put-selector/put',
+	'dojo/_base/sniff',
+	'xstyle/css!./css/dgrid.css'
+], function (declare, listen, has, miscUtil, hasClass, put) {
+	// Add user agent/feature CSS classes
+	hasClass('mozilla', 'touch');
+
+	// Add a feature test for pointer (only Dojo 1.10 has pointer-events and MSPointer tests)
+	has.add('pointer', function (global) {
+		return 'PointerEvent' in global ? 'pointer' :
+			'MSPointerEvent' in global ? 'MSPointer' : false;
+	});
+
+	var oddClass = 'dgrid-row-odd',
+		evenClass = 'dgrid-row-even',
 		scrollbarWidth, scrollbarHeight;
-	
-	function byId(id){
+
+	function byId(id) {
 		return document.getElementById(id);
 	}
-	
-	function cleanupTestElement(element){
-		element.className = "";
-		document.body.removeChild(element);
+
+	function cleanupTestElement(element) {
+		element.className = '';
+		if (element.parentNode) {
+			document.body.removeChild(element);
+		}
 	}
-	
-	function getScrollbarSize(element, dimension){
+
+	function getScrollbarSize(element, dimension) {
 		// Used by has tests for scrollbar width/height
-		put(document.body, element, ".dgrid-scrollbar-measure");
-		var size = element["offset" + dimension] - element["client" + dimension];
+		put(document.body, element, '.dgrid-scrollbar-measure');
+		var size = element['offset' + dimension] - element['client' + dimension];
 		cleanupTestElement(element);
 		return size;
 	}
-	has.add("dom-scrollbar-width", function(global, doc, element){
-		return getScrollbarSize(element, "Width");
+	has.add('dom-scrollbar-width', function (global, doc, element) {
+		return getScrollbarSize(element, 'Width');
 	});
-	has.add("dom-scrollbar-height", function(global, doc, element){
-		return getScrollbarSize(element, "Height");
+	has.add('dom-scrollbar-height', function (global, doc, element) {
+		return getScrollbarSize(element, 'Height');
 	});
-	
-	has.add("dom-rtl-scrollbar-left", function(global, doc, element){
-		var div = put("div"),
+
+	has.add('dom-rtl-scrollbar-left', function (global, doc, element) {
+		var div = put('div'),
 			isLeft;
-		
-		put(document.body, element, ".dgrid-scrollbar-measure[dir=rtl]");
+
+		put(document.body, element, '.dgrid-scrollbar-measure[dir=rtl]');
 		put(element, div);
-		
+
 		// position: absolute makes IE always report child's offsetLeft as 0,
 		// but it conveniently makes other browsers reset to 0 as base, and all
 		// versions of IE are known to move the scrollbar to the left side for rtl
-		isLeft = !!has("ie") || !!has("trident") || div.offsetLeft >= has("dom-scrollbar-width");
+		isLeft = !!has('ie') || !!has('trident') || div.offsetLeft >= has('dom-scrollbar-width');
 		cleanupTestElement(element);
-		put(div, "!");
-		element.removeAttribute("dir");
+		put(div, '!');
+		element.removeAttribute('dir');
 		return isLeft;
 	});
-	
+
 	// var and function for autogenerating ID when one isn't provided
 	var autogen = 0;
-	function generateId(){
-		return "dgrid_" + autogen++;
+	function generateId() {
+		return 'dgrid_' + autogen++;
 	}
-	
+
 	// common functions for class and className setters/getters
 	// (these are run in instance context)
 	var spaceRx = / +/g;
-	function setClass(cls){
+	function setClass(cls) {
 		// Format input appropriately for use with put...
-		var putClass = cls ? "." + cls.replace(spaceRx, ".") : "";
-		
+		var putClass = cls ? '.' + cls.replace(spaceRx, '.') : '';
+
 		// Remove any old classes, and add new ones.
-		if(this._class){
-			putClass = "!" + this._class.replace(spaceRx, "!") + putClass;
+		if (this._class) {
+			putClass = '!' + this._class.replace(spaceRx, '!') + putClass;
 		}
 		put(this.domNode, putClass);
-		
+
 		// Store for later retrieval/removal.
 		this._class = cls;
 	}
-	function getClass(){
+	function getClass() {
 		return this._class;
 	}
-	
+
 	// window resize event handler, run in context of List instance
-	var winResizeHandler = has("ie") < 7 && !has("quirks") ? function(){
-		// IE6 triggers window.resize on any element resize;
-		// avoid useless calls (and infinite loop if height: auto).
-		// The measurement logic here is based on dojo/window logic.
-		var root, w, h, dims;
-		
-		if(!this._started){ return; } // no sense calling resize yet
-		
-		root = document.documentElement;
-		w = root.clientWidth;
-		h = root.clientHeight;
-		dims = this._prevWinDims || [];
-		if(dims[0] !== w || dims[1] !== h){
+	var winResizeHandler = function () {
+		if (this._started) {
 			this.resize();
-			this._prevWinDims = [w, h];
 		}
-	} :
-	function(){
-		if(this._started){ this.resize(); }
 	};
-	
-	// Desktop versions of functions, deferred to when there is no touch support,
-	// or when the useTouchScroll instance property is set to false
-	
-	function desktopGetScrollPosition(){
-		return {
-			x: this.bodyNode.scrollLeft,
-			y: this.bodyNode.scrollTop
-		};
-	}
-	
-	function desktopScrollTo(options){
-		if(typeof options.x !== "undefined"){
-			this.bodyNode.scrollLeft = options.x;
-		}
-		if(typeof options.y !== "undefined"){
-			this.bodyNode.scrollTop = options.y;
-		}
-	}
-	
-	return declare(has("touch") ? TouchScroll : null, {
+
+	return declare(null, {
 		tabableHeader: false,
+
 		// showHeader: Boolean
 		//		Whether to render header (sub)rows.
 		showHeader: false,
-		
+
 		// showFooter: Boolean
 		//		Whether to render footer area.  Extensions which display content
 		//		in the footer area should set this to true.
 		showFooter: false,
-		
+
 		// maintainOddEven: Boolean
 		//		Whether to maintain the odd/even classes when new rows are inserted.
 		//		This can be disabled to improve insertion performance if odd/even styling is not employed.
 		maintainOddEven: true,
-		
+
 		// cleanAddedRules: Boolean
 		//		Whether to track rules added via the addCssRule method to be removed
 		//		when the list is destroyed.  Note this is effective at the time of
 		//		the call to addCssRule, not at the time of destruction.
 		cleanAddedRules: true,
-		
-		// useTouchScroll: Boolean
-		//		If touch support is available, this determines whether to
-		//		incorporate logic from the TouchScroll module (at the expense of
-		//		normal desktop/mouse or native mobile scrolling functionality).
-		useTouchScroll: null,
-		
+
 		// addUiClasses: Boolean
 		//		Whether to add jQuery UI classes to various elements in dgrid's DOM.
 		addUiClasses: true,
-
-		// shouldObserveStore: Boolean
-		//		Whether this instance should observe any observable store it is passed.
-		shouldObserveStore: true,
-		
-		// cleanEmptyObservers: Boolean
-		//		Whether to clean up observers for empty result sets.
-		cleanEmptyObservers: true,
 
 		// highlightDuration: Integer
 		//		The amount of time (in milliseconds) that a row should remain
 		//		highlighted after it has been updated.
 		highlightDuration: 250,
-		
-		postscript: function(params, srcNodeRef){
+
+		postscript: function (params, srcNodeRef) {
 			// perform setup and invoke create in postScript to allow descendants to
 			// perform logic before create/postCreate happen (a la dijit/_WidgetBase)
 			var grid = this;
-			
-			(this._Row = function(id, object, element){
+
+			(this._Row = function (id, object, element) {
 				this.id = id;
 				this.data = object;
 				this.element = element;
-			}).prototype.remove = function(){
+			}).prototype.remove = function () {
 				grid.removeRow(this.element);
 			};
-			
-			if(srcNodeRef){
+
+			if (srcNodeRef) {
 				// normalize srcNodeRef and store on instance during create process.
 				// Doing this in postscript is a bit earlier than dijit would do it,
 				// but allows subclasses to access it pre-normalized during create.
@@ -26441,663 +26448,434 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 			}
 			this.create(params, srcNodeRef);
 		},
-		listType: "list",
-		
-		create: function(params, srcNodeRef){
-			var domNode = this.domNode = srcNodeRef || put("div"),
+		listType: 'list',
+
+		create: function (params, srcNodeRef) {
+			var domNode = this.domNode = srcNodeRef || put('div'),
 				cls;
-			
-			if(params){
+
+			if (params) {
 				this.params = params;
 				declare.safeMixin(this, params);
-				
+
 				// Check for initial class or className in params or on domNode
-				cls = params["class"] || params.className || domNode.className;
-				
-				// handle sort param - TODO: revise @ 0.4 when _sort -> sort
-				this._sort = params.sort || [];
-				delete this.sort; // ensure back-compat method isn't shadowed
-			}else{
-				this._sort = [];
+				cls = params['class'] || params.className || domNode.className;
 			}
-			
+
 			// ensure arrays and hashes are initialized
-			this.observers = [];
-			this._numObservers = 0;
+			this.sort = this.sort || [];
 			this._listeners = [];
 			this._rowIdToObject = {};
-			
+
 			this.postMixInProperties && this.postMixInProperties();
-			
+
 			// Apply id to widget and domNode,
 			// from incoming node, widget params, or autogenerated.
 			this.id = domNode.id = domNode.id || this.id || generateId();
-			
-			// If useTouchScroll wasn't explicitly set on the instance, set it
-			// now during creation (not up-front, in case document isn't ready)
-			if(this.useTouchScroll === null){
-				this.useTouchScroll = !has("dom-scrollbar-width");
-			}
-			
+
 			// Perform initial rendering, and apply classes if any were specified.
 			this.buildRendering();
-			if(cls){ setClass.call(this, cls); }
-			
+			if (cls) {
+				setClass.call(this, cls);
+			}
+
 			this.postCreate();
-			
+
 			// remove srcNodeRef instance property post-create
 			delete this.srcNodeRef;
 			// to preserve "it just works" behavior, call startup if we're visible
-			if(this.domNode.offsetHeight){
+			if (this.domNode.offsetHeight) {
 				this.startup();
 			}
 		},
-		buildRendering: function(){
+		buildRendering: function () {
 			var domNode = this.domNode,
 				addUiClasses = this.addUiClasses,
 				self = this,
-				headerNode, spacerNode, bodyNode, footerNode, isRTL;
-			
+				headerNode, bodyNode, footerNode, isRTL;
+
 			// Detect RTL on html/body nodes; taken from dojo/dom-geometry
 			isRTL = this.isRTL = (document.body.dir || document.documentElement.dir ||
-				document.body.style.direction).toLowerCase() == "rtl";
-			
+				document.body.style.direction).toLowerCase() === 'rtl';
+
 			// Clear out className (any pre-applied classes will be re-applied via the
 			// class / className setter), then apply standard classes/attributes
-			domNode.className = "";
-			
-			put(domNode, "[role=grid].dgrid.dgrid-" + this.listType +
-				(addUiClasses ? ".ui-widget" : ""));
-			
+			domNode.className = '';
+
+			put(domNode, '[role=grid].dgrid.dgrid-' + this.listType +
+				(addUiClasses ? '.ui-widget' : ''));
+
 			// Place header node (initially hidden if showHeader is false).
-			headerNode = this.headerNode = put(domNode, 
-				"div.dgrid-header.dgrid-header-row" +
-				(addUiClasses ? ".ui-widget-header" : "") +
-				(this.showHeader ? "" : ".dgrid-header-hidden"));
-			if(has("quirks") || has("ie") < 8){
-				spacerNode = put(domNode, "div.dgrid-spacer");
-			}
-			bodyNode = this.bodyNode = put(domNode, "div.dgrid-scroller");
-			
+			headerNode = this.headerNode = put(domNode,
+				'div.dgrid-header.dgrid-header-row' +
+				(addUiClasses ? '.ui-widget-header' : '') +
+				(this.showHeader ? '' : '.dgrid-header-hidden'));
+			bodyNode = this.bodyNode = put(domNode, 'div.dgrid-scroller');
+
 			// Firefox 4+ adds overflow: auto elements to the tab index by default;
 			// force them to not be tabbable, but restrict this to Firefox,
 			// since it breaks accessibility support in other browsers
-			if(has("ff")){
+			if (has('ff')) {
 				bodyNode.tabIndex = -1;
 			}
-			
-			this.headerScrollNode = put(domNode, "div.dgrid-header.dgrid-header-scroll.dgrid-scrollbar-width" +
-				(addUiClasses ? ".ui-widget-header" : ""));
-			
+
+			this.headerScrollNode = put(domNode, 'div.dgrid-header.dgrid-header-scroll.dgrid-scrollbar-width' +
+				(addUiClasses ? '.ui-widget-header' : ''));
+
 			// Place footer node (initially hidden if showFooter is false).
-			footerNode = this.footerNode = put("div.dgrid-footer" +
-				(this.showFooter ? "" : ".dgrid-footer-hidden"));
+			footerNode = this.footerNode = put('div.dgrid-footer' +
+				(this.showFooter ? '' : '.dgrid-footer-hidden'));
 			put(domNode, footerNode);
-			
-			if(isRTL){
-				domNode.className += " dgrid-rtl" +
-					(has("dom-rtl-scrollbar-left") ? " dgrid-rtl-swap" : "");
+
+			if (isRTL) {
+				domNode.className += ' dgrid-rtl' +
+					(has('dom-rtl-scrollbar-left') ? ' dgrid-rtl-swap' : '');
 			}
-			
-			listen(bodyNode, "scroll", function(event){
-				if(self.showHeader){
+
+			listen(bodyNode, 'scroll', function (event) {
+				if (self.showHeader) {
 					// keep the header aligned with the body
 					headerNode.scrollLeft = event.scrollLeft || bodyNode.scrollLeft;
 				}
 				// re-fire, since browsers are not consistent about propagation here
 				event.stopPropagation();
-				listen.emit(domNode, "scroll", {scrollTarget: bodyNode});
+				listen.emit(domNode, 'scroll', {scrollTarget: bodyNode});
 			});
 			this.configStructure();
 			this.renderHeader();
-			
+
 			this.contentNode = this.touchNode = put(this.bodyNode,
-				"div.dgrid-content" + (addUiClasses ? ".ui-widget-content" : ""));
+				'div.dgrid-content' + (addUiClasses ? '.ui-widget-content' : ''));
 			// add window resize handler, with reference for later removal if needed
-			this._listeners.push(this._resizeHandle = listen(window, "resize",
+			this._listeners.push(this._resizeHandle = listen(window, 'resize',
 				miscUtil.throttleDelayed(winResizeHandler, this)));
 		},
-		
-		postCreate: has("touch") ? function(){
-			if(this.useTouchScroll){
-				this.inherited(arguments);
-			}
-		} : function(){},
-		
-		startup: function(){
+
+		postCreate: function () {
+		},
+
+		startup: function () {
 			// summary:
 			//		Called automatically after postCreate if the component is already
 			//		visible; otherwise, should be called manually once placed.
-			
-			if(this._started){ return; } // prevent double-triggering
+
+			if (this._started) {
+				return;
+			}
 			this.inherited(arguments);
 			this._started = true;
 			this.resize();
 			// apply sort (and refresh) now that we're ready to render
-			this.set("sort", this._sort);
+			this.set('sort', this.sort);
 		},
-		
-		configStructure: function(){
+
+		configStructure: function () {
 			// does nothing in List, this is more of a hook for the Grid
 		},
-		resize: function(){
-			var
-				bodyNode = this.bodyNode,
+		resize: function () {
+			var bodyNode = this.bodyNode,
 				headerNode = this.headerNode,
 				footerNode = this.footerNode,
 				headerHeight = headerNode.offsetHeight,
-				footerHeight = this.showFooter ? footerNode.offsetHeight : 0,
-				quirks = has("quirks") || has("ie") < 7;
-			
-			this.headerScrollNode.style.height = bodyNode.style.marginTop = headerHeight + "px";
-			bodyNode.style.marginBottom = footerHeight + "px";
-			
-			if(quirks){
-				// in IE6 and quirks mode, the "bottom" CSS property is ignored.
-				// We guard against negative values in case of issues with external CSS.
-				bodyNode.style.height = ""; // reset first
-				bodyNode.style.height =
-					Math.max((this.domNode.offsetHeight - headerHeight - footerHeight), 0) + "px";
-				if (footerHeight) {
-					// Work around additional glitch where IE 6 / quirks fails to update
-					// the position of the bottom-aligned footer; this jogs its memory.
-					footerNode.style.bottom = '1px';
-					setTimeout(function(){ footerNode.style.bottom = ''; }, 0);
-				}
-			}
-			
-			if(!scrollbarWidth){
+				footerHeight = this.showFooter ? footerNode.offsetHeight : 0;
+
+			this.headerScrollNode.style.height = bodyNode.style.marginTop = headerHeight + 'px';
+			bodyNode.style.marginBottom = footerHeight + 'px';
+
+			if (!scrollbarWidth) {
 				// Measure the browser's scrollbar width using a DIV we'll delete right away
-				scrollbarWidth = has("dom-scrollbar-width");
-				scrollbarHeight = has("dom-scrollbar-height");
-				
+				scrollbarWidth = has('dom-scrollbar-width');
+				scrollbarHeight = has('dom-scrollbar-height');
+
 				// Avoid issues with certain widgets inside in IE7, and
 				// ColumnSet scroll issues with all supported IE versions
-				if(has("ie")){
+				if (has('ie')) {
 					scrollbarWidth++;
 					scrollbarHeight++;
 				}
-				
+
 				// add rules that can be used where scrollbar width/height is needed
-				miscUtil.addCssRule(".dgrid-scrollbar-width", "width: " + scrollbarWidth + "px");
-				miscUtil.addCssRule(".dgrid-scrollbar-height", "height: " + scrollbarHeight + "px");
-				
-				if(scrollbarWidth != 17 && !quirks){
+				miscUtil.addCssRule('.dgrid-scrollbar-width', 'width: ' + scrollbarWidth + 'px');
+				miscUtil.addCssRule('.dgrid-scrollbar-height', 'height: ' + scrollbarHeight + 'px');
+
+				if (scrollbarWidth !== 17) {
 					// for modern browsers, we can perform a one-time operation which adds
 					// a rule to account for scrollbar width in all grid headers.
-					miscUtil.addCssRule(".dgrid-header-row", "right: " + scrollbarWidth + "px");
+					miscUtil.addCssRule('.dgrid-header-row', 'right: ' + scrollbarWidth + 'px');
 					// add another for RTL grids
-					miscUtil.addCssRule(".dgrid-rtl-swap .dgrid-header-row", "left: " + scrollbarWidth + "px");
+					miscUtil.addCssRule('.dgrid-rtl-swap .dgrid-header-row', 'left: ' + scrollbarWidth + 'px');
 				}
 			}
-			
-			if(quirks){
-				// old IE doesn't support left + right + width:auto; set width directly
-				headerNode.style.width = bodyNode.clientWidth + "px";
-				setTimeout(function(){
-					// sync up (after the browser catches up with the new width)
-					headerNode.scrollLeft = bodyNode.scrollLeft;
-				}, 0);
-			}
 		},
-		
-		addCssRule: function(selector, css){
+
+		addCssRule: function (selector, css) {
 			// summary:
 			//		Version of util/misc.addCssRule which tracks added rules and removes
 			//		them when the List is destroyed.
-			
+
 			var rule = miscUtil.addCssRule(selector, css);
-			if(this.cleanAddedRules){
+			if (this.cleanAddedRules) {
 				// Although this isn't a listener, it shares the same remove contract
 				this._listeners.push(rule);
 			}
 			return rule;
 		},
-		
-		on: function(eventType, listener){
+
+		on: function (eventType, listener) {
 			// delegate events to the domNode
 			var signal = listen(this.domNode, eventType, listener);
-			if(!has("dom-addeventlistener")){
+			if (!has('dom-addeventlistener')) {
 				this._listeners.push(signal);
 			}
 			return signal;
 		},
-		
-		cleanup: function(){
+
+		cleanup: function () {
 			// summary:
 			//		Clears out all rows currently in the list.
-			
-			var observers = this.observers,
-				i;
-			for(i in this._rowIdToObject){
-				if(this._rowIdToObject[i] != this.columns){
+
+			var i;
+			for (i in this._rowIdToObject) {
+				if (this._rowIdToObject[i] !== this.columns) {
 					var rowElement = byId(i);
-					if(rowElement){
+					if (rowElement) {
 						this.removeRow(rowElement, true);
 					}
 				}
 			}
-			// remove any store observers
-			for(i = 0;i < observers.length; i++){
-				var observer = observers[i];
-				observer && observer.cancel();
-			}
-			this.observers = [];
-			this._numObservers = 0;
-			this.preload = null;
 		},
-		destroy: function(){
+		destroy: function () {
 			// summary:
 			//		Destroys this grid
-			
+
 			// Remove any event listeners and other such removables
-			if(this._listeners){ // Guard against accidental subsequent calls to destroy
-				for(var i = this._listeners.length; i--;){
+			if (this._listeners) { // Guard against accidental subsequent calls to destroy
+				for (var i = this._listeners.length; i--;) {
 					this._listeners[i].remove();
 				}
-				delete this._listeners;
+				this._listeners = null;
 			}
-			
+
 			this._started = false;
 			this.cleanup();
 			// destroy DOM
-			put(this.domNode, "!");
-			
-			if(this.useTouchScroll){
-				// Only call TouchScroll#destroy if we also initialized it
-				this.inherited(arguments);
-			}
+			put(this.domNode, '!');
 		},
-		refresh: function(){
+		refresh: function () {
 			// summary:
 			//		refreshes the contents of the grid
 			this.cleanup();
 			this._rowIdToObject = {};
 			this._autoId = 0;
-			
+
 			// make sure all the content has been removed so it can be recreated
-			this.contentNode.innerHTML = "";
+			this.contentNode.innerHTML = '';
 			// Ensure scroll position always resets (especially for TouchScroll).
 			this.scrollTo({ x: 0, y: 0 });
 		},
-		
-		newRow: function(object, parentNode, beforeNode, i, options){
-			if(parentNode){
-				var row = this.insertRow(object, parentNode, beforeNode, i, options);
-				put(row, ".dgrid-highlight" +
-					(this.addUiClasses ? ".ui-state-highlight" : ""));
-				setTimeout(function(){
-					put(row, "!dgrid-highlight!ui-state-highlight");
-				}, this.highlightDuration);
-				return row;
-			}
+
+		highlightRow: function (rowElement, delay) {
+			// summary:
+			//		Highlights a row.  Used when updating rows due to store
+			//		notifications, but potentially also useful in other cases.
+			// rowElement: Object
+			//		Row element (or object returned from the row method) to
+			//		highlight.
+			// delay: Number
+			//		Number of milliseconds between adding and removing the
+			//		ui-state-highlight class.
+
+			rowElement = rowElement.element || rowElement;
+			put(rowElement, '.dgrid-highlight' +
+				(this.addUiClasses ? '.ui-state-highlight' : ''));
+			setTimeout(function () {
+				put(rowElement, '!dgrid-highlight!ui-state-highlight');
+			}, delay || this.highlightDuration);
 		},
-		adjustRowIndices: function(firstRow){
+
+		adjustRowIndices: function (firstRow) {
 			// this traverses through rows to maintain odd/even classes on the rows when indexes shift;
 			var next = firstRow;
 			var rowIndex = next.rowIndex;
-			if(rowIndex > -1){ // make sure we have a real number in case this is called on a non-row
-				do{
+			if (rowIndex > -1) { // make sure we have a real number in case this is called on a non-row
+				do {
 					// Skip non-numeric, non-rows
-					if(next.rowIndex > -1){
-						if(this.maintainOddEven){
-							if((next.className + ' ').indexOf("dgrid-row ") > -1){
-								put(next, '.' + (rowIndex % 2 == 1 ? oddClass : evenClass) + '!' + (rowIndex % 2 == 0 ? oddClass : evenClass));
+					if (next.rowIndex > -1) {
+						if (this.maintainOddEven) {
+							if ((next.className + ' ').indexOf('dgrid-row ') > -1) {
+								put(next, '.' + (rowIndex % 2 === 1 ? oddClass : evenClass) + '!' +
+									(rowIndex % 2 === 0 ? oddClass : evenClass));
 							}
 						}
 						next.rowIndex = rowIndex++;
 					}
-				}while((next = next.nextSibling) && next.rowIndex != rowIndex);
+				} while ((next = next.nextSibling) && next.rowIndex !== rowIndex);
 			}
 		},
-		renderArray: function(results, beforeNode, options){
+		renderArray: function (results, beforeNode, options) {
 			// summary:
-			//		This renders an array or collection of objects as rows in the grid, before the
-			//		given node. This will listen for changes in the collection if an observe method
-			//		is available (as it should be if it comes from an Observable data store).
+			//		Renders an array of objects as rows, before the given node.
+
 			options = options || {};
 			var self = this,
 				start = options.start || 0,
-				observers = this.observers,
-				rows, container, observerIndex;
-			
-			if(!beforeNode){
+				rowsFragment = document.createDocumentFragment(),
+				rows = [],
+				container,
+				i = 0,
+				len = results.length;
+
+			if (!beforeNode) {
 				this._lastCollection = results;
 			}
-			if(results.observe && this.shouldObserveStore){
-				// observe the results for changes
-				self._numObservers++;
-				var observer = results.observe(function(object, from, to){
-					var row, firstRow, nextNode, parentNode;
-					
-					function advanceNext() {
-						nextNode = (nextNode.connected || nextNode).nextSibling;
-					}
-					
-					// a change in the data took place
-					if(from > -1 && rows[from]){
-						// remove from old slot
-						row = rows.splice(from, 1)[0];
-						// check to make sure the node is still there before we try to remove it
-						// (in case it was moved to a different place in the DOM)
-						if(row.parentNode == container){
-							firstRow = row.nextSibling;
-							if(firstRow){ // it's possible for this to have been already removed if it is in overlapping query results
-								if(from != to){ // if from and to are identical, it is an in-place update and we don't want to alter the rowIndex at all
-									firstRow.rowIndex--; // adjust the rowIndex so adjustRowIndices has the right starting point
-								}
-							}
-							self.removeRow(row);
-						}
-						// Update count to reflect that we lost one row
-						options.count--;
-						// The removal of rows could cause us to need to page in more items
-						if(self._processScroll){
-							self._processScroll();
-						}
-					}
-					if(to > -1){
-						// Add to new slot (either before an existing row, or at the end)
-						// First determine the DOM node that this should be placed before.
-						if(rows.length){
-							if(to === 0){ // if it is the first row, we can safely get the next item
-								nextNode = rows[to];
-								// Re-retrieve the element in case we are referring to an orphan
-								nextNode = nextNode && correctElement(nextNode);
-							}else{
-								// If we are near the end of the page, we may not be able to retrieve the 
-								// result from our own array, so go from the previous row and advance one
-								nextNode = rows[to - 1];
-								if(nextNode){
-									nextNode = correctElement(nextNode);
-									// Make sure to skip connected nodes, so we don't accidentally
-									// insert a row in between a parent and its children.
-									advanceNext();
-								}
-							}
-						}else{
-							// There are no rows.  Allow for subclasses to insert new rows somewhere other than
-							// at the end of the parent node.
-							nextNode = self._getFirstRowSibling && self._getFirstRowSibling(container);
-						}
-						// Make sure we don't trip over a stale reference to a
-						// node that was removed, or try to place a node before
-						// itself (due to overlapped queries)
-						if(row && nextNode && row.id === nextNode.id){
-							advanceNext();
-						}
-						if(nextNode && !nextNode.parentNode){
-							nextNode = byId(nextNode.id);
-						}
-						parentNode = (beforeNode && beforeNode.parentNode) ||
-							(nextNode && nextNode.parentNode) || self.contentNode;
-						row = self.newRow(object, parentNode, nextNode, options.start + to, options);
-						
-						if(row){
-							row.observerIndex = observerIndex;
-							rows.splice(to, 0, row);
-							if(!firstRow || to < from){
-								// the inserted row is first, so we update firstRow to point to it
-								var previous = row.previousSibling;
-								// if we are not in sync with the previous row, roll the firstRow back one so adjustRowIndices can sync everything back up.
-								firstRow = !previous || previous.rowIndex + 1 == row.rowIndex || row.rowIndex == 0 ?
-									row : previous;
-							}
-						}
-						options.count++;
-					}
-					
-					if(from === 0){
-						overlapRows(1, 1);
-					}else if(from === results.length - (to === -1 ? 0 : 1)){
-						// It was (re)moved from the end
-						// (which was the previous length if it was a removal)
-						overlapRows(0, 0);
-					}
-					
-					from != to && firstRow && self.adjustRowIndices(firstRow);
-					self._onNotification(rows, object, from, to);
-				}, true);
-				observerIndex = observers.push(observer) - 1;
-			}
-			var rowsFragment = document.createDocumentFragment(),
-				lastRow;
 
-			function overlapRows(){
-				// This is responsible for setting row overlaps in result sets to
-				// ensure that observable can always properly determine which page
-				// an object belongs to.
-				// This function uses kind of an esoteric argument, optimized for
-				// performance and size, since it is called quite frequently.
-				// `sides` is an array of overlapping operations, with a falsy item indicating
-				// to add an overlap to the top, and a truthy item means to add an overlap
-				// to the bottom (so [0, 1] adds one overlap to the top and the bottom)
-				
-				var sides = arguments;
-				// Only perform row overlap in the case of observable results
-				if(observerIndex > -1){
-					// Iterate through the sides operations
-					for(var i = 0; i < sides.length; i++){
-						var top = sides[i];
-						var lastRow = rows[top ? 0 : rows.length-1];
-						lastRow = lastRow && correctElement(lastRow);
-						// check to make sure we have a row, we won't if we don't have any rows
-						if(lastRow){
-							// Make sure we have the correct row element
-							// (not one that was previously removed)
-							var row = lastRow[top ? "previousSibling" : "nextSibling"];
-							if(row){
-								row = self.row(row);
-							}
-							if(row && row.element != lastRow){
-								var method = top ? "unshift" : "push";
-								// Take the row and data from the adjacent page and unshift to the
-								// top or push to the bottom of our array of rows and results,
-								// and adjust the count
-								results[method](row.data);
-								rows[method](row.element);
-								options.count++;
-							}
-						}
-					}
+			// Insert a row for each item into the document fragment
+			while (i < len) {
+				rows[i] = this.insertRow(results[i], rowsFragment, null, start++, options);
+				i++;
+			}
+
+			// Insert the document fragment into the appropriate position
+			container = beforeNode ? beforeNode.parentNode : self.contentNode;
+			if (container && container.parentNode &&
+					(container !== self.contentNode || len)) {
+				container.insertBefore(rowsFragment, beforeNode || null);
+				if (len) {
+					self.adjustRowIndices(rows[len - 1]);
 				}
 			}
-			function correctElement(row){
-				// If a node has been orphaned, try to retrieve the correct in-document element
-				// (use isDescendant since offsetParent is faulty in IE<9)
-				if(!dom.isDescendant(row, self.domNode) && byId(row.id)){
-					return self.row(row.id.slice(self.id.length + 5)).element;
-				}
-				// Fall back to the originally-specified element
-				return row;
-			}
-			
-			function mapEach(object){
-				lastRow = self.insertRow(object, rowsFragment, null, start++, options);
-				lastRow.observerIndex = observerIndex;
-				return lastRow;
-			}
-			function whenError(error){
-				if(typeof observerIndex !== "undefined"){
-					observers[observerIndex].cancel();
-					observers[observerIndex] = 0;
-					self._numObservers--;
-				}
-				if(error){
-					throw error;
-				}
-			}
-			var originalRows;
-			function whenDone(resolvedRows){
-				// Save the original rows, before the overlapping is performed
-				originalRows = resolvedRows.slice(0);
-				container = beforeNode ? beforeNode.parentNode : self.contentNode;
-				if(container && container.parentNode &&
-						(container !== self.contentNode || resolvedRows.length)){
-					container.insertBefore(rowsFragment, beforeNode || null);
-					lastRow = resolvedRows[resolvedRows.length - 1];
-					lastRow && self.adjustRowIndices(lastRow);
-				}else if(observers[observerIndex] && self.cleanEmptyObservers){
-					// Remove the observer and don't bother inserting;
-					// rows are already out of view or there were none to track
-					whenError();
-				}
-				rows = resolvedRows;
-				if(observer){
-					observer.rows = rows;
-				}
-			}
-			
-			// Now render the results
-			if(results.map){
-				rows = results.map(mapEach, console.error);
-				if(rows.then){
-					return results.then(function(resultsArray){
-						results = resultsArray;
-						return rows.then(function(resolvedRows){
-							whenDone(resolvedRows);
-							// Overlap rows in the results array when using observable
-							// so that we can determine page boundary changes
-							// (but return the original set)
-							overlapRows(1, 1, 0, 0);
-							return originalRows;
-						});
-					});
-				}
-			}else{
-				rows = [];
-				for(var i = 0, l = results.length; i < l; i++){
-					rows[i] = mapEach(results[i]);
-				}
-			}
-			
-			whenDone(rows);
-			overlapRows(1, 1, 0, 0);
-			// Return the original rows, not the overlapped set
-			return originalRows;
+
+			return rows;
 		},
 
-		_onNotification: function(rows, object, from, to){
-			// summary:
-			//		Protected method called whenever a store notification is observed.
-			//		Intended to be extended as necessary by mixins/extensions.
-		},
-
-		renderHeader: function(){
+		renderHeader: function () {
 			// no-op in a plain list
 		},
-		
+
 		_autoId: 0,
-		insertRow: function(object, parent, beforeNode, i, options){
+		insertRow: function (object, parent, beforeNode, i, options) {
 			// summary:
 			//		Creates a single row in the grid.
-			
+
 			// Include parentId within row identifier if one was specified in options.
 			// (This is used by tree to allow the same object to appear under
 			// multiple parents.)
-			var parentId = options.parentId,
-				id = this.id + "-row-" + (parentId ? parentId + "-" : "") + 
-					((this.store && this.store.getIdentity) ? 
-						this.store.getIdentity(object) : this._autoId++),
+			var id = this.id + '-row-' + ((this.collection && this.collection.getIdentity) ?
+					this.collection.getIdentity(object) : this._autoId++),
 				row = byId(id),
 				previousRow = row && row.previousSibling;
-			
-			if(row){// if it existed elsewhere in the DOM, we will remove it, so we can recreate it
-				if(row === beforeNode){
+
+			if (row) {
+				// If it existed elsewhere in the DOM, we will remove it, so we can recreate it
+				if (row === beforeNode) {
 					beforeNode = (beforeNode.connected || beforeNode).nextSibling;
 				}
 				this.removeRow(row);
 			}
 			row = this.renderRow(object, options);
-			row.className = (row.className || "") + " dgrid-row " +
-				(i % 2 == 1 ? oddClass : evenClass) +
-				(this.addUiClasses ? " ui-state-default" : "");
-			// get the row id for easy retrieval
+			row.className = (row.className || '') + ' dgrid-row ' +
+				(i % 2 === 1 ? oddClass : evenClass) +
+				(this.addUiClasses ? ' ui-state-default' : '');
+			// Get the row id for easy retrieval
 			this._rowIdToObject[row.id = id] = object;
 			parent.insertBefore(row, beforeNode || null);
-			if(previousRow){
-				// in this case, we are pulling the row from another location in the grid, and we need to readjust the rowIndices from the point it was removed
+
+			row.rowIndex = i;
+			if (previousRow && previousRow.rowIndex !== (row.rowIndex - 1)) {
+				// In this case, we are pulling the row from another location in the grid,
+				// and we need to readjust the rowIndices from the point it was removed
 				this.adjustRowIndices(previousRow);
 			}
-			row.rowIndex = i;
 			return row;
 		},
-		renderRow: function(value, options){
+		renderRow: function (value) {
 			// summary:
 			//		Responsible for returning the DOM for a single row in the grid.
-			
-			return put("div", "" + value);
+			// value: Mixed
+			//		Value to render
+			// options: Object?
+			//		Optional object with additional options
+
+			return put('div', '' + value);
 		},
-		removeRow: function(rowElement, justCleanup){
+		removeRow: function (rowElement, preserveDom) {
 			// summary:
 			//		Simply deletes the node in a plain List.
 			//		Column plugins may aspect this to implement their own cleanup routines.
 			// rowElement: Object|DOMNode
 			//		Object or element representing the row to be removed.
-			// justCleanup: Boolean
+			// preserveDom: Boolean?
 			//		If true, the row element will not be removed from the DOM; this can
 			//		be used by extensions/plugins in cases where the DOM will be
 			//		massively cleaned up at a later point in time.
-			
+			// options: Object?
+			//		May be specified with a `rows` property for the purpose of
+			//		cleaning up collection tracking (used by `_StoreMixin`).
+
 			rowElement = rowElement.element || rowElement;
 			delete this._rowIdToObject[rowElement.id];
-			if(!justCleanup){
-				put(rowElement, "!");
+			if (!preserveDom) {
+				put(rowElement, '!');
 			}
 		},
-		
-		row: function(target){
+
+		row: function (target) {
 			// summary:
 			//		Get the row object by id, object, node, or event
 			var id;
-			
-			if(target instanceof this._Row){ return target; } // no-op; already a row
-			
-			if(target.target && target.target.nodeType){
-				// event
+
+			if (target instanceof this._Row) {
+				return target; // No-op; already a row
+			}
+
+			if (target.target && target.target.nodeType) {
+				// Event
 				target = target.target;
 			}
-			if(target.nodeType){
+			if (target.nodeType) {
+				// Row element, or child of a row element
 				var object;
-				do{
+				do {
 					var rowId = target.id;
-					if((object = this._rowIdToObject[rowId])){
-						return new this._Row(rowId.substring(this.id.length + 5), object, target); 
+					if ((object = this._rowIdToObject[rowId])) {
+						return new this._Row(rowId.substring(this.id.length + 5), object, target);
 					}
 					target = target.parentNode;
-				}while(target && target != this.domNode);
+				}while (target && target !== this.domNode);
 				return;
 			}
-			if(typeof target == "object"){
-				// assume target represents a store item
-				id = this.store.getIdentity(target);
-			}else{
-				// assume target is a row ID
-				id = target;
-				target = this._rowIdToObject[this.id + "-row-" + id];
+
+			if (typeof target === 'object') {
+				// Assume target represents a collection item
+				id = this.collection.getIdentity(target);
 			}
-			return new this._Row(id, target, byId(this.id + "-row-" + id));
+			else {
+				// Assume target is a row ID
+				id = target;
+				target = this._rowIdToObject[this.id + '-row-' + id];
+			}
+			return new this._Row(id, target, byId(this.id + '-row-' + id));
 		},
-		cell: function(target){
+		cell: function (target) {
 			// this doesn't do much in a plain list
 			return {
 				row: this.row(target)
 			};
 		},
-		
-		_move: function(item, steps, targetClass, visible){
+
+		_move: function (item, steps, targetClass, visible) {
 			var nextSibling, current, element;
 			// Start at the element indicated by the provided row or cell object.
 			element = current = item.element;
 			steps = steps || 1;
-			
-			do{
+
+			do {
 				// Outer loop: move in the appropriate direction.
-				if((nextSibling = current[steps < 0 ? "previousSibling" : "nextSibling"])){
-					do{
+				if ((nextSibling = current[steps < 0 ? 'previousSibling' : 'nextSibling'])) {
+					do {
 						// Inner loop: advance, and dig into children if applicable.
 						current = nextSibling;
-						if(current && (current.className + " ").indexOf(targetClass + " ") > -1){
+						if (current && (current.className + ' ').indexOf(targetClass + ' ') > -1) {
 							// Element with the appropriate class name; count step, stop digging.
 							element = current;
 							steps += steps < 0 ? 1 : -1;
@@ -27105,21 +26883,23 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 						}
 						// If the next sibling isn't a match, drill down to search, unless
 						// visible is true and children are hidden.
-					}while((nextSibling = (!visible || !current.hidden) && current[steps < 0 ? "lastChild" : "firstChild"]));
-				}else{
+					} while ((nextSibling = (!visible || !current.hidden) &&
+						current[steps < 0 ? 'lastChild' : 'firstChild']));
+				}
+				else {
 					current = current.parentNode;
-					if(!current || current === this.bodyNode || current === this.headerNode){
+					if (!current || current === this.bodyNode || current === this.headerNode) {
 						// Break out if we step out of the navigation area entirely.
 						break;
 					}
 				}
-			}while(steps);
+			}while (steps);
 			// Return the final element we arrived at, which might still be the
 			// starting element if we couldn't navigate further in that direction.
 			return element;
 		},
-		
-		up: function(row, steps, visible){
+
+		up: function (row, steps, visible) {
 			// summary:
 			//		Returns the row that is the given number of steps (1 by default)
 			//		above the row represented by the given object.
@@ -27134,10 +26914,12 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 			//		A row object representing the appropriate row.  If the top of the
 			//		list is reached before the given number of steps, the first row will
 			//		be returned.
-			if(!row.element){ row = this.row(row); }
-			return this.row(this._move(row, -(steps || 1), "dgrid-row", visible));
+			if (!row.element) {
+				row = this.row(row);
+			}
+			return this.row(this._move(row, -(steps || 1), 'dgrid-row', visible));
 		},
-		down: function(row, steps, visible){
+		down: function (row, steps, visible) {
 			// summary:
 			//		Returns the row that is the given number of steps (1 by default)
 			//		below the row represented by the given object.
@@ -27152,23 +26934,29 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 			//		A row object representing the appropriate row.  If the bottom of the
 			//		list is reached before the given number of steps, the last row will
 			//		be returned.
-			if(!row.element){ row = this.row(row); }
-			return this.row(this._move(row, steps || 1, "dgrid-row", visible));
+			if (!row.element) {
+				row = this.row(row);
+			}
+			return this.row(this._move(row, steps || 1, 'dgrid-row', visible));
 		},
-		
-		scrollTo: has("touch") ? function(options){
-			// If TouchScroll is the superclass, defer to its implementation.
-			return this.useTouchScroll ? this.inherited(arguments) :
-				desktopScrollTo.call(this, options);
-		} : desktopScrollTo,
-		
-		getScrollPosition: has("touch") ? function(){
-			// If TouchScroll is the superclass, defer to its implementation.
-			return this.useTouchScroll ? this.inherited(arguments) :
-				desktopGetScrollPosition.call(this);
-		} : desktopGetScrollPosition,
-		
-		get: function(/*String*/ name /*, ... */){
+
+		scrollTo: function (options) {
+			if (typeof options.x !== 'undefined') {
+				this.bodyNode.scrollLeft = options.x;
+			}
+			if (typeof options.y !== 'undefined') {
+				this.bodyNode.scrollTop = options.y;
+			}
+		},
+
+		getScrollPosition: function () {
+			return {
+				x: this.bodyNode.scrollLeft,
+				y: this.bodyNode.scrollTop
+			};
+		},
+
+		get: function (/*String*/ name /*, ... */) {
 			// summary:
 			//		Get a property on a List instance.
 			//	name:
@@ -27179,23 +26967,23 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 			//		Get a named property on a List object. The property may
 			//		potentially be retrieved via a getter method in subclasses. In the base class
 			//		this just retrieves the object's property.
-			
-			var fn = "_get" + name.charAt(0).toUpperCase() + name.slice(1);
-			
-			if(typeof this[fn] === "function"){
+
+			var fn = '_get' + name.charAt(0).toUpperCase() + name.slice(1);
+
+			if (typeof this[fn] === 'function') {
 				return this[fn].apply(this, [].slice.call(arguments, 1));
 			}
-			
+
 			// Alert users that try to use Dijit-style getter/setters so they don’t get confused
 			// if they try to use them and it does not work
-			if(! 1  && typeof this[fn + "Attr"] === "function"){
-				 0 && console.warn("dgrid: Use " + fn + " instead of " + fn + "Attr for getting " + name);
+			if (! 1  && typeof this[fn + 'Attr'] === 'function') {
+				 0 && console.warn('dgrid: Use ' + fn + ' instead of ' + fn + 'Attr for getting ' + name);
 			}
-			
+
 			return this[name];
 		},
-		
-		set: function(/*String*/ name, /*Object*/ value /*, ... */){
+
+		set: function (/*String*/ name, /*Object*/ value /*, ... */) {
 			//	summary:
 			//		Set a property on a List instance
 			//	name:
@@ -27214,111 +27002,110 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 			//	|		bar: 3
 			//	|	})
 			//		This is equivalent to calling set(foo, "Howdy") and set(bar, 3)
-			
-			if(typeof name === "object"){
-				for(var k in name){
+
+			if (typeof name === 'object') {
+				for (var k in name) {
 					this.set(k, name[k]);
 				}
-			}else{
-				var fn = "_set" + name.charAt(0).toUpperCase() + name.slice(1);
-				
-				if(typeof this[fn] === "function"){
+			}
+			else {
+				var fn = '_set' + name.charAt(0).toUpperCase() + name.slice(1);
+
+				if (typeof this[fn] === 'function') {
 					this[fn].apply(this, [].slice.call(arguments, 1));
-				}else{
+				}
+				else {
 					// Alert users that try to use Dijit-style getter/setters so they don’t get confused
 					// if they try to use them and it does not work
-					if(! 1  && typeof this[fn + "Attr"] === "function"){
-						 0 && console.warn("dgrid: Use " + fn + " instead of " + fn + "Attr for setting " + name);
+					if (! 1  && typeof this[fn + 'Attr'] === 'function') {
+						 0 && console.warn('dgrid: Use ' + fn + ' instead of ' + fn + 'Attr for setting ' + name);
 					}
-					
+
 					this[name] = value;
 				}
 			}
-			
+
 			return this;
 		},
-		
+
 		// Accept both class and className programmatically to set domNode class.
 		_getClass: getClass,
 		_setClass: setClass,
 		_getClassName: getClass,
 		_setClassName: setClass,
-		
-		_setSort: function(property, descending){
+
+		_setSort: function (property, descending) {
 			// summary:
 			//		Sort the content
 			// property: String|Array
 			//		String specifying field to sort by, or actual array of objects
-			//		with attribute and descending properties
+			//		with property and descending properties
 			// descending: boolean
 			//		In the case where property is a string, this argument
 			//		specifies whether to sort ascending (false) or descending (true)
-			
-			this._sort = typeof property != "string" ? property :
-				[{attribute: property, descending: descending}];
-			
+
+			this.sort = typeof property !== 'string' ? property :
+				[{property: property, descending: descending}];
+
+			this._applySort();
+		},
+
+		_applySort: function () {
+			// summary:
+			//		Applies the current sort
+			// description:
+			//		This is an extension point to allow specializations to apply the sort differently
+
 			this.refresh();
-			
-			if(this._lastCollection){
-				if(property.length){
-					// if an array was passed in, flatten to just first sort attribute
-					// for default array sort logic
-					if(typeof property != "string"){
-						descending = property[0].descending;
-						property = property[0].attribute;
-					}
-					
-					this._lastCollection.sort(function(a,b){
+
+			if (this._lastCollection) {
+				var sort = this.sort;
+				if (sort && sort.length > 0) {
+					var property = sort[0].property,
+						descending = !!sort[0].descending;
+					this._lastCollection.sort(function (a, b) {
 						var aVal = a[property], bVal = b[property];
 						// fall back undefined values to "" for more consistent behavior
-						if(aVal === undefined){ aVal = ""; }
-						if(bVal === undefined){ bVal = ""; }
-						return aVal == bVal ? 0 : (aVal > bVal == !descending ? 1 : -1);
+						if (aVal === undefined) {
+							aVal = '';
+						}
+						if (bVal === undefined) {
+							bVal = '';
+						}
+						return aVal === bVal ? 0 : (aVal > bVal !== descending ? 1 : -1);
 					});
 				}
 				this.renderArray(this._lastCollection);
 			}
 		},
-		// TODO: remove the following two (and rename _sort to sort) in 0.4
-		sort: function(property, descending){
-			kernel.deprecated("sort(...)", 'use set("sort", ...) instead', "dgrid 0.4");
-			this.set("sort", property, descending);
-		},
-		_getSort: function(){
-			return this._sort;
-		},
-		
-		_setShowHeader: function(show){
+
+		_setShowHeader: function (show) {
 			// this is in List rather than just in Grid, primarily for two reasons:
 			// (1) just in case someone *does* want to show a header in a List
 			// (2) helps address IE < 8 header display issue in List
-			
+
 			var headerNode = this.headerNode;
-			
+
 			this.showHeader = show;
-			
+
 			// add/remove class which has styles for "hiding" header
-			put(headerNode, (show ? "!" : ".") + "dgrid-header-hidden");
-			
+			put(headerNode, (show ? '!' : '.') + 'dgrid-header-hidden');
+
 			this.renderHeader();
 			this.resize(); // resize to account for (dis)appearance of header
-			
-			if(show){
+
+			if (show) {
 				// Update scroll position of header to make sure it's in sync.
 				headerNode.scrollLeft = this.getScrollPosition().x;
 			}
 		},
-		setShowHeader: function(show){
-			kernel.deprecated("setShowHeader(...)", 'use set("showHeader", ...) instead', "dgrid 0.4");
-			this.set("showHeader", show);
-		},
-		
-		_setShowFooter: function(show){
+
+		_setShowFooter: function (show) {
 			this.showFooter = show;
-			
+
 			// add/remove class which has styles for hiding footer
-			put(this.footerNode, (show ? "!" : ".") + "dgrid-footer-hidden");
-			
+			put(this.footerNode, (show ? '!' : '.') + 'dgrid-footer-hidden');
+
 			this.resize(); // to account for (dis)appearance of footer
 		}
 	});
@@ -27327,17 +27114,17 @@ function(kernel, declare, dom, listen, has, miscUtil, TouchScroll, hasClass, put
 },
 'dgrid/util/misc':function(){
 define([
-	"dojo/has",
-	"put-selector/put"
-], function(has, put){
+	'dojo/has',
+	'put-selector/put'
+], function (has, put) {
 	// summary:
 	//		This module defines miscellaneous utility methods for purposes of
 	//		adding styles, and throttling/debouncing function calls.
-	
-	has.add("dom-contains", function(global, doc, element){
+
+	has.add('dom-contains', function (global, doc, element) {
 		return !!element.contains; // not supported by FF < 9
 	});
-	
+
 	// establish an extra stylesheet which addCssRule calls will use,
 	// plus an array to track actual indices in stylesheet for removal
 	var extraRules = [],
@@ -27345,158 +27132,170 @@ define([
 		removeMethod,
 		rulesProperty,
 		invalidCssChars = /([^A-Za-z0-9_\u00A0-\uFFFF-])/g;
-	
-	function removeRule(index){
+
+	function removeRule(index) {
 		// Function called by the remove method on objects returned by addCssRule.
 		var realIndex = extraRules[index],
 			i, l;
-		if (realIndex === undefined) { return; } // already removed
-		
+		if (realIndex === undefined) {
+			return; // already removed
+		}
+
 		// remove rule indicated in internal array at index
 		extraSheet[removeMethod](realIndex);
-		
+
 		// Clear internal array item representing rule that was just deleted.
 		// NOTE: we do NOT splice, since the point of this array is specifically
 		// to negotiate the splicing that occurs in the stylesheet itself!
 		extraRules[index] = undefined;
-		
+
 		// Then update array items as necessary to downshift remaining rule indices.
 		// Can start at index + 1, since array is sparse but strictly increasing.
-		for(i = index + 1, l = extraRules.length; i < l; i++){
-			if(extraRules[i] > realIndex){ extraRules[i]--; }
+		for (i = index + 1, l = extraRules.length; i < l; i++) {
+			if (extraRules[i] > realIndex) {
+				extraRules[i]--;
+			}
 		}
 	}
-	
+
 	var util = {
 		// Throttle/debounce functions
-		
+
 		defaultDelay: 15,
-		throttle: function(cb, context, delay){
+		throttle: function (cb, context, delay) {
 			// summary:
 			//		Returns a function which calls the given callback at most once per
 			//		delay milliseconds.  (Inspired by plugd)
 			var ran = false;
 			delay = delay || util.defaultDelay;
-			return function(){
-				if(ran){ return; }
+			return function () {
+				if (ran) {
+					return;
+				}
 				ran = true;
 				cb.apply(context, arguments);
-				setTimeout(function(){ ran = false; }, delay);
+				setTimeout(function () {
+					ran = false;
+				}, delay);
 			};
 		},
-		throttleDelayed: function(cb, context, delay){
+		throttleDelayed: function (cb, context, delay) {
 			// summary:
 			//		Like throttle, except that the callback runs after the delay,
 			//		rather than before it.
 			var ran = false;
 			delay = delay || util.defaultDelay;
-			return function(){
-				if(ran){ return; }
+			return function () {
+				if (ran) {
+					return;
+				}
 				ran = true;
 				var a = arguments;
-				setTimeout(function(){
+				setTimeout(function () {
 					ran = false;
 					cb.apply(context, a);
 				}, delay);
 			};
 		},
-		debounce: function(cb, context, delay){
+		debounce: function (cb, context, delay) {
 			// summary:
 			//		Returns a function which calls the given callback only after a
 			//		certain time has passed without successive calls.  (Inspired by plugd)
 			var timer;
 			delay = delay || util.defaultDelay;
-			return function(){
-				if(timer){
+			return function () {
+				if (timer) {
 					clearTimeout(timer);
 					timer = null;
 				}
 				var a = arguments;
-				timer = setTimeout(function(){
+				timer = setTimeout(function () {
 					cb.apply(context, a);
 				}, delay);
 			};
 		},
-		
+
 		// Iterative functions
-		
-		each: function(arrayOrObject, callback, context){
+
+		each: function (arrayOrObject, callback, context) {
 			// summary:
 			//		Given an array or object, iterates through its keys.
 			//		Does not use hasOwnProperty (since even Dojo does not
 			//		consistently use it), but will iterate using a for or for-in
 			//		loop as appropriate.
-			
+
 			var i, len;
-			
-			if(!arrayOrObject){
+
+			if (!arrayOrObject) {
 				return;
 			}
-			
-			if(typeof arrayOrObject.length === "number"){
-				for(i = 0, len = arrayOrObject.length; i < len; i++){
+
+			if (typeof arrayOrObject.length === 'number') {
+				for (i = 0, len = arrayOrObject.length; i < len; i++) {
 					callback.call(context, arrayOrObject[i], i, arrayOrObject);
 				}
-			}else{
-				for(i in arrayOrObject){
+			}
+			else {
+				for (i in arrayOrObject) {
 					callback.call(context, arrayOrObject[i], i, arrayOrObject);
 				}
 			}
 		},
-		
+
 		// DOM-related functions
-		
-		contains: function(parent, node){
+
+		contains: function (parent, node) {
 			// summary:
 			//		Checks to see if an element is contained in another element.
-			
-			if(has("dom-contains")){
+
+			if (has('dom-contains')) {
 				return parent.contains(node);
-			}else{
-				return parent.compareDocumentPosition(node) & 8 /* DOCUMENT_POSITION_CONTAINS */;
+			}
+			else {
+				return parent.compareDocumentPosition(node) & /* DOCUMENT_POSITION_CONTAINS */ 8;
 			}
 		},
-		
+
 		// CSS-related functions
-		
-		addCssRule: function(selector, css){
+
+		addCssRule: function (selector, css) {
 			// summary:
 			//		Dynamically adds a style rule to the document.  Returns an object
 			//		with a remove method which can be called to later remove the rule.
-			
-			if(!extraSheet){
+
+			if (!extraSheet) {
 				// First time, create an extra stylesheet for adding rules
-				extraSheet = put(document.getElementsByTagName("head")[0], "style");
+				extraSheet = put(document.getElementsByTagName('head')[0], 'style');
 				// Keep reference to actual StyleSheet object (`styleSheet` for IE < 9)
 				extraSheet = extraSheet.sheet || extraSheet.styleSheet;
 				// Store name of method used to remove rules (`removeRule` for IE < 9)
-				removeMethod = extraSheet.deleteRule ? "deleteRule" : "removeRule";
+				removeMethod = extraSheet.deleteRule ? 'deleteRule' : 'removeRule';
 				// Store name of property used to access rules (`rules` for IE < 9)
-				rulesProperty = extraSheet.cssRules ? "cssRules" : "rules";
+				rulesProperty = extraSheet.cssRules ? 'cssRules' : 'rules';
 			}
-			
+
 			var index = extraRules.length;
 			extraRules[index] = (extraSheet.cssRules || extraSheet.rules).length;
 			extraSheet.addRule ?
 				extraSheet.addRule(selector, css) :
 				extraSheet.insertRule(selector + '{' + css + '}', extraRules[index]);
-			
+
 			return {
-				get: function(prop) {
+				get: function (prop) {
 					return extraSheet[rulesProperty][extraRules[index]].style[prop];
 				},
-				set: function(prop, value) {
-					if (typeof extraRules[index] !== "undefined") {
+				set: function (prop, value) {
+					if (typeof extraRules[index] !== 'undefined') {
 						extraSheet[rulesProperty][extraRules[index]].style[prop] = value;
 					}
 				},
-				remove: function(){
+				remove: function () {
 					removeRule(index);
 				}
 			};
 		},
-		
-		escapeCssIdentifier: function(id, replace){
+
+		escapeCssIdentifier: function (id, replace) {
 			// summary:
 			//		Escapes normally-invalid characters in a CSS identifier (such as . or :);
 			//		see http://www.w3.org/TR/CSS2/syndata.html#value-def-identifier
@@ -27505,8 +27304,8 @@ define([
 			// replace: String?
 			//		If specified, indicates that invalid characters should be
 			//		replaced by the given string rather than being escaped
-			
-			return typeof id === 'string' ? id.replace(invalidCssChars, replace || "\\$1") : id;
+
+			return typeof id === 'string' ? id.replace(invalidCssChars, replace || '\\$1') : id;
 		}
 	};
 	return util;
@@ -27698,82 +27497,87 @@ define([], function(){
 
 },
 'dgrid/extensions/DijitRegistry':function(){
-define(["dojo/_base/declare", "dojo/dom-geometry", "dijit/registry"],
-function(declare, domGeometry, registry){
+define([
+	'dojo/_base/declare',
+	'dojo/dom-geometry',
+	'dijit/registry'
+], function (declare, domGeometry, registry) {
 	return declare(null, {
 		// summary:
 		//		A dgrid extension which will add the grid to the dijit registry,
 		//		so that startup() will be successfully called by dijit layout widgets
 		//		with dgrid children.
-		
+
 		// Defaults normally imposed on _WidgetBase by container widget modules:
 		minSize: 0, // BorderContainer
 		maxSize: Infinity, // BorderContainer
 		layoutPriority: 0, // BorderContainer
 		showTitle: true, // StackContainer
-		
-		buildRendering: function(){
+
+		buildRendering: function () {
 			registry.add(this);
 			this.inherited(arguments);
 			// Note: for dojo 2.0 may rename widgetId to dojo._scopeName + "_widgetId"
-			this.domNode.setAttribute("widgetId", this.id);
+			this.domNode.setAttribute('widgetId', this.id);
 		},
-		
-		startup: function(){
-			if(this._started){ return; }
+
+		startup: function () {
+			if (this._started) {
+				return;
+			}
 			this.inherited(arguments);
-			
+
 			var widget = registry.getEnclosingWidget(this.domNode.parentNode);
 			// If we have a parent layout container widget, it will handle resize,
 			// so remove the window resize listener added by List.
-			if(widget && widget.isLayoutContainer){
+			if (widget && widget.isLayoutContainer) {
 				this._resizeHandle.remove();
 			}
 		},
 
-		destroyRecursive: function() {
+		destroyRecursive: function () {
 			this.destroy();
 		},
-		
-		destroy: function(){
+
+		destroy: function () {
 			this.inherited(arguments);
 			registry.remove(this.id);
 		},
-		
-		getChildren: function(){
+
+		getChildren: function () {
 			// provide hollow implementation for logic which assumes its existence
 			// (e.g. dijit/form/_FormMixin)
 			return [];
 		},
-		
-		isLeftToRight: function(){
+
+		isLeftToRight: function () {
 			// Implement method expected by Dijit layout widgets
 			return !this.isRTL;
 		},
-		
-		resize: function(changeSize){
+
+		resize: function (changeSize) {
 			// Honor changeSize parameter used by layout widgets, and resize grid
-			if(changeSize){
+			if (changeSize) {
 				domGeometry.setMarginBox(this.domNode, changeSize);
 			}
-			
+
 			this.inherited(arguments);
 		},
-		
-		_set: function(prop, value){
+
+		_set: function (prop, value) {
 			// summary:
 			//		Simple analogue of _WidgetBase#_set for compatibility with some
 			//		Dijit layout widgets which assume its existence.
 			this[prop] = value;
 		},
-		
-		watch: function(){
+
+		watch: function () {
 			// summary:
 			//		dgrid doesn't support watch; this is a no-op for compatibility with
 			//		some Dijit layout widgets which assume its existence.
 		},
-		
-		getParent: function(){
+
+		getParent: function () {
 			// summary:
 			//		Analogue of _WidgetBase#getParent for compatibility with for example
 			//		dijit._KeyNavContainer.
@@ -27785,1219 +27589,1246 @@ function(declare, domGeometry, registry){
 },
 'dgrid/Keyboard':function(){
 define([
-	"dojo/_base/declare",
-	"dojo/aspect",
-	"dojo/on",
-	"dojo/_base/lang",
-	"dojo/has",
-	"put-selector/put",
-	"./util/misc",
-	"dojo/_base/Deferred",
-	"dojo/_base/sniff"
-], function(declare, aspect, on, lang, has, put, miscUtil, Deferred){
+	'dojo/_base/declare',
+	'dojo/aspect',
+	'dojo/on',
+	'dojo/_base/lang',
+	'dojo/has',
+	'put-selector/put',
+	'./util/misc',
+	'dojo/_base/sniff'
+], function (declare, aspect, on, lang, has, put, miscUtil) {
 
-var delegatingInputTypes = {
-		checkbox: 1,
-		radio: 1,
-		button: 1
-	},
-	hasGridCellClass = /\bdgrid-cell\b/,
-	hasGridRowClass = /\bdgrid-row\b/;
+	var delegatingInputTypes = {
+			checkbox: 1,
+			radio: 1,
+			button: 1
+		},
+		hasGridCellClass = /\bdgrid-cell\b/,
+		hasGridRowClass = /\bdgrid-row\b/;
 
-var Keyboard = declare(null, {
-	// summary:
-	//		Adds keyboard navigation capability to a list or grid.
-	
-	// pageSkip: Number
-	//		Number of rows to jump by when page up or page down is pressed.
-	pageSkip: 10,
-	
-	tabIndex: 0,
-	
-	// keyMap: Object
-	//		Hash which maps key codes to functions to be executed (in the context
-	//		of the instance) for key events within the grid's body.
-	keyMap: null,
-	
-	// headerKeyMap: Object
-	//		Hash which maps key codes to functions to be executed (in the context
-	//		of the instance) for key events within the grid's header row.
-	headerKeyMap: null,
-	
-	postMixInProperties: function(){
-		this.inherited(arguments);
-		
-		if(!this.keyMap){
-			this.keyMap = lang.mixin({}, Keyboard.defaultKeyMap);
-		}
-		if(!this.headerKeyMap){
-			this.headerKeyMap = lang.mixin({}, Keyboard.defaultHeaderKeyMap);
-		}
-	},
-	
-	postCreate: function(){
-		this.inherited(arguments);
-		var grid = this;
-		
-		function handledEvent(event){
-			// text boxes and other inputs that can use direction keys should be ignored and not affect cell/row navigation
-			var target = event.target;
-			return target.type && (!delegatingInputTypes[target.type] || event.keyCode == 32);
-		}
-		
-		function enableNavigation(areaNode){
-			var cellNavigation = grid.cellNavigation,
-				isFocusableClass = cellNavigation ? hasGridCellClass : hasGridRowClass,
-				isHeader = areaNode === grid.headerNode,
-				initialNode = areaNode;
-			
-			function initHeader(){
-				if(grid._focusedHeaderNode){
-					// Remove the tab index for the node that previously had it.
-					grid._focusedHeaderNode.tabIndex = -1;
-				}
-				if(grid.showHeader){
-					if(cellNavigation){
-						// Get the focused element. Ensure that the focused element
-						// is actually a grid cell, not a column-set-cell or some
-						// other cell that should not be focused
-						for(var i = 0, element, elements = grid.headerNode.getElementsByTagName("th"); (element = elements[i]); ++i){
-							if(isFocusableClass.test(element.className)){
-								grid._focusedHeaderNode = initialNode = element;
-								break;
+	var Keyboard = declare(null, {
+		// summary:
+		//		Adds keyboard navigation capability to a list or grid.
+
+		// pageSkip: Number
+		//		Number of rows to jump by when page up or page down is pressed.
+		pageSkip: 10,
+
+		tabIndex: 0,
+
+		// keyMap: Object
+		//		Hash which maps key codes to functions to be executed (in the context
+		//		of the instance) for key events within the grid's body.
+		keyMap: null,
+
+		// headerKeyMap: Object
+		//		Hash which maps key codes to functions to be executed (in the context
+		//		of the instance) for key events within the grid's header row.
+		headerKeyMap: null,
+
+		postMixInProperties: function () {
+			this.inherited(arguments);
+
+			if (!this.keyMap) {
+				this.keyMap = lang.mixin({}, Keyboard.defaultKeyMap);
+			}
+			if (!this.headerKeyMap) {
+				this.headerKeyMap = lang.mixin({}, Keyboard.defaultHeaderKeyMap);
+			}
+		},
+
+		postCreate: function () {
+			this.inherited(arguments);
+			var grid = this;
+
+			function handledEvent(event) {
+				// Text boxes and other inputs that can use direction keys should be ignored
+				// and not affect cell/row navigation
+				var target = event.target;
+				return target.type && (!delegatingInputTypes[target.type] || event.keyCode === 32);
+			}
+
+			function enableNavigation(areaNode) {
+				var cellNavigation = grid.cellNavigation,
+					isFocusableClass = cellNavigation ? hasGridCellClass : hasGridRowClass,
+					isHeader = areaNode === grid.headerNode,
+					initialNode = areaNode;
+
+				function initHeader() {
+					if (grid._focusedHeaderNode) {
+						// Remove the tab index for the node that previously had it.
+						grid._focusedHeaderNode.tabIndex = -1;
+					}
+					if (grid.showHeader) {
+						if (cellNavigation) {
+							// Get the focused element. Ensure that the focused element
+							// is actually a grid cell, not a column-set-cell or some
+							// other cell that should not be focused
+							var elements = grid.headerNode.getElementsByTagName('th');
+							for (var i = 0, element; (element = elements[i]); ++i) {
+								if (isFocusableClass.test(element.className)) {
+									grid._focusedHeaderNode = initialNode = element;
+									break;
+								}
 							}
 						}
-					}
-					else{
-						grid._focusedHeaderNode = initialNode = grid.headerNode;
-					}
+						else {
+							grid._focusedHeaderNode = initialNode = grid.headerNode;
+						}
 
-					// Set the tab index only if the header is visible.
-					if(initialNode){
-						initialNode.tabIndex = grid.tabIndex;
+						// Set the tab index only if the header is visible.
+						if (initialNode) {
+							initialNode.tabIndex = grid.tabIndex;
+						}
 					}
 				}
-			}
-			
-			if(isHeader){
-				// Initialize header now (since it's already been rendered),
-				// and aspect after future renderHeader calls to reset focus.
-				initHeader();
-				aspect.after(grid, "renderHeader", initHeader, true);
-			}else{
-				aspect.after(grid, "renderArray", function(ret){
-					// summary:
-					//		Ensures the first element of a grid is always keyboard selectable after data has been
-					//		retrieved if there is not already a valid focused element.
-					
-					return Deferred.when(ret, function(ret){
+
+				if (isHeader) {
+					// Initialize header now (since it's already been rendered),
+					// and aspect after future renderHeader calls to reset focus.
+					initHeader();
+					aspect.after(grid, 'renderHeader', initHeader, true);
+				}
+				else {
+					aspect.after(grid, 'renderArray', function (rows) {
+						// summary:
+						//		Ensures the first element of a grid is always keyboard selectable after data has been
+						//		retrieved if there is not already a valid focused element.
+
 						var focusedNode = grid._focusedNode || initialNode;
-						
+
 						// do not update the focused element if we already have a valid one
-						if(isFocusableClass.test(focusedNode.className) && miscUtil.contains(areaNode, focusedNode)){
-							return ret;
+						if (isFocusableClass.test(focusedNode.className) && miscUtil.contains(areaNode, focusedNode)) {
+							return rows;
 						}
-						
+
 						// ensure that the focused element is actually a grid cell, not a
 						// dgrid-preload or dgrid-content element, which should not be focusable,
 						// even when data is loaded asynchronously
-						for(var i = 0, elements = areaNode.getElementsByTagName("*"), element; (element = elements[i]); ++i){
-							if(isFocusableClass.test(element.className)){
+						var elements = areaNode.getElementsByTagName('*');
+						for (var i = 0, element; (element = elements[i]); ++i) {
+							if (isFocusableClass.test(element.className)) {
 								focusedNode = grid._focusedNode = element;
 								break;
 							}
 						}
-						
+
 						focusedNode.tabIndex = grid.tabIndex;
-						return ret;
+						return rows;
 					});
+				}
+
+				grid._listeners.push(on(areaNode, 'mousedown', function (event) {
+					if (!handledEvent(event)) {
+						grid._focusOnNode(event.target, isHeader, event);
+					}
+				}));
+
+				grid._listeners.push(on(areaNode, 'keydown', function (event) {
+					// For now, don't squash browser-specific functionalities by letting
+					// ALT and META function as they would natively
+					if (event.metaKey || event.altKey) {
+						return;
+					}
+
+					var handler = grid[isHeader ? 'headerKeyMap' : 'keyMap'][event.keyCode];
+
+					// Text boxes and other inputs that can use direction keys should be ignored
+					// and not affect cell/row navigation
+					if (handler && !handledEvent(event)) {
+						handler.call(grid, event);
+					}
+				}));
+			}
+
+			if (this.tabableHeader) {
+				enableNavigation(this.headerNode);
+				on(this.headerNode, 'dgrid-cellfocusin', function () {
+					grid.scrollTo({ x: this.scrollLeft });
 				});
 			}
-			
-			grid._listeners.push(on(areaNode, "mousedown", function(event){
-				if(!handledEvent(event)){
-					grid._focusOnNode(event.target, isHeader, event);
+			enableNavigation(this.contentNode);
+		},
+
+		removeRow: function (rowElement) {
+			if (!this._focusedNode) {
+				// Nothing special to do if we have no record of anything focused
+				return this.inherited(arguments);
+			}
+
+			var self = this,
+				isActive = document.activeElement === this._focusedNode,
+				focusedTarget = this[this.cellNavigation ? 'cell' : 'row'](this._focusedNode),
+				focusedRow = focusedTarget.row || focusedTarget,
+				sibling;
+			rowElement = rowElement.element || rowElement;
+
+			// If removed row previously had focus, temporarily store information
+			// to be handled in an immediately-following insertRow call, or next turn
+			if (rowElement === focusedRow.element) {
+				sibling = this.down(focusedRow, true);
+
+				// Check whether down call returned the same row, or failed to return
+				// any (e.g. during a partial unrendering)
+				if (!sibling || sibling.element === rowElement) {
+					sibling = this.up(focusedRow, true);
 				}
-			}));
-			
-			grid._listeners.push(on(areaNode, "keydown", function(event){
-				// For now, don't squash browser-specific functionalities by letting
-				// ALT and META function as they would natively
-				if(event.metaKey || event.altKey) {
+
+				this._removedFocus = {
+					active: isActive,
+					rowId: focusedRow.id,
+					columnId: focusedTarget.column && focusedTarget.column.id,
+					siblingId: !sibling || sibling.element === rowElement ? undefined : sibling.id
+				};
+
+				// Call _restoreFocus on next turn, to restore focus to sibling
+				// if no replacement row was immediately inserted.
+				// Pass original row's id in case it was re-inserted in a renderArray
+				// call (and thus was found, but couldn't be focused immediately)
+				setTimeout(function () {
+					if (self._removedFocus) {
+						self._restoreFocus(focusedRow.id);
+					}
+				}, 0);
+
+				// Clear _focusedNode until _restoreFocus is called, to avoid
+				// needlessly re-running this logic
+				this._focusedNode = null;
+			}
+
+			this.inherited(arguments);
+		},
+
+		insertRow: function () {
+			var rowElement = this.inherited(arguments);
+			if (this._removedFocus && !this._removedFocus.wait) {
+				this._restoreFocus(rowElement);
+			}
+			return rowElement;
+		},
+
+		_restoreFocus: function (row) {
+			// summary:
+			//		Restores focus to the newly inserted row if it matches the
+			//		previously removed row, or to the nearest sibling otherwise.
+
+			var focusInfo = this._removedFocus,
+				newTarget,
+				cell;
+
+			row = row && this.row(row);
+			newTarget = row && row.element && row.id === focusInfo.rowId ? row :
+				typeof focusInfo.siblingId !== 'undefined' && this.row(focusInfo.siblingId);
+
+			if (newTarget && newTarget.element) {
+				if (!newTarget.element.parentNode.parentNode) {
+					// This was called from renderArray, so the row hasn't
+					// actually been placed in the DOM yet; handle it on the next
+					// turn (called from removeRow).
+					focusInfo.wait = true;
 					return;
 				}
-				
-				var handler = grid[isHeader ? "headerKeyMap" : "keyMap"][event.keyCode];
-				
-				// Text boxes and other inputs that can use direction keys should be ignored and not affect cell/row navigation
-				if(handler && !handledEvent(event)){
-					handler.call(grid, event);
+				// Should focus be on a cell?
+				if (typeof focusInfo.columnId !== 'undefined') {
+					cell = this.cell(newTarget, focusInfo.columnId);
+					if (cell && cell.element) {
+						newTarget = cell;
+					}
 				}
-			}));
-		}
-		
-		if(this.tabableHeader){
-			enableNavigation(this.headerNode);
-			on(this.headerNode, "dgrid-cellfocusin", function(){
-				grid.scrollTo({ x: this.scrollLeft });
-			});
-		}
-		enableNavigation(this.contentNode);
-	},
-	
-	removeRow: function(rowElement){
-		if(!this._focusedNode){
-			// Nothing special to do if we have no record of anything focused
-			return this.inherited(arguments);
-		}
-		
-		var self = this,
-			isActive = document.activeElement === this._focusedNode,
-			focusedTarget = this[this.cellNavigation ? "cell" : "row"](this._focusedNode),
-			focusedRow = focusedTarget.row || focusedTarget,
-			sibling;
-		rowElement = rowElement.element || rowElement;
-		
-		// If removed row previously had focus, temporarily store information
-		// to be handled in an immediately-following insertRow call, or next turn
-		if(rowElement === focusedRow.element){
-			sibling = this.down(focusedRow, true);
-			
-			// Check whether down call returned the same row, or failed to return
-			// any (e.g. during a partial unrendering)
-			if (!sibling || sibling.element === rowElement) {
-				sibling = this.up(focusedRow, true);
+				if (focusInfo.active && newTarget.element.offsetHeight !== 0) {
+					// Row/cell was previously focused and is visible, so focus the new one immediately
+					this._focusOnNode(newTarget, false, null);
+				}
+				else {
+					// Row/cell was not focused or is not visible, but we still need to
+					// update _focusedNode and the element's tabIndex/class
+					put(newTarget.element, '.dgrid-focus');
+					newTarget.element.tabIndex = this.tabIndex;
+					this._focusedNode = newTarget.element;
+				}
 			}
-			
-			this._removedFocus = {
-				active: isActive,
-				rowId: focusedRow.id,
-				columnId: focusedTarget.column && focusedTarget.column.id,
-				siblingId: !sibling || sibling.element === rowElement ? undefined : sibling.id
-			};
-			
-			// Call _restoreFocus on next turn, to restore focus to sibling
-			// if no replacement row was immediately inserted.
-			// Pass original row's id in case it was re-inserted in a renderArray
-			// call (and thus was found, but couldn't be focused immediately)
-			setTimeout(function() {
-				if(self._removedFocus){
-					self._restoreFocus(focusedRow.id);
-				}
-			}, 0);
-			
-			// Clear _focusedNode until _restoreFocus is called, to avoid
-			// needlessly re-running this logic
-			this._focusedNode = null;
-		}
-		
-		this.inherited(arguments);
-	},
-	
-	insertRow: function(object){
-		var rowElement = this.inherited(arguments);
-		if(this._removedFocus && !this._removedFocus.wait){
-			this._restoreFocus(rowElement);
-		}
-		return rowElement;
-	},
-	
-	_restoreFocus: function(row) {
-		// summary:
-		//		Restores focus to the newly inserted row if it matches the
-		//		previously removed row, or to the nearest sibling otherwise.
-		
-		var focusInfo = this._removedFocus,
-			newTarget,
-			cell;
-		
-		row = row && this.row(row);
-		newTarget = row && row.element && row.id === focusInfo.rowId ? row :
-			typeof focusInfo.siblingId !== "undefined" && this.row(focusInfo.siblingId);
-		
-		if(newTarget && newTarget.element){
-			if(!newTarget.element.parentNode.parentNode){
-				// This was called from renderArray, so the row hasn't
-				// actually been placed in the DOM yet; handle it on the next
-				// turn (called from removeRow).
-				focusInfo.wait = true;
+
+			delete this._removedFocus;
+		},
+
+		addKeyHandler: function (key, callback, isHeader) {
+			// summary:
+			//		Adds a handler to the keyMap on the instance.
+			//		Supports binding additional handlers to already-mapped keys.
+			// key: Number
+			//		Key code representing the key to be handled.
+			// callback: Function
+			//		Callback to be executed (in instance context) when the key is pressed.
+			// isHeader: Boolean
+			//		Whether the handler is to be added for the grid body (false, default)
+			//		or the header (true).
+
+			// Aspects may be about 10% slower than using an array-based appraoch,
+			// but there is significantly less code involved (here and above).
+			return aspect.after( // Handle
+				this[isHeader ? 'headerKeyMap' : 'keyMap'], key, callback, true);
+		},
+
+		_focusOnNode: function (element, isHeader, event) {
+			var focusedNodeProperty = '_focused' + (isHeader ? 'Header' : '') + 'Node',
+				focusedNode = this[focusedNodeProperty],
+				cellOrRowType = this.cellNavigation ? 'cell' : 'row',
+				cell = this[cellOrRowType](element),
+				inputs,
+				input,
+				numInputs,
+				inputFocused,
+				i;
+
+			element = cell && cell.element;
+			if (!element) {
 				return;
 			}
-			// Should focus be on a cell?
-			if(typeof focusInfo.columnId !== "undefined"){
-				cell = this.cell(newTarget, focusInfo.columnId);
-				if(cell && cell.element){
-					newTarget = cell;
+
+			if (this.cellNavigation) {
+				inputs = element.getElementsByTagName('input');
+				for (i = 0, numInputs = inputs.length; i < numInputs; i++) {
+					input = inputs[i];
+					if ((input.tabIndex !== -1 || '_dgridLastValue' in input) && !input.disabled) {
+						input.focus();
+						inputFocused = true;
+						break;
+					}
 				}
 			}
-			if(focusInfo.active && newTarget.element.offsetHeight !== 0){
-				// Row/cell was previously focused and is visible, so focus the new one immediately
-				this._focusOnNode(newTarget, false, null);
-			}else{
-				// Row/cell was not focused or is not visible, but we still need to
-				// update _focusedNode and the element's tabIndex/class
-				put(newTarget.element, ".dgrid-focus");
-				newTarget.element.tabIndex = this.tabIndex;
-				this._focusedNode = newTarget.element;
+
+			// Set up event information for dgrid-cellfocusout/in events.
+			// Note that these events are not fired for _restoreFocus.
+			if (event !== null) {
+				event = lang.mixin({ grid: this }, event);
+				if (event.type) {
+					event.parentType = event.type;
+				}
+				if (!event.bubbles) {
+					// IE doesn't always have a bubbles property already true.
+					// Opera throws if you try to set it to true if it is already true.
+					event.bubbles = true;
+				}
+			}
+
+			if (focusedNode) {
+				// Clean up previously-focused element
+				// Remove the class name and the tabIndex attribute
+				put(focusedNode, '!dgrid-focus[!tabIndex]');
+
+				// Expose object representing focused cell or row losing focus, via
+				// event.cell or event.row; which is set depends on cellNavigation.
+				if (event) {
+					event[cellOrRowType] = this[cellOrRowType](focusedNode);
+					on.emit(focusedNode, 'dgrid-cellfocusout', event);
+				}
+			}
+			focusedNode = this[focusedNodeProperty] = element;
+
+			if (event) {
+				// Expose object representing focused cell or row gaining focus, via
+				// event.cell or event.row; which is set depends on cellNavigation.
+				// Note that yes, the same event object is being reused; on.emit
+				// performs a shallow copy of properties into a new event object.
+				event[cellOrRowType] = cell;
+			}
+
+			var isFocusableClass = this.cellNavigation ? hasGridCellClass : hasGridRowClass;
+			if (!inputFocused && isFocusableClass.test(element.className)) {
+				element.tabIndex = this.tabIndex;
+				element.focus();
+			}
+			put(element, '.dgrid-focus');
+
+			if (event) {
+				on.emit(focusedNode, 'dgrid-cellfocusin', event);
+			}
+		},
+
+		focusHeader: function (element) {
+			this._focusOnNode(element || this._focusedHeaderNode, true);
+		},
+
+		focus: function (element) {
+			var node = element || this._focusedNode;
+			if (node) {
+				this._focusOnNode(node, false);
+			}
+			else {
+				this.contentNode.focus();
 			}
 		}
-		
-		delete this._removedFocus;
-	},
-	
-	addKeyHandler: function(key, callback, isHeader){
+	});
+
+	// Common functions used in default keyMap (called in instance context)
+
+	var moveFocusVertical = Keyboard.moveFocusVertical = function (event, steps) {
+		var cellNavigation = this.cellNavigation,
+			target = this[cellNavigation ? 'cell' : 'row'](event),
+			columnId = cellNavigation && target.column.id,
+			next = this.down(this._focusedNode, steps, true);
+
+		// Navigate within same column if cell navigation is enabled
+		if (cellNavigation) {
+			next = this.cell(next, columnId);
+		}
+		this._focusOnNode(next, false, event);
+
+		event.preventDefault();
+	};
+
+	var moveFocusUp = Keyboard.moveFocusUp = function (event) {
+		moveFocusVertical.call(this, event, -1);
+	};
+
+	var moveFocusDown = Keyboard.moveFocusDown = function (event) {
+		moveFocusVertical.call(this, event, 1);
+	};
+
+	var moveFocusPageUp = Keyboard.moveFocusPageUp = function (event) {
+		moveFocusVertical.call(this, event, -this.pageSkip);
+	};
+
+	var moveFocusPageDown = Keyboard.moveFocusPageDown = function (event) {
+		moveFocusVertical.call(this, event, this.pageSkip);
+	};
+
+	var moveFocusHorizontal = Keyboard.moveFocusHorizontal = function (event, steps) {
+		if (!this.cellNavigation) {
+			return;
+		}
+		var isHeader = !this.row(event), // header reports row as undefined
+			currentNode = this['_focused' + (isHeader ? 'Header' : '') + 'Node'];
+
+		this._focusOnNode(this.right(currentNode, steps), isHeader, event);
+		event.preventDefault();
+	};
+
+	var moveFocusLeft = Keyboard.moveFocusLeft = function (event) {
+		moveFocusHorizontal.call(this, event, -1);
+	};
+
+	var moveFocusRight = Keyboard.moveFocusRight = function (event) {
+		moveFocusHorizontal.call(this, event, 1);
+	};
+
+	var moveHeaderFocusEnd = Keyboard.moveHeaderFocusEnd = function (event, scrollToBeginning) {
+		// Header case is always simple, since all rows/cells are present
+		var nodes;
+		if (this.cellNavigation) {
+			nodes = this.headerNode.getElementsByTagName('th');
+			this._focusOnNode(nodes[scrollToBeginning ? 0 : nodes.length - 1], true, event);
+		}
+		// In row-navigation mode, there's nothing to do - only one row in header
+
+		// Prevent browser from scrolling entire page
+		event.preventDefault();
+	};
+
+	var moveHeaderFocusHome = Keyboard.moveHeaderFocusHome = function (event) {
+		moveHeaderFocusEnd.call(this, event, true);
+	};
+
+	var moveFocusEnd = Keyboard.moveFocusEnd = function (event, scrollToTop) {
 		// summary:
-		//		Adds a handler to the keyMap on the instance.
-		//		Supports binding additional handlers to already-mapped keys.
-		// key: Number
-		//		Key code representing the key to be handled.
-		// callback: Function
-		//		Callback to be executed (in instance context) when the key is pressed.
-		// isHeader: Boolean
-		//		Whether the handler is to be added for the grid body (false, default)
-		//		or the header (true).
-		
-		// Aspects may be about 10% slower than using an array-based appraoch,
-		// but there is significantly less code involved (here and above).
-		return aspect.after( // Handle
-			this[isHeader ? "headerKeyMap" : "keyMap"], key, callback, true);
-	},
-	
-	_focusOnNode: function(element, isHeader, event){
-		var focusedNodeProperty = "_focused" + (isHeader ? "Header" : "") + "Node",
-			focusedNode = this[focusedNodeProperty],
-			cellOrRowType = this.cellNavigation ? "cell" : "row",
-			cell = this[cellOrRowType](element),
-			inputs,
-			input,
-			numInputs,
-			inputFocused,
-			i;
-		
-		element = cell && cell.element;
-		if(!element){ return; }
-		
-		if(this.cellNavigation){
-			inputs = element.getElementsByTagName("input");
-			for(i = 0, numInputs = inputs.length; i < numInputs; i++){
-				input = inputs[i];
-				if((input.tabIndex != -1 || "_dgridLastValue" in input) && !input.disabled){
-					// Employ workaround for focus rectangle in IE < 8
-					if(has("ie") < 8){ input.style.position = "relative"; }
-					input.focus();
-					if(has("ie") < 8){ input.style.position = ""; }
-					inputFocused = true;
-					break;
-				}
+		//		Handles requests to scroll to the beginning or end of the grid.
+
+		// Assume scrolling to top unless event is specifically for End key
+		var cellNavigation = this.cellNavigation,
+			contentNode = this.contentNode,
+			contentPos = scrollToTop ? 0 : contentNode.scrollHeight,
+			scrollPos = contentNode.scrollTop + contentPos,
+			endChild = contentNode[scrollToTop ? 'firstChild' : 'lastChild'],
+			hasPreload = endChild.className.indexOf('dgrid-preload') > -1,
+			endTarget = hasPreload ? endChild[(scrollToTop ? 'next' : 'previous') + 'Sibling'] : endChild,
+			endPos = endTarget.offsetTop + (scrollToTop ? 0 : endTarget.offsetHeight),
+			handle;
+
+		if (hasPreload) {
+			// Find the nearest dgrid-row to the relevant end of the grid
+			while (endTarget && endTarget.className.indexOf('dgrid-row') < 0) {
+				endTarget = endTarget[(scrollToTop ? 'next' : 'previous') + 'Sibling'];
+			}
+			// If none is found, there are no rows, and nothing to navigate
+			if (!endTarget) {
+				return;
 			}
 		}
-		
-		// Set up event information for dgrid-cellfocusout/in events.
-		// Note that these events are not fired for _restoreFocus.
-		if(event !== null){
-			event = lang.mixin({ grid: this }, event);
-			if(event.type){
-				event.parentType = event.type;
+
+		// Grid content may be lazy-loaded, so check if content needs to be
+		// loaded first
+		if (!hasPreload || endChild.offsetHeight < 1) {
+			// End row is loaded; focus the first/last row/cell now
+			if (cellNavigation) {
+				// Preserve column that was currently focused
+				endTarget = this.cell(endTarget, this.cell(event).column.id);
 			}
-			if(!event.bubbles){
-				// IE doesn't always have a bubbles property already true.
-				// Opera throws if you try to set it to true if it is already true.
-				event.bubbles = true;
+			this._focusOnNode(endTarget, false, event);
+		}
+		else {
+			// In IE < 9, the event member references will become invalid by the time
+			// _focusOnNode is called, so make a (shallow) copy up-front
+			if (!has('dom-addeventlistener')) {
+				event = lang.mixin({}, event);
 			}
-		}
-		
-		if(focusedNode){
-			// Clean up previously-focused element
-			// Remove the class name and the tabIndex attribute
-			put(focusedNode, "!dgrid-focus[!tabIndex]");
-			if(has("ie") < 8){
-				// Clean up after workaround below (for non-input cases)
-				focusedNode.style.position = "";
-			}
-			
-			// Expose object representing focused cell or row losing focus, via
-			// event.cell or event.row; which is set depends on cellNavigation.
-			if(event){
-				event[cellOrRowType] = this[cellOrRowType](focusedNode);
-				on.emit(focusedNode, "dgrid-cellfocusout", event);
-			}
-		}
-		focusedNode = this[focusedNodeProperty] = element;
-		
-		if(event){
-			// Expose object representing focused cell or row gaining focus, via
-			// event.cell or event.row; which is set depends on cellNavigation.
-			// Note that yes, the same event object is being reused; on.emit
-			// performs a shallow copy of properties into a new event object.
-			event[cellOrRowType] = cell;
-		}
-		
-		var isFocusableClass = this.cellNavigation ? hasGridCellClass : hasGridRowClass;
-		if(!inputFocused && isFocusableClass.test(element.className)){
-			if(has("ie") < 8){
-				// setting the position to relative magically makes the outline
-				// work properly for focusing later on with old IE.
-				// (can't be done a priori with CSS or screws up the entire table)
-				element.style.position = "relative";
-			}
-			element.tabIndex = this.tabIndex;
-			element.focus();
-		}
-		put(element, ".dgrid-focus");
-		
-		if(event){
-			on.emit(focusedNode, "dgrid-cellfocusin", event);
-		}
-	},
-	
-	focusHeader: function(element){
-		this._focusOnNode(element || this._focusedHeaderNode, true);
-	},
-	
-	focus: function(element){
-		var node = element || this._focusedNode;
-		if(node){
-			this._focusOnNode(node, false);
-		}else{
-			this.contentNode.focus();
-		}
-	}
-});
 
-// Common functions used in default keyMap (called in instance context)
-
-var moveFocusVertical = Keyboard.moveFocusVertical = function(event, steps){
-	var cellNavigation = this.cellNavigation,
-		target = this[cellNavigation ? "cell" : "row"](event),
-		columnId = cellNavigation && target.column.id,
-		next = this.down(this._focusedNode, steps, true);
-	
-	// Navigate within same column if cell navigation is enabled
-	if(cellNavigation){ next = this.cell(next, columnId); }
-	this._focusOnNode(next, false, event);
-	
-	event.preventDefault();
-};
-
-var moveFocusUp = Keyboard.moveFocusUp = function(event){
-	moveFocusVertical.call(this, event, -1);
-};
-
-var moveFocusDown = Keyboard.moveFocusDown = function(event){
-	moveFocusVertical.call(this, event, 1);
-};
-
-var moveFocusPageUp = Keyboard.moveFocusPageUp = function(event){
-	moveFocusVertical.call(this, event, -this.pageSkip);
-};
-
-var moveFocusPageDown = Keyboard.moveFocusPageDown = function(event){
-	moveFocusVertical.call(this, event, this.pageSkip);
-};
-
-var moveFocusHorizontal = Keyboard.moveFocusHorizontal = function(event, steps){
-	if(!this.cellNavigation){ return; }
-	var isHeader = !this.row(event), // header reports row as undefined
-		currentNode = this["_focused" + (isHeader ? "Header" : "") + "Node"];
-	
-	this._focusOnNode(this.right(currentNode, steps), isHeader, event);
-	event.preventDefault();
-};
-
-var moveFocusLeft = Keyboard.moveFocusLeft = function(event){
-	moveFocusHorizontal.call(this, event, -1);
-};
-
-var moveFocusRight = Keyboard.moveFocusRight = function(event){
-	moveFocusHorizontal.call(this, event, 1);
-};
-
-var moveHeaderFocusEnd = Keyboard.moveHeaderFocusEnd = function(event, scrollToBeginning){
-	// Header case is always simple, since all rows/cells are present
-	var nodes;
-	if(this.cellNavigation){
-		nodes = this.headerNode.getElementsByTagName("th");
-		this._focusOnNode(nodes[scrollToBeginning ? 0 : nodes.length - 1], true, event);
-	}
-	// In row-navigation mode, there's nothing to do - only one row in header
-	
-	// Prevent browser from scrolling entire page
-	event.preventDefault();
-};
-
-var moveHeaderFocusHome = Keyboard.moveHeaderFocusHome = function(event){
-	moveHeaderFocusEnd.call(this, event, true);
-};
-
-var moveFocusEnd = Keyboard.moveFocusEnd = function(event, scrollToTop){
-	// summary:
-	//		Handles requests to scroll to the beginning or end of the grid.
-	
-	// Assume scrolling to top unless event is specifically for End key
-	var self = this,
-		cellNavigation = this.cellNavigation,
-		contentNode = this.contentNode,
-		contentPos = scrollToTop ? 0 : contentNode.scrollHeight,
-		scrollPos = contentNode.scrollTop + contentPos,
-		endChild = contentNode[scrollToTop ? "firstChild" : "lastChild"],
-		hasPreload = endChild.className.indexOf("dgrid-preload") > -1,
-		endTarget = hasPreload ? endChild[(scrollToTop ? "next" : "previous") + "Sibling"] : endChild,
-		endPos = endTarget.offsetTop + (scrollToTop ? 0 : endTarget.offsetHeight),
-		handle;
-	
-	if(hasPreload){
-		// Find the nearest dgrid-row to the relevant end of the grid
-		while(endTarget && endTarget.className.indexOf("dgrid-row") < 0){
-			endTarget = endTarget[(scrollToTop ? "next" : "previous") + "Sibling"];
-		}
-		// If none is found, there are no rows, and nothing to navigate
-		if(!endTarget){ return; }
-	}
-	
-	// Grid content may be lazy-loaded, so check if content needs to be
-	// loaded first
-	if(!hasPreload || endChild.offsetHeight < 1){
-		// End row is loaded; focus the first/last row/cell now
-		if(cellNavigation){
-			// Preserve column that was currently focused
-			endTarget = this.cell(endTarget, this.cell(event).column.id);
-		}
-		this._focusOnNode(endTarget, false, event);
-	}else{
-		// In IE < 9, the event member references will become invalid by the time
-		// _focusOnNode is called, so make a (shallow) copy up-front
-		if(!has("dom-addeventlistener")){
-			event = lang.mixin({}, event);
-		}
-		
-		// If the topmost/bottommost row rendered doesn't reach the top/bottom of
-		// the contentNode, we are using OnDemandList and need to wait for more
-		// data to render, then focus the first/last row in the new content.
-		handle = aspect.after(this, "renderArray", function(rows){
-			handle.remove();
-			return Deferred.when(rows, function(rows){
+			// If the topmost/bottommost row rendered doesn't reach the top/bottom of
+			// the contentNode, we are using OnDemandList and need to wait for more
+			// data to render, then focus the first/last row in the new content.
+			handle = aspect.after(this, 'renderArray', function (rows) {
 				var target = rows[scrollToTop ? 0 : rows.length - 1];
-				if(cellNavigation){
+				if (cellNavigation) {
 					// Preserve column that was currently focused
-					target = self.cell(target, self.cell(event).column.id);
+					target = this.cell(target, this.cell(event).column.id);
 				}
-				self._focusOnNode(target, false, event);
+				this._focusOnNode(target, false, event);
+				handle.remove();
+				return rows;
 			});
-		});
-	}
-	
-	if(scrollPos === endPos){
-		// Grid body is already scrolled to end; prevent browser from scrolling
-		// entire page instead
+		}
+
+		if (scrollPos === endPos) {
+			// Grid body is already scrolled to end; prevent browser from scrolling
+			// entire page instead
+			event.preventDefault();
+		}
+	};
+
+	var moveFocusHome = Keyboard.moveFocusHome = function (event) {
+		moveFocusEnd.call(this, event, true);
+	};
+
+	function preventDefault(event) {
 		event.preventDefault();
 	}
-};
 
-var moveFocusHome = Keyboard.moveFocusHome = function(event){
-	moveFocusEnd.call(this, event, true);
-};
+	Keyboard.defaultKeyMap = {
+		32: preventDefault, // space
+		33: moveFocusPageUp, // page up
+		34: moveFocusPageDown, // page down
+		35: moveFocusEnd, // end
+		36: moveFocusHome, // home
+		37: moveFocusLeft, // left
+		38: moveFocusUp, // up
+		39: moveFocusRight, // right
+		40: moveFocusDown // down
+	};
 
-function preventDefault(event){
-	event.preventDefault();
-}
+	// Header needs fewer default bindings (no vertical), so bind it separately
+	Keyboard.defaultHeaderKeyMap = {
+		32: preventDefault, // space
+		35: moveHeaderFocusEnd, // end
+		36: moveHeaderFocusHome, // home
+		37: moveFocusLeft, // left
+		39: moveFocusRight // right
+	};
 
-Keyboard.defaultKeyMap = {
-	32: preventDefault, // space
-	33: moveFocusPageUp, // page up
-	34: moveFocusPageDown, // page down
-	35: moveFocusEnd, // end
-	36: moveFocusHome, // home
-	37: moveFocusLeft, // left
-	38: moveFocusUp, // up
-	39: moveFocusRight, // right
-	40: moveFocusDown // down
-};
-
-// Header needs fewer default bindings (no vertical), so bind it separately
-Keyboard.defaultHeaderKeyMap = {
-	32: preventDefault, // space
-	35: moveHeaderFocusEnd, // end
-	36: moveHeaderFocusHome, // home
-	37: moveFocusLeft, // left
-	39: moveFocusRight // right
-};
-
-return Keyboard;
+	return Keyboard;
 });
 },
 'dgrid/Selection':function(){
-define(["dojo/_base/kernel", "dojo/_base/declare", "dojo/_base/Deferred", "dojo/on", "dojo/has", "dojo/aspect", "./List", "dojo/has!touch?./util/touch", "put-selector/put", "dojo/query", "dojo/_base/sniff"],
-function(kernel, declare, Deferred, on, has, aspect, List, touchUtil, put){
+define([
+	'dojo/_base/declare',
+	'dojo/on',
+	'dojo/has',
+	'dojo/aspect',
+	'./List',
+	'dojo/has!touch?./util/touch',
+	'put-selector/put',
+	'dojo/query',
+	'dojo/_base/sniff'
+], function (declare, on, has, aspect, List, touchUtil, put) {
 
-has.add("dom-comparedocumentposition", function(global, doc, element){
-	return !!element.compareDocumentPosition;
-});
+	has.add('dom-comparedocumentposition', function (global, doc, element) {
+		return !!element.compareDocumentPosition;
+	});
 
-has.add("pointer", function(global){
-	return "PointerEvent" in global ? "pointer" :
-		"MSPointerEvent" in global ? "MSPointer" : false;
-});
+	// Add feature test for user-select CSS property for optionally disabling
+	// text selection.
+	// (Can't use dom.setSelectable prior to 1.8.2 because of bad sniffs, see #15990)
+	has.add('css-user-select', function (global, doc, element) {
+		var style = element.style,
+			prefixes = ['Khtml', 'O', 'ms', 'Moz', 'Webkit'],
+			i = prefixes.length,
+			name = 'userSelect';
 
-// Add feature test for user-select CSS property for optionally disabling
-// text selection.
-// (Can't use dom.setSelectable prior to 1.8.2 because of bad sniffs, see #15990)
-has.add("css-user-select", function(global, doc, element){
-	var style = element.style,
-		prefixes = ["Khtml", "O", "ms", "Moz", "Webkit"],
-		i = prefixes.length,
-		name = "userSelect";
+		// Iterate prefixes from most to least likely
+		do {
+			if (typeof style[name] !== 'undefined') {
+				// Supported; return property name
+				return name;
+			}
+		} while (i-- && (name = prefixes[i] + 'UserSelect'));
 
-	// Iterate prefixes from most to least likely
-	do{
-		if(typeof style[name] !== "undefined"){
-			// Supported; return property name
-			return name;
-		}
-	}while(i-- && (name = prefixes[i] + "UserSelect"));
+		// Not supported if we didn't return before now
+		return false;
+	});
 
-	// Not supported if we didn't return before now
-	return false;
-});
+	// Also add a feature test for the onselectstart event, which offers a more
+	// graceful fallback solution than node.unselectable.
+	has.add('dom-selectstart', typeof document.onselectstart !== 'undefined');
 
-// Also add a feature test for the onselectstart event, which offers a more
-// graceful fallback solution than node.unselectable.
-has.add("dom-selectstart", typeof document.onselectstart !== "undefined");
+	var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey',
+		hasUserSelect = has('css-user-select'),
+		hasPointer = has('pointer'),
+		hasMSPointer = hasPointer && hasPointer.slice(0, 2) === 'MS',
+		downType = hasPointer ? hasPointer + (hasMSPointer ? 'Down' : 'down') : 'mousedown',
+		upType = hasPointer ? hasPointer + (hasMSPointer ? 'Up' : 'up') : 'mouseup';
 
-var ctrlEquiv = has("mac") ? "metaKey" : "ctrlKey",
-	hasUserSelect = has("css-user-select"),
-	hasPointer = has("pointer"),
-	hasMSPointer = hasPointer && hasPointer.slice(0, 2) === "MS",
-	downType = hasPointer ? hasPointer + (hasMSPointer ? "Down" : "down") : "mousedown",
-	upType = hasPointer ? hasPointer + (hasMSPointer ? "Up" : "up") : "mouseup";
+	function makeUnselectable(node, unselectable) {
+		// Utility function used in fallback path for recursively setting unselectable
+		var value = node.unselectable = unselectable ? 'on' : '',
+			elements = node.getElementsByTagName('*'),
+			i = elements.length;
 
-function makeUnselectable(node, unselectable){
-	// Utility function used in fallback path for recursively setting unselectable
-	var value = node.unselectable = unselectable ? "on" : "",
-		elements = node.getElementsByTagName("*"),
-		i = elements.length;
-	
-	while(--i){
-		if(elements[i].tagName === "INPUT" || elements[i].tagName === "TEXTAREA"){
-			continue; // Don't prevent text selection in text input fields.
-		}
-		elements[i].unselectable = value;
-	}
-}
-
-function setSelectable(grid, selectable){
-	// Alternative version of dojo/dom.setSelectable based on feature detection.
-	
-	// For FF < 21, use -moz-none, which will respect -moz-user-select: text on
-	// child elements (e.g. form inputs).  In FF 21, none behaves the same.
-	// See https://developer.mozilla.org/en-US/docs/CSS/user-select
-	var node = grid.bodyNode,
-		value = selectable ? "text" : has("ff") < 21 ? "-moz-none" : "none";
-	
-	// In IE10+, -ms-user-select: none will block selection from starting within the
-	// element, but will not block an existing selection from entering the element.
-	// When using a modifier key, IE will select text inside of the element as well
-	// as outside of the element, because it thinks the selection started outside.
-	// Therefore, fall back to other means of blocking selection for IE10+.
-	if(hasUserSelect && hasUserSelect !== "msUserSelect"){
-		node.style[hasUserSelect] = value;
-	}else if(has("dom-selectstart")){
-		// For browsers that don't support user-select but support selectstart (IE<10),
-		// we can hook up an event handler as necessary.  Since selectstart bubbles,
-		// it will handle any child elements as well.
-		// Note, however, that both this and the unselectable fallback below are
-		// incapable of preventing text selection from outside the targeted node.
-		if(!selectable && !grid._selectstartHandle){
-			grid._selectstartHandle = on(node, "selectstart", function(evt){
-				var tag = evt.target && evt.target.tagName;
-				
-				// Prevent selection except where a text input field is involved.
-				if(tag !== "INPUT" && tag !== "TEXTAREA"){
-					evt.preventDefault();
-				}
-			});
-		}else if(selectable && grid._selectstartHandle){
-			grid._selectstartHandle.remove();
-			delete grid._selectstartHandle;
-		}
-	}else{
-		// For browsers that don't support either user-select or selectstart (Opera),
-		// we need to resort to setting the unselectable attribute on all nodes
-		// involved.  Since this doesn't automatically apply to child nodes, we also
-		// need to re-apply it whenever rows are rendered.
-		makeUnselectable(node, !selectable);
-		if(!selectable && !grid._unselectableHandle){
-			grid._unselectableHandle = aspect.after(grid, "renderRow", function(row){
-				makeUnselectable(row, true);
-				return row;
-			});
-		}else if(selectable && grid._unselectableHandle){
-			grid._unselectableHandle.remove();
-			delete grid._unselectableHandle;
+		while (--i) {
+			if (elements[i].tagName === 'INPUT' || elements[i].tagName === 'TEXTAREA') {
+				continue; // Don't prevent text selection in text input fields.
+			}
+			elements[i].unselectable = value;
 		}
 	}
-}
 
-return declare(null, {
-	// summary:
-	//		Add selection capabilities to a grid. The grid will have a selection property and
-	//		fire "dgrid-select" and "dgrid-deselect" events.
-	
-	// selectionDelegate: String
-	//		Selector to delegate to as target of selection events.
-	selectionDelegate: ".dgrid-row",
-	
-	// selectionEvents: String|Function
-	//		Event (or comma-delimited events, or extension event) to listen on
-	//		to trigger select logic.
-	selectionEvents: downType + "," + upType + ",dgrid-cellfocusin",
-	
-	// selectionTouchEvents: String|Function
-	//		Event (or comma-delimited events, or extension event) to listen on
-	//		in addition to selectionEvents for touch devices.
-	selectionTouchEvents: has("touch") ? touchUtil.tap : null,
-	
-	// deselectOnRefresh: Boolean
-	//		If true, the selection object will be cleared when refresh is called.
-	deselectOnRefresh: true,
-	
-	// allowSelectAll: Boolean
-	//		If true, allow ctrl/cmd+A to select all rows.
-	//		Also consulted by the selector plugin for showing select-all checkbox.
-	allowSelectAll: false,
-	
-	// selection:
-	//		An object where the property names correspond to 
-	//		object ids and values are true or false depending on whether an item is selected
-	selection: {},
-	
-	// selectionMode: String
-	//		The selection mode to use, can be "none", "multiple", "single", or "extended".
-	selectionMode: "extended",
-	
-	// allowTextSelection: Boolean
-	//		Whether to still allow text within cells to be selected.  The default
-	//		behavior is to allow text selection only when selectionMode is none;
-	//		setting this property to either true or false will explicitly set the
-	//		behavior regardless of selectionMode.
-	allowTextSelection: undefined,
-	
-	// _selectionTargetType: String
-	//		Indicates the property added to emitted events for selected targets;
-	//		overridden in CellSelection
-	_selectionTargetType: "rows",
-	
-	create: function(){
-		this.selection = {};
-		return this.inherited(arguments);
-	},
-	postCreate: function(){
-		this.inherited(arguments);
-		
-		this._initSelectionEvents();
-		
-		// Force selectionMode setter to run
-		var selectionMode = this.selectionMode;
-		this.selectionMode = "";
-		this._setSelectionMode(selectionMode);
-	},
-	
-	destroy: function(){
-		this.inherited(arguments);
-		
-		// Remove any extra handles added by Selection.
-		if(this._selectstartHandle){ this._selectstartHandle.remove(); }
-		if(this._unselectableHandle){ this._unselectableHandle.remove(); }
-		if(this._removeDeselectSignals){ this._removeDeselectSignals(); }
-	},
-	
-	_setSelectionMode: function(mode){
-		// summary:
-		//		Updates selectionMode, resetting necessary variables.
-		if(mode == this.selectionMode){ return; } // prevent unnecessary spinning
-		
-		// Start selection fresh when switching mode.
-		this.clearSelection();
-		
-		this.selectionMode = mode;
-		
-		// Compute name of selection handler for this mode once
-		// (in the form of _fooSelectionHandler)
-		this._selectionHandlerName = "_" + mode + "SelectionHandler";
-		
-		// Also re-run allowTextSelection setter in case it is in automatic mode.
-		this._setAllowTextSelection(this.allowTextSelection);
-	},
-	setSelectionMode: function(mode){
-		kernel.deprecated("setSelectionMode(...)", 'use set("selectionMode", ...) instead', "dgrid 0.4");
-		this.set("selectionMode", mode);
-	},
-	
-	_setAllowTextSelection: function(allow){
-		if(typeof allow !== "undefined"){
-			setSelectable(this, allow);
-		}else{
-			setSelectable(this, this.selectionMode === "none");
+	function setSelectable(grid, selectable) {
+		// Alternative version of dojo/dom.setSelectable based on feature detection.
+
+		// For FF < 21, use -moz-none, which will respect -moz-user-select: text on
+		// child elements (e.g. form inputs).  In FF 21, none behaves the same.
+		// See https://developer.mozilla.org/en-US/docs/CSS/user-select
+		var node = grid.bodyNode,
+			value = selectable ? 'text' : has('ff') < 21 ? '-moz-none' : 'none';
+
+		// In IE10+, -ms-user-select: none will block selection from starting within the
+		// element, but will not block an existing selection from entering the element.
+		// When using a modifier key, IE will select text inside of the element as well
+		// as outside of the element, because it thinks the selection started outside.
+		// Therefore, fall back to other means of blocking selection for IE10+.
+		if (hasUserSelect && hasUserSelect !== 'msUserSelect') {
+			node.style[hasUserSelect] = value;
 		}
-		this.allowTextSelection = allow;
-	},
-	
-	_handleSelect: function(event, target){
-		// Don't run if selection mode doesn't have a handler (incl. "none"), target can't be selected,
-		// or if coming from a dgrid-cellfocusin from a mousedown
-		if(!this[this._selectionHandlerName] || !this.allowSelect(this.row(target)) ||
-				(event.type === "dgrid-cellfocusin" && event.parentType === "mousedown") ||
-				(event.type === upType && target != this._waitForMouseUp)){
-			return;
-		}
-		this._waitForMouseUp = null;
-		this._selectionTriggerEvent = event;
-		
-		// Don't call select handler for ctrl+navigation
-		if(!event.keyCode || !event.ctrlKey || event.keyCode == 32){
-			// If clicking a selected item, wait for mouseup so that drag n' drop
-			// is possible without losing our selection
-			if(!event.shiftKey && event.type === downType && this.isSelected(target)){
-				this._waitForMouseUp = target;
-			}else{
-				this[this._selectionHandlerName](event, target);
+		else if (has('dom-selectstart')) {
+			// For browsers that don't support user-select but support selectstart (IE<10),
+			// we can hook up an event handler as necessary.  Since selectstart bubbles,
+			// it will handle any child elements as well.
+			// Note, however, that both this and the unselectable fallback below are
+			// incapable of preventing text selection from outside the targeted node.
+			if (!selectable && !grid._selectstartHandle) {
+				grid._selectstartHandle = on(node, 'selectstart', function (evt) {
+					var tag = evt.target && evt.target.tagName;
+
+					// Prevent selection except where a text input field is involved.
+					if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+						evt.preventDefault();
+					}
+				});
+			}
+			else if (selectable && grid._selectstartHandle) {
+				grid._selectstartHandle.remove();
+				delete grid._selectstartHandle;
 			}
 		}
-		this._selectionTriggerEvent = null;
-	},
-	
-	_singleSelectionHandler: function(event, target){
+		else {
+			// For browsers that don't support either user-select or selectstart (Opera),
+			// we need to resort to setting the unselectable attribute on all nodes
+			// involved.  Since this doesn't automatically apply to child nodes, we also
+			// need to re-apply it whenever rows are rendered.
+			makeUnselectable(node, !selectable);
+			if (!selectable && !grid._unselectableHandle) {
+				grid._unselectableHandle = aspect.after(grid, 'renderRow', function (row) {
+					makeUnselectable(row, true);
+					return row;
+				});
+			}
+			else if (selectable && grid._unselectableHandle) {
+				grid._unselectableHandle.remove();
+				delete grid._unselectableHandle;
+			}
+		}
+	}
+
+	return declare(null, {
 		// summary:
-		//		Selection handler for "single" mode, where only one target may be
-		//		selected at a time.
-		
-		var ctrlKey = event.keyCode ? event.ctrlKey : event[ctrlEquiv];
-		if(this._lastSelected === target){
-			// Allow ctrl to toggle selection, even within single select mode.
-			this.select(target, null, !ctrlKey || !this.isSelected(target));
-		}else{
+		//		Add selection capabilities to a grid. The grid will have a selection property and
+		//		fire "dgrid-select" and "dgrid-deselect" events.
+
+		// selectionDelegate: String
+		//		Selector to delegate to as target of selection events.
+		selectionDelegate: '.dgrid-row',
+
+		// selectionEvents: String|Function
+		//		Event (or comma-delimited events, or extension event) to listen on
+		//		to trigger select logic.
+		selectionEvents: downType + ',' + upType + ',dgrid-cellfocusin',
+
+		// selectionTouchEvents: String|Function
+		//		Event (or comma-delimited events, or extension event) to listen on
+		//		in addition to selectionEvents for touch devices.
+		selectionTouchEvents: has('touch') ? touchUtil.tap : null,
+
+		// deselectOnRefresh: Boolean
+		//		If true, the selection object will be cleared when refresh is called.
+		deselectOnRefresh: true,
+
+		// allowSelectAll: Boolean
+		//		If true, allow ctrl/cmd+A to select all rows.
+		//		Also consulted by the selector plugin for showing select-all checkbox.
+		allowSelectAll: false,
+
+		// selection:
+		//		An object where the property names correspond to
+		//		object ids and values are true or false depending on whether an item is selected
+		selection: {},
+
+		// selectionMode: String
+		//		The selection mode to use, can be "none", "multiple", "single", or "extended".
+		selectionMode: 'extended',
+
+		// allowTextSelection: Boolean
+		//		Whether to still allow text within cells to be selected.  The default
+		//		behavior is to allow text selection only when selectionMode is none;
+		//		setting this property to either true or false will explicitly set the
+		//		behavior regardless of selectionMode.
+		allowTextSelection: undefined,
+
+		// _selectionTargetType: String
+		//		Indicates the property added to emitted events for selected targets;
+		//		overridden in CellSelection
+		_selectionTargetType: 'rows',
+
+		create: function () {
+			this.selection = {};
+			return this.inherited(arguments);
+		},
+		postCreate: function () {
+			this.inherited(arguments);
+
+			this._initSelectionEvents();
+
+			// Force selectionMode setter to run
+			var selectionMode = this.selectionMode;
+			this.selectionMode = '';
+			this._setSelectionMode(selectionMode);
+		},
+
+		destroy: function () {
+			this.inherited(arguments);
+
+			// Remove any extra handles added by Selection.
+			if (this._selectstartHandle) {
+				this._selectstartHandle.remove();
+			}
+			if (this._unselectableHandle) {
+				this._unselectableHandle.remove();
+			}
+			if (this._removeDeselectSignals) {
+				this._removeDeselectSignals();
+			}
+		},
+
+		_setSelectionMode: function (mode) {
+			// summary:
+			//		Updates selectionMode, resetting necessary variables.
+
+			if (mode === this.selectionMode) {
+				return;
+			}
+
+			// Start selection fresh when switching mode.
 			this.clearSelection();
-			this.select(target);
-			this._lastSelected = target;
-		}
-	},
-	
-	_multipleSelectionHandler: function(event, target){
-		// summary:
-		//		Selection handler for "multiple" mode, where shift can be held to
-		//		select ranges, ctrl/cmd can be held to toggle, and clicks/keystrokes
-		//		without modifier keys will add to the current selection.
-		
-		var lastRow = this._lastSelected,
-			ctrlKey = event.keyCode ? event.ctrlKey : event[ctrlEquiv],
-			value;
-		
-		if(!event.shiftKey){
-			// Toggle if ctrl is held; otherwise select
-			value = ctrlKey ? null : true;
-			lastRow = null;
-		}
-		this.select(target, lastRow, value);
 
-		if(!lastRow){
-			// Update reference for potential subsequent shift+select
-			// (current row was already selected above)
-			this._lastSelected = target;
-		}
-	},
-	
-	_extendedSelectionHandler: function(event, target){
-		// summary:
-		//		Selection handler for "extended" mode, which is like multiple mode
-		//		except that clicks/keystrokes without modifier keys will clear
-		//		the previous selection.
-		
-		// Clear selection first for right-clicks outside selection and non-ctrl-clicks;
-		// otherwise, extended mode logic is identical to multiple mode
-		if(event.button === 2 ? !this.isSelected(target) :
-				!(event.keyCode ? event.ctrlKey : event[ctrlEquiv])){
-			this.clearSelection(null, true);
-		}
-		this._multipleSelectionHandler(event, target);
-	},
-	
-	_toggleSelectionHandler: function(event, target){
-		// summary:
-		//		Selection handler for "toggle" mode which simply toggles the selection
-		//		of the given target.  Primarily useful for touch input.
-		
-		this.select(target, null, null);
-	},
+			this.selectionMode = mode;
 
-	_initSelectionEvents: function(){
-		// summary:
-		//		Performs first-time hookup of event handlers containing logic
-		//		required for selection to operate.
-		
-		var grid = this,
-			contentNode = this.contentNode,
-			selector = this.selectionDelegate;
-		
-		this._selectionEventQueues = {
-			deselect: [],
-			select: []
-		};
-		
-		if(has("touch") && !has("pointer") && this.selectionTouchEvents){
-			// Listen for taps, and also for mouse/keyboard, making sure not
-			// to trigger both for the same interaction
-			on(contentNode, touchUtil.selector(selector, this.selectionTouchEvents), function(evt){
-				grid._handleSelect(evt, this);
-				grid._ignoreMouseSelect = this;
-			});
-			on(contentNode, on.selector(selector, this.selectionEvents), function(event){
-				if(grid._ignoreMouseSelect !== this){
+			// Compute name of selection handler for this mode once
+			// (in the form of _fooSelectionHandler)
+			this._selectionHandlerName = '_' + mode + 'SelectionHandler';
+
+			// Also re-run allowTextSelection setter in case it is in automatic mode.
+			this._setAllowTextSelection(this.allowTextSelection);
+		},
+
+		_setAllowTextSelection: function (allow) {
+			if (typeof allow !== 'undefined') {
+				setSelectable(this, allow);
+			}
+			else {
+				setSelectable(this, this.selectionMode === 'none');
+			}
+			this.allowTextSelection = allow;
+		},
+
+		_handleSelect: function (event, target) {
+			// Don't run if selection mode doesn't have a handler (incl. "none"), target can't be selected,
+			// or if coming from a dgrid-cellfocusin from a mousedown
+			if (!this[this._selectionHandlerName] || !this.allowSelect(this.row(target)) ||
+					(event.type === 'dgrid-cellfocusin' && event.parentType === 'mousedown') ||
+					(event.type === upType && target !== this._waitForMouseUp)) {
+				return;
+			}
+			this._waitForMouseUp = null;
+			this._selectionTriggerEvent = event;
+
+			// Don't call select handler for ctrl+navigation
+			if (!event.keyCode || !event.ctrlKey || event.keyCode === 32) {
+				// If clicking a selected item, wait for mouseup so that drag n' drop
+				// is possible without losing our selection
+				if (!event.shiftKey && event.type === downType && this.isSelected(target)) {
+					this._waitForMouseUp = target;
+				}
+				else {
+					this[this._selectionHandlerName](event, target);
+				}
+			}
+			this._selectionTriggerEvent = null;
+		},
+
+		_singleSelectionHandler: function (event, target) {
+			// summary:
+			//		Selection handler for "single" mode, where only one target may be
+			//		selected at a time.
+
+			var ctrlKey = event.keyCode ? event.ctrlKey : event[ctrlEquiv];
+			if (this._lastSelected === target) {
+				// Allow ctrl to toggle selection, even within single select mode.
+				this.select(target, null, !ctrlKey || !this.isSelected(target));
+			}
+			else {
+				this.clearSelection();
+				this.select(target);
+				this._lastSelected = target;
+			}
+		},
+
+		_multipleSelectionHandler: function (event, target) {
+			// summary:
+			//		Selection handler for "multiple" mode, where shift can be held to
+			//		select ranges, ctrl/cmd can be held to toggle, and clicks/keystrokes
+			//		without modifier keys will add to the current selection.
+
+			var lastRow = this._lastSelected,
+				ctrlKey = event.keyCode ? event.ctrlKey : event[ctrlEquiv],
+				value;
+
+			if (!event.shiftKey) {
+				// Toggle if ctrl is held; otherwise select
+				value = ctrlKey ? null : true;
+				lastRow = null;
+			}
+			this.select(target, lastRow, value);
+
+			if (!lastRow) {
+				// Update reference for potential subsequent shift+select
+				// (current row was already selected above)
+				this._lastSelected = target;
+			}
+		},
+
+		_extendedSelectionHandler: function (event, target) {
+			// summary:
+			//		Selection handler for "extended" mode, which is like multiple mode
+			//		except that clicks/keystrokes without modifier keys will clear
+			//		the previous selection.
+
+			// Clear selection first for right-clicks outside selection and non-ctrl-clicks;
+			// otherwise, extended mode logic is identical to multiple mode
+			if (event.button === 2 ? !this.isSelected(target) :
+					!(event.keyCode ? event.ctrlKey : event[ctrlEquiv])) {
+				this.clearSelection(null, true);
+			}
+			this._multipleSelectionHandler(event, target);
+		},
+
+		_toggleSelectionHandler: function (event, target) {
+			// summary:
+			//		Selection handler for "toggle" mode which simply toggles the selection
+			//		of the given target.  Primarily useful for touch input.
+
+			this.select(target, null, null);
+		},
+
+		_initSelectionEvents: function () {
+			// summary:
+			//		Performs first-time hookup of event handlers containing logic
+			//		required for selection to operate.
+
+			var grid = this,
+				contentNode = this.contentNode,
+				selector = this.selectionDelegate;
+
+			this._selectionEventQueues = {
+				deselect: [],
+				select: []
+			};
+
+			if (has('touch') && !has('pointer') && this.selectionTouchEvents) {
+				// Listen for taps, and also for mouse/keyboard, making sure not
+				// to trigger both for the same interaction
+				on(contentNode, touchUtil.selector(selector, this.selectionTouchEvents), function (evt) {
+					grid._handleSelect(evt, this);
+					grid._ignoreMouseSelect = this;
+				});
+				on(contentNode, on.selector(selector, this.selectionEvents), function (event) {
+					if (grid._ignoreMouseSelect !== this) {
+						grid._handleSelect(event, this);
+					}
+					else if (event.type === upType) {
+						grid._ignoreMouseSelect = null;
+					}
+				});
+			}
+			else {
+				// Listen for mouse/keyboard actions that should cause selections
+				on(contentNode, on.selector(selector, this.selectionEvents), function (event) {
 					grid._handleSelect(event, this);
-				}else if(event.type === upType){
-					grid._ignoreMouseSelect = null;
-				}
-			});
-		}else{
-			// Listen for mouse/keyboard actions that should cause selections
-			on(contentNode, on.selector(selector, this.selectionEvents), function(event){
-				grid._handleSelect(event, this);
-			});
-		}
-		
-		// Also hook up spacebar (for ctrl+space)
-		if(this.addKeyHandler){
-			this.addKeyHandler(32, function(event){
-				grid._handleSelect(event, event.target);
-			});
-		}
-		
-		// If allowSelectAll is true, bind ctrl/cmd+A to (de)select all rows,
-		// unless the event was received from an editor component.
-		// (Handler further checks against _allowSelectAll, which may be updated
-		// if selectionMode is changed post-init.)
-		if(this.allowSelectAll){
-			this.on("keydown", function(event) {
-				if(event[ctrlEquiv] && event.keyCode == 65 &&
-						!/\bdgrid-input\b/.test(event.target.className)){
-					event.preventDefault();
-					grid[grid.allSelected ? "clearSelection" : "selectAll"]();
-				}
-			});
-		}
-		
-		// Update aspects if there is a store change
-		if(this._setStore){
-			aspect.after(this, "_setStore", function(){
-				grid._updateDeselectionAspect();
-			});
-		}
-		this._updateDeselectionAspect();
-	},
-	
-	_updateDeselectionAspect: function(){
-		// summary:
-		//		Hooks up logic to handle deselection of removed items.
-		//		Aspects to an observable store's notify method if applicable,
-		//		or to the list/grid's removeRow method otherwise.
-		
-		var self = this,
-			store = this.store,
-			beforeSignal,
-			afterSignal;
+				});
+			}
 
-		function ifSelected(object, idToUpdate, methodName){
-			// Calls a method if the row corresponding to the object is selected.
-			var id = idToUpdate || (object && object[self.idProperty || "id"]);
-			if(id != null){
-				var row = self.row(id),
+			// Also hook up spacebar (for ctrl+space)
+			if (this.addKeyHandler) {
+				this.addKeyHandler(32, function (event) {
+					grid._handleSelect(event, event.target);
+				});
+			}
+
+			// If allowSelectAll is true, bind ctrl/cmd+A to (de)select all rows,
+			// unless the event was received from an editor component.
+			// (Handler further checks against _allowSelectAll, which may be updated
+			// if selectionMode is changed post-init.)
+			if (this.allowSelectAll) {
+				this.on('keydown', function (event) {
+					if (event[ctrlEquiv] && event.keyCode === 65 &&
+							!/\bdgrid-input\b/.test(event.target.className)) {
+						event.preventDefault();
+						grid[grid.allSelected ? 'clearSelection' : 'selectAll']();
+					}
+				});
+			}
+
+			// Update aspects if there is a collection change
+			if (this._setCollection) {
+				aspect.before(this, '_setCollection', function (collection) {
+					grid._updateDeselectionAspect(collection);
+				});
+			}
+			this._updateDeselectionAspect();
+		},
+
+		_updateDeselectionAspect: function (collection) {
+			// summary:
+			//		Hooks up logic to handle deselection of removed items.
+			//		Aspects to a trackable collection's notify method if applicable,
+			//		or to the list/grid's removeRow method otherwise.
+
+			var self = this,
+				signals;
+
+			function ifSelected(rowArg, methodName) {
+				// Calls a method if the row corresponding to the object is selected.
+				var row = self.row(rowArg),
 					selection = row && self.selection[row.id];
 				// Is the row currently in the selection list.
-				if(selection){
-					self[methodName](row, null, selection);
+				if (selection) {
+					self[methodName](row);
 				}
 			}
-		}
-		
-		// Remove anything previously configured
-		if(this._removeDeselectSignals){
-			this._removeDeselectSignals();
-		}
 
-		// Is there currently an observable store?
-		if(store && store.notify){
-			beforeSignal = aspect.before(store, "notify", function(object, idToUpdate){
-				if(!object){
-					// Call deselect on the row if the object is being removed.  This allows the
-					// deselect event to reference the row element while it still exists in the DOM.
-					ifSelected(object, idToUpdate, "deselect");
+			// Remove anything previously configured
+			if (this._removeDeselectSignals) {
+				this._removeDeselectSignals();
+			}
+
+			if (collection && collection.track && this._observeCollection) {
+				signals = [
+					aspect.before(this, '_observeCollection', function (collection) {
+						signals.push(
+							collection.on('delete', function (event) {
+								if (typeof event.index === 'undefined') {
+									// Call deselect on the row if the object is being removed.  This allows the
+									// deselect event to reference the row element while it still exists in the DOM.
+									ifSelected(event.id, 'deselect');
+								}
+							})
+						);
+					}),
+					aspect.after(this, '_observeCollection', function (collection) {
+						signals.push(
+							collection.on('update', function (event) {
+								if (typeof event.index !== 'undefined') {
+									// When List updates an item, the row element is removed and a new one inserted.
+									// If at this point the object is still in grid.selection,
+									// then call select on the row so the element's CSS is updated.
+									ifSelected(collection.getIdentity(event.target), 'select');
+								}
+							})
+						);
+					}, true)
+				];
+			}
+			else {
+				signals = [
+					aspect.before(this, 'removeRow', function (rowElement, preserveDom) {
+						var row;
+						if (!preserveDom) {
+							row = this.row(rowElement);
+							// if it is a real row removal for a selected item, deselect it
+							if (row && (row.id in this.selection)) {
+								this.deselect(row);
+							}
+						}
+					})
+				];
+			}
+
+			this._removeDeselectSignals = function () {
+				for (var i = signals.length; i--;) {
+					signals[i].remove();
 				}
-			});
-			afterSignal = aspect.after(store, "notify", function(object, idToUpdate){
-				// When List updates an item, the row element is removed and a new one inserted.
-				// If at this point the object is still in grid.selection, then call select on the row so the
-				// element's CSS is updated.  If the object was removed then the aspect-before has already deselected it.
-				ifSelected(object, idToUpdate, "select");
-			}, true);
-			
-			this._removeDeselectSignals = function(){
-				beforeSignal.remove();
-				afterSignal.remove();
+				signals = [];
 			};
-		}else{
-			beforeSignal = aspect.before(this, "removeRow", function(rowElement, justCleanup){
-				var row;
-				if(!justCleanup){
-					row = this.row(rowElement);
-					// if it is a real row removal for a selected item, deselect it
-					if(row && (row.id in this.selection)){
-						this.deselect(row);
+		},
+
+		allowSelect: function () {
+			// summary:
+			//		A method that can be overriden to determine whether or not a row (or
+			//		cell) can be selected. By default, all rows (or cells) are selectable.
+			// target: Object
+			//		Row object (for Selection) or Cell object (for CellSelection) for the
+			//		row/cell in question
+			return true;
+		},
+
+		_fireSelectionEvent: function (type) {
+			// summary:
+			//		Fires an event for the accumulated rows once a selection
+			//		operation is finished (whether singular or for a range)
+
+			var queue = this._selectionEventQueues[type],
+				triggerEvent = this._selectionTriggerEvent,
+				eventObject;
+
+			eventObject = {
+				bubbles: true,
+				grid: this
+			};
+			if (triggerEvent) {
+				eventObject.parentType = triggerEvent.type;
+			}
+			eventObject[this._selectionTargetType] = queue;
+
+			// Clear the queue so that the next round of (de)selections starts anew
+			this._selectionEventQueues[type] = [];
+
+			on.emit(this.contentNode, 'dgrid-' + type, eventObject);
+		},
+
+		_fireSelectionEvents: function () {
+			var queues = this._selectionEventQueues,
+				type;
+
+			for (type in queues) {
+				if (queues[type].length) {
+					this._fireSelectionEvent(type);
+				}
+			}
+		},
+
+		_select: function (row, toRow, value) {
+			// summary:
+			//		Contains logic for determining whether to select targets, but
+			//		does not emit events.  Called from select, deselect, selectAll,
+			//		and clearSelection.
+
+			var selection,
+				previousValue,
+				element,
+				toElement,
+				direction;
+
+			if (typeof value === 'undefined') {
+				// default to true
+				value = true;
+			}
+			if (!row.element) {
+				row = this.row(row);
+			}
+
+			// Check whether we're allowed to select the given row before proceeding.
+			// If a deselect operation is being performed, this check is skipped,
+			// to avoid errors when changing column definitions, and since disabled
+			// rows shouldn't ever be selected anyway.
+			if (value === false || this.allowSelect(row)) {
+				selection = this.selection;
+				previousValue = !!selection[row.id];
+				if (value === null) {
+					// indicates a toggle
+					value = !previousValue;
+				}
+				element = row.element;
+				if (!value && !this.allSelected) {
+					delete this.selection[row.id];
+				}
+				else {
+					selection[row.id] = value;
+				}
+				if (element) {
+					// add or remove classes as appropriate
+					if (value) {
+						put(element, '.dgrid-selected' +
+							(this.addUiClasses ? '.ui-state-active' : ''));
+					}
+					else {
+						put(element, '!dgrid-selected!ui-state-active');
 					}
 				}
-			});
-			this._removeDeselectSignals = function(){
-				beforeSignal.remove();
-			};
-		}
-	},
-	
-	allowSelect: function(row){
-		// summary:
-		//		A method that can be overriden to determine whether or not a row (or 
-		//		cell) can be selected. By default, all rows (or cells) are selectable.
-		return true;
-	},
-	
-	_fireSelectionEvent: function(type){
-		// summary:
-		//		Fires an event for the accumulated rows once a selection
-		//		operation is finished (whether singular or for a range)
-		
-		var queue = this._selectionEventQueues[type],
-			triggerEvent = this._selectionTriggerEvent,
-			eventObject;
-		
-		eventObject = {
-			bubbles: true,
-			grid: this
-		};
-		if(triggerEvent){
-			eventObject.parentType = triggerEvent.type;
-		}
-		eventObject[this._selectionTargetType] = queue;
-		
-		// Clear the queue so that the next round of (de)selections starts anew
-		this._selectionEventQueues[type] = [];
-		
-		on.emit(this.contentNode, "dgrid-" + type, eventObject);
-	},
-	
-	_fireSelectionEvents: function(){
-		var queues = this._selectionEventQueues,
-			type;
-		
-		for(type in queues){
-			if(queues[type].length){
-				this._fireSelectionEvent(type);
-			}
-		}
-	},
-	
-	_select: function(row, toRow, value){
-		// summary:
-		//		Contains logic for determining whether to select targets, but
-		//		does not emit events.  Called from select, deselect, selectAll,
-		//		and clearSelection.
-		
-		var selection,
-			previousValue,
-			element,
-			toElement,
-			direction;
-		
-		if(typeof value === "undefined"){
-			// default to true
-			value = true;
-		} 
-		if(!row.element){
-			row = this.row(row);
-		}
-		
-		// Check whether we're allowed to select the given row before proceeding.
-		// If a deselect operation is being performed, this check is skipped,
-		// to avoid errors when changing column definitions, and since disabled
-		// rows shouldn't ever be selected anyway.
-		if(value === false || this.allowSelect(row)){
-			selection = this.selection;
-			previousValue = !!selection[row.id];
-			if(value === null){
-				// indicates a toggle
-				value = !previousValue;
-			}
-			element = row.element;
-			if(!value && !this.allSelected){
-				delete this.selection[row.id];
-			}else{
-				selection[row.id] = value;
-			}
-			if(element){
-				// add or remove classes as appropriate
-				if(value){
-					put(element, ".dgrid-selected" +
-						(this.addUiClasses ? ".ui-state-active" : ""));
-				}else{
-					put(element, "!dgrid-selected!ui-state-active");
+				if (value !== previousValue && element) {
+					// add to the queue of row events
+					this._selectionEventQueues[(value ? '' : 'de') + 'select'].push(row);
 				}
-			}
-			if(value !== previousValue && element){
-				// add to the queue of row events
-				this._selectionEventQueues[(value ? "" : "de") + "select"].push(row);
-			}
-			
-			if(toRow){
-				if(!toRow.element){
-					toRow = this.row(toRow);
-				}
-				
-				if(!toRow){
-					this._lastSelected = element;
-					 0 && console.warn("The selection range has been reset because the " +
-						"beginning of the selection is no longer in the DOM. " +
-						"If you are using OnDemandList, you may wish to increase " +
-						"farOffRemoval to avoid this, but note that keeping more nodes " +
-						"in the DOM may impact performance.");
-					return;
-				}
-				
-				toElement = toRow.element;
-				if(toElement){
-					direction = this._determineSelectionDirection(element, toElement);
-					if(!direction){
-						// The original element was actually replaced
-						toElement = document.getElementById(toElement.id);
+
+				if (toRow) {
+					if (!toRow.element) {
+						toRow = this.row(toRow);
+					}
+
+					if (!toRow) {
+						this._lastSelected = element;
+						 0 && console.warn('The selection range has been reset because the ' +
+							'beginning of the selection is no longer in the DOM. ' +
+							'If you are using OnDemandList, you may wish to increase ' +
+							'farOffRemoval to avoid this, but note that keeping more nodes ' +
+							'in the DOM may impact performance.');
+						return;
+					}
+
+					toElement = toRow.element;
+					if (toElement) {
 						direction = this._determineSelectionDirection(element, toElement);
-					}
-					while(row.element != toElement && (row = this[direction](row))){
-						this._select(row, null, value);
+						if (!direction) {
+							// The original element was actually replaced
+							toElement = document.getElementById(toElement.id);
+							direction = this._determineSelectionDirection(element, toElement);
+						}
+						while (row.element !== toElement && (row = this[direction](row))) {
+							this._select(row, null, value);
+						}
 					}
 				}
 			}
-		}
-	},
-	
-	// Implement _determineSelectionDirection differently based on whether the
-	// browser supports element.compareDocumentPosition; use sourceIndex for IE<9
-	_determineSelectionDirection: has("dom-comparedocumentposition") ? function (from, to) {
-		var result = to.compareDocumentPosition(from);
-		if(result & 1){
-			return false; // Out of document
-		}
-		return result === 2 ? "down" : "up";
-	} : function(from, to) {
-		if(to.sourceIndex < 1){
-			return false; // Out of document
-		}
-		return to.sourceIndex > from.sourceIndex ? "down" : "up";
-	},
-	
-	select: function(row, toRow, value){
-		// summary:
-		//		Selects or deselects the given row or range of rows.
-		// row: Mixed
-		//		Row object (or something that can resolve to one) to (de)select
-		// toRow: Mixed
-		//		If specified, the inclusive range between row and toRow will
-		//		be (de)selected
-		// value: Boolean|Null
-		//		Whether to select (true/default), deselect (false), or toggle
-		//		(null) the row
-		
-		this._select(row, toRow, value);
-		this._fireSelectionEvents();
-	},
-	deselect: function(row, toRow){
-		// summary:
-		//		Deselects the given row or range of rows.
-		// row: Mixed
-		//		Row object (or something that can resolve to one) to deselect
-		// toRow: Mixed
-		//		If specified, the inclusive range between row and toRow will
-		//		be deselected
-		
-		this.select(row, toRow, false);
-	},
-	
-	clearSelection: function(exceptId, dontResetLastSelected){
-		// summary:
-		//		Deselects any currently-selected items.
-		// exceptId: Mixed?
-		//		If specified, the given id will not be deselected.
-		
-		this.allSelected = false;
-		for(var id in this.selection){
-			if(exceptId !== id){
-				this._select(id, null, false);
-			}
-		}
-		if(!dontResetLastSelected){
-			this._lastSelected = null;
-		}
-		this._fireSelectionEvents();
-	},
-	selectAll: function(){
-		this.allSelected = true;
-		this.selection = {}; // we do this to clear out pages from previous sorts
-		for(var i in this._rowIdToObject){
-			var row = this.row(this._rowIdToObject[i]);
-			this._select(row.id, null, true);
-		}
-		this._fireSelectionEvents();
-	},
-	
-	isSelected: function(object){
-		// summary:
-		//		Returns true if the indicated row is selected.
-		
-		if(typeof object === "undefined" || object === null){
-			return false;
-		}
-		if(!object.element){
-			object = this.row(object);
-		}
-		
-		// First check whether the given row is indicated in the selection hash;
-		// failing that, check if allSelected is true (testing against the
-		// allowSelect method if possible)
-		return (object.id in this.selection) ? !!this.selection[object.id] :
-			this.allSelected && (!object.data || this.allowSelect(object));
-	},
-	
-	refresh: function(){
-		if(this.deselectOnRefresh){
-			this.clearSelection();
-		}
-		this._lastSelected = null;
-		return this.inherited(arguments);
-	},
-	
-	renderArray: function(){
-		var grid = this,
-			rows = this.inherited(arguments);
-		
-		Deferred.when(rows, function(rows){
-			var selection = grid.selection,
-				i, row, selected;
-			for(i = 0; i < rows.length; i++){
-				row = grid.row(rows[i]);
-				selected = row.id in selection ? selection[row.id] : grid.allSelected;
-				if(selected){
-					grid._select(row, null, selected);
-				}
-			}
-			grid._fireSelectionEvents();
-		});
-		return rows;
-	}
-});
+		},
 
+		// Implement _determineSelectionDirection differently based on whether the
+		// browser supports element.compareDocumentPosition; use sourceIndex for IE<9
+		_determineSelectionDirection: has('dom-comparedocumentposition') ? function (from, to) {
+			var result = to.compareDocumentPosition(from);
+			if (result & 1) {
+				return false; // Out of document
+			}
+			return result === 2 ? 'down' : 'up';
+		} : function (from, to) {
+			if (to.sourceIndex < 1) {
+				return false; // Out of document
+			}
+			return to.sourceIndex > from.sourceIndex ? 'down' : 'up';
+		},
+
+		select: function (row, toRow, value) {
+			// summary:
+			//		Selects or deselects the given row or range of rows.
+			// row: Mixed
+			//		Row object (or something that can resolve to one) to (de)select
+			// toRow: Mixed
+			//		If specified, the inclusive range between row and toRow will
+			//		be (de)selected
+			// value: Boolean|Null
+			//		Whether to select (true/default), deselect (false), or toggle
+			//		(null) the row
+
+			this._select(row, toRow, value);
+			this._fireSelectionEvents();
+		},
+		deselect: function (row, toRow) {
+			// summary:
+			//		Deselects the given row or range of rows.
+			// row: Mixed
+			//		Row object (or something that can resolve to one) to deselect
+			// toRow: Mixed
+			//		If specified, the inclusive range between row and toRow will
+			//		be deselected
+
+			this.select(row, toRow, false);
+		},
+
+		clearSelection: function (exceptId, dontResetLastSelected) {
+			// summary:
+			//		Deselects any currently-selected items.
+			// exceptId: Mixed?
+			//		If specified, the given id will not be deselected.
+
+			this.allSelected = false;
+			for (var id in this.selection) {
+				if (exceptId !== id) {
+					this._select(id, null, false);
+				}
+			}
+			if (!dontResetLastSelected) {
+				this._lastSelected = null;
+			}
+			this._fireSelectionEvents();
+		},
+		selectAll: function () {
+			this.allSelected = true;
+			this.selection = {}; // we do this to clear out pages from previous sorts
+			for (var i in this._rowIdToObject) {
+				var row = this.row(this._rowIdToObject[i]);
+				this._select(row.id, null, true);
+			}
+			this._fireSelectionEvents();
+		},
+
+		isSelected: function (object) {
+			// summary:
+			//		Returns true if the indicated row is selected.
+
+			if (typeof object === 'undefined' || object === null) {
+				return false;
+			}
+			if (!object.element) {
+				object = this.row(object);
+			}
+
+			// First check whether the given row is indicated in the selection hash;
+			// failing that, check if allSelected is true (testing against the
+			// allowSelect method if possible)
+			return (object.id in this.selection) ? !!this.selection[object.id] :
+				this.allSelected && (!object.data || this.allowSelect(object));
+		},
+
+		refresh: function () {
+			if (this.deselectOnRefresh) {
+				this.clearSelection();
+			}
+			this._lastSelected = null;
+			return this.inherited(arguments);
+		},
+
+		renderArray: function () {
+			var rows = this.inherited(arguments),
+				selection = this.selection,
+				i,
+				row,
+				selected;
+
+			for (i = 0; i < rows.length; i++) {
+				row = this.row(rows[i]);
+				selected = row.id in selection ? selection[row.id] : this.allSelected;
+				if (selected) {
+					this.select(row, null, selected);
+				}
+			}
+			this._fireSelectionEvents();
+			return rows;
+		}
+	});
 });
 
 },
@@ -30224,465 +30055,502 @@ return supplemental;
 
 },
 'dgrid/extensions/ColumnResizer':function(){
-define(["dojo/_base/declare", "dojo/on", "dojo/query", "dojo/_base/lang", "dojo/dom", "dojo/dom-geometry", "dojo/has", "../util/misc", "put-selector/put", "dojo/_base/html", "xstyle/css!../css/extensions/ColumnResizer.css"],
-function(declare, listen, query, lang, dom, geom, has, miscUtil, put){
+define([
+	'dojo/_base/declare',
+	'dojo/on',
+	'dojo/query',
+	'dojo/_base/lang',
+	'dojo/dom',
+	'dojo/dom-geometry',
+	'dojo/has',
+	'../util/misc',
+	'put-selector/put',
+	'dojo/_base/html',
+	'xstyle/css!../css/extensions/ColumnResizer.css'
+], function (declare, listen, query, lang, dom, geom, has, miscUtil, put) {
 
-function addRowSpan(table, span, startRow, column, id){
-	// loop through the rows of the table and add this column's id to
-	// the rows' column
-	for(var i=1; i<span; i++){
-		table[startRow+i][column] = id;
+	function addRowSpan(table, span, startRow, column, id) {
+		// loop through the rows of the table and add this column's id to
+		// the rows' column
+		for (var i = 1; i < span; i++) {
+			table[startRow + i][column] = id;
+		}
 	}
-}
-function subRowAssoc(subRows){
-	// Take a sub-row structure and output an object with key=>value pairs
-	// The keys will be the column id's; the values will be the first-row column
-	// that column's resizer should be associated with.
+	function subRowAssoc(subRows) {
+		// Take a sub-row structure and output an object with key=>value pairs
+		// The keys will be the column id's; the values will be the first-row column
+		// that column's resizer should be associated with.
 
-	var i = subRows.length,
-		l = i,
-		numCols = subRows[0].length,
-		table = new Array(i);
+		var i = subRows.length,
+			l = i,
+			numCols = subRows[0].length,
+			table = new Array(i);
 
-	// create table-like structure in an array so it can be populated
-	// with row-spans and col-spans
-	while(i--){
-		table[i] = new Array(numCols);
+		// create table-like structure in an array so it can be populated
+		// with row-spans and col-spans
+		while (i--) {
+			table[i] = new Array(numCols);
+		}
+
+		var associations = {};
+
+		for (i = 0; i < l; i++) {
+			var row = table[i],
+				subRow = subRows[i];
+
+			// j: counter for table columns
+			// js: counter for subrow structure columns
+			for (var j = 0, js = 0; j < numCols; j++) {
+				var cell = subRow[js], k;
+
+				// if something already exists in the table (row-span), skip this
+				// spot and go to the next
+				if (typeof row[j] !== 'undefined') {
+					continue;
+				}
+				row[j] = cell.id;
+
+				if (cell.rowSpan && cell.rowSpan > 1) {
+					addRowSpan(table, cell.rowSpan, i, j, cell.id);
+				}
+
+				// colSpans are only applicable in the second or greater rows
+				// and only if the colSpan is greater than 1
+				if (i > 0 && cell.colSpan && cell.colSpan > 1) {
+					for (k = 1; k < cell.colSpan; k++) {
+						// increment j and assign the id since this is a span
+						row[++j] = cell.id;
+						if (cell.rowSpan && cell.rowSpan > 1) {
+							addRowSpan(table, cell.rowSpan, i, j, cell.id);
+						}
+					}
+				}
+				associations[cell.id] = subRows[0][j].id;
+				js++;
+			}
+		}
+
+		return associations;
 	}
 
-	var associations = {};
+	function resizeColumnWidth(grid, colId, width, parentType, doResize) {
+		// don't react to widths <= 0, e.g. for hidden columns
+		if (width <= 0) {
+			return;
+		}
 
-	for(i=0; i<l; i++){
-		var row = table[i],
-			subRow = subRows[i];
+		var column = grid.columns[colId],
+			event,
+			rule;
 
-		// j: counter for table columns
-		// js: counter for subrow structure columns
-		for(var j=0, js=0; j<numCols; j++){
-			var cell = subRow[js], k;
+		if (!column) {
+			return;
+		}
 
-			// if something already exists in the table (row-span), skip this
-			// spot and go to the next
-			if(typeof row[j] != "undefined"){
-				continue;
+		event = {
+			grid: grid,
+			columnId: colId,
+			width: width,
+			bubbles: true,
+			cancelable: true
+		};
+
+		if (parentType) {
+			event.parentType = parentType;
+		}
+
+		if (!grid._resizedColumns || listen.emit(grid.headerNode, 'dgrid-columnresize', event)) {
+			// Update width on column object, then convert value for CSS
+			if (width === 'auto') {
+				delete column.width;
 			}
-			row[j] = cell.id;
-
-			if(cell.rowSpan && cell.rowSpan > 1){
-				addRowSpan(table, cell.rowSpan, i, j, cell.id);
+			else {
+				column.width = width;
+				width += 'px';
 			}
 
-			// colSpans are only applicable in the second or greater rows
-			// and only if the colSpan is greater than 1
-			if(i>0 && cell.colSpan && cell.colSpan > 1){
-				for(k=1; k<cell.colSpan; k++){
-					// increment j and assign the id since this is a span
-					row[++j] = cell.id;
-					if(cell.rowSpan && cell.rowSpan > 1){
-						addRowSpan(table, cell.rowSpan, i, j, cell.id);
+			rule = grid._columnSizes[colId];
+
+			if (rule) {
+				// Modify existing, rather than deleting + adding
+				rule.set('width', width);
+			}
+			else {
+				// Use miscUtil function directly, since we clean these up ourselves anyway
+				rule = miscUtil.addCssRule('#' + miscUtil.escapeCssIdentifier(grid.domNode.id) +
+					' .dgrid-column-' + miscUtil.escapeCssIdentifier(colId, '-'),
+					'width: ' + width + ';');
+			}
+
+			// keep a reference for future removal
+			grid._columnSizes[colId] = rule;
+
+			if (doResize !== false) {
+				grid.resize();
+			}
+
+			return true;
+		}
+	}
+
+	// Functions for shared resizer node
+
+	var resizerNode, // DOM node for resize indicator, reused between instances
+		resizableCount = 0; // Number of ColumnResizer-enabled grid instances
+	var resizer = {
+		// This object contains functions for manipulating the shared resizerNode
+		create: function () {
+			resizerNode = put('div.dgrid-column-resizer');
+		},
+		destroy: function () {
+			put(resizerNode, '!');
+			resizerNode = null;
+		},
+		show: function (grid) {
+			var pos = geom.position(grid.domNode, true);
+			resizerNode.style.top = pos.y + 'px';
+			resizerNode.style.height = pos.h + 'px';
+			put(document.body, resizerNode);
+		},
+		move: function (x) {
+			resizerNode.style.left = x + 'px';
+		},
+		hide: function () {
+			resizerNode.parentNode.removeChild(resizerNode);
+		}
+	};
+
+	return declare(null, {
+		resizeNode: null,
+
+		// minWidth: Number
+		//		Minimum column width, in px.
+		minWidth: 40,
+
+		// adjustLastColumn: Boolean
+		//		If true, adjusts the last column's width to "auto" at times where the
+		//		browser would otherwise stretch all columns to span the grid.
+		adjustLastColumn: true,
+
+		_resizedColumns: false, // flag indicating if resizer has converted column widths to px
+
+		buildRendering: function () {
+			this.inherited(arguments);
+
+			// Create resizerNode when first grid w/ ColumnResizer is created
+			if (!resizableCount) {
+				resizer.create();
+			}
+			resizableCount++;
+		},
+
+		destroy: function () {
+			this.inherited(arguments);
+
+			// Remove any applied column size styles since we're tracking them directly
+			for (var name in this._columnSizes) {
+				this._columnSizes[name].remove();
+			}
+
+			// If this is the last grid on the page with ColumnResizer, destroy the
+			// shared resizerNode
+			if (!--resizableCount) {
+				resizer.destroy();
+			}
+		},
+
+		resizeColumnWidth: function (colId, width) {
+			// Summary:
+			//      calls grid's styleColumn function to add a style for the column
+			// colId: String
+			//      column id
+			// width: Integer
+			//      new width of the column
+			return resizeColumnWidth(this, colId, width);
+		},
+
+		configStructure: function () {
+			var oldSizes = this._oldColumnSizes = lang.mixin({}, this._columnSizes), // shallow clone
+				k;
+
+			this._resizedColumns = false;
+			this._columnSizes = {};
+
+			this.inherited(arguments);
+
+			// Remove old column styles that are no longer relevant; this is specifically
+			// done *after* calling inherited so that _columnSizes will contain keys
+			// for all columns in the new structure that were assigned widths.
+			for (k in oldSizes) {
+				if (!(k in this._columnSizes)) {
+					oldSizes[k].remove();
+				}
+			}
+			delete this._oldColumnSizes;
+		},
+
+		_configColumn: function (column) {
+			this.inherited(arguments);
+
+			var colId = column.id,
+				rule;
+
+			if ('width' in column) {
+				// Update or add a style rule for the specified width
+				if ((rule = this._oldColumnSizes[colId])) {
+					rule.set('width', column.width + 'px');
+				}
+				else {
+					rule = miscUtil.addCssRule('#' + miscUtil.escapeCssIdentifier(this.domNode.id) +
+						' .dgrid-column-' + miscUtil.escapeCssIdentifier(colId, '-'),
+						'width: ' + column.width + 'px;');
+				}
+				this._columnSizes[colId] = rule;
+			}
+		},
+
+		renderHeader: function () {
+			this.inherited(arguments);
+
+			var grid = this;
+
+			var assoc;
+			if (this.columnSets && this.columnSets.length) {
+				var csi = this.columnSets.length;
+				while (csi--) {
+					assoc = lang.mixin(assoc || {}, subRowAssoc(this.columnSets[csi]));
+				}
+			}
+			else if (this.subRows && this.subRows.length > 1) {
+				assoc = subRowAssoc(this.subRows);
+			}
+
+			var colNodes = query('.dgrid-cell', grid.headerNode),
+				i = colNodes.length;
+			while (i--) {
+				var colNode = colNodes[i],
+					id = colNode.columnId,
+					col = grid.columns[id],
+					childNodes = colNode.childNodes,
+					resizeHandle;
+
+				if (!col || col.resizable === false) {
+					continue;
+				}
+
+				var headerTextNode = put('div.dgrid-resize-header-container');
+				colNode.contents = headerTextNode;
+
+				// move all the children to the header text node
+				while (childNodes.length > 0) {
+					put(headerTextNode, childNodes[0]);
+				}
+
+				resizeHandle = put(colNode, headerTextNode, 'div.dgrid-resize-handle.resizeNode-' +
+					miscUtil.escapeCssIdentifier(id, '-'));
+				resizeHandle.columnId = assoc && assoc[id] || id;
+			}
+
+			if (!grid.mouseMoveListen) {
+				// establish listeners for initiating, dragging, and finishing resize
+				listen(grid.headerNode,
+					'.dgrid-resize-handle:mousedown' +
+						(has('touch') ? ',.dgrid-resize-handle:touchstart' : ''),
+					function (e) {
+						grid._resizeMouseDown(e, this);
+						grid.mouseMoveListen.resume();
+						grid.mouseUpListen.resume();
+					}
+				);
+				grid._listeners.push(grid.mouseMoveListen =
+					listen.pausable(document,
+						'mousemove' + (has('touch') ? ',touchmove' : ''),
+						miscUtil.throttleDelayed(function (e) {
+							grid._updateResizerPosition(e);
+						})
+				));
+				grid._listeners.push(grid.mouseUpListen = listen.pausable(document,
+					'mouseup' + (has('touch') ? ',touchend' : ''),
+					function (e) {
+						grid._resizeMouseUp(e);
+						grid.mouseMoveListen.pause();
+						grid.mouseUpListen.pause();
+					}
+				));
+				// initially pause the move/up listeners until a drag happens
+				grid.mouseMoveListen.pause();
+				grid.mouseUpListen.pause();
+			}
+		}, // end renderHeader
+
+		_resizeMouseDown: function (e, target) {
+			// Summary:
+			//      called when mouse button is pressed on the header
+			// e: Object
+			//      mousedown event object
+
+			// preventDefault actually seems to be enough to prevent browser selection
+			// in all but IE < 9.  setSelectable works for those.
+			e.preventDefault();
+			dom.setSelectable(this.domNode, false);
+			this._startX = this._getResizeMouseLocation(e); //position of the target
+
+			this._targetCell = query('.dgrid-column-' + miscUtil.escapeCssIdentifier(target.columnId, '-'),
+				this.headerNode)[0];
+
+			// Show resizerNode after initializing its x position
+			this._updateResizerPosition(e);
+			resizer.show(this);
+		},
+		_resizeMouseUp: function (e) {
+			// Summary:
+			//      called when mouse button is released
+			// e: Object
+			//      mouseup event object
+
+			var columnSizes = this._columnSizes,
+				colNodes, colWidths, gridWidth;
+
+			if (this.adjustLastColumn) {
+				// For some reason, total column width needs to be 1 less than this
+				gridWidth = this.headerNode.clientWidth - 1;
+			}
+
+			//This is used to set all the column widths to a static size
+			if (!this._resizedColumns) {
+				colNodes = query('.dgrid-cell', this.headerNode);
+
+				if (this.columnSets && this.columnSets.length) {
+					colNodes = colNodes.filter(function (node) {
+						var idx = node.columnId.split('-');
+						return idx[0] === '0' && !(node.columnId in columnSizes);
+					});
+				}
+				else if (this.subRows && this.subRows.length > 1) {
+					colNodes = colNodes.filter(function (node) {
+						return node.columnId.charAt(0) === '0' && !(node.columnId in columnSizes);
+					});
+				}
+
+				// Get a set of sizes before we start mutating, to avoid
+				// weird disproportionate measures if the grid has set
+				// column widths, but no full grid width set
+				colWidths = colNodes.map(function (colNode) {
+					return colNode.offsetWidth;
+				});
+
+				// Set a baseline size for each column based on
+				// its original measure
+				colNodes.forEach(function (colNode, i) {
+					resizeColumnWidth(this, colNode.columnId, colWidths[i], null, false);
+				}, this);
+
+				this._resizedColumns = true;
+			}
+			dom.setSelectable(this.domNode, true);
+
+			var cell = this._targetCell,
+				delta = this._getResizeMouseLocation(e) - this._startX, //final change in position of resizer
+				newWidth = cell.offsetWidth + delta, //the new width after resize
+				obj = this._getResizedColumnWidths(),//get current total column widths before resize
+				totalWidth = obj.totalWidth,
+				lastCol = obj.lastColId,
+				lastColWidth = query('.dgrid-column-' + miscUtil.escapeCssIdentifier(lastCol, '-'),
+					this.headerNode)[0].offsetWidth;
+
+			if (newWidth < this.minWidth) {
+				//enforce minimum widths
+				newWidth = this.minWidth;
+			}
+
+			if (resizeColumnWidth(this, cell.columnId, newWidth, e.type)) {
+				if (cell.columnId !== lastCol && this.adjustLastColumn) {
+					if (totalWidth + delta < gridWidth) {
+						//need to set last column's width to auto
+						resizeColumnWidth(this, lastCol, 'auto', e.type);
+					}
+					else if (lastColWidth - delta <= this.minWidth) {
+						//change last col width back to px, unless it is the last column itself being resized...
+						resizeColumnWidth(this, lastCol, this.minWidth, e.type);
 					}
 				}
 			}
-			associations[cell.id] = subRows[0][j].id;
-			js++;
-		}
-	}
+			resizer.hide();
 
-	return associations;
-}
+			// Clean up after the resize operation
+			delete this._startX;
+			delete this._targetCell;
+		},
 
-function resizeColumnWidth(grid, colId, width, parentType, doResize){
-	// don't react to widths <= 0, e.g. for hidden columns
-	if(width <= 0){ return; }
+		_updateResizerPosition: function (e) {
+			// Summary:
+			//      updates position of resizer bar as mouse moves
+			// e: Object
+			//      mousemove event object
 
-	var column = grid.columns[colId],
-		event,
-		rule;
-	
-	if(!column){
-		return;
-	}
-	
-	event = {
-		grid: grid,
-		columnId: colId,
-		width: width,
-		bubbles: true,
-		cancelable: true
-	};
-	
-	if(parentType){
-		event.parentType = parentType;
-	}
-	
-	if(!grid._resizedColumns || listen.emit(grid.headerNode, "dgrid-columnresize", event)){
-		// Update width on column object, then convert value for CSS
-		if(width === "auto"){
-			delete column.width;
-		}else{
-			column.width = width;
-			width += "px";
-		}
-		
-		rule = grid._columnSizes[colId];
-		
-		if(rule){
-			// Modify existing, rather than deleting + adding
-			rule.set("width", width);
-		}else{
-			// Use miscUtil function directly, since we clean these up ourselves anyway
-			rule = miscUtil.addCssRule("#" + miscUtil.escapeCssIdentifier(grid.domNode.id) +
-				" .dgrid-column-" + miscUtil.escapeCssIdentifier(colId, "-"),
-				"width: " + width + ";");
-		}
-
-		// keep a reference for future removal
-		grid._columnSizes[colId] = rule;
-		
-		if(doResize !== false){
-			grid.resize();
-		}
-		
-		return true;
-	}
-}
-
-// Functions for shared resizer node
-
-var resizerNode, // DOM node for resize indicator, reused between instances
-	resizableCount = 0; // Number of ColumnResizer-enabled grid instances
-var resizer = {
-	// This object contains functions for manipulating the shared resizerNode
-	create: function(){
-		resizerNode = put("div.dgrid-column-resizer");
-	},
-	destroy: function(){
-		put(resizerNode, "!");
-		resizerNode = null;
-	},
-	show: function(grid){
-		var pos = geom.position(grid.domNode, true);
-		resizerNode.style.top = pos.y + "px";
-		resizerNode.style.height = pos.h + "px";
-		put(document.body, resizerNode);
-	},
-	move: function(x){
-		resizerNode.style.left = x + "px";
-	},
-	hide: function(){
-		resizerNode.parentNode.removeChild(resizerNode);
-	}
-};
-
-return declare(null, {
-	resizeNode: null,
-	
-	// minWidth: Number
-	//		Minimum column width, in px.
-	minWidth: 40,
-	
-	// adjustLastColumn: Boolean
-	//		If true, adjusts the last column's width to "auto" at times where the
-	//		browser would otherwise stretch all columns to span the grid.
-	adjustLastColumn: true,
-	
-	_resizedColumns: false, // flag indicating if resizer has converted column widths to px
-	
-	buildRendering: function(){
-		this.inherited(arguments);
-		
-		// Create resizerNode when first grid w/ ColumnResizer is created
-		if(!resizableCount++){
-			resizer.create();
-		}
-	},
-	
-	destroy: function(){
-		this.inherited(arguments);
-		
-		// Remove any applied column size styles since we're tracking them directly
-		for(var name in this._columnSizes){
-			this._columnSizes[name].remove();
-		}
-		
-		// If this is the last grid on the page with ColumnResizer, destroy the
-		// shared resizerNode
-		if(!--resizableCount){
-			resizer.destroy();
-		}
-	},
-	
-	resizeColumnWidth: function(colId, width){
-		// Summary:
-		//      calls grid's styleColumn function to add a style for the column
-		// colId: String
-		//      column id
-		// width: Integer
-		//      new width of the column
-		return resizeColumnWidth(this, colId, width);
-	},
-	
-	configStructure: function(){
-		var oldSizes = this._oldColumnSizes = lang.mixin({}, this._columnSizes), // shallow clone
-			k;
-		
-		this._resizedColumns = false;
-		this._columnSizes = {};
-		
-		this.inherited(arguments);
-		
-		// Remove old column styles that are no longer relevant; this is specifically
-		// done *after* calling inherited so that _columnSizes will contain keys
-		// for all columns in the new structure that were assigned widths.
-		for(k in oldSizes){
-			if(!(k in this._columnSizes)){
-				oldSizes[k].remove();
-			}
-		}
-		delete this._oldColumnSizes;
-	},
-	
-	_configColumn: function(column){
-		this.inherited(arguments);
-		
-		var colId = column.id,
-			rule;
-		
-		if("width" in column){
-			// Update or add a style rule for the specified width
-			if((rule = this._oldColumnSizes[colId])){
-				rule.set("width", column.width + "px");
-			}else{
-				rule = miscUtil.addCssRule("#" + miscUtil.escapeCssIdentifier(this.domNode.id) +
-					" .dgrid-column-" + miscUtil.escapeCssIdentifier(colId, "-"),
-					"width: " + column.width + "px;");
-			}
-			this._columnSizes[colId] = rule;
-		}
-	},
-	
-	renderHeader: function(){
-		this.inherited(arguments);
-		
-		var grid = this;
-		
-		var assoc;
-		if(this.columnSets && this.columnSets.length){
-			var csi = this.columnSets.length;
-			while(csi--){
-				assoc = lang.mixin(assoc||{}, subRowAssoc(this.columnSets[csi]));
-			}
-		}else if(this.subRows && this.subRows.length > 1){
-			assoc = subRowAssoc(this.subRows);
-		}
-
-		var colNodes = query(".dgrid-cell", grid.headerNode),
-			i = colNodes.length;
-		while(i--){
-			var colNode = colNodes[i],
-				id = colNode.columnId,
-				col = grid.columns[id],
-				childNodes = colNode.childNodes,
-				resizeHandle;
-
-			if(!col || col.resizable === false){ continue; }
-
-			var headerTextNode = put("div.dgrid-resize-header-container");
-			colNode.contents = headerTextNode;
-
-			// move all the children to the header text node
-			while(childNodes.length > 0){
-				put(headerTextNode, childNodes[0]);
+			if (!this._targetCell) {
+				return; // Release event was already processed
 			}
 
-			resizeHandle = put(colNode, headerTextNode, "div.dgrid-resize-handle.resizeNode-" +
-				miscUtil.escapeCssIdentifier(id, "-"));
-			resizeHandle.columnId = assoc && assoc[id] || id;
-		}
-
-		if(!grid.mouseMoveListen){
-			// establish listeners for initiating, dragging, and finishing resize
-			listen(grid.headerNode,
-				".dgrid-resize-handle:mousedown" +
-					(has("touch") ? ",.dgrid-resize-handle:touchstart" : ""),
-				function(e){
-					grid._resizeMouseDown(e, this);
-					grid.mouseMoveListen.resume();
-					grid.mouseUpListen.resume();
-				}
-			);
-			grid._listeners.push(grid.mouseMoveListen = listen.pausable(document,
-				"mousemove" + (has("touch") ? ",touchmove" : ""),
-				miscUtil.throttleDelayed(function(e){ grid._updateResizerPosition(e); })
-			));
-			grid._listeners.push(grid.mouseUpListen = listen.pausable(document,
-				"mouseup" + (has("touch") ? ",touchend" : ""),
-				function(e){
-					grid._resizeMouseUp(e);
-					grid.mouseMoveListen.pause();
-					grid.mouseUpListen.pause();
-				}
-			));
-			// initially pause the move/up listeners until a drag happens
-			grid.mouseMoveListen.pause();
-			grid.mouseUpListen.pause();
-		}
-	}, // end renderHeader
-
-	_resizeMouseDown: function(e, target){
-		// Summary:
-		//      called when mouse button is pressed on the header
-		// e: Object
-		//      mousedown event object
-		
-		// preventDefault actually seems to be enough to prevent browser selection
-		// in all but IE < 9.  setSelectable works for those.
-		e.preventDefault();
-		dom.setSelectable(this.domNode, false);
-		this._startX = this._getResizeMouseLocation(e); //position of the target
-		
-		this._targetCell = query(".dgrid-column-" + miscUtil.escapeCssIdentifier(target.columnId, "-"),
-			this.headerNode)[0];
-
-		// Show resizerNode after initializing its x position
-		this._updateResizerPosition(e);
-		resizer.show(this);
-	},
-	_resizeMouseUp: function(e){
-		// Summary:
-		//      called when mouse button is released
-		// e: Object
-		//      mouseup event object
-		
-		var columnSizes = this._columnSizes,
-			colNodes, colWidths, gridWidth;
-		
-		if(this.adjustLastColumn){
-			// For some reason, total column width needs to be 1 less than this
-			gridWidth = this.headerNode.clientWidth - 1;
-		}
-		
-		//This is used to set all the column widths to a static size
-		if(!this._resizedColumns){
-			colNodes = query(".dgrid-cell", this.headerNode);
-			
-			if(this.columnSets && this.columnSets.length){
-				colNodes = colNodes.filter(function(node){
-					var idx = node.columnId.split("-");
-					return idx[0] == "0" && !(node.columnId in columnSizes);
-				});
-			}else if(this.subRows && this.subRows.length > 1){
-				colNodes = colNodes.filter(function(node){
-					return node.columnId.charAt(0) == "0" && !(node.columnId in columnSizes);
-				});
+			var mousePos = this._getResizeMouseLocation(e),
+				delta = mousePos - this._startX, //change from where user clicked to where they drag
+				width = this._targetCell.offsetWidth,
+				left = mousePos;
+			if (width + delta < this.minWidth) {
+				left = this._startX - (width - this.minWidth);
 			}
-			
-			// Get a set of sizes before we start mutating, to avoid
-			// weird disproportionate measures if the grid has set
-			// column widths, but no full grid width set
-			colWidths = colNodes.map(function(colNode){
-				return colNode.offsetWidth;
-			});
-			
-			// Set a baseline size for each column based on
-			// its original measure
-			colNodes.forEach(function(colNode, i){
-				resizeColumnWidth(this, colNode.columnId, colWidths[i], null, false);
-			}, this);
-			
-			this._resizedColumns = true;
-		}
-		dom.setSelectable(this.domNode, true);
-		
-		var cell = this._targetCell,
-			delta = this._getResizeMouseLocation(e) - this._startX, //final change in position of resizer
-			newWidth = cell.offsetWidth + delta, //the new width after resize
-			obj = this._getResizedColumnWidths(),//get current total column widths before resize
-			totalWidth = obj.totalWidth,
-			lastCol = obj.lastColId,
-			lastColWidth = query(".dgrid-column-" + miscUtil.escapeCssIdentifier(lastCol, "-"),
-				this.headerNode)[0].offsetWidth;
-		
-		if(newWidth < this.minWidth){
-			//enforce minimum widths
-			newWidth = this.minWidth;
-		}
-		
-		if(resizeColumnWidth(this, cell.columnId, newWidth, e.type)){
-			if(cell.columnId != lastCol && this.adjustLastColumn){
-				if(totalWidth + delta < gridWidth) {
-					//need to set last column's width to auto
-					resizeColumnWidth(this, lastCol, "auto", e.type);
-				}else if(lastColWidth-delta <= this.minWidth) {
-					//change last col width back to px, unless it is the last column itself being resized...
-					resizeColumnWidth(this, lastCol, this.minWidth, e.type);
-				}
+			resizer.move(left);
+		},
+
+		_getResizeMouseLocation: function (e) {
+			//Summary:
+			//      returns position of mouse relative to the left edge
+			// e: event object
+			//      mouse move event object
+			var posX = 0;
+			if (e.pageX) {
+				posX = e.pageX;
 			}
+			else if (e.clientX) {
+				posX = e.clientX + document.body.scrollLeft +
+					document.documentElement.scrollLeft;
+			}
+			return posX;
+		},
+		_getResizedColumnWidths: function () {
+			//Summary:
+			//      returns object containing new column width and column id
+			var totalWidth = 0,
+				colNodes = query(
+					(this.columnSets ? '.dgrid-column-set-cell ' : '') + 'tr:first-child .dgrid-cell',
+					this.headerNode);
+
+			var i = colNodes.length;
+			if (!i) {
+				return {};
+			}
+
+			var lastColId = colNodes[i - 1].columnId;
+
+			while (i--) {
+				totalWidth += colNodes[i].offsetWidth;
+			}
+			return {totalWidth: totalWidth, lastColId: lastColId};
 		}
-		resizer.hide();
-		
-		// Clean up after the resize operation
-		delete this._startX;
-		delete this._targetCell;
-	},
-	
-	_updateResizerPosition: function(e){
-		// Summary:
-		//      updates position of resizer bar as mouse moves
-		// e: Object
-		//      mousemove event object
-
-		if(!this._targetCell){ return; } // Release event was already processed
-		
-		var mousePos = this._getResizeMouseLocation(e),
-			delta = mousePos - this._startX, //change from where user clicked to where they drag
-			width = this._targetCell.offsetWidth,
-			left = mousePos;
-		if(width + delta < this.minWidth){ 
-			left = this._startX - (width - this.minWidth); 
-		}
-		resizer.move(left);
-	},
-
-	_getResizeMouseLocation: function(e){
-		//Summary:
-		//      returns position of mouse relative to the left edge
-		// e: event object
-		//      mouse move event object
-		var posX = 0;
-		if(e.pageX){
-			posX = e.pageX;
-		}else if(e.clientX){
-			posX = e.clientX + document.body.scrollLeft +
-				document.documentElement.scrollLeft;
-		}
-		return posX;
-	},
-	_getResizedColumnWidths: function (){
-		//Summary:
-		//      returns object containing new column width and column id
-		var totalWidth = 0,
-			colNodes = query(
-				(this.columnSets ? ".dgrid-column-set-cell " : "") + "tr:first-child .dgrid-cell",
-				this.headerNode);
-
-		var i = colNodes.length;
-		if(!i){ return {}; }
-
-		var lastColId = colNodes[i-1].columnId;
-
-		while(i--){
-			totalWidth += colNodes[i].offsetWidth;
-		}
-		return {totalWidth: totalWidth, lastColId: lastColId};
-	}
-});
+	});
 });
 
 },
 'dgrid/extensions/ColumnHider':function(){
-define(["dojo/_base/declare", "dojo/has", "dojo/on", "../util/misc", "put-selector/put", "dojo/i18n!./nls/columnHider", "xstyle/css!../css/extensions/ColumnHider.css"],
-function(declare, has, listen, miscUtil, put, i18n){
+define([
+	'dojo/_base/declare',
+	'dojo/has',
+	'dojo/on',
+	'../util/misc',
+	'put-selector/put',
+	'dojo/i18n!./nls/columnHider',
+	'xstyle/css!../css/extensions/ColumnHider.css'
+], function (declare, has, listen, miscUtil, put, i18n) {
 /*
  *	Column Hider plugin for dgrid
  *	Originally contributed by TRT 2011-09-28
@@ -30700,62 +30568,58 @@ function(declare, has, listen, miscUtil, put, i18n){
  *		definition as a template to write your own plugin.
  *
  */
-	
+
 	var activeGrid, // references grid for which the menu is currently open
-		bodyListener, // references pausable event handler for body mousedown
-		// Need to handle old IE specially for checkbox listener and for attribute.
-		hasIE = has("ie"),
-		hasIEQuirks = hasIE && has("quirks"),
-		forAttr = hasIE < 8 || hasIEQuirks ? "htmlFor" : "for";
-	
-	function getColumnIdFromCheckbox(cb, grid){
+		bodyListener; // references pausable event handler for body mousedown
+
+	function getColumnIdFromCheckbox(cb, grid) {
 		// Given one of the checkboxes from the hider menu,
 		// return the id of the corresponding column.
 		// (e.g. gridIDhere-hider-menu-check-colIDhere -> colIDhere)
 		return cb.id.substr(grid.id.length + 18);
 	}
-	
+
 	return declare(null, {
 		// hiderMenuNode: DOMNode
 		//		The node for the menu to show/hide columns.
 		hiderMenuNode: null,
-		
+
 		// hiderToggleNode: DOMNode
 		//		The node for the toggler to open the menu.
 		hiderToggleNode: null,
-		
+
 		// i18nColumnHider: Object
 		//		This object contains all of the internationalized strings for
 		//		the ColumnHider extension as key/value pairs.
 		i18nColumnHider: i18n,
-		
+
 		// _hiderMenuOpened: Boolean
 		//		Records the current open/closed state of the menu.
 		_hiderMenuOpened: false,
-		
+
 		// _columnHiderRules: Object
 		//		Hash containing handles returned from addCssRule.
 		_columnHiderRules: null,
-		
+
 		// _columnHiderCheckboxes: Object
 		//		Hash containing checkboxes generated for menu items.
 		_columnHiderCheckboxes: null,
-		
-		_renderHiderMenuEntries: function(){
+
+		_renderHiderMenuEntries: function () {
 			// summary:
 			//		Iterates over subRows for the sake of adding items to the
 			//		column hider menu.
-			
+
 			var subRows = this.subRows,
 				first = true,
 				srLength, cLength, sr, c;
-			
+
 			delete this._columnHiderFirstCheckbox;
-			
-			for(sr = 0, srLength = subRows.length; sr < srLength; sr++){
-				for(c = 0, cLength = subRows[sr].length; c < cLength; c++){
+
+			for (sr = 0, srLength = subRows.length; sr < srLength; sr++) {
+				for (c = 0, cLength = subRows[sr].length; c < cLength; c++) {
 					this._renderHiderMenuEntry(subRows[sr][c]);
-					if(first){
+					if (first) {
 						first = false;
 						this._columnHiderFirstCheckbox =
 							this._columnHiderCheckboxes[subRows[sr][c].id];
@@ -30763,153 +30627,157 @@ function(declare, has, listen, miscUtil, put, i18n){
 				}
 			}
 		},
-		
-		_renderHiderMenuEntry: function(col){
+
+		_renderHiderMenuEntry: function (col) {
 			var id = col.id,
-				replacedId = miscUtil.escapeCssIdentifier(id, "-"),
+				replacedId = miscUtil.escapeCssIdentifier(id, '-'),
 				div,
 				checkId,
 				checkbox,
 				label;
-			
-			if(col.hidden){
+
+			if (col.hidden) {
 				// Hide the column (reset first to avoid short-circuiting logic)
 				col.hidden = false;
 				this._hideColumn(id);
 				col.hidden = true;
 			}
-			
+
 			// Allow cols to opt out of the hider (e.g. for selector column).
-			if(col.unhidable){ return; }
-			
+			if (col.unhidable) {
+				return;
+			}
+
 			// Create the checkbox and label for each column selector.
-			div = put("div.dgrid-hider-menu-row");
-			checkId = this.domNode.id + "-hider-menu-check-" + replacedId;
-			
+			div = put('div.dgrid-hider-menu-row');
+			checkId = this.domNode.id + '-hider-menu-check-' + replacedId;
+
 			// put-selector can't handle invalid selector characters, and the
 			// ID could have some, so add it directly
 			checkbox = this._columnHiderCheckboxes[id] =
-				put(div, "input.dgrid-hider-menu-check.hider-menu-check-" + replacedId + "[type=checkbox]");
+				put(div, 'input.dgrid-hider-menu-check.hider-menu-check-' + replacedId + '[type=checkbox]');
 			checkbox.id = checkId;
-			
-			label = put(div, "label.dgrid-hider-menu-label.hider-menu-label-" + replacedId +
-				"[" + forAttr + "=" + checkId + "]",
-				col.label || col.field || "");
-			
+
+			label = put(div, 'label.dgrid-hider-menu-label.hider-menu-label-' + replacedId +
+				'[for=' + checkId + ']',
+				col.label || col.field || '');
+
 			put(this.hiderMenuNode, div);
-			
-			if(!col.hidden){
+
+			if (!col.hidden) {
 				// Hidden state is false; checkbox should be initially checked.
 				// (Need to do this after adding to DOM to avoid IE6 clobbering it.)
 				checkbox.checked = true;
 			}
 		},
-		
-		renderHeader: function(){
+
+		renderHeader: function () {
 			var grid = this,
 				hiderMenuNode = this.hiderMenuNode,
 				hiderToggleNode = this.hiderToggleNode,
 				id;
-			
-			function stopPropagation(event){
+
+			function stopPropagation(event) {
 				event.stopPropagation();
 			}
-			
+
 			this.inherited(arguments);
-			
-			if(!hiderMenuNode){ // first run
+
+			if (!hiderMenuNode) {
+				// First run
 				// Assume that if this plugin is used, then columns are hidable.
 				// Create the toggle node.
 				hiderToggleNode = this.hiderToggleNode =
-					put(this.domNode, "button.ui-icon.dgrid-hider-toggle[type=button][aria-label=" +
-						this.i18nColumnHider.popupTriggerLabel + "]");
-				
-				this._listeners.push(listen(hiderToggleNode, "click", function(e){
+					put(this.domNode, 'button.ui-icon.dgrid-hider-toggle[type=button][aria-label=' +
+						this.i18nColumnHider.popupTriggerLabel + ']');
+
+				this._listeners.push(listen(hiderToggleNode, 'click', function (e) {
 					grid._toggleColumnHiderMenu(e);
 				}));
-	
+
 				// Create the column list, with checkboxes.
 				hiderMenuNode = this.hiderMenuNode =
-					put("div.dgrid-hider-menu[role=dialog][aria-label=" +
-						this.i18nColumnHider.popupLabel + "]");
-				hiderMenuNode.id = this.id + "-hider-menu";
+					put('div.dgrid-hider-menu[role=dialog][aria-label=' +
+						this.i18nColumnHider.popupLabel + ']');
+				hiderMenuNode.id = this.id + '-hider-menu';
 
-				this._listeners.push(listen(hiderMenuNode, "keyup", function (e) {
+				this._listeners.push(listen(hiderMenuNode, 'keyup', function (e) {
 					var charOrCode = e.charCode || e.keyCode;
-					if(charOrCode === /*ESCAPE*/ 27){
+					if (charOrCode === /*ESCAPE*/ 27) {
 						grid._toggleColumnHiderMenu(e);
 						hiderToggleNode.focus();
 					}
 				}));
-				
+
 				// Make sure our menu is initially hidden, then attach to the document.
-				hiderMenuNode.style.display = "none";
+				hiderMenuNode.style.display = 'none';
 				put(this.domNode, hiderMenuNode);
-				
+
 				// Hook up delegated listener for modifications to checkboxes.
 				this._listeners.push(listen(hiderMenuNode,
-						".dgrid-hider-menu-check:" + (hasIE < 9 || hasIEQuirks ? "click" : "change"),
-					function(e){
+						'.dgrid-hider-menu-check:' + (has('ie') < 9 ? 'click' : 'change'),
+					function (e) {
 						grid._updateColumnHiddenState(
 							getColumnIdFromCheckbox(e.target, grid), !e.target.checked);
 					}
 				));
-				
+
 				// Stop click events from propagating from menu or trigger nodes,
 				// so that we can simply track body clicks for hide without
 				// having to drill-up to check.
 				this._listeners.push(
-					listen(hiderMenuNode, "mousedown", stopPropagation),
-					listen(hiderToggleNode, "mousedown", stopPropagation)
+					listen(hiderMenuNode, 'mousedown', stopPropagation),
+					listen(hiderToggleNode, 'mousedown', stopPropagation)
 				);
-				
+
 				// Hook up top-level mousedown listener if it hasn't been yet.
-				if(!bodyListener){
-					bodyListener = listen.pausable(document, "mousedown", function(e){
+				if (!bodyListener) {
+					bodyListener = listen.pausable(document, 'mousedown', function (e) {
 						// If an event reaches this listener, the menu is open,
 						// but a click occurred outside, so close the dropdown.
 						activeGrid && activeGrid._toggleColumnHiderMenu(e);
 					});
 					bodyListener.pause(); // pause initially; will resume when menu opens
 				}
-			}else{ // subsequent run
+			}
+			else { // subsequent run
 				// Remove active rules, and clear out the menu (to be repopulated).
-				for(id in this._columnHiderRules){
+				for (id in this._columnHiderRules) {
 					this._columnHiderRules[id].remove();
 				}
-				hiderMenuNode.innerHTML = "";
+				hiderMenuNode.innerHTML = '';
 			}
-			
+
 			this._columnHiderCheckboxes = {};
 			this._columnHiderRules = {};
 
 			// Populate menu with checkboxes/labels based on current columns.
 			this._renderHiderMenuEntries();
 		},
-		
-		destroy: function(){
+
+		destroy: function () {
 			this.inherited(arguments);
 			// Remove any remaining rules applied to hidden columns.
-			for(var id in this._columnHiderRules){
+			for (var id in this._columnHiderRules) {
 				this._columnHiderRules[id].remove();
 			}
 		},
-		
-		left: function(cell, steps){
+
+		left: function (cell, steps) {
 			return this.right(cell, -steps);
 		},
-		
-		right: function(cell, steps){
-			if(!cell.element){
+
+		right: function (cell, steps) {
+			if (!cell.element) {
 				cell = this.cell(cell);
 			}
 			var nextCell = this.inherited(arguments),
 				prevCell = cell;
-			
+
 			// Skip over hidden cells
-			while(nextCell.column.hidden){
+			while (nextCell.column.hidden) {
 				nextCell = this.inherited(arguments, [nextCell, steps > 0 ? 1 : -1]);
-				if(prevCell.element === nextCell.element){
+				if (prevCell.element === nextCell.element) {
 					// No further visible cell found - return original
 					return cell;
 				}
@@ -30917,27 +30785,28 @@ function(declare, has, listen, miscUtil, put, i18n){
 			}
 			return nextCell;
 		},
-		
-		isColumnHidden: function(id){
+
+		isColumnHidden: function (id) {
 			// summary:
 			//		Convenience method to determine current hidden state of a column
 			return !!this._columnHiderRules[id];
 		},
-		
-		_toggleColumnHiderMenu: function(){
+
+		_toggleColumnHiderMenu: function () {
 			var hidden = this._hiderMenuOpened, // reflects hidden state after toggle
 				hiderMenuNode = this.hiderMenuNode,
 				domNode = this.domNode,
 				firstCheckbox;
 
 			// Show or hide the hider menu
-			hiderMenuNode.style.display = (hidden ? "none" : "");
+			hiderMenuNode.style.display = (hidden ? 'none' : '');
 
 			// Adjust height of menu
 			if (hidden) {
 				// Clear the set size
-				hiderMenuNode.style.height = "";
-			} else {
+				hiderMenuNode.style.height = '';
+			}
+			else {
 				// Adjust height of the menu if necessary
 				// Why 12? Based on menu default paddings and border, we need
 				// to adjust to be 12 pixels shorter. Given the infrequency of
@@ -30945,14 +30814,14 @@ function(declare, has, listen, miscUtil, put, i18n){
 				// static value of 12 for now, to avoid pulling in any sort of
 				// computed styles.
 				if (hiderMenuNode.offsetHeight > domNode.offsetHeight - 12) {
-					hiderMenuNode.style.height = (domNode.offsetHeight - 12) + "px";
+					hiderMenuNode.style.height = (domNode.offsetHeight - 12) + 'px';
 				}
 				// focus on the first checkbox
 				(firstCheckbox = this._columnHiderFirstCheckbox) && firstCheckbox.focus();
 			}
 
 			// Pause or resume the listener for clicks outside the menu
-			bodyListener[hidden ? "pause" : "resume"]();
+			bodyListener[hidden ? 'pause' : 'resume']();
 
 			// Update activeGrid appropriately
 			activeGrid = hidden ? null : this;
@@ -30960,14 +30829,14 @@ function(declare, has, listen, miscUtil, put, i18n){
 			// Toggle the instance property
 			this._hiderMenuOpened = !hidden;
 		},
-		
-		_hideColumn: function(id){
+
+		_hideColumn: function (id) {
 			// summary:
 			//		Hides the column indicated by the given id.
-			
+
 			// Use miscUtil function directly, since we clean these up ourselves anyway
 			var grid = this,
-				selectorPrefix = "#" + miscUtil.escapeCssIdentifier(this.domNode.id) + " .dgrid-column-",
+				selectorPrefix = '#' + miscUtil.escapeCssIdentifier(this.domNode.id) + ' .dgrid-column-',
 				tableRule; // used in IE8 code path
 
 			if (this._columnHiderRules[id]) {
@@ -30975,43 +30844,45 @@ function(declare, has, listen, miscUtil, put, i18n){
 			}
 
 			this._columnHiderRules[id] =
-				miscUtil.addCssRule(selectorPrefix + miscUtil.escapeCssIdentifier(id, "-"),
-					"display: none;");
+				miscUtil.addCssRule(selectorPrefix + miscUtil.escapeCssIdentifier(id, '-'),
+					'display: none;');
 
-			if((has("ie") === 8 || has("ie") === 10) && !has("quirks")){
-				tableRule = miscUtil.addCssRule(".dgrid-row-table", "display: inline-table;");
+			if (has('ie') === 8 || has('ie') === 10) {
+				// Work around IE8 display issue and IE10 issue where
+				// header/body cells get out of sync when ColumnResizer is also used
+				tableRule = miscUtil.addCssRule('.dgrid-row-table', 'display: inline-table;');
 
-				window.setTimeout(function(){
+				window.setTimeout(function () {
 					tableRule.remove();
 					grid.resize();
 				}, 0);
 			}
 		},
-		
-		_showColumn: function(id){
+
+		_showColumn: function (id) {
 			// summary:
 			//		Shows the column indicated by the given id
 			//		(by removing the rule responsible for hiding it).
-			
-			if(this._columnHiderRules[id]){
+
+			if (this._columnHiderRules[id]) {
 				this._columnHiderRules[id].remove();
 				delete this._columnHiderRules[id];
 			}
 		},
-		
-		_updateColumnHiddenState: function(id, hidden){
+
+		_updateColumnHiddenState: function (id, hidden) {
 			// summary:
 			//		Performs internal work for toggleColumnHiddenState; see the public
 			//		method for more information.
-			
+
 			this[hidden ? '_hideColumn' : '_showColumn'](id);
-			
+
 			// Update hidden state in actual column definition,
 			// in case columns are re-rendered.
 			this.columns[id].hidden = hidden;
-			
+
 			// Emit event to notify of column state change.
-			listen.emit(this.domNode, "dgrid-columnstatechange", {
+			listen.emit(this.domNode, 'dgrid-columnstatechange', {
 				grid: this,
 				column: this.columns[id],
 				hidden: hidden,
@@ -31021,8 +30892,8 @@ function(declare, has, listen, miscUtil, put, i18n){
 			// Adjust the size of the header.
 			this.resize();
 		},
-		
-		toggleColumnHiddenState: function(id, hidden){
+
+		toggleColumnHiddenState: function (id, hidden) {
 			// summary:
 			//		Shows or hides the column with the given id.
 			// id: String
@@ -31030,10 +30901,12 @@ function(declare, has, listen, miscUtil, put, i18n){
 			// hide: Boolean?
 			//		If specified, explicitly sets the hidden state of the specified
 			//		column.  If unspecified, toggles the column from the current state.
-			
-			if(typeof hidden === "undefined"){ hidden = !this._columnHiderRules[id]; }
+
+			if (typeof hidden === 'undefined') {
+				hidden = !this._columnHiderRules[id];
+			}
 			this._updateColumnHiddenState(id, hidden);
-			
+
 			// Since this can be called directly, re-sync the appropriate checkbox.
 			this._columnHiderCheckboxes[id].checked = !hidden;
 		}
@@ -31043,143 +30916,146 @@ function(declare, has, listen, miscUtil, put, i18n){
 },
 'dgrid/extensions/DnD':function(){
 define([
-	"dojo/_base/declare",
-	"dojo/_base/lang",
-	"dojo/_base/array",
-	"dojo/_base/Deferred",
-	"dojo/aspect",
-	"dojo/on",
-	"dojo/topic",
-	"dojo/has",
-	"dojo/dnd/Source",
-	"dojo/dnd/Manager",
-	"dojo/_base/NodeList",
-	"put-selector/put",
-	"../Selection",
-	"dojo/has!touch?../util/touch",
-	"dojo/has!touch?./_DnD-touch-autoscroll",
-	"xstyle/css!dojo/resources/dnd.css"
-], function(declare, lang, arrayUtil, Deferred, aspect, on, topic, has, DnDSource, DnDManager, NodeList, put, Selection, touchUtil){
+	'dojo/_base/declare',
+	'dojo/_base/lang',
+	'dojo/_base/array',
+	'dojo/aspect',
+	'dojo/on',
+	'dojo/topic',
+	'dojo/has',
+	'dojo/when',
+	'dojo/dnd/Source',
+	'dojo/dnd/Manager',
+	'dojo/_base/NodeList',
+	'put-selector/put',
+	'../Selection',
+	'dojo/has!touch?../util/touch',
+	'dojo/has!touch?./_DnD-touch-autoscroll',
+	'xstyle/css!dojo/resources/dnd.css'
+], function (declare, lang, arrayUtil, aspect, on, topic, has, when, DnDSource,
+		DnDManager, NodeList, put, Selection, touchUtil) {
 	// Requirements
 	// * requires a store (sounds obvious, but not all Lists/Grids have stores...)
 	// * must support options.before in put calls
 	//   (if undefined, put at end)
 	// * should support copy
 	//   (copy should also support options.before as above)
-	
+
 	// TODOs
 	// * consider sending items rather than nodes to onDropExternal/Internal
 	// * consider emitting store errors via OnDemandList._trackError
-	
+
 	var GridDnDSource = declare(DnDSource, {
 		grid: null,
-		
-		getObject: function(node){
+
+		getObject: function (node) {
 			// summary:
 			//		getObject is a method which should be defined on any source intending
 			//		on interfacing with dgrid DnD.
-			
+
 			var grid = this.grid;
 			// Extract item id from row node id (gridID-row-*).
-			return grid.store.get(node.id.slice(grid.id.length + 5));
+			return grid.collection.get(node.id.slice(grid.id.length + 5));
 		},
-		_legalMouseDown: function(evt){
+		_legalMouseDown: function (evt) {
 			// Fix _legalMouseDown to only allow starting drag from an item
 			// (not from bodyNode outside contentNode).
 			var legal = this.inherited(arguments);
-			return legal && evt.target != this.grid.bodyNode;
+			return legal && evt.target !== this.grid.bodyNode;
 		},
 
 		// DnD method overrides
-		onDrop: function(sourceSource, nodes, copy){
+		onDrop: function (sourceSource, nodes, copy) {
 			var targetSource = this,
 				targetRow = this._targetAnchor = this.targetAnchor, // save for Internal
 				grid = this.grid,
-				store = grid.store;
-			
-			if(!this.before && targetRow){
+				store = grid.collection;
+
+			if (!this.before && targetRow) {
 				// target before next node if dropped within bottom half of this node
 				// (unless there's no node to target at all)
 				targetRow = targetRow.nextSibling;
 			}
 			targetRow = targetRow && grid.row(targetRow);
-			
-			Deferred.when(targetRow && store.get(targetRow.id), function(target){
+
+			when(targetRow && store.get(targetRow.id), function (target) {
 				// Note: if dropping after the last row, or into an empty grid,
 				// target will be undefined.  Thus, it is important for store to place
 				// item last in order if options.before is undefined.
-				
+
 				// Delegate to onDropInternal or onDropExternal for rest of logic.
 				// These are passed the target item as an additional argument.
-				if(targetSource != sourceSource){
+				if (targetSource !== sourceSource) {
 					targetSource.onDropExternal(sourceSource, nodes, copy, target);
-				}else{
+				}
+				else {
 					targetSource.onDropInternal(nodes, copy, target);
 				}
 			});
 		},
-		onDropInternal: function(nodes, copy, targetItem){
+		onDropInternal: function (nodes, copy, targetItem) {
 			var grid = this.grid,
-				store = grid.store,
+				store = grid.collection,
 				targetSource = this,
 				anchor = targetSource._targetAnchor,
 				targetRow,
 				nodeRow;
-			
-			if(anchor){ // (falsy if drop occurred in empty space after rows)
+
+			if (anchor) { // (falsy if drop occurred in empty space after rows)
 				targetRow = this.before ? anchor.previousSibling : anchor.nextSibling;
 			}
-			
+
 			// Don't bother continuing if the drop is really not moving anything.
 			// (Don't need to worry about edge first/last cases since dropping
 			// directly on self doesn't fire onDrop, but we do have to worry about
 			// dropping last node into empty space beyond rendered rows.)
 			nodeRow = grid.row(nodes[0]);
-			if(!copy && (targetRow === nodes[0] ||
-					(!targetItem && nodeRow && grid.down(nodeRow).element == nodes[0]))){
+			if (!copy && (targetRow === nodes[0] ||
+					(!targetItem && nodeRow && grid.down(nodeRow).element === nodes[0]))) {
 				return;
 			}
-			
-			nodes.forEach(function(node){
-				Deferred.when(targetSource.getObject(node), function(object){
+
+			nodes.forEach(function (node) {
+				when(targetSource.getObject(node), function (object) {
 					var id = store.getIdentity(object);
-					
+
 					// For copy DnD operations, copy object, if supported by store;
 					// otherwise settle for put anyway.
 					// (put will relocate an existing item with the same id, i.e. move).
-					store[copy && store.copy ? "copy" : "put"](object, {
-						before: targetItem
+					store[copy && store.copy ? 'copy' : 'put'](object, {
+						beforeId: targetItem ? store.getIdentity(targetItem) : null
 					});
-					
+
 					// Self-drops won't cause the dgrid-select handler to re-fire,
 					// so update the cached node manually
-					if(targetSource._selectedNodes[id]){
+					if (targetSource._selectedNodes[id]) {
 						targetSource._selectedNodes[id] = grid.row(id).element;
 					}
 				});
 			});
 		},
-		onDropExternal: function(sourceSource, nodes, copy, targetItem){
+		onDropExternal: function (sourceSource, nodes, copy, targetItem) {
 			// Note: this default implementation expects that two grids do not
 			// share the same store.  There may be more ideal implementations in the
 			// case of two grids using the same store (perhaps differentiated by
 			// query), dragging to each other.
-			var store = this.grid.store,
+			var store = this.grid.collection,
 				sourceGrid = sourceSource.grid;
-			
+
 			// TODO: bail out if sourceSource.getObject isn't defined?
-			nodes.forEach(function(node, i){
-				Deferred.when(sourceSource.getObject(node), function(object){
-					if(!copy){
-						if(sourceGrid){
+			nodes.forEach(function (node, i) {
+				when(sourceSource.getObject(node), function (object) {
+					if (!copy) {
+						if (sourceGrid) {
 							// Remove original in the case of inter-grid move.
 							// (Also ensure dnd source is cleaned up properly)
-							Deferred.when(sourceGrid.store.getIdentity(object), function(id){
+							when(sourceGrid.collection.getIdentity(object), function (id) {
 								!i && sourceSource.selectNone(); // deselect all, one time
 								sourceSource.delItem(node.id);
-								sourceGrid.store.remove(id);
+								sourceGrid.collection.remove(id);
 							});
-						}else{
+						}
+						else {
 							sourceSource.deleteSelectedNodes();
 						}
 					}
@@ -31188,62 +31064,65 @@ define([
 					// Note that we use store.copy if available even for non-copy dnd:
 					// since this coming from another dnd source, always behave as if
 					// it is a new store item if possible, rather than replacing existing.
-					store[store.copy ? "copy" : "put"](object, {
-						before: targetItem
+					store[store.copy ? 'copy' : 'put'](object, {
+						beforeId: targetItem ? store.getIdentity(targetItem) : null
 					});
 				});
 			});
 		},
-		
-		onDndStart: function(source, nodes, copy){
+
+		onDndStart: function (source) {
 			// Listen for start events to apply style change to avatar.
-			
+
 			this.inherited(arguments); // DnDSource.prototype.onDndStart.apply(this, arguments);
-			if(source == this){
+			if (source === this) {
 				// If TouchScroll is in use, cancel any pending scroll operation.
-				if(this.grid.cancelTouchScroll){ this.grid.cancelTouchScroll(); }
-				
+				if (this.grid.cancelTouchScroll) {
+					this.grid.cancelTouchScroll();
+				}
+
 				// Set avatar width to half the grid's width.
 				// Kind of a naive default, but prevents ridiculously wide avatars.
 				DnDManager.manager().avatar.node.style.width =
-					this.grid.domNode.offsetWidth / 2 + "px";
+					this.grid.domNode.offsetWidth / 2 + 'px';
 			}
 		},
-		
-		onMouseDown: function(evt){
+
+		onMouseDown: function (evt) {
 			// Cancel the drag operation on presence of more than one contact point.
 			// (This check will evaluate to false under non-touch circumstances.)
-			if(has("touch") && this.isDragging &&
-					touchUtil.countCurrentTouches(evt, this.grid.touchNode) > 1){
-				topic.publish("/dnd/cancel");
+			if (has('touch') && this.isDragging &&
+					touchUtil.countCurrentTouches(evt, this.grid.touchNode) > 1) {
+				topic.publish('/dnd/cancel');
 				DnDManager.manager().stopDrag();
-			}else{
+			}
+			else {
 				this.inherited(arguments);
 			}
 		},
-		
-		onMouseMove: function(evt){
+
+		onMouseMove: function (evt) {
 			// If we're handling touchmove, only respond to single-contact events.
-			if(!has("touch") || touchUtil.countCurrentTouches(evt, this.grid.touchNode) <= 1){
+			if (!has('touch') || touchUtil.countCurrentTouches(evt, this.grid.touchNode) <= 1) {
 				this.inherited(arguments);
 			}
 		},
-		
-		checkAcceptance: function(source, nodes){
+
+		checkAcceptance: function (source) {
 			// Augment checkAcceptance to block drops from sources without getObject.
 			return source.getObject &&
 				DnDSource.prototype.checkAcceptance.apply(this, arguments);
 		},
-		getSelectedNodes: function(){
+		getSelectedNodes: function () {
 			// If dgrid's Selection mixin is in use, synchronize with it, using a
 			// map of node references (updated on dgrid-[de]select events).
-			
-			if(!this.grid.selection){
+
+			if (!this.grid.selection) {
 				return this.inherited(arguments);
 			}
 			var t = new NodeList(),
 				id;
-			for(id in this.grid.selection){
+			for (id in this.grid.selection) {
 				t.push(this._selectedNodes[id]);
 			}
 			return t;	// NodeList
@@ -31252,7 +31131,7 @@ define([
 		// onDrop* implementations (checking whether store.copy is available);
 		// not doing that just yet until we're sure about default impl.
 	});
-	
+
 	// Mix in Selection for more resilient dnd handling, particularly when part
 	// of the selection is scrolled out of view and unrendered (which we
 	// handle below).
@@ -31260,28 +31139,29 @@ define([
 		// dndSourceType: String
 		//		Specifies the type which will be set for DnD items in the grid,
 		//		as well as what will be accepted by it by default.
-		dndSourceType: "dgrid-row",
-		
+		dndSourceType: 'dgrid-row',
+
 		// dndParams: Object
 		//		Object containing params to be passed to the DnD Source constructor.
 		dndParams: null,
-		
+
 		// dndConstructor: Function
 		//		Constructor from which to instantiate the DnD Source.
 		//		Defaults to the GridSource constructor defined/exposed by this module.
 		dndConstructor: GridDnDSource,
-		
-		postMixInProperties: function(){
+
+		postMixInProperties: function () {
 			this.inherited(arguments);
 			// ensure dndParams is initialized
 			this.dndParams = lang.mixin({ accept: [this.dndSourceType] }, this.dndParams);
 		},
-		
-		postCreate: function(){
+
+		postCreate: function () {
 			this.inherited(arguments);
-			
+
 			// Make the grid's content a DnD source/target.
-			this.dndSource = new (this.dndConstructor || GridDnDSource)(
+			var Source = this.dndConstructor || GridDnDSource;
+			this.dndSource = new Source(
 				this.bodyNode,
 				lang.mixin(this.dndParams, {
 					// add cross-reference to grid for potential use in inter-grid drop logic
@@ -31289,56 +31169,56 @@ define([
 					dropParent: this.contentNode
 				})
 			);
-			
+
 			// Set up select/deselect handlers to maintain references, in case selected
 			// rows are scrolled out of view and unrendered, but then dragged.
 			var selectedNodes = this.dndSource._selectedNodes = {};
-			
-			function selectRow(row){
+
+			function selectRow(row) {
 				selectedNodes[row.id] = row.element;
 			}
-			function deselectRow(row){
+			function deselectRow(row) {
 				delete selectedNodes[row.id];
 				// Re-sync dojo/dnd UI classes based on deselection
 				// (unfortunately there is no good programmatic hook for this)
 				put(row.element, '!dojoDndItemSelected!dojoDndItemAnchor');
 			}
-			
-			this.on("dgrid-select", function(event){
+
+			this.on('dgrid-select', function (event) {
 				arrayUtil.forEach(event.rows, selectRow);
 			});
-			this.on("dgrid-deselect", function(event){
+			this.on('dgrid-deselect', function (event) {
 				arrayUtil.forEach(event.rows, deselectRow);
 			});
-			
-			aspect.after(this, "destroy", function(){
+
+			aspect.after(this, 'destroy', function () {
 				delete this.dndSource._selectedNodes;
 				selectedNodes = null;
 				this.dndSource.destroy();
 			}, true);
 		},
-		
-		insertRow: function(object){
+
+		insertRow: function (object) {
 			// override to add dojoDndItem class to make the rows draggable
 			var row = this.inherited(arguments),
-				type = typeof this.getObjectDndType == "function" ?
+				type = typeof this.getObjectDndType === 'function' ?
 					this.getObjectDndType(object) : [this.dndSourceType];
-			
-			put(row, ".dojoDndItem");
+
+			put(row, '.dojoDndItem');
 			this.dndSource.setItem(row.id, {
 				data: object,
 				type: type instanceof Array ? type : [type]
 			});
 			return row;
 		},
-		
+
 		removeRow: function (rowElement) {
 			this.dndSource.delItem(this.row(rowElement));
 			this.inherited(arguments);
 		}
 	});
 	DnD.GridSource = GridDnDSource;
-	
+
 	return DnD;
 });
 
@@ -31611,49 +31491,57 @@ function(
 
 },
 'dgrid/extensions/Pagination':function(){
-define(["../_StoreMixin", "dojo/_base/declare", "dojo/_base/array", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/query", "dojo/string", "dojo/has", "put-selector/put", "../util/misc", "dojo/i18n!./nls/pagination",
-	"dojo/_base/sniff", "xstyle/css!../css/extensions/Pagination.css"],
-function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has, put, miscUtil, i18n){
-	function cleanupContent(grid){
+define([
+	'../_StoreMixin',
+	'dojo/_base/declare',
+	'dojo/_base/array',
+	'dojo/_base/lang',
+	'dojo/on',
+	'dojo/query',
+	'dojo/string',
+	'dojo/has',
+	'dojo/when',
+	'put-selector/put',
+	'../util/misc',
+	'dojo/i18n!./nls/pagination',
+	'dojo/_base/sniff',
+	'xstyle/css!../css/extensions/Pagination.css'
+], function (_StoreMixin, declare, arrayUtil, lang, on, query, string, has, when, put, miscUtil, i18n) {
+	function cleanupContent(grid) {
 		// Remove any currently-rendered rows, or noDataMessage
-		if(grid.noDataNode){
-			put(grid.noDataNode, "!");
+		if (grid.noDataNode) {
+			put(grid.noDataNode, '!');
 			delete grid.noDataNode;
-		}else{
+		}
+		else {
 			grid.cleanup();
 		}
-		grid.contentNode.innerHTML = "";
+		grid.contentNode.innerHTML = '';
 	}
-	function cleanupLoading(grid){
-		if(grid.loadingNode){
-			put(grid.loadingNode, "!");
+	function cleanupLoading(grid) {
+		if (grid.loadingNode) {
+			put(grid.loadingNode, '!');
 			delete grid.loadingNode;
-		}else if(grid._oldPageNodes){
+		}
+		else if (grid._oldPageNodes) {
 			// If cleaning up after a load w/ showLoadingMessage: false,
 			// be careful to only clean up rows from the old page, not the new one
-			for(var id in grid._oldPageNodes){
+			for (var id in grid._oldPageNodes) {
 				grid.removeRow(grid._oldPageNodes[id]);
 			}
 			delete grid._oldPageNodes;
-			// Also remove the observer from the previous page, if there is one
-			if(grid._oldPageObserver){
-				grid._oldPageObserver.cancel();
-				grid._numObservers--;
-				delete grid._oldPageObserver;
-			}
 		}
 		delete grid._isLoading;
 	}
-	
+
 	return declare(_StoreMixin, {
 		// summary:
 		//		An extension for adding discrete pagination to a List or Grid.
-		
+
 		// rowsPerPage: Number
 		//		Number of rows (items) to show on a given page.
 		rowsPerPage: 10,
-		
+
 		// pagingTextBox: Boolean
 		//		Indicates whether or not to show a textbox for paging.
 		pagingTextBox: false,
@@ -31663,7 +31551,7 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 		// firstLastArrows: Boolean
 		//		Indicates whether or not to show the first and last arrow links.
 		firstLastArrows: false,
-		
+
 		// pagingLinks: Number
 		//		The number of page links to show on each side of the current page
 		//		Set to 0 (or false) to disable page links.
@@ -31672,197 +31560,201 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 		//		This provides options for different page sizes in a drop-down.
 		//		If it is empty (default), no page size drop-down will be displayed.
 		pageSizeOptions: null,
-		
+
 		// showLoadingMessage: Boolean
 		//		If true, clears previous data and displays loading node when requesting
 		//		another page; if false, leaves previous data in place until new data
 		//		arrives, then replaces it immediately.
 		showLoadingMessage: true,
-		
+
 		// i18nPagination: Object
 		//		This object contains all of the internationalized strings as
 		//		key/value pairs.
 		i18nPagination: i18n,
-		
+
 		showFooter: true,
 		_currentPage: 1,
-		_total: 0,
-		
-		buildRendering: function(){
+
+		buildRendering: function () {
 			this.inherited(arguments);
-			
+
 			// add pagination to footer
 			var grid = this,
 				paginationNode = this.paginationNode =
-					put(this.footerNode, "div.dgrid-pagination"),
+					put(this.footerNode, 'div.dgrid-pagination'),
 				statusNode = this.paginationStatusNode =
-					put(paginationNode, "div.dgrid-status"),
+					put(paginationNode, 'div.dgrid-status'),
 				i18n = this.i18nPagination,
 				navigationNode,
-				node,
-				i;
-			
+				node;
+
 			statusNode.tabIndex = 0;
-			
+
 			// Initialize UI based on pageSizeOptions and rowsPerPage
 			this._updatePaginationSizeSelect();
 			this._updateRowsPerPageOption();
-			
+
 			// initialize some content into paginationStatusNode, to ensure
 			// accurate results on initial resize call
-			statusNode.innerHTML = string.substitute(i18n.status,
-				{ start: 1, end: 1, total: 0 });
-			
+			this._updatePaginationStatus(this._total);
+
 			navigationNode = this.paginationNavigationNode =
-				put(paginationNode, "div.dgrid-navigation");
-			
-			if(this.firstLastArrows){
+				put(paginationNode, 'div.dgrid-navigation');
+
+			if (this.firstLastArrows) {
 				// create a first-page link
 				node = this.paginationFirstNode =
-					put(navigationNode,  "span.dgrid-first.dgrid-page-link", "«");
-				node.setAttribute("aria-label", i18n.gotoFirst);
+					put(navigationNode,  'span.dgrid-first.dgrid-page-link', '«');
+				node.setAttribute('aria-label', i18n.gotoFirst);
 				node.tabIndex = 0;
 			}
-			if(this.previousNextArrows){
+			if (this.previousNextArrows) {
 				// create a previous link
 				node = this.paginationPreviousNode =
-					put(navigationNode,  "span.dgrid-previous.dgrid-page-link", "‹");
-				node.setAttribute("aria-label", i18n.gotoPrev);
+					put(navigationNode,  'span.dgrid-previous.dgrid-page-link', '‹');
+				node.setAttribute('aria-label', i18n.gotoPrev);
 				node.tabIndex = 0;
 			}
-			
-			this.paginationLinksNode = put(navigationNode, "span.dgrid-pagination-links");
-			if(this.previousNextArrows){
+
+			this.paginationLinksNode = put(navigationNode, 'span.dgrid-pagination-links');
+			if (this.previousNextArrows) {
 				// create a next link
 				node = this.paginationNextNode =
-					put(navigationNode, "span.dgrid-next.dgrid-page-link", "›");
-				node.setAttribute("aria-label", i18n.gotoNext);
+					put(navigationNode, 'span.dgrid-next.dgrid-page-link', '›');
+				node.setAttribute('aria-label', i18n.gotoNext);
 				node.tabIndex = 0;
 			}
-			if(this.firstLastArrows){
+			if (this.firstLastArrows) {
 				// create a last-page link
 				node = this.paginationLastNode =
-					put(navigationNode,  "span.dgrid-last.dgrid-page-link", "»");
-				node.setAttribute("aria-label", i18n.gotoLast);
+					put(navigationNode,  'span.dgrid-last.dgrid-page-link', '»');
+				node.setAttribute('aria-label', i18n.gotoLast);
 				node.tabIndex = 0;
 			}
-			
-			this._listeners.push(on(navigationNode, ".dgrid-page-link:click,.dgrid-page-link:keydown", function(event){
+
+			/* jshint maxlen: 121 */
+			this._listeners.push(on(navigationNode, '.dgrid-page-link:click,.dgrid-page-link:keydown', function (event) {
 				// For keyboard events, only respond to enter
-				if(event.type === "keydown" && event.keyCode !== 13){
+				if (event.type === 'keydown' && event.keyCode !== 13) {
 					return;
 				}
-				
+
 				var cls = this.className,
 					curr, max;
-				
-				if(grid._isLoading || cls.indexOf("dgrid-page-disabled") > -1){
+
+				if (grid._isLoading || cls.indexOf('dgrid-page-disabled') > -1) {
 					return;
 				}
-				
+
 				curr = grid._currentPage;
 				max = Math.ceil(grid._total / grid.rowsPerPage);
-				
+
 				// determine navigation target based on clicked link's class
-				if(this === grid.paginationPreviousNode){
+				if (this === grid.paginationPreviousNode) {
 					grid.gotoPage(curr - 1);
-				}else if(this === grid.paginationNextNode){
+				}
+				else if (this === grid.paginationNextNode) {
 					grid.gotoPage(curr + 1);
-				}else if(this === grid.paginationFirstNode){
+				}
+				else if (this === grid.paginationFirstNode) {
 					grid.gotoPage(1);
-				}else if(this === grid.paginationLastNode){
+				}
+				else if (this === grid.paginationLastNode) {
 					grid.gotoPage(max);
-				}else if(cls === "dgrid-page-link"){
+				}
+				else if (cls === 'dgrid-page-link') {
 					grid.gotoPage(+this.innerHTML); // the innerHTML has the page number
 				}
 			}));
 		},
-		
-		destroy: function(){
+
+		destroy: function () {
 			this.inherited(arguments);
-			if(this._pagingTextBoxHandle){
+			if (this._pagingTextBoxHandle) {
 				this._pagingTextBoxHandle.remove();
 			}
 		},
 
-		_updatePaginationSizeSelect: function(){
+		_updatePaginationSizeSelect: function () {
 			// summary:
 			//		Creates or repopulates the pagination size selector based on
 			//		the values in pageSizeOptions. Called from buildRendering
 			//		and _setPageSizeOptions.
-			
+
 			var pageSizeOptions = this.pageSizeOptions,
 				paginationSizeSelect = this.paginationSizeSelect,
 				handle;
-			
-			if(pageSizeOptions && pageSizeOptions.length){
-				if(!paginationSizeSelect){
+
+			if (pageSizeOptions && pageSizeOptions.length) {
+				if (!paginationSizeSelect) {
 					// First time setting page options; create the select
 					paginationSizeSelect = this.paginationSizeSelect =
-						put(this.paginationNode, "select.dgrid-page-size[aria-label=" +
-							this.i18nPagination.rowsPerPage + "]");
-					
+						put(this.paginationNode, 'select.dgrid-page-size[aria-label=' +
+							this.i18nPagination.rowsPerPage + ']');
+
 					handle = this._paginationSizeChangeHandle =
-						on(paginationSizeSelect, "change", lang.hitch(this, function(){
-							this.set("rowsPerPage", +this.paginationSizeSelect.value);
+						on(paginationSizeSelect, 'change', lang.hitch(this, function () {
+							this.set('rowsPerPage', +this.paginationSizeSelect.value);
 						}));
 					this._listeners.push(handle);
 				}
-				
+
 				// Repopulate options
 				paginationSizeSelect.options.length = 0;
-				for(var i = 0; i < pageSizeOptions.length; i++){
-					put(paginationSizeSelect, "option", pageSizeOptions[i], {
+				for (var i = 0; i < pageSizeOptions.length; i++) {
+					put(paginationSizeSelect, 'option', pageSizeOptions[i], {
 						value: pageSizeOptions[i],
 						selected: this.rowsPerPage === pageSizeOptions[i]
 					});
 				}
 				// Ensure current rowsPerPage value is in options
 				this._updateRowsPerPageOption();
-			}else if(!(pageSizeOptions && pageSizeOptions.length) && paginationSizeSelect){
+			}
+			else if (!(pageSizeOptions && pageSizeOptions.length) && paginationSizeSelect) {
 				// pageSizeOptions was removed; remove/unhook the drop-down
-				put(paginationSizeSelect, "!");
+				put(paginationSizeSelect, '!');
 				this.paginationSizeSelect = null;
 				this._paginationSizeChangeHandle.remove();
 			}
 		},
 
-		_setPageSizeOptions: function(pageSizeOptions){
-			this.pageSizeOptions = pageSizeOptions && pageSizeOptions.sort(function(a, b){
+		_setPageSizeOptions: function (pageSizeOptions) {
+			this.pageSizeOptions = pageSizeOptions && pageSizeOptions.sort(function (a, b) {
 				return a - b;
 			});
 			this._updatePaginationSizeSelect();
 		},
 
-		_updateRowsPerPageOption: function(){
+		_updateRowsPerPageOption: function () {
 			// summary:
 			//		Ensures that an option for rowsPerPage's value exists in the
 			//		paginationSizeSelect drop-down (if one is rendered).
 			//		Called from buildRendering and _setRowsPerPage.
-			
+
 			var rowsPerPage = this.rowsPerPage,
 				pageSizeOptions = this.pageSizeOptions,
 				paginationSizeSelect = this.paginationSizeSelect;
-			
-			if(paginationSizeSelect){
-				if(arrayUtil.indexOf(pageSizeOptions, rowsPerPage) < 0){
-					this._setPageSizeOptions(pageSizeOptions.concat([rowsPerPage])); 
-				}else{
-					paginationSizeSelect.value = "" + rowsPerPage;
+
+			if (paginationSizeSelect) {
+				if (arrayUtil.indexOf(pageSizeOptions, rowsPerPage) < 0) {
+					this._setPageSizeOptions(pageSizeOptions.concat([rowsPerPage]));
+				}
+				else {
+					paginationSizeSelect.value = '' + rowsPerPage;
 				}
 			}
 		},
-		
-		_setRowsPerPage: function(rowsPerPage){
+
+		_setRowsPerPage: function (rowsPerPage) {
 			this.rowsPerPage = rowsPerPage;
 			this._updateRowsPerPageOption();
 			this.gotoPage(1);
 		},
 
-		_updateNavigation: function(){
+		_updateNavigation: function () {
 			// summary:
 			//		Update status and navigation controls based on total count from query
-			
+
 			var grid = this,
 				i18n = this.i18nPagination,
 				linksNode = this.paginationLinksNode,
@@ -31875,202 +31767,238 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 				focusedPage,
 				lastFocusablePageLink,
 				focusableNodes;
-			
-			function pageLink(page, addSpace){
+
+			function pageLink(page, addSpace) {
 				var link;
 				var disabled;
-				if(grid.pagingTextBox && page == currentPage && end > 1){
+				if (grid.pagingTextBox && page === currentPage && end > 1) {
 					// use a paging text box if enabled instead of just a number
 					link = put(linksNode, 'input.dgrid-page-input[type=text][value=$]', currentPage);
-					link.setAttribute("aria-label", i18n.jumpPage);
-					grid._pagingTextBoxHandle = on(link, "change", function(){
+					link.setAttribute('aria-label', i18n.jumpPage);
+					grid._pagingTextBoxHandle = on(link, 'change', function () {
 						var value = +this.value;
-						if(!isNaN(value) && value > 0 && value <= end){
+						if (!isNaN(value) && value > 0 && value <= end) {
 							grid.gotoPage(+this.value);
 						}
 					});
-					if(focused && focused.tagName === "INPUT"){
+					if (focused && focused.tagName === 'INPUT') {
 						link.focus();
 					}
-				}else{
+				}
+				else {
 					// normal link
 					disabled = page === currentPage;
 					link = put(linksNode,
 						'span' + (disabled ? '.dgrid-page-disabled' : '') + '.dgrid-page-link',
-						page + (addSpace ? " " : ""));
-					link.setAttribute("aria-label", i18n.gotoPage);
+						page + (addSpace ? ' ' : ''));
+					link.setAttribute('aria-label', i18n.gotoPage);
 					link.tabIndex = disabled ? -1 : 0;
-					
+
 					// Try to restore focus if applicable;
 					// if we need to but can't, try on the previous or next page,
 					// depending on whether we're at the end
-					if(focusedPage === page){
-						if(!disabled){
+					if (focusedPage === page) {
+						if (!disabled) {
 							link.focus();
-						}else if(page < end){
+						}
+						else if (page < end) {
 							focusedPage++;
-						}else{
+						}
+						else {
 							lastFocusablePageLink.focus();
 						}
 					}
-					
-					if(!disabled){
+
+					if (!disabled) {
 						lastFocusablePageLink = link;
 					}
 				}
 			}
-			
-			function setDisabled(link, disabled){
-				put(link, (disabled ? "." : "!") + "dgrid-page-disabled");
+
+			function setDisabled(link, disabled) {
+				put(link, (disabled ? '.' : '!') + 'dgrid-page-disabled');
 				link.tabIndex = disabled ? -1 : 0;
 			}
-			
-			if(!focused || !miscUtil.contains(this.paginationNavigationNode, focused)){
+
+			if (!focused || !miscUtil.contains(this.paginationNavigationNode, focused)) {
 				focused = null;
-			}else if(focused.className === "dgrid-page-link"){
+			}
+			else if (focused.className === 'dgrid-page-link') {
 				focusedPage = +focused.innerHTML;
 			}
-			
-			if(pagingTextBoxHandle){ pagingTextBoxHandle.remove(); }
-			linksNode.innerHTML = "";
-			query(".dgrid-first, .dgrid-previous", paginationNavigationNode).forEach(function(link){
+
+			if (pagingTextBoxHandle) {
+				pagingTextBoxHandle.remove();
+			}
+			linksNode.innerHTML = '';
+			query('.dgrid-first, .dgrid-previous', paginationNavigationNode).forEach(function (link) {
 				setDisabled(link, currentPage === 1);
 			});
-			query(".dgrid-last, .dgrid-next", paginationNavigationNode).forEach(function(link){
+			query('.dgrid-last, .dgrid-next', paginationNavigationNode).forEach(function (link) {
 				setDisabled(link, currentPage >= end);
 			});
-			
-			if(pagingLinks && end > 0){
+
+			if (pagingLinks && end > 0) {
 				// always include the first page (back to the beginning)
 				pageLink(1, true);
 				var start = currentPage - pagingLinks;
-				if(start > 2) {
+				if (start > 2) {
 					// visual indication of skipped page links
-					put(linksNode, "span.dgrid-page-skip", "...");
-				}else{
+					put(linksNode, 'span.dgrid-page-skip', '...');
+				}
+				else {
 					start = 2;
 				}
 				// now iterate through all the page links we should show
-				for(var i = start; i < Math.min(currentPage + pagingLinks + 1, end); i++){
+				for (var i = start; i < Math.min(currentPage + pagingLinks + 1, end); i++) {
 					pageLink(i, true);
 				}
-				if(currentPage + pagingLinks + 1 < end){
-					put(linksNode, "span.dgrid-page-skip", "...");
+				if (currentPage + pagingLinks + 1 < end) {
+					put(linksNode, 'span.dgrid-page-skip', '...');
 				}
 				// last link
-				if(end > 1){
+				if (end > 1) {
 					pageLink(end);
 				}
-			}else if(grid.pagingTextBox){
+			}
+			else if (grid.pagingTextBox) {
 				// The pageLink function is also used to create the paging textbox.
 				pageLink(currentPage);
 			}
-			
+
 			if (focused && focused.tabIndex === -1) {
 				// One of the first/last or prev/next links was focused but
 				// is now disabled, so find something focusable
-				focusableNodes = query("[tabindex='0']", this.paginationNavigationNode);
-				if(focused === this.paginationPreviousNode || focused === this.paginationFirstNode){
+				focusableNodes = query('[tabindex="0"]', this.paginationNavigationNode);
+				if (focused === this.paginationPreviousNode || focused === this.paginationFirstNode) {
 					focused = focusableNodes[0];
-				}else if(focusableNodes.length){
+				}
+				else if (focusableNodes.length) {
 					focused = focusableNodes[focusableNodes.length - 1];
 				}
-				if(focused){
+				if (focused) {
 					focused.focus();
 				}
 			}
 		},
-		
-		refresh: function(){
+
+		_updatePaginationStatus: function (total) {
+			var count = this.rowsPerPage;
+			var start = Math.min(total, (this._currentPage - 1) * count + 1);
+			this.paginationStatusNode.innerHTML = string.substitute(this.i18nPagination.status, {
+				start: start,
+				end: Math.min(total, start + count - 1),
+				total: total
+			});
+		},
+
+		refresh: function (options) {
+			// summary:
+			//		Re-renders the first page of data, or the current page if
+			//		options.keepCurrentPage is true.
+
 			var self = this;
-			
+			var page = options && options.keepCurrentPage ?
+				Math.min(this._currentPage, Math.ceil(this._total / this.rowsPerPage)) : 1;
+
 			this.inherited(arguments);
-			
-			if(!this.store){
-				 0 && console.warn("Pagination requires a store to operate.");
-				return;
-			}
-			
+
 			// Reset to first page and return promise from gotoPage
-			return this.gotoPage(1).then(function(results){
+			return this.gotoPage(page).then(function (results) {
 				// Emit on a separate turn to enable event to be used consistently for
 				// initial render, regardless of whether the backing store is async
-				setTimeout(function() {
-					on.emit(self.domNode, "dgrid-refresh-complete", {
+				setTimeout(function () {
+					on.emit(self.domNode, 'dgrid-refresh-complete', {
 						bubbles: true,
 						cancelable: false,
-						grid: self,
-						results: results // QueryResults object (may be a wrapped promise)
+						grid: self
 					});
 				}, 0);
-				
+
 				return results;
 			});
 		},
-		
-		_onNotification: function(rows){
-			if(rows.length !== this._rowsOnPage){
+
+		_onNotification: function (rows, event, collection) {
+			var rowsPerPage = this.rowsPerPage;
+			var pageEnd = this._currentPage * rowsPerPage;
+			var needsRefresh = (event.type === 'add' && event.index < pageEnd) ||
+				(event.type === 'delete' && event.previousIndex < pageEnd) ||
+				(event.type === 'update' &&
+					Math.floor(event.index / rowsPerPage) !== Math.floor(event.previousIndex / rowsPerPage));
+
+			if (needsRefresh) {
 				// Refresh the current page to maintain correct number of rows on page
-				this.gotoPage(this._currentPage);
+				this.gotoPage(Math.min(this._currentPage, Math.ceil(event.totalLength / this.rowsPerPage)));
+			}
+			// If we're not updating the whole page, check if we at least need to update status/navigation
+			else if (collection === this._renderedCollection && event.totalLength !== this._total) {
+				this._updatePaginationStatus(event.totalLength);
+				this._updateNavigation();
 			}
 		},
-		
-		renderArray: function(results, beforeNode){
+
+		renderQueryResults: function (results, beforeNode) {
 			var grid = this,
 				rows = this.inherited(arguments);
-			
-			// Make sure _lastCollection is cleared (due to logic in List)
-			this._lastCollection = null;
-			
-			if(!beforeNode){
-				if(this._topLevelRequest && this._topLevelRequest !== results){
+
+			if (!beforeNode) {
+				if (this._topLevelRequest) {
 					// Cancel previous async request that didn't finish
 					this._topLevelRequest.cancel();
 					delete this._topLevelRequest;
 				}
-				
-				if (typeof results.cancel === "function") {
+
+				if (typeof rows.cancel === 'function') {
 					// Store reference to new async request in progress
-					this._topLevelRequest = results;
+					this._topLevelRequest = rows;
 				}
-				
-				Deferred.when(results, function(){
-					if(grid._topLevelRequest){
+
+				when(rows, function () {
+					if (grid._topLevelRequest) {
 						// Remove reference to request now that it's finished
 						delete grid._topLevelRequest;
 					}
 				});
 			}
-			
+
 			return rows;
 		},
-		
-		insertRow: function(){
+
+		insertRow: function () {
 			var oldNodes = this._oldPageNodes,
 				row = this.inherited(arguments);
-			
-			if(oldNodes && row === oldNodes[row.id]){
+
+			if (oldNodes && row === oldNodes[row.id]) {
 				// If the previous row was reused, avoid removing it in cleanup
 				delete oldNodes[row.id];
 			}
-			
+
 			return row;
 		},
-		
-		gotoPage: function(page){
+
+		gotoPage: function (page) {
 			// summary:
 			//		Loads the given page.  Note that page numbers start at 1.
 			var grid = this,
-				dfd = new Deferred();
-			
-			var result = this._trackError(function(){
+				start = (this._currentPage - 1) * this.rowsPerPage;
+
+			if (!this._renderedCollection) {
+				 0 && console.warn('Pagination requires a collection to operate.');
+				return when([]);
+			}
+
+			if (this._renderedCollection.releaseRange) {
+				this._renderedCollection.releaseRange(start, start + this.rowsPerPage);
+			}
+
+			return this._trackError(function () {
 				var count = grid.rowsPerPage,
 					start = (page - 1) * count,
-					options = lang.mixin(grid.get("queryOptions"), {
+					options = {
 						start: start,
 						count: count
-						// current sort is also included by get("queryOptions")
-					}),
+					},
 					results,
 					contentNode = grid.contentNode,
 					loadingNode,
@@ -32078,370 +32006,380 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 					children,
 					i,
 					len;
-				
-				if(grid.showLoadingMessage){
+
+				if (grid.showLoadingMessage) {
 					cleanupContent(grid);
-					loadingNode = grid.loadingNode = put(contentNode, "div.dgrid-loading");
+					loadingNode = grid.loadingNode = put(contentNode, 'div.dgrid-loading');
 					loadingNode.innerHTML = grid.loadingMessage;
-				}else{
+				}
+				else {
 					// Reference nodes to be cleared later, rather than now;
 					// iterate manually since IE < 9 doesn't like slicing HTMLCollections
 					grid._oldPageNodes = oldNodes = {};
 					children = contentNode.children;
-					for(i = 0, len = children.length; i < len; i++){
+					for (i = 0, len = children.length; i < len; i++) {
 						oldNodes[children[i].id] = children[i];
 					}
-					// Also reference the current page's observer (if any)
-					grid._oldPageObserver = grid.observers.pop();
 				}
-				
+
 				// set flag to deactivate pagination event handlers until loaded
 				grid._isLoading = true;
-				
-				// Run new query and pass it into renderArray
-				results = grid.store.query(grid.query, options);
-				
-				Deferred.when(grid.renderArray(results, null, options), function(rows){
+
+				results = grid._renderedCollection.fetchRange({
+					start: start,
+					end: start + count
+				});
+
+				return grid.renderQueryResults(results, null, options).then(function (rows) {
 					cleanupLoading(grid);
 					// Reset scroll Y-position now that new page is loaded.
 					grid.scrollTo({ y: 0 });
-					
-					Deferred.when(results.total, function(total){
-						if(!total){
-							if(grid.noDataNode){
-								put(grid.noDataNode, "!");
+
+					if (grid._rows) {
+						grid._rows.min = start;
+						grid._rows.max = start + count - 1;
+					}
+
+					when(results.totalLength, function (total) {
+						if (!total) {
+							if (grid.noDataNode) {
+								put(grid.noDataNode, '!');
 								delete grid.noDataNode;
 							}
 							// If there are no results, display the no data message.
-							grid.noDataNode = put(grid.contentNode, "div.dgrid-no-data");
+							grid.noDataNode = put(grid.contentNode, 'div.dgrid-no-data');
 							grid.noDataNode.innerHTML = grid.noDataMessage;
 						}
-						
+
 						// Update status text based on now-current page and total.
-						grid.paginationStatusNode.innerHTML = string.substitute(grid.i18nPagination.status, {
-							start: Math.min(start + 1, total),
-							end: Math.min(total, start + count),
-							total: total
-						});
 						grid._total = total;
 						grid._currentPage = page;
 						grid._rowsOnPage = rows.length;
-						
+						grid._updatePaginationStatus(total);
+
 						// It's especially important that _updateNavigation is called only
-						// after renderArray is resolved as well (to prevent jumping).
+						// after renderQueryResults is resolved as well (to prevent jumping).
 						grid._updateNavigation();
 					});
-					
-					if (has("ie") < 7 || (has("ie") && has("quirks"))) {
-						// call resize in old IE in case grid is set to height: auto
-						grid.resize();
-					}
-					
-					dfd.resolve(results);
-				}, function(error){
+
+					return results;
+				}, function (error) {
 					cleanupLoading(grid);
-					dfd.reject(error);
+					throw error;
 				});
-				
-				return dfd.promise;
 			});
-			
-			if (!result) {
-				// A synchronous error occurred; reject the promise.
-				dfd.reject();
-			}
-			return dfd.promise;
 		}
 	});
 });
 
 },
 'dgrid/_StoreMixin':function(){
-define(["dojo/_base/kernel", "dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred", "dojo/on", "dojo/aspect", "put-selector/put"],
-function(kernel, declare, lang, Deferred, listen, aspect, put){
+define([
+	'dojo/_base/declare',
+	'dojo/_base/lang',
+	'dojo/Deferred',
+	'dojo/aspect',
+	'dojo/on',
+	'dojo/when',
+	'put-selector/put'
+], function (declare, lang, Deferred, aspect, on, when, put) {
 	// This module isolates the base logic required by store-aware list/grid
 	// components, e.g. OnDemandList/Grid and the Pagination extension.
-	
-	// Noop function, needed for _trackError when callback due to a bug in 1.8
-	// (see http://bugs.dojotoolkit.org/ticket/16667)
-	function noop(value){ return value; }
-	
-	function emitError(err){
+
+	function emitError(err) {
 		// called by _trackError in context of list/grid, if an error is encountered
-		if(typeof err !== "object"){
+		if (typeof err !== 'object') {
 			// Ensure we actually have an error object, so we can attach a reference.
 			err = new Error(err);
-		}else if(err.dojoType === "cancel"){
+		}
+		else if (err.dojoType === 'cancel') {
 			// Don't fire dgrid-error events for errors due to canceled requests
 			// (unfortunately, the Deferred instrumentation will still log them)
 			return;
 		}
-		// TODO: remove this @ 0.4 (prefer grid property directly on event object)
-		err.grid = this;
-		
-		if(listen.emit(this.domNode, "dgrid-error", {
-				grid: this,
-				error: err,
-				cancelable: true,
-				bubbles: true })){
+
+		var event = on.emit(this.domNode, 'dgrid-error', {
+			grid: this,
+			error: err,
+			cancelable: true,
+			bubbles: true
+		});
+		if (event) {
 			 0 && console.error(err);
 		}
 	}
-	
+
 	return declare(null, {
-		// store: Object
-		//		The object store (implementing the dojo/store API) from which data is
-		//		to be fetched.
-		store: null,
-		
-		// query: Object
-		//		Specifies query parameter(s) to pass to store.query calls.
-		query: null,
-		
-		// queryOptions: Object
-		//		Specifies additional query options to mix in when calling store.query;
-		//		sort, start, and count are already handled.
-		queryOptions: null,
-		
+		// collection: Object
+		//		The base object collection (implementing the dstore/api/Store API) before being sorted
+		//		or otherwise processed by the grid. Use it for general purpose store operations such as
+		//		`getIdentity` and `get`, `add`, `put`, and `remove`.
+		collection: null,
+
+		// _renderedCollection: Object
+		//		The object collection from which data is to be fetched. This is the sorted collection.
+		//		Use it when retrieving data to be rendered by the grid.
+		_renderedCollection: null,
+
+		// _rows: Array
+		//		Sparse array of row nodes, used to maintain the grid in response to events from a tracked collection.
+		//		Each node's index corresponds to the index of its data object in the collection.
+		_rows: null,
+
+		// _observerHandle: Object
+		//		The observer handle for the current collection, if trackable.
+		_observerHandle: null,
+
+		// shouldTrackCollection: Boolean
+		//		Whether this instance should track any trackable collection it is passed.
+		shouldTrackCollection: true,
+
 		// getBeforePut: boolean
 		//		If true, a get request will be performed to the store before each put
 		//		as a baseline when saving; otherwise, existing row data will be used.
 		getBeforePut: true,
-		
+
 		// noDataMessage: String
-		//		Message to be displayed when no results exist for a query, whether at
+		//		Message to be displayed when no results exist for a collection, whether at
 		//		the time of the initial query or upon subsequent observed changes.
 		//		Defined by _StoreMixin, but to be implemented by subclasses.
-		noDataMessage: "",
-		
+		noDataMessage: '',
+
 		// loadingMessage: String
 		//		Message displayed when data is loading.
 		//		Defined by _StoreMixin, but to be implemented by subclasses.
-		loadingMessage: "",
-		
-		constructor: function(){
+		loadingMessage: '',
+
+		_total: 0,
+
+		constructor: function () {
 			// Create empty objects on each instance, not the prototype
-			this.query = {};
-			this.queryOptions = {};
 			this.dirty = {};
 			this._updating = {}; // Tracks rows that are mid-update
 			this._columnsWithSet = {};
 
 			// Reset _columnsWithSet whenever column configuration is reset
-			aspect.before(this, "configStructure", lang.hitch(this, function(){
+			aspect.before(this, 'configStructure', lang.hitch(this, function () {
 				this._columnsWithSet = {};
 			}));
 		},
-		
-		postCreate: function(){
+
+		destroy: function () {
 			this.inherited(arguments);
-			if(this.store){
-				this._updateNotifyHandle(this.store);
+
+			if (this._renderedCollection) {
+				this._cleanupCollection();
 			}
 		},
-		
-		destroy: function(){
-			this.inherited(arguments);
-			if(this._notifyHandle){
-				this._notifyHandle.remove();
-			}
-		},
-		
-		_configColumn: function(column){
+
+		_configColumn: function (column) {
 			// summary:
 			//		Implements extension point provided by Grid to store references to
 			//		any columns with `set` methods, for use during `save`.
-			if (column.set){
+			if (column.set) {
 				this._columnsWithSet[column.field] = column;
 			}
 			this.inherited(arguments);
 		},
-		
-		_updateNotifyHandle: function(store){
+
+		_setCollection: function (collection) {
 			// summary:
-			//		Unhooks any previously-existing store.notify handle, and
-			//		hooks up a new one for the given store.
-			
-			if(this._notifyHandle){
-				// Unhook notify handler from previous store
-				this._notifyHandle.remove();
-				delete this._notifyHandle;
+			//		Assigns a new collection to the list/grid, sets up tracking
+			//		if applicable, and tells the list/grid to refresh.
+
+			if (this._renderedCollection) {
+				this.cleanup();
+				this._cleanupCollection({
+					// Only clear the dirty hash if the collection being used is actually from a different store
+					// (i.e. not just a re-sorted / re-filtered version of the same store)
+					shouldRevert: !collection || collection.storage !== this._renderedCollection.storage
+				});
 			}
-			if(store && typeof store.notify === "function" && this.shouldObserveStore){
-				this._notifyHandle = aspect.after(store, "notify",
-					lang.hitch(this, "_onNotify"), true);
-				
-				var sort = this.get("sort");
-				if (!sort || !sort.length) {
-					 0 && console.warn("Observable store detected, but no sort order specified. " +
-						"You may experience quirks when adding/updating items.  " +
-						"These can be resolved by setting a sort order on the list or grid.");
+
+			if (collection) {
+				var renderedCollection = collection;
+				if (this.sort && this.sort.length > 0) {
+					renderedCollection = collection.sort(this.sort);
 				}
+
+				if (renderedCollection.track && this.shouldTrackCollection) {
+					renderedCollection = renderedCollection.track();
+					this._rows = [];
+
+					this._observerHandle = this._observeCollection(
+						renderedCollection,
+						this.contentNode,
+						{ rows: this._rows }
+					);
+				}
+
+				this._renderedCollection = renderedCollection;
+			}
+
+			this.collection = collection;
+			this.refresh();
+		},
+
+		_setStore: function () {
+			if (!this.collection) {
+				 0 && console.debug('set(\'store\') call detected, but you probably meant set(\'collection\') for 0.4');
 			}
 		},
-		
-		_setStore: function(store, query, queryOptions){
+
+		_getTotal: function () {
 			// summary:
-			//		Assigns a new store (and optionally query/queryOptions) to the list,
-			//		and tells it to refresh.
-			
-			this._updateNotifyHandle(store);
-			
-			this.store = store;
-			this.dirty = {}; // discard dirty map, as it applied to a previous store
-			this.set("query", query, queryOptions);
+			//		Retrieves the currently-tracked total (as updated by
+			//		subclasses after store queries, or by _StoreMixin in response to
+			//		updated totalLength in events)
+
+			return this._total;
 		},
-		_setQuery: function(query, queryOptions){
+
+		_cleanupCollection: function (options) {
 			// summary:
-			//		Assigns a new query (and optionally queryOptions) to the list,
-			//		and tells it to refresh.
-			
-			var sort = queryOptions && queryOptions.sort;
-			
-			this.query = query !== undefined ? query : this.query;
-			this.queryOptions = queryOptions || this.queryOptions;
-			
-			// If we have new sort criteria, pass them through sort
-			// (which will update _sort and call refresh in itself).
-			// Otherwise, just refresh.
-			sort ? this.set("sort", sort) : this.refresh();
-		},
-		setStore: function(store, query, queryOptions){
-			kernel.deprecated("setStore(...)", 'use set("store", ...) instead', "dgrid 0.4");
-			this.set("store", store, query, queryOptions);
-		},
-		setQuery: function(query, queryOptions){
-			kernel.deprecated("setQuery(...)", 'use set("query", ...) instead', "dgrid 0.4");
-			this.set("query", query, queryOptions);
-		},
-		
-		_getQueryOptions: function(){
-			// summary:
-			//		Get a fresh queryOptions object, also including the current sort
-			var options = lang.delegate(this.queryOptions, {});
-			if(typeof(this._sort) === "function" || this._sort.length){
-				// Prevents SimpleQueryEngine from doing unnecessary "null" sorts (which can
-				// change the ordering in browsers that don't use a stable sort algorithm, eg Chrome)
-				options.sort = this._sort;
+			//		Handles cleanup duty for the previous collection;
+			//		called during _setCollection and destroy.
+			// options: Object?
+			//		* shouldRevert: Whether to clear the dirty hash
+
+			options = options || {};
+
+			if (this._renderedCollection.tracking) {
+				this._renderedCollection.tracking.remove();
 			}
-			return options;
+
+			// Remove observer and existing rows so any sub-row observers will be cleaned up
+			if (this._observerHandle) {
+				this._observerHandle.remove();
+				this._observerHandle = this._rows = null;
+			}
+
+			// Discard dirty map, as it applied to a previous collection
+			if (options.shouldRevert !== false) {
+				this.dirty = {};
+			}
+
+			this._renderedCollection = this.collection = null;
 		},
-		_getQuery: function(){
-			// summary:
-			//		Implemented consistent with _getQueryOptions so that if query is
-			//		an object, this returns a protected (delegated) object instead of
-			//		the original.
-			var q = this.query;
-			return typeof q == "object" && q != null ? lang.delegate(q, {}) : q;
-		},
-		
-		_setSort: function(property, descending){
-			// summary:
-			//		Sort the content
-			
-			// prevent default storeless sort logic as long as we have a store
-			if(this.store){ this._lastCollection = null; }
-			this.inherited(arguments);
-		},
-		
-		_onNotify: function(object, existingId){
-			// summary:
-			//		Method called when the store's notify method is called.
-			
-			// Call inherited in case anything was mixed in earlier
-			this.inherited(arguments);
-			
-			// For adds/puts, check whether any observers are hooked up;
-			// if not, force a refresh to properly hook one up now that there is data
-			if(object && this._numObservers < 1){
-				this.refresh({ keepScrollPosition: true });
+
+		_applySort: function () {
+			if (this.collection) {
+				this.set('collection', this.collection);
+			}
+			else if (this.store) {
+				 0 && console.debug('_StoreMixin found store property but not collection; ' +
+					'this is often the sign of a mistake during migration from 0.3 to 0.4');
 			}
 		},
-		
-		refresh: function(){
+
+		row: function () {
+			// Extend List#row with more appropriate lookup-by-id logic
+			var row = this.inherited(arguments);
+			if (row && row.data && typeof row.id !== 'undefined') {
+				row.id = this.collection.getIdentity(row.data);
+			}
+			return row;
+		},
+
+		refresh: function () {
 			var result = this.inherited(arguments);
-			
-			if(!this.store){
-				this.noDataNode = put(this.contentNode, "div.dgrid-no-data");
+
+			if (!this.collection) {
+				this.noDataNode = put(this.contentNode, 'div.dgrid-no-data');
 				this.noDataNode.innerHTML = this.noDataMessage;
 			}
-			
+
 			return result;
 		},
-		
-		renderArray: function(){
-			var self = this;
+
+		renderArray: function () {
 			var rows = this.inherited(arguments);
-			
-			if(!this.store){
-				Deferred.when(rows, function(resolvedRows){
-					if(resolvedRows.length && self.noDataNode){
-						put(self.noDataNode, "!");
-					}
-				});
+
+			if (!this.collection) {
+				if (rows.length && this.noDataNode) {
+					put(this.noDataNode, '!');
+				}
 			}
 			return rows;
 		},
-		
-		insertRow: function(object, parent, beforeNode, i, options){
-			var store = this.store,
+
+		insertRow: function (object, parent, beforeNode, i, options) {
+			var store = this.collection,
 				dirty = this.dirty,
 				id = store && store.getIdentity(object),
-				dirtyObj;
-			
-			if(id in dirty && !(id in this._updating)){ dirtyObj = dirty[id]; }
-			if(dirtyObj){
+				dirtyObj,
+				row;
+
+			if (id in dirty && !(id in this._updating)) {
+				dirtyObj = dirty[id];
+			}
+			if (dirtyObj) {
 				// restore dirty object as delegate on top of original object,
 				// to provide protection for subsequent changes as well
 				object = lang.delegate(object, dirtyObj);
 			}
-			return this.inherited(arguments);
+
+			row = this.inherited(arguments);
+
+			if (options && options.rows) {
+				options.rows[i] = row;
+			}
+
+			// Remove no data message when a new row appears.
+			// Run after inherited logic to prevent confusion due to noDataNode
+			// no longer being present as a sibling.
+			if (this.noDataNode) {
+				put(this.noDataNode, '!');
+				this.noDataNode = null;
+			}
+
+			return row;
 		},
-		
-		updateDirty: function(id, field, value){
+
+		updateDirty: function (id, field, value) {
 			// summary:
 			//		Updates dirty data of a field for the item with the specified ID.
 			var dirty = this.dirty,
 				dirtyObj = dirty[id];
-			
-			if(!dirtyObj){
+
+			if (!dirtyObj) {
 				dirtyObj = dirty[id] = {};
 			}
 			dirtyObj[field] = value;
 		},
-		setDirty: function(id, field, value){
-			kernel.deprecated("setDirty(...)", "use updateDirty() instead", "dgrid 0.4");
-			this.updateDirty(id, field, value);
-		},
-		
-		save: function() {
+
+		save: function () {
 			// Keep track of the store and puts
 			var self = this,
-				store = this.store,
+				store = this.collection,
 				dirty = this.dirty,
 				dfd = new Deferred(), promise = dfd.promise,
-				getFunc = function(id){
+				getFunc = function (id) {
 					// returns a function to pass as a step in the promise chain,
 					// with the id variable closured
 					var data;
 					return (self.getBeforePut || !(data = self.row(id).data)) ?
-						function(){ return store.get(id); } :
-						function(){ return data; };
+						function () {
+							return store.get(id);
+						} :
+						function () {
+							return data;
+						};
 				};
-			
+
 			// function called within loop to generate a function for putting an item
 			function putter(id, dirtyObj) {
 				// Return a function handler
-				return function(object) {
+				return function (object) {
 					var colsWithSet = self._columnsWithSet,
 						updating = self._updating,
 						key, data;
 
-					if (typeof object.set === "function") {
+					if (typeof object.set === 'function') {
 						object.set(dirtyObj);
 					} else {
 						// Copy dirty props to the original, applying setters if applicable
-						for(key in dirtyObj){
+						for (key in dirtyObj) {
 							object[key] = dirtyObj[key];
 						}
 					}
@@ -32450,46 +32388,48 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 					// Note that while in the most common cases column.set is intended
 					// to return transformed data for the key in question, it is also
 					// possible to directly modify the object to be saved.
-					for(key in colsWithSet){
+					for (key in colsWithSet) {
 						data = colsWithSet[key].set(object);
-						if(data !== undefined){ object[key] = data; }
+						if (data !== undefined) {
+							object[key] = data;
+						}
 					}
-					
+
 					updating[id] = true;
 					// Put it in the store, returning the result/promise
-					return Deferred.when(store.put(object), function() {
+					return when(store.put(object), function () {
 						// Clear the item now that it's been confirmed updated
 						delete dirty[id];
 						delete updating[id];
 					});
 				};
 			}
-			
+
 			// For every dirty item, grab the ID
-			for(var id in dirty) {
+			for (var id in dirty) {
 				// Create put function to handle the saving of the the item
 				var put = putter(id, dirty[id]);
-				
+
 				// Add this item onto the promise chain,
 				// getting the item from the store first if desired.
 				promise = promise.then(getFunc(id)).then(put);
 			}
-			
+
 			// Kick off and return the promise representing all applicable get/put ops.
 			// If the success callback is fired, all operations succeeded; otherwise,
 			// save will stop at the first error it encounters.
 			dfd.resolve();
 			return promise;
 		},
-		
-		revert: function(){
+
+		revert: function () {
 			// summary:
 			//		Reverts any changes since the previous save.
 			this.dirty = {};
 			this.refresh();
 		},
-		
-		_trackError: function(func){
+
+		_trackError: function (func) {
 			// summary:
 			//		Utility function to handle emitting of error events.
 			// func: Function|String
@@ -32500,44 +32440,193 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 			//		callback on failure.
 			// tags:
 			//		protected
-			
-			var result;
-			
-			if(typeof func == "string"){ func = lang.hitch(this, func); }
-			
-			try{
-				result = func();
-			}catch(err){
+
+			if (typeof func === 'string') {
+				func = lang.hitch(this, func);
+			}
+
+			var self = this,
+				promise;
+
+			try {
+				promise = when(func());
+			} catch (err) {
 				// report sync error
-				emitError.call(this, err);
+				var dfd = new Deferred();
+				dfd.reject(err);
+				promise = dfd.promise;
 			}
-			
-			// wrap in when call to handle reporting of potential async error
-			return Deferred.when(result, noop, lang.hitch(this, emitError));
+
+			promise.otherwise(function (err) {
+				emitError.call(self, err);
+			});
+			return promise;
 		},
-		
-		newRow: function(){
-			// Override to remove no data message when a new row appears.
-			// Run inherited logic first to prevent confusion due to noDataNode
-			// no longer being present as a sibling.
-			var row = this.inherited(arguments);
-			if(this.noDataNode){
-				put(this.noDataNode, "!");
-				delete this.noDataNode;
-			}
-			return row;
-		},
-		removeRow: function(rowElement, justCleanup){
+
+		removeRow: function (rowElement, preserveDom, options) {
 			var row = {element: rowElement};
 			// Check to see if we are now empty...
-			if(!justCleanup && this.noDataMessage &&
+			if (!preserveDom && this.noDataMessage &&
 					(this.up(row).element === rowElement) &&
-					(this.down(row).element === rowElement)){
+					(this.down(row).element === rowElement)) {
 				// ...we are empty, so show the no data message.
-				this.noDataNode = put(this.contentNode, "div.dgrid-no-data");
+				this.noDataNode = put(this.contentNode, 'div.dgrid-no-data');
 				this.noDataNode.innerHTML = this.noDataMessage;
 			}
+
+			var rows = (options && options.rows) || this._rows;
+			if (rows) {
+				delete rows[rowElement.rowIndex];
+			}
+
 			return this.inherited(arguments);
+		},
+
+		renderQueryResults: function (results, beforeNode, options) {
+			// summary:
+			//		Renders objects from QueryResults as rows, before the given node.
+
+			options = lang.mixin({ rows: this._rows }, options);
+			var self = this;
+
+			return when(results).then(function (resolvedResults) {
+				var resolvedRows = self.renderArray(resolvedResults, beforeNode, options);
+				delete self._lastCollection; // used only for non-store List/Grid
+				return resolvedRows;
+			});
+		},
+
+		_observeCollection: function (collection, container, options) {
+			var self = this,
+				rows = options.rows,
+				row;
+
+			var handles = [
+				collection.on('delete, update', function (event) {
+					var from = event.previousIndex;
+					var to = event.index;
+
+					if (from !== undefined && rows[from]) {
+						if ('max' in rows && (to === undefined || to < rows.min || to > rows.max)) {
+							rows.max--;
+						}
+
+						row = rows[from];
+
+						// check to make the sure the node is still there before we try to remove it
+						// (in case it was moved to a different place in the DOM)
+						if (row.parentNode === container) {
+							self.removeRow(row, false, options);
+						}
+
+						// remove the old slot
+						rows.splice(from, 1);
+
+						if (event.type === 'delete' ||
+								(event.type === 'update' && (from < to || to === undefined))) {
+							// adjust the rowIndex so adjustRowIndices has the right starting point
+							rows[from] && rows[from].rowIndex--;
+						}
+
+						// the removal of rows could cause us to need to page in more items
+						if (self._processScroll) {
+							self._processScroll();
+						}
+					}
+					if (event.type === 'delete') {
+						// Reset row in case this is later followed by an add;
+						// only update events should retain the row variable below
+						row = null;
+					}
+				}),
+
+				collection.on('add, update', function (event) {
+					var from = event.previousIndex;
+					var to = event.index;
+					var nextNode;
+
+					function advanceNext() {
+						nextNode = (nextNode.connected || nextNode).nextSibling;
+					}
+
+					// When possible, restrict observations to the actually rendered range
+					if (to !== undefined && (!('max' in rows) || (to >= rows.min && to <= rows.max))) {
+						if ('max' in rows && (from === undefined || from < rows.min || from > rows.max)) {
+							rows.max++;
+						}
+						// Add to new slot (either before an existing row, or at the end)
+						// First determine the DOM node that this should be placed before.
+						if (rows.length) {
+							nextNode = rows[to];
+							if (!nextNode) {
+								nextNode = rows[to - 1];
+								if (nextNode) {
+									// Make sure to skip connected nodes, so we don't accidentally
+									// insert a row in between a parent and its children.
+									advanceNext();
+								}
+							}
+						}
+						else {
+							// There are no rows.  Allow for subclasses to insert new rows somewhere other than
+							// at the end of the parent node.
+							nextNode = self._getFirstRowSibling && self._getFirstRowSibling(container);
+						}
+						// Make sure we don't trip over a stale reference to a
+						// node that was removed, or try to place a node before
+						// itself (due to overlapped queries)
+						if (row && nextNode && row.id === nextNode.id) {
+							advanceNext();
+						}
+						if (nextNode && !nextNode.parentNode) {
+							nextNode = document.getElementById(nextNode.id);
+						}
+						rows.splice(to, 0, undefined);
+						row = self.insertRow(event.target, container, nextNode, to, options);
+						self.highlightRow(row);
+					}
+					// Reset row so it doesn't get reused on the next event
+					row = null;
+				}),
+
+				collection.on('add, delete, update', function (event) {
+					var from = (typeof event.previousIndex !== 'undefined') ? event.previousIndex : Infinity,
+						to = (typeof event.index !== 'undefined') ? event.index : Infinity,
+						adjustAtIndex = Math.min(from, to);
+					from !== to && rows[adjustAtIndex] && self.adjustRowIndices(rows[adjustAtIndex]);
+
+					// Fire _onNotification, even for out-of-viewport notifications,
+					// since some things may still need to update (e.g. Pagination's status/navigation)
+					self._onNotification(rows, event, collection);
+
+					// Update _total after _onNotification so that it can potentially
+					// decide whether to perform actions based on whether the total changed
+					if (collection === self._renderedCollection && 'totalLength' in event) {
+						self._total = event.totalLength;
+					}
+				})
+			];
+
+			return {
+				remove: function () {
+					while (handles.length > 0) {
+						handles.pop().remove();
+					}
+				}
+			};
+		},
+
+		_onNotification: function () {
+			// summary:
+			//		Protected method called whenever a store notification is observed.
+			//		Intended to be extended as necessary by mixins/extensions.
+			// rows: Array
+			//		A sparse array of row nodes corresponding to data objects in the collection.
+			// event: Object
+			//		The notification event
+			// collection: Object
+			//		The collection that the notification is relevant to.
+			//		Useful for distinguishing child-level from top-level notifications.
 		}
 	});
 });
@@ -32789,12 +32878,12 @@ define([
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
 'url:dijit/layout/templates/ScrollingTabController.html':"<div class=\"dijitTabListContainer-${tabPosition}\" style=\"visibility:hidden\">\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerMenuButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_menuBtn\"\n\t\t data-dojo-props=\"containerId: '${containerId}', iconClass: 'dijitTabStripMenuIcon',\n\t\t\t\t\tdropDownPosition: ['below-alt', 'above-alt']\"\n\t\t data-dojo-attach-point=\"_menuBtn\" showLabel=\"false\" title=\"\">&#9660;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_leftBtn\"\n\t\t data-dojo-props=\"iconClass:'dijitTabStripSlideLeftIcon', showLabel:false, title:''\"\n\t\t data-dojo-attach-point=\"_leftBtn\" data-dojo-attach-event=\"onClick: doSlideLeft\">&#9664;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_rightBtn\"\n\t\t data-dojo-props=\"iconClass:'dijitTabStripSlideRightIcon', showLabel:false, title:''\"\n\t\t data-dojo-attach-point=\"_rightBtn\" data-dojo-attach-event=\"onClick: doSlideRight\">&#9654;</div>\n\t<div class='dijitTabListWrapper' data-dojo-attach-point='tablistWrapper'>\n\t\t<div role='tablist' data-dojo-attach-event='onkeydown:onkeydown'\n\t\t\t data-dojo-attach-point='containerNode' class='nowrapTabStrip'></div>\n\t</div>\n</div>",
 'url:dijit/layout/templates/_ScrollingTabControllerButton.html':"<div data-dojo-attach-event=\"ondijitclick:_onClick\" class=\"dijitTabInnerDiv dijitTabContent dijitButtonContents\"  data-dojo-attach-point=\"focusNode\" role=\"button\">\n\t<span role=\"presentation\" class=\"dijitInline dijitTabStripIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point=\"containerNode,titleNode\" class=\"dijitButtonText\"></span>\n</div>",
-'url:dgrid/css/dgrid.css':{"cssText":".dgrid{position:relative;overflow:hidden;border:1px solid #ddd;height:30em;display:block;}.dgrid-header{background-color:#eee;}.dgrid-header-row{position:absolute;right:17px;left:0;}.dgrid-header-scroll{position:absolute;top:0;right:0;}.dgrid-footer{position:absolute;bottom:0;width:100%;}.dgrid-header-hidden, html.has-quirks .dgrid-header-hidden .dgrid-cell{font-size:0;height:0 !important;border-top:none !important;border-bottom:none !important;margin-top:0 !important;margin-bottom:0 !important;padding-top:0 !important;padding-bottom:0 !important;}.dgrid-footer-hidden{display:none;}.dgrid-sortable{cursor:pointer;}.dgrid-header, .dgrid-header-row, .dgrid-footer{overflow:hidden;background-color:#eee;}.dgrid-row-table{border-collapse:collapse;border:none;table-layout:fixed;empty-cells:show;width:100%;height:100%;}.dgrid-cell{padding:0px;text-align:left;overflow:hidden;vertical-align:top;border:1px solid #ddd;border-top-style:none;box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-webkit-box-sizing:border-box;}.dgrid-cell-padding{padding:3px;}.dgrid-content{position:relative;height:99%;}.dgrid-scroller{overflow-x:auto;overflow-y:scroll;position:absolute;top:0px;margin-top:25px;bottom:0px;width:100%;}.dgrid-preload{font-size:0;line-height:0;}.dgrid-loading{position:relative;height:100%;}.dgrid-above{position:absolute;bottom:0;}.ui-icon{width:16px;height:16px;background-image:url(\"data:image/png;base64,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\");}.ui-icon-triangle-1-e{background-position:-32px -16px;}.ui-icon-triangle-1-se{background-position:-48px -16px;}.dgrid-expando-icon{width:16px;height:16px;}.dgrid-tree-container{-webkit-transition-duration:0.3s;-moz-transition-duration:0.3s;-ms-transition-duration:0.3s;-o-transition-duration:0.3s;transition-duration:0.3s;overflow:hidden;}.dgrid-tree-container.dgrid-tree-resetting{-webkit-transition-duration:0;-moz-transition-duration:0;-ms-transition-duration:0;-o-transition-duration:0;transition-duration:0;}.dgrid-sort-arrow{background-position:-64px -16px;display:block;float:right;margin:0 4px 0 5px;height:12px;}.dgrid-sort-up .dgrid-sort-arrow{background-position:0px -16px;}.dgrid-selected{background-color:#bfd6eb;}.dgrid-input{width:99%;}html.has-mozilla .dgrid *:focus, html.has-opera .dgrid *:focus{outline:1px dotted;}html.has-ie-6-7.has-no-quirks .dgrid-row-table{width:auto;}html.has-quirks .dgrid-row-table, html.has-ie-6 .dgrid-row-table{height:auto;}html.has-quirks .dgrid-header-scroll, html.has-ie-6 .dgrid-header-scroll{font-size:0;}html.has-mozilla .dgrid-focus{outline-offset:-1px;}.dgrid-scrollbar-measure{width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px;}.dgrid-autoheight{height:auto;}.dgrid-autoheight .dgrid-scroller{position:relative;overflow-y:hidden;}.dgrid-autoheight .dgrid-header-scroll{display:none;}.dgrid-autoheight .dgrid-header{right:0;}#dgrid-css-dgrid-loaded{display:none;}","xCss":"html.has-mozilla .dgrid *:{/27};{/17background-image:url(\"data:image/png;base64,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\");}"},
-'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
-'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
+'url:dgrid/css/dgrid.css':{"cssText":".dgrid{position:relative;overflow:hidden;border:1px solid #ddd;height:30em;display:block;}.dgrid-header{background-color:#eee;}.dgrid-header-row{position:absolute;right:17px;left:0;}.dgrid-header-scroll{position:absolute;top:0;right:0;}.dgrid-footer{position:absolute;bottom:0;width:100%;}.dgrid-header-hidden{font-size:0;height:0 !important;border-top:none !important;border-bottom:none !important;margin-top:0 !important;margin-bottom:0 !important;padding-top:0 !important;padding-bottom:0 !important;}.dgrid-footer-hidden{display:none;}.dgrid-sortable{cursor:pointer;}.dgrid-header, .dgrid-header-row, .dgrid-footer{overflow:hidden;background-color:#eee;}.dgrid-row-table{border-collapse:collapse;border:none;table-layout:fixed;empty-cells:show;width:100%;height:100%;}.dgrid-cell{padding:3px;text-align:left;overflow:hidden;vertical-align:top;border:1px solid #ddd;border-top-style:none;box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-webkit-box-sizing:border-box;}.dgrid-content{position:relative;height:99%;}.dgrid-scroller{overflow-x:auto;overflow-y:scroll;position:absolute;top:0px;margin-top:25px;bottom:0px;width:100%;}.dgrid-preload{font-size:0;line-height:0;}.dgrid-loading{position:relative;height:100%;}.dgrid-above{position:absolute;bottom:0;}.ui-icon{width:16px;height:16px;background-image:url(\"data:image/png;base64,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\");}.ui-icon-triangle-1-e{background-position:-32px -16px;}.ui-icon-triangle-1-se{background-position:-48px -16px;}.dgrid-expando-icon{width:16px;height:16px;}.dgrid-tree-container{-webkit-transition-duration:0.3s;-moz-transition-duration:0.3s;-ms-transition-duration:0.3s;-o-transition-duration:0.3s;transition-duration:0.3s;overflow:hidden;}.dgrid-tree-container.dgrid-tree-resetting{-webkit-transition-duration:0;-moz-transition-duration:0;-ms-transition-duration:0;-o-transition-duration:0;transition-duration:0;}.dgrid-sort-arrow{background-position:-64px -16px;display:block;float:right;margin:0 4px 0 5px;height:12px;}.dgrid-sort-up .dgrid-sort-arrow{background-position:0px -16px;}.dgrid-selected{background-color:#bfd6eb;}.dgrid-input{width:99%;}html.has-mozilla .dgrid-focus{outline-offset:-1px;}.dgrid-scrollbar-measure{width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px;}.dgrid-autoheight{height:auto;}.dgrid-autoheight .dgrid-scroller{position:relative;overflow-y:hidden;}.dgrid-autoheight .dgrid-header-scroll{display:none;}.dgrid-autoheight .dgrid-header{right:0;}#dgrid-css-dgrid-loaded{display:none;}","xCss":"{/16background-image:url(\"data:image/png;base64,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\");}"},
+'url:dgrid/css/extensions/ColumnResizer.css':".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}.dgrid-resize-header-container{position:relative;}.dgrid-header .dgrid-cell{overflow:hidden;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}",
+'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>\n\n</div>\n",
-'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
+'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div data-dojo-type=\"dijit/form/FilteringSelect\" name=\"files\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"\"></div>\n\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Scientific Name'\"></div>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"geneticCode\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t<option value=\"11\">11</option>\n\t\t\t<option value=\"4\">4</option>\n\t\t</select>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t</select>\n\t\t<div data-dojo-type=\"dijit/form/FilteringSelect\" name=\"outputLocation\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"\"></div>\n\t\t\n\n\t</div >\n\t\t<div style=\"width:400px; margin:auto\" class=\"workingMessage\">\n\t\t\tCreating new workspace ...\n\t\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"errorMessage\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Creating Folder:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate Genome</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

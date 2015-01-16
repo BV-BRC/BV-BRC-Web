@@ -66,7 +66,3 @@
 .sage .dgrid-header .dojoDndItemAfter {
 	border-right: 2px dotted #fff !important;
 }
-.has-ie-6-7 .sage .dgrid-navigation a,
-.has-ie.has-quirks .sage .dgrid-navigation a {
-	color: #fff;
-}

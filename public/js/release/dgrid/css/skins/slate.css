@@ -50,7 +50,3 @@
 .slate .dgrid-header .dojoDndItemAfter {
 	border-right: 2px dotted #fff !important;
 }
-.has-ie-6-7 .slate .dgrid-navigation a,
-.has-ie.has-quirks .slate .dgrid-navigation a {
-	color: #fff;
-}
