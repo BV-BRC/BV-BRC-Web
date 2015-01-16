@@ -7,10 +7,7 @@ var bodyParser = require('body-parser');
 var config = require("./config");
 var session = require("express-session");
 var RedisStore = require('connect-redis')(session);
-
-
-var passport = require('passport')
-, OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
+var passport = require('passport');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -24,7 +21,6 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -37,14 +33,16 @@ var sessionStore = app.sessionStore = new RedisStore(config.get("redis"));
 app.use(session({
     store: sessionStore,
     name: config.get("cookieKey"),
-    cookie: { domain: config.get('cookieDomain'),  maxAge: 2628000000 },
+    cookie: { domain: config.get('cookieDomain'),  maxAge: config.get("sessionTTL")},
     secret: config.get('cookieSecret'),
     resave:false,
     saveUninitialized:true
 }));
 
+
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(function(req,res,next){
     console.log("Config.production: ", config.production);
     console.log("Session Data: ", req.session);
@@ -54,19 +52,18 @@ app.use(function(req,res,next){
     next();
 })
 
+// passport serialize/deserialize user
+// thise must exist to satisfy passport, but we're not really 
+// deserializing at the moment to avoid forcing p3-web to depend on the p3-user 
+// database directly.  However, req.session.user is populated by p3-user 
+// to contain the users' profile, so this isnt' so necessary
 
 passport.serializeUser(function(user, done) {
-  console.log("serialize User: ", user);
   done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-  console.log("deserializeUser ID: ", id);
   done(null, {id: id});
-//  db.users.find(id, function (err, user) {
-//       console.log("deserialized User: ", user);
-//    done(err, user);
-//  });
 });
 
 app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
@@ -78,7 +75,11 @@ app.use('/users', users);
 
 app.get("/login", 
 	function(req,res,next){
-		res.redirect(302, config.get("authorizationURL") + "?application_id=" + config.get("application_id"));
+		if (!req.isAuthenticated || !req.isAuthenticated()) {
+			res.redirect(302, config.get("authorizationURL") + "?application_id=" + config.get("application_id"));
+		}else{
+                	res.render('authcb', { title: 'User Service', request: req});
+		}
 	}
 );
 
@@ -88,6 +89,8 @@ app.get("/logout", function(req,res,next){
 		res.redirect("/");
 	});
 });
+
+
 app.get("/auth/callback", 
 	function(req,res,next){
 		console.log("Authorization Callback");

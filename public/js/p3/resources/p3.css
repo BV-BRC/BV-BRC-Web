@@ -36,6 +36,16 @@ body.patric {
 	color: #333;
 }
 
+.ShowWithAuth {
+	display: none;
+}
+
+
+
+.Authenticated .ShowWithoutAuth {
+	display: none;
+}
+
 .HomeServiceLink {
 	width: 100px;
 	height: 100px;

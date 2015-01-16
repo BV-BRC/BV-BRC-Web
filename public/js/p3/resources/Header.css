@@ -23,10 +23,29 @@
 	padding:2px;
 }
 
+/*
+.TopMenuBar > A,
 .TopMenuBar > SPAN {
 	margin-right: 8px;
 	cursor: pointer;
 }
+*/
+
+.Authenticated .TopMenuLink.HideWithAuth {
+	display: none;
+}
+
+.Authenticated .TopMenuLink.ShowWithAuth {
+	display: inline;
+}
+
+.TopMenuLink {
+	display: inline;
+	margin-right: 8px;
+	cursor: pointer;
+	color: #fff;
+}
+
 
 .P3Header {
 	width: 100%;
@@ -58,6 +77,8 @@
 	color: orange;
 }
 
+.TopMenuLink,
+.TopMenuLink:visited,
 .P3Header A,
 .P3Header A:visited {
 	text-decoration:none;

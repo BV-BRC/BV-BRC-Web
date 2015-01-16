@@ -18,7 +18,9 @@ var defaults =  {
 
 	"cookieSecret": "patric3",
 	"cookieKey": "patric3",
-	"cookieDomain": ".patric.local"
+	"cookieDomain": ".patric.local",
+
+	"sessionTTL": 2628000000
 }
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
