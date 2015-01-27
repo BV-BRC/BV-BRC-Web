@@ -3,3 +3,32 @@
 	padding: 4px;
 }
 
+.UploadComplete {
+	color: green;
+	border: 1px solid green;
+}
+
+.UploadingButton {
+	display: inline-block;
+	margin: 2px;
+	margin-right: 4px;
+	padding:2px;
+	border: 1px solid gray;
+}
+
+.TypeContainer {
+	display: inline-block;
+	width: 100px;
+	float: left;
+}
+
+.ItemTypeIcon {
+	width:90px; 
+	height: 90px;
+	margin:auto;
+	border: 1px solid gray;
+}
+
+.TypeContainer > DIV {
+	text-align: center;
+}

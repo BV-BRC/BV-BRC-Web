@@ -1,7 +1,9 @@
 		<title><%= (request&&request.local&&request.local.title)?request.local.title:"" %></title>
 		<% if (request && request.production) { %>
 			<link rel='stylesheet' href='/js/release/p3/resources/p3.css' />
+			<link rel='stylesheet' href='/js/release/p3/resources/p2.css' />
 		<% } else { %>
 			<link rel='stylesheet' href='/js/p3/resources/p3.css' />
+			<link rel='stylesheet' href='/js/p3/resources/p2.css' />
 		<% } %>
 

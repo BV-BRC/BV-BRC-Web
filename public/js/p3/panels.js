@@ -19,7 +19,7 @@ define([],function(){
                 title: "Upload",
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
-                dataParam: "folder",
+                dataParam: "path",
                 params: {}
             
             }
