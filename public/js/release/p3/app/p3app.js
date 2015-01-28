@@ -92,8 +92,12 @@ define("p3/app/p3app", [
 			if (!this.api) { this.api={}}
 			if (this.workspaceAPI){
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
-
 			}
+			if (this.serviceAPI){
+				console.log("Setup API Service @ ", this.serviceAPI);
+				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
+			}
+	
 			// console.log("go()")
 			// setTimeout(function(){
 			// 	Router.go("/workspace/dmachi/foo/bar");

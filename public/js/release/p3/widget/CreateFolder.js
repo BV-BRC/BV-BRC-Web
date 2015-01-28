@@ -30,7 +30,7 @@ define("p3/widget/CreateFolder", [
 				var values = this.getValues();
 				console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
-				window.App.api.workspace("Workspace.create_workspace_directory",[{directory:this.path + "/" + values.name}]).then(function(results){
+				window.App.api.workspace("Workspace.create",[{objects:[[this.path + values.name,"Directory"]]}]).then(function(results){
 					console.log("RESULTS", results)
 					domClass.remove(_self.domNode, "Working");
 					console.log("create_workspace_folder results", results)

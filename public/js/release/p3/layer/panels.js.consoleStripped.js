@@ -30,7 +30,7 @@ define([
 				var values = this.getValues();
 				 0 && console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
-				window.App.api.workspace("Workspace.create_workspace_directory",[{directory:this.path + "/" + values.name}]).then(function(results){
+				window.App.api.workspace("Workspace.create",[{objects:[[this.path + values.name,"Directory"]]}]).then(function(results){
 					 0 && console.log("RESULTS", results)
 					domClass.remove(_self.domNode, "Working");
 					 0 && console.log("create_workspace_folder results", results)
@@ -115,12 +115,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Uploader.html","dijit/form/Form","dojo/_base/Deferred",
-	"dijit/ProgressBar","dojo/dom-construct"
+	"dijit/ProgressBar","dojo/dom-construct","p3/UploadManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,Deferred,
-	ProgressBar,domConstruct
+	ProgressBar,domConstruct,UploadManager
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
@@ -139,16 +139,15 @@ define([
 
 		uploadFile: function(file, uploadDirectory){
 			if (!this._uploading){ this._uploading=[]}
-			var xhr = new XMLHttpRequest();
-			var reader = new FileReader();
-			this._uploading.push(file)
+
 			var _self=this;
 
-			return Deferred.when(window.App.api.workspace("Workspace.create_upload_node",[{objects:[[uploadDirectory,file.name,"Unspecified"]]}]), function(getUrlRes){
+			return Deferred.when(window.App.api.workspace("Workspace.create",[{objects:[[uploadDirectory+file.name,"unspecified",{},""]],createUploadNodes:true}]), function(getUrlRes){
 				domClass.add(_self.domNode,"Working");
 
-				 0 && console.log("getUrlRes",getUrlRes);
-				var uploadUrl = getUrlRes[0][0];
+				 0 && console.log("getUrlRes",getUrlRes, getUrlRes[0]);
+				var uploadUrl = getUrlRes[0][0][11];
+				 0 && console.log("uploadUrl: ", uploadUrl);
 				if (!_self.uploadTable){
 					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.workingMessage);
 					_self.uploadTable = domConstruct.create('tbody',{}, table)
@@ -156,58 +155,38 @@ define([
 
 				var row = domConstruct.create("tr",{},_self.uploadTable);
 				var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
-				var pnode = domConstruct.create("td",{style: {width: "80%"}},row);
 
-				var progressBar = new ProgressBar({style: "100%"});
-				progressBar.placeAt(pnode);
-				progressBar.startup();
-				 0 && console.log("progressBar", progressBar, ProgressBar)
+//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
+					UploadManager.upload({file: file, url: uploadUrl}, window.App.authorizationToken);
+				
 
-				xhr.upload.addEventListener("progress", function(e){
-					if (e.lengthComputable) {
-						var percentage = Math.round((e.loaded*100)/e.total);
-						progressBar.set("value",percentage);
-					}
-				})
-
-				xhr.upload.addEventListener("load", function(e){
-					progressBar.set("value", 100);
-					 0 && console.log("File Upload Complete");
-				})
-
-				xhr.open("POST",uploadUrl);
-				xhr.setRequestHeader("Authorization", window.App.authorizationToken)
-				reader.onload = function(evt){
-					xhr.send(evt.target.result);
-				}
-
-				reader.readAsBinaryString(file);
 			});
 
 		},
 		onFileSelectionChange: function(evt){
 			 0 && console.log("onFileSelectionChange",evt, this.fileInput);
-			Object.keys(this.fileInput.files).forEach(function(key){
-				var f = this.fileInput.files[key];
-				if (f.name){
-					this.uploadFile(f,"/reviewer/test8/");
-					 0 && console.log("File: ",f);
-				}
-			},this)
 		},
 
 		onSubmit: function(evt){
 			var _self = this;
-			if (this.validate()){
-				var values = this.getValues();
-				 0 && console.log("Submission Values", values);
-				domClass.add(this.domNode,"Working");
-			}else{
-				 0 && console.log("Form is incomplete");
-			}
-
 			evt.preventDefault();
 			evt.stopPropagation();
+
+			if (!_self.path) {
+				 0 && console.error("Missing Path for Upload: ", _self.path);
+				return;
+			}
+	
+			Object.keys(this.fileInput.files).forEach(function(key){
+				var f = _self.fileInput.files[key];
+				if (f.name){
+					this.uploadFile(f,_self.path);
+					 0 && console.log("File: ",f);
+
+				}
+			},this)
+
+			on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
 		},
 
 		onCancel: function(evt){
@@ -947,9 +926,91 @@ return number;
 });
 
 },
+'p3/UploadManager':function(){
+define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
+
+	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+	var UploadManager = (declare([], {
+		constructor: function(){
+			this._inProgress={};
+		},
+		token: null,
+		upload: function(files, token){
+			if (token) {
+				this.token=token;
+				this.headers = {
+					Authorization: "OAuth " + token
+				}
+			}
+			var _self=this;
+			if (files instanceof Array){
+				files.forEach(function(obj){
+					_self._uploadFile(obj.file, obj.url);
+				});
+			}else if (files && files.file){
+				_self._uploadFile(files.file, files.url);
+			}
+		},	
+
+		_uploadFile: function(file, url) {	
+			var def = new Deferred();
+			var fd = new FormData();
+			fd.append("upload", file);
+
+			req = new XMLHttpRequest();
+			req.upload.addEventListener("progress", function(evt){
+				 0 && console.log("evt: ", evt);
+				 0 && console.log("progress: ", (evt.loaded / evt.total)*100);
+				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url})
+			});
+
+			req.upload.addEventListener("load", function(data){
+				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url})
+				def.resolve(data);
+			});
+	
+			req.upload.addEventListener("error", function(error){
+				 0 && console.log("Error Uploading File: ", error);
+				def.reject(error);
+			});
+
+			req.open("PUT", url, true);
+
+			for (var prop in this.headers){
+				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
+				req.setRequestHeader(prop, this.headers[prop]);
+			}
+
+			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url})
+			req.send(fd);
+			return def.promise;
+
+			/*
+			this.headers['X-Requested-With']=null;
+			return xhr.put(url, {
+				headers: this.headers,
+				data:fd
+			}).then(function(data){
+				 0 && console.log("after put data : ", data);
+				return data;
+			}, function(err){
+				 0 && console.log("Error Uploading File: ", err);
+			}, function(evt){
+				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
+			});
+			*/
+		}
+
+	}))()
+
+	return UploadManager;
+});
+
+
+},
 'url:p3/widget/templates/CreateFolder.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\"></div>\n\t</div>\n\t\t<div class=\"workingMessage\">\n\t\t\tCreating new workspace ...\n\t\t</div>\n\n\t\t<div class=\"errorMessage\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Creating Folder:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Create Folder</div>\n\t\t</div>\t\n</form>\n\n",
 'url:p3/widget/templates/CreateWorkspace.html':"<form dojoAttachPoint=\"containerNode\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div class=\"PanelForm\" style=\"\">\n\t\t<input data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for new Workspace',trim:true,placeHolder:'MyWorkspace'\" />\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Create Workspace</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style='width:400px'>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-point=\"uploadType\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t<option value=\"auto\">Auto Detect</option>\n\t\t\t<option value=\"fasta\">FASTA</option>\t\t\t\n\t\t</select>\n\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" multiple=\"true\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\t\n\t</div>\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div class=\"errorMessage\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Creating Folder:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Create Folder</div>\n\t\t</div>\t\n</form>\n\n",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style='width:400px'>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-point=\"uploadType\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t<option value=\"auto\">Auto Detect</option>\n\t\t\t<option value=\"fasta\">FASTA</option>\t\t\t\n\t\t</select>\n\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" multiple=\"true\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\t\n\t</div>\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t</div>\t\n</form>\n\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/panels*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

@@ -8,14 +8,12 @@ widgets will generally expect to exist.
 
 ```js
 require([
-    'dojo/_base/declare',
-    'dgrid/OnDemandGrid',
-    'dgrid/extensions/DijitRegistry'
-], function (declare, OnDemandGrid, DijitRegistry) {
-    var grid = new (declare([ OnDemandGrid, DijitRegistry ]))({
-        collection: myStore,
+    "dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/extensions/DijitRegistry"
+], function(declare, OnDemandGrid, DijitRegistry){
+    var grid = new (declare([OnDemandGrid, DijitRegistry]))({
+        store: myStore,
         columns: myColumns
-    }, 'grid');
+    }, "grid");
 });
 ```
 

@@ -1,11 +1,13 @@
 define("p3/widget/WorkspaceExplorerView", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
-	"dojo/_base/Deferred", "dojo/dom-geometry"
+	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
+	"dojo/topic"
 ], function(
 	declare, WidgetBase, on,
 	domClass, domConstr, WorkspaceGrid,
-	Deferred, domGeometry
+	Deferred, domGeometry,JobManager,
+	Topic
 ) {
 	return declare([WorkspaceGrid], {
 		"baseClass": "WorkspaceExplorerView",
@@ -17,8 +19,10 @@ define("p3/widget/WorkspaceExplorerView", [
 			if (ws[ws.length - 1] == "/") {
 				ws = ws.substr(0, ws.length - 1)
 			}
-			return Deferred.when(window.App.api.workspace("Workspace.list_workspace_hierarchical_contents", [{
-					directory: ws,
+			if (!ws) { ws = "/" }
+
+			return Deferred.when(window.App.api.workspace("Workspace.ls", [{
+					paths: [ws],
 					includeSubDirs: false,
 					Recursive: false
 				}]), function(results) {
@@ -29,18 +33,18 @@ define("p3/widget/WorkspaceExplorerView", [
 					}
 					return results[0][ws].map(function(r) {
 						return {
-							id: r[0],
-							name: r[1],
-							type: r[2],
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
 							creation_time: r[3],
-							link_reference: r[4],
+							link_reference: r[11],
 							owner_id: r[5],
-							workspaceId: r[6],
-							workspaceName: r[7],
-							path: r[8],
-							size: r[9],
-							userMeta: r[10],
-							autoMeta: r[11]
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
 						}
 					})
 				},
@@ -87,12 +91,21 @@ define("p3/widget/WorkspaceExplorerView", [
 
 			var _self = this;
 
-
 			this.listWorkspaceContents(this.path).then(function(contents) {
 				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
+
+			Topic.subscribe("/Jobs", function(msg){
+				if (msg.type=="JobStatus") {
+					console.log("JobStatus MSG: ", msg.job);
+				}else if (msg.type=="JobStatusChanged") {
+					console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
+				}
+			});
+
 		},
+
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;

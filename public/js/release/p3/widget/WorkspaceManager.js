@@ -32,11 +32,11 @@ define("p3/widget/WorkspaceManager", [
 			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
 			this.workspaceBrowserTabs = new TabContainer({region: "center"});
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path});
-			this.workspaceGroups = new WorkspaceGroups({content: "Groups", title: "Groups"})
-			this.workspaceJobs = new WorkspaceJobs({content: "Jobs", title: "Jobs"})
+			//this.workspaceGroups = new WorkspaceGroups({content: "Groups", title: "Groups"})
+			//this.workspaceJobs = new WorkspaceJobs({content: "Jobs", title: "Jobs"})
 			this.workspaceBrowserTabs.addChild(this.workspaceBrowser);
-			this.workspaceBrowserTabs.addChild(this.workspaceGroups);
-			this.workspaceBrowserTabs.addChild(this.workspaceJobs);
+			//this.workspaceBrowserTabs.addChild(this.workspaceGroups);
+			//this.workspaceBrowserTabs.addChild(this.workspaceJobs);
 			
 			//this.workspaceDetail = new WorkspaceItemDetail({content: "Workspace Detail", region: "right", splitter: true,style: "width:250px;min-width:150px;margin:-1px"})
 

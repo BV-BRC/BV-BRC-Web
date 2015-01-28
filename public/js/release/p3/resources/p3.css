@@ -5020,9 +5020,17 @@ div.dijitNumberTextBoxRtl {
 	padding-right: 4px;
 	padding:2px;
 }
-.TopMenuBar > SPAN {
+.Authenticated .TopMenuLink.HideWithAuth {
+	display: none;
+}
+.Authenticated .TopMenuLink.ShowWithAuth {
+	display: inline;
+}
+.TopMenuLink {
+	display: inline;
 	margin-right: 8px;
 	cursor: pointer;
+	color: #fff;
 }
 .P3Header {
 	width: 100%;
@@ -5050,6 +5058,8 @@ div.dijitNumberTextBoxRtl {
 .topMenuButton:hover{
 	color: orange;
 }
+.TopMenuLink,
+.TopMenuLink:visited,
 .P3Header A,
 .P3Header A:visited {
 	text-decoration:none;
@@ -5227,6 +5237,31 @@ div.dijitNumberTextBoxRtl {
 .WorkspaceController,
 .WorkspaceGlobalController {
 	padding: 4px;
+}
+.UploadComplete {
+	color: green;
+	border: 1px solid green;
+}
+.UploadingButton {
+	display: inline-block;
+	margin: 2px;
+	margin-right: 4px;
+	padding:2px;
+	border: 1px solid gray;
+}
+.TypeContainer {
+	display: inline-block;
+	width: 80;
+	float: left;
+}
+.ItemTypeIcon {
+	width:64px; 
+	height: 64px;
+	margin:auto;
+	border: 1px solid gray;
+}
+.TypeContainer > DIV {
+	text-align: center;
 }
 @font-face {
   font-family: 'Icons';
@@ -5531,6 +5566,12 @@ body.patric {
 }
 .layer > H1 {
 	color: #333;
+}
+.ShowWithAuth {
+	display: none;
+}
+.Authenticated .ShowWithoutAuth {
+	display: none;
 }
 .HomeServiceLink {
 	width: 100px;

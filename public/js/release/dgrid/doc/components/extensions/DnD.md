@@ -4,22 +4,19 @@ The DnD extension can be used to add row drag'n'drop functionality.
 
 ```js
 require([
-    'dojo/_base/declare',
-    'dgrid/OnDemandGrid',
-    'dgrid/extensions/DnD',
-    'dojo/dnd/Source'
-], function (declare, OnDemandGrid, DnD, DnDSource) {
-    var grid = new (declare([ OnDemandGrid, DnD ]))({
-        collection: myStore,
+    "dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/Selection", "dgrid/extensions/DnD", "dojo/dnd/Source"
+], function(declare, OnDemandGrid, Selection, DnD, DnDSource){
+    var grid = new (declare([OnDemandGrid, Selection, DnD, Keyboard]))({
+        store: myStore,
         columns: {
-            name: 'Name'
+            name: "Name"
             // ...
         }
-    }, 'grid');
-
+    }, "grid");
+    
     // Set up another target
-    var target = new DnDSource('target', {
-        accept: [ 'dgrid-row' ],
+    var target = new DnDSource("target", {
+        accept: ["dgrid-row"],
         isSource: false
         // Optionally, override onDrop(source, nodes) with custom behavior
     });
@@ -29,14 +26,11 @@ require([
 ## Requirements
 
 The DnD extension assumes usage of a store-backed component, most commonly an
-[OnDemandGrid](../core-components/OnDemandList-and-OnDemandGrid.md#ondemandgrid)
-instance. The store should be order-aware, supporting the `options.beforeId`
-parameter on `add()` and `put()` calls to properly respond to DnD operations.
-(`dstore/Memory` and `dstore/Rest` both support this feature.)
-
-Additionally, if the store supports a `copy` method, it will be called for DnD
-copy operations within the same list/grid (since a `put` would normally relocate
-the item).
+[OnDemandGrid](../core-components/OnDemandList-and-OnDemandGrid.md#ondemandgrid) instance. The store should be
+order-aware, supporting the `options.before` parameter on `add()` and `put()`
+calls to properly respond to DnD operations. Additionally, if the store supports
+a `copy` method, it will be called for DnD copy operations within the same
+list/grid (since a `put` would normally relocate the item).
 
 Note that the DnD extension inherits the [Selection](../mixins/Selection.md) mixin, which allows it to
 behave more resiliently when dragging items.
@@ -55,15 +49,15 @@ Property | Description
 
 ## Touch Support
 
-The `dojo/dnd` package supports interaction via touch events.
+As of Dojo 1.8, the `dojo/dnd` package supports interaction via touch events.
 However, since touch events are also used to control scrolling of dgrid
-components on touch devices, a conflict ensues and touch scrolling wins by default.
+components on touch devices, a conflict ensues and TouchScroll wins by default.
 There are generally two ways to resolve this conflict:
 
+* Increase `touchesToScroll` to 2 on the instance, to require that two fingers
+  be used to scroll it.
 * Set up DnD handles somewhere in the grid, and instruct the DnD source to
   only drag by handles by passing `withHandles: true` in `dndParams`.
-* Use `dgrid/TouchScroll` and increase `touchesToScroll` to 2 on the instance,
-  to require that two fingers be used to scroll it.
 
 Examples of both of these solutions can be found in
 `test/extensions/DnD_touch.html`.

@@ -24,7 +24,8 @@
 	bottom: 0;
 	width: 100%;
 }
-.dgrid-header-hidden {
+.dgrid-header-hidden,
+html.has-quirks .dgrid-header-hidden .dgrid-cell {
 	
 	font-size: 0; 
 	height: 0 !important;
@@ -51,11 +52,11 @@
 	border: none;
 	table-layout: fixed;
 	empty-cells: show;
-	width: 100%;
+	width: 100%; 
 	height: 100%;
 }
 .dgrid-cell {
-	padding: 3px;
+	padding: 0px;
 	text-align: left;
 	overflow: hidden;
 	vertical-align: top;
@@ -66,6 +67,9 @@
 	-moz-box-sizing: border-box;
 	-ms-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
+}
+.dgrid-cell-padding {
+	padding: 3px;
 }
 .dgrid-content {
 	position: relative;
@@ -138,6 +142,23 @@
 }
 .dgrid-input {
 	width: 99%;
+}
+html.has-mozilla .dgrid *:focus, html.has-opera .dgrid *:focus {
+	 
+	outline: 1px dotted;
+}
+html.has-ie-6-7.has-no-quirks .dgrid-row-table {
+	
+	width: auto;
+}
+html.has-quirks .dgrid-row-table, html.has-ie-6 .dgrid-row-table {
+	
+	height: auto; 
+}
+html.has-quirks .dgrid-header-scroll,
+html.has-ie-6 .dgrid-header-scroll {
+	
+	font-size: 0;
 }
 html.has-mozilla .dgrid-focus {
 	

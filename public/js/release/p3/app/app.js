@@ -26,17 +26,25 @@ define("p3/app/app", [
 			this._containers={};
 			console.log("Launching Application...");
 
-var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-var eventer = window[eventMethod];
-var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
-// Listen to message from child window
-eventer(messageEvent,function(e) {
-  console.log('parent received message!:  ',e.data);
-},false);
-			//on(window,"message", function(msg){
-			//	console.log("window.message: ", msg);
-			//});
+			on(window,"message", function(evt){
+				var msg = evt.data;
+				console.log("window.message: ", msg);
+				if (!msg || !msg.type) { return; }
+
+				switch(msg.type){
+					case "AuthenticationSuccess":
+						if (_self.loginWindow){
+							_self.loginWindow.close();
+						}		
+						self.accessToken = msg.accessToken;
+						self.user = msg.userProfile;	
+						domClass.add(document.body, "Authenticated");
+						break;
+				}					
+
+				Topic.publish("/" + msg.type, msg);
+			});
 
 			Ready(this,function(){
 				console.log("Instantiate App Widgets");
@@ -97,7 +105,7 @@ eventer(messageEvent,function(e) {
 				console.log("Login Link Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				console.log("Target", evt.target.href);
+				console.log("Target", evt.target.href, window);
 				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
 				console.log("end loginLink Lcik");
 			});

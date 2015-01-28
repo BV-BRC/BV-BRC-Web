@@ -119,18 +119,28 @@ define("p3/widget/WorkspaceGrid", [
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
-				    if (row.data.type == "Directory"){
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path + "/" + row.data.name + "/"})
+				    if (row.data.type == "folder"){
+						Topic.publish("/navigate", {href:"/workspace" + row.data.path + "/"})
+						_selection={};
+						Topic.publish("/select", []);
 					}
 				});
+				_selection={};
+				Topic.publish("/select", []);
 
-				this.on(".dgrid-content .dgrid-row:dgrid-select", function(evt) {
-				    var rows = event.rows;
-				    if (Object.keys(rows).length==1){
-				    	console.log("Select Workspace Item");
-				    }else{
-				    	console.log("Selected Rows", rows)
-				    }
+				this.on("dgrid-select", function(evt) {
+					console.log("dgrid-select");
+					var rows = event.rows;
+					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+					Topic.publish("/select", sel);
+				});
+				this.on("dgrid-deselect", function(evt) {
+					console.log("dgrid-select");
+					var rows = event.rows;
+					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
+					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+					Topic.publish("/select", sel);
 				});
 
 

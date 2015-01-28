@@ -21,9 +21,17 @@
 	padding-right: 4px;
 	padding:2px;
 }
-.TopMenuBar > SPAN {
+.Authenticated .TopMenuLink.HideWithAuth {
+	display: none;
+}
+.Authenticated .TopMenuLink.ShowWithAuth {
+	display: inline;
+}
+.TopMenuLink {
+	display: inline;
 	margin-right: 8px;
 	cursor: pointer;
+	color: #fff;
 }
 .P3Header {
 	width: 100%;
@@ -51,6 +59,8 @@
 .topMenuButton:hover{
 	color: orange;
 }
+.TopMenuLink,
+.TopMenuLink:visited,
 .P3Header A,
 .P3Header A:visited {
 	text-decoration:none;

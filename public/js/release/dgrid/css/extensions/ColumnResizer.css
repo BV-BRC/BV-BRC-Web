@@ -15,6 +15,15 @@
 	border-left: 5px solid transparent;
 	outline: none;
 }
+html.has-ie-6 .dgrid-resize-handle {
+	border-color: pink;
+	filter: chroma(color=pink);
+}
+html.has-mozilla .dgrid .dgrid-resize-handle:focus,
+html.has-opera .dgrid .dgrid-resize-handle:focus {
+	
+	outline: none;
+}
 .dgrid-resize-header-container {
 	height:100%;
 }
@@ -24,12 +33,24 @@ html.has-touch .dgrid-resize-handle {
 html.has-touch .dgrid-column-resizer {
 	width: 2px;
 }
-.dgrid-resize-header-container {
+html.has-no-quirks .dgrid-resize-header-container {
 	
 	position: relative;
 }
-.dgrid-header .dgrid-cell {
+html.has-ie-6 .dgrid-resize-header-container {
+	position: static; 
+} 
+.dgrid-header .dgrid-cell-padding {
 	overflow: hidden;
+}
+html.has-ie-6 .dgrid-header .dgrid-cell-padding {
+	margin-right: 4px; 
+}
+html.has-ie-6 .dgrid-header .dgrid-sort-arrow {
+    margin-right: 0; 
+}
+html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell {
+	position:relative;
 }
 #dgrid-css-extensions-ColumnResizer-loaded {
 	display: none;
