@@ -92,8 +92,11 @@ define([
 			if (!this.api) { this.api={}}
 			if (this.workspaceAPI){
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
-
 			}
+			if (this.serviceAPI){
+				this.api.service = RPC(this.serviceAPI, "OAuth " + this.authorizationToken);
+			}
+	
 			// console.log("go()")
 			// setTimeout(function(){
 			// 	Router.go("/workspace/dmachi/foo/bar");

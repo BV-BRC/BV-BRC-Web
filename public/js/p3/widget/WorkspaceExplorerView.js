@@ -94,6 +94,19 @@ define([
 				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
+
+			this.pollJobs();
+		},
+
+		pollJobs: function(){
+			var _self=this;
+			Deferred.when(window.App.api.service("AppService.enumerate_tasks"), function(tasks){
+				console.log("tasks: ", tasks);
+				this.tasks =tasks;
+				setTimeout(function(){
+					self.pollJobs();
+				},10000)
+			});
 		},
 		_setPath: function(val) {
 			this.path = val;
