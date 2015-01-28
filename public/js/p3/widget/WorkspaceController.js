@@ -33,7 +33,7 @@ define([
 
 				if (!this.jobSummaryNode){
 					console.log("Creating Job Summary Node");
-					this.jobSummaryNode = domConstr.create('div',{style:{float:"right","font-size": "1.2em"}}, this.domNode);
+					this.jobSummaryNode = domConstr.create('div',{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);
 				}	
 				var Summary = "Jobs <span style='color:blue'>" + (msg.summary.completed||0) + "</span> <span style='color:green'>" + (msg.summary.running||0) + "</span>" + "</span> <span style='color:orange'>" + (msg.summary.queued||0) + "</span>"; 
 				console.log("Summary: ", Summary);
