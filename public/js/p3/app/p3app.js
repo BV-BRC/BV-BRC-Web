@@ -94,7 +94,8 @@ define([
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
 			if (this.serviceAPI){
-				this.api.service = RPC(this.serviceAPI, "OAuth " + this.authorizationToken);
+				console.log("Setup API Service @ ", this.serviceAPI);
+				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
 	
 			// console.log("go()")

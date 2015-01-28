@@ -1,11 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
-	"dojo/_base/Deferred", "dojo/dom-geometry"
+	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
+	"dojo/topic"
 ], function(
 	declare, WidgetBase, on,
 	domClass, domConstr, WorkspaceGrid,
-	Deferred, domGeometry
+	Deferred, domGeometry,JobManager,
+	Topic
 ) {
 	return declare([WorkspaceGrid], {
 		"baseClass": "WorkspaceExplorerView",
@@ -89,25 +91,21 @@ define([
 
 			var _self = this;
 
-
 			this.listWorkspaceContents(this.path).then(function(contents) {
 				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
 
-			this.pollJobs();
+			Topic.subscribe("/Jobs", function(msg){
+				if (msg.type=="JobStatus") {
+					console.log("JobStatus MSG: ", msg.job);
+				}else if (msg.type=="JobStatusChanged") {
+					console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
+				}
+			});
+
 		},
 
-		pollJobs: function(){
-			var _self=this;
-			Deferred.when(window.App.api.service("AppService.enumerate_tasks"), function(tasks){
-				console.log("tasks: ", tasks);
-				this.tasks =tasks;
-				setTimeout(function(){
-					self.pollJobs();
-				},10000)
-			});
-		},
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
