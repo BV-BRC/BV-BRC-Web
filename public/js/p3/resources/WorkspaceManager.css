@@ -18,13 +18,13 @@
 
 .TypeContainer {
 	display: inline-block;
-	width: 100px;
+	width: 80;
 	float: left;
 }
 
 .ItemTypeIcon {
-	width:90px; 
-	height: 90px;
+	width:64px; 
+	height: 64px;
 	margin:auto;
 	border: 1px solid gray;
 }
