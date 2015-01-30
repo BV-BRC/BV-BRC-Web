@@ -51,3 +51,26 @@
 .wsItemCreationTime {
 	width: 150px;
 }
+.UploadStatusButton {
+	padding:1px;
+	margin:2px;
+	border-radius:3px;
+	background: #333;
+	color:#333;
+	float:right:
+	font-size: 1.1em;
+}
+
+.UploadStatusButton > SPAN:first-child {
+	color:#fff;margin:2px;padding:2px
+}
+.UploadStatusButton > DIV {
+	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
+
+}
+
+.UploadStatusMarker::after {
+	content:"\00b7";
+}
+
+
