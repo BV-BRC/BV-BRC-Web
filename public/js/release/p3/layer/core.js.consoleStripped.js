@@ -32274,11 +32274,11 @@ define([
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dojo/topic","dojo/_base/lang",
-	"dojo/dom-construct","../JobManager"
+	"dojo/dom-construct","../JobManager","../UploadManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Topic,lang,
-	domConstr,JobManager
+	domConstr,JobManager,UploadManager
 ){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceController",
@@ -32295,8 +32295,14 @@ define([
 				}
 			}));
 			JobManager.getJobSummary().then(lang.hitch(this,"onJobsMessage"));
+			this._uploads={
+				inProgress: 0,
+				complete: 0,
+				progress: 0,
+				files: {}
+			}
 
-			this._uploadButtons={}
+			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 		},
 
 		onJobsMessage: function(msg){
@@ -32308,7 +32314,7 @@ define([
 					 0 && console.log("Creating Job Summary Node");
 					this.jobSummaryNode = domConstr.create('div',{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);
 				}	
-				var Summary = "Jobs <span style='color:blue'>" + (msg.summary.completed||0) + "</span> <span style='color:green'>" + (msg.summary.running||0) + "</span>" + "</span> <span style='color:orange'>" + (msg.summary.queued||0) + "</span>"; 
+				var Summary = "<div style='padding:1px;margin:2px;border-radius:3px;background: #333;color:#333;'> <span style='color:#fff;margin:2px;padding:2px'>Jobs</span> <div style='display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;'><span style='color:blue'>" + (msg.summary.completed||0) + "</span>&centerdot;<span style='color:green'>" + (msg.summary.running||0) + "</span>" + "&centerdot;<span style='color:orange'>" + (msg.summary.queued||0) + "</span></div></div>"; 
 				 0 && console.log("Summary: ", Summary);
 				this.jobSummaryNode.innerHTML= Summary;
 			}
@@ -32316,35 +32322,256 @@ define([
 
 		onUploadMessage: function(msg){
 			 0 && console.log("WorkspaceController: ", this);
+			if (msg && msg.type=="UploadStatSummary"){
+				 0 && console.log("UploadStatSummary: ", msg.summary);
+				this._uploads.inProgress=msg.summary.inProgress;
+				this._uploads.complete = msg.summary.complete;
+				this._uploads.progress = msg.summary.progress;
+				msg.summary.completedFiles.forEach(function(f){
+					this._uploads[f]={}
+				},this);
+				if (!this.uploadStatusButton) {
+					this.uploadStatusButton = domConstr.create("div",{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);		
+					var wrapper = domConstr.create("div",{'class':"UploadStatusButton",innerHTML: "<span>Uploads</span>"}, this.uploadStatusButton);
+					var innerWrap = domConstr.create("div",{},wrapper);
+					this.uploadTotalCount = domConstr.create("span",{"class":"UploadCompleteCount", innerHTML: this._uploads.complete},innerWrap);
+					
+					this.uploadingCount = domConstr.create("span",{"class":"UploadingCount", innerHTML: this._uploads.inProgress},innerWrap);
+					this.uploadingProgress = domConstr.create("span",{"class":"UploadingProgress",innerHTML: this._uploads.progress + "%"},innerWrap);
+				}else{
+					this.uploadTotalCount.innerHTML = this._uploads.complete;
+					this.uploadingCount.innerHTML = this._uploads.inProgress;
+					this.uploadingProgress.innerHTML = this._uploads.progress + "%"
+				}
+
+				if (this._uploads.inProgress <1){
+					domClass.add(this.uploadingProgress,"dijitHidden");
+				}
+				return;
+
+			}
+
 			if (msg && msg.type == "UploadStart"){
-				var b = domConstr.create("div",{innerHTML: msg.filename, "class":"UploadingButton"}, this.domNode);		
-				this._uploadButtons[msg.filename]=b;
+				this._uploads.inProgress++;
+				this._uploads.files[msg.filename] = {}
+		
+				if (!this.uploadStatusButton) {
+					this.uploadStatusButton = domConstr.create("div",{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);		
+					var wrapper = domConstr.create("div",{'class':"UploadStatusButton",innerHTML: "<span>Uploads</span>"}, this.uploadStatusButton);
+					var innerWrap = domConstr.create("div",{},wrapper);
+					this.uploadTotalCount = domConstr.create("span",{innerHTML: this._uploads.complete},innerWrap);
+					this.uploadingCount = domConstr.create("span",{innerHTML: this._uploads.inProgress},innerWrap);
+					this.uploadingProgress = domConstr.create("span",{innerHTML: this._uploads.progress},innerWrap);
+				}else{
+					this.uploadTotalCount.innerHTML = this._uploads.complete;
+					this.uploadingCount.innerHTML = this._uploads.inProgress;
+					this.uploadingProgress.innerHTML = this._uploads.progress + "%"
+				}
+
 				return;
 			}
 
 
 			if (msg && msg.type == "UploadProgress"){
-				if (this._uploadButtons[msg.filename]){
-					this._uploadButtons[msg.filename].innerHTML= msg.filename + "&nbsp;( " + msg.progress + "% )";
+				if (this._uploads[msg.filename]){
+					this._uploads[msg.filename] = msg;
 				}
+				UploadManager.getUploadSummary().then(lang.hitch(this, function(res){
+					var stats = res.summary;
+					 0 && console.log("getUploadSummary cb stats: ", res);
+					 0 && console.log("Stats.progress: ", stats.progress);
+
+					this._uploads.progress = stats.progress;
+					 0 && console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
+					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
+					if (this._uploads.inProgress>0){
+						domClass.remove(this.uploadingProgress,"dijitHidden");
+					}
+				}));
 				return;
 			}
 
 			if (msg && msg.type == "UploadComplete"){
-				if (this._uploadButtons[msg.filename]){
-					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
-					this._uploadButtons[msg.filename].innerHTML= msg.filename 
+				this._uploads.inProgress--;
+				this._uploads.complete++
+				this.uploadTotalCount.innerHTML = this._uploads.complete;
+				this.uploadingCount.innerHTML = this._uploads.inProgress;
+	
+				if (this._uploads.inProgress<1){
+					domClass.add(this.uploadingProgress, "dijitHidden");			
+				}
+
+
+//				if (this._uploadButtons[msg.filename]){
+//					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
+//					this._uploadButtons[msg.filename].innerHTML= msg.filename 
 //					setTimeout(function(){
 //						domConstr.destroy(this._uploadButtons[msg.filename]);
 //						delete this._uploadButtons[msg.filename];
 //					},30000);
-				}
+//				}
 				return;
 			}
 	
 		}
 	});
 });
+
+},
+'p3/UploadManager':function(){
+define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
+
+	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+	var UploadManager = (declare([], {
+		constructor: function(){
+			this.activeCount=0;
+			this.completeCount=0;
+			this.completedUploads=[]
+			this.errorCount=0;
+			this.inProgress={};
+
+			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
+				if (this.listenUnload){
+					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads ."; 
+					(event || window.event).returnValue = msg;
+					return msg;
+				}
+				return;		
+			}));
+			
+		},
+		token: null,
+		upload: function(files, token){
+			if (token) {
+				this.token=token;
+				this.headers = {
+					Authorization: "OAuth " + token
+				}
+			}
+			var _self=this;
+			if (files instanceof Array){
+				files.forEach(function(obj){
+					_self._uploadFile(obj.file, obj.url);
+				});
+			}else if (files && files.file){
+				_self._uploadFile(files.file, files.url);
+			}
+		},
+		getUploadSummary: function(){
+			var def = new Deferred();
+			var _self=this;
+			var summary = {
+				inProgress: _self.activeCount,
+				complete: _self.completeCount,
+				errors: _self.errorCount,
+				completedFiles: _self.completedUploads,
+				progress: 0
+			}
+			var totalSize=0;
+			var loadedSize=0;
+
+			Object.keys(this.inProgress).forEach(function(fname){
+				totalSize+=this.inProgress[fname].total;
+				loadedSize+=this.inProgress[fname].loaded;
+			},this)
+
+			if (totalSize>0) {
+				summary.progress = parseInt((loadedSize/totalSize)*100);
+			}else{
+				summary.progress=0;
+			}
+			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+
+			var msg ={
+				type: "UploadStatSummary", 
+				summary:summary
+			};
+
+			 0 && console.log("Summary message: ", msg)
+			def.resolve(msg);
+                        return def.promise;
+		},
+
+
+		listenUnload: false,
+		unloadPageListener: function(){
+			this.listenUnload=false;
+		},
+
+		loadPageListener: function(){
+			this.listenUnload=true;
+		},	
+
+		_uploadFile: function(file, url) {	
+			var def = new Deferred();
+			var fd = new FormData();
+			fd.append("upload", file);
+			this.inProgress[file.name] = {name: file.name, size: file.size}
+			var _self=this;	
+			req = new XMLHttpRequest();
+			req.upload.addEventListener("progress", function(evt){
+				 0 && console.log("evt: ", evt);
+				 0 && console.log("progress: ", (evt.loaded / evt.total)*100);
+				_self.inProgress[file.name].loaded = evt.loaded;
+				_self.inProgress[file.name].total = evt.total;
+				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url})
+			});
+
+			req.upload.addEventListener("load", lang.hitch(this,function(data){
+				_self.activeCount--;
+				_self.completeCount++
+				_self.completedUploads.push(file.name);
+
+				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url})
+
+				if (_self.activeCount < 1){
+					_self.unloadPageListener();
+				}
+				def.resolve(data);
+			}));
+	
+			req.upload.addEventListener("error", function(error){
+				 0 && console.log("Error Uploading File: ", error);
+				_self.activeCount--;
+				_self.errorCount++;
+				def.reject(error);
+			});
+
+			req.open("PUT", url, true);
+
+			for (var prop in this.headers){
+				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
+				req.setRequestHeader(prop, this.headers[prop]);
+			}
+
+			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url})
+			this.activeCount++;
+
+			this.loadPageListener();
+			req.send(fd);
+			return def.promise;
+
+			/*
+			this.headers['X-Requested-With']=null;
+			return xhr.put(url, {
+				headers: this.headers,
+				data:fd
+			}).then(function(data){
+				 0 && console.log("after put data : ", data);
+				return data;
+			}, function(err){
+				 0 && console.log("Error Uploading File: ", err);
+			}, function(evt){
+				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
+			});
+			*/
+		}
+
+	}))()
+
+	return UploadManager;
+});
+
 
 },
 'p3/widget/WorkspaceItemDetail':function(){
