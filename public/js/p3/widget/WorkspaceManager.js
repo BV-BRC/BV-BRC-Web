@@ -28,20 +28,22 @@ define([
 			if (this._started){ return; }
 			this.inherited(arguments);
 
-			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.workspaceBrowserTabs = new TabContainer({region: "center"});
-			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path});
+//			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
+			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "top", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
+			//this.workspaceBrowserTabs = new TabContainer({region: "center"});
+			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
+		
 			//this.workspaceGroups = new WorkspaceGroups({content: "Groups", title: "Groups"})
 			//this.workspaceJobs = new WorkspaceJobs({content: "Jobs", title: "Jobs"})
-			this.workspaceBrowserTabs.addChild(this.workspaceBrowser);
+			//this.workspaceBrowserTabs.addChild(this.workspaceBrowser);
 			//this.workspaceBrowserTabs.addChild(this.workspaceGroups);
 			//this.workspaceBrowserTabs.addChild(this.workspaceJobs);
 			
 			//this.workspaceDetail = new WorkspaceItemDetail({content: "Workspace Detail", region: "right", splitter: true,style: "width:250px;min-width:150px;margin:-1px"})
 
-			this.addChild(this.wsGlobal)
-			this.addChild(this.workspaceBrowserTabs);
+//			this.addChild(this.wsGlobal)
+			//this.addChild(this.workspaceBrowserTabs);
+			this.addChild(this.workspaceBrowser);
 			// this.addChild(this.workspaceDetail);	
 			this.addChild(this.wsController);
 
@@ -55,7 +57,7 @@ define([
 			if (this._started){
 				console.log("Workspace Manager Set Path: ", this.path)
 
-				this.wsGlobal.set('path',val);
+//				this.wsGlobal.set('path',val);
 				this.workspaceBrowser.set("path", val)
 			}
 		}

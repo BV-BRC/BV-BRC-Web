@@ -35,17 +35,22 @@ define([
 			out.push("</span>");
 			this.browserHeader = new ContentPane({content: out.join(""), region: "top"});
 			this.explorer = new WorkspaceExplorerView({path: this.path, region: "center"});
-			this.detailPanel = new ContentPane({content: "Detail", style:"width:300px", region: "right", splitter: true});
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", splitter: true})
+//			this.actionPanel = new ContentPane({content: '<div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div><div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div>',region: right, style: "width:44px;background:#efefef;", splitter: false, region: "right"});
+
+			this.actionPanel = new ContentPane({region: "right",style: "width:44px;background:#efefef;", content: '<div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div><div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div>', layoutPriority:2});
+			this.detailPanel = new ContentPane({content: "Detail", style:"width:300px", region: "right", splitter: true, layoutPriorty:1});
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: true, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.browserHeader);
-			this.addChild(this.explorer);
+			this.addChild(this.explorer); 
+			this.addChild(this.actionPanel);
 //			this.addChild(this.detailPanel);
 
 			var self=this;
 			Topic.subscribe("/select", function(selection){
 				if (selection.length==0){
 					var done=0;
+					self.removeChild(self.actionPanel);
 					self.getChildren().some(function(child){
 						if (child===self.detailPanel){
 							self.removeChild(self.detailPanel);
@@ -72,13 +77,13 @@ define([
 					self.itemDetailPanel.set("item",selection[0]);	
 
 					console.log("itemDetailPanel: ", self.itemDetailPanel);
-
+					self.addChild(self.actionPanel);
 					if (!self.getChildren().some(function(child){
 						return child===self.itemDetailPanel
 					})){
 						self.addChild(self.itemDetailPanel);
 					}
-	
+					
 				}else{
 					if (!self.getChildren().some(function(child){
 						return child===self.itemDetailPanel
@@ -86,6 +91,7 @@ define([
 						self.removeChild(self.itemDetailPanel);
 					}
 
+					self.addChild(self.actionPanel);
 					if (!self.getChildren().some(function(child){
 						return child===self.detailPanel
 					})){

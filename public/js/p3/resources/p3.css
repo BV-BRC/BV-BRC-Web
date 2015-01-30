@@ -16,6 +16,15 @@ body.patric {
     background: #efefef;
 }
 
+A, A:visited {
+	text-decoration: none;
+	color: inherit;
+}
+
+A:hover {
+	border-bottom: 2px solid orange;
+}
+
 .layoutContainer {
 	width: 100%;
 	height: 100%;

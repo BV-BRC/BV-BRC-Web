@@ -2,37 +2,45 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic"
+		"dojo/topic","dgrid/editor"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic
+		Deferred, aspect, lang,Topic,editor
 	) {
-		return declare([Grid, ColumnHider, DnD, Keyboard, ColumnResizer, DijitRegistry], {
+		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
-				"name": {
-					label: "Name",
-					field: "name"
-				},
 				"type": {
 					label: "Type",
-					field: "type"
+					field: "type",
+					className: "wsItemType"
 				},
-				creation_time: {
-					label: "Created On",
-					field: "creation_time"
-				},
-				owner_id: {
-					label: "Owner",
-					field: "owner_id"
+				"name": {
+					label: "Name",
+					field: "name",
+					className: "wsItemName"
 				},
 				size: {
 					label: "Size",
-					field: "size"
+					field: "size",
+					className: "wsItemSize"
 				},
+	
+				owner_id: {
+					label: "Owner",
+					field: "owner_id",
+					className: "wsItemOwnerId"
+				},
+				creation_time: {
+					label: "Created On",
+					field: "creation_time",
+					className: "wsItemCreationTime",
+					formatter: formatter.date
+				},
+	
 				userMeta: {
 					label: "User Metadata",
 					field: "userMeta",

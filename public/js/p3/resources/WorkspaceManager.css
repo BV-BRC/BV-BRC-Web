@@ -32,3 +32,22 @@
 .TypeContainer > DIV {
 	text-align: center;
 }
+
+.wsItemType {
+	width: 90px;
+}
+
+.wsItemName {
+}
+
+.wsItemOwnerId {
+	width: 90px;
+}
+
+.wsItemSize {
+	width: 48px;
+}
+
+.wsItemCreationTime {
+	width: 150px;
+}
