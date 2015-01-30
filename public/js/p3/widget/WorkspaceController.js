@@ -61,10 +61,10 @@ define([
 					this.uploadStatusButton = domConstr.create("div",{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);		
 					var wrapper = domConstr.create("div",{'class':"UploadStatusButton",innerHTML: "<span>Uploads</span>"}, this.uploadStatusButton);
 					var innerWrap = domConstr.create("div",{},wrapper);
-					this.uploadTotalCount = domConstr.create("span",{"class":"UploadStatusMarker", innerHTML: this._uploads.complete},innerWrap);
+					this.uploadTotalCount = domConstr.create("span",{"class":"UploadCompleteCount", innerHTML: this._uploads.complete},innerWrap);
 					
-					this.uploadingCount = domConstr.create("span",{"class":"UploadStatusMarker", innerHTML: this._uploads.inProgress},innerWrap);
-					this.uploadingProgress = domConstr.create("span",{innerHTML: this._uploads.progress + "%"},innerWrap);
+					this.uploadingCount = domConstr.create("span",{"class":"UploadingCount", innerHTML: this._uploads.inProgress},innerWrap);
+					this.uploadingProgress = domConstr.create("span",{"class":"UploadingProgress",innerHTML: this._uploads.progress + "%"},innerWrap);
 				}else{
 					this.uploadTotalCount.innerHTML = this._uploads.complete;
 					this.uploadingCount.innerHTML = this._uploads.inProgress;

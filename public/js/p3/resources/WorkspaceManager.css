@@ -68,9 +68,25 @@
 	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
 
 }
+.UploadCompleteCount {
+	color: blue;
+}
 
-.UploadStatusMarker::after {
+.UploadingProgress,
+.UploadingCount {
+	color: green;
+}
+
+.UploadCompleteCount::after {
+	content:"\00b7";
+	
+}
+
+.UploadingProgress::before{
 	content:"\00b7";
 }
+
+
+
 
 
