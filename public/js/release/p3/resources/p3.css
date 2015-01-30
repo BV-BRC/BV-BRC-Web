@@ -5263,6 +5263,20 @@ div.dijitNumberTextBoxRtl {
 .TypeContainer > DIV {
 	text-align: center;
 }
+.wsItemType {
+	width: 90px;
+}
+.wsItemName {
+}
+.wsItemOwnerId {
+	width: 90px;
+}
+.wsItemSize {
+	width: 48px;
+}
+.wsItemCreationTime {
+	width: 150px;
+}
 @font-face {
   font-family: 'Icons';
   src: url("iconic/font/fonts/open-iconic.eot");
@@ -5549,6 +5563,13 @@ body.patric {
     padding: 0;
     font-family: arial;
     background: #efefef;
+}
+A, A:visited {
+	text-decoration: none;
+	color: inherit;
+}
+A:hover {
+	border-bottom: 2px solid orange;
 }
 .layoutContainer {
 	width: 100%;
