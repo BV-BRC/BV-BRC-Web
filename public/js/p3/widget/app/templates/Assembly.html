@@ -1,0 +1,71 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+
+    <div class="appsetup appshadow">
+    </div>
+    <div style="width: 900px;margin:auto;margin-top: 10px;padding:10px;">
+	<div style="width:900px; margin:auto" class="formFieldsContainer">
+		<div id="pairedBox" class="appbox appshadow">
+			<h4 class="appboxlabel"> Paired read library</h4>
+			<table style="width:100%" data-dojo-attach-point="pairedReads">
+				<tr>
+				  <td>Read File 1</td>
+				  <td>Read File 2</td>		
+				  <td>Avg. Insert</td>		
+				  <td>Std. Insert</td>		
+				</tr>
+				<tr>
+				<td><div data-dojo-type="dijit/form/FilteringSelect" name="file1pair" data-dojo-attach-point="read1pair1" style="width:300px" required="true" data-dojo-props=""></div></td>
+				<td><div data-dojo-type="dijit/form/FilteringSelect" name="file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="true" data-dojo-props=""></div></td>
+				<td><div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" id="avgpair1" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div></td>		
+				<td><div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" id="stdpair1" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div></td>		
+				</tr>
+			</table>
+			<div class="readbuttons">
+				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
+			</div>
+                </div>
+
+		<div id="singleBox" class="appbox appshadow">
+			<h4 class="appboxlabel">Single read library</h4>
+			<table style="width:100%" data-dojo-attach-point="singleReads">
+				<tr>
+				<td><div data-dojo-type="dijit/form/FilteringSelect" name="readfile" data-dojo-attach-point="read1" style="width:300px" required="true" data-dojo-props=""></div></td>
+				</tr>
+			</table>
+			<div class="readbuttons">
+				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
+			</div>
+                </div>
+		<div id="singleBox" class="appbox appshadow">
+			<h4 class="appboxlabel">Parameters</h4>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="files" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Scientific Name'"></div>
+			<select data-dojo-type="dijit/form/Select" name="geneticCode" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<option value="auto">auto</option>
+				<option value="4">4</option>
+			</select>
+			<select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<option value="bacteria">Bacteria</option>
+				<option value="archaea">Archaea</option>
+			</select>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="outputLocation" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+                </div>
+		
+
+	</div >
+		<div style="width:400px; margin:auto" class="workingMessage">
+			Creating new workspace ...
+		</div>
+
+		<div style="width:400px; margin:auto" class="errorMessage">
+			<div style="font-weight:900;font-size:1.1em;">Error Creating Folder:</div>
+			<p data-dojo-attach-point="errorMessage">Error</p>
+		</div>
+		
+		<div style="margin-top: 10px; text-align:center;">
+			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Assemble!</div>
+		</div>	
+	</div>
+</form>
+
