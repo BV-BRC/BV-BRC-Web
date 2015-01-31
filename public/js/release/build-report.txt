@@ -1,4 +1,4 @@
-Build started: Thu Jan 29 2015 23:50:44 GMT-0500 (EST)
+Build started: Fri Jan 30 2015 12:43:54 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,9 +126,9 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:3.765s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:9.516s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.246s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.002s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:8.244s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:10.352s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1597,6 +1597,7 @@ p3/layer/core:
 	p3/widget/WorkspaceGlobalController
 	p3/widget/templates/WorkspaceGlobalController.html
 	p3/widget/WorkspaceController
+	p3/UploadManager
 	p3/widget/WorkspaceItemDetail
 	p3/widget/viewer/GenomeList
 	p3/widget/PageGrid
@@ -1620,13 +1621,12 @@ p3/layer/panels:
 	dojo/number
 	dojo/cldr/nls/number
 	dijit/templates/ProgressBar.html
-	p3/UploadManager
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.765s)
+Done (compile time:2.002s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.765s)
+Done (compile time:2.002s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1749,9 +1749,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:9.516s)
+Done (compile time:8.244s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.765s)
+Done (compile time:2.002s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1874,7 +1874,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:9.516s)
+Done (compile time:8.244s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:407: WARNING - unreachable code
 	}else if( 0 ){
@@ -1904,12 +1904,12 @@ core.js.uncompressed.js:27722: WARNING - Suspicious code. This code lacks side-e
 				if(xCss){
 				^
 
-core.js.uncompressed.js:32432: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:32659: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
 0 error(s), 8 warning(s)
-Done (compile time:11.246s)
+Done (compile time:10.352s)
 
 
 Has Features Detected
@@ -2361,4 +2361,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 90.949 seconds
+	build time: 89.407 seconds

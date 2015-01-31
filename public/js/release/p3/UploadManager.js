@@ -4,7 +4,10 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lan
 	var UploadManager = (declare([], {
 		constructor: function(){
 			this.activeCount=0;
-			this._inProgress={};
+			this.completeCount=0;
+			this.completedUploads=[]
+			this.errorCount=0;
+			this.inProgress={};
 
 			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
 				if (this.listenUnload){
@@ -33,6 +36,41 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lan
 				_self._uploadFile(files.file, files.url);
 			}
 		},
+		getUploadSummary: function(){
+			var def = new Deferred();
+			var _self=this;
+			var summary = {
+				inProgress: _self.activeCount,
+				complete: _self.completeCount,
+				errors: _self.errorCount,
+				completedFiles: _self.completedUploads,
+				progress: 0
+			}
+			var totalSize=0;
+			var loadedSize=0;
+
+			Object.keys(this.inProgress).forEach(function(fname){
+				totalSize+=this.inProgress[fname].total;
+				loadedSize+=this.inProgress[fname].loaded;
+			},this)
+
+			if (totalSize>0) {
+				summary.progress = parseInt((loadedSize/totalSize)*100);
+			}else{
+				summary.progress=0;
+			}
+			console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+
+			var msg ={
+				type: "UploadStatSummary", 
+				summary:summary
+			};
+
+			console.log("Summary message: ", msg)
+			def.resolve(msg);
+                        return def.promise;
+		},
+
 
 		listenUnload: false,
 		unloadPageListener: function(){
@@ -47,27 +85,34 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lan
 			var def = new Deferred();
 			var fd = new FormData();
 			fd.append("upload", file);
-		
+			this.inProgress[file.name] = {name: file.name, size: file.size}
+			var _self=this;	
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
 				console.log("evt: ", evt);
 				console.log("progress: ", (evt.loaded / evt.total)*100);
+				_self.inProgress[file.name].loaded = evt.loaded;
+				_self.inProgress[file.name].total = evt.total;
 				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url})
 			});
 
 			req.upload.addEventListener("load", lang.hitch(this,function(data){
-				this.activeCount--;
+				_self.activeCount--;
+				_self.completeCount++
+				_self.completedUploads.push(file.name);
+
 				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url})
 
-				if (this.activeCount < 1){
-					this.unloadPageListener();
+				if (_self.activeCount < 1){
+					_self.unloadPageListener();
 				}
 				def.resolve(data);
 			}));
 	
 			req.upload.addEventListener("error", function(error){
 				console.log("Error Uploading File: ", error);
-				this.activeCount--;
+				_self.activeCount--;
+				_self.errorCount++;
 				def.reject(error);
 			});
 
