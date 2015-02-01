@@ -5329,6 +5329,9 @@ div.dijitNumberTextBoxRtl {
 	content:"\00b7";
 	color: #333;
 }
+.PanelForm {
+	overflow: auto;
+}
 .PanelForm .messageContainer{
 	text-align: center;
 	margin: 4px;

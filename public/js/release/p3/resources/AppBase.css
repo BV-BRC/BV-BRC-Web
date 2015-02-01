@@ -1,3 +1,6 @@
+.PanelForm {
+	overflow: auto;
+}
 .PanelForm .messageContainer{
 	text-align: center;
 	margin: 4px;
