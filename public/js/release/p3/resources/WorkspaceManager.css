@@ -1,0 +1,95 @@
+.WorkspaceController,
+.WorkspaceGlobalController {
+	padding: 4px;
+}
+.WorkspaceExplorerView {
+	background:#888;
+}
+.BrowserHeader {
+	padding:2px;
+	vertical-align:middle;
+}
+.wsBreadCrumb {
+	font-size:1.1em;
+	margin:2px;
+	padding:4px;
+}
+.UploadComplete {
+	color: green;
+	border: 1px solid green;
+}
+.UploadingButton {
+	display: inline-block;
+	margin: 2px;
+	margin-right: 4px;
+	padding:2px;
+	border: 1px solid gray;
+}
+.TypeContainer {
+	display: inline-block;
+	width: 80;
+	font-size:.65em;
+	border:1px solid gray;
+	padding:4px;
+}
+.ItemDetailPanel {
+	background:#efefef;
+	color:#333;
+	padding:4px;
+	border-top: 1px solid #333;
+}
+.ItemTypeIcon {
+	width:64px; 
+	height: 64px;
+	margin:auto;
+	border: 1px solid gray;
+}
+.TypeContainer > DIV {
+	text-align: center;
+}
+.wsItemType {
+	width: 150px;
+}
+.wsItemName {
+}
+.wsItemOwnerId {
+	width: 90px;
+}
+.wsItemSize {
+	width: 48px;
+}
+.wsItemCreationTime {
+	width: 150px;
+}
+.UploadStatusButton {
+	padding:1px;
+	margin:2px;
+	border-radius:3px;
+	background: #333;
+	color:#333;
+	font-size: 1.1em;
+	cursor: pointer;
+}
+.UploadStatusButton > SPAN:first-child {
+	color:#fff;margin:2px;padding:2px
+}
+.UploadStatusButton > DIV {
+	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
+}
+.UploadingComplete{
+	color: blue;
+	margin:0px;
+}
+.UploadingProgress,
+.UploadingActive{
+	color: green;
+	margin:0px;
+}
+.UploadingActive::before{
+	content:"\00b7";
+	color: #333;
+}
+.UploadingProgress::before{
+	content:"\00b7";
+	color: #333;
+}

@@ -1,0 +1,93 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+
+    <div class="appsetup appshadow">
+		<div class="appbox">
+			<label for="infolder">Input Folder</label>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			<div style="margin:0 80px 0 80px; display: inline-block;">Upload to Blah</div>
+		</div>
+		<div class="appbox">
+			<label for="outfolder">Output Folder</label>
+			<div data-dojo-type="dijit/form/FilteringSelect"  name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>
+	    	</div>
+    </div>
+    <div style="width: 700px;margin:auto;margin-top: 10px;padding:10px;">
+	<div style="width:700px; margin:auto" class="formFieldsContainer">
+		<div id="pairedBox" class="appbox appshadow">
+			<h4 class="appboxlabel"> Paired read library</h4>
+			<div class="approw">
+				Read File 1
+				<div data-dojo-type="dijit/form/FilteringSelect" name="file1pair" data-dojo-attach-point="read1pair1" style="width:300px" required="true" data-dojo-props=""></div>
+			</div>
+			<div class="approw">
+				Read File 2		
+				<div data-dojo-type="dijit/form/FilteringSelect" name="file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="true" data-dojo-props=""></div>
+			</div>
+			<div class="approw">
+				<label for="strategy">Interleaved</label>
+				<select data-dojo-type="dijit/form/Select" name="interleaved" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<option value="true">True</option>
+				<option value="false">False</option>
+				</select>
+			</div>
+			<div class="approw">
+				Average Insert Size
+				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>
+			</div>
+			<div class="approw">
+				Std. Insert		
+				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>		
+			</div>
+			<div class="readbuttons">
+				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
+			</div>
+                </div>
+
+		<div class="appbox appshadow">
+			<h4 class="appboxlabel">Single read library</h4>
+			<label for="singleread">Read File</label>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="readfile" data-dojo-attach-point="read1" style="width:300px" required="true" data-dojo-props=""></div>
+			<div class="readbuttons">
+				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
+			</div>
+                </div>
+		<div class="appbox appshadow">
+			<h4 class="appboxlabel">Parameters</h4>
+			<div class="approw">
+				<label for="contigsfile">Benchmark File</label>
+				<div data-dojo-type="dijit/form/FilteringSelect" name="files" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			</div>
+			<div class="approw">
+				<label for="strategy">Assembly Strategy</label>
+				<select data-dojo-type="dijit/form/Select" name="geneticCode" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<option value="auto">auto</option>
+				<option value="4">4</option>
+				</select>
+			</div>
+                </div>
+		
+
+	</div >
+		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
+			Submitting Assembly Job
+		</div>
+
+		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
+			Submitting Assembly Job
+		</div>
+
+		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
+			<div style="font-weight:900;font-size:1.1em;">Error Submitting AssemblyJob<div>
+			<p data-dojo-attach-point="errorMessage">Error</p>
+		</div>
+		
+		<div style="margin-top: 10px; text-align:center;">
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Assemble</div>
+		</div>	
+	</div>
+</form>
+
