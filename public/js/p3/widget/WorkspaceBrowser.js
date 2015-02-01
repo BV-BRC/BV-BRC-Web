@@ -57,7 +57,7 @@ define([
 
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
-				validTypes: ["genome_group"],
+				validTypes: ["genome_group"]
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];

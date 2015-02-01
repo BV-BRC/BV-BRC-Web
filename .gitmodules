@@ -26,6 +26,3 @@
 [submodule "public/js/util"]
 	path = public/js/util
 	url = git@github.com:dojo/util.git
-[submodule "public/js/p3/resources/Font-Awesome"]
-	path = public/js/p3/resources/Font-Awesome
-	url = https://github.com/FortAwesome/Font-Awesome

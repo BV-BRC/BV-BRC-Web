@@ -4,7 +4,7 @@ define([
 	"dojo/dom-construct","../JobManager","../UploadManager",
 	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
         "dojo/text!./templates/UploadStatus.html",
-	"dijit/_hasDropDown","dijit/layout/ContentPane"
+	"dijit/_HasDropDown","dijit/layout/ContentPane"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Topic,lang,
