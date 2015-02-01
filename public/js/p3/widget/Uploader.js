@@ -13,6 +13,7 @@ define([
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
+		overwrite: false,
 		validate: function(){
 			console.log("this.validate()",this);
 			var valid = this.inherited(arguments);
@@ -44,7 +45,7 @@ define([
 				var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
 
 //					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
-					UploadManager.upload({file: file, url: uploadUrl}, window.App.authorizationToken);
+					UploadManager.upload({file: file, uploadDirectory:uploadDirectory, url: uploadUrl}, window.App.authorizationToken);
 				
 
 			});

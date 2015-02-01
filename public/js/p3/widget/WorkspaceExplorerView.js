@@ -83,6 +83,17 @@ define([
 			this.renderArray(items);
 			// this.refresh();	
 		},
+
+		refreshWorkspace: function(){
+			var _self=this;
+			this.listWorkspaceContents(this.path).then(function(contents) {
+				console.log("Workspace Contents", contents);
+				_self.render(_self.path, contents);
+			})
+
+
+		},
+
 		startup: function() {
 			if (this._started) {
 				return;

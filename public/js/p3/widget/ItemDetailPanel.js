@@ -8,7 +8,7 @@ define([
 	Template
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
-		"baseClass": "WorkspaceGlobalController",
+		"baseClass": "ItemDetailPanel",
 		"disabled":false,
 		templateString: Template,
 		item: null,

@@ -1,9 +1,20 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 	<div style='width:400px'>
-		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-			<option value="auto">Auto Detect</option>
-			<option value="fasta">FASTA</option>			
+		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="width:300px" required="true" data-dojo-props="">
+			<option value="auto">Unspecified</option>
+			<option value="contigs">Contigs (.fa) </option>
+			<option value="fasta">fasta (.fa,.fasta) </option>
+			<option value="fastq">fastq (.fq, .fastq) </option>		
+			<option value="phenomics_gene_list">Phenomics Gene List (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="phenomics_gene_matrix">Phenomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="phenomics_experiment_metadata">Phenomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>
+			<option value="proteomics_gene_list">Proteomics Gene List (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="proteomics_gene_matrix">Proteomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="proteomics_experiment_metadata">Proteomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>	
+			<option value="transcriptomics_gene_list">Transcriptomics Gene List (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="transcriptomics_gene_matrix">Transcriptomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>			
+			<option value="transcriptomics_experiment_metadata">Transcriptomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>			
 		</select>
 		<input type="file" data-dojo-attach-point="fileInput" multiple="true" data-dojo-attach-event="onchange:onFileSelectionChange" />	
 	</div>
@@ -16,3 +27,4 @@
 		</div>	
 </form>
 
+ 	

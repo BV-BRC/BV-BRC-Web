@@ -22,6 +22,38 @@ define([
 		panels: Panels,
 		startup: function(){
 			var _self=this;
+			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
+				console.log("Workspace URL Callback", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="p3/widget/JobManager";
+				newState.value=path;
+				newState.set= "path";
+				console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
+				console.log("Workspace URL Callback", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="p3/widget/UploadManager";
+				newState.value=path;
+				newState.set= "path";
+				console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+
+
 			Router.register("\/workspace(\/.*)", function(params, oldPath, newPath, state){
 				console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}

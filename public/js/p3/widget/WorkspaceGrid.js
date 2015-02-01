@@ -2,14 +2,14 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem",
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
@@ -35,7 +35,7 @@ define([
 					className: "wsItemOwnerId"
 				},
 				creation_time: {
-					label: "Created On",
+					label: "Created",
 					field: "creation_time",
 					className: "wsItemCreationTime",
 					formatter: formatter.date
@@ -150,7 +150,30 @@ define([
 					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 					Topic.publish("/select", sel);
 				});
+				var activeItem;
+				this.on(".dgrid-content:contextmenu", function(evt){
+					var row=_self.row(evt);
+					activeItem = row;
+					console.log("activeItem: ", row.data);
+				});
 
+				var menu = new Menu({
+					  // Hook menu at domNode level since it stops propagation, and would
+					  // block any contextmenu events delegated from the domNode otherwise
+					  targetNodeIds: [this.domNode]
+				});
+
+				menu.addChild(new MenuItem({
+					label: "Delete Object",
+					onClick: function() {
+						if (activeItem) {
+							console.log("Delete Object: ", activeItem.data.id);
+							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path]}]), function(results){
+								console.log("Delete Object Results: ", results);
+							});
+						}
+					}
+				}));
 
 				this.inherited(arguments);
 				this._started = true;

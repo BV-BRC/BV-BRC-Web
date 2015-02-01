@@ -22,7 +22,14 @@ define([],function(){
                 dataParam: "path",
                 params: {}
             
+            },
+            UploadReplace: {
+                title: "Overwrite File",
+                layer: "p3/layer/panels",
+                ctor: "p3/widget/Uploader",
+                params: {overwrite:true}
             }
+	
 	
 	}
 

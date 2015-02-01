@@ -67,12 +67,12 @@ define([
 				console.log("DialogButton Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				params={};
+				var params={};
 
 				var rel = evt.target.attributes.rel.value;
 				var parts = rel.split(":");
 				var type = parts[0];
-				var params=parts[1];
+				params=parts[1];
 				var w = _self.loadPanel(type,params);
 		                Deferred.when(w, function(w){
                			     if (!_self.dialog) {
@@ -95,6 +95,27 @@ define([
 					 _self.dialog.hide();
 				 }
 
+			});
+
+
+			Topic.subscribe("/openDialog", function(msg){
+				console.log("OpenDialog: ", msg);
+				var type = msg.type
+				var params=msg.params||{};
+				var w = _self.loadPanel(type,params);
+		                Deferred.when(w, function(w){
+               			     if (!_self.dialog) {
+		                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
+               			     }else{
+		                            _self.dialog.set('title', w.title);
+               			     }
+		                    _self.dialog.set('content', '');
+       			             domConstruct.place(w.domNode, _self.dialog.containerNode);
+		                    _self.dialog.show();
+               			     w.startup();
+		                });
+
+				console.log("Open Dialog", type);
 			});
 
 			Topic.subscribe("/navigate",function(msg){

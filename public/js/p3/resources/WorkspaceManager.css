@@ -3,6 +3,20 @@
 	padding: 4px;
 }
 
+.WorkspaceExplorerView {
+	background:#888;
+}
+
+.BrowserHeader {
+	padding:2px;
+	vertical-align:middle;
+}
+
+.wsBreadCrumb {
+	font-size:1.1em;
+	margin:2px;
+	padding:4px;
+}
 .UploadComplete {
 	color: green;
 	border: 1px solid green;
@@ -22,6 +36,12 @@
 	float: left;
 }
 
+
+.ItemDetailPanel {
+	background:#bbb;
+	color:#333;
+	padding:4px;
+}
 .ItemTypeIcon {
 	width:64px; 
 	height: 64px;
@@ -34,7 +54,7 @@
 }
 
 .wsItemType {
-	width: 90px;
+	width: 150px;
 }
 
 .wsItemName {
@@ -57,8 +77,8 @@
 	border-radius:3px;
 	background: #333;
 	color:#333;
-	float:right:
 	font-size: 1.1em;
+	cursor: pointer;
 }
 
 .UploadStatusButton > SPAN:first-child {
@@ -68,25 +88,25 @@
 	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
 
 }
-.UploadCompleteCount {
+.UploadingComplete{
 	color: blue;
+	margin:0px;
 }
 
 .UploadingProgress,
-.UploadingCount {
+.UploadingActive{
 	color: green;
+	margin:0px;
 }
-
-.UploadCompleteCount::after {
+.UploadingActive::before{
 	content:"\00b7";
-	
+	color: #333;
 }
 
 .UploadingProgress::before{
 	content:"\00b7";
+	color: #333;
 }
-
-
 
 
 

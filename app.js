@@ -14,6 +14,8 @@ var users = require('./routes/users');
 var workspace  = require('./routes/workspace');
 var viewers  = require('./routes/viewers');
 var apps= require('./routes/apps');
+var uploads = require('./routes/uploads');
+var jobs = require('./routes/jobs');
 
 var app = express();
 
@@ -71,8 +73,9 @@ app.use('/', routes);
 app.use("/workspace", workspace)
 app.use("/view", viewers)
 app.use("/app", apps)
-app.use('/users', users);
-
+app.use("/job", jobs)
+app.use("/uploads", uploads)
+app.use('/users', users); 
 app.get("/login", 
 	function(req,res,next){
 		if (!req.isAuthenticated || !req.isAuthenticated()) {

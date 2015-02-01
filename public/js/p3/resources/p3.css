@@ -4,7 +4,6 @@
 @import url("Carousel.css");
 @import url("Drawer.css");
 @import url("WorkspaceManager.css");
-@import url("iconic/font/css/open-iconic.css");
 
 html, body,
 body.patric {
@@ -19,10 +18,6 @@ body.patric {
 A, A:visited {
 	text-decoration: none;
 	color: inherit;
-}
-
-A:hover {
-	border-bottom: 2px solid orange;
 }
 
 .layoutContainer {
@@ -103,4 +98,24 @@ A:hover {
 .PanelForm .formFieldsContainer > *{
 	font-size: 1.1em;
 	margin-top: 10px;
+}
+
+.ActionBar {
+	background: #3a69b9;
+	border-right:1px solid #888;
+	border-left:1px solid #333;
+}
+
+.ActionBar .fa {
+	margin-bottom:6px;
+	margin-top:4px;
+	color: #fff;
+}
+
+.fa {
+	cursor: pointer;
+}
+
+.fa:hover {
+	color: #e75200;
 }

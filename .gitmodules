@@ -1,6 +1,3 @@
-[submodule "public/js/p3/resources/iconic"]
-	path = public/js/p3/resources/iconic
-	url = https://github.com/iconic/open-iconic
 [submodule "public/js/xstyle"]
 	path = public/js/xstyle
 	url = git@github.com:/kriszyp/xstyle.git
@@ -29,3 +26,6 @@
 [submodule "public/js/util"]
 	path = public/js/util
 	url = git@github.com:dojo/util.git
+[submodule "public/js/p3/resources/Font-Awesome"]
+	path = public/js/p3/resources/Font-Awesome
+	url = https://github.com/FortAwesome/Font-Awesome

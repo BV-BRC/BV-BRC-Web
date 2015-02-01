@@ -30,10 +30,10 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			var _self=this;
 			if (files instanceof Array){
 				files.forEach(function(obj){
-					_self._uploadFile(obj.file, obj.url);
+					_self._uploadFile(obj.file, obj.url,obj.uploadDirectory);
 				});
 			}else if (files && files.file){
-				_self._uploadFile(files.file, files.url);
+				_self._uploadFile(files.file, files.url, files.uploadDirectory);
 			}
 		},
 		getUploadSummary: function(){
@@ -44,6 +44,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 				complete: _self.completeCount,
 				errors: _self.errorCount,
 				completedFiles: _self.completedUploads,
+				activeFiles: this.inProgress,
 				progress: 0
 			}
 			var totalSize=0;
@@ -81,11 +82,11 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			this.listenUnload=true;
 		},	
 
-		_uploadFile: function(file, url) {	
+		_uploadFile: function(file, url, workspacePath) {	
 			var def = new Deferred();
 			var fd = new FormData();
 			fd.append("upload", file);
-			this.inProgress[file.name] = {name: file.name, size: file.size}
+			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath:workspacePath}
 			var _self=this;	
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
@@ -93,15 +94,20 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 				console.log("progress: ", (evt.loaded / evt.total)*100);
 				_self.inProgress[file.name].loaded = evt.loaded;
 				_self.inProgress[file.name].total = evt.total;
-				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url})
+				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url, workspacePath: workspacePath})
 			});
 
 			req.upload.addEventListener("load", lang.hitch(this,function(data){
 				_self.activeCount--;
 				_self.completeCount++
-				_self.completedUploads.push(file.name);
+				_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
+				Object.keys(_self.inProgress).some(function(key){
+					if (key == file.name){
+						delete _self.inProgress[key];
+					}
+				})
 
-				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url})
+				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
 
 				if (_self.activeCount < 1){
 					_self.unloadPageListener();
@@ -123,7 +129,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 				req.setRequestHeader(prop, this.headers[prop]);
 			}
 
-			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url})
+			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url, workspacePath: workspacePath})
 			this.activeCount++;
 
 			this.loadPageListener();
