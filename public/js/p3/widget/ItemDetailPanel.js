@@ -15,12 +15,26 @@ define([
 		startup: function(){
 			var _self=this;
 			//if (this._started) { return; }
+			var currentIcon;
 			this.watch("item", function(prop,oldVal,item){
 				console.log("ItemDetailPanel Set(): ", arguments);
+				domClass.remove(_self.typeIcon,currentIcon)
+				switch(item.type){
+					case "folder": 
+						domClass.add(_self.typeIcon,"fa fa-folder fa-3x")
+						currentIcon="fa fa-folder fa-3x";
+						break;
+					default: 
+						domClass.add(_self.typeIcon,"fa fa-file fa-3x")
+						currentIcon="fa fa-file fa-3x";
+						break;
+				}	
 				Object.keys(item).forEach(function(key){
        	                		var val = item[key]; 
 					if (_self[key + "Node"]){
 						_self[key+"Node"].innerHTML=val;
+					}else if (_self[key +"Widget"]){
+						_self[key+"Widget"].set("value",val);
 					}
 				});
 			})

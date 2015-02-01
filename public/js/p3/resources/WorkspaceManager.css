@@ -33,12 +33,14 @@
 .TypeContainer {
 	display: inline-block;
 	width: 80;
-	float: left;
+	font-size:.65em;
+	border:1px solid gray;
+	padding:4px;
 }
 
 
 .ItemDetailPanel {
-	background:#bbb;
+	background:#efefef;
 	color:#333;
 	padding:4px;
 }
@@ -48,6 +50,7 @@
 	margin:auto;
 	border: 1px solid gray;
 }
+
 
 .TypeContainer > DIV {
 	text-align: center;

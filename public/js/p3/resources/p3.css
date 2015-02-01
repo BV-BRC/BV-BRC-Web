@@ -102,9 +102,10 @@ A, A:visited {
 }
 
 .ActionBar {
-	background: #3a69b9;
+	/*background: #3a69b9;*/
+	background:#333;
 	border-right:1px solid #888;
-	border-left:1px solid #333;
+	border-left:1px solid #000;
 }
 
 .ActionBar .fa {
@@ -115,6 +116,7 @@ A, A:visited {
 
 .fa {
 	cursor: pointer;
+	color: #333;
 }
 
 .fa:hover {
