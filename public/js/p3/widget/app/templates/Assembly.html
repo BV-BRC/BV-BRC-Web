@@ -4,12 +4,12 @@
     <div class="appsetup appshadow">
 		<div class="appbox">
 			<label for="infolder">Input Folder</label>
-			<div data-dojo-type="dijit/form/FilteringSelect" id="infolder" name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
 			<div style="margin:0 80px 0 80px; display: inline-block;">Upload to Blah</div>
 		</div>
 		<div class="appbox">
 			<label for="outfolder">Output Folder</label>
-			<div data-dojo-type="dijit/form/FilteringSelect" id="outfolder" name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+			<div data-dojo-type="dijit/form/FilteringSelect"  name="infolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
 			<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>
 	    	</div>
     </div>
@@ -34,30 +34,30 @@
 			</div>
 			<div class="approw">
 				Average Insert Size
-				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" id="avgpair1" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>
+				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>
 			</div>
 			<div class="approw">
 				Std. Insert		
-				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" id="stdpair1" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>		
+				<div class="insertspinner" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>		
 			</div>
 			<div class="readbuttons">
 				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
 			</div>
                 </div>
 
-		<div id="singleBox" class="appbox appshadow">
+		<div class="appbox appshadow">
 			<h4 class="appboxlabel">Single read library</h4>
 			<label for="singleread">Read File</label>
-			<div id="singleread" data-dojo-type="dijit/form/FilteringSelect" name="readfile" data-dojo-attach-point="read1" style="width:300px" required="true" data-dojo-props=""></div>
+			<div data-dojo-type="dijit/form/FilteringSelect" name="readfile" data-dojo-attach-point="read1" style="width:300px" required="true" data-dojo-props=""></div>
 			<div class="readbuttons">
 				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
 			</div>
                 </div>
-		<div id="singleBox" class="appbox appshadow">
+		<div class="appbox appshadow">
 			<h4 class="appboxlabel">Parameters</h4>
 			<div class="approw">
 				<label for="contigsfile">Benchmark File</label>
-				<div id="contigsfile" data-dojo-type="dijit/form/FilteringSelect" name="files" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
+				<div data-dojo-type="dijit/form/FilteringSelect" name="files" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props=""></div>
 			</div>
 			<div class="approw">
 				<label for="strategy">Assembly Strategy</label>
@@ -70,17 +70,23 @@
 		
 
 	</div >
-		<div style="width:400px; margin:auto" class="workingMessage">
-			Creating new workspace ...
+		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
+			Submitting Assembly Job
 		</div>
 
-		<div style="width:400px; margin:auto" class="errorMessage">
-			<div style="font-weight:900;font-size:1.1em;">Error Creating Folder:</div>
+		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
+			Submitting Assembly Job
+		</div>
+
+		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
+			<div style="font-weight:900;font-size:1.1em;">Error Submitting AssemblyJob<div>
 			<p data-dojo-attach-point="errorMessage">Error</p>
 		</div>
 		
 		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Assemble!</div>
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Assemble</div>
 		</div>	
 	</div>
 </form>

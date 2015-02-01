@@ -43,6 +43,7 @@
 	background:#efefef;
 	color:#333;
 	padding:4px;
+	border-top: 1px solid #333;
 }
 .ItemTypeIcon {
 	width:64px; 

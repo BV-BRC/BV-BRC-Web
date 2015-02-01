@@ -4,6 +4,7 @@
 @import url("Carousel.css");
 @import url("Drawer.css");
 @import url("WorkspaceManager.css");
+@import url("AppBase.css");
 @import url("assembly.css");
 
 html, body,
@@ -70,42 +71,11 @@ A, A:visited {
 }
 
 
-.PanelForm .errorMessage,
-.PanelForm .workingMessage {
-	text-align: center;
-	margin: 4px;
-	display: none;
-	width: 300px;
-}
 
-.PanelForm .workingMessage {
-	color: green;
-}
-
-.PanelForm .errorMessage {
-	color: red;
-}
-
-.PanelForm.Working .workingMessage {
-	display: block;
-}
-
-.PanelForm.Error .errorMessage{
-	display: block;
-}
-.formFieldsContainer {
-	text-align:center;
-}
-.PanelForm .formFieldsContainer > *{
-	font-size: 1.1em;
-	margin-top: 10px;
-}
 
 .ActionBar {
 	/*background: #3a69b9;*/
 	background:#333;
-	border-right:1px solid #888;
-	border-left:1px solid #000;
 }
 
 .ActionBar .fa {
