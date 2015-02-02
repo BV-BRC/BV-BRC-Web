@@ -8,7 +8,7 @@ define([
 	Template,AppBase
 ){
 	return declare([AppBase], {
-		"baseClass": "App Annotation",
+		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "Annotation"
 	});

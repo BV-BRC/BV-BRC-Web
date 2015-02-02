@@ -20,6 +20,8 @@ define([
 ) {
 	return declare([App], {
 		panels: Panels,
+		activeWorkspace: null,
+		activeWorkspacePath: "/",
 		startup: function(){
 			var _self=this;
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
@@ -129,6 +131,12 @@ define([
 				console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
+
+			Topic.subscribe("/ActiveWorkspace", function(as){
+				console.log("SET App.activeWorkspace",as)
+				_self.activeWorkspace=as.workspace;
+				_self.activeWorkspacePath=as.path;
+			});
 	
 			// console.log("go()")
 			// setTimeout(function(){
