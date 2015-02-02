@@ -7,24 +7,29 @@ box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
 
 .appsetup{
 width: 100%;
-height:70px;
 margin-top:0px;
-padding:10px;
+padding:15px 0px 10px 10px;
 text-align: center;
+background-color: #F0F1F3;
+}
+
+.paramlabel {
+	font-size: .65em;
+	text-transform: uppercase;
 }
 
 
 .approw{
 width: 100%;
-height:30px;
-margin-top:0px;
+margin-top:10px;
 }
 
 .appbox{
 background-color: #F0F1F3;
 margin: 0 auto;
 width: auto;
-padding: 5px 0px 10px 0px;
+padding: 5px 0px 10px 10px;
+text-align: left;
 }
 
 .insertspinner{
