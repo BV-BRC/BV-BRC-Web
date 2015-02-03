@@ -9,7 +9,10 @@
 		</div>
     </div>
     <div style="width: 700px;margin:auto;margin-top: 10px;padding:10px;">
-	<div style="width:400px; margin:auto" class="formFieldsContainer">
+	<div style="width:700px; margin:auto" class="formFieldsContainer">
+		<table style="width:100%">
+		<tr>
+		<td>
 		<div id="pairedBox" class="appbox appshadow">
 			<h4 class="appboxlabel"> Paired read library</h4>
 			<div class="approw">
@@ -21,19 +24,21 @@
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="true" data-dojo-props="type:['reads'],multi:false"></div>
 			</div>
 			<div class="approw">
-				<label class="paramlabel" for="interleaved">Interleaved</label><br>
-				<select data-dojo-type="dijit/form/Select" name="interleaved" data-dojo-attach-point="workspaceName" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-				<option value="true">True</option>
-				<option value="false">False</option>
-				</select>
-			</div>
-			<div class="approw">
-				<label class="paramlabel" for="avginsert">Average Insert Size</label><br>
-				<div class="insertspinner" name="avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>
-			</div>
-			<div class="approw">
-				<label class="paramlabel" for="stdinsert">Std. Insert</label><br>		
-				<div class="insertspinner" name="stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>		
+				<div class="approwsegment">
+					<label class="paramlabel" for="interleaved">Interleaved</label><br>
+					<select data-dojo-type="dijit/form/Select" name="interleaved" data-dojo-attach-point="workspaceName" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="true">True</option>
+					<option value="false">False</option>
+					</select>
+				</div>
+				<div class="approwsegment">
+					<label class="paramlabel" for="avginsert">Avg. Insert Size</label><br>
+					<div class="insertspinner" name="avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="avgpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>
+				</div>
+				<div class="approwsegment">
+					<label class="paramlabel" for="stdinsert">Std. Insert</label><br>		
+					<div class="insertspinner" name="stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="stdpair1" value="100" data-dojo-props="smallDelta:10, constraints:{min:9,max:2000,places:0}" ></div>		
+				</div>
 			</div>
 			<div class="readbuttons">
 				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
@@ -48,12 +53,29 @@
 				<button type="button" class="round-button" onclick="alert('Hello world!')">+</button>
 			</div>
                 </div>
+		</td>
+		<td>
+		<div id="libraryBox" class="appbox appshadow" style="width:330px">
+			<!--<h4 class="appboxlabel">Libraries in assembly</h4>-->
+		<!--<table data-dojo-type="dojox.grid.DataGrid"
+		    data-dojo-attach-point="assemblyfiles"
+		    data-dojo-props="store:this.libraryStore}, structure: [[{'name': 'Read Files', 'field': 'filenames'}]],rowsPerPage:20,clientSort:true,rowSelector:'20px'" style="width: 300px; height: 200px;">
+		    <thead>
+			<tr>
+			    <th width="300px"
+				field="name">Read Files</th>
+			</tr>
+		    </thead>
+		</table>-->
+		<div id="librarytable" style="height: 20em;"></div>
+		</div>
+		</td>
+		</tr>
+		<tr>
+		<td>
+
 		<div class="appbox appshadow">
 			<h4 class="appboxlabel">Parameters</h4>
-			<div class="approw">
-                                <label class="paramlabel" for="contigs">Benchmark Contigs</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false"></div>
-			</div>
 			<div class="approw">
 				<label for="strategy" class="paramlabel">Assembly Strategy</label><br>
 				<select data-dojo-type="dijit/form/Select" name="strategy" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
@@ -63,12 +85,22 @@
 			</div>
 			<div class="approw">
 				<label for="outfolder" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="outfolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false,placeHolder:'Optional'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="outfolder" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false"></div>
 			</div>
 			<div class="approw">
 				<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>
 			</div>
-        </div>
+			<div class="approw">
+                                <label class="paramlabel" for="contigs">Benchmark Contigs</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,placeHolder:'Optional'"></div>
+			</div>
+        	</div>
+		</td>
+		<td>
+		</td>
+		</tr>
+		</table>
+		
 		
 	</div>
 
