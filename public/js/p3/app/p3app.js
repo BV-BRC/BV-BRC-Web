@@ -6,7 +6,7 @@ define([
 	"dojo/store/JsonRest",
 	"dojo/ready","./app","../router",
 	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
-	"../jsonrpc", "../panels"
+	"../jsonrpc", "../panels","../WorkspaceManager"
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
@@ -16,7 +16,7 @@ define([
 	Ready,App,
 	Router,Window,
 	Drawer,ContentPane,
-	RPC, Panels
+	RPC, Panels, WorkspaceManager
 ) {
 	return declare([App], {
 		panels: Panels,
@@ -124,9 +124,12 @@ define([
 			});
 
 			if (!this.api) { this.api={}}
+
 			if (this.workspaceAPI){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user?this.user.id:"");				
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
+
 			if (this.serviceAPI){
 				console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);

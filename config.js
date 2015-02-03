@@ -20,7 +20,15 @@ var defaults =  {
 	"cookieKey": "patric3",
 	"cookieDomain": ".patric.local",
 
-	"sessionTTL": 2628000000
+	"sessionTTL": 2628000000,
+
+	workspaceServiceURL:"",
+	appServiceURL: "",
+	dataURL: "",
+
+	enableDevAuth: false,
+	devAuthorizationToken: "",
+	devUser: false
 }
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
