@@ -1,17 +1,12 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
-	"dgrid/Grid","dgrid/extensions/DijitRegistry",
-        "dgrid/Keyboard", "dgrid/Selection","dgrid/extensions/ColumnResizer","dgrid/extensions/ColumnHider",
-        "dgrid/extensions/DnD","dojo/dnd/Source","dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!"
+        "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!"
 ], function(
 	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
+	domClass,
 	Template,AppBase,domConstr,
-        Grid,Store,DijitRegistry,
-        Keyboard,Selection,formatter,ColumnResizer,
-        ColumnHider,DnD,DnDSource,
         Deferred,aspect,lang,domReady
 ){
 	return declare([AppBase], {
@@ -49,22 +44,27 @@ define([
 
 		onAddPair: function(){
 			console.log("Create New Row", domConstr);
-			var tr =  this.libsTable.insertRow(0);//var tr =  domConstr.create("tr",{},this.libsTableBody);
+//			var tr =  domConstr.create("tr",{});
+//			domConstr.place(tr,this.libsTableBody,"first");
+			var tr = this.libsTable.insertRow(0);
 			var td = domConstr.create('td', {innerHTML: "somefile.txt"},tr);
 			var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 			if(this.addedRows < this.startingRows){
 				this.libsTable.deleteRow(-1);
 			}
-			var handle = on(td2, "click", function(evt){
+			var handle = on(td2, "click", lang.hitch(this,function(evt){
+				console.log("Delete Row");
 				domConstr.destroy(tr);
-				handle.remove();
 				this.addedRows = this.addedRows-1;
 				if (this.addedRows < this.startingRows){
-					var tr =  this.libsTable.insertRow(-1);//domConstr.create("tr",{},this.libsTable);
-					var td = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
-					var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+//					var ntr =  domConstr.create("tr",{});
+//					domConstr.place("ntr",this.libsTableBody,"last");
+					var ntr = this.libsTable.insertRow(-1);	
+					var ntd = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+					var ntd2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 				}	
-			});
+				handle.remove();
+			}));
 			this.addedRows= this.addedRows+1;
 		}
 		
