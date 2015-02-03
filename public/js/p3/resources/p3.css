@@ -70,7 +70,27 @@ A, A:visited {
 	box-shadow: 0px 0px 24px orange;
 }
 
+.claro .dijitDialog {
+       -moz-transform: scaleX(1);
+        -o-transform: scaleX(1);
+        -webkit-transform: scaleX(1);
+        transform: scaleX(1);
+        filter: FlipH;
+        -ms-filter: "FlipH";
+        transition: transform .75s;
+		backface-visibility: hidden;
+}
+.claro .dijitDialog.flipped {
+        -moz-transform: scaleX(-1);
+        -o-transform: scaleX(-1);
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        filter: FlipH;
+        -ms-filter: "FlipH";
+        transition: transform .75s;
+        backface-visibility: hidden;
 
+}
 
 
 .ActionBar {

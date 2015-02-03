@@ -10,6 +10,7 @@ define([
 ){
 
 	var dropDown = new ContentPane({content: "Workspace Search", style:"background:#fff;"});
+
 	return declare([WidgetBase,Templated,WidgetsInTemplate,HasDropDown], {
 		"baseClass": "WorkspaceObjectSelector",
 		"disabled":false,
@@ -29,6 +30,11 @@ define([
 		openChooser: function(){
 			if (!this.dialog){
 				this.dialog = new Dialog({title:"Workspace Explorer", content: "<div style='width:300px;height:400px'>WS Browser</div>"});
+				var _self=this;
+				on(this.dialog.domNode, "click", function(evt){
+					console.log(evt);
+					domClass.toggle(_self.dialog.domNode,"flipped");
+				});
 			}
 			this.dialog.show();
 		},

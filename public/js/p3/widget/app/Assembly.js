@@ -18,21 +18,28 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Assembly",
-		libraryData:[
-            { first: 'Bob', last: 'Barker', age: 89 },
-            { first: 'Vanna', last: 'White', age: 55 },
-            { first: 'Pat', last: 'Sajak', age: 65 }
-        ],
-		libraryGrid: new Grid({
-			columns: {'first': 'Libraries in assembly'},
-			},"librarytable"),
+		constructor: function(){
+            		this.libraryData = [
+				{ first: 'Bob', last: 'Barker', age: 89 },
+				{ first: 'Vanna', last: 'White', age: 55 },
+				{ first: 'Pat', last: 'Sajak', age: 65 }
+			];
+		},
                 startup: function(){
                         if (this._started) { return; }
                         this.inherited(arguments);
+
+
+			this.libraryGrid = new Grid({
+				columns: {'first': 'Libraries in assembly'}
+			}, this.gridNode);
+
+			this.libraryGrid.startup();
 			this.libraryGrid.renderArray(this.libraryData);
-			this._started=true;
-			}
 			
+			this._started=true;
+		}
+		
 	});
 });
 
