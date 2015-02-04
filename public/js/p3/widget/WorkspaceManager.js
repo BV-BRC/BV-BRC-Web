@@ -29,7 +29,7 @@ define([
 			this.inherited(arguments);
 
 //			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "top", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
+			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
 			//this.workspaceBrowserTabs = new TabContainer({region: "center"});
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
 		
