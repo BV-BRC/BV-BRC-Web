@@ -13,7 +13,7 @@ define([
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		templateString: Template,
-		applicationName: "Assembly",
+		applicationName: "GenomeAssembly",
 		libraryData: null,
 		startingRows: 14,
 
