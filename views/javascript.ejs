@@ -14,21 +14,12 @@
                 <% } %>
 
                         require(["<%= request.applicationModule %>"],function(App){
-
                                 appOpts=<%- JSON.stringify(request.applicationOptions || {}) %>
-                                appOpts.workspaceAPI = "http://p3.theseed.org/services/Workspace";
-                                appOpts.serviceAPI= "http://p3.theseed.org/services/app_service";
-                                appOpts.dataAPI = "http://patric-hs-prod-1.cid-app:8080";
-                                //appOpts.authorizationToken = "<%- request.session.accessToken %>";
-				//appOpts.accessToken="<%- request.session.accessToken %>";
- 
-                                appOpts.authorizationToken = "un=reviewer|tokenid=2FCA3DA0-A5B5-11E4-AEF1-EDAB42A49C03|expiry=1453851833|client_id=reviewer|token_type=Bearer|SigningSubject=http://rast.nmpdr.org/goauth/keys/E087E220-F8B1-11E3-9175-BD9D42A49C03|sig=1fa9b81ae2710de8ed94b3565dbed5c5cfe5a6116694b10c5fa6e925fcb3b46ce9da76685e2953ac90d0d787ea5fb94755567037e1a1857e9c4f41f3de75a0639809271187a151933e7331316d30be252adccfdc722cef890f4a5f9232420cd1e5263cd8f10afca26a5f3b3f3b91e8a944b76ec54938c71f2e0b446a6c0a3df6";
-
-                                //appOpts.user= <%- (request.session && request.session.userProfile)?JSON.stringify(request.session.userProfile):"''"%>;
-				appOpts.user= {id: "reviewer", name: "Reviewer Reviewer"}	
-
-                                window.App = new App(appOpts);
-
+                                appOpts.workspaceAPI = "<%- request.applicationOptions.workspaceServiceURL %>";
+                                appOpts.serviceAPI= "<%- request.applicationOptions.appServiceURL %>";
+                                appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
+                                appOpts.authorizationToken = "<%- (request&&request.session)?(request.session.authorizationToken || request.session.accessToken):"" %>";
+				window.App = new App(appOpts);
                         });
                 <% if (request&&request.production){ %>
                         });

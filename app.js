@@ -41,16 +41,39 @@ app.use(session({
     saveUninitialized:true
 }));
 
-
 app.use(passport.initialize());
 app.use(passport.session());
+
+if (config.get("enableDevAuth")){
+	app.use(function(req,res,next){
+		var user = config.get("devUser");
+		if (user && (!req.isAuthenticated || !req.isAuthenticated() )) {
+                        req.logIn(user, function(err) {
+                                if (err) { return next(err); }
+
+                                if (user && req.session) {
+                                        delete user.password;
+                                        req.session.userProfile = user;
+                                        req.session.authorizationToken = config.get("devAuthorizationToken");
+                                }else{
+                                        console.log("NO Session");
+                                }
+                                next();
+                        });
+		}
+		next();
+	});
+}
+
+
 
 app.use(function(req,res,next){
     console.log("Config.production: ", config.production);
     console.log("Session Data: ", req.session);
+    req.config = config;
     req.production = config.get("production") || false;
     req.productionLayers=["p3/layer/core"]
-    req.applicationOptions = {version: "3.0"}
+    req.applicationOptions = {version: "3.0", workspaceServiceURL:config.get("workspaceServiceURL"),appServiceURL:config.get("appServiceURL"),dataServiceURL:config.get("dataServiceURL")}
     next();
 })
 
