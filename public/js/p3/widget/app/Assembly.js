@@ -67,15 +67,13 @@ define([
 					assembly_values[k]=values[k];
 				}
 			}
-			for (var i in pairedList){
-				pairedLibs.push(i.libRecord);
-			}
+			pairedList.forEach(function(item){
+				pairedLibs.push(item.libRecord)});
 			if(pairedLibs.length){
 				assembly_values["paired_end_libs"]=pairedLibs;
 			}
-			for (var j in singleList){
-				singleLibs.push(j.libRecord["single_end_libs"]);
-			}
+			singleList.forEach(function(item){
+				singleLibs.push(item.libRecord["single_end_libs"]) });
 			if(singleLibs.length){
 				assembly_values["single_end_libs"]=singleLibs;
 			}
