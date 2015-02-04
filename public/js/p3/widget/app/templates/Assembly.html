@@ -23,11 +23,11 @@
 			</div>
 			<div class="approw">
 				<label class="paramlabel" for="libdat_file1pair">Read File 1</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/test/file1'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/reviewer/test/b99_1.fq'"></div>
 			</div>
 			<div class="approw">
 				<label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/test/file2'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/reviewer/test/b99_2.fq'"></div>
 			</div>
 			<div class="approw">
 				<div class="approwsegment" style="margin:0 0 0 0">
@@ -56,7 +56,7 @@
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa fa-arrow-circle-o-right fa-lg"></i></div>
 			</div>
 			<label class="paramlabel" for="singleread">Read File</label><br>
-			<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/test/file1'"></div>
+			<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'/reviewer/test/b99_1.fq'"></div>
                 </div>
 
 		<div class="appbox appshadow">
@@ -70,7 +70,7 @@
 			</div>
 			<div class="approw">
 				<label for="outfolder" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false, value:'/test/'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false, value:'/reviewer/test/'"></div>
 			</div>
 			<div class="approw">
 				<div data-dojo-type="dijit/form/ValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>

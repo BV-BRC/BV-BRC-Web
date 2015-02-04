@@ -8,7 +8,7 @@ define([
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstr,
-        Deferred,aspect,lang,domReady
+        Deferred,aspect,lang,domReady,NumberTextBox,query
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -21,11 +21,6 @@ define([
 
 			this.addedLibs=0;
 			this.addedPairs=0;
-            		this.libraryData = [
-				{ first: 'Bob', last: 'Barker', age: 89 },
-				{ first: 'Vanna', last: 'White', age: 55 },
-				{ first: 'Pat', last: 'Sajak', age: 65 }
-			];
 			this.pairToAttachPt={
 				read1:"read1pair1",
 				read2:"read2pair1",
@@ -55,7 +50,6 @@ define([
 */			
 			this._started=true;
 		},
-		//"params":["GenomeAssembly",{"interleaved":"Yes","recipe":"auto","output_path":"/reviewer/test","read1":"b99_1.fq","read2":"b99_2.fq","single_end_libs":"/reviewer/test/b99_2.fq","reference_assembly":"/reviewer/test/b99_2.fq","insert_size_mean":50,"output_file":"test2"}]}:
 		getValues:function(){
 			if (typeof String.prototype.startsWith != 'function') {
 				String.prototype.startsWith = function (str){
@@ -65,16 +59,27 @@ define([
 			var assembly_values={};
 			var values = this.inherited(arguments);
 			var pairedList = query(".pairdata");	
-			var singleList = query(".singledata");	
+			var singleList = query(".singledata");
+			var pairedLibs =[];
+			var singleLibs=[];	
 			for (var k in values) {
 				if(!k.startsWith("libdat_")){
 					assembly_values[k]=values[k];
 				}
 			}
-			if(pairedList.length){
-				assembly_values["paired_end_libs"]=[];
+			for (var i in pairedList){
+				pairedLibs.push(i.libRecord);
 			}
-			//for (var i in pairedList){
+			if(pairedLibs.length){
+				assembly_values["paired_end_libs"]=pairedLibs;
+			}
+			for (var j in singleList){
+				singleLibs.push(j.libRecord["single_end_libs"]);
+			}
+			if(singleLibs.length){
+				assembly_values["single_end_libs"]=singleLibs;
+			}
+			return(assembly_values);
 				
 		},
 		ingestLibrary: function(input_pts, target){
