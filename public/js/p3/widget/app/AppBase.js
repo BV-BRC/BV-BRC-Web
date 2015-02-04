@@ -52,8 +52,13 @@ define([
 
 		onSubmit: function(evt){
 			var _self = this;
+
+			evt.preventDefault();
+			evt.stopPropagation();
 			if (this.validate()){
+				console.log("Validated");
 				var values = this.getValues();
+
 				console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
 				domClass.remove(this.domNode,"Error");
@@ -74,8 +79,6 @@ define([
 				console.log("Form is incomplete");
 			}
 
-			evt.preventDefault();
-			evt.stopPropagation();
 		},
 
 		onCancel: function(evt){

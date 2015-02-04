@@ -79,7 +79,7 @@ define([
 			if(singleLibs.length){
 				assembly_values["single_end_libs"]=singleLibs;
 			}
-			return(assembly_values);
+			return assembly_values;
 				
 		},
 		ingestLibrary: function(input_pts, target){
