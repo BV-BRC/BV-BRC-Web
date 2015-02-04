@@ -4,7 +4,7 @@
 	<body>
 		Login Successful
 	<script>
-		var message=<%- JSON.stringify({type: "AuthenticationSuccess", userProfile:request.session.userProfile,accessToken: request.session.accessToken}) %>
+		var message=<%- JSON.stringify({type: "AuthenticationSuccess", userProfile:request.session.userProfile,authorizationToken: request.session.authorizationToken,accessToken:request.session.authorizationToken}) %>
 		if (window.opener || window.parent){
 			console.log("Post Parent Message: ", message);
 			(window.opener || window.parent).postMessage(message,"*");

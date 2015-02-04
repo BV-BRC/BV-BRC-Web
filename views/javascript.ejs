@@ -18,7 +18,7 @@
                                 appOpts.workspaceAPI = "<%- request.applicationOptions.workspaceServiceURL %>";
                                 appOpts.serviceAPI= "<%- request.applicationOptions.appServiceURL %>";
                                 appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
-                                appOpts.authorizationToken = "<%- request.session.authorizationToken || request.session.accessToken %>";
+                                appOpts.authorizationToken = "<%- (request&&request.session)?(request.session.authorizationToken || request.session.accessToken):"" %>";
 				window.App = new App(appOpts);
                         });
                 <% if (request&&request.production){ %>
