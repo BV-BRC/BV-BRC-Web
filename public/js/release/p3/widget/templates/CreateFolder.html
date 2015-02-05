@@ -3,11 +3,11 @@
 	<div >
 		<div data-dojo-type="dijit/form/ValidationTextBox" name="name" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'"></div>
 	</div>
-		<div class="workingMessage">
+		<div class="workingMessage messageContainer">
 			Creating new workspace ...
 		</div>
 
-		<div class="errorMessage">
+		<div class="errorMessage messageContainer">
 			<div style="font-weight:900;font-size:1.1em;">Error Creating Folder:</div>
 			<p data-dojo-attach-point="errorMessage">Error</p>
 		</div>

@@ -6,7 +6,7 @@ define("p3/app/p3app", [
 	"dojo/store/JsonRest",
 	"dojo/ready","./app","../router",
 	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
-	"../jsonrpc", "../panels"
+	"../jsonrpc", "../panels","../WorkspaceManager"
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
@@ -16,10 +16,12 @@ define("p3/app/p3app", [
 	Ready,App,
 	Router,Window,
 	Drawer,ContentPane,
-	RPC, Panels
+	RPC, Panels, WorkspaceManager
 ) {
 	return declare([App], {
 		panels: Panels,
+		activeWorkspace: null,
+		activeWorkspacePath: "/",
 		startup: function(){
 			var _self=this;
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
@@ -122,13 +124,22 @@ define("p3/app/p3app", [
 			});
 
 			if (!this.api) { this.api={}}
+
 			if (this.workspaceAPI){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user?this.user.id:"");				
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
+
 			if (this.serviceAPI){
 				console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
+
+			Topic.subscribe("/ActiveWorkspace", function(as){
+				console.log("SET App.activeWorkspace",as)
+				_self.activeWorkspace=as.workspace;
+				_self.activeWorkspacePath=as.path;
+			});
 	
 			// console.log("go()")
 			// setTimeout(function(){

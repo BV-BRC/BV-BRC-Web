@@ -176,8 +176,12 @@ define("p3/widget/WorkspaceBrowser", [
 		_setPathAttr: function(val){
 			console.log("WorkspaceBrowser setPath()", val)
 			this.path = val;
+			var parts = this.path.split("/").filter(function(x){ return x!=""; });
+			var workspace = parts[0] + "/" + parts[1];
+			console.log("Publish to ActiveWorkspace:",workspace,val)
+			Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
+
 			if (this._started){
-				var parts = this.path.split("/").filter(function(x){ return x!=""; });
 				var len = parts.length;
 				var out = [];
 				var bp = ["workspace"];
@@ -195,7 +199,8 @@ define("p3/widget/WorkspaceBrowser", [
 				out.push("<span style='float:right;font-size:.75em;'>");
 				out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
 				out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
-				out.push("</span>");
+
+
 				this.browserHeader.set("content", out.join(""));
 
 				console.log("Set Explorer set()", val);

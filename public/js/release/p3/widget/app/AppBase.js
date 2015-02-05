@@ -3,11 +3,11 @@ require({cache:{
 define("p3/widget/app/AppBase", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html","dijit/form/Form"
+	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin
+	Template,FormMixin,WorkspaceObjectSelector
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -15,6 +15,19 @@ define("p3/widget/app/AppBase", [
 		path: "",
 		applicationName:  "Date",
 		showCancel: false,
+		activeWorkspace: "",
+		activeWorkspacePath: "",
+	
+		postMixInProperties: function(){
+			this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
+			this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
+			this.inherited(arguments);
+		},
+
+		_setValueAttr: function(val){
+			this.value = val || window.App.activeWorkspacePath;
+		},
+
 		startup: function(){
 			if (this._started) { return; }
 			this.inherited(arguments);
@@ -41,8 +54,13 @@ define("p3/widget/app/AppBase", [
 
 		onSubmit: function(evt){
 			var _self = this;
+
+			evt.preventDefault();
+			evt.stopPropagation();
 			if (this.validate()){
+				console.log("Validated");
 				var values = this.getValues();
+
 				console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
 				domClass.remove(this.domNode,"Error");
@@ -63,8 +81,6 @@ define("p3/widget/app/AppBase", [
 				console.log("Form is incomplete");
 			}
 
-			evt.preventDefault();
-			evt.stopPropagation();
 		},
 
 		onCancel: function(evt){

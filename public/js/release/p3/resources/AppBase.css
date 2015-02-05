@@ -32,3 +32,12 @@
 	font-size: 1.1em;
 	margin-top: 10px;
 }
+.App {
+}
+.App .TitleSection {
+	width:420px;margin:auto;margin-top:10px;padding:10px;
+}
+.App LABEL {
+	font-size: .65em;
+	text-transform: uppercase;
+}
