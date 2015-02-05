@@ -107,6 +107,12 @@ define("p3/widget/WorkspaceExplorerView", [
 				_self.render(_self.path, contents);
 			})
 
+			Topic.subscribe("/refreshWorkspace", function(msg){
+				_self.refreshWorkspace();
+			});
+
+
+
 			Topic.subscribe("/Jobs", function(msg){
 				if (msg.type=="JobStatus") {
 					console.log("JobStatus MSG: ", msg.job);

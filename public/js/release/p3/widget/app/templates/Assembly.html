@@ -73,8 +73,8 @@
 				</select>
 			</div>
 			<div class="approw">
-				<label for="outfolder" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false, value:'/reviewer/test/'"></div>
+				<label for="output_path" class="paramlabel">Output Folder</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false, value:'/reviewer/test/'"></div>
 			</div>
 			<div class="approw">
 				<div data-dojo-type="dijit/form/ValidationTextBox" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'"></div>
@@ -108,11 +108,11 @@
 		</div>
 
 		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-			Submitting Assembly Job
+			Assembly Job has been queued.
 		</div>
 
 		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
-			<div style="font-weight:900;font-size:1.1em;">Error Submitting AssemblyJob</div>
+			<div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
 			<p data-dojo-attach-point="errorMessage">Error</p>
 		</div>
 		

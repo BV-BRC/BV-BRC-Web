@@ -5373,10 +5373,7 @@ div.dijitNumberTextBoxRtl {
 	text-transform: uppercase;
 }
 .appshadow{
-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--webkit-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--moz-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--o-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
+	border: 1px solid #aaa;
 }
 .appsetup{
 margin-top:0px;
@@ -5545,4 +5542,18 @@ A, A:visited {
 }
 .fa:hover {
 	color: #e75200;
+}
+.fileUploadButton {
+	position: relative; overflow:hidden; margin-bottom: 8px;display:inline-block;border: 1px solid #b5bcc7;cursor: pointer;
+	color: #333;
+}
+.fileUploadButton:hover {
+	border: 1px solid orange;
+}
+.fileUploadButton > span {
+	padding: 4px;
+	font-size: 1.1em;
+}
+.fileUploadButton > input { 
+	position:absolute;top:0;right:0;margin:0;padding:0;font-size:.9em;cursor:pointer;opacity:0;filter: alpha(opacity=0);
 }

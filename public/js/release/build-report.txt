@@ -1,4 +1,4 @@
-Build started: Wed Feb 04 2015 23:07:04 GMT-0500 (EST)
+Build started: Thu Feb 05 2015 00:47:21 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,9 +126,9 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:3.252s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:8.991s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:10.219s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:3.314s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:9.236s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.693s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1629,9 +1629,9 @@ p3/layer/panels:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.252s)
+Done (compile time:3.314s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.252s)
+Done (compile time:3.314s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1754,9 +1754,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:8.991s)
+Done (compile time:9.236s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:3.252s)
+Done (compile time:3.314s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1879,7 +1879,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:8.991s)
+Done (compile time:9.236s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:450: WARNING - unreachable code
 	}else if( 0 ){
@@ -1893,32 +1893,32 @@ core.js.uncompressed.js:11346: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:25921: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:25927: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:27553: WARNING - unreachable code
+core.js.uncompressed.js:27559: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:27592: WARNING - unreachable code
+core.js.uncompressed.js:27598: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:27940: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:27946: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:33024: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:33032: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
-core.js.uncompressed.js:34392: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:34406: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if (!this.value || !this.workspace){
 			^
 
 0 error(s), 9 warning(s)
-Done (compile time:10.219s)
+Done (compile time:11.693s)
 
 
 Has Features Detected
@@ -2370,4 +2370,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 80.752 seconds
+	build time: 82.909 seconds

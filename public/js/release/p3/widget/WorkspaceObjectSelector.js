@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"intermediateChanges:true\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>"}});
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"intermediateChanges:true\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n"}});
 define("p3/widget/WorkspaceObjectSelector", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
@@ -23,6 +23,12 @@ define("p3/widget/WorkspaceObjectSelector", [
 		dropDown: dropDown,
 		workspace: "",
 		value: "",
+		_setValueAttr: function(value){
+			this.value = value;
+			if (this._started) {
+				this.searchBox.set('value', value);
+			}
+		},
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){
 				this.value=this.workspace;
@@ -56,6 +62,9 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if (this._started){return;}
 			if (!this.value || !this.workspace){
 
+			}
+			if (this.value) {	
+				this.searchBox.set('value', this.value);
 			}	
 		}
 	});

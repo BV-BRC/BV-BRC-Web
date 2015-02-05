@@ -1,8 +1,5 @@
 .appshadow{
-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--webkit-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--moz-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--o-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
+	border: 1px solid #aaa;
 }
 .appsetup{
 margin-top:0px;

@@ -3,11 +3,12 @@ require({cache:{
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/CreateFolder.html","dijit/form/Form"
+	"dojo/text!./templates/CreateFolder.html","dijit/form/Form",
+	"dojo/topic"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin
+	Template,FormMixin,Topic
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
@@ -35,6 +36,7 @@ define([
 					domClass.remove(_self.domNode, "Working");
 					console.log("create_workspace_folder results", results)
 					var path = "/" + ["workspace", results[0][5],results[0][8],results[0][1]].join("/")
+					Topic.publish("/refreshWorkspace",{});
 					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles:true});
 				}, function(err){
 					console.log("Error:", err)
@@ -150,7 +152,7 @@ define([
 				var uploadUrl = getUrlRes[0][0][11];
 				console.log("uploadUrl: ", uploadUrl);
 				if (!_self.uploadTable){
-					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.workingMessage);
+					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.fileTableContainer);
 					_self.uploadTable = domConstruct.create('tbody',{}, table)
 				}
 
@@ -166,10 +168,40 @@ define([
 		},
 		onFileSelectionChange: function(evt){
 			console.log("onFileSelectionChange",evt, this.fileInput);
+		
+			if (!this.uploadTable){
+				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody',{}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th",{innerHTML: "File"}, htr);
+				domConstruct.create("th",{innerHTML:"Type"},htr);
+				domConstruct.create("th",{innerHTML:"Size"},htr);
+				domConstruct.create("th",{},htr);
+			}
+
+			var files = evt.target.files;
+			console.log("files: ", files);
+			var _self=this;
+			
+			Object.keys(files).forEach(function(idx) {
+				var file = files[idx];
+				if (file && file.name && file.size) {
+					console.log("file: ", file);
+					var row = domConstruct.create("tr",{},_self.uploadTable);
+					var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
+					var typeNode = domConstruct.create("td",{innerHTML: _self.uploadType.get("value")},row);
+					var sizeNode = domConstruct.create("td",{innerHTML: file.size},row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'},row);
+					var handle=on(delNode,"click", function(evt){
+						handle.remove();	
+						domConstruct.destroy(row);
+					});
+				}
+			});
 		},
 
 		onSubmit: function(evt){
-			var _self = this;
+			var _self =this;
 			evt.preventDefault();
 			evt.stopPropagation();
 
@@ -929,7 +961,7 @@ return number;
 },
 'url:p3/widget/templates/CreateFolder.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div >\n\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\"></div>\n\t</div>\n\t\t<div class=\"workingMessage messageContainer\">\n\t\t\tCreating new workspace ...\n\t\t</div>\n\n\t\t<div class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Creating Folder:</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Create Folder</div>\n\t\t</div>\t\n</form>\n\n",
 'url:p3/widget/templates/CreateWorkspace.html':"<form dojoAttachPoint=\"containerNode\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div class=\"PanelForm\" style=\"\">\n\t\t<input data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" data-dojo-attach-point=\"workspaceName\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for new Workspace',trim:true,placeHolder:'MyWorkspace'\" />\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Create Workspace</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style='width:400px'>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-point=\"uploadType\" style=\"width:300px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t<option value=\"auto\">Unspecified</option>\n\t\t\t<option value=\"contigs\">Contigs (.fa) </option>\n\t\t\t<option value=\"fasta\">fasta (.fa,.fasta) </option>\n\t\t\t<option value=\"fastq\">fastq (.fq, .fastq) </option>\t\t\n\t\t\t<option value=\"phenomics_gene_list\">Phenomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"phenomics_gene_matrix\">Phenomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"phenomics_experiment_metadata\">Phenomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\n\t\t\t<option value=\"proteomics_gene_list\">Proteomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"proteomics_gene_matrix\">Proteomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"proteomics_experiment_metadata\">Proteomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\t\n\t\t\t<option value=\"transcriptomics_gene_list\">Transcriptomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"transcriptomics_gene_matrix\">Transcriptomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"transcriptomics_experiment_metadata\">Transcriptomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t</select>\n\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" multiple=\"true\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\t\n\t</div>\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t</div>\t\n</form>\n\n \t",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style='width:450px'>\n\t\t<div class=\"fileUploadButton\">\n\t\t\t<span>Add File(s)</span>\n\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" multiple=\"true\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t</div>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:300px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t<option value=\"auto\">Unspecified</option>\n\t\t\t<option value=\"contigs\">Contigs (.fa) </option>\n\t\t\t<option value=\"fasta\">fasta (.fa,.fasta) </option>\n\t\t\t<option value=\"fastq\">fastq (.fq, .fastq) </option>\t\t\n\t\t\t<option value=\"phenomics_gene_list\">Phenomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"phenomics_gene_matrix\">Phenomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"phenomics_experiment_metadata\">Phenomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\n\t\t\t<option value=\"proteomics_gene_list\">Proteomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"proteomics_gene_matrix\">Proteomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"proteomics_experiment_metadata\">Proteomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\t\n\t\t\t<option value=\"transcriptomics_gene_list\">Transcriptomics Gene List (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"transcriptomics_gene_matrix\">Transcriptomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t\t<option value=\"transcriptomics_experiment_metadata\">Transcriptomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>\t\t\t\n\t\t</select>\n\t</div>\n\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t</div>\t\n</form>\n\n \t\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/panels*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
