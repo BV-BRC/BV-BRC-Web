@@ -10,7 +10,7 @@ define([
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
-		applicationName: "Annotation"
+		applicationName: "GenomeAnnotation"
 	});
 });
 
