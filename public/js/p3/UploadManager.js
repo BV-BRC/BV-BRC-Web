@@ -35,6 +35,8 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			}else if (files && files.file){
 				_self._uploadFile(files.file, files.url, files.uploadDirectory);
 			}
+
+			Topic.publish("/refreshWorkspace",{});
 		},
 		getUploadSummary: function(){
 			var def = new Deferred();

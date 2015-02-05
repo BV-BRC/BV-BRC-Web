@@ -37,7 +37,7 @@ define([
 				var uploadUrl = getUrlRes[0][0][11];
 				console.log("uploadUrl: ", uploadUrl);
 				if (!_self.uploadTable){
-					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.workingMessage);
+					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.fileTableContainer);
 					_self.uploadTable = domConstruct.create('tbody',{}, table)
 				}
 
@@ -53,10 +53,40 @@ define([
 		},
 		onFileSelectionChange: function(evt){
 			console.log("onFileSelectionChange",evt, this.fileInput);
+		
+			if (!this.uploadTable){
+				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody',{}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th",{innerHTML: "File"}, htr);
+				domConstruct.create("th",{innerHTML:"Type"},htr);
+				domConstruct.create("th",{innerHTML:"Size"},htr);
+				domConstruct.create("th",{},htr);
+			}
+
+			var files = evt.target.files;
+			console.log("files: ", files);
+			var _self=this;
+			
+			Object.keys(files).forEach(function(idx) {
+				var file = files[idx];
+				if (file && file.name && file.size) {
+					console.log("file: ", file);
+					var row = domConstruct.create("tr",{},_self.uploadTable);
+					var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
+					var typeNode = domConstruct.create("td",{innerHTML: _self.uploadType.get("value")},row);
+					var sizeNode = domConstruct.create("td",{innerHTML: file.size},row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'},row);
+					var handle=on(delNode,"click", function(evt){
+						handle.remove();	
+						domConstruct.destroy(row);
+					});
+				}
+			});
 		},
 
 		onSubmit: function(evt){
-			var _self = this;
+			var _self =this;
 			evt.preventDefault();
 			evt.stopPropagation();
 

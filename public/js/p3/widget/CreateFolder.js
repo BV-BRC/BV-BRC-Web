@@ -1,11 +1,12 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/CreateFolder.html","dijit/form/Form"
+	"dojo/text!./templates/CreateFolder.html","dijit/form/Form",
+	"dojo/topic"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin
+	Template,FormMixin,Topic
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
@@ -33,6 +34,7 @@ define([
 					domClass.remove(_self.domNode, "Working");
 					console.log("create_workspace_folder results", results)
 					var path = "/" + ["workspace", results[0][5],results[0][8],results[0][1]].join("/")
+					Topic.publish("/refreshWorkspace",{});
 					on.emit(_self.domNode, "dialogAction", {action: "close", navigate: path, bubbles:true});
 				}, function(err){
 					console.log("Error:", err)

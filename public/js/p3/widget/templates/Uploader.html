@@ -1,7 +1,11 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-	<div style='width:400px'>
-		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="width:300px" required="true" data-dojo-props="">
+	<div style='width:450px'>
+		<div class="fileUploadButton">
+			<span>Add File(s)</span>
+			<input type="file" data-dojo-attach-point="fileInput" multiple="true" data-dojo-attach-event="onchange:onFileSelectionChange" />
+		</div>
+		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="vertical-align: top;width:300px" required="true" data-dojo-props="">
 			<option value="auto">Unspecified</option>
 			<option value="contigs">Contigs (.fa) </option>
 			<option value="fasta">fasta (.fa,.fasta) </option>
@@ -16,8 +20,9 @@
 			<option value="transcriptomics_gene_matrix">Transcriptomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>			
 			<option value="transcriptomics_experiment_metadata">Transcriptomics Experiment Comparison Metadata (.csv,.txt,.xsl,.xlsx)</option>			
 		</select>
-		<input type="file" data-dojo-attach-point="fileInput" multiple="true" data-dojo-attach-event="onchange:onFileSelectionChange" />	
 	</div>
+		<div data-dojo-attach-point="fileTableContainer"></div>
+
 		<div class="workingMessage" style="width:400px;" data-dojo-attach-point="workingMessage">
 		</div>
 
