@@ -168,7 +168,7 @@ define([
 					onClick: function() {
 						if (activeItem) {
 							console.log("Delete Object: ", activeItem.data.id);
-							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path]}]), function(results){
+							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path],deleteDirectories: (activeItem.data.type=="folder")?true:false }]), function(results){
 								console.log("Delete Object Results: ", results);
 							});
 						}

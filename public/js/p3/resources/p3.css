@@ -78,8 +78,10 @@ A, A:visited {
         filter: FlipH;
         -ms-filter: "FlipH";
         transition: transform .75s;
-		backface-visibility: hidden;
+	backface-visibility: hidden;
+	perspective: 1000;
 }
+
 .claro .dijitDialog.flipped {
         -moz-transform: scaleX(-1);
         -o-transform: scaleX(-1);
@@ -89,7 +91,10 @@ A, A:visited {
         -ms-filter: "FlipH";
         transition: transform .75s;
         backface-visibility: hidden;
+}
 
+.claro .dijitDialog.flipped .dijitDialogPaneContent{
+	display: none;
 }
 
 
