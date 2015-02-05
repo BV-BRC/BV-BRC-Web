@@ -40,10 +40,10 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
-			this.read1pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
-			this.read2pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_2.fq");
-			this.read1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
-			this.output_path.set('value',"/" +  window.App.user.id +"/home/test/");
+			//this.read1pair1.set('value',"/" +  window.App.user.id +"/home/");
+			//this.read2pair1.set('value',"/" +  window.App.user.id +"/home/");
+			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
+			//this.output_path.set('value',"/" +  window.App.user.id +"/home/");
 /*
 			this.libraryGrid = new Grid({
 				columns: {'first': 'Libraries in assembly'}
@@ -106,12 +106,22 @@ define([
 		},
 		makePairName:function(libRecord){
 			var fn =libRecord["read1"].replace(/^.*[\\\/]/, '');
-			return "pair"+"("+fn+")";
+			var fn2 =libRecord["read2"].replace(/^.*[\\\/]/, '');
+			if(fn.length > 10){
+				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			}
+			if(fn2.length > 10){
+				fn2=fn2.substr(0,3)+".."+fn2.substr(7,9);
+			}
+			return "("+fn+", "+fn2+")";
 		},	
 			
 
 		makeSingleName:function(libRecord){
 			var fn =libRecord["single_end_libs"].replace(/^.*[\\\/]/, '');
+			if(fn.length > 10){
+				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			}
 			return fn;
 		},
 
