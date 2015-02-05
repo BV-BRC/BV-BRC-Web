@@ -38,17 +38,23 @@
 				<label>Output Location</label><br>
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_location" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'"></div>
 			</div>
+			
+			<div style="text-align:left;">
+				<label>Output Name</label><br>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+			</div>
+			
 		</div>
 
 		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-            Submitting Sleep Job
+            Submitting Annotation Job
         </div>
 
         <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
                 Error Submitting Job
         </div>
         <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-                Sleep Job has been queued.
+                Annotation Job has been queued.
         </div>
         <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>

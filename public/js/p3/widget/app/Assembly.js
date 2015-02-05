@@ -40,6 +40,10 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
+			this.read1pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
+			this.read2pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_2.fq");
+			this.read1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
+			this.output_path.set('value',"/" +  window.App.user.id +"/home/test/");
 /*
 			this.libraryGrid = new Grid({
 				columns: {'first': 'Libraries in assembly'}
