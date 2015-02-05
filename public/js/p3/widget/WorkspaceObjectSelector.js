@@ -21,6 +21,12 @@ define([
 		dropDown: dropDown,
 		workspace: "",
 		value: "",
+		_setValueAttr: function(value){
+			this.value = value;
+			if (this._started) {
+				this.searchBox.set('value', value);
+			}
+		},
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){
 				this.value=this.workspace;
@@ -54,6 +60,9 @@ define([
 			if (this._started){return;}
 			if (!this.value || !this.workspace){
 
+			}
+			if (this.value) {	
+				this.searchBox.set('value', this.value);
 			}	
 		}
 	});
