@@ -2,15 +2,14 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
 	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
-	"dojo/topic"
+	"dojo/topic",'../WorkspaceManager'
 ], function(
 	declare, WidgetBase, on,
 	domClass, domConstr, WorkspaceGrid,
 	Deferred, domGeometry,JobManager,
-	Topic
+	Topic,WorkspaceManager
 ) {
 	return declare([WorkspaceGrid], {
-		"baseClass": "WorkspaceExplorerView",
 		"disabled": false,
 		path: "/",
 
@@ -21,34 +20,7 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(window.App.api.workspace("Workspace.ls", [{
-					paths: [ws],
-					includeSubDirs: false,
-					Recursive: false
-				}]), function(results) {
-					console.log("Results: ", results)
-					console.log("path: ", ws);
-					if (!results[0] || !results[0][ws]) {
-						return [];
-					}
-					return results[0][ws].map(function(r) {
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
-					})
-				},
-				function(err) {
+			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ return res; }, function(err) {
 					console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
@@ -99,6 +71,7 @@ define([
 				return;
 			}
 			this.inherited(arguments);
+			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			var _self = this;
 

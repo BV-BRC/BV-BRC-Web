@@ -2,21 +2,22 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
 				"type": {
-					label: "Type",
+					label: "",
 					field: "type",
-					className: "wsItemType"
+					className: "wsItemType",
+					formatter: formatter.wsItemType
 				},
 				"name": {
 					label: "Name",
@@ -39,7 +40,7 @@ define([
 					field: "creation_time",
 					className: "wsItemCreationTime",
 					formatter: formatter.date
-				},
+				}/*,
 	
 				userMeta: {
 					label: "User Metadata",
@@ -50,7 +51,7 @@ define([
 					label: "Metadata",
 					field: "autoMeta",
 					hidden: true
-				}
+				}*/
 			},
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -167,10 +168,13 @@ define([
 					label: "Delete Object",
 					onClick: function() {
 						if (activeItem) {
-							console.log("Delete Object: ", activeItem.data.id);
-							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path],deleteDirectories: (activeItem.data.type=="folder")?true:false }]), function(results){
-								console.log("Delete Object Results: ", results);
-							});
+							console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
+							if (activeItem.data.type=="folder"){
+								WorkspaceManager.deleteFolder([activeItem.data.path]);
+							}else{
+								WorkspaceManager.deleteObject([activeItem.data.path],true);
+							}
+							
 						}
 					}
 				}));

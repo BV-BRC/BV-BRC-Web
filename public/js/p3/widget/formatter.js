@@ -35,6 +35,14 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				return out.join('');
 			} 
 			return val;	
+		},
+		wsItemType: function(val){
+			switch (val) {
+				case "folder":
+					return '<i class="fa fa-folder fa-1x" title="Folder" />'
+				default: 
+					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
+			}
 		}
 
 	}

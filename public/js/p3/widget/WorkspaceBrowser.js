@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
-	"./ActionBar","dojo/_base/Deferred"
+	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
-	ActionBar,Deferred
+	ActionBar,Deferred,WorkspaceManager
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -61,6 +61,8 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
+
+				/*
 				switch (sel.type) {
 					case "genome_group":
 						Topic.publish("/navigate",{href:"/view/GenomeList"});
@@ -68,6 +70,10 @@ define([
 					default:
 						console.log("Type isn't setup with a viewer");
 				}
+				*/
+
+				WorkspaceManager.getObjects([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
+
 			}, true);
 
 
@@ -88,13 +94,7 @@ define([
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-
-				Deferred.when(window.App.api.workspace("Workspace.delete",[{objects:objs}]), function(results){
-					console.log("Delete Object Results: ", results);
-					self.refresh();
-				});
-
-				console.log("Delete Item Action", selection);
+				WorkspaceManager.deleteObject(objs,true);
 			}, true);
 
 

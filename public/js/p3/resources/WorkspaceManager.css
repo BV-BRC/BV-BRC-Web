@@ -3,10 +3,6 @@
 	padding: 4px;
 }
 
-.WorkspaceExplorerView {
-	background:#888;
-}
-
 .BrowserHeader {
 	padding:2px;
 	vertical-align:middle;
@@ -57,10 +53,15 @@
 	text-align: center;
 }
 
+.dgrid-cell.wsItemType,
 .wsItemType {
-	width: 150px;
+	width: 32px;
+	text-align: center;
 }
 
+.WorkspaceExplorerView .dgrid-cell {
+	border: 0px;
+}
 .wsItemName {
 }
 
