@@ -21,14 +21,9 @@ define([
 
 			this.addedLibs=0;
 			this.addedPairs=0;
-			this.pairToAttachPt={
-				read1:"read1pair1",
-				read2:"read2pair1",
-				interleaved:"interleaved",
-				insert_size_mean:"avgpair1",
-				insert_size_stdev:"stdpair1"};
-			this.singleToAttachPt={
-				single_end_libs:"read1"};
+			this.pairToAttachPt=["read1", "read2", "interleaved", "insert_size_mean", "insert_size_stdev"];
+			this.paramToAttachPt=["recipe","output_path","output_file","reference_assembly"];
+			this.singleToAttachPt=["single_end_libs"];
 		},
 
                 startup: function(){
@@ -40,10 +35,10 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
-			this.read1pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
-			this.read2pair1.set('value',"/" +  window.App.user.id +"/home/test/b99_2.fq");
-			this.read1.set('value',"/" +  window.App.user.id +"/home/test/b99_1.fq");
-			this.output_path.set('value',"/" +  window.App.user.id +"/home/test/");
+			this.read1.set('value',"/" +  window.App.user.id +"/home/");
+			this.read2.set('value',"/" +  window.App.user.id +"/home/");
+			this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
+			this.output_path.set('value',"/" +  window.App.user.id +"/home/");
 /*
 			this.libraryGrid = new Grid({
 				columns: {'first': 'Libraries in assembly'}
@@ -65,12 +60,13 @@ define([
 			var pairedList = query(".pairdata");	
 			var singleList = query(".singledata");
 			var pairedLibs =[];
-			var singleLibs=[];	
-			for (var k in values) {
-				if(!k.startsWith("libdat_")){
-					assembly_values[k]=values[k];
-				}
-			}
+			var singleLibs=[];
+			this.ingestAttachPoints(this.paramToAttachPt, assembly_values);	
+			//for (var k in values) {
+			//	if(!k.startsWith("libdat_")){
+			//		assembly_values[k]=values[k];
+			//	}
+			//}
 			pairedList.forEach(function(item){
 				pairedLibs.push(item.libRecord)});
 			if(pairedLibs.length){
@@ -84,34 +80,56 @@ define([
 			return assembly_values;
 				
 		},
-		ingestLibrary: function(input_pts, target){
+		ingestAttachPoints: function(input_pts, target){
 			var success=1;
-			for (var key in input_pts) {
-				var cur_value=this[input_pts[key]].value;
+			input_pts.forEach(function(attachname){
+				var cur_value=null;
+				var incomplete =0;
+				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
+					cur_value=this[attachname].searchBox.get('value');
+					incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
+				}
+				else if(attachname == "output_path"){
+					cur_value=this[attachname].searchBox.get('value');
+				}
+				else {
+					cur_value=this[attachname].value;
+				}
+					
 				if(typeof(cur_value) == "string"){
-					target[key]=cur_value.trim();
+					target[attachname]=cur_value.trim();
 				}
 				else{
-					target[key]=cur_value;
+					target[attachname]=cur_value;
 				}
-				if(!target[key]){
-					this[input_pts[key]]._set("state","Error");
+				if(!target[attachname] || incomplete){
+					this[attachname]._set("state","Error");
 					success=0;
 				}
 				else{
-					this[input_pts[key]]._set("state","");
+					this[attachname]._set("state","");
 				}			 
-			}
+			}, this);
 			return(success);
 		},
 		makePairName:function(libRecord){
 			var fn =libRecord["read1"].replace(/^.*[\\\/]/, '');
-			return "pair"+"("+fn+")";
+			var fn2 =libRecord["read2"].replace(/^.*[\\\/]/, '');
+			if(fn.length > 10){
+				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			}
+			if(fn2.length > 10){
+				fn2=fn2.substr(0,3)+".."+fn2.substr(7,9);
+			}
+			return "("+fn+", "+fn2+")";
 		},	
 			
 
 		makeSingleName:function(libRecord){
 			var fn =libRecord["single_end_libs"].replace(/^.*[\\\/]/, '');
+			if(fn.length > 10){
+				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			}
 			return fn;
 		},
 
@@ -127,7 +145,7 @@ define([
 		onAddSingle: function(){
 			console.log("Create New Row", domConstr);
 			var lrec={};
-			var chkPassed=this.ingestLibrary(this.singleToAttachPt, lrec);
+			var chkPassed=this.ingestAttachPoints(this.singleToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstr.create('td', {"class":"singledata", innerHTML:""},tr);
@@ -157,7 +175,7 @@ define([
 //			var tr =  domConstr.create("tr",{});
 //			domConstr.place(tr,this.libsTableBody,"first");
 			var lrec={};
-			var chkPassed=this.ingestLibrary(this.pairToAttachPt, lrec);
+			var chkPassed=this.ingestAttachPoints(this.pairToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstr.create('td', {"class":"pairdata", innerHTML:""},tr);
