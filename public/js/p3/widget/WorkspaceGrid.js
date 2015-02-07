@@ -33,7 +33,8 @@ define([
 				owner_id: {
 					label: "Owner",
 					field: "owner_id",
-					className: "wsItemOwnerId"
+					className: "wsItemOwnerId",
+					formatter: formatter.baseUsername
 				},
 				creation_time: {
 					label: "Created",

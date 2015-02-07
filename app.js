@@ -27,7 +27,6 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cookieParser(config.get('cookieSecret')));
 
@@ -96,6 +95,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
+app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
 app.use("/workspace", workspace)
 app.use("/view", viewers)

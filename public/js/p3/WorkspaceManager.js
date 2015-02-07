@@ -72,11 +72,17 @@ define([
 			}));
 		},
 
-		createFolder: function(path){
-			console.log("createFolder: ", path);
-
-			return Deferred.when(this.api("Workspace.create",[{objects:[[path,"Directory"]]}]),lang.hitch(this,function(results){
-					console.log("Workspace.create(folder) results",path, results);
+		createFolder: function(paths){
+			console.log("createFolder: ", paths);
+			if (!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			var objs = paths.map(function(p){ return [p,"Directory"] })
+			return Deferred.when(this.api("Workspace.create",[{objects:objs}]),lang.hitch(this,function(results){
+					console.log("Workspace.create(folder) results",paths, results);
 					var res;
 
 					if (!results[0][0] || !results[0][0]) {
@@ -139,7 +145,13 @@ define([
 
 		createWorkspace: function(name){
 			console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
-			return this.createFolder("/" + this.userId + "/"+name+"/")
+			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
+				if (name=="home"){
+					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments"]),function(){
+						return workspace	
+					})
+				}
+			}));
 		},
 
 		getObjects: function(paths){
@@ -161,7 +173,7 @@ define([
 
 		},
 
-		getFolderContents: function(path) {
+		getFolderContents: function(path,showHidden) {
 	
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
@@ -192,6 +204,9 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
+					}).filter(function(r){
+						if (!showHidden && r.name.charAt(0)=="."){ return false };
+						return true;
 					})
 					console.log("Final getFolderContents()", res)
 					return res;

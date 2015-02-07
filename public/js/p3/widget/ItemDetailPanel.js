@@ -24,6 +24,16 @@ define([
 						domClass.add(_self.typeIcon,"fa fa-folder fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
+					//case "contigs": 
+					//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
+					//	currentIcon="fa fa-folder fa-3x";
+					//	break;
+					case "contigs": 
+					case "fasta": 
+						domClass.add(_self.typeIcon,"fa icon-fasta fa-3x")
+						currentIcon="fa fa-folder fa-3x";
+						break;
+	
 					default: 
 						domClass.add(_self.typeIcon,"fa fa-file fa-3x")
 						currentIcon="fa fa-file fa-3x";
