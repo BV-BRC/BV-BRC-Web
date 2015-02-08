@@ -28,7 +28,7 @@ define([
 					label: "Size",
 					field: "size",
 					className: "wsItemSize",
-					hidden: true,
+					hidden: true
 				},
 	
 				owner_id: {
@@ -36,8 +36,7 @@ define([
 					field: "owner_id",
 					className: "wsItemOwnerId",
 					formatter: formatter.baseUsername,
-					hidden: true,
-
+					hidden: true
 				},
 				creation_time: {
 					label: "Created",
