@@ -101,7 +101,7 @@ function(
                                 "accept": "application/json",
                                 "content-type": "application/json",
                                 'X-Requested-With':null,
-				'Authorization': token?token:(window.App.authorizationToken||""),
+				'Authorization': token?token:(window.App.authorizationToken||"")
                         }});
                         console.log("store: ", store);
                         return store;
