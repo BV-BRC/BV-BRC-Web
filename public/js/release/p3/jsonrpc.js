@@ -14,8 +14,6 @@ define("p3/jsonrpc", ["dojo/request","dojo/_base/Deferred"], function(xhr,defer)
 				handleAs: "json",
 				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
 			}),function(response){
-				console.log("response: ", response)
-				
 				if (response.error){
 					return def.reject(response.error);
 				}

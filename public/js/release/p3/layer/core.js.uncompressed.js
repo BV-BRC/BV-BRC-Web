@@ -42,7 +42,7 @@ define([
 			});
 
 			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Workspace URL Callback", params.newPath);
+				console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -65,7 +65,11 @@ define([
 					newState[prop]=params.state[prop]
 				}
 		
-				var path = params.params[0] || "/"
+				var path = params.params[0] || ("/"  + _self.user.id + "/home/");
+				var parts = path.split("/");
+				if (parts.length<3){
+					path =  ("/"  + _self.user.id + "/home/");
+				}
 				newState.widgetClass="p3/widget/WorkspaceManager";
 				newState.value=path;
 				newState.set= "path";
@@ -13196,8 +13200,6 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 				handleAs: "json",
 				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
 			}),function(response){
-				console.log("response: ", response)
-				
 				if (response.error){
 					return def.reject(response.error);
 				}
@@ -13250,9 +13252,14 @@ define([],function(){
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
                 params: {overwrite:true}
+            },
+
+    	    GenomeGroupViewer: {
+                title: "Genome Group",
+                layer: "p3/layer/panels",
+                ctor: "p3/widget/viewer/GenomeList",
+                params: {}
             }
-	
-	
 	}
 
 })
@@ -13261,31 +13268,277 @@ define([],function(){
 'p3/WorkspaceManager':function(){
 define([
 	"dojo/request", "dojo/_base/declare","dojo/_base/lang", 
-	"dojo/_base/Deferred","dojo/topic","./jsonrpc"
+	"dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful"
 ],function(
 	xhr,declare,lang,
-	Deferred,Topic,RPC
+	Deferred,Topic,RPC,Stateful
 ){
 
-	var WorkspaceManager = (declare([], {
-		constructor: function(){
-			this.userWorkspaces=[];	
-		},
+	var WorkspaceManager = (declare([Stateful], {
+		userWorkspaces: null,
+		currentWorkspace: null,
+		currentPath: null,
 		token: "",
 		apiUrl: "",
 		userId: "",
+
+		_userWorkspacesGetter: function(){
+			if (this.userWorkspaces && this.userWorkspaces.length>0){
+				return this.userWorkspaces;
+			}
+
+			var p = "/" + this.userId + "/";
+			return Deferred.when(this.api("Workspace.ls", [{
+				paths: [p],
+				includeSubDirs: false,
+				Recursive: false
+			}]), lang.hitch(this, function(results) {
+					var res;
+					if (!results[0] || !results[0][p]) {
+						res = []
+					}else{
+						res = results[0][p].map(function(r) {
+							return {
+								id: r[4],
+								path: r[2] + r[0],
+								name: r[0],
+								type: r[1],
+								creation_time: r[3],
+								link_reference: r[11],
+								owner_id: r[5],
+								size: r[6],
+								userMeta: r[7],
+								autoMeta: r[8],
+								user_permission: r[9],
+								global_permission: r[10]
+							}
+						})
+					}
+
+
+					if (res.length>0){
+						this.set("userWorkspaces", res);
+						Topic.publish("/refreshWorkspace",{});
+						return res;
+					}
+
+
+					return Deferred.when(this.createWorkspace("home"), lang.hitch(this,function(hws){
+						this.set("userWorkspaces",[hws]);
+						return [hws];
+					}, function(err){
+						console.log("Error Creating User's home workspace: ", err);
+//						console.error("Unable to create user's 'home' workspace: ", err);
+						return [];
+					}));
+			}));
+		},
+
+		createFolder: function(paths){
+			if (!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			var objs = paths.map(function(p){ return [p,"Directory"] })
+			return Deferred.when(this.api("Workspace.create",[{objects:objs}]),lang.hitch(this,function(results){
+					var res;
+
+					if (!results[0][0] || !results[0][0]) {
+						throw new Error("Error Creating Folder");
+					}else{
+						var r = results[0][0];
+						var out = {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+						return out;
+					}
+				Topic.publish("/refreshWorkspace",{});
+			}));
+		},
+
+		deleteFolder: function(paths){
+			if (!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			if (paths.indexOf("home")>=0){
+				throw new Error("Cannot delete your 'home' Workspace");
+			}
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true }]), function(results){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
+
+		deleteObject: function(paths, deleteFolders){
+			if (!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			if (paths.indexOf("home")>=0){
+				throw new Error("Cannot delete your 'home' Workspace");
+			}
+
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: deleteFolders }]), function(results){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
+
+
+		createWorkspace: function(name){
+			console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
+			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
+				if (name=="home"){
+					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments"]),function(){
+						return workspace	
+					})
+				}
+			}));
+		},
+
+		getObjects: function(paths){
+			if (!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			paths = paths.map(function(p){ return decodeURIComponent(p); })
+			console.log('getObjects: ', paths)
+			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
+				console.log("results[0]", results[0])
+				var meta = {
+					name: results[0][0][0][0],
+					type: results[0][0][0][1],
+					path: results[0][0][0][2],
+					creation_time: results[0][0][0][3],
+					id: results[0][0][0][4],
+					owner_id: results[0][0][0][5],
+					size: results[0][0][0][6],
+					userMeta: results[0][0][0][7],
+					autoMeta: results[0][0][0][8],
+					user_permissions: results[0][0][0][9],
+					global_permission: results[0][0][0][10],
+					link_reference: results[0][0][0][11]
+				}
+				var res = {
+					metadata: meta,
+					data: results[0][0][1]
+				}
+				return res;
+			});
+
+		},
+
+		getFolderContents: function(path,showHidden) {
+	
+			return Deferred.when(this.api("Workspace.ls", [{
+					paths: [path],
+					includeSubDirs: false,
+					Recursive: false
+				}]), function(results) {
+					console.log("path: ", path);
+
+					if (!results[0] || !results[0][path]) {
+						return [];
+					}
+					var res = results[0][path];
+		
+					console.log("array res", res);
+
+					res = res.map(function(r) {
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					}).filter(function(r){
+						if (!showHidden && r.name.charAt(0)=="."){ return false };
+						return true;
+					})
+					console.log("Final getFolderContents()", res)
+					return res;
+				},
+
+				function(err) {
+					console.log("Error Loading Workspace:", err);
+					_self.showError(err);
+				})
+		},
+
+		_userWorkspacesSetter: function(val){
+			this.userWorkspaces = val;
+		},
+
+		_currentWorkspaceGetter: function(){
+			if (this.currentWorkspace){
+				console.log("CURRENT WORKSPACE: ", this.currentWorkspace)
+				return this.currentWorkspace;
+			}
+
+			return Deferred.when(this.get('userWorkspaces'),lang.hitch(this,function(cws){
+				if (!cws || cws.length<1){
+					throw Error("No User Workspaces found when attempting to get the Current Workspace for user.");
+				}
+				this.set("currentWorkspace",cws[0]);
+				return cws[0];
+			}))
+		},
+		_currentWorkspaceSetter: function(val){
+			this.currentWorkspace = val;
+		},
+
+		_currentPathGetter: function(){
+			if (!this.currentPath){
+				return Deferred.when(this.get('currentWorkspace'),lang.hitch(this,function(cws){
+					this.set("currentPath",cws.path);
+					return cws.path;
+				}))
+			}
+
+			return this.currentPath;
+		},
+		_currentPathSetter: function(val){
+			this.currentPath = val;
+		},
+
 		init: function(apiUrl, token, userId){
+			if (!apiUrl || !token || !userId){
+				console.log("Unable to initialize workspace manager. Args: ", arguments);
+				return;
+			}
+
 			this.token = token;
 			this.apiUrl = apiUrl
 			this.api = RPC(apiUrl, token);
-
-			if (userId) { 
-				this.userId = userId; 
-				this.getCurrentWorkspacePath();
-			}
-		},
-		getCurrentWorkspacePath: function(){
-				
+			this.userId = userId; 
+			Deferred.when(this.get("currentPath"), function(cwsp){ console.log("Current Workspace Path: ", cwsp) });
+		
 		}
 	}))()
 
@@ -21938,16 +22191,16 @@ define([
 	return declare([BorderContainer], {
 		"workspaceServer": "",
 		"currentWorkspace": "",
-		gutters:true,
+		gutters:false,
 		liveSplitters: true,
-		style: "margin:0px;padding:4px;",
+		style: "margin:-1px;padding:0px;",
 		path: "/",
 		startup: function(){
 			if (this._started){ return; }
 			this.inherited(arguments);
 
 //			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
+			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false});
 			//this.workspaceBrowserTabs = new TabContainer({region: "center"});
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
 		
@@ -25496,12 +25749,12 @@ define([
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
-	"./ActionBar","dojo/_base/Deferred"
+	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
-	ActionBar,Deferred
+	ActionBar,Deferred,WorkspaceManager,lang
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -25510,9 +25763,9 @@ define([
 		gutters: false,
 		startup: function(){
 			if (this._started) {return;}
-			var parts = this.path.split("/").filter(function(x){ return x!=""; })
+			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
 			var out = ["<span class='wsBreadCrumb'>"];
-			var parts = this.path.split("/").filter(function(x){ return x!=""; });
+			var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
 			var len = parts.length;
 			var bp = ["workspace"];
 			parts.forEach(function(p,idx){
@@ -25526,12 +25779,12 @@ define([
 				out.push("'>" + p + "</a>&nbsp;/&nbsp;");
 			})
 			out.push("</span>");
-			out.push("<span style='float:right;font-size:.75em;'>");
+			out.push("<span style='float:right;'>");
 			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
 			out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
 			out.push("</span>");
 			this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
-			this.explorer = new WorkspaceExplorerView({path: this.path, region: "center"});
+			//this.explorer = new WorkspaceExplorerView({path: decodeURIComponent(this.path), region: "center"});
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
 
@@ -25555,6 +25808,8 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
+
+				/*
 				switch (sel.type) {
 					case "genome_group":
 						Topic.publish("/navigate",{href:"/view/GenomeList"});
@@ -25562,6 +25817,10 @@ define([
 					default:
 						console.log("Type isn't setup with a viewer");
 				}
+				*/
+
+				WorkspaceManager.getObjects([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
+
 			}, true);
 
 
@@ -25582,13 +25841,7 @@ define([
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-
-				Deferred.when(window.App.api.workspace("Workspace.delete",[{objects:objs}]), function(results){
-					console.log("Delete Object Results: ", results);
-					self.refresh();
-				});
-
-				console.log("Delete Item Action", selection);
+				WorkspaceManager.deleteObject(objs,true);
 			}, true);
 
 
@@ -25600,7 +25853,7 @@ define([
 			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.browserHeader);
-			this.addChild(this.explorer); 
+			//this.addChild(this.explorer); 
 			this.addChild(this.actionPanel);
 //			this.addChild(this.detailPanel);
 
@@ -25626,83 +25879,84 @@ define([
 
 				self.actionPanel.set('selection', selection);
 				self.addChild(self.actionPanel);
-				/*
-				if (selection.length==1){
-					if (!self.getChildren().some(function(child){
-						return child===self.detailPanel
-					})){
-						self.removeChild(self.detailPanel);
-					}
-
-					console.log("Set Item Detail Panel: ", selection[0]);
-	
-					self.itemDetailPanel.set("item",selection[0]);	
-
-					console.log("itemDetailPanel: ", self.itemDetailPanel);
-					self.addChild(self.actionPanel);
-					if (!self.getChildren().some(function(child){
-						return child===self.itemDetailPanel
-					})){
-						self.addChild(self.itemDetailPanel);
-					}
-					
-				}else{
-					if (!self.getChildren().some(function(child){
-						return child===self.itemDetailPanel
-					})){
-						self.removeChild(self.itemDetailPanel);
-					}
-
-					self.addChild(self.actionPanel);
-					if (!self.getChildren().some(function(child){
-						return child===self.detailPanel
-					})){
-						self.addChild(self.detailPanel);
-					}
-	
-					self.detailPanel.set("content", selection.length + " Items Selected");
-				}
-				*/
 			});	
 			this.inherited(arguments);
 
 		},
 		_setPathAttr: function(val){
 			console.log("WorkspaceBrowser setPath()", val)
-			this.path = val;
-			var parts = this.path.split("/").filter(function(x){ return x!=""; });
+			this.path = decodeURIComponent(val);
+			var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
 			var workspace = parts[0] + "/" + parts[1];
-			console.log("Publish to ActiveWorkspace:",workspace,val)
-			Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
-
-			if (this._started){
-				var len = parts.length;
-				var out = [];
-				var bp = ["workspace"];
-				parts.forEach(function(p,idx){
-					if (idx == (parts.length-1)){
-						out.push(p + "&nbsp;/");
-						return;
-					}
-					out.push("<a class='navigationLink' href='");
-					bp.push(p);
-					out.push("/" + bp.join("/")+"/")
-					out.push("'>" + p + "</a>&nbsp;/&nbsp;");
-				})
-				//out.push("<span>" + parts.join("/") + "</span>");
-				out.push("<span style='float:right;font-size:.75em;'>");
-				out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
-				out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
-
-
-				this.browserHeader.set("content", out.join(""));
-
-				console.log("Set Explorer set()", val);
-				this.explorer.set("path", val);
+			var obj;
+			console.log("Workspace: ", workspace, parts[1], val)
+			if (!parts[1]){
+				obj = {metadata: {type: "folder"}}
+			}else{
+				obj = WorkspaceManager.getObjects(val,true)
 			}
+
+			Deferred.when(obj, lang.hitch(this,function(obj){
+				var panelCtor;
+				var params = {path: this.path, region: "center"}
+				console.log("Browse to Type: ", obj.metadata.type, obj);
+				switch(obj.metadata.type) {
+					case "folder": 
+						panelCtor = WorkspaceExplorerView;
+						break;
+					case "genome_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
+						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path)+"))";
+						break;
+					default:
+						panelCtor = ContentPane;
+						params.content = "Invalid Object";
+				}	
+
+				console.log("params.query: ", params.query);
+				Deferred.when(panelCtor, lang.hitch(this,function(Panel){
+					if (!this.activePane || !this.activePanel instanceof Panel){
+						if (this.activePanel) { this.removeChild(this.activePanel); }
+						this.activePanel = new Panel(params);
+						this.addChild(this.activePanel);
+					}
+
+					var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
+					var workspace = parts[0] + "/" + parts[1];
+					console.log("Publish to ActiveWorkspace:",workspace,val)
+					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
+
+					if (this._started){
+						var len = parts.length;
+						var out = [];
+
+						var out = ["<span class='wsBreadCrumb'>"];
+						var bp = ["workspace"];
+						parts.forEach(function(p,idx){
+							if (idx == (parts.length-1)){
+								out.push(p + "&nbsp;");
+								return;
+							}
+							out.push("<a class='navigationLink' href='");
+							bp.push(p);
+							out.push("/" + bp.join("/"))
+							out.push("'>" + p + "</a>&nbsp;/&nbsp;");
+						})
+						//out.push("<span>" + parts.join("/") + "</span>");
+						out.push("<span style='float:right;'>");
+						out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
+						out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
+						out.push("</span>");	
+
+						this.browserHeader.set("content", out.join(""));
+					}
+				}));
+			}));
 		},
 		refresh: function(){
-			this.explorer.refreshWorkspace()
+			if (this.activePanel instanceof WorkspaceExplorerView){
+				this.explorer.refreshWorkspace()
+			}
 		},
 		getMenuButtons: function(){
 			// console.log("Get Menu Buttons");
@@ -25726,15 +25980,14 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
 	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
-	"dojo/topic"
+	"dojo/topic",'../WorkspaceManager'
 ], function(
 	declare, WidgetBase, on,
 	domClass, domConstr, WorkspaceGrid,
 	Deferred, domGeometry,JobManager,
-	Topic
+	Topic,WorkspaceManager
 ) {
 	return declare([WorkspaceGrid], {
-		"baseClass": "WorkspaceExplorerView",
 		"disabled": false,
 		path: "/",
 
@@ -25745,34 +25998,7 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(window.App.api.workspace("Workspace.ls", [{
-					paths: [ws],
-					includeSubDirs: false,
-					Recursive: false
-				}]), function(results) {
-					console.log("Results: ", results)
-					console.log("path: ", ws);
-					if (!results[0] || !results[0][ws]) {
-						return [];
-					}
-					return results[0][ws].map(function(r) {
-						return {
-							id: r[4],
-							path: r[2] + r[0],
-							name: r[0],
-							type: r[1],
-							creation_time: r[3],
-							link_reference: r[11],
-							owner_id: r[5],
-							size: r[6],
-							userMeta: r[7],
-							autoMeta: r[8],
-							user_permission: r[9],
-							global_permission: r[10]
-						}
-					})
-				},
-				function(err) {
+			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ return res; }, function(err) {
 					console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
@@ -25811,7 +26037,6 @@ define([
 		refreshWorkspace: function(){
 			var _self=this;
 			this.listWorkspaceContents(this.path).then(function(contents) {
-				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -25823,11 +26048,11 @@ define([
 				return;
 			}
 			this.inherited(arguments);
+			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			var _self = this;
 
 			this.listWorkspaceContents(this.path).then(function(contents) {
-				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -25838,11 +26063,11 @@ define([
 
 
 			Topic.subscribe("/Jobs", function(msg){
-				if (msg.type=="JobStatus") {
-					console.log("JobStatus MSG: ", msg.job);
-				}else if (msg.type=="JobStatusChanged") {
-					console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
-				}
+				// if (msg.type=="JobStatus") {
+				// 	console.log("JobStatus MSG: ", msg.job);
+				// }else if (msg.type=="JobStatusChanged") {
+				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
+				// }
 			});
 
 		},
@@ -25850,10 +26075,10 @@ define([
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
-			console.log("WorkspaceExplorerView setPath", val)
+			//console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
 				this.listWorkspaceContents(this.path).then(function(contents) {
-					console.log("Workspace Contents", contents);
+			//		console.log("Workspace Contents", contents);
 					_self.render(_self.path, contents);
 				});
 			}
@@ -25867,21 +26092,22 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
 				"type": {
-					label: "Type",
+					label: "",
 					field: "type",
-					className: "wsItemType"
+					className: "wsItemType",
+					formatter: formatter.wsItemType
 				},
 				"name": {
 					label: "Name",
@@ -25891,20 +26117,23 @@ define([
 				size: {
 					label: "Size",
 					field: "size",
-					className: "wsItemSize"
+					className: "wsItemSize",
+					hidden: true
 				},
 	
 				owner_id: {
 					label: "Owner",
 					field: "owner_id",
-					className: "wsItemOwnerId"
+					className: "wsItemOwnerId",
+					formatter: formatter.baseUsername,
+					hidden: true
 				},
 				creation_time: {
 					label: "Created",
 					field: "creation_time",
 					className: "wsItemCreationTime",
 					formatter: formatter.date
-				},
+				}/*,
 	
 				userMeta: {
 					label: "User Metadata",
@@ -25915,7 +26144,7 @@ define([
 					label: "Metadata",
 					field: "autoMeta",
 					hidden: true
-				}
+				}*/
 			},
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -25992,11 +26221,12 @@ define([
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
-				    if (row.data.type == "folder"){
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path + "/"})
-						_selection={};
+				    //if (row.data.type == "folder"){
 						Topic.publish("/select", []);
-					}
+
+						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+						_selection={};
+					//}
 				});
 				_selection={};
 				Topic.publish("/select", []);
@@ -26032,10 +26262,13 @@ define([
 					label: "Delete Object",
 					onClick: function() {
 						if (activeItem) {
-							console.log("Delete Object: ", activeItem.data.id);
-							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path],deleteDirectories: (activeItem.data.type=="folder")?true:false }]), function(results){
-								console.log("Delete Object Results: ", results);
-							});
+							console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
+							if (activeItem.data.type=="folder"){
+								WorkspaceManager.deleteFolder([activeItem.data.path]);
+							}else{
+								WorkspaceManager.deleteObject([activeItem.data.path],true);
+							}
+							
 						}
 					}
 				}));
@@ -29407,6 +29640,22 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				return out.join('');
 			} 
 			return val;	
+		},
+		baseUsername: function(val){
+			var parts = val.split("@");
+			return parts[0];
+		},
+		wsItemType: function(val){
+			switch (val) {
+				case "folder":
+					return '<i class="fa fa-folder fa-1x" title="Folder" />'
+				case "contigs":
+				case "fast":
+					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
+
+				default: 
+					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
+			}
 		}
 
 	}
@@ -32418,6 +32667,16 @@ define([
 						domClass.add(_self.typeIcon,"fa fa-folder fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
+					//case "contigs": 
+					//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
+					//	currentIcon="fa fa-folder fa-3x";
+					//	break;
+					case "contigs": 
+					case "fasta": 
+						domClass.add(_self.typeIcon,"fa icon-fasta fa-3x")
+						currentIcon="fa fa-folder fa-3x";
+						break;
+	
 					default: 
 						domClass.add(_self.typeIcon,"fa fa-file fa-3x")
 						currentIcon="fa fa-file fa-3x";
@@ -32475,20 +32734,15 @@ define([
 				valid=[];
 			}
 
-			console.log("valid: ", valid);
 			var types = Object.keys(selectionTypes)
-			console.log("types: ", types);
 
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
-				console.log("Filder Act: ", act);
 				var validTypes = act.options.validTypes||[];
-				console.log("ValidTypes: ", validTypes);
 				return validTypes.some(function(t){
 					return ((t=="*") || (types.indexOf(t)>=0));
 				});		
 			},this);
-			console.log("Valid Actions: ", valid);	
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
@@ -32504,7 +32758,6 @@ define([
 			this.inherited(arguments);
 			var _self=this;
 			on(this.domNode, "click", function(evt){
-				console.log("ActionButton clicked",evt.target.attributes.rel.value, evt.target);
 				var rel = evt.target.attributes.rel.value;
 				if (_self._actions[rel]) {
 					_self._actions[rel].action.apply(_self,[_self.selection]);
@@ -32513,7 +32766,6 @@ define([
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
-			console.log("AddAction", name);
 			var b = domConstruct.create("i",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes,rel:name});
 
 			domConstruct.place(b,this.domNode,"last");
@@ -32628,16 +32880,12 @@ define([
 		},
 
 		onJobsMessage: function(msg){
-			console.log("OnJobsMessage: ", msg);
 			if (msg.type=="JobStatusSummary"){
-				console.log("Update Job Summary");
 
 				if (!this.jobSummaryNode){
-					console.log("Creating Job Summary Node");
 					this.jobSummaryNode = domConstr.create('div',{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);
 				}	
 				var Summary = "<div style='padding:1px;margin:2px;border-radius:3px;background: #333;color:#333;'> <span style='color:#fff;margin:2px;padding:2px'>Jobs</span> <div style='display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;'><span style='color:blue'>" + (msg.summary.completed||0) + "</span>&centerdot;<span style='color:green'>" + (msg.summary.running||0) + "</span>" + "&centerdot;<span style='color:orange'>" + (msg.summary.queued||0) + "</span></div></div>"; 
-				console.log("Summary: ", Summary);
 				this.jobSummaryNode.innerHTML= Summary;
 				on(this.jobSummaryNode, "click", function(evt){
 					Topic.publish("/navigate", {href:"/job/"});
@@ -32822,13 +33070,14 @@ define([
 	"dojo/dom-construct","../JobManager","../UploadManager",
 	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
         "dojo/text!./templates/UploadStatus.html",
-	"dijit/_HasDropDown","dijit/layout/ContentPane"
+	"dijit/_HasDropDown","dijit/layout/ContentPane",
+	"dijit/Tooltip"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Topic,lang,
 	domConstr,JobManager,UploadManager,
 	TemplatedMixin,WidgetsInTemplate,template,
-	HasDropDown,ContentPane
+	HasDropDown,ContentPane,Tooltip
 ){
 
 	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
@@ -32849,6 +33098,10 @@ define([
 			this.inherited(arguments);
 			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
+			this.tooltip = new Tooltip({
+				connectId: [this.domNode],
+				label: " Completed &middot; In progress &middot; % Complete"
+			});
 		},
 		onUploadMessage: function(msg){
 			console.log("UPLOADMMANAGER MESSAGE: ", msg);
@@ -32939,6 +33192,619 @@ define([
 });
 
 },
+'dijit/Tooltip':function(){
+define([
+	"dojo/_base/array", // array.forEach array.indexOf array.map
+	"dojo/_base/declare", // declare
+	"dojo/_base/fx", // fx.fadeIn fx.fadeOut
+	"dojo/dom", // dom.byId
+	"dojo/dom-class", // domClass.add
+	"dojo/dom-geometry", // domGeometry.position
+	"dojo/dom-style", // domStyle.set, domStyle.get
+	"dojo/_base/lang", // lang.hitch lang.isArrayLike
+	"dojo/mouse",
+	"dojo/on",
+	"dojo/sniff", // has("ie"), has("trident")
+	"./_base/manager",	// manager.defaultDuration
+	"./place",
+	"./_Widget",
+	"./_TemplatedMixin",
+	"./BackgroundIframe",
+	"dojo/text!./templates/Tooltip.html",
+	"./main"		// sets dijit.showTooltip etc. for back-compat
+], function(array, declare, fx, dom, domClass, domGeometry, domStyle, lang, mouse, on, has,
+			manager, place, _Widget, _TemplatedMixin, BackgroundIframe, template, dijit){
+
+	// module:
+	//		dijit/Tooltip
+
+
+	// TODO: Tooltip should really share more positioning code with TooltipDialog, like:
+	//		- the orient() method
+	//		- the connector positioning code in show()
+	//		- the dijitTooltip[Dialog] class
+	//
+	// The problem is that Tooltip's implementation supplies it's own <iframe> and interacts directly
+	// with dijit/place, rather than going through dijit/popup like TooltipDialog and other popups (ex: Menu).
+
+	var MasterTooltip = declare("dijit._MasterTooltip", [_Widget, _TemplatedMixin], {
+		// summary:
+		//		Internal widget that holds the actual tooltip markup,
+		//		which occurs once per page.
+		//		Called by Tooltip widgets which are just containers to hold
+		//		the markup
+		// tags:
+		//		protected
+
+		// duration: Integer
+		//		Milliseconds to fade in/fade out
+		duration: manager.defaultDuration,
+
+		templateString: template,
+
+		postCreate: function(){
+			this.ownerDocumentBody.appendChild(this.domNode);
+
+			this.bgIframe = new BackgroundIframe(this.domNode);
+
+			// Setup fade-in and fade-out functions.
+			this.fadeIn = fx.fadeIn({ node: this.domNode, duration: this.duration, onEnd: lang.hitch(this, "_onShow") });
+			this.fadeOut = fx.fadeOut({ node: this.domNode, duration: this.duration, onEnd: lang.hitch(this, "_onHide") });
+		},
+
+		show: function(innerHTML, aroundNode, position, rtl, textDir, onMouseEnter, onMouseLeave){
+			// summary:
+			//		Display tooltip w/specified contents to right of specified node
+			//		(To left if there's no space on the right, or if rtl == true)
+			// innerHTML: String
+			//		Contents of the tooltip
+			// aroundNode: DomNode|dijit/place.__Rectangle
+			//		Specifies that tooltip should be next to this node / area
+			// position: String[]?
+			//		List of positions to try to position tooltip (ex: ["right", "above"])
+			// rtl: Boolean?
+			//		Corresponds to `WidgetBase.dir` attribute, where false means "ltr" and true
+			//		means "rtl"; specifies GUI direction, not text direction.
+			// textDir: String?
+			//		Corresponds to `WidgetBase.textdir` attribute; specifies direction of text.
+			// onMouseEnter: Function?
+			//		Callback function for mouse enter on tooltip
+			// onMouseLeave: Function?
+			//		Callback function for mouse leave on tooltip
+
+			if(this.aroundNode && this.aroundNode === aroundNode && this.containerNode.innerHTML == innerHTML){
+				return;
+			}
+
+			if(this.fadeOut.status() == "playing"){
+				// previous tooltip is being hidden; wait until the hide completes then show new one
+				this._onDeck=arguments;
+				return;
+			}
+			this.containerNode.innerHTML=innerHTML;
+
+			if(textDir){
+				this.set("textDir", textDir);
+			}
+
+			this.containerNode.align = rtl? "right" : "left"; //fix the text alignment
+
+			var pos = place.around(this.domNode, aroundNode,
+				position && position.length ? position : Tooltip.defaultPosition, !rtl, lang.hitch(this, "orient"));
+
+			// Position the tooltip connector for middle alignment.
+			// This could not have been done in orient() since the tooltip wasn't positioned at that time.
+			var aroundNodeCoords = pos.aroundNodePos;
+			if(pos.corner.charAt(0) == 'M' && pos.aroundCorner.charAt(0) == 'M'){
+				this.connectorNode.style.top = aroundNodeCoords.y + ((aroundNodeCoords.h - this.connectorNode.offsetHeight) >> 1) - pos.y + "px";
+				this.connectorNode.style.left = "";
+			}else if(pos.corner.charAt(1) == 'M' && pos.aroundCorner.charAt(1) == 'M'){
+				this.connectorNode.style.left = aroundNodeCoords.x + ((aroundNodeCoords.w - this.connectorNode.offsetWidth) >> 1) - pos.x + "px";
+			}else{
+				// Not *-centered, but just above/below/after/before
+				this.connectorNode.style.left = "";
+				this.connectorNode.style.top = "";
+			}
+
+			// show it
+			domStyle.set(this.domNode, "opacity", 0);
+			this.fadeIn.play();
+			this.isShowingNow = true;
+			this.aroundNode = aroundNode;
+
+			this.onMouseEnter = onMouseEnter || noop;
+			this.onMouseLeave = onMouseLeave || noop;
+		},
+
+		orient: function(/*DomNode*/ node, /*String*/ aroundCorner, /*String*/ tooltipCorner, /*Object*/ spaceAvailable, /*Object*/ aroundNodeCoords){
+			// summary:
+			//		Private function to set CSS for tooltip node based on which position it's in.
+			//		This is called by the dijit popup code.   It will also reduce the tooltip's
+			//		width to whatever width is available
+			// tags:
+			//		protected
+
+			this.connectorNode.style.top = ""; //reset to default
+
+			var heightAvailable = spaceAvailable.h,
+				widthAvailable = spaceAvailable.w;
+
+			node.className = "dijitTooltip " +
+				{
+					"MR-ML": "dijitTooltipRight",
+					"ML-MR": "dijitTooltipLeft",
+					"TM-BM": "dijitTooltipAbove",
+					"BM-TM": "dijitTooltipBelow",
+					"BL-TL": "dijitTooltipBelow dijitTooltipABLeft",
+					"TL-BL": "dijitTooltipAbove dijitTooltipABLeft",
+					"BR-TR": "dijitTooltipBelow dijitTooltipABRight",
+					"TR-BR": "dijitTooltipAbove dijitTooltipABRight",
+					"BR-BL": "dijitTooltipRight",
+					"BL-BR": "dijitTooltipLeft"
+				}[aroundCorner + "-" + tooltipCorner];
+
+			// reset width; it may have been set by orient() on a previous tooltip show()
+			this.domNode.style.width = "auto";
+
+			// Reduce tooltip's width to the amount of width available, so that it doesn't overflow screen.
+			// Note that sometimes widthAvailable is negative, but we guard against setting style.width to a
+			// negative number since that causes an exception on IE.
+			var size = domGeometry.position(this.domNode);
+			if(has("ie") || has("trident")){
+				// workaround strange IE bug where setting width to offsetWidth causes words to wrap
+				size.w += 2;
+			}
+
+			var width = Math.min((Math.max(widthAvailable,1)), size.w);
+
+			domGeometry.setMarginBox(this.domNode, {w: width});
+
+			// Reposition the tooltip connector.
+			if(tooltipCorner.charAt(0) == 'B' && aroundCorner.charAt(0) == 'B'){
+				var bb = domGeometry.position(node);
+				var tooltipConnectorHeight = this.connectorNode.offsetHeight;
+				if(bb.h > heightAvailable){
+					// The tooltip starts at the top of the page and will extend past the aroundNode
+					var aroundNodePlacement = heightAvailable - ((aroundNodeCoords.h + tooltipConnectorHeight) >> 1);
+					this.connectorNode.style.top = aroundNodePlacement + "px";
+					this.connectorNode.style.bottom = "";
+				}else{
+					// Align center of connector with center of aroundNode, except don't let bottom
+					// of connector extend below bottom of tooltip content, or top of connector
+					// extend past top of tooltip content
+					this.connectorNode.style.bottom = Math.min(
+						Math.max(aroundNodeCoords.h/2 - tooltipConnectorHeight/2, 0),
+						bb.h - tooltipConnectorHeight) + "px";
+					this.connectorNode.style.top = "";
+				}
+			}else{
+				// reset the tooltip back to the defaults
+				this.connectorNode.style.top = "";
+				this.connectorNode.style.bottom = "";
+			}
+
+			return Math.max(0, size.w - widthAvailable);
+		},
+
+		_onShow: function(){
+			// summary:
+			//		Called at end of fade-in operation
+			// tags:
+			//		protected
+			if(has("ie")){
+				// the arrow won't show up on a node w/an opacity filter
+				this.domNode.style.filter="";
+			}
+		},
+
+		hide: function(aroundNode){
+			// summary:
+			//		Hide the tooltip
+
+			if(this._onDeck && this._onDeck[1] == aroundNode){
+				// this hide request is for a show() that hasn't even started yet;
+				// just cancel the pending show()
+				this._onDeck=null;
+			}else if(this.aroundNode === aroundNode){
+				// this hide request is for the currently displayed tooltip
+				this.fadeIn.stop();
+				this.isShowingNow = false;
+				this.aroundNode = null;
+				this.fadeOut.play();
+			}else{
+				// just ignore the call, it's for a tooltip that has already been erased
+			}
+
+			this.onMouseEnter = this.onMouseLeave = noop;
+		},
+
+		_onHide: function(){
+			// summary:
+			//		Called at end of fade-out operation
+			// tags:
+			//		protected
+
+			this.domNode.style.cssText="";	// to position offscreen again
+			this.containerNode.innerHTML="";
+			if(this._onDeck){
+				// a show request has been queued up; do it now
+				this.show.apply(this, this._onDeck);
+				this._onDeck=null;
+			}
+		}
+	});
+
+	if(has("dojo-bidi")){
+		MasterTooltip.extend({
+			_setAutoTextDir: function(/*Object*/node){
+				// summary:
+				//		Resolve "auto" text direction for children nodes
+				// tags:
+				//		private
+
+				this.applyTextDir(node);
+				array.forEach(node.children, function(child){ this._setAutoTextDir(child); }, this);
+			},
+
+			_setTextDirAttr: function(/*String*/ textDir){
+				// summary:
+				//		Setter for textDir.
+				// description:
+				//		Users shouldn't call this function; they should be calling
+				//		set('textDir', value)
+				// tags:
+				//		private
+
+				this._set("textDir", textDir);
+
+				if (textDir == "auto"){
+					this._setAutoTextDir(this.containerNode);
+				}else{
+					this.containerNode.dir = this.textDir;
+				}
+			}
+		});
+	}
+
+	dijit.showTooltip = function(innerHTML, aroundNode, position, rtl, textDir, onMouseEnter, onMouseLeave){
+		// summary:
+		//		Static method to display tooltip w/specified contents in specified position.
+		//		See description of dijit/Tooltip.defaultPosition for details on position parameter.
+		//		If position is not specified then dijit/Tooltip.defaultPosition is used.
+		// innerHTML: String
+		//		Contents of the tooltip
+		// aroundNode: place.__Rectangle
+		//		Specifies that tooltip should be next to this node / area
+		// position: String[]?
+		//		List of positions to try to position tooltip (ex: ["right", "above"])
+		// rtl: Boolean?
+		//		Corresponds to `WidgetBase.dir` attribute, where false means "ltr" and true
+		//		means "rtl"; specifies GUI direction, not text direction.
+		// textDir: String?
+		//		Corresponds to `WidgetBase.textdir` attribute; specifies direction of text.
+		// onMouseEnter: Function?
+		//		Callback function for mouse over on tooltip
+		// onMouseLeave: Function?
+		//		Callback function for mouse leave on tooltip
+
+		// After/before don't work, but for back-compat convert them to the working after-centered, before-centered.
+		// Possibly remove this in 2.0.   Alternately, get before/after to work.
+		if(position){
+			position = array.map(position, function(val){
+				return {after: "after-centered", before: "before-centered"}[val] || val;
+			});
+		}
+
+		if(!Tooltip._masterTT){ dijit._masterTT = Tooltip._masterTT = new MasterTooltip(); }
+		return Tooltip._masterTT.show(innerHTML, aroundNode, position, rtl, textDir, onMouseEnter, onMouseLeave);
+	};
+
+	dijit.hideTooltip = function(aroundNode){
+		// summary:
+		//		Static method to hide the tooltip displayed via showTooltip()
+		return Tooltip._masterTT && Tooltip._masterTT.hide(aroundNode);
+	};
+
+	// Possible states for a tooltip, see Tooltip.state property for definitions
+	var DORMANT = "DORMANT",
+		SHOW_TIMER = "SHOW TIMER",
+		SHOWING = "SHOWING",
+		HIDE_TIMER = "HIDE TIMER";
+
+	function noop(){}
+
+	var Tooltip = declare("dijit.Tooltip", _Widget, {
+		// summary:
+		//		Pops up a tooltip (a help message) when you hover over a node.
+		//		Also provides static show() and hide() methods that can be used without instantiating a dijit/Tooltip.
+
+		// label: String
+		//		HTML to display in the tooltip.
+		//		Specified as innerHTML when creating the widget from markup.
+		label: "",
+
+		// showDelay: Integer
+		//		Number of milliseconds to wait after hovering over/focusing on the object, before
+		//		the tooltip is displayed.
+		showDelay: 400,
+
+		// hideDelay: Integer
+		//		Number of milliseconds to wait after unhovering the object, before
+		//		the tooltip is hidden.  Note that blurring an object hides the tooltip immediately.
+		hideDelay: 400,
+
+		// connectId: String|String[]|DomNode|DomNode[]
+		//		Id of domNode(s) to attach the tooltip to.
+		//		When user hovers over specified dom node(s), the tooltip will appear.
+		connectId: [],
+
+		// position: String[]
+		//		See description of `dijit/Tooltip.defaultPosition` for details on position parameter.
+		position: [],
+
+		// selector: String?
+		//		CSS expression to apply this Tooltip to descendants of connectIds, rather than to
+		//		the nodes specified by connectIds themselves.    Useful for applying a Tooltip to
+		//		a range of rows in a table, tree, etc.   Use in conjunction with getContent() parameter.
+		//		Ex: connectId: myTable, selector: "tr", getContent: function(node){ return ...; }
+		//
+		//		The application must require() an appropriate level of dojo/query to handle the selector.
+		selector: "",
+
+		// TODO: in 2.0 remove support for multiple connectIds.   selector gives the same effect.
+		// So, change connectId to a "", remove addTarget()/removeTarget(), etc.
+
+		_setConnectIdAttr: function(/*String|String[]|DomNode|DomNode[]*/ newId){
+			// summary:
+			//		Connect to specified node(s)
+
+			// Remove connections to old nodes (if there are any)
+			array.forEach(this._connections || [], function(nested){
+				array.forEach(nested, function(handle){ handle.remove(); });
+			}, this);
+
+			// Make array of id's to connect to, excluding entries for nodes that don't exist yet, see startup()
+			this._connectIds = array.filter(lang.isArrayLike(newId) ? newId : (newId ? [newId] : []),
+					function(id){ return dom.byId(id, this.ownerDocument); }, this);
+
+			// Make connections
+			this._connections = array.map(this._connectIds, function(id){
+				var node = dom.byId(id, this.ownerDocument),
+					selector = this.selector,
+					delegatedEvent = selector ?
+						function(eventType){ return on.selector(selector, eventType); } :
+						function(eventType){ return eventType; },
+					self = this;
+				return [
+					on(node, delegatedEvent(mouse.enter), function(){
+						self._onHover(this);
+					}),
+					on(node, delegatedEvent("focusin"), function(){
+						self._onHover(this);
+					}),
+					on(node, delegatedEvent(mouse.leave), lang.hitch(self, "_onUnHover")),
+					on(node, delegatedEvent("focusout"), lang.hitch(self, "set", "state", DORMANT))
+				];
+			}, this);
+
+			this._set("connectId", newId);
+		},
+
+		addTarget: function(/*OomNode|String*/ node){
+			// summary:
+			//		Attach tooltip to specified node if it's not already connected
+
+			// TODO: remove in 2.0 and just use set("connectId", ...) interface
+
+			var id = node.id || node;
+			if(array.indexOf(this._connectIds, id) == -1){
+				this.set("connectId", this._connectIds.concat(id));
+			}
+		},
+
+		removeTarget: function(/*DomNode|String*/ node){
+			// summary:
+			//		Detach tooltip from specified node
+
+			// TODO: remove in 2.0 and just use set("connectId", ...) interface
+
+			var id = node.id || node,	// map from DOMNode back to plain id string
+				idx = array.indexOf(this._connectIds, id);
+			if(idx >= 0){
+				// remove id (modifies original this._connectIds but that's OK in this case)
+				this._connectIds.splice(idx, 1);
+				this.set("connectId", this._connectIds);
+			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			domClass.add(this.domNode,"dijitTooltipData");
+		},
+
+		startup: function(){
+			this.inherited(arguments);
+
+			// If this tooltip was created in a template, or for some other reason the specified connectId[s]
+			// didn't exist during the widget's initialization, then connect now.
+			var ids = this.connectId;
+			array.forEach(lang.isArrayLike(ids) ? ids : [ids], this.addTarget, this);
+		},
+
+		getContent: function(/*DomNode*/ node){
+			// summary:
+			//		User overridable function that return the text to display in the tooltip.
+			// tags:
+			//		extension
+			return this.label || this.domNode.innerHTML;
+		},
+
+		// state: [private readonly] String
+		//		One of:
+		//
+		//		- DORMANT: tooltip not SHOWING
+		//		- SHOW TIMER: tooltip not SHOWING but timer set to show it
+		//		- SHOWING: tooltip displayed
+		//		- HIDE TIMER: tooltip displayed, but timer set to hide it
+		state: DORMANT,
+		_setStateAttr: function(val){
+			if(this.state == val ||
+				(val == SHOW_TIMER && this.state == SHOWING) ||
+				(val == HIDE_TIMER && this.state == DORMANT)){
+				return;
+			}
+
+			if(this._hideTimer){
+				this._hideTimer.remove();
+				delete this._hideTimer;
+			}
+			if(this._showTimer){
+				this._showTimer.remove();
+				delete this._showTimer;
+			}
+
+			switch(val){
+				case DORMANT:
+					if(this._connectNode){
+						Tooltip.hide(this._connectNode);
+						delete this._connectNode;
+						this.onHide();
+					}
+					break;
+				case SHOW_TIMER:	 // set timer to show tooltip
+					// should only get here from a DORMANT state, i.e. tooltip can't be already SHOWING
+					if(this.state != SHOWING){
+						this._showTimer = this.defer(function(){ this.set("state", SHOWING); }, this.showDelay);
+					}
+					break;
+				case SHOWING:		// show tooltip and clear timers
+					var content = this.getContent(this._connectNode);
+					if(!content){
+						this.set("state", DORMANT);
+						return;
+					}
+
+					// Show tooltip and setup callbacks for mouseenter/mouseleave of tooltip itself
+					Tooltip.show(content, this._connectNode, this.position, !this.isLeftToRight(), this.textDir,
+						lang.hitch(this, "set", "state", SHOWING), lang.hitch(this, "set", "state", HIDE_TIMER));
+
+					this.onShow(this._connectNode, this.position);
+					break;
+				case HIDE_TIMER:	// set timer set to hide tooltip
+					this._hideTimer = this.defer(function(){ this.set("state", DORMANT); }, this.hideDelay);
+					break;
+			}
+
+			this._set("state", val);
+		},
+
+		_onHover: function(/*DomNode*/ target){
+			// summary:
+			//		Despite the name of this method, it actually handles both hover and focus
+			//		events on the target node, setting a timer to show the tooltip.
+			// tags:
+			//		private
+
+			if(this._connectNode && target != this._connectNode){
+				// Tooltip is displaying for another node
+				this.set("state", DORMANT);
+			}
+			this._connectNode = target;		// _connectNode means "tooltip currently displayed for this node"
+
+			this.set("state", SHOW_TIMER);	// no-op if show-timer already set, or if already showing
+		},
+
+		_onUnHover: function(/*DomNode*/ target){
+			// summary:
+			//		Handles mouseleave event on the target node, hiding the tooltip.
+			// tags:
+			//		private
+
+			this.set("state", HIDE_TIMER);		// no-op if already dormant, or if hide-timer already set
+		},
+
+		// open() and close() aren't used anymore, except from the _BidiSupport/misc/Tooltip test.
+		// Should probably remove for 2.0, but leaving for now.
+		open: function(/*DomNode*/ target){
+			// summary:
+			//		Display the tooltip; usually not called directly.
+			// tags:
+			//		private
+
+			this.set("state", DORMANT);
+			this._connectNode = target;		// _connectNode means "tooltip currently displayed for this node"
+			this.set("state", SHOWING);
+		},
+
+		close: function(){
+			// summary:
+			//		Hide the tooltip or cancel timer for show of tooltip
+			// tags:
+			//		private
+
+			this.set("state", DORMANT);
+		},
+
+		onShow: function(/*===== target, position =====*/){
+			// summary:
+			//		Called when the tooltip is shown
+			// tags:
+			//		callback
+		},
+
+		onHide: function(){
+			// summary:
+			//		Called when the tooltip is hidden
+			// tags:
+			//		callback
+		},
+
+		destroy: function(){
+			this.set("state", DORMANT);
+
+			// Remove connections manually since they aren't registered to be removed by _WidgetBase
+			array.forEach(this._connections || [], function(nested){
+				array.forEach(nested, function(handle){ handle.remove(); });
+			}, this);
+
+			this.inherited(arguments);
+		}
+	});
+
+	Tooltip._MasterTooltip = MasterTooltip;		// for monkey patching
+	Tooltip.show = dijit.showTooltip;		// export function through module return value
+	Tooltip.hide = dijit.hideTooltip;		// export function through module return value
+
+	Tooltip.defaultPosition = ["after-centered", "before-centered"];
+
+	/*=====
+	lang.mixin(Tooltip, {
+		 // defaultPosition: String[]
+		 //		This variable controls the position of tooltips, if the position is not specified to
+		 //		the Tooltip widget or *TextBox widget itself.  It's an array of strings with the values
+		 //		possible for `dijit/place.around()`.   The recommended values are:
+		 //
+		 //		- before-centered: centers tooltip to the left of the anchor node/widget, or to the right
+		 //		  in the case of RTL scripts like Hebrew and Arabic
+		 //		- after-centered: centers tooltip to the right of the anchor node/widget, or to the left
+		 //		  in the case of RTL scripts like Hebrew and Arabic
+		 //		- above-centered: tooltip is centered above anchor node
+		 //		- below-centered: tooltip is centered above anchor node
+		 //
+		 //		The list is positions is tried, in order, until a position is found where the tooltip fits
+		 //		within the viewport.
+		 //
+		 //		Be careful setting this parameter.  A value of "above-centered" may work fine until the user scrolls
+		 //		the screen so that there's no room above the target node.   Nodes with drop downs, like
+		 //		DropDownButton or FilteringSelect, are especially problematic, in that you need to be sure
+		 //		that the drop down and tooltip don't overlap, even when the viewport is scrolled so that there
+		 //		is only room below (or above) the target node, but not both.
+	 });
+	=====*/
+	return Tooltip;
+});
+
+},
 'p3/widget/WorkspaceItemDetail':function(){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
@@ -32970,13 +33836,20 @@ define([
 	return declare([BorderContainer], {
 		"baseClass": "GenomeList",
 		"disabled":false,
-		"path": "/",
+		"query": null,
+		_setQueryAttr: function(query){
+			this.query = query;
+			if (this.viewer){
+				this.viewer.set("query", query);
+			}
+		},
 		startup: function(){
 			if (this._started) {return;}
 			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
-				query: "",
+				query: (this.query||""),
+				apiToken: window.App.authorizationToken,
 				apiServer: window.App.dataAPI,
 				dataModel: "genome",
 				columns: {
@@ -33057,13 +33930,15 @@ function(
 			selfAccept: false,
 			copyOnly: true
 		},
-
-                _setApiServer: function(server){
+                _setApiServer: function(server, token){
                         console.log("_setapiServerAttr: ", server);
                         this.apiServer = server;
-                        this.set('store', this.createStore(this.dataModel), this.buildQuery());
+			var t = token || this.apiToken || ""
+                        this.set('store', this.createStore(this.dataModel, t), this.buildQuery());
                 },
 
+
+		apiToken: "",
 		_setTotalRows: function(rows){
 			this.totalRows=rows;
 			console.log("Total Rows: ",rows);	
@@ -33087,7 +33962,7 @@ function(
 	                        });
 			});
 
-			if (!this.store && this.dataModel) {
+			if (!this.store && this.dataModel){
 	                        this.store = this.createStore(this.dataModel);
 			}
                         this.inherited(arguments);
@@ -33106,12 +33981,13 @@ function(
                         console.log("Feature Grid Query:" , q);
                         return q;
                 },
-                createStore: function(dataModel){
-                        console.log("Create Store for ", dataModel, " at ", this.apiServer);
+                createStore: function(dataModel, token){
+                        console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
                         var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"document_id", headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
-                                'X-Requested-With':null
+                                'X-Requested-With':null,
+				'Authorization': token?token:(window.App.authorizationToken||"")
                         }});
                         console.log("store: ", store);
                         return store;
@@ -34437,9 +35313,10 @@ define([
 'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table style=\"width:100%\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div style=\"font-size:1.2em;font-weight:900;\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\"></div>\n\t\t\t\t\t\t<span data-dojo-attach-point=\"typeNode\"></span> &middot; <span data-dojo-attach-point=\"owner_idNode\"></span>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:.85em\">\n\t\t<div data-dojo-attach-point=\"idNode\"></div>\n\t\t<div data-dojo-attach-point=\"pathNode\"></div>\n\t\t<div>Created <span data-dojo-attach-point=\"creation_timeNode\"></span></div>\n\t</div> \n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n",
+'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"float:right;\"></div>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Annotate Genome</h3>\n  \t  \t<p>Calls genes and functionally annotates an input contig set.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Scientific Name'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"geneticCode\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Annotate Genome</h3>\n  \t  \t<p>Calls genes and functionally annotates an input contig set.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"geneticCode\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"intermediateChanges:true\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}

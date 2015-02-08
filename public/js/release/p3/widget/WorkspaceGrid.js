@@ -2,21 +2,22 @@ define("p3/widget/WorkspaceGrid", [
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
 				"type": {
-					label: "Type",
+					label: "",
 					field: "type",
-					className: "wsItemType"
+					className: "wsItemType",
+					formatter: formatter.wsItemType
 				},
 				"name": {
 					label: "Name",
@@ -26,20 +27,23 @@ define("p3/widget/WorkspaceGrid", [
 				size: {
 					label: "Size",
 					field: "size",
-					className: "wsItemSize"
+					className: "wsItemSize",
+					hidden: true
 				},
 	
 				owner_id: {
 					label: "Owner",
 					field: "owner_id",
-					className: "wsItemOwnerId"
+					className: "wsItemOwnerId",
+					formatter: formatter.baseUsername,
+					hidden: true
 				},
 				creation_time: {
 					label: "Created",
 					field: "creation_time",
 					className: "wsItemCreationTime",
 					formatter: formatter.date
-				},
+				}/*,
 	
 				userMeta: {
 					label: "User Metadata",
@@ -50,7 +54,7 @@ define("p3/widget/WorkspaceGrid", [
 					label: "Metadata",
 					field: "autoMeta",
 					hidden: true
-				}
+				}*/
 			},
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -127,11 +131,12 @@ define("p3/widget/WorkspaceGrid", [
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
-				    if (row.data.type == "folder"){
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path + "/"})
-						_selection={};
+				    //if (row.data.type == "folder"){
 						Topic.publish("/select", []);
-					}
+
+						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+						_selection={};
+					//}
 				});
 				_selection={};
 				Topic.publish("/select", []);
@@ -167,10 +172,13 @@ define("p3/widget/WorkspaceGrid", [
 					label: "Delete Object",
 					onClick: function() {
 						if (activeItem) {
-							console.log("Delete Object: ", activeItem.data.id);
-							Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: [activeItem.data.path],deleteDirectories: (activeItem.data.type=="folder")?true:false }]), function(results){
-								console.log("Delete Object Results: ", results);
-							});
+							console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
+							if (activeItem.data.type=="folder"){
+								WorkspaceManager.deleteFolder([activeItem.data.path]);
+							}else{
+								WorkspaceManager.deleteObject([activeItem.data.path],true);
+							}
+							
 						}
 					}
 				}));

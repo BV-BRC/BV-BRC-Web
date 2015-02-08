@@ -35,6 +35,22 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				return out.join('');
 			} 
 			return val;	
+		},
+		baseUsername: function(val){
+			var parts = val.split("@");
+			return parts[0];
+		},
+		wsItemType: function(val){
+			switch (val) {
+				case "folder":
+					return '<i class="fa fa-folder fa-1x" title="Folder" />'
+				case "contigs":
+				case "fast":
+					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
+
+				default: 
+					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
+			}
 		}
 
 	}

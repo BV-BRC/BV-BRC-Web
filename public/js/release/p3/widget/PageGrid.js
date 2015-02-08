@@ -44,13 +44,15 @@ function(
 			selfAccept: false,
 			copyOnly: true
 		},
-
-                _setApiServer: function(server){
+                _setApiServer: function(server, token){
                         console.log("_setapiServerAttr: ", server);
                         this.apiServer = server;
-                        this.set('store', this.createStore(this.dataModel), this.buildQuery());
+			var t = token || this.apiToken || ""
+                        this.set('store', this.createStore(this.dataModel, t), this.buildQuery());
                 },
 
+
+		apiToken: "",
 		_setTotalRows: function(rows){
 			this.totalRows=rows;
 			console.log("Total Rows: ",rows);	
@@ -74,7 +76,7 @@ function(
 	                        });
 			});
 
-			if (!this.store && this.dataModel) {
+			if (!this.store && this.dataModel){
 	                        this.store = this.createStore(this.dataModel);
 			}
                         this.inherited(arguments);
@@ -93,12 +95,13 @@ function(
                         console.log("Feature Grid Query:" , q);
                         return q;
                 },
-                createStore: function(dataModel){
-                        console.log("Create Store for ", dataModel, " at ", this.apiServer);
+                createStore: function(dataModel, token){
+                        console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
                         var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"document_id", headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
-                                'X-Requested-With':null
+                                'X-Requested-With':null,
+				'Authorization': token?token:(window.App.authorizationToken||"")
                         }});
                         console.log("store: ", store);
                         return store;

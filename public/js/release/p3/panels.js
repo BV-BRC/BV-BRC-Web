@@ -28,9 +28,14 @@ define("p3/panels", [],function(){
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
                 params: {overwrite:true}
+            },
+
+    	    GenomeGroupViewer: {
+                title: "Genome Group",
+                layer: "p3/layer/panels",
+                ctor: "p3/widget/viewer/GenomeList",
+                params: {}
             }
-	
-	
 	}
 
 })

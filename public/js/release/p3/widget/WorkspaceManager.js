@@ -20,16 +20,16 @@ define("p3/widget/WorkspaceManager", [
 	return declare([BorderContainer], {
 		"workspaceServer": "",
 		"currentWorkspace": "",
-		gutters:true,
+		gutters:false,
 		liveSplitters: true,
-		style: "margin:0px;padding:4px;",
+		style: "margin:-1px;padding:0px;",
 		path: "/",
 		startup: function(){
 			if (this._started){ return; }
 			this.inherited(arguments);
 
 //			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false, style: "border:0px;margin:-1px;margin-bottom:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
+			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false});
 			//this.workspaceBrowserTabs = new TabContainer({region: "center"});
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
 		

@@ -6,13 +6,14 @@ define("p3/widget/UploadStatus", [
 	"dojo/dom-construct","../JobManager","../UploadManager",
 	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
         "dojo/text!./templates/UploadStatus.html",
-	"dijit/_HasDropDown","dijit/layout/ContentPane"
+	"dijit/_HasDropDown","dijit/layout/ContentPane",
+	"dijit/Tooltip"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Topic,lang,
 	domConstr,JobManager,UploadManager,
 	TemplatedMixin,WidgetsInTemplate,template,
-	HasDropDown,ContentPane
+	HasDropDown,ContentPane,Tooltip
 ){
 
 	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
@@ -33,6 +34,10 @@ define("p3/widget/UploadStatus", [
 			this.inherited(arguments);
 			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
+			this.tooltip = new Tooltip({
+				connectId: [this.domNode],
+				label: " Completed &middot; In progress &middot; % Complete"
+			});
 		},
 		onUploadMessage: function(msg){
 			console.log("UPLOADMMANAGER MESSAGE: ", msg);

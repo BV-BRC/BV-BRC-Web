@@ -7,8 +7,8 @@
 		</div>
 		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-point="uploadType" style="vertical-align: top;width:300px" required="true" data-dojo-props="">
 			<option value="auto">Unspecified</option>
-			<option value="contigs">Contigs (.fa) </option>
-			<option value="fasta">fasta (.fa,.fasta) </option>
+			<option value="contigs">Contigs (.fa, .fasta) </option>
+		<!--	<option value="fasta">fasta (.fa,.fasta) </option>-->
 			<option value="fastq">fastq (.fq, .fastq) </option>		
 			<option value="phenomics_gene_list">Phenomics Gene List (.csv,.txt,.xsl,.xlsx)</option>			
 			<option value="phenomics_gene_matrix">Phenomics Gene Matrix (.csv,.txt,.xsl,.xlsx)</option>			
@@ -28,7 +28,7 @@
 
 		<div style="margin:4px;margin-top:8px;text-align:right;">
 			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Upload Files</div>
+			<div data-dojo-attach-point="saveButton" type="submit" disabled="true" data-dojo-type="dijit/form/Button">Upload Files</div>
 		</div>	
 </form>
 

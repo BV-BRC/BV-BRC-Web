@@ -2,8 +2,9 @@
 .WorkspaceGlobalController {
 	padding: 4px;
 }
-.WorkspaceExplorerView {
-	background:#888;
+.WorkspaceController {
+	background:#ddd;
+	border-top: #227194;
 }
 .BrowserHeader {
 	padding:2px;
@@ -12,7 +13,17 @@
 .wsBreadCrumb {
 	font-size:1.1em;
 	margin:2px;
+	margin-top: 4px;
+	margin-left: 4px;
+	font-weight: 900;
 	padding:4px;
+	color: #134d75;
+}
+.patric .BrowserHeader A,
+.patric .wsBreadCrumb A {
+	color: #123d75;
+	font-size:1.0em;
+	font-weight: 600;
 }
 .UploadComplete {
 	color: green;
@@ -33,10 +44,13 @@
 	padding:4px;
 }
 .ItemDetailPanel {
-	background:#efefef;
+	background:#d7e4f2;
 	color:#333;
 	padding:4px;
-	border-top: 1px solid #333;
+	margin-left: -1px;
+	border-left: 0px solid #888;
+	border-top: 1px solid #34698e;
+	box-shadow:0px 0px 1px;*/
 }
 .ItemTypeIcon {
 	width:64px; 
@@ -47,8 +61,13 @@
 .TypeContainer > DIV {
 	text-align: center;
 }
+.dgrid-cell.wsItemType,
 .wsItemType {
-	width: 150px;
+	width: 32px;
+	text-align: center;
+}
+.WorkspaceExplorerView .dgrid-cell {
+	border: 0px;
 }
 .wsItemName {
 }

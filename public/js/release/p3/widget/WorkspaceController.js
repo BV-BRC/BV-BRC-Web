@@ -28,16 +28,12 @@ define("p3/widget/WorkspaceController", [
 		},
 
 		onJobsMessage: function(msg){
-			console.log("OnJobsMessage: ", msg);
 			if (msg.type=="JobStatusSummary"){
-				console.log("Update Job Summary");
 
 				if (!this.jobSummaryNode){
-					console.log("Creating Job Summary Node");
 					this.jobSummaryNode = domConstr.create('div',{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);
 				}	
 				var Summary = "<div style='padding:1px;margin:2px;border-radius:3px;background: #333;color:#333;'> <span style='color:#fff;margin:2px;padding:2px'>Jobs</span> <div style='display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;'><span style='color:blue'>" + (msg.summary.completed||0) + "</span>&centerdot;<span style='color:green'>" + (msg.summary.running||0) + "</span>" + "&centerdot;<span style='color:orange'>" + (msg.summary.queued||0) + "</span></div></div>"; 
-				console.log("Summary: ", Summary);
 				this.jobSummaryNode.innerHTML= Summary;
 				on(this.jobSummaryNode, "click", function(evt){
 					Topic.publish("/navigate", {href:"/job/"});
