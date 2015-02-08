@@ -19,14 +19,12 @@ define([
 				return this.userWorkspaces;
 			}
 
-			console.log("Call Workspace.ls()");
 			var p = "/" + this.userId + "/";
 			return Deferred.when(this.api("Workspace.ls", [{
 				paths: [p],
 				includeSubDirs: false,
 				Recursive: false
 			}]), lang.hitch(this, function(results) {
-					console.log("Workspace.ls() results", results);
 					var res;
 					if (!results[0] || !results[0][p]) {
 						res = []
@@ -49,19 +47,15 @@ define([
 						})
 					}
 
-					console.log("RES.len", res.length);
 
 					if (res.length>0){
-						console.log("USER WORKSPACES" , res);
 						this.set("userWorkspaces", res);
 						Topic.publish("/refreshWorkspace",{});
 						return res;
 					}
 
-					console.log("No User Workspaces, create a home workspace");
 
 					return Deferred.when(this.createWorkspace("home"), lang.hitch(this,function(hws){
-						console.log("Got New Home Workspace: ",hws)
 						this.set("userWorkspaces",[hws]);
 						return [hws];
 					}, function(err){
@@ -73,7 +67,6 @@ define([
 		},
 
 		createFolder: function(paths){
-			console.log("createFolder: ", paths);
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -82,7 +75,6 @@ define([
 			}
 			var objs = paths.map(function(p){ return [p,"Directory"] })
 			return Deferred.when(this.api("Workspace.create",[{objects:objs}]),lang.hitch(this,function(results){
-					console.log("Workspace.create(folder) results",paths, results);
 					var res;
 
 					if (!results[0][0] || !results[0][0]) {
@@ -103,10 +95,8 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
-						console.log("out: ", out);
 						return out;
 					}
-				console.log("RESULTS", results)
 				Topic.publish("/refreshWorkspace",{});
 			}));
 		},
@@ -161,11 +151,26 @@ define([
 			if (!(paths instanceof Array)){
 				paths = [paths];
 			}
-
+			paths = paths.map(function(p){ return decodeURIComponent(p); })
+			console.log('getObjects: ', paths)
 			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
 				console.log("results[0]", results[0])
+				var meta = {
+					name: results[0][0][0][0],
+					type: results[0][0][0][1],
+					path: results[0][0][0][2],
+					creation_time: results[0][0][0][3],
+					id: results[0][0][0][4],
+					owner_id: results[0][0][0][5],
+					size: results[0][0][0][6],
+					userMeta: results[0][0][0][7],
+					autoMeta: results[0][0][0][8],
+					user_permissions: results[0][0][0][9],
+					global_permission: results[0][0][0][10],
+					link_reference: results[0][0][0][11]
+				}
 				var res = {
-					metadata: results[0][0][0],
+					metadata: meta,
 					data: results[0][0][1]
 				}
 				return res;

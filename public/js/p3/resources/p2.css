@@ -703,16 +703,16 @@ body {
 body.light-bg {
   background: #fff;
 }
-body > div.main-header .masthead {
+div.main-header .masthead {
   background: #fff;
 }
-body > div.main-header .masthead .wrapper {
+div.main-header .masthead .wrapper {
   width: 967px;
   margin: 0 auto;
   height: 75px;
   position: relative;
 }
-body > div.main-header .logo {
+div.main-header .logo {
   text-indent: 110%;
   white-space: nowrap;
   overflow: hidden;
@@ -725,15 +725,15 @@ body > div.main-header .logo {
   float: left;
   margin-top: 10px;
 }
-body > div.main-header .main-nav {
+div.main-header .main-nav {
   margin: 0;
   padding: 0;
   position: absolute;
   left: 285px;
   bottom: 0;
 }
-body > div.main-header .main-nav li,
-body > div.main-header .main-nav header {
+div.main-header .main-nav li,
+div.main-header .main-nav header {
   background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #dfdfdf));
   background: -webkit-linear-gradient(#ffffff, #dfdfdf);
   background: -moz-linear-gradient(#ffffff, #dfdfdf);
@@ -741,8 +741,8 @@ body > div.main-header .main-nav header {
   background: -ms-linear-gradient(#ffffff, #dfdfdf);
   background: linear-gradient(#ffffff, #dfdfdf);
 }
-body > div.main-header .main-nav li.active,
-body > div.main-header .main-nav li.hover {
+div.main-header .main-nav li.active,
+div.main-header .main-nav li.hover {
   background: #09456f;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #09456f), color-stop(100%, #34698e));
   background-image: -webkit-linear-gradient(#09456f, #34698e);
@@ -751,23 +751,23 @@ body > div.main-header .main-nav li.hover {
   background-image: -ms-linear-gradient(#09456f, #34698e);
   background-image: linear-gradient(#09456f, #34698e);
 }
-body > div.main-header .main-nav li.active > a,
-body > div.main-header .main-nav li.hover > a {
+div.main-header .main-nav li.active > a,
+div.main-header .main-nav li.hover > a {
   color: white;
 }
-body > div.main-header .main-nav li.active > a:visited,
-body > div.main-header .main-nav li.hover > a:visited {
+div.main-header .main-nav li.active > a:visited,
+div.main-header .main-nav li.hover > a:visited {
   color: white;
 }
-body > div.main-header .main-nav li.active > a:hover,
-body > div.main-header .main-nav li.hover > a:hover {
+div.main-header .main-nav li.active > a:hover,
+div.main-header .main-nav li.hover > a:hover {
   color: white;
 }
-body > div.main-header .main-nav li.active > a:active,
-body > div.main-header .main-nav li.hover > a:active {
+div.main-header .main-nav li.active > a:active,
+div.main-header .main-nav li.hover > a:active {
   color: white;
 }
-body > div.main-header .main-nav > li {
+div.main-header .main-nav > li {
   margin: 0;
   padding: 0;
   float: left;
@@ -776,10 +776,10 @@ body > div.main-header .main-nav > li {
   border-left: #fff 1px solid;
   background: #f4f4f4;
 }
-body > div.main-header .main-nav > li.first {
+div.main-header .main-nav > li.first {
   border-left: #dfdfdf 1px solid;
 }
-body > div.main-header .main-nav > li.first a {
+div.main-header .main-nav > li.first a {
   background: url(/patric/images/icon-home.png) no-repeat top center;
   text-indent: -9999em;
   width: 16px;
@@ -787,26 +787,26 @@ body > div.main-header .main-nav > li.first a {
   padding: 0px;
   margin: 9px;
 }
-body > div.main-header .main-nav > li.first.active > div.submenu > ul > li a, body > div.main-header .main-nav > li.first.hover > div.submenu > ul > li.hover a {
+div.main-header .main-nav > li.first.active > div.submenu > ul > li a, body > div.main-header .main-nav > li.first.hover > div.submenu > ul > li.hover a {
   background-position: center left;
 }
-body > div.main-header .main-nav > li.first.active a, body > div.main-header .main-nav > li.first.hover a {
+div.main-header .main-nav > li.first.active a, body > div.main-header .main-nav > li.first.hover a {
   background-position: bottom center;
 }
-body > div.main-header .main-nav > li.active, body > div.main-header .main-nav > li.hover {
+div.main-header .main-nav > li.active, body > div.main-header .main-nav > li.hover {
   border: #34698e 1px solid;
 }
-body > div.main-header .main-nav > li > a {
+div.main-header .main-nav > li > a {
   display: block;
   font-weight: bold;
   font-size: 12px;
   text-transform: uppercase;
   padding: 10px 10px;
 }
-body > div.main-header .main-nav > li.has-sub > a {
+div.main-header .main-nav > li.has-sub > a {
   background: url(/patric/images/arrow-cyan-se.png) no-repeat bottom right;
 }
-body > div.main-header .main-nav .submenu {
+div.main-header .main-nav .submenu {
   display: none;
   position: absolute;
   top: 35px;
@@ -826,74 +826,74 @@ body > div.main-header .main-nav .submenu {
   -o-border-bottom-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
-body > div.main-header .main-nav .submenu header p {
+div.main-header .main-nav .submenu header p {
   margin: 0px;
   padding: 5px 10px;
 }
-body > div.main-header .main-nav .submenu ul {
+div.main-header .main-nav .submenu ul {
   margin: 0px;
   padding: 0px;
 }
-body > div.main-header .main-nav .submenu ul li {
+div.main-header .main-nav .submenu ul li {
   margin: 0px;
   padding: 5px 10px;
   border-top: #dfdfdf 1px solid;
 }
-body > div.main-header .main-nav .submenu ul li a {
+div.main-header .main-nav .submenu ul li a {
   background: url(/patric/images/arrow-cyan-e.png) no-repeat center left;
   padding-left: 10px;
 }
-body > div.main-header .main-nav .submenu ul li.hover {
+div.main-header .main-nav .submenu ul li.hover {
   border-top: #09456f 1px solid;
 }
-body > div.main-header .main-nav .submenu.two-col {
+div.main-header .main-nav .submenu.two-col {
   width: 290px;
 }
-body > div.main-header .main-nav .submenu.two-col ul.left {
+div.main-header .main-nav .submenu.two-col ul.left {
   width: 145px;
 }
-body > div.main-header .main-nav .submenu.two-col ul.left.first li {
+div.main-header .main-nav .submenu.two-col ul.left.first li {
   border-right: #dfdfdf 1px solid;
 }
-body > div.main-header .login {
+div.main-header .login {
   position: absolute;
   bottom: 0px;
   right: 0px;
   width: 250px;
   text-align: right;
 }
-body > div.main-header .login span.logged-out {
+div.main-header .login span.logged-out {
   display: none;
   margin-bottom: 10px;
 }
-body > div.main-header .login span.logged-out .button {
+div.main-header .login span.logged-out .button {
   font-size: 10px;
   text-transform: uppercase;
   margin-bottom: 5px;
 }
-body > div.main-header .toolbar {
+div.main-header .toolbar {
   clear: both;
   overflow: hidden;
   height: 41px;
   line-height: 41px;
   background: #34698e;
 }
-body > div.main-header .toolbar form.search {
+div.main-header .toolbar form.search {
   display: inline;
   float: left;
   margin-right: 17px;
   width: 311px;
 }
-* html body > div.main-header .toolbar form.search {
+* html body  div.main-header .toolbar form.search {
   overflow-x: hidden;
 }
-body > div.main-header .toolbar form.search input[type="text"] {
+div.main-header .toolbar form.search input[type="text"] {
   width: 220px;
   height: 23px;
   border: 0px;
   padding: 0px 5px;
 }
-body > div.main-header .toolbar form.search input[type="submit"] {
+div.main-header .toolbar form.search input[type="submit"] {
   text-indent: 200%;
   white-space: nowrap;
   overflow: hidden;
@@ -907,7 +907,7 @@ body > div.main-header .toolbar form.search input[type="submit"] {
   cursor: pointer;
   background-color: transparent;
 }
-body > div.main-header .toolbar .workspace {
+div.main-header .toolbar .workspace {
   display: inline;
   float: left;
   margin-right: 0;
@@ -915,7 +915,7 @@ body > div.main-header .toolbar .workspace {
   text-align: right;
   line-height: 41px;
 }
-* html body > div.main-header .toolbar .workspace {
+* html body  div.main-header .toolbar .workspace {
   overflow-x: hidden;
 }
 

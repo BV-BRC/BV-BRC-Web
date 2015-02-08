@@ -27,14 +27,17 @@ define([
 				size: {
 					label: "Size",
 					field: "size",
-					className: "wsItemSize"
+					className: "wsItemSize",
+					hidden: true,
 				},
 	
 				owner_id: {
 					label: "Owner",
 					field: "owner_id",
 					className: "wsItemOwnerId",
-					formatter: formatter.baseUsername
+					formatter: formatter.baseUsername,
+					hidden: true,
+
 				},
 				creation_time: {
 					label: "Created",
@@ -129,11 +132,12 @@ define([
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
-				    if (row.data.type == "folder"){
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path + "/"})
-						_selection={};
+				    //if (row.data.type == "folder"){
 						Topic.publish("/select", []);
-					}
+
+						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+						_selection={};
+					//}
 				});
 				_selection={};
 				Topic.publish("/select", []);

@@ -33,20 +33,15 @@ define([
 				valid=[];
 			}
 
-			console.log("valid: ", valid);
 			var types = Object.keys(selectionTypes)
-			console.log("types: ", types);
 
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
-				console.log("Filder Act: ", act);
 				var validTypes = act.options.validTypes||[];
-				console.log("ValidTypes: ", validTypes);
 				return validTypes.some(function(t){
 					return ((t=="*") || (types.indexOf(t)>=0));
 				});		
 			},this);
-			console.log("Valid Actions: ", valid);	
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
@@ -62,7 +57,6 @@ define([
 			this.inherited(arguments);
 			var _self=this;
 			on(this.domNode, "click", function(evt){
-				console.log("ActionButton clicked",evt.target.attributes.rel.value, evt.target);
 				var rel = evt.target.attributes.rel.value;
 				if (_self._actions[rel]) {
 					_self._actions[rel].action.apply(_self,[_self.selection]);
@@ -71,7 +65,6 @@ define([
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
-			console.log("AddAction", name);
 			var b = domConstruct.create("i",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes,rel:name});
 
 			domConstruct.place(b,this.domNode,"last");

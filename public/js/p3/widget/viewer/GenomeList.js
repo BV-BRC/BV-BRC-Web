@@ -10,13 +10,20 @@ define([
 	return declare([BorderContainer], {
 		"baseClass": "GenomeList",
 		"disabled":false,
-		"path": "/",
+		"query": null,
+		_setQueryAttr: function(query){
+			this.query = query;
+			if (this.viewer){
+				this.viewer.set("query", query);
+			}
+		},
 		startup: function(){
 			if (this._started) {return;}
 			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
-				query: "",
+				query: (this.query||""),
+				apiToken: window.App.authorizationToken,
 				apiServer: window.App.dataAPI,
 				dataModel: "genome",
 				columns: {

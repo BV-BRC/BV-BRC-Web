@@ -59,7 +59,6 @@ define([
 		refreshWorkspace: function(){
 			var _self=this;
 			this.listWorkspaceContents(this.path).then(function(contents) {
-				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -76,7 +75,6 @@ define([
 			var _self = this;
 
 			this.listWorkspaceContents(this.path).then(function(contents) {
-				console.log("Workspace Contents", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -87,11 +85,11 @@ define([
 
 
 			Topic.subscribe("/Jobs", function(msg){
-				if (msg.type=="JobStatus") {
-					console.log("JobStatus MSG: ", msg.job);
-				}else if (msg.type=="JobStatusChanged") {
-					console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
-				}
+				// if (msg.type=="JobStatus") {
+				// 	console.log("JobStatus MSG: ", msg.job);
+				// }else if (msg.type=="JobStatusChanged") {
+				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
+				// }
 			});
 
 		},
@@ -99,10 +97,10 @@ define([
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
-			console.log("WorkspaceExplorerView setPath", val)
+			//console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
 				this.listWorkspaceContents(this.path).then(function(contents) {
-					console.log("Workspace Contents", contents);
+			//		console.log("Workspace Contents", contents);
 					_self.render(_self.path, contents);
 				});
 			}
