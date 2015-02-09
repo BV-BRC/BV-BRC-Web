@@ -817,7 +817,7 @@ define([
 						if (_self.loginWindow){
 							_self.loginWindow.close();
 						}		
-						window.reload();
+						window.location.reload();
 						break;
 //						self.accessToken = msg.accessToken;
 //						self.user = msg.userProfile;	
