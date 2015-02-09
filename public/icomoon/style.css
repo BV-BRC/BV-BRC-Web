@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'icomoon';
-	src:url('fonts/icomoon.eot?llbgnw');
-	src:url('fonts/icomoon.eot?#iefixllbgnw') format('embedded-opentype'),
-		url('fonts/icomoon.woff?llbgnw') format('woff'),
-		url('fonts/icomoon.ttf?llbgnw') format('truetype'),
-		url('fonts/icomoon.svg?llbgnw#icomoon') format('svg');
+	src:url('fonts/icomoon.eot?-7hb6oo');
+	src:url('fonts/icomoon.eot?#iefix-7hb6oo') format('embedded-opentype'),
+		url('fonts/icomoon.woff?-7hb6oo') format('woff'),
+		url('fonts/icomoon.ttf?-7hb6oo') format('truetype'),
+		url('fonts/icomoon.svg?-7hb6oo#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -23,15 +23,35 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
-.icon-contigs:before {
+.icon-experiments:before {
 	content: "\e600";
 }
 
-.icon-fasta:before {
+.icon-taxonomy:before {
 	content: "\e601";
 }
 
-.icon-alignment:before {
+.icon-genome-features:before {
 	content: "\e602";
+}
+
+.icon-bench:before {
+	content: "\e603";
+}
+
+.icon-contigs:before {
+	content: "\e604";
+}
+
+.icon-fasta:before {
+	content: "\e605";
+}
+
+.icon-alignment:before {
+	content: "\e606";
+}
+
+.icon-home2:before {
+	content: "\e901";
 }
 
