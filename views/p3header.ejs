@@ -152,16 +152,28 @@
 
 
 					</ul>
-					<div class="login">
+					<div class="login ShowWithoutAuth">
 						<div id='dashboardnav'>
-						<span class='logged-in smallest'>
-							<a class="button" href="javascript:void(0)" onclick="doLogin()">Login</a>
-							Not Registered? <a class="arrow-slate-e" href="/portal/portal/patric/MyAccount/PATRICUserPortletWindow?_jsfBridgeViewId=%2Fjsf%2Findex.xhtml&amp;action=1">Sign Up</a>
-							<br/><a href="http://enews.patricbrc.org/workspace-faqs/registration-faqs/" target="_blank">Learn About Registering</a>
-						</span>
-					
-</div>
+							<span class='logged-in smallest'>
+								<a class="button" href="javascript:void(0)" onclick="_self.loginWindow = window.open("/login", "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");">Login</a>
+								Not Registered? <a class="arrow-slate-e" href="/portal/portal/patric/MyAccount/PATRICUserPortletWindow?_jsfBridgeViewId=%2Fjsf%2Findex.xhtml&amp;action=1">Sign Up</a>
+								<br/><a href="http://enews.patricbrc.org/workspace-faqs/registration-faqs/" target="_blank">Learn About Registering</a>
+							</span>
+						</div>
 					</div>
+					<div class="login ShowWithAuth">
+
+						<div id="dashboardnav">
+							<p class="highlight large close">Welcome <%- (request&&request.session)?(request.session.userProfile.id):"" %></p>
+							<p class="smallest close2x">Not <%- (request&&request.session)?(request.session.userProfile.id):"" %>? <a class="double-arrow-link" href="/logout">Logout</a></p>
+
+							<p class="smallest close2x">
+								<!-- <a class="double-arrow-link" href="/portal/portal/patric/MyAccount/PATRICUserPortletWindow?_jsfBridgeViewId=%2Fjsf%2Findex.xhtml&amp;action=1">My Account</a> -->
+							</p>
+						</div>
+					</div>
+
+	
 				</div>
 			</div>
 			<div class="toolbar ondark linkstyle-highlight-c">

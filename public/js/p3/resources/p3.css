@@ -50,7 +50,9 @@ A, A:visited {
 	display: none;
 }
 
-
+.Authenticated .ShowWithAuth{
+	display: inherit;
+}
 
 .Authenticated .ShowWithoutAuth {
 	display: none;

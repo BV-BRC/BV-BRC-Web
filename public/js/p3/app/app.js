@@ -37,10 +37,12 @@ define([
 						if (_self.loginWindow){
 							_self.loginWindow.close();
 						}		
-						self.accessToken = msg.accessToken;
-						self.user = msg.userProfile;	
-						domClass.add(document.body, "Authenticated");
+						window.reload();
 						break;
+//						self.accessToken = msg.accessToken;
+//						self.user = msg.userProfile;	
+//						domClass.add(document.body, "Authenticated");
+//						break;
 				}					
 
 				Topic.publish("/" + msg.type, msg);
