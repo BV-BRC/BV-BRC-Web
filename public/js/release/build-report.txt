@@ -1,4 +1,4 @@
-Build started: Mon Feb 09 2015 17:27:52 GMT-0500 (EST)
+Build started: Mon Feb 09 2015 18:51:16 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,9 +126,9 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.92s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.533s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:9.054s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.785s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.525s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:8.352s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1632,9 +1632,9 @@ p3/layer/panels:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.92s)
+Done (compile time:1.785s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.92s)
+Done (compile time:1.785s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1757,9 +1757,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:6.533s)
+Done (compile time:6.525s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.92s)
+Done (compile time:1.785s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1882,7 +1882,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:6.533s)
+Done (compile time:6.525s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:454: WARNING - unreachable code
 	}else if( 0 ){
@@ -1925,7 +1925,7 @@ core.js.uncompressed.js:35300: WARNING - Suspicious code. This code lacks side-e
 			^
 
 0 error(s), 10 warning(s)
-Done (compile time:9.054s)
+Done (compile time:8.352s)
 
 
 Has Features Detected
@@ -2377,4 +2377,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 79.437 seconds
+	build time: 78.685 seconds

@@ -34,7 +34,7 @@ define("p3/widget/WorkspaceBrowser", [
 			out.push("</span>");
 			out.push("<span style='float:right;'>");
 			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
-			out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
+			out.push("<a href class='DialogButton fa fa-folder-plus fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
 			out.push("</span>");
 			this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
 			//this.explorer = new WorkspaceExplorerView({path: decodeURIComponent(this.path), region: "center"});
