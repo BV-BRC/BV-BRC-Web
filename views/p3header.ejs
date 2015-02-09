@@ -183,8 +183,8 @@
 						<input placeholder="Search" title="Search" type="text" id="global_search_keyword" name="global_search_keyword"/>
 						<input type="submit" onclick="search_all_header()" />
 					</form>
-					<div class="workspace smallest">
-						<span class="upper">My workspace:</span>
+					<div class="workspace smallest ShowWithAuth">
+						<span class="upper">My workspace: <a href="/workspace/<%- (request&&request.session)?(request.session.userProfile.id):"" %>/home">home</a></span>
 						<a class="arrow-white-e" href="#"><span id="cart"></span></a>
 					</div>
 				</div>
