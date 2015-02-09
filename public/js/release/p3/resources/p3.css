@@ -5470,6 +5470,9 @@ margin: 10px 0 10px 10px;
 .round-button:hover {
     
 }
+.GenomeList {
+	font-size: .9em;
+}
 .zero_result_mask {
   background-image: none;
   padding: 5px 10px 5px 5px;

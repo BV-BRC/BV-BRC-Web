@@ -1,4 +1,4 @@
-Build started: Sun Feb 08 2015 12:45:46 GMT-0500 (EST)
+Build started: Mon Feb 09 2015 14:44:54 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,9 +126,9 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:4.676s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:19.87s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:25.44s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.114s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.761s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:8.778s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1250,6 +1250,7 @@ info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/Carousel.css
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/Drawer.css
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/Footer.css
+	file: /Users/dmachi/work/p3-web/public/js/p3/resources/GenomeList.css
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/Header.css
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/WorkspaceManager.css
 	file: /Users/dmachi/work/p3-web/public/js/p3/resources/assembly.css
@@ -1631,9 +1632,9 @@ p3/layer/panels:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:4.676s)
+Done (compile time:2.114s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:4.676s)
+Done (compile time:2.114s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1756,9 +1757,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:19.87s)
+Done (compile time:6.761s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:4.676s)
+Done (compile time:2.114s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1881,7 +1882,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:19.87s)
+Done (compile time:6.761s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:454: WARNING - unreachable code
 	}else if( 0 ){
@@ -1915,16 +1916,16 @@ core.js.uncompressed.js:28179: WARNING - Suspicious code. This code lacks side-e
 				if(xCss){
 				^
 
-core.js.uncompressed.js:33905: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:33921: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
-core.js.uncompressed.js:35282: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:35298: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if (!this.value || !this.workspace){
 			^
 
 0 error(s), 10 warning(s)
-Done (compile time:25.44s)
+Done (compile time:8.778s)
 
 
 Has Features Detected
@@ -2376,4 +2377,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 106.07 seconds
+	build time: 84.512 seconds
