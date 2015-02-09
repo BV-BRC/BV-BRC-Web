@@ -45,9 +45,13 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "folder":
 					return '<i class="fa fa-folder fa-1x" title="Folder" />'
 				case "contigs":
-				case "fast":
+					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
+				case "fasta":
 					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
-
+				case "feature_group":
+					return '<i class="fa icon-features fa-1x" title="Contigs" />'
+				case "genome_group":
+					return '<i class="fa icon-genome fa-1x" title="Contigs" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
 			}
