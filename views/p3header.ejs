@@ -155,24 +155,26 @@
 					<div class="login ShowWithoutAuth">
 						<div id='dashboardnav'>
 							<span class='logged-in smallest'>
-								<a class="button" href="javascript:void(0)" onclick="_self.loginWindow = window.open("/login", "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");">Login</a>
+								<a class="button" href="javascript:void(0)" onclick='window.App.loginWindow = window.open("/login", "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");'>Login</a>
 								Not Registered? <a class="arrow-slate-e" href="/portal/portal/patric/MyAccount/PATRICUserPortletWindow?_jsfBridgeViewId=%2Fjsf%2Findex.xhtml&amp;action=1">Sign Up</a>
 								<br/><a href="http://enews.patricbrc.org/workspace-faqs/registration-faqs/" target="_blank">Learn About Registering</a>
 							</span>
 						</div>
 					</div>
+
+					<% if (request && request.session && request.session.userProfile && request.session.userProfile.id) { %>
 					<div class="login ShowWithAuth">
 
 						<div id="dashboardnav">
-							<p class="highlight large close">Welcome <%- (request&&request.session)?(request.session.userProfile.id):"" %></p>
-							<p class="smallest close2x">Not <%- (request&&request.session)?(request.session.userProfile.id):"" %>? <a class="double-arrow-link" href="/logout">Logout</a></p>
+							<p class="highlight large close">Welcome <%- (request&&request.session)?(request.session.userProfile.id.split("@")[0]):"" %></p>
+							<p class="smallest close2x">Not <%- (request&&request.session)?(request.session.userProfile.id.split("@")[0]):"" %>? <a class="double-arrow-link" href="/logout">Logout</a></p>
 
 							<p class="smallest close2x">
 								<!-- <a class="double-arrow-link" href="/portal/portal/patric/MyAccount/PATRICUserPortletWindow?_jsfBridgeViewId=%2Fjsf%2Findex.xhtml&amp;action=1">My Account</a> -->
 							</p>
 						</div>
 					</div>
-
+					<% } %>
 	
 				</div>
 			</div>
@@ -183,10 +185,13 @@
 						<input placeholder="Search" title="Search" type="text" id="global_search_keyword" name="global_search_keyword"/>
 						<input type="submit" onclick="search_all_header()" />
 					</form>
+
+					<% if (request && request.session && request.session.userProfile && request.session.userProfile.id) { %>
 					<div class="workspace smallest ShowWithAuth">
 						<span class="upper">My workspace: <a href="/workspace/<%- (request&&request.session)?(request.session.userProfile.id):"" %>/home">home</a></span>
 						<a class="arrow-white-e" href="#"><span id="cart"></span></a>
 					</div>
+					<% } %>
 				</div>
 			</div>
 			
