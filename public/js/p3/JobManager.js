@@ -1,7 +1,7 @@
 define(["dojo/_base/Deferred","dojo/topic"], 
 
 function(Deferred,Topic){
-
+	console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
 	var firstRun=true;
@@ -33,6 +33,10 @@ function(Deferred,Topic){
 					PollJobs();
 				},10000)
 			});
+		}else{
+			setTimeout(function(){
+				PollJobs();
+			},1000);
 		}
 	}
 	
@@ -40,6 +44,7 @@ function(Deferred,Topic){
 
 	return {
 		getJobSummary: function(){
+			console.log("getJobSummary()");
 			var def = new Deferred();
 			var summary = {total: 0}
 			Deferred.when(ready, function(){

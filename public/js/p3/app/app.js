@@ -65,7 +65,7 @@ define([
 		listen: function(){
 			var _self = this;
 
-			on(document, "A.DialogButton:click", function(evt){
+			on(document, ".DialogButton:click", function(evt){
 				console.log("DialogButton Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();

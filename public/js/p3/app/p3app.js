@@ -168,15 +168,15 @@ define([
 
 			// },2000);
 
-			this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
-			this.leftDrawer.startup();
-			console.log("leftDrawer", this.leftDrawer)
+			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
+			//this.leftDrawer.startup();
+			//console.log("leftDrawer", this.leftDrawer)
 			// setTimeout(function(){
 			// 	Topic.publish("/overlay/left", {action: "set", panel: ContentPane});
 			// }, 1000);
 
-			this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
-			this.rightDrawer.startup();
+			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
+			//this.rightDrawer.startup();
 			// setTimeout(function(){
 			// 	Topic.publish("/overlay/right", {action: "set", panel: ContentPane});
 			// }, 1000);
