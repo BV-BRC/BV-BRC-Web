@@ -66,7 +66,15 @@ function(Deferred,Topic){
 		}
 
 	return {
-		getJobSummary: getJobSummary
+		getJobSummary: getJobSummary,
+		getJobs: function(){
+			return Deferred.when(ready, function(){
+			console.log('getJobs()', Jobs);
+				return Object.keys(Jobs).map(function(id){
+					return Jobs[id];
+				});
+			});
+		}
 	}
 
 })
