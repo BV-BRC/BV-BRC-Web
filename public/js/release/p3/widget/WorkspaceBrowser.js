@@ -192,7 +192,7 @@ define("p3/widget/WorkspaceBrowser", [
 							}
 							out.push("<a class='navigationLink' href='");
 							bp.push(p);
-							out.push("/" + bp.join("/") );
+							out.push("/" + bp.join("/") + ((idx==0)?"/":"") );
 							out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
 						})
 						//out.push("<span>" + parts.join("/") + "</span>");
