@@ -5317,6 +5317,7 @@ div.dijitNumberTextBoxRtl {
 .wsItemCreationTime {
 	width: 150px;
 }
+.JobStatusButton,
 .UploadStatusButton {
 	padding:1px;
 	margin:2px;
@@ -5326,21 +5327,28 @@ div.dijitNumberTextBoxRtl {
 	font-size: 1.1em;
 	cursor: pointer;
 }
+.JobStatusButton > SPAN:first-child,
 .UploadStatusButton > SPAN:first-child {
 	color:#fff;margin:2px;padding:2px
 }
+.JobStatusButton > DIV,
 .UploadStatusButton > DIV {
 	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
 }
+.JobsComplete,
 .UploadingComplete{
 	color: blue;
 	margin:0px;
 }
+.JobsRunning,
 .UploadingProgress,
 .UploadingActive{
 	color: green;
 	margin:0px;
 }
+.JobsRunning::before,
+.JobsQueued::before,
+.JobsSuspended::before,
 .UploadingActive::before{
 	content:"\00b7";
 	color: #333;
@@ -5348,6 +5356,14 @@ div.dijitNumberTextBoxRtl {
 .UploadingProgress::before{
 	content:"\00b7";
 	color: #333;
+}
+.JobsQueued {
+	color: orange;
+	margin: 0px;
+}
+.JobsSuspended {
+	color: red;
+	margin:0px;
 }
 .PanelForm {
 	overflow: auto;

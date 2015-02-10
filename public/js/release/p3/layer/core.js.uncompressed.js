@@ -170,15 +170,15 @@ define([
 
 			// },2000);
 
-			this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
-			this.leftDrawer.startup();
-			console.log("leftDrawer", this.leftDrawer)
+			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
+			//this.leftDrawer.startup();
+			//console.log("leftDrawer", this.leftDrawer)
 			// setTimeout(function(){
 			// 	Topic.publish("/overlay/left", {action: "set", panel: ContentPane});
 			// }, 1000);
 
-			this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
-			this.rightDrawer.startup();
+			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
+			//this.rightDrawer.startup();
 			// setTimeout(function(){
 			// 	Topic.publish("/overlay/right", {action: "set", panel: ContentPane});
 			// }, 1000);
@@ -862,7 +862,7 @@ define([
 		listen: function(){
 			var _self = this;
 
-			on(document, "A.DialogButton:click", function(evt){
+			on(document, ".DialogButton:click", function(evt){
 				console.log("DialogButton Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
@@ -22222,7 +22222,7 @@ define([
 			this.inherited(arguments);
 
 //			this.wsGlobal = new WorkspaceGlobalController({path: this.path, region: "top", splitter:false, style: "border:0px;margin:-1px;margin-top:-4px;margin-left:-4px;margin-right:-4px;background:#efefef"});
-			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false});
+//			this.wsController = new WorkspaceController({content:"Workspace Controller", region: "bottom", splitter:false});
 			//this.workspaceBrowserTabs = new TabContainer({region: "center"});
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
 		
@@ -22238,7 +22238,7 @@ define([
 			//this.addChild(this.workspaceBrowserTabs);
 			this.addChild(this.workspaceBrowser);
 			// this.addChild(this.workspaceDetail);	
-			this.addChild(this.wsController);
+//			this.addChild(this.wsController);
 
 		
 		},
@@ -32609,7 +32609,7 @@ return function(column, editor, editOn){
 define(["dojo/_base/Deferred","dojo/topic"], 
 
 function(Deferred,Topic){
-
+	console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
 	var firstRun=true;
@@ -32621,17 +32621,20 @@ function(Deferred,Topic){
 				tasks[0].forEach(function(task){
 					if (!Jobs[task.id]){
 						Jobs[task.id]=task;
-						Topic.publish("/Jobs", {type: "JobStatus", job: task});
+					//	Topic.publish("/Jobs", {type: "JobStatus", job: task});
 					}else{
 						if (Jobs[task.id].status != task.status){
 							var oldJob= Jobs[task.id];
 							Jobs[task.id] = task;
-							Topic.publish("/Jobs", {type: "JobStatusChanged", job: task, status: task.status, oldStatus: oldJob.status});	
+					//		Topic.publish("/Jobs", {type: "JobStatusChanged", job: task, status: task.status, oldStatus: oldJob.status});	
 						}else{
 							Jobs[task.id]=task;
 						}
 					}
 
+					Deferred.when(getJobSummary(), function(msg){
+						Topic.publish("/Jobs", msg);
+					});	
 				});
 				if (firstRun){
 					ready.resolve(true);	
@@ -32641,13 +32644,17 @@ function(Deferred,Topic){
 					PollJobs();
 				},10000)
 			});
+		}else{
+			setTimeout(function(){
+				PollJobs();
+			},1000);
 		}
 	}
 	
 	PollJobs();
 
-	return {
-		getJobSummary: function(){
+	function getJobSummary(){
+			console.log("getJobSummary() from api_service");
 			var def = new Deferred();
 			var summary = {total: 0}
 			Deferred.when(ready, function(){
@@ -32665,6 +32672,9 @@ function(Deferred,Topic){
 
 			return def.promise;
 		}
+
+	return {
+		getJobSummary: getJobSummary
 	}
 
 })
@@ -32909,32 +32919,7 @@ define([
 	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
 		"baseClass": "WorkspaceController",
 		"disabled":false,
-		templateString: Template,
-		startup: function(){
-			this.inherited(arguments);
-			Topic.subscribe("/Jobs",lang.hitch(this,function(msg){
-				if (msg!="JobStatusSummary"){
-					JobManager.getJobSummary().then(lang.hitch(this,"onJobsMessage"));	
-				}
-			}));
-			JobManager.getJobSummary().then(lang.hitch(this,"onJobsMessage"));
-		},
-
-		onJobsMessage: function(msg){
-			if (msg.type=="JobStatusSummary"){
-
-				if (!this.jobSummaryNode){
-					this.jobSummaryNode = domConstr.create('div',{"style":{"float":"right","font-size": "1.2em"}}, this.domNode);
-				}	
-				var Summary = "<div style='padding:1px;margin:2px;border-radius:3px;background: #333;color:#333;'> <span style='color:#fff;margin:2px;padding:2px'>Jobs</span> <div style='display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;'><span style='color:blue'>" + (msg.summary.completed||0) + "</span>&centerdot;<span style='color:green'>" + (msg.summary.running||0) + "</span>" + "&centerdot;<span style='color:orange'>" + (msg.summary.queued||0) + "</span></div></div>"; 
-				this.jobSummaryNode.innerHTML= Summary;
-				on(this.jobSummaryNode, "click", function(evt){
-					Topic.publish("/navigate", {href:"/job/"});
-				});
-	
-			}
-		}
-
+		templateString: Template
 
 	});
 });
@@ -35355,7 +35340,7 @@ define([
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
-'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"float:right;\"></div>\n</div>\n",
+'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa fa-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:/\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Annotate Genome</h3>\n  \t  \t<p>Calls genes and functionally annotates an input contig set.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"geneticCode\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
