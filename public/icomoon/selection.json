@@ -106,7 +106,7 @@
 				"code": 58887,
 				"name": "genome"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 0
 		},
 		{
@@ -166,7 +166,7 @@
 				"code": 58880,
 				"name": "experiments"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 1
 		},
 		{
@@ -234,7 +234,7 @@
 				"code": 58881,
 				"name": "taxonomy"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 2
 		},
 		{
@@ -302,7 +302,7 @@
 				"code": 58882,
 				"name": "genome-features"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 3
 		},
 		{
@@ -418,7 +418,7 @@
 				"code": 58883,
 				"name": "bench"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 4
 		},
 		{
@@ -454,7 +454,7 @@
 				"code": 58884,
 				"name": "contigs"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 5
 		},
 		{
@@ -698,7 +698,7 @@
 				"code": 58885,
 				"name": "fasta"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 6
 		},
 		{
@@ -734,7 +734,7 @@
 				"code": 58886,
 				"name": "alignment"
 			},
-			"setIdx": 0,
+			"setIdx": 2,
 			"iconIdx": 7
 		},
 		{
@@ -759,8 +759,34 @@
 				"ligatures": "home2, house2",
 				"name": "home2"
 			},
-			"setIdx": 1,
+			"setIdx": 3,
 			"iconIdx": 1
+		},
+		{
+			"icon": {
+				"paths": [
+					"M576 256l-128-128h-448v832h1024v-704h-448zM704 704h-128v128h-128v-128h-128v-128h128v-128h128v128h128v128z"
+				],
+				"attrs": [],
+				"tags": [
+					"folder-plus",
+					"directory",
+					"folder-add"
+				],
+				"defaultCode": 57509,
+				"grid": 16
+			},
+			"attrs": [],
+			"properties": {
+				"id": 230,
+				"order": 15,
+				"prevSize": 32,
+				"code": 59697,
+				"ligatures": "folder-plus, directory3",
+				"name": "folder-plus"
+			},
+			"setIdx": 3,
+			"iconIdx": 49
 		}
 	],
 	"height": 1024,
