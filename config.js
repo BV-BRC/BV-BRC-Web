@@ -28,7 +28,8 @@ var defaults =  {
 
 	enableDevAuth: false,
 	devAuthorizationToken: "",
-	devUser: false
+	devUser: false,
+        enableDevTools: false
 }
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);

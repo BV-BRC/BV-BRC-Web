@@ -161,6 +161,10 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "feature_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
+						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					default:
 						panelCtor = ContentPane;
 						params.content = "Invalid Object";

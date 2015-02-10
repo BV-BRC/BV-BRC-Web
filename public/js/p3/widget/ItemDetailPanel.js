@@ -32,7 +32,6 @@ define([
 						domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
-	
 					case "fasta": 
 						domClass.add(_self.typeIcon,"fa icon-fasta fa-3x")
 						currentIcon="fa fa-folder fa-3x";
@@ -42,7 +41,7 @@ define([
 						currentIcon="fa fa-folder fa-3x";
 						break;
 					case "feature_group": 
-						domClass.add(_self.typeIcon,"fa icon-features fa-3x")
+						domClass.add(_self.typeIcon,"fa icon-genome-features fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
 	

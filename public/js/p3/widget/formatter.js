@@ -49,7 +49,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "fasta":
 					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
 				case "feature_group":
-					return '<i class="fa icon-features fa-1x" title="Contigs" />'
+					return '<i class="fa icon-genome-features fa-1x" title="Contigs" />'
 				case "genome_group":
 					return '<i class="fa icon-genome fa-1x" title="Contigs" />'
 				default: 
