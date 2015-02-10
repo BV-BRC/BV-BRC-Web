@@ -30,7 +30,7 @@ define([
 		},
 		startup: function(){
 			this.inherited(arguments);
-			Topic.subscribe("/JobStatusSummary", lang.hitch(this,"onJobMessage"))
+			Topic.subscribe("/Jobs", lang.hitch(this,"onJobMessage"))
 			JobManager.getJobSummary().then(lang.hitch(this,"onJobMessage"));
 //			this.tooltip = new Tooltip({
 //				connectId: [this.domNode],

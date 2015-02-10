@@ -13,17 +13,20 @@ function(Deferred,Topic){
 				tasks[0].forEach(function(task){
 					if (!Jobs[task.id]){
 						Jobs[task.id]=task;
-						Topic.publish("/Jobs", {type: "JobStatus", job: task});
+					//	Topic.publish("/Jobs", {type: "JobStatus", job: task});
 					}else{
 						if (Jobs[task.id].status != task.status){
 							var oldJob= Jobs[task.id];
 							Jobs[task.id] = task;
-							Topic.publish("/Jobs", {type: "JobStatusChanged", job: task, status: task.status, oldStatus: oldJob.status});	
+					//		Topic.publish("/Jobs", {type: "JobStatusChanged", job: task, status: task.status, oldStatus: oldJob.status});	
 						}else{
 							Jobs[task.id]=task;
 						}
 					}
 
+					Deferred.when(getJobSummary(), function(msg){
+						Topic.publish("/Jobs", msg);
+					});	
 				});
 				if (firstRun){
 					ready.resolve(true);	
@@ -42,9 +45,8 @@ function(Deferred,Topic){
 	
 	PollJobs();
 
-	return {
-		getJobSummary: function(){
-			console.log("getJobSummary()");
+	function getJobSummary(){
+			console.log("getJobSummary() from api_service");
 			var def = new Deferred();
 			var summary = {total: 0}
 			Deferred.when(ready, function(){
@@ -62,6 +64,9 @@ function(Deferred,Topic){
 
 			return def.promise;
 		}
+
+	return {
+		getJobSummary: getJobSummary
 	}
 
 })
