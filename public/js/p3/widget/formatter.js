@@ -1,6 +1,8 @@
 define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
 
 	var dateFormatter =  function(obj,format){
+		console.log("dateFormatter: ", obj);
+		if (!obj || obj=="0001-01-01T00:00:00Z") { return "" }
 		if (typeof obj == "string") {
 			obj = new Date(Date.parse(obj));
 		}else if (typeof obj == "number") {
@@ -40,6 +42,15 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var parts = val.split("@");
 			return parts[0];
 		},
+		status: function(val){
+			return val;
+			switch (val) {
+				case "completed":
+					return '<i class="fa fa-check fa-1x" title="Folder" />'
+				case "queued":
+					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
+			}
+		},	
 		wsItemType: function(val){
 			switch (val) {
 				case "folder":

@@ -13,25 +13,28 @@ define([
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
-				"id":{
-					label: "ID",
-					field: "id"
-				},
-				"app": {
-					label: "App",
-					field: "app",
-					className: "wsItemType"
-				},
 				"status": {
 					label: "Status",
-					field: "status"
+					field: "status",
+					formatter: formatter.status
 				},
+
 				submit_time: {
 					label: "Submit",
 					field: "submit_time",
 					formatter: formatter.date	
 				},
 	
+				"id":{
+					label: "ID",
+					field: "id",
+					hidden: true
+				},
+				"app": {
+					label: "App",
+					field: "app"
+				},
+
 				start_time: {
 					label: "Start",
 					field: "start_time",
