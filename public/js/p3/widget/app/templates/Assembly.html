@@ -23,11 +23,11 @@
 			</div>
 			<div class="approw">
 				<label class="paramlabel" for="libdat_file1pair">Read File 1</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
 			</div>
 			<div class="approw">
 				<label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2pair1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
 			</div>
 			<div class="approw">
 				<div class="approwsegment" style="margin:0 0 0 0">
@@ -39,11 +39,11 @@
 				</div>
 				<div class="approwsegment">
 					<label class="paramlabel" for="libdat__avginsert">Mean Insert Size</label><br>
-					<div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="avgpair1" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>
+					<div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_mean" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>
 				</div>
 				<div class="approwsegment">
 					<label class="paramlabel" for="libdat_stdinsert">Std. Insert</label><br>		
-					<div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="stdpair1" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>		
+					<div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_stdev" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>		
 				</div>
 			</div>
                 </div>
@@ -56,14 +56,14 @@
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa fa-arrow-circle-o-right fa-lg"></i></div>
 			</div>
 			<label class="paramlabel" for="singleread">Read File</label><br>
-			<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
+			<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,value:'${activeWorkspacePath}'"></div>
                 </div>
 
 		<div class="appbox appshadow">
 			<h4 class="appboxlabel">Parameters</h4>
 			<div class="approw">
 				<label for="recipe" class="paramlabel">Assembly Strategy</label><br>
-				<select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 				<option value="auto">auto</option>
 				<option value="full_spades">full spades</option>
 				<option value="fast">fast</option>
@@ -81,7 +81,7 @@
 			</div>
 			<div class="approw">
                                 <label class="paramlabel" for="reference_assembly">Benchmark Contigs</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="reference_assembly" style="width:300px" required="false" data-dojo-props="type:['contigs'],multi:false,placeHolder:'Optional'"></div>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="reference_assembly" data-dojo-attach-point="reference_assembly" style="width:300px" required="false" data-dojo-props="type:['contigs'],multi:false,placeHolder:'Optional'"></div>
 			</div>
         	</div>
 		</td>

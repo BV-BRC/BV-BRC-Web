@@ -85,12 +85,15 @@ define([
 			input_pts.forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
+				var browser_select=0;
 				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
 					cur_value=this[attachname].searchBox.get('value');
 					incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
+					browser_select=1;
 				}
 				else if(attachname == "output_path"){
 					cur_value=this[attachname].searchBox.get('value');
+					browser_select=1;
 				}
 				else {
 					cur_value=this[attachname].value;
@@ -102,8 +105,10 @@ define([
 				else{
 					target[attachname]=cur_value;
 				}
-				if(!target[attachname] || incomplete){
-					this[attachname]._set("state","Error");
+				if((!target[attachname] || incomplete)){
+					if(! browser_select){
+						this[attachname]._set("state","Error");
+					}
 					success=0;
 				}
 				else{

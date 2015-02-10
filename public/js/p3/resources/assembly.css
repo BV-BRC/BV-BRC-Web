@@ -21,7 +21,7 @@ background-color: #F0F1F3;
 .librarytable{
 	width: 300px;
 	border-collapse:collapse;
-	border-color: rgb(171,171,171);
+	border: 1px solid rgb(171,171,171);
 }
 table.assemblyblocks td{vertical-align:top;}
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
