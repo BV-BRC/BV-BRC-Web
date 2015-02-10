@@ -25930,6 +25930,10 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "feature_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
+						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					default:
 						panelCtor = ContentPane;
 						params.content = "Invalid Object";
@@ -29676,7 +29680,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "fasta":
 					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
 				case "feature_group":
-					return '<i class="fa icon-features fa-1x" title="Contigs" />'
+					return '<i class="fa icon-genome-features fa-1x" title="Contigs" />'
 				case "genome_group":
 					return '<i class="fa icon-genome fa-1x" title="Contigs" />'
 				default: 
@@ -32701,7 +32705,6 @@ define([
 						domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
-	
 					case "fasta": 
 						domClass.add(_self.typeIcon,"fa icon-fasta fa-3x")
 						currentIcon="fa fa-folder fa-3x";
@@ -32711,7 +32714,7 @@ define([
 						currentIcon="fa fa-folder fa-3x";
 						break;
 					case "feature_group": 
-						domClass.add(_self.typeIcon,"fa icon-features fa-3x")
+						domClass.add(_self.typeIcon,"fa icon-genome-features fa-3x")
 						currentIcon="fa fa-folder fa-3x";
 						break;
 	
