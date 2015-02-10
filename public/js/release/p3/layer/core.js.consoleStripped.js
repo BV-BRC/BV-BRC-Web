@@ -25778,12 +25778,12 @@ define([
 				out.push("<a class='navigationLink' href='");
 				bp.push(p);
 				out.push("/" + bp.join("/")+"/")
-				out.push("'>" + p + "</a>&nbsp;/&nbsp;");
+				out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p) + "</a>&nbsp;/&nbsp;");
 			})
 			out.push("</span>");
 			out.push("<span style='float:right;'>");
-			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
-			out.push("<a href class='DialogButton fa fa-folder-plus fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
+			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Upload to Folder'></a>");
+			out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
 			out.push("</span>");
 			this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
 			//this.explorer = new WorkspaceExplorerView({path: decodeURIComponent(this.path), region: "center"});
@@ -25941,13 +25941,13 @@ define([
 							}
 							out.push("<a class='navigationLink' href='");
 							bp.push(p);
-							out.push("/" + bp.join("/"))
-							out.push("'>" + p + "</a>&nbsp;/&nbsp;");
+							out.push("/" + bp.join("/") );
+							out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
 						})
 						//out.push("<span>" + parts.join("/") + "</span>");
 						out.push("<span style='float:right;'>");
-						out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + this.path + "' style='margin:4px;' title='Upload to Folder'></a>");
-						out.push("<a href class='DialogButton fa fa-plus-square fa-2x' rel='CreateFolder:" + this.path + "' style='margin:4px;' title='Create Folder' ></a>");
+						out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
+						out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
 						out.push("</span>");	
 
 						this.browserHeader.set("content", out.join(""));
