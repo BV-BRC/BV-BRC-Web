@@ -145,12 +145,20 @@
 								</ul>
 							</div>
 						</li>
+
+						<% if (request.applicationOptions && request.applicationOptions.enableDevTools){ %>
+	
 						<li class="has-sub">
 							<a href="#">Dev</a>
 							<div class="submenu">
+								<header><p class="bold light">apps</p></header>
+								<ul>
+									<li><a class="navigationLink" href="/app/Assembly"">assembly</a></li>
+									<li><a class="navigationLink" href="/app/Annotation"">annotation</a></li>
+								</ul>
 							</div>
 						</li>
-
+						<% } %>
 
 					</ul>
 					<div class="login ShowWithoutAuth">

@@ -826,6 +826,11 @@ div.main-header .main-nav .submenu {
   -o-border-bottom-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+
+div.main-header .main-nav .hover .submenu{
+	display: inherit;
+}
+
 div.main-header .main-nav .submenu header p {
   margin: 0px;
   padding: 5px 10px;
@@ -926,12 +931,12 @@ body.logged-out > header .login .logged-in {
   display: none;
 }
 
-body .container.main-container {
+.container.main-container {
   margin-top: 15px;
   margin-bottom: 30px;
 }
 
-body .container.tabs-above {
+.container.tabs-above {
   margin-top: 20px;
   margin-bottom: 0px;
 }  
@@ -939,51 +944,51 @@ body .container.tabs-above {
   margin: 20px 0px;
 }
 
-body .bottom {
+.bottom {
   background: #dbe3e5;
   border-top: #c0cbcf 1px solid;
   padding: 36px 0px;
 }
-body .bottom .container {
+.bottom .container {
   overflow: hidden;
 }
-body .bottom .container .column-narrow {
+.bottom .container .column-narrow {
   display: inline;
   float: left;
   margin-right: 17px;
   width: 229px;
 }
-* html body .bottom .container .column-narrow {
+ html body .bottom .container .column-narrow {
   overflow-x: hidden;
 }
-body .bottom .container .column-wide {
+.bottom .container .column-wide {
   display: inline;
   float: left;
   margin-right: 0;
   width: 721px;
 }
-* html body .bottom .container .column-wide {
+html body .bottom .container .column-wide {
   overflow-x: hidden;
 }
-body .bottom .container .column-wide .column {
+.bottom .container .column-wide .column {
   display: inline;
   float: left;
   margin-right: 17px;
   width: 352px;
 }
-* html body .bottom .container .column-wide .column {
+.bottom .container .column-wide .column {
   overflow-x: hidden;
 }
-body .bottom .container .column-wide .column.last {
+.bottom .container .column-wide .column.last {
   display: inline;
   float: left;
   margin-right: 0;
   width: 352px;
 }
-* html body .bottom .container .column-wide .column.last {
+.bottom .container .column-wide .column.last {
   overflow-x: hidden;
 }
-body .bottom .container .column-half {
+.bottom .container .column-half {
   display: inline;
   float: left;
   margin-right: 17px;

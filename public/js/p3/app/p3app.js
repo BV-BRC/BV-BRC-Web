@@ -24,6 +24,23 @@ define([
 		activeWorkspacePath: "/",
 		startup: function(){
 			var _self=this;
+
+			/* these two on()s enable the p2 header mouse overs */
+			on(document.body, ".has-sub:mouseover", function(evt){
+				var target = evt.target;
+				while(!domClass.contains(target,"has-sub") && target.parentNode){
+					target = target.parentNode
+				}
+				domClass.add(target, "hover");
+			});
+			on(document.body, ".has-sub:mouseout", function(evt){
+				var target = evt.target;
+				while(!domClass.contains(target,"has-sub") && target.parentNode){
+					target = target.parentNode
+				}
+				domClass.remove(target, "hover");
+			});
+	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
 				console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
