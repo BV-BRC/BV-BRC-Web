@@ -6,6 +6,7 @@
 					<ul class="main-nav no-decoration">
 						<li class="first active">
 							<a class="home active" href="/portal/portal/patric/Home">Home</a>
+
 							<div class="submenu">
 								<ul>
 									<li><a href="/portal/portal/patric/Home">PATRIC Home</a></li>
@@ -188,7 +189,7 @@
 
 					<% if (request && request.session && request.session.userProfile && request.session.userProfile.id) { %>
 					<div class="workspace smallest ShowWithAuth">
-						<span class="upper">My workspace: <a href="/workspace/<%- (request&&request.session)?(request.session.userProfile.id):"" %>/home">home</a></span>
+						<span class="upper">workspace: <a class="navigationLink" href="/workspace/<%- (request&&request.session)?(request.session.userProfile.id):"" %>/home">home</a></span>
 						<a class="arrow-white-e" href="#"><span id="cart"></span></a>
 					</div>
 					<% } %>

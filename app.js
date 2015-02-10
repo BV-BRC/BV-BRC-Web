@@ -95,6 +95,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
+app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
 app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
 app.use("/workspace", workspace)
