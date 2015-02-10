@@ -12,6 +12,13 @@ define([
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
+		_setPathAttr: function(p){
+			if (p.charAt(0)!="/") {
+				this.path = p.substr(0,-1);
+			}else{
+				this.path=p;
+			}
+		},
 		validate: function(){
 			console.log("this.validate()",this);
 			var valid = this.inherited(arguments);
