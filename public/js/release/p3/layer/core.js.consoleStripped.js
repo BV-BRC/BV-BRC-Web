@@ -925,8 +925,11 @@ define([
 				 0 && console.log("Login Link Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				 0 && console.log("Target", evt.target.href, window);
-				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
+				 0 && console.log("Target", evt.target.href);
+				 0 && console.log("Create Dialog()", evt.target.href);
+				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="' + evt.target.href + '"></iframe>'});
+				dlg.show();
+//				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
 				 0 && console.log("end loginLink Lcik");
 			});
 
