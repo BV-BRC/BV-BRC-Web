@@ -31,12 +31,18 @@ define([
 				this.searchBox.set('value', value);
 			}
 		},
+
+		_getValueAttr: function(value){
+			return this.searchBox.get('value', value);
+		},
+
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){
 				this.value=this.workspace;
 			}
 			this.inherited(arguments);
 		},
+
 		openChooser: function(){
 			if (!this.dialog){
 				this.dialog = new Dialog({title:"Workspace Explorer"});

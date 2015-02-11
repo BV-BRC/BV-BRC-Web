@@ -57,20 +57,21 @@ define([
 
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
-				validTypes: ["genome_group"]
+				validTypes: ["genome_group","feature_group"]
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 
-				/*
 				switch (sel.type) {
 					case "genome_group":
-						Topic.publish("/navigate",{href:"/view/GenomeList"});
+						Topic.publish("/navigate",{href:"/view/GenomeList"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
+						break;
+					case "feature_group":
+						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
 						break;
 					default:
 						console.log("Type isn't setup with a viewer");
 				}
-				*/
 
 				WorkspaceManager.getObjects([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
 
