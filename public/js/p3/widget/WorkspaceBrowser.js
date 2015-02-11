@@ -231,7 +231,8 @@ define([
 					var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
 					var workspace = parts[0] + "/" + parts[1];
 					console.log("Publish to ActiveWorkspace:",workspace,val)
-					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
+					WorkspaceManager.set("currentPath",val);
+//					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
 					if (this._started){
 						var len = parts.length;
