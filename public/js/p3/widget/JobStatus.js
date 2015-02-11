@@ -38,9 +38,9 @@ define([
 			});
 		},
 		onJobMessage: function(msg){
-			console.log("Job Message: ", msg);
+			//console.log("Job Message: ", msg);
 			if (msg && msg.type=="JobStatusSummary"){
-				console.log("JobStatusSummary: ", msg.summary);
+				//console.log("JobStatusSummary: ", msg.summary);
 				this._jobstatus.inProgress=msg.summary['in-progress']||0;
 				this._jobstatus.complete = msg.summary.completed||0;
 				this._jobstatus.queued= msg.summary.queued||0;

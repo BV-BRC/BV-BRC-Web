@@ -99,40 +99,13 @@ define([
 
 
 
-//			this.actionPanel = new ContentPane({content: '<div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div><div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div>',region: right, style: "width:44px;background:#efefef;", splitter: false, region: "right"});
-
-//			this.actionPanel = new ContentPane({region: "right",style: "width:44px;background:#efefef;", content: '<div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div><div style="width:40px;height:40px;border:1px solid gray;margin-2px;margin-top:4px;margin-bottom:4px;"></div>', layoutPriority:2});
 			this.detailPanel = new ContentPane({content: "Detail", style:"width:300px", region: "right", splitter: false, layoutPriorty:1});
 			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.browserHeader);
-			//this.addChild(this.explorer); 
-			this.addChild(this.actionPanel);
-//			this.addChild(this.detailPanel);
+//			this.addChild(this.actionPanel);
 
 			var self=this;
-			Topic.subscribe("/select", function(selection){
-
-				if (selection.length==0){
-					var done=0;
-					self.removeChild(self.actionPanel);
-					self.getChildren().some(function(child){
-						if (child===self.detailPanel){
-							self.removeChild(self.detailPanel);
-							done++;
-						}
-						if (child===self.itemDetailPanel){
-							self.removeChild(self.itemDetailPanel);
-							done++;
-						}
-						if (done>1) { return true; }	
-					});
-					return;
-				}
-
-				self.actionPanel.set('selection', selection);
-				self.addChild(self.actionPanel);
-			});	
 			this.inherited(arguments);
 
 		},
@@ -172,10 +145,87 @@ define([
 
 				console.log("params.query: ", params.query);
 				Deferred.when(panelCtor, lang.hitch(this,function(Panel){
-					if (!this.activePane || !this.activePanel instanceof Panel){
-						if (this.activePanel) { this.removeChild(this.activePanel); }
-						this.activePanel = new Panel(params);
-						this.addChild(this.activePanel);
+					console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
+					if (!this.activePanel || !(this.activePanel instanceof Panel)){
+						if (this.activePanel) { 
+							this.removeChild(this.activePanel);
+						 }
+						console.log("Creeate New Active Panel");
+						var newPanel = new Panel(params);
+						var hideTimer;
+
+						if (newPanel.on) {
+						newPanel.on("select", lang.hitch(this,function(evt){
+							console.log("Selected: ", evt);
+							var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
+								console.log("rownum: ", rownum);
+								console.log("Row: ", evt.grid.row(rownum).data);
+								return evt.grid.row(rownum).data;
+							}));
+							console.log("selection: ", sel);
+							console.log("this.activePanel: ", newPanel);
+							if (hideTimer) {
+								clearTimeout(hideTimer);
+							}
+							if (sel.length>0){
+								this.addChild(this.actionPanel);
+							}
+							this.actionPanel.set("selection", sel);
+
+							if (sel.length==1) {
+								if (this.getChildren().some(function(child){
+									return (child===this.actionPanel)
+								},this)) {
+									this.itemDetailPanel.set("item",sel[0]);	
+								}
+
+							}else{
+								this.removeChild(this.actionPanel);
+							}
+						}));	
+
+						newPanel.on("deselect", lang.hitch(this,function(evt){
+							if (!evt.selected) { 
+								this.actionPanel.set("selection", []); 
+							}else{
+								var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
+									console.log("rownum: ", rownum);
+									console.log("Row: ", evt.grid.row(rownum).data);
+									return evt.grid.row(rownum).data;
+								}));
+							}
+							console.log("selection: ", sel);
+							this.actionPanel.set("selection", sel);
+							if (!sel || sel.length<1){
+								hideTimer = setTimeout(lang.hitch(this,function(){
+									this.removeChild(this.actionPanel);
+									this.removeChild(this.itemDetailPanel);
+								}),500);	
+							}
+						}));
+
+						newPanel.on("ItemDblClick", lang.hitch(this,function(evt){
+							console.log("ItemDblClick: ", evt);
+							Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
+							this.actionPanel.set("selection", []);
+							newPanel.clearSelection();
+							hideTimer = setTimeout(lang.hitch(this,function(){
+								this.removeChild(this.actionPanel);
+								this.removeChild(this.itemDetailPanel);
+							}),500);	
+	
+						}));
+						}
+	
+						this.addChild(newPanel);
+						this.activePanel = newPanel;
+					}else{
+						this.activePanel.set('path', this.path);
+						if (this.activePanel.clearSelection){
+							this.activePanel.clearSelection();
+						}
+						this.removeChild(this.actionPanel);
+						this.removeChild(this.itemDetailPanel);
 					}
 
 					var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });

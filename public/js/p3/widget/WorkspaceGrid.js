@@ -2,14 +2,14 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
@@ -128,40 +128,65 @@ define([
 					});
 				});
 
+
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
+					on.emit(_self.domNode, "ItemDblClick", {
+						item_path: row.data.path,
+						bubbles: true,
+						cancelable: true
+					});	
 				    //if (row.data.type == "folder"){
-						Topic.publish("/select", []);
+		//				Topic.publish("/select", []);
 
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-						_selection={};
+		//				Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+		//				_selection={};
 					//}
 				});
-				_selection={};
-				Topic.publish("/select", []);
+				//_selection={};
+				//Topic.publish("/select", []);
 
 				this.on("dgrid-select", function(evt) {
-					console.log("dgrid-select");
-					var rows = event.rows;
-					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					Topic.publish("/select", sel);
+					console.log('dgrid-select: ', evt);
+					var newEvt = {
+						rows: event.rows,
+						selected: evt.grid.selection,
+						grid: _self,
+						bubbles: true,
+						cancelable: true
+					}	
+					on.emit(_self.domNode, "select", newEvt);
+					//console.log("dgrid-select");
+					//var rows = event.rows;
+					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+					//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+					//Topic.publish("/select", sel);
 				});
 				this.on("dgrid-deselect", function(evt) {
 					console.log("dgrid-select");
-					var rows = event.rows;
-					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
-					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					Topic.publish("/select", sel);
+					var newEvt = {
+						rows: event.rows,
+						selected: evt.grid.selection,
+						grid: _self,
+						bubbles: true,
+						cancelable: true
+					}	
+					on.emit(_self.domNode, "deselect", newEvt);
+					return;
+//					var rows = event.rows;
+//					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
+//					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+//					Topic.publish("/select", sel);
 				});
+				/*
 				var activeItem;
 				this.on(".dgrid-content:contextmenu", function(evt){
 					var row=_self.row(evt);
 					activeItem = row;
 					console.log("activeItem: ", row.data);
 				});
-
+				
 				var menu = new Menu({
 					  // Hook menu at domNode level since it stops propagation, and would
 					  // block any contextmenu events delegated from the domNode otherwise
@@ -182,6 +207,7 @@ define([
 						}
 					}
 				}));
+				*/
 
 				this.inherited(arguments);
 				this._started = true;
