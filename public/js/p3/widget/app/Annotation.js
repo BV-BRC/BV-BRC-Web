@@ -10,7 +10,24 @@ define([
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
-		applicationName: "GenomeAnnotation"
+		applicationName: "GenomeAnnotation",
+		constructor: function(){
+			this._selfSet=true;
+		},	
+	
+		onSuggestNameChange: function(val){
+			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
+				this._selfSet=true;	
+				this.output_nameWidget.set('value', val);
+			}
+		},
+
+		getValues: function(){
+			var vals = this.inherited(arguments);
+			vals.contigs = "_uuid/" + vals.contigs;
+			vals.output_location = "_uuid/" + vals.output_location;
+			return vals;
+		}
 	});
 });
 
