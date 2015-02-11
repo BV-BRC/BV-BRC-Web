@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\">\n\t<span>Jobs</span>\n\t<div>\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</div>\n</div>\n"}});
+'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\">\n\t<a class=\"navigationLink\" href=\"/job/\">Jobs</a>\n\t<div>\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</div>\n</div>\n"}});
 define("p3/widget/JobStatus", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dojo/topic","dojo/_base/lang",
@@ -34,15 +34,15 @@ define("p3/widget/JobStatus", [
 			this.inherited(arguments);
 			Topic.subscribe("/Jobs", lang.hitch(this,"onJobMessage"))
 			JobManager.getJobSummary().then(lang.hitch(this,"onJobMessage"));
-//			this.tooltip = new Tooltip({
-//				connectId: [this.domNode],
-//				label: " Completed &middot; In progress &middot; % Complete"
-//			});
+			this.tooltip = new Tooltip({
+				connectId: [this.domNode],
+				label: " Completed &middot; In progress &middot; Queued &middot; Suspended"
+			});
 		},
 		onJobMessage: function(msg){
-			console.log("Job Message: ", msg);
+			//console.log("Job Message: ", msg);
 			if (msg && msg.type=="JobStatusSummary"){
-				console.log("JobStatusSummary: ", msg.summary);
+				//console.log("JobStatusSummary: ", msg.summary);
 				this._jobstatus.inProgress=msg.summary['in-progress']||0;
 				this._jobstatus.complete = msg.summary.completed||0;
 				this._jobstatus.queued= msg.summary.queued||0;

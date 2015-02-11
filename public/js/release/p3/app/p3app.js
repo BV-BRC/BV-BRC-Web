@@ -155,13 +155,13 @@ define("p3/app/p3app", [
 				console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
-
+/*
 			Topic.subscribe("/ActiveWorkspace", function(as){
 				console.log("SET App.activeWorkspace",as)
 				_self.activeWorkspace=as.workspace;
 				_self.activeWorkspacePath=as.path;
 			});
-	
+*/	
 			// console.log("go()")
 			// setTimeout(function(){
 			// 	Router.go("/workspace/dmachi/foo/bar");

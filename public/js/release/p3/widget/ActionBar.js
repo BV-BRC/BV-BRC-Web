@@ -10,10 +10,12 @@ define("p3/widget/ActionBar", [
 		constructor: function(){
 			this._actions={}
 		},
-
+		selection: null,
 		_setSelectionAttr: function(sel){
 			console.log("setSelection", sel);
 			this.selection = sel;
+
+//			return;
 			var valid;
 			var selectionTypes = {}
 			sel.forEach(function(s){

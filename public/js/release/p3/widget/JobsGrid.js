@@ -1,60 +1,50 @@
-define("p3/widget/WorkspaceGrid", [
+define("p3/widget/JobsGrid", [
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
-				"type": {
-					label: "",
-					field: "type",
-					className: "wsItemType",
-					formatter: formatter.wsItemType
+				"status": {
+					label: "Status",
+					field: "status",
+					formatter: formatter.status
 				},
-				"name": {
-					label: "Name",
-					field: "name",
-					className: "wsItemName"
-				},
-				size: {
-					label: "Size",
-					field: "size",
-					className: "wsItemSize",
-					hidden: true
+
+				submit_time: {
+					label: "Submit",
+					field: "submit_time",
+					formatter: formatter.date	
 				},
 	
-				owner_id: {
-					label: "Owner",
-					field: "owner_id",
-					className: "wsItemOwnerId",
-					formatter: formatter.baseUsername,
+				"id":{
+					label: "ID",
+					field: "id",
 					hidden: true
 				},
-				creation_time: {
-					label: "Created",
-					field: "creation_time",
-					className: "wsItemCreationTime",
-					formatter: formatter.date
-				}/*,
-	
-				userMeta: {
-					label: "User Metadata",
-					field: "userMeta",
-					hidden: true
+				"app": {
+					label: "App",
+					field: "app"
 				},
-				autoMeta: {
-					label: "Metadata",
-					field: "autoMeta",
-					hidden: true
-				}*/
+
+				start_time: {
+					label: "Start",
+					field: "start_time",
+					formatter: formatter.date	
+				},
+				completed_time: {
+					label: "Completed",
+					field: "completed_time",
+					formatter: formatter.date	
+				}
 			},
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -128,65 +118,40 @@ define("p3/widget/WorkspaceGrid", [
 					});
 				});
 
-
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
 				    console.log("dblclick row:", row)
-					on.emit(_self.domNode, "ItemDblClick", {
-						item_path: row.data.path,
-						bubbles: true,
-						cancelable: true
-					});	
 				    //if (row.data.type == "folder"){
-		//				Topic.publish("/select", []);
+						Topic.publish("/select", []);
 
-		//				Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-		//				_selection={};
+						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+						_selection={};
 					//}
 				});
-				//_selection={};
-				//Topic.publish("/select", []);
+				_selection={};
+				Topic.publish("/select", []);
 
 				this.on("dgrid-select", function(evt) {
-					console.log('dgrid-select: ', evt);
-					var newEvt = {
-						rows: event.rows,
-						selected: evt.grid.selection,
-						grid: _self,
-						bubbles: true,
-						cancelable: true
-					}	
-					on.emit(_self.domNode, "select", newEvt);
-					//console.log("dgrid-select");
-					//var rows = event.rows;
-					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-					//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					//Topic.publish("/select", sel);
+					console.log("dgrid-select");
+					var rows = event.rows;
+					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+					Topic.publish("/select", sel);
 				});
 				this.on("dgrid-deselect", function(evt) {
 					console.log("dgrid-select");
-					var newEvt = {
-						rows: event.rows,
-						selected: evt.grid.selection,
-						grid: _self,
-						bubbles: true,
-						cancelable: true
-					}	
-					on.emit(_self.domNode, "deselect", newEvt);
-					return;
-//					var rows = event.rows;
-//					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
-//					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-//					Topic.publish("/select", sel);
+					var rows = event.rows;
+					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
+					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+					Topic.publish("/select", sel);
 				});
-				/*
 				var activeItem;
 				this.on(".dgrid-content:contextmenu", function(evt){
 					var row=_self.row(evt);
 					activeItem = row;
 					console.log("activeItem: ", row.data);
 				});
-				
+
 				var menu = new Menu({
 					  // Hook menu at domNode level since it stops propagation, and would
 					  // block any contextmenu events delegated from the domNode otherwise
@@ -207,7 +172,6 @@ define("p3/widget/WorkspaceGrid", [
 						}
 					}
 				}));
-				*/
 
 				this.inherited(arguments);
 				this._started = true;

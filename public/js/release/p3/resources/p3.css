@@ -5327,6 +5327,7 @@ div.dijitNumberTextBoxRtl {
 	font-size: 1.1em;
 	cursor: pointer;
 }
+.JobStatusButton > A:first-child,
 .JobStatusButton > SPAN:first-child,
 .UploadStatusButton > SPAN:first-child {
 	color:#fff;margin:2px;padding:2px

@@ -13,14 +13,13 @@ define("p3/WorkspaceManager", [
 		token: "",
 		apiUrl: "",
 		userId: "",
-
 		_userWorkspacesGetter: function(){
 			if (this.userWorkspaces && this.userWorkspaces.length>0){
 				return this.userWorkspaces;
 			}
 
 			var p = "/" + this.userId + "/";
-			return Deferred.when(this.api("Workspace.ls", [{
+			this.userWorkspaces =Deferred.when(this.api("Workspace.ls", [{
 				paths: [p],
 				includeSubDirs: false,
 				Recursive: false
@@ -56,7 +55,7 @@ define("p3/WorkspaceManager", [
 
 
 					return Deferred.when(this.createWorkspace("home"), lang.hitch(this,function(hws){
-						this.set("userWorkspaces",[hws]);
+						this.userWorkspaces=[hws];
 						return [hws];
 					}, function(err){
 						console.log("Error Creating User's home workspace: ", err);
@@ -64,6 +63,7 @@ define("p3/WorkspaceManager", [
 						return [];
 					}));
 			}));
+			return this.userWorkspaces;
 		},
 
 		createFolder: function(paths){
@@ -141,6 +141,57 @@ define("p3/WorkspaceManager", [
 						return workspace	
 					})
 				}
+			}));
+		},
+
+		getObjectsByType: function(types, ws){
+			types= (types instanceof Array)?types:[types];
+			console.log("Get ObjectsByType: ", types);
+
+			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
+				console.log("current: ", current, current.path);
+				var path = current.path;
+				return Deferred.when(this.api("Workspace.ls",[{
+					paths: [current.path],
+					excludeDirectories: false,
+					excludeObjects: false,
+					recursive: true,
+					query: {
+						type: types[0]
+					}
+				}]), function(results){
+					console.log("getObjectsByType Results: ", results);
+					if (!results[0] || !results[0][path]) {
+						return [];
+					}
+					var res = results[0][path];
+		
+					console.log("array res", res);
+	
+					res = res.map(function(r) {
+						console.log("r: ", r);
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					})/*.filter(function(r){
+						if (!showHidden && r.name.charAt(0)=="."){ return false };
+						return true;
+					})*/
+
+					console.log("Final getObjectsByType()", res)
+					return res;
+				})
 			}));
 		},
 
@@ -228,18 +279,16 @@ define("p3/WorkspaceManager", [
 		},
 
 		_currentWorkspaceGetter: function(){
-			if (this.currentWorkspace){
-				console.log("CURRENT WORKSPACE: ", this.currentWorkspace)
-				return this.currentWorkspace;
+			if (!this.currentWorkspace) {
+				this.currentWorkspace = Deferred.when(this.get('userWorkspaces'),lang.hitch(this,function(cws){
+					if (!cws || cws.length<1){
+						throw Error("No User Workspaces found when attempting to get the Current Workspace for user.");
+					}
+					this.currentWorkspace=cws[0];
+					return cws[0];
+				}))
 			}
-
-			return Deferred.when(this.get('userWorkspaces'),lang.hitch(this,function(cws){
-				if (!cws || cws.length<1){
-					throw Error("No User Workspaces found when attempting to get the Current Workspace for user.");
-				}
-				this.set("currentWorkspace",cws[0]);
-				return cws[0];
-			}))
+			return this.currentWorkspace;
 		},
 		_currentWorkspaceSetter: function(val){
 			this.currentWorkspace = val;
@@ -247,10 +296,11 @@ define("p3/WorkspaceManager", [
 
 		_currentPathGetter: function(){
 			if (!this.currentPath){
-				return Deferred.when(this.get('currentWorkspace'),lang.hitch(this,function(cws){
-					this.set("currentPath",cws.path);
+				this.currentPath = Deferred.when(this.get('currentWorkspace'),lang.hitch(this,function(cws){
+					this.currentPath=cws.path;
 					return cws.path;
 				}))
+			
 			}
 
 			return this.currentPath;

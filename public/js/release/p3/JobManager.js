@@ -1,7 +1,7 @@
 define("p3/JobManager", ["dojo/_base/Deferred","dojo/topic"], 
 
 function(Deferred,Topic){
-	console.log("Start Job Manager");
+	//console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
 	var firstRun=true;
@@ -9,7 +9,7 @@ function(Deferred,Topic){
 	function PollJobs() {
 		if (window.App && window.App.api && window.App.api.service) {
 			Deferred.when(window.App.api.service("AppService.enumerate_tasks",[0,50]), function(tasks){
-//				console.log("tasks: ", tasks);
+//				//console.log("tasks: ", tasks);
 				tasks[0].forEach(function(task){
 					if (!Jobs[task.id]){
 						Jobs[task.id]=task;
@@ -46,7 +46,7 @@ function(Deferred,Topic){
 	PollJobs();
 
 	function getJobSummary(){
-			console.log("getJobSummary() from api_service");
+			//console.log("getJobSummary() from api_service");
 			var def = new Deferred();
 			var summary = {total: 0}
 			Deferred.when(ready, function(){
@@ -66,7 +66,15 @@ function(Deferred,Topic){
 		}
 
 	return {
-		getJobSummary: getJobSummary
+		getJobSummary: getJobSummary,
+		getJobs: function(){
+			return Deferred.when(ready, function(){
+			//console.log('getJobs()', Jobs);
+				return Object.keys(Jobs).map(function(id){
+					return Jobs[id];
+				});
+			});
+		}
 	}
 
 })

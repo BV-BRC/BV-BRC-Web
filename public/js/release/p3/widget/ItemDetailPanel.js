@@ -32,19 +32,19 @@ define("p3/widget/ItemDetailPanel", [
 					//	break;
 					case "contigs": 
 						domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
-						currentIcon="fa fa-folder fa-3x";
+						currentIcon="fa fa-contigs fa-3x";
 						break;
 					case "fasta": 
 						domClass.add(_self.typeIcon,"fa icon-fasta fa-3x")
-						currentIcon="fa fa-folder fa-3x";
+						currentIcon="fa icon-fasta fa-3x";
 						break;
 					case "genome_group": 
 						domClass.add(_self.typeIcon,"fa icon-genome fa-3x")
-						currentIcon="fa fa-folder fa-3x";
+						currentIcon="fa icon-genome fa-3x";
 						break;
 					case "feature_group": 
 						domClass.add(_self.typeIcon,"fa icon-genome-features fa-3x")
-						currentIcon="fa fa-folder fa-3x";
+						currentIcon="fa icon-genome-features fa-3x";
 						break;
 	
 					default: 
