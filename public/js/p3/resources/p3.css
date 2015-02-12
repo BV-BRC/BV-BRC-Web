@@ -26,6 +26,10 @@ A, A:visited {
 	color: inherit;
 }
 
+body.patric *:focus {
+    outline: 0;
+}
+
 .layoutContainer {
 	width: 100%;
 	height: 100%;
