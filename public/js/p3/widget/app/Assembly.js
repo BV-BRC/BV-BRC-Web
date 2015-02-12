@@ -35,10 +35,10 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
-			this.read1.set('value',"/" +  window.App.user.id +"/home/");
-			this.read2.set('value',"/" +  window.App.user.id +"/home/");
-			this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
-			this.output_path.set('value',"/" +  window.App.user.id +"/home/");
+			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
+			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
+			//this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
+			//this.output_path.set('value',"/" +  window.App.user.id +"/home/");
 /*
 			this.libraryGrid = new Grid({
 				columns: {'first': 'Libraries in assembly'}
@@ -87,15 +87,17 @@ define([
 				var incomplete =0;
 				var browser_select=0;
 				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
-					cur_value=this[attachname].searchBox.get('value');
-					incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
+					cur_value="_uuid/"+this[attachname].searchBox.value;
+					//cur_value=this[attachname].searchBox.get('value');
+					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 					browser_select=1;
 				}
 				else if(attachname == "output_path"){
-					cur_value=this[attachname].searchBox.get('value');
+					cur_value="_uuid/"+this[attachname].searchBox.value;
+					//cur_value=this[attachname].searchBox.get('value');
 					browser_select=1;
 				}
-				else {
+				else{
 					cur_value=this[attachname].value;
 				}
 					
@@ -118,22 +120,24 @@ define([
 			return(success);
 		},
 		makePairName:function(libRecord){
-			var fn =libRecord["read1"].replace(/^.*[\\\/]/, '');
-			var fn2 =libRecord["read2"].replace(/^.*[\\\/]/, '');
-			if(fn.length > 10){
-				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			var fn =this.read1.searchBox.get("displayedValue");
+			var fn2 =this.read2.searchBox.get("displayedValue");
+			var maxName=15; 
+			if(fn.length > maxName){
+				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
-			if(fn2.length > 10){
-				fn2=fn2.substr(0,3)+".."+fn2.substr(7,9);
+			if(fn2.length > maxName){
+				fn2=fn2.substr(0,(maxName/2)-2)+".."+fn2.substr((fn2.length-(maxName/2))+2);
 			}
 			return "("+fn+", "+fn2+")";
 		},	
 			
 
 		makeSingleName:function(libRecord){
-			var fn =libRecord["single_end_libs"].replace(/^.*[\\\/]/, '');
-			if(fn.length > 10){
-				fn=fn.substr(0,3)+".."+fn.substr(7,9);
+			var fn =this.single_end_libs.searchBox.get("displayedValue");
+                        maxName=30
+			if(fn.length > maxName){
+				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
 			return fn;
 		},
@@ -155,7 +159,7 @@ define([
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstr.create('td', {"class":"singledata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makeSingleName(td.libRecord);
+				td.innerHTML=this.makeSingleName();
 				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
@@ -185,7 +189,7 @@ define([
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstr.create('td', {"class":"pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makePairName(td.libRecord);
+				td.innerHTML=this.makePairName();
 				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
