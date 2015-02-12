@@ -87,13 +87,13 @@ define([
 				var incomplete =0;
 				var browser_select=0;
 				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
-					cur_value="_uuid/"+this[attachname].searchBox.value;
+					cur_value="/_uuid/"+this[attachname].searchBox.value;
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 					browser_select=1;
 				}
 				else if(attachname == "output_path"){
-					cur_value="_uuid/"+this[attachname].searchBox.value;
+					cur_value="/_uuid/"+this[attachname].searchBox.value;
 					//cur_value=this[attachname].searchBox.get('value');
 					browser_select=1;
 				}
