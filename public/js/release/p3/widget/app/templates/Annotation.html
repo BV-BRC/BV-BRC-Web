@@ -15,12 +15,12 @@
 
 			<div style="text-align:left;">
 				<label>Scientific Name</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="name" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'"></div>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="scientific_name" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'"></div>
 			</div>
 
 			<div style="text-align:left;">
 				<label>Genetic Code</label><br>
-				<select data-dojo-type="dijit/form/Select" name="geneticCode" data-dojo-attach-point="workspaceName" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+				<select data-dojo-type="dijit/form/Select" name="code" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 					<option value="11">11</option>
 					<option value="4">4</option>
 				</select>
