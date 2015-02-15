@@ -3,12 +3,13 @@ define([
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Dialog", "dojo/NodeList-traverse"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstr,
-        Deferred,aspect,lang,domReady,NumberTextBox,query
+        Deferred,aspect,lang,domReady,NumberTextBox,query,
+	dom, popup, Dialog, children
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -26,6 +27,7 @@ define([
 			this.singleToAttachPt=["single_end_libs"];
 		},
 
+
                 startup: function(){
                         if (this._started) { return; }
                         this.inherited(arguments);
@@ -35,6 +37,34 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
+			ibuttons=query(".infobutton");
+			ibuttons.forEach(function(item){
+				item.info_dialog = new Dialog({
+					content: dojo.query(".infobuttoninfo", item)[0],
+					draggable: true,
+					style: "min-width: 400px"
+					//onMouseLeave: function(){
+					//	popup.close(item.info_dialog);
+					//}
+				});
+				item.open=false;
+				
+				on(item, 'click', function(){
+					if(! item.open){
+						item.open=true;
+						popup.open({
+							popup: item.info_dialog,
+							draggable: true,
+							around: item
+						});
+					}
+					else{
+						item.open=false;
+						popup.close(item.info_dialog);
+					}	
+				});
+			});
+
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
 			//this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
