@@ -17,21 +17,9 @@
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel"> Paired read library</label>
 					<div class="infobutton">
-						<i name="pairinfo"  class="fa fa-info-circle fa"></i>
+						<i class="fa fa-info-circle fa"></i>
 						<div style="display:none;">
-						<div class="infobuttoninfo">
-							<h4>Paired read library</h4>
-							<!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->
-							<h6>Read File 1 and Read File 2</h6>
-							<p> Many paired read libraries are given as file pairs, with each file representing one half of all pairs. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair the selection of which file is READ 1 and which is READ 2 does not matter.</p>
-							<h5>Advanced Parameters</h5>
-							<h6>Single Interleaved</h6>
-							<p>Some paired-end sequences are available in a single file where each read in a pair occurs in succession. Such files are said to be 'interleaved'.</p>
-							<h6>Mean Insert Size</h6>
-							<p>This refers to the mean insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
-							<h6>Std. Insert Size</h6>
-							<p>This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
-						</div>
+						<div name="pairinfo" class="infobuttoninfo"></div>
 						</div>
 					</div>
 				</div>
@@ -80,6 +68,12 @@
 		<div class="appbox appshadow">
 			<div class="headerrow">
 				<label class="appboxlabel">Parameters</label>
+				<div class="infobutton">
+					<i class="fa fa-info-circle fa"></i>
+					<div style="display:none;">
+					<div name="parameterinfo" class="infobuttoninfo"></div>
+					</div>
+				</div>
 			</div>
 			<div class="approw">
 				<label for="recipe" class="paramlabel">Assembly Strategy</label><br>

@@ -37,31 +37,42 @@ define([
 				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
-			ibuttons=query(".infobutton");
+                        //create help dialog for infobutton's with infobuttoninfo div's
+                        var hashelp=query(".infobuttoninfo").length;
+                        if(hashelp){
+                            
+			}
+			var ibuttons=query(".infobutton");
 			ibuttons.forEach(function(item){
-				item.info_dialog = new Dialog({
-					content: dojo.query(".infobuttoninfo", item)[0],
-					draggable: true,
-					style: "min-width: 400px"
-					//onMouseLeave: function(){
-					//	popup.close(item.info_dialog);
-					//}
-				});
-				item.open=false;
-				
-				on(item, 'click', function(){
-					if(! item.open){
-						item.open=true;
-						popup.open({
-							popup: item.info_dialog,
-							draggable: true,
-							around: item
-						});
-					}
-					else{
-						item.open=false;
-						popup.close(item.info_dialog);
-					}	
+                                var helpdialogs=dojo.query(".infobuttoninfo", item);
+                                helpdialogs.forEach(function(helpinfo){
+					item.info_dialog = new Dialog({
+						//content: helpinfo,
+						href: "./GenomeAssemblyHelp.html",
+						draggable: true,
+						style: "min-width: 400px"
+						//onMouseLeave: function(){
+						//	popup.close(item.info_dialog);
+						//}
+					});
+					item.open=false;
+					on(item.info_dialog, 'show', function(){
+						var x=0;	
+					});
+					on(item, 'click', function(){
+						if(! item.open){
+							item.open=true;
+							popup.open({
+								popup: item.info_dialog,
+								draggable: true,
+								around: item
+							});
+						}
+						else{
+							item.open=false;
+							popup.close(item.info_dialog);
+						}	
+					});
 				});
 			});
 
