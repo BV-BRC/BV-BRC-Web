@@ -45,8 +45,10 @@ td.textcol{
 table.assemblyblocks td{vertical-align:top;}
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
-.emptyrow {min-height:22px;}
-.libraryrow {min-height:23px;}
+.emptyrow {min-height:23px;
+	   max-height:23px;}
+.libraryrow {max-height:23px;
+            min-height:23px;}
 
 
 .headerrow{
