@@ -107,12 +107,13 @@ define([
 			}));
 			this.interleaved.active=(this.interleaved.value=="true");
 			on(this.interleaved, 'change', lang.hitch(this, function(){
-				this.interleaved.active=(this.interleaved.value=="true");
 				if(this.interleaved.active){
-					this.read2block.style.visibility='hidden';
+					this.interleaved.active=false;
+					this.read2block.style.visibility='visible';
 				}
 				else{
-					this.read2block.style.visibility='visible';
+					this.interleaved.active=true;
+					this.read2block.style.visibility='hidden';
 				}	
 			}));
 				
