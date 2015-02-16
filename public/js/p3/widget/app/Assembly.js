@@ -3,13 +3,13 @@ define([
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Dialog", "dojo/NodeList-traverse", "dojo/request"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse", "dojo/request"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstruct,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
-	dom, popup, Dialog, children, xhr
+	dom, popup, Tooltip, Dialog, TooltipDialog, children, xhr
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -22,45 +22,30 @@ define([
 
 			this.addedLibs=0;
 			this.addedPairs=0;
-			this.pairToAttachPt=["read1", "read2", "interleaved", "insert_size_mean", "insert_size_stdev"];
+			this.pairToAttachPt1=["read1", "read2"];
+			this.pairToAttachPt2=["read1"];
+			this.advPairToAttachPt=["interleaved", "insert_size_mean", "insert_size_stdev"];
 			this.paramToAttachPt=["recipe","output_path","output_file","reference_assembly"];
 			this.singleToAttachPt=["single_end_libs"];
 		},
 
+		gethelp: function(){
 
-                startup: function(){
-                        if (this._started) { return; }
-                        this.inherited(arguments);
-			for (i = 0; i < this.startingRows; i++) { 
-				var tr =  this.libsTable.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
-				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
-			}
-			this.numlibs.startup();
-                        //create help dialog for infobutton's with infobuttoninfo div's
-
-			var helprequest=xhr.get("/js/p3/widget/app/help/GenomeAssemblyHelp.html",{
+			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
 			   handleAs: "text",
-                        });
+                        });		
 			helprequest.then(function(data){
 				var help_doc=domConstruct.toDom(data);
 			        var ibuttons=query(".infobutton");
 				ibuttons.forEach(function(item){
-					var helpdialogs=query(".infobuttoninfo", item);
-					helpdialogs.forEach(function(helpinfo){
-						var help_text= help_doc.getElementById(helpinfo.attributes.name.value) || "Help text missing";
+					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					if (dojo.hasClass(item, "dialoginfo")){
 						item.info_dialog = new Dialog({
 							content: help_text,
-							//href: "/js/p3/widget/app/GenomeAssemblyHelp.html",
 							draggable: true,
 							style: "overflow-y: auto; max-width: 350px; max-height: 400px"
-							//onMouseLeave: function(){
-							//	popup.close(item.info_dialog);
-							//}
 						});
 						item.open=false;
-						on(item.info_dialog, 'show', function(){
-						});
 						on(item, 'click', function(){
 							if(! item.open){
 								item.open=true;
@@ -71,22 +56,71 @@ define([
 								item.info_dialog.hide();
 							}	
 						});
-					});
+					}
+					else if (dojo.hasClass(item, "tooltipinfo")){
+						item.info_dialog = new TooltipDialog({
+							content: help_text,
+							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
+							onMouseLeave: function(){
+								popup.close(item.info_dialog);
+							}
+						});
+						on(item, 'mouseover', function(){
+							popup.open({
+								popup: item.info_dialog,
+								around: item
+							});
+						});
+					}	
 				});
-			});	
+			});
+		},	
+
+
+                startup: function(){
+                        if (this._started) { return; }
+                        this.inherited(arguments);
+			for (i = 0; i < this.startingRows; i++) { 
+				var tr =  this.libsTable.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
+				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+			}
+			this.numlibs.startup();
+                        //create help dialog for infobutton's with infobuttoninfo div's
+			this.advrow.active=(this.advrow.style.display!='none');
+			on(this.advanced, 'click', lang.hitch(this, function(){
+				this.advrow.active=(this.advrow.style.display!='none');
+				if (! this.advrow.active){
+					this.advrow.active=true;
+					this.advrow.style.display='block';
+					this.advicon.className="fa fa-caret-left fa-1";
+				}
+				else{	
+					this.advrow.active=false;
+					this.advrow.style.display='none';
+					this.advicon.className="fa fa-caret-down fa-1";
+				}
+			}));
+			this.interleaved.active=(this.interleaved.value=="true");
+			on(this.interleaved, 'change', lang.hitch(this, function(){
+				this.interleaved.active=(this.interleaved.value=="true");
+				if(this.interleaved.active){
+					this.read2block.style.visibility='hidden';
+				}
+				else{
+					this.read2block.style.visibility='visible';
+				}	
+			}));
+				
+				
+
+			this.gethelp();
 
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
 			//this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
 			//this.output_path.set('value',"/" +  window.App.user.id +"/home/");
-/*
-			this.libraryGrid = new Grid({
-				columns: {'first': 'Libraries in assembly'}
-			}, this.gridNode);
-
-			this.libraryGrid.startup();
-			this.libraryGrid.renderArray(this.libraryData);
-*/			
 			this._started=true;
 		},
 		getValues:function(){
@@ -120,20 +154,22 @@ define([
 			return assembly_values;
 				
 		},
-		ingestAttachPoints: function(input_pts, target){
+		ingestAttachPoints: function(input_pts, target, req){
+                        req = typeof req !== 'undefined' ? req : true;
 			var success=1;
 			input_pts.forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
 				var browser_select=0;
 				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
-					cur_value="/_uuid/"+this[attachname].searchBox.value;
+					cur_value=this[attachname].searchBox.value? "/_uuid/"+this[attachname].searchBox.value : "";
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 					browser_select=1;
 				}
 				else if(attachname == "output_path"){
-					cur_value="/_uuid/"+this[attachname].searchBox.value;
+					cur_value=this[attachname].searchBox.value? "/_uuid/"+this[attachname].searchBox.value : "";
+					//cur_value="/_uuid/"+this[attachname].searchBox.value;
 					//cur_value=this[attachname].searchBox.get('value');
 					browser_select=1;
 				}
@@ -147,7 +183,7 @@ define([
 				else{
 					target[attachname]=cur_value;
 				}
-				if((!target[attachname] || incomplete)){
+				if(req && (!target[attachname] || incomplete)){
 					if(! browser_select){
 						this[attachname]._set("state","Error");
 					}
@@ -162,24 +198,29 @@ define([
 		makePairName:function(libRecord){
 			var fn =this.read1.searchBox.get("displayedValue");
 			var fn2 =this.read2.searchBox.get("displayedValue");
-			var maxName=15; 
+			var maxName=12; 
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
 			if(fn2.length > maxName){
 				fn2=fn2.substr(0,(maxName/2)-2)+".."+fn2.substr((fn2.length-(maxName/2))+2);
 			}
-			return "("+fn+", "+fn2+")";
+			if(this.interleaved.active){
+				return "P("+fn+")";
+			}
+			else{
+				return "P("+fn+", "+fn2+")";
+			}
 		},	
 			
 
 		makeSingleName:function(libRecord){
 			var fn =this.single_end_libs.searchBox.get("displayedValue");
-                        maxName=30
+                        maxName=24
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
-			return fn;
+			return "S("+fn+")";
 		},
 
 		increaseLib: function(){
@@ -200,6 +241,7 @@ define([
 				var td = domConstruct.create('td', {"class":"singledata", innerHTML:""},tr);
 				td.libRecord=lrec;
 				td.innerHTML=this.makeSingleName();
+				var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
 				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
@@ -212,6 +254,7 @@ define([
 						var ntr = this.libsTable.insertRow(-1);	
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
 						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));
@@ -221,15 +264,35 @@ define([
 		
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-//			var tr =  domConstr.create("tr",{});
-//			domConstr.place(tr,this.libsTableBody,"first");
 			var lrec={};
-			var chkPassed=this.ingestAttachPoints(this.pairToAttachPt, lrec);
+			//If you want to disable advanced parameters while not shown this would be the place.
+			//but for right now, if you set them and then hide them, they are still active
+			var pairToIngest=this.interleaved.active ? this.pairToAttachPt2 : this.pairToAttachPt1;
+			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
+			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
+			this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
 				var td = domConstruct.create('td', {"class":"pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
 				td.innerHTML=this.makePairName();
+				var advPairInfo= [];
+				if(lrec["insert_size_mean"]){
+					advPairInfo.push("Mean Insert Size:"+lrec["insert_size_mean"]);
+				}
+				if(lrec["insert_size_stdev"]){
+					advPairInfo.push("Std. Insert Size:"+lrec["insert_size_stdev"]);
+				}
+				if(advPairInfo.length){
+					var tdinfo=domConstruct.create("td", {innerHTML: "<i class='fa fa-info fa-1' />"},tr);
+					var ihandle=new Tooltip({
+						connectId: [tdinfo],
+						label: advPairInfo.join("</br>") 
+					});
+				}
+				else{
+					var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
+				}
 				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
@@ -244,6 +307,7 @@ define([
 						var ntr = this.libsTable.insertRow(-1);	
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
 						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));

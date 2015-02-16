@@ -1,7 +1,7 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div style="width: 700px;margin:auto;">
-    <div class="apptitle" name="apptitle">
+    <div class="apptitle" id="apptitle">
                 <h3>Genome Assembly</h3>
                 <p>Assemble contigs from sequencing reads.</p>
     </div>
@@ -16,11 +16,8 @@
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel"> Paired read library</label>
-					<div class="infobutton">
+					<div name="pairinfo" class="iconbox infobutton dialoginfo">
 						<i class="fa fa-info-circle fa"></i>
-						<div style="display:none;">
-						<div name="pairinfo" class="infobuttoninfo"></div>
-						</div>
 					</div>
 				</div>
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair" class="fa fa-arrow-circle-o-right fa-lg"></i></div>
@@ -30,23 +27,33 @@
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['unspecified'],multi:false"></div>
 			</div>
 			<div class="approw">
-				<label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['unspecified'],multi:false"></div>
+				<div data-dojo-attach-point="read2block">
+					<label class="paramlabel" for="libdat_file2pair">Read File 2</label><br>
+					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['unspecified'],multi:false"></div>
+				</div>
 			</div>
 			<div class="approw">
+				<div class="approwsegment" data-dojo-attach-point="advanced">
+					<label class="largelabel">Advanced</label>
+					<div class="iconbox" style="margin-left:0px">
+						<i data-dojo-attach-point="advicon" class="fa fa-caret-down fa-1"></i>
+					</div>
+				</div>
+			</div>
+			<div class="approw"  data-dojo-attach-point="advrow" style="display: none">
 				<div class="approwsegment" style="margin:0 0 0 0">
-					<label class="paramlabel" for="libdat_interleaved">Interleaved</label><br>
+					<label class="paramlabel" for="libdat_interleaved">File 1 Interleaved</label><br>
 					<select data-dojo-type="dijit/form/Select" name="libdat_interleaved" data-dojo-attach-point="interleaved" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-					<option value="true">True</option>
 					<option value="false">False</option>
+					<option value="true">True</option>
 					</select>
 				</div>
 				<div class="approwsegment">
-					<label class="paramlabel" for="libdat__avginsert">Mean Insert Size</label><br>
+					<label class="paramlabel" for="libdat_avginsert">Mean Insert Size</label><br>
 					<div class="insertspinner" name="libdat_avginsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_mean" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>
 				</div>
 				<div class="approwsegment">
-					<label class="paramlabel" for="libdat_stdinsert">Std. Insert</label><br>		
+					<label class="paramlabel" for="libdat_stdinsert">Std. Insert Size</label><br>		
 					<div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_stdev" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>		
 				</div>
 			</div>
@@ -68,11 +75,8 @@
 		<div class="appbox appshadow">
 			<div class="headerrow">
 				<label class="appboxlabel">Parameters</label>
-				<div class="infobutton">
+				<div name="parameterinfo" class="iconbox infobutton dialoginfo">
 					<i class="fa fa-info-circle fa"></i>
-					<div style="display:none;">
-					<div name="parameterinfo" class="infobuttoninfo"></div>
-					</div>
 				</div>
 			</div>
 			<div class="approw">
@@ -104,6 +108,9 @@
 		<div class="appbox appshadow" style="min-height: 380px; height:auto; width:330px">
 			<div class="headerrow">
 				<label class="appboxlabel">Participating libraries</label>
+				<div name="selectedinfo" class="iconbox infobutton tooltipinfo">
+					<i class="fa fa-info-circle fa"></i>
+				</div>
 			</div>
 			<div class="approw" style="width:100%; margin-top:10px; text-align: center;">
 			<table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style='margin:0 0 0 10px; width:90%;'>

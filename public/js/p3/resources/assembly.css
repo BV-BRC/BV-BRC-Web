@@ -22,6 +22,11 @@ margin-left:20px;
 	font-size: .65em;
 	text-transform: uppercase;
 }
+label.largelabel {
+	font-size: .80em;
+	text-transform: uppercase;
+	vertical-align: middle;
+}
 
 .librarytable{
 	width: 300px;
@@ -93,10 +98,13 @@ margin:10px 0 0 10px;
 }
 
 
-.infobutton{
+
+.iconbox{
 display:inline-block;
 margin-left:5px;
+vertical-align:bottom;
 }
+
 
 label.appboxlabel {
 text-align:left;
