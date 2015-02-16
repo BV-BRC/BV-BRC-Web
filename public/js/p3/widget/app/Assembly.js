@@ -3,13 +3,13 @@ define([
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Dialog", "dojo/NodeList-traverse"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Dialog", "dojo/NodeList-traverse", "dojo/request"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstr,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
-	dom, popup, Dialog, children
+	dom, popup, Dialog, children, xhr
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -39,38 +39,41 @@ define([
 			this.numlibs.startup();
                         //create help dialog for infobutton's with infobuttoninfo div's
                         var hashelp=query(".infobuttoninfo").length;
-                        if(hashelp){
-                            
-			}
 			var ibuttons=query(".infobutton");
 			ibuttons.forEach(function(item){
                                 var helpdialogs=dojo.query(".infobuttoninfo", item);
                                 helpdialogs.forEach(function(helpinfo){
 					item.info_dialog = new Dialog({
 						//content: helpinfo,
-						href: "./GenomeAssemblyHelp.html",
+						//href: "/js/p3/widget/app/GenomeAssemblyHelp.html",
 						draggable: true,
-						style: "min-width: 400px"
+						style: "overflow-y: auto; min-width: 400px"
 						//onMouseLeave: function(){
 						//	popup.close(item.info_dialog);
 						//}
 					});
 					item.open=false;
 					on(item.info_dialog, 'show', function(){
-						var x=0;	
+						xhr.get("/js/p3/widget/app/GenomeAssemblyHelp.html",{
+						   handleAs: "text",
+                                                }).then(function(data){
+						   item.info_dialog.content=data;
+						});	
 					});
 					on(item, 'click', function(){
 						if(! item.open){
 							item.open=true;
-							popup.open({
-								popup: item.info_dialog,
-								draggable: true,
-								around: item
-							});
+							item.info_dialog.show();
+							//popup.open({
+							//	popup: item.info_dialog,
+							//	draggable: true,
+							//	around: item
+							//});
 						}
 						else{
 							item.open=false;
-							popup.close(item.info_dialog);
+							item.info_dialog.hide();
+							//popup.close(item.info_dialog);
 						}	
 					});
 				});
