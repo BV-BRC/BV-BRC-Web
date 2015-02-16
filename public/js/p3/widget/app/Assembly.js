@@ -190,7 +190,8 @@ define([
 				if(req && (!target[attachname] || incomplete)){
 					if(browser_select){
 						//this[attachname]._set("state","Error");
-						dojo.addClass(this[attachname], "dijitTextBoxError dijitComboBoxError dijitValidationTextBoxError dijitError dijitTextBoxFocused dijitComboBoxFocused dijitValidationTextBoxFocused dijitTextBoxErrorFocused dijitComboBoxErrorFocused dijitValidationTextBoxErrorFocused dijitErrorFocused dijitFocused");
+						this[attachname].set("message", "Need a file.");;
+						this[attachname].focus=true;
 					}
 					success=0;
 				}
