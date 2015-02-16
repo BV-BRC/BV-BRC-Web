@@ -7,7 +7,7 @@ define([
 ], function(
 	declare, WidgetBase, on,
 	domClass,
-	Template,AppBase,domConstr,
+	Template,AppBase,domConstruct,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
 	dom, popup, Dialog, children, xhr
 ){
@@ -33,51 +33,47 @@ define([
                         this.inherited(arguments);
 			for (i = 0; i < this.startingRows; i++) { 
 				var tr =  this.libsTable.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
-				var td = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
-				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
                         //create help dialog for infobutton's with infobuttoninfo div's
-                        var hashelp=query(".infobuttoninfo").length;
-			var ibuttons=query(".infobutton");
-			ibuttons.forEach(function(item){
-                                var helpdialogs=dojo.query(".infobuttoninfo", item);
-                                helpdialogs.forEach(function(helpinfo){
-					item.info_dialog = new Dialog({
-						//content: helpinfo,
-						//href: "/js/p3/widget/app/GenomeAssemblyHelp.html",
-						draggable: true,
-						style: "overflow-y: auto; min-width: 400px"
-						//onMouseLeave: function(){
-						//	popup.close(item.info_dialog);
-						//}
-					});
-					item.open=false;
-					on(item.info_dialog, 'show', function(){
-						xhr.get("/js/p3/widget/app/GenomeAssemblyHelp.html",{
-						   handleAs: "text",
-                                                }).then(function(data){
-						   item.info_dialog.content=data;
-						});	
-					});
-					on(item, 'click', function(){
-						if(! item.open){
-							item.open=true;
-							item.info_dialog.show();
-							//popup.open({
-							//	popup: item.info_dialog,
-							//	draggable: true,
-							//	around: item
-							//});
-						}
-						else{
-							item.open=false;
-							item.info_dialog.hide();
-							//popup.close(item.info_dialog);
-						}	
+
+			var helprequest=xhr.get("/js/p3/widget/app/help/GenomeAssemblyHelp.html",{
+			   handleAs: "text",
+                        });
+			helprequest.then(function(data){
+				var help_doc=domConstruct.toDom(data);
+			        var ibuttons=query(".infobutton");
+				ibuttons.forEach(function(item){
+					var helpdialogs=query(".infobuttoninfo", item);
+					helpdialogs.forEach(function(helpinfo){
+						var help_text= help_doc.getElementById(helpinfo.attributes.name.value) || "Help text missing";
+						item.info_dialog = new Dialog({
+							content: help_text,
+							//href: "/js/p3/widget/app/GenomeAssemblyHelp.html",
+							draggable: true,
+							style: "overflow-y: auto; max-width: 350px; max-height: 400px"
+							//onMouseLeave: function(){
+							//	popup.close(item.info_dialog);
+							//}
+						});
+						item.open=false;
+						on(item.info_dialog, 'show', function(){
+						});
+						on(item, 'click', function(){
+							if(! item.open){
+								item.open=true;
+								item.info_dialog.show();
+							}
+							else{
+								item.open=false;
+								item.info_dialog.hide();
+							}	
+						});
 					});
 				});
-			});
+			});	
 
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
@@ -196,26 +192,26 @@ define([
 			this.numlibs.set('value',Number(this.addedLibs));	
 		},	
 		onAddSingle: function(){
-			console.log("Create New Row", domConstr);
+			console.log("Create New Row", domConstruct);
 			var lrec={};
 			var chkPassed=this.ingestAttachPoints(this.singleToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstr.create('td', {"class":"singledata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"singledata", innerHTML:""},tr);
 				td.libRecord=lrec;
 				td.innerHTML=this.makeSingleName();
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
 					console.log("Delete Row");
-					domConstr.destroy(tr);
+					domConstruct.destroy(tr);
 					this.decreaseLib();
 					if (this.addedLibs < this.startingRows){
 						var ntr = this.libsTable.insertRow(-1);	
-						var ntd = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
-						var ntd2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));
@@ -224,30 +220,30 @@ define([
 		},
 		
 		onAddPair: function(){
-			console.log("Create New Row", domConstr);
+			console.log("Create New Row", domConstruct);
 //			var tr =  domConstr.create("tr",{});
 //			domConstr.place(tr,this.libsTableBody,"first");
 			var lrec={};
 			var chkPassed=this.ingestAttachPoints(this.pairToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstr.create('td', {"class":"pairdata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
 				td.innerHTML=this.makePairName();
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
 					console.log("Delete Row");
-					domConstr.destroy(tr);
+					domConstruct.destroy(tr);
 					this.decreaseLib();
 					if (this.addedLibs < this.startingRows){
 	//					var ntr =  domConstr.create("tr",{});
 	//					domConstr.place("ntr",this.libsTableBody,"last");
 						var ntr = this.libsTable.insertRow(-1);	
-						var ntd = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
-						var ntd2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));
