@@ -39,11 +39,14 @@ define([
 			        var ibuttons=query(".infobutton");
 				ibuttons.forEach(function(item){
 					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					help_text.style.overflowY='auto';
+					help_text.style.maxHeight='400px';
 					if (dojo.hasClass(item, "dialoginfo")){
 						item.info_dialog = new Dialog({
 							content: help_text,
+							class: 'nonModal',
 							draggable: true,
-							style: "overflow-y: auto; max-width: 350px; max-height: 400px"
+							style: "max-width: 350px;"
 						});
 						item.open=false;
 						on(item, 'click', function(){
@@ -184,8 +187,9 @@ define([
 					target[attachname]=cur_value;
 				}
 				if(req && (!target[attachname] || incomplete)){
-					if(! browser_select){
-						this[attachname]._set("state","Error");
+					if(browser_select){
+						//this[attachname]._set("state","Error");
+						dojo.addClass(this[attachname], "dijitTextBoxError dijitComboBoxError dijitValidationTextBoxError dijitError dijitTextBoxFocused dijitComboBoxFocused dijitValidationTextBoxFocused dijitTextBoxErrorFocused dijitComboBoxErrorFocused dijitValidationTextBoxErrorFocused dijitErrorFocused dijitFocused");
 					}
 					success=0;
 				}
@@ -238,9 +242,9 @@ define([
 			var chkPassed=this.ingestAttachPoints(this.singleToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstruct.create('td', {"class":"singledata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"textcol singledata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makeSingleName();
+				td.innerHTML="<div class='libraryrow'>"+this.makeSingleName()+"</div>";
 				var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
 				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
@@ -273,9 +277,9 @@ define([
 			this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstruct.create('td', {"class":"pairdata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"textcol pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makePairName();
+				td.innerHTML="<div class='libraryrow'>"+this.makePairName()+"</div>";
 				var advPairInfo= [];
 				if(lrec["insert_size_mean"]){
 					advPairInfo.push("Mean Insert Size:"+lrec["insert_size_mean"]);
@@ -305,7 +309,7 @@ define([
 	//					var ntr =  domConstr.create("tr",{});
 	//					domConstr.place("ntr",this.libsTableBody,"last");
 						var ntr = this.libsTable.insertRow(-1);	
-						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyyrow'></div>"},ntr);
 						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	

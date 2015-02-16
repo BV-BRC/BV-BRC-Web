@@ -13,6 +13,10 @@ text-align: right;
 background-color: #F0F1F3;
 }
 
+.nonModal_underlay {
+    display:none
+}
+
 .apptitle{
 margin-top:20px;
 margin-left:20px;
@@ -28,15 +32,21 @@ label.largelabel {
 	vertical-align: middle;
 }
 
+td.textcol{
+	padding-left:5px;
+	min-height:23px;
+}
 .librarytable{
 	width: 300px;
 	border-collapse:collapse;
 	border: 1px solid rgb(171,171,171);
+        font-size: 13px;
 }
 table.assemblyblocks td{vertical-align:top;}
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
-.emptyrow {min-height:23px;}
+.emptyrow {min-height:22px;}
+.libraryrow {min-height:23px;}
 
 
 .headerrow{
