@@ -71,7 +71,7 @@ min-width: 400px;
 max-height: 500px;
 }
 
-.dijitDialogTitleBar{
+.claro .dijitDialogTitleBar{
 background-color: #F0F1F3;
 }
 
@@ -116,6 +116,8 @@ display:inline-block;
 margin-left:5px;
 vertical-align:bottom;
 }
+
+div.iconbox i{color: rgb(52, 105, 142);}
 
 
 label.appboxlabel {

@@ -91,28 +91,29 @@ define([
 			}
 			this.numlibs.startup();
                         //create help dialog for infobutton's with infobuttoninfo div's
-			this.advrow.active=(this.advrow.style.display!='none');
+			this.advrow.turnedOn=(this.advrow.style.display!='none');
 			on(this.advanced, 'click', lang.hitch(this, function(){
-				this.advrow.active=(this.advrow.style.display!='none');
-				if (! this.advrow.active){
-					this.advrow.active=true;
+				this.advrow.turnedOn=(this.advrow.style.display!='none');
+				if (! this.advrow.turnedOn){
+					this.advrow.turnedOn=true;
 					this.advrow.style.display='block';
 					this.advicon.className="fa fa-caret-left fa-1";
 				}
 				else{	
-					this.advrow.active=false;
+					this.advrow.turnedOn=false;
 					this.advrow.style.display='none';
 					this.advicon.className="fa fa-caret-down fa-1";
 				}
 			}));
-			this.interleaved.active=(this.interleaved.value=="true");
+			this.interleaved.turnedOn=(this.interleaved.value=="true");
 			on(this.interleaved, 'change', lang.hitch(this, function(){
-				this.interleaved.active=(this.interleaved.value=="true");
-				if(this.interleaved.active){
-					this.read2block.style.visibility='hidden';
+				if(this.interleaved.turnedOn){
+					this.interleaved.turnedOn=false;
+					this.read2block.style.visibility='visible';
 				}
 				else{
-					this.read2block.style.visibility='visible';
+					this.interleaved.turnedOn=true;
+					this.read2block.style.visibility='hidden';
 				}	
 			}));
 				
@@ -189,7 +190,8 @@ define([
 				if(req && (!target[attachname] || incomplete)){
 					if(browser_select){
 						//this[attachname]._set("state","Error");
-						dojo.addClass(this[attachname], "dijitTextBoxError dijitComboBoxError dijitValidationTextBoxError dijitError dijitTextBoxFocused dijitComboBoxFocused dijitValidationTextBoxFocused dijitTextBoxErrorFocused dijitComboBoxErrorFocused dijitValidationTextBoxErrorFocused dijitErrorFocused dijitFocused");
+						this[attachname].set("message", "Need a file.");;
+						this[attachname].focus=true;
 					}
 					success=0;
 				}
@@ -209,7 +211,7 @@ define([
 			if(fn2.length > maxName){
 				fn2=fn2.substr(0,(maxName/2)-2)+".."+fn2.substr((fn2.length-(maxName/2))+2);
 			}
-			if(this.interleaved.active){
+			if(this.interleaved.turnedOn){
 				return "P("+fn+")";
 			}
 			else{
@@ -271,7 +273,7 @@ define([
 			var lrec={};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
-			var pairToIngest=this.interleaved.active ? this.pairToAttachPt2 : this.pairToAttachPt1;
+			var pairToIngest=this.interleaved.turnedOn ? this.pairToAttachPt2 : this.pairToAttachPt1;
 			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
