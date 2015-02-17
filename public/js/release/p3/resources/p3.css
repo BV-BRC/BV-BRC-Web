@@ -5418,6 +5418,10 @@ padding:15px 50px 10px 10px;
 text-align: right;
 background-color: #F0F1F3;
 }
+.apptitle{
+margin-top:20px;
+margin-left:20px;
+}
 .paramlabel {
 	font-size: .65em;
 	text-transform: uppercase;
@@ -5434,10 +5438,21 @@ table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
 .headerrow{
 width: 100%;
 display:inline-block;
+margin-top:5px;
 }
 .approw{
 width: 100%;
-margin-top:10px;
+margin-top:5px;
+}
+.infobuttoninfo{
+overflow: auto;
+}
+.dijitDialogPopup{
+min-width: 400px;
+max-height: 500px;
+}
+.dijitDialogTitleBar{
+background-color: #F0F1F3;
 }
 .appbox{
 background-color: #F0F1F3;
@@ -5466,9 +5481,18 @@ margin:5px 0px 5px 5px;
 text-align: left;
 margin:10px 0 0 10px;
 }
-.appboxlabel{
+.infobutton{
+display:inline-block;
+margin-left:5px;
+}
+label.appboxlabel {
 text-align:left;
 margin: 10px 0 10px 10px;
+font-size: 14px;
+line-height: 16px;
+text-transform: none;
+vertical-align: top;
+font-weight: bold;
 }
 .round-button {
     display:block;

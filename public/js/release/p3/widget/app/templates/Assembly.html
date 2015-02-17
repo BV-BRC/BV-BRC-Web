@@ -1,7 +1,10 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-
-    <div style="width: 700px;margin:auto;margin-top: 10px;padding:10px;">
+    <div style="width: 700px;margin:auto;">
+    <div class="apptitle" name="apptitle">
+                <h3>Genome Assembly</h3>
+                <p>Assemble contigs from sequencing reads.</p>
+    </div>
 	<div style="width:700px; margin:auto" class="formFieldsContainer">
 		<div style="display: none;">
 			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
@@ -12,7 +15,25 @@
 		<div id="pairedBox" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
-					<h4 class="appboxlabel"> Paired read library</h4>
+					<label class="appboxlabel"> Paired read library</label>
+					<div class="infobutton">
+						<i name="pairinfo"  class="fa fa-info-circle fa"></i>
+						<div style="display:none;">
+						<div class="infobuttoninfo">
+							<h4>Paired read library</h4>
+							<!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->
+							<h6>Read File 1 and Read File 2</h6>
+							<p> Many paired read libraries are given as file pairs, with each file representing one half of all pairs. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+							<h5>Advanced Parameters</h5>
+							<h6>Single Interleaved</h6>
+							<p>Some paired-end sequences are available in a single file where each read in a pair occurs in succession. Such files are said to be 'interleaved'.</p>
+							<h6>Mean Insert Size</h6>
+							<p>This refers to the mean insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+							<h6>Std. Insert Size</h6>
+							<p>This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+						</div>
+						</div>
+					</div>
 				</div>
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddPair" class="fa fa-arrow-circle-o-right fa-lg"></i></div>
 			</div>
@@ -46,16 +67,20 @@
 		<div class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
-					<h4 class="appboxlabel">Single read library</h4>
+					<label class="appboxlabel">Single read library</label>
 				</div>
 				<div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa fa-arrow-circle-o-right fa-lg"></i></div>
 			</div>
-			<label class="paramlabel" for="singleread">Read File</label><br>
-			<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:300px" required="false" data-dojo-props="type:['unspecified'],multi:false"></div>
+			<div class="approw">
+				<label class="paramlabel" for="singleread">Read File</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libs" style="width:300px" required="false" data-dojo-props="type:['unspecified'],multi:false"></div>
+			</div>
                 </div>
 
 		<div class="appbox appshadow">
-			<h4 class="appboxlabel">Parameters</h4>
+			<div class="headerrow">
+				<label class="appboxlabel">Parameters</label>
+			</div>
 			<div class="approw">
 				<label for="recipe" class="paramlabel">Assembly Strategy</label><br>
 				<select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
@@ -82,9 +107,11 @@
         	</div>
 		</td>
 		<td>
-		<div class="appbox appshadow" style="min-height: 400px; height:auto; width:330px">
-			<h4 class="appboxlabel">Participating libraries</h4>
-			<div style="width:100%; text-align: center;">
+		<div class="appbox appshadow" style="min-height: 380px; height:auto; width:330px">
+			<div class="headerrow">
+				<label class="appboxlabel">Participating libraries</label>
+			</div>
+			<div class="approw" style="width:100%; margin-top:10px; text-align: center;">
 			<table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style='margin:0 0 0 10px; width:90%;'>
 				<tbody data-dojo-attach-point="libsTableBody">
 						

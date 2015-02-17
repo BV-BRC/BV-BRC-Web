@@ -53,6 +53,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		},	
 		wsItemType: function(val){
 			switch (val) {
+				case "parentfolder":
+					return '<i class="fa fa-level-up fa-1x" title="Folder" />'
 				case "folder":
 					return '<i class="fa fa-folder fa-1x" title="Folder" />'
 				case "contigs":

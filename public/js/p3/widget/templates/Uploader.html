@@ -1,6 +1,7 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-	<div style='width:450px'>
+	<div>
+		<div style="margin-bottom:5px;">Uploading File(s) to: <span data-dojo-attach-point="destinationPath">${path}</span></div>
 		<div class="fileUploadButton">
 			<span>Add File(s)</span>
 			<input type="file" data-dojo-attach-point="fileInput" multiple="true" data-dojo-attach-event="onchange:onFileSelectionChange" />
@@ -31,5 +32,3 @@
 			<div data-dojo-attach-point="saveButton" type="submit" disabled="true" data-dojo-type="dijit/form/Button">Upload Files</div>
 		</div>	
 </form>
-
- 	

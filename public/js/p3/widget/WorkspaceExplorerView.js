@@ -59,6 +59,26 @@ define([
 		refreshWorkspace: function(){
 			var _self=this;
 			this.listWorkspaceContents(this.path).then(function(contents) {
+				console.log("listWSContents: ", contents);
+				var parts = _self.path.split("/").filter(function(x){ return !!x});
+				console.log("Path Parts: ", parts);
+				if (parts.length>1){
+					parts.pop();
+					var parentPath = "/" + parts.join("/");
+					console.log("parentPath: ", parentPath);
+
+					var p= {
+						name: "Parent Folder",
+						path: parentPath,
+						type: "parentfolder",
+						id: parentPath,
+						owner_id: "@"
+					};
+					console.log("p: ",p);
+					contents.unshift(p);
+				}
+
+				console.log("Revised Contents:", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -99,10 +119,11 @@ define([
 			var _self = this;
 			//console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
-				this.listWorkspaceContents(this.path).then(function(contents) {
+				this.refreshWorkspace();
+//				this.listWorkspaceContents(this.path).then(function(contents) {
 			//		console.log("Workspace Contents", contents);
-					_self.render(_self.path, contents);
-				});
+//					_self.render(_self.path, contents);
+//				});
 			}
 		}
 	});

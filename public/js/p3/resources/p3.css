@@ -81,32 +81,68 @@ body.patric *:focus {
 }
 
 .claro .dijitDialog {
-       -moz-transform: scaleX(1);
-        -o-transform: scaleX(1);
-        -webkit-transform: scaleX(1);
-        transform: scaleX(1);
-        filter: FlipH;
-        -ms-filter: "FlipH";
-        transition: transform .75s;
-	backface-visibility: hidden;
 	perspective: 1000;
 }
 
-.claro .dijitDialog.flipped {
-        -moz-transform: scaleX(-1);
-        -o-transform: scaleX(-1);
-        -webkit-transform: scaleX(-1);
-        transform: scaleX(-1);
-        filter: FlipH;
-        -ms-filter: "FlipH";
-        transition: transform .75s;
-        backface-visibility: hidden;
+.claro .flippableDialog.dijitDialog {
+	border: 0px;
+	box-shadow: 0 0 0;
+	-webkit-box-shadow: 0 0 0;
+	overflow: visible;
 }
 
-.claro .dijitDialog.flipped .dijitDialogPaneContent{
-	display: none;
+.claro .flippableDialog.dijitDialog .flipper {
+	border: 1px solid #759dc0;
+	box-shadow: 0 1px 5px rgba(0,0,0,0.25); 
+	-webkit-box-shadow: 0 1px 5px rgba(0,0,0.25);
 }
 
+.claro .flipped .flipper {
+	transform: rotateY(180deg);
+}
+
+.flipper {
+	transition: transform 1s;
+	transform-style: preserve-3d;
+	-webkit-transform-style: preserve-3d;
+	position:relative;
+}
+
+.claro .dijitDialog .backpaneTitleBar,
+.claro .dijitDialog .dijitDialogTitleBar,
+.claro .dijitDialog .dijitDialogPaneContent,
+.dijitDialog .backpane  {
+	backface-visibility: hidden;
+}
+
+.claro .dijitDialog .backpaneTitleBar,
+.claro .dijitDialog .backpane {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border:0px;
+	
+}
+
+.claro .dijitDialog .backpane {
+	background: #fff;
+	padding:8px;
+	margin:0px;
+}
+
+.claro .dijitDialog .dijitDialogTitleBar ,
+.claro .dijitDialog .dijitDialogPaneContent {
+	z-index: 2;
+	transform: rotateY(0deg);
+}
+
+
+.claro .flippableDialog .backpaneTitleBar,
+.claro .dijitDialog .backpane{
+	transform: rotateY(180deg);
+}
 
 .ActionBar {
 	/*background: #3a69b9;*/

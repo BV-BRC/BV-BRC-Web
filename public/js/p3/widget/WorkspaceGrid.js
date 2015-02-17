@@ -134,9 +134,11 @@ define([
 				    console.log("dblclick row:", row)
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
+						item: row.data,
 						bubbles: true,
 						cancelable: true
 					});	
+					console.log('after emit');
 				    //if (row.data.type == "folder"){
 		//				Topic.publish("/select", []);
 

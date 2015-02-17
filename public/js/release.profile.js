@@ -88,7 +88,15 @@ var profile = {
 			exclude: [
 				"p3/layer/core"
 			]
-		}
+		},
+		"p3/layer/globalWSObject": {
+			customBase: true,
+			boot: true,
+			include: [
+				"p3/GlobalWorkspace"
+			],
+			deps: ["p3/GlobalWorkspace"]
+		}	
 	
 	}
 };
