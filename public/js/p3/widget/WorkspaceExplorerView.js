@@ -12,7 +12,15 @@ define([
 	return declare([WorkspaceGrid], {
 		"disabled": false,
 		path: "/",
+		types: null,
 
+		_setTypesAttr: function(val){
+			if (!(val instanceof Array)){
+				this.types=[val];
+			}else{
+				this.types=val;
+			}
+		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
 			if (ws[ws.length - 1] == "/") {
@@ -20,10 +28,17 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ return res; }, function(err) {
-					console.log("Error Loading Workspace:", err);
-					_self.showError(err);
-				})
+			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+				if (_self.types){
+					res = res.filter(function(r){
+						return (r && r.type && (_self.types.indexOf(r.type)>=0))
+					});
+				}
+				return res;
+			}, function(err) {
+				console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
 		},
 
 		showError: function(err) {

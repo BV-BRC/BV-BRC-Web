@@ -11,8 +11,14 @@ define([
 ){
 	return declare([Dialog],{
 		templateString: template,
-		flip: function(){
-			domClass.toggle(this.domNode,"flipped");
+		flip: function(side){
+			if (side=="front") {
+				domClass.remove(this.domNode,"flipped");
+			}else if (side=="back"){
+				domClass.add(this.domNode, "flipped")
+			}else{
+				domClass.toggle(this.domNode,"flipped");
+			}
 		},
 
 		_setBackpaneContentAttr: function(content){

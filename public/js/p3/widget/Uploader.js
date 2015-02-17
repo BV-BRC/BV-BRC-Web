@@ -3,19 +3,23 @@ define([
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Uploader.html","dijit/form/Form","dojo/_base/Deferred",
 	"dijit/ProgressBar","dojo/dom-construct","p3/UploadManager","dojo/query","dojo/dom-attr",
-	"dojo/_base/lang","dojo/dom-geometry", "dojo/dom-style"
+	"dojo/_base/lang","dojo/dom-geometry", "dojo/dom-style","dojo/promise/all","../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,Deferred,
 	ProgressBar,domConstruct,UploadManager,Query,domAttr,
-	lang,domGeometry,domStyle
+	lang,domGeometry,domStyle,All,WorkspaceManager
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
 		overwrite: false,
+		multiple:false, 
+		types: false, 
+		pathLabel: "Upload file to: ", 
+		buttonLabel: "Choose File",
 		_setPathAttr: function(val){
 			this.path = val;
 			this.destinationPath.innerHTML=val;
@@ -25,6 +29,13 @@ define([
 
 			this.inherited(arguments);
 			var state = this.get("state")
+
+			if (this.multiple) {
+				domAttr.set(this.fileInput, "multiple", true);
+			}else{
+				domAttr.set(this.fileInput, "multiple", false);
+			}
+
 			if ((state == "Incomplete") || (state == "Error")) {
 			        this.saveButton.set("disabled", true);
 			}
@@ -61,13 +72,15 @@ define([
 			if (!this._uploading){ this._uploading=[]}
 
 			var _self=this;
-
-			return Deferred.when(window.App.api.workspace("Workspace.create",[{objects:[[uploadDirectory+file.name,(type||"unspecified"),{},""]],createUploadNodes:true}]), function(getUrlRes){
+			var obj = {path: uploadDirectory, name: file.name, type: type}
+			return Deferred.when(WorkspaceManager.create(obj,true), function(obj){
 				domClass.add(_self.domNode,"Working");
-
-				console.log("getUrlRes",getUrlRes, getUrlRes[0]);
-				var uploadUrl = getUrlRes[0][0][11];
-				console.log("uploadUrl: ", uploadUrl);
+				console.log("obj: ", obj);
+				console.log("obj.link_reference: ", obj.link_reference);
+//				console.log("getUrlRes",getUrlRes, getUrlRes[0]);
+//				var uploadUrl = getUrlRes[0][0][11];
+				var uploadUrl = obj.link_reference;
+//				console.log("uploadUrl: ", uploadUrl);
 				if (!_self.uploadTable){
 					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.fileTableContainer);
 					_self.uploadTable = domConstruct.create('tbody',{}, table)
@@ -77,15 +90,20 @@ define([
 				var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
 
 //					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
-					UploadManager.upload({file: file, uploadDirectory:uploadDirectory, url: uploadUrl}, window.App.authorizationToken);
-				
-
+				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
+				UploadManager.upload(msg, window.App.authorizationToken);
+				return obj;	
 			});
 
 		},
 		onFileSelectionChange: function(evt){
 			console.log("onFileSelectionChange",evt, this.fileInput);
-		
+	
+			if (this.uploadTable && !this.multiple){
+				domConstruct.empty(this.uploadTable);
+				delete this.uploadTable;
+			}
+	
 			if (!this.uploadTable){
 				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
 				this.uploadTable = domConstruct.create('tbody',{}, table)
@@ -130,6 +148,8 @@ define([
 				console.error("Missing Path for Upload: ", _self.path);
 				return;
 			}
+
+//			domClass.add(_self.domNode, "working");
 			var validFiles=[]
 			Query("TR.fileRow",this.uploadTable).map(function(tr){
 					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
@@ -141,17 +161,22 @@ define([
 				files[_self.fileInput.files[key].name] = _self.fileInput.files[key];
 			})
 
+			var defs=[];
+			var wsFiles=[]
 			validFiles.forEach(function(valid){
 				var key = valid.filename;
 				var f = files[key];
-				console.log("f file:", f)
 				if (f.name){
-					this.uploadFile(f,_self.path,valid.type);
-					console.log("File: ",f.name);
+					defs.push(Deferred.when(this.uploadFile(f,_self.path,valid.type), function(res){
+						wsFiles.push(res);
+						return true;
+					}));
 				}
 			},this)
-
-			on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+			All(defs).then(function(results){	
+				console.log("UPLOAD Create WS files results: ", wsFiles);	
+				on.emit(_self.domNode, "dialogAction", {action:"close",files: wsFiles, bubbles:true});
+			});
 		},
 
 		onCancel: function(evt){

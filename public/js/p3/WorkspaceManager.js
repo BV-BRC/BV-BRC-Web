@@ -66,6 +66,36 @@ define([
 			return this.userWorkspaces;
 		},
 
+		create: function(obj, createUploadNode){
+			var _self=this;
+			console.log("WorkspaceManager.create(): ", obj);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.typetype||"unspecified"),obj.userMeta||{},(obj.userData||"")]],createUploadNodes:createUploadNode}]), function(results){
+                                        var res;
+
+                                        if (!results[0][0] || !results[0][0]) {
+                                                throw new Error("Error Creating Folder");
+                                        }else{
+                                                var r = results[0][0];
+                                                var out = {
+                                                        id: r[4],
+                                                        path: r[2] + r[0],
+                                                        name: r[0],
+                                                        type: r[1],
+                                                        creation_time: r[3],
+                                                        link_reference: r[11],
+                                                        owner_id: r[5],
+                                                        size: r[6],
+                                                        userMeta: r[7],
+                                                        autoMeta: r[8],
+                                                        user_permission: r[9],
+                                                        global_permission: r[10]
+                                                }
+                                		Topic.publish("/refreshWorkspace",{});
+                                                return out;
+                                        }
+			});
+		},
+
 		createFolder: function(paths){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -155,10 +185,7 @@ define([
 					paths: [current.path],
 					excludeDirectories: false,
 					excludeObjects: false,
-					recursive: true,
-					query: {
-						type: types[0]
-					}
+					recursive: true
 				}]), function(results){
 					console.log("getObjectsByType Results: ", results);
 					if (!results[0] || !results[0][path]) {
@@ -184,6 +211,8 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
+					}).filter(function(r){
+						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
 						return true;
