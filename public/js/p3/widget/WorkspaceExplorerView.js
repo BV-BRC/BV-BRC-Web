@@ -64,9 +64,19 @@ define([
 		postCreate: function() {
 			this.inherited(arguments);
 		},
-
+		addNewFolder: function(item){
+			var items = this._items;
+			var list = [item].concat(items);
+			this.render(this.path,list);
+			this._items = items;	
+//			console.log("Cell: ", this.cell("untitled","name"));
+//			var row = this.row(0);
+			var cell = this.cell(0, "name");
+			this.edit(cell);
+		},
 		render: function(val, items) {
 			this.refresh();
+			this._items = items;
 			this.renderArray(items);
 			// this.refresh();	
 		},
@@ -135,6 +145,10 @@ define([
 			if (this._started) {
 				this.refreshWorkspace();
 			}
+		},
+
+		save: function(){
+			console.log("Save Arguments: ", arguments);
 		}
 	});
 });

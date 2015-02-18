@@ -39,6 +39,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return val;	
 		},
 		baseUsername: function(val){
+			if (!val) { return "" }
 			var parts = val.split("@");
 			return parts[0];
 		},

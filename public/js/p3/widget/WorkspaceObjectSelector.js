@@ -102,12 +102,12 @@ define([
 
 		createSelectedPane: function(){
 			var wrap= domConstr.create("div",{});
-			var sel = domConstr.create("span", {innerHTML: "Selection: "},wrap);
+			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
 //			domConstr.place(this.selValNode, sel, "last");
-			var buttonContainer = domConstr.create("span", {
-				style: {"float":"right"}, 
-				innerHTML: '<i rel="upload" class="fa fa-2x fa-upload" />'
+			var buttonContainer = domConstr.create("div", {
+				style: {"font-size":".85em",display: "inline-block","float":"right","text-align":"right"}, 
+				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
 			},wrap);
 			
 			return wrap;	
@@ -121,8 +121,8 @@ define([
 				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
 				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
 
-				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane()});
-				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;"});
+				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
+				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
 				var cancelButton = new Button({label: "Cancel"});
 				cancelButton.on('click', function(){
 					_self.dialog.hide();
@@ -145,11 +145,25 @@ define([
 						case "upload":
 							_self.dialog.flip();
 							break;
+						case "createFolder":
+							console.log("Create Folder", _self.grid.row(0));
+							var element=_self.grid.row(0).element;
+							console.log("element: ", element);
+							_self.grid.addNewFolder({id:"untitled"});
+					
+							break;
 					}
 				});
 				var _self=this;
 				var grid = this.grid = new Grid({region: "center",path: this.path, selectionMode:"single",deselectOnRefresh:true, types: this.type?(["folder"].concat(this.type)):false});
-
+				_self.grid.on("dgrid-datachange", function(evt){
+					var name = evt.value;
+					if (!name) { return; }
+					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name),function(){
+						_self.grid.refreshWorkspace();
+						_self.refreshWorkspaceItems();
+					});
+				});
 				grid.allowSelect = function(row){
 					if (row.data.type && (_self.type.indexOf(row.data.type)>=0)){
 						return true;	

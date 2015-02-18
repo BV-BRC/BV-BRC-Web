@@ -2,14 +2,14 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on","dijit/form/TextBox"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on,TextBox
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
@@ -19,11 +19,18 @@ define([
 					className: "wsItemType",
 					formatter: formatter.wsItemType
 				},
-				"name": {
+				"name": editor({
 					label: "Name",
 					field: "name",
-					className: "wsItemName"
-				},
+					className: "wsItemName",
+					canEdit: function(obj,val){
+						return obj.id=='untitled';
+					},
+					autoSave: true,
+					editOn: "click",
+					editor: TextBox,
+					editorArgs: {placeHolder: "Untitled Folder", trim: true}
+				}),
 				size: {
 					label: "Size",
 					field: "size",
