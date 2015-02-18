@@ -1,22 +1,26 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
-	<div>
-		<div style="margin-bottom:5px;">${pathLabel} <span data-dojo-attach-point="destinationPath">${path}</span></div>
-		<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-event="onChange:onUploadTypeChanged" data-dojo-attach-point="uploadType" style="vertical-align: top;width:300px" required="true" data-dojo-props="">
-		</select>
-		<div class="fileUploadButton">
-			<span>${buttonLabel}</span>
-			<input type="file" data-dojo-attach-point="fileInput" data-dojo-attach-event="onchange:onFileSelectionChange" />
+	<div style="margin-left:5px; border:solid 1px #B5BCC7;">
+		<div style="padding: 5px; background-color:#eee; margin-bottom:5px;">${pathLabel} <span data-dojo-attach-point="destinationPath">${path}</span></div>
+		<div style="padding: 5px;">
+			<div style="width:300px">
+				${typeLabel}<select data-dojo-type="dijit/form/Select" name="type" data-dojo-attach-event="onChange:onUploadTypeChanged" data-dojo-attach-point="uploadType" style="vertical-align: top;width:200px" required="true" data-dojo-props="">
+			</select>
+			</div></br>
+			<div class="fileUploadButton">
+				<span>${buttonLabel}</span>
+				<input type="file" data-dojo-attach-point="fileInput" data-dojo-attach-event="onchange:onFileSelectionChange" />
+			</div>
+		
+			<div data-dojo-attach-point="fileTableContainer"></div>
+
+			<div class="workingMessage" style="width:400px;" data-dojo-attach-point="workingMessage">
+			</div>
+
+			<div style="margin-left:20px;margin-top:20px;text-align:right;">
+				<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+				<div data-dojo-attach-point="saveButton" type="submit" disabled="true" data-dojo-type="dijit/form/Button">Upload Files</div>
+			</div>	
 		</div>
-	
 	</div>
-		<div data-dojo-attach-point="fileTableContainer"></div>
-
-		<div class="workingMessage" style="width:400px;" data-dojo-attach-point="workingMessage">
-		</div>
-
-		<div style="margin:4px;margin-top:8px;text-align:right;">
-			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-			<div data-dojo-attach-point="saveButton" type="submit" disabled="true" data-dojo-type="dijit/form/Button">Upload Files</div>
-		</div>	
 </form>

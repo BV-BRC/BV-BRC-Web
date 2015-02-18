@@ -202,7 +202,7 @@ define([
 				frontBC.addChild(grid);	
 				frontBC.addChild(buttonsPane);	
 				frontBC.startup();
-				var backhead= new ContentPane({region:"top", content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Return</span>' });
+				var backhead= new ContentPane({region:"top", content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>' });
 				on(backhead.domNode, "span:click", function(evt){
                                         console.log("Click: ", evt);
                                         var rel = domAttr.get(evt.target,"rel");
@@ -212,7 +212,7 @@ define([
                                                         break;
                                         }
                                 });	
-				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Choose File"});
+				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Select File"});
 
 				on(uploader.domNode,"dialogAction", function(evt){
 					console.log("Uploader Dialog Action: ",evt);

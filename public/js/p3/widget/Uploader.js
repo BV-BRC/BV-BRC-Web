@@ -19,7 +19,8 @@ define([
 		multiple:false, 
 		types: false, 
 		pathLabel: "Upload file to: ", 
-		buttonLabel: "Choose File",
+		buttonLabel: "Select Files",
+		typeLabel: "Upload type: ",
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
@@ -42,6 +43,25 @@ define([
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
 			domAttr.set(this.fileInput, "accept", formats.join(","));
+		},
+                createUploadTable: function(empty){
+
+			if (!this.uploadTable){
+				var table = domConstruct.create("table",{style: {border: "1px solid #eee", width: "100%"}}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody',{}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML: "File Selected"}, htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Type"},htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Size"},htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align": "right"}},htr);
+				if(empty){
+					var row = domConstruct.create("tr",{"class":"fileRow"},this.uploadTable);
+					domConstruct.create("td",{style: {"padding-left":"5px","text-align":"left"}, innerHTML: "<i>None</i>"}, row);
+					domConstruct.create("td",{style: {"text-align":"left"}},row);
+					domConstruct.create("td",{style: {"text-align":"left"}},row);
+					domConstruct.create("td",{style: {"text-align": "right"}},row);
+				}
+			}
 		},
 		startup: function(){
 			if (this._started){return;}
@@ -77,13 +97,14 @@ define([
 			}
 
 			this.watch("state", function(prop, val, val2){
-			        console.log("Uplosd Form State: ",prop, val, val2);
+			        console.log("Upload Form State: ",prop, val, val2);
 			        if (val2=="Incomplete" || val2=="Error") {
 			                this.saveButton.set("disabled", true);
 			        }else{
 			                this.saveButton.set('disabled',false);
 			        }
 			});
+			this.createUploadTable(true);
 		},
 		validate: function(){
 			console.log("this.validate()",this);
@@ -139,8 +160,10 @@ define([
 				domConstruct.empty(this.uploadTable);
 				delete this.uploadTable;
 			}
+
+			this.createUploadTable(false);
 	
-			if (!this.uploadTable){
+/*			if (!this.uploadTable){
 				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
 				this.uploadTable = domConstruct.create('tbody',{}, table)
 				var htr = domConstruct.create("tr", {}, this.uploadTable);
@@ -148,7 +171,7 @@ define([
 				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Type"},htr);
 				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Size"},htr);
 				domConstruct.create("th",{style: {"text-align": "right"}},htr);
-			}
+			}*/
 
 			var files = evt.target.files;
 			console.log("files: ", files);
