@@ -1,17 +1,17 @@
 require({cache:{
-'url:p3/widget/app/templates/Assembly.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div style=\"width: 700px;margin:auto;\">\n    <div class=\"apptitle\" name=\"apptitle\">\n                <h3>Genome Assembly</h3>\n                <p>Assemble contigs from sequencing reads.</p>\n    </div>\n\t<div style=\"width:700px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div style=\"display: none;\">\n\t\t\t<input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\"/>\n\t\t</div>\n\t\t<table class=\"assemblyblocks\" style=\"width:100%\">\n\t\t<tr>\n\t\t<td>\n\t\t<div id=\"pairedBox\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\"> Paired read library</label>\n\t\t\t\t\t<div class=\"infobutton\">\n\t\t\t\t\t\t<i name=\"pairinfo\"  class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t\t<div style=\"display:none;\">\n\t\t\t\t\t\t<div class=\"infobuttoninfo\">\n\t\t\t\t\t\t\t<h4>Paired read library</h4>\n\t\t\t\t\t\t\t<!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->\n\t\t\t\t\t\t\t<h6>Read File 1 and Read File 2</h6>\n\t\t\t\t\t\t\t<p> Many paired read libraries are given as file pairs, with each file representing one half of all pairs. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair the selection of which file is READ 1 and which is READ 2 does not matter.</p>\n\t\t\t\t\t\t\t<h5>Advanced Parameters</h5>\n\t\t\t\t\t\t\t<h6>Single Interleaved</h6>\n\t\t\t\t\t\t\t<p>Some paired-end sequences are available in a single file where each read in a pair occurs in succession. Such files are said to be 'interleaved'.</p>\n\t\t\t\t\t\t\t<h6>Mean Insert Size</h6>\n\t\t\t\t\t\t\t<p>This refers to the mean insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>\n\t\t\t\t\t\t\t<h6>Std. Insert Size</h6>\n\t\t\t\t\t\t\t<p>This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa fa-arrow-circle-o-right fa-lg\"></i></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\" for=\"libdat_file1pair\">Read File 1</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified'],multi:false\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\" for=\"libdat_file2pair\">Read File 2</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified'],multi:false\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin:0 0 0 0\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_interleaved\">Interleaved</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"libdat_interleaved\" data-dojo-attach-point=\"interleaved\" required=\"false\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"true\">True</option>\n\t\t\t\t\t<option value=\"false\">False</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"approwsegment\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat__avginsert\">Mean Insert Size</label><br>\n\t\t\t\t\t<div class=\"insertspinner\" name=\"libdat_avginsert\" data-dojo-type=\"dijit/form/NumberSpinner\" data-dojo-attach-point=\"insert_size_mean\" data-dojo-props=\"smallDelta:10, constraints:{min:10,max:2000,places:0}\" ></div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"approwsegment\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_stdinsert\">Std. Insert</label><br>\t\t\n\t\t\t\t\t<div class=\"insertspinner\" name=\"libdat_stdinsert\" data-dojo-type=\"dijit/form/NumberSpinner\" data-dojo-attach-point=\"insert_size_stdev\" data-dojo-props=\"smallDelta:10, constraints:{min:10,max:2000,places:0}\" ></div>\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n                </div>\n\n\t\t<div class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Single read library</label>\n\t\t\t\t</div>\n\t\t\t\t<div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa fa-arrow-circle-o-right fa-lg\"></i></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\" for=\"singleread\">Read File</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"single_end_libs\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified'],multi:false\"></div>\n\t\t\t</div>\n                </div>\n\n\t\t<div class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label for=\"recipe\" class=\"paramlabel\">Assembly Strategy</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t<option value=\"auto\">auto</option>\n\t\t\t\t<option value=\"full_spades\">full spades</option>\n\t\t\t\t<option value=\"fast\">fast</option>\n\t\t\t\t<option value=\"miseq\">miseq</option>\n\t\t\t\t<option value=\"smart\">smart</option>\n\t\t\t\t<option value=\"kiki\">kiki</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label for=\"output_path\" class=\"paramlabel\">Output Folder</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\"  name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\">Output Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n                                <label class=\"paramlabel\" for=\"reference_assembly\">Benchmark Contigs</label><br>\n                                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"reference_assembly\" data-dojo-attach-point=\"reference_assembly\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['contigs'],multi:false,placeHolder:'Optional'\"></div>\n\t\t\t</div>\n        \t</div>\n\t\t</td>\n\t\t<td>\n\t\t<div class=\"appbox appshadow\" style=\"min-height: 380px; height:auto; width:330px\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<label class=\"appboxlabel\">Participating libraries</label>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"width:100%; margin-top:10px; text-align: center;\">\n\t\t\t<table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style='margin:0 0 0 10px; width:90%;'>\n\t\t\t\t<tbody data-dojo-attach-point=\"libsTableBody\">\n\t\t\t\t\t\t\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t\t</div>\n\t\t</div>\n\t\t</td>\n\t\t</tr>\n\t\t</table>\n\t\t\n\t\t\n\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n\t\t\tSubmitting Assembly Job\n\t\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n\t\t\tAssembly Job has been queued.\n\t\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Assemble</div>\n\t\t</div>\t\n\t\n</form>\n\n"}});
+'url:p3/widget/app/templates/Assembly.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n    <div style=\"width: 700px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n                <h3>Genome Assembly</h3>\n                <p>Assemble contigs from sequencing reads.</p>\n    </div>\n\t<div style=\"width:700px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div style=\"display: none;\">\n\t\t\t<input data-dojo-type=\"dijit/form/NumberTextBox\" value=\"0\" required=\"true\" data-dojo-attach-point=\"numlibs\" data-dojo-props=\"constraints:{min:1,max:1000},\"/>\n\t\t</div>\n\t\t<table class=\"assemblyblocks\" style=\"width:100%\">\n\t\t<tr>\n\t\t<td>\n\t\t<div id=\"pairedBox\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\"> Paired read library</label>\n\t\t\t\t\t<div name=\"pairinfo\" class=\"iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddPair\" class=\"fa fa-arrow-circle-o-right fa-lg\"></i></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\" for=\"libdat_file1pair\">Read File 1</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file1pair\" data-dojo-attach-point=\"read1\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified','reads'],multi:false\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div data-dojo-attach-point=\"read2block\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_file2pair\">Read File 2</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_file2pair\" data-dojo-attach-point=\"read2\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified','reads'],multi:false\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" data-dojo-attach-point=\"advanced\">\n\t\t\t\t\t<label class=\"largelabel\">Advanced</label>\n\t\t\t\t\t<div class=\"iconbox\" style=\"margin-left:0px\">\n\t\t\t\t\t\t<i data-dojo-attach-point=\"advicon\" class=\"fa fa-caret-down fa-1\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\"  data-dojo-attach-point=\"advrow\" style=\"display: none\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin:0 0 0 0\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_interleaved\">File 1 Interleaved</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"libdat_interleaved\" data-dojo-attach-point=\"interleaved\" required=\"false\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"false\">False</option>\n\t\t\t\t\t<option value=\"true\">True</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"approwsegment\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_avginsert\">Mean Insert Size</label><br>\n\t\t\t\t\t<div class=\"insertspinner\" name=\"libdat_avginsert\" data-dojo-type=\"dijit/form/NumberSpinner\" data-dojo-attach-point=\"insert_size_mean\" data-dojo-props=\"smallDelta:10, constraints:{min:10,max:2000,places:0}\" ></div>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"approwsegment\">\n\t\t\t\t\t<label class=\"paramlabel\" for=\"libdat_stdinsert\">Std. Insert Size</label><br>\t\t\n\t\t\t\t\t<div class=\"insertspinner\" name=\"libdat_stdinsert\" data-dojo-type=\"dijit/form/NumberSpinner\" data-dojo-attach-point=\"insert_size_stdev\" data-dojo-props=\"smallDelta:10, constraints:{min:10,max:2000,places:0}\" ></div>\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n                </div>\n\n\t\t<div class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Single read library</label>\n\t\t\t\t</div>\n\t\t\t\t<div style=\"width:10%;display:inline-block;\"><i data-dojo-attach-event=\"click:onAddSingle\" class=\"fa fa-arrow-circle-o-right fa-lg\"></i></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\" for=\"singleread\">Read File</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"libdat_readfile\" data-dojo-attach-point=\"single_end_libs\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified','reads'],multi:false\"></div>\n\t\t\t</div>\n                </div>\n\n\t\t<div class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t<div name=\"parameterinfo\" class=\"iconbox infobutton dialoginfo\">\n\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label for=\"recipe\" class=\"paramlabel\">Assembly Strategy</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"recipe\" data-dojo-attach-point=\"recipe\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t<option value=\"auto\">auto</option>\n\t\t\t\t<option value=\"full_spades\">full spades</option>\n\t\t\t\t<option value=\"fast\">fast</option>\n\t\t\t\t<option value=\"miseq\">miseq</option>\n\t\t\t\t<option value=\"smart\">smart</option>\n\t\t\t\t<option value=\"kiki\">kiki</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label for=\"output_path\" class=\"paramlabel\">Output Folder</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\"  name=\"output_path\" data-dojo-attach-point=\"output_path\" style=\"width:300px\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<label class=\"paramlabel\">Output Name</label><br>\n\t\t\t\t<div data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" data-dojo-attach-point=\"output_file\" style=\"width:300px\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n                                <label class=\"paramlabel\" for=\"reference_assembly\">Benchmark Contigs</label><br>\n                                <div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"reference_assembly\" data-dojo-attach-point=\"reference_assembly\" style=\"width:300px\" required=\"false\" data-dojo-props=\"type:['unspecified','contigs'],multi:false,placeHolder:'Optional'\"></div>\n\t\t\t</div>\n        \t</div>\n\t\t</td>\n\t\t<td>\n\t\t<div class=\"appbox appshadow\" style=\"min-height: 380px; height:auto; width:330px\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<label class=\"appboxlabel\">Participating libraries</label>\n\t\t\t\t<div name=\"selectedinfo\" class=\"iconbox infobutton tooltipinfo\">\n\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"width:100%; margin-top:10px; text-align: center;\">\n\t\t\t<table class=\"librarytable\" frame=\"box\" data-dojo-attach-point=\"libsTable\" style='margin:0 0 0 10px; width:90%;'>\n\t\t\t\t<tbody data-dojo-attach-point=\"libsTableBody\">\n\t\t\t\t\t\t\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t\t</div>\n\t\t</div>\n\t\t</td>\n\t\t</tr>\n\t\t</table>\n\t\t\n\t\t\n\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"workingMessage messageContainer\">\n\t\t\tSubmitting Assembly Job\n\t\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"submittedMessage messageContainer\">\n\t\t\tAssembly Job has been queued.\n\t\t</div>\n\n\t\t<div style=\"width:400px; margin:auto\" class=\"errorMessage messageContainer\">\n\t\t\t<div style=\"font-weight:900;font-size:1.1em;\">Error Submitting Assembly Job</div>\n\t\t\t<p data-dojo-attach-point=\"errorMessage\">Error</p>\n\t\t</div>\n\t\t\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Assemble</div>\n\t\t</div>\t\n\t\n</form>\n\n"}});
 define("p3/widget/app/Assembly", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/TooltipDialog", "dojo/NodeList-traverse"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse", "dojo/request"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
-	Template,AppBase,domConstr,
+	Template,AppBase,domConstruct,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
-	dom, popup, Dialog, children
+	dom, popup, Tooltip, Dialog, TooltipDialog, children, xhr
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -24,10 +24,62 @@ define("p3/widget/app/Assembly", [
 
 			this.addedLibs=0;
 			this.addedPairs=0;
-			this.pairToAttachPt=["read1", "read2", "interleaved", "insert_size_mean", "insert_size_stdev"];
+			this.pairToAttachPt1=["read1", "read2"];
+			this.pairToAttachPt2=["read1"];
+			this.advPairToAttachPt=["interleaved", "insert_size_mean", "insert_size_stdev"];
 			this.paramToAttachPt=["recipe","output_path","output_file","reference_assembly"];
 			this.singleToAttachPt=["single_end_libs"];
 		},
+
+		gethelp: function(){
+
+			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
+			   handleAs: "text",
+                        });		
+			helprequest.then(function(data){
+				var help_doc=domConstruct.toDom(data);
+			        var ibuttons=query(".infobutton");
+				ibuttons.forEach(function(item){
+					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					help_text.style.overflowY='auto';
+					help_text.style.maxHeight='400px';
+					if (dojo.hasClass(item, "dialoginfo")){
+						item.info_dialog = new Dialog({
+							content: help_text,
+							class: 'nonModal',
+							draggable: true,
+							style: "max-width: 350px;"
+						});
+						item.open=false;
+						on(item, 'click', function(){
+							if(! item.open){
+								item.open=true;
+								item.info_dialog.show();
+							}
+							else{
+								item.open=false;
+								item.info_dialog.hide();
+							}	
+						});
+					}
+					else if (dojo.hasClass(item, "tooltipinfo")){
+						item.info_dialog = new TooltipDialog({
+							content: help_text,
+							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
+							onMouseLeave: function(){
+								popup.close(item.info_dialog);
+							}
+						});
+						on(item, 'mouseover', function(){
+							popup.open({
+								popup: item.info_dialog,
+								around: item
+							});
+						});
+					}	
+				});
+			});
+		},	
 
 
                 startup: function(){
@@ -35,50 +87,48 @@ define("p3/widget/app/Assembly", [
                         this.inherited(arguments);
 			for (i = 0; i < this.startingRows; i++) { 
 				var tr =  this.libsTable.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
-				var td = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
-				var td2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
+				var td3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},tr);
 			}
 			this.numlibs.startup();
-			ibuttons=query(".infobutton");
-			ibuttons.forEach(function(item){
-				item.info_dialog = new Dialog({
-					content: dojo.query(".infobuttoninfo", item)[0],
-					//draggable: true,
-					//style: "min-width: 400px"
-					onMouseLeave: function(){
-						popup.close(item.info_dialog);
-					}
-				});
-				item.open=false;
+                        //create help dialog for infobutton's with infobuttoninfo div's
+			this.advrow.turnedOn=(this.advrow.style.display!='none');
+			on(this.advanced, 'click', lang.hitch(this, function(){
+				this.advrow.turnedOn=(this.advrow.style.display!='none');
+				if (! this.advrow.turnedOn){
+					this.advrow.turnedOn=true;
+					this.advrow.style.display='block';
+					this.advicon.className="fa fa-caret-left fa-1";
+				}
+				else{	
+					this.advrow.turnedOn=false;
+					this.advrow.style.display='none';
+					this.advicon.className="fa fa-caret-down fa-1";
+				}
+			}));
+			this.interleaved.turnedOn=(this.interleaved.value=="true");
+			on(this.interleaved, 'change', lang.hitch(this, function(){
+				if(this.interleaved.turnedOn){
+					this.interleaved.turnedOn=false;
+					//this.read2block.style.visibility='visible';
+					this.read2.set('disabled', false);		
+				}
+				else{
+					this.interleaved.turnedOn=true;
+//					this.read2block.style.visibility='hidden';
+					this.read2.set('disabled', true);		
+				}	
+			}));
 				
-				on(item, 'click', function(){
-					if(! item.open){
-						item.open=true;
-						popup.open({
-							popup: item.info_dialog,
-							draggable: true,
-							around: item
-						});
-					}
-					else{
-						item.open=false;
-						popup.close(item.info_dialog);
-					}	
-				});
-			});
+				
+
+			this.gethelp();
 
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
 			//this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
 			//this.output_path.set('value',"/" +  window.App.user.id +"/home/");
-/*
-			this.libraryGrid = new Grid({
-				columns: {'first': 'Libraries in assembly'}
-			}, this.gridNode);
-
-			this.libraryGrid.startup();
-			this.libraryGrid.renderArray(this.libraryData);
-*/			
 			this._started=true;
 		},
 		getValues:function(){
@@ -112,20 +162,22 @@ define("p3/widget/app/Assembly", [
 			return assembly_values;
 				
 		},
-		ingestAttachPoints: function(input_pts, target){
+		ingestAttachPoints: function(input_pts, target, req){
+                        req = typeof req !== 'undefined' ? req : true;
 			var success=1;
 			input_pts.forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
 				var browser_select=0;
 				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs"){
-					cur_value="/_uuid/"+this[attachname].searchBox.value;
+					cur_value=this[attachname].searchBox.value? "/_uuid/"+this[attachname].searchBox.value : "";
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 					browser_select=1;
 				}
 				else if(attachname == "output_path"){
-					cur_value="/_uuid/"+this[attachname].searchBox.value;
+					cur_value=this[attachname].searchBox.value? "/_uuid/"+this[attachname].searchBox.value : "";
+					//cur_value="/_uuid/"+this[attachname].searchBox.value;
 					//cur_value=this[attachname].searchBox.get('value');
 					browser_select=1;
 				}
@@ -139,9 +191,11 @@ define("p3/widget/app/Assembly", [
 				else{
 					target[attachname]=cur_value;
 				}
-				if((!target[attachname] || incomplete)){
-					if(! browser_select){
-						this[attachname]._set("state","Error");
+				if(req && (!target[attachname] || incomplete)){
+					if(browser_select){
+						//this[attachname]._set("state","Error");
+						this[attachname].set("message", "Need a file.");;
+						this[attachname].focus=true;
 					}
 					success=0;
 				}
@@ -154,24 +208,29 @@ define("p3/widget/app/Assembly", [
 		makePairName:function(libRecord){
 			var fn =this.read1.searchBox.get("displayedValue");
 			var fn2 =this.read2.searchBox.get("displayedValue");
-			var maxName=15; 
+			var maxName=12; 
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
 			if(fn2.length > maxName){
 				fn2=fn2.substr(0,(maxName/2)-2)+".."+fn2.substr((fn2.length-(maxName/2))+2);
 			}
-			return "("+fn+", "+fn2+")";
+			if(this.interleaved.turnedOn){
+				return "P("+fn+")";
+			}
+			else{
+				return "P("+fn+", "+fn2+")";
+			}
 		},	
 			
 
 		makeSingleName:function(libRecord){
 			var fn =this.single_end_libs.searchBox.get("displayedValue");
-                        maxName=30
+                        maxName=24
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
-			return fn;
+			return "S("+fn+")";
 		},
 
 		increaseLib: function(){
@@ -184,26 +243,28 @@ define("p3/widget/app/Assembly", [
 			this.numlibs.set('value',Number(this.addedLibs));	
 		},	
 		onAddSingle: function(){
-			console.log("Create New Row", domConstr);
+			console.log("Create New Row", domConstruct);
 			var lrec={};
 			var chkPassed=this.ingestAttachPoints(this.singleToAttachPt, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstr.create('td', {"class":"singledata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"textcol singledata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makeSingleName();
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				td.innerHTML="<div class='libraryrow'>"+this.makeSingleName()+"</div>";
+				var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
 					console.log("Delete Row");
-					domConstr.destroy(tr);
+					domConstruct.destroy(tr);
 					this.decreaseLib();
 					if (this.addedLibs < this.startingRows){
 						var ntr = this.libsTable.insertRow(-1);	
-						var ntd = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
-						var ntd2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));
@@ -212,30 +273,51 @@ define("p3/widget/app/Assembly", [
 		},
 		
 		onAddPair: function(){
-			console.log("Create New Row", domConstr);
-//			var tr =  domConstr.create("tr",{});
-//			domConstr.place(tr,this.libsTableBody,"first");
+			console.log("Create New Row", domConstruct);
 			var lrec={};
-			var chkPassed=this.ingestAttachPoints(this.pairToAttachPt, lrec);
+			//If you want to disable advanced parameters while not shown this would be the place.
+			//but for right now, if you set them and then hide them, they are still active
+			var pairToIngest=this.interleaved.turnedOn ? this.pairToAttachPt2 : this.pairToAttachPt1;
+			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
+			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
+			this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
-				var td = domConstr.create('td', {"class":"pairdata", innerHTML:""},tr);
+				var td = domConstruct.create('td', {"class":"textcol pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
-				td.innerHTML=this.makePairName();
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				td.innerHTML="<div class='libraryrow'>"+this.makePairName()+"</div>";
+				var advPairInfo= [];
+				if(lrec["insert_size_mean"]){
+					advPairInfo.push("Mean Insert Size:"+lrec["insert_size_mean"]);
+				}
+				if(lrec["insert_size_stdev"]){
+					advPairInfo.push("Std. Insert Size:"+lrec["insert_size_stdev"]);
+				}
+				if(advPairInfo.length){
+					var tdinfo=domConstruct.create("td", {innerHTML: "<i class='fa fa-info fa-1' />"},tr);
+					var ihandle=new Tooltip({
+						connectId: [tdinfo],
+						label: advPairInfo.join("</br>") 
+					});
+				}
+				else{
+					var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
+				}
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
 					console.log("Delete Row");
-					domConstr.destroy(tr);
+					domConstruct.destroy(tr);
 					this.decreaseLib();
 					if (this.addedLibs < this.startingRows){
 	//					var ntr =  domConstr.create("tr",{});
 	//					domConstr.place("ntr",this.libsTableBody,"last");
 						var ntr = this.libsTable.insertRow(-1);	
-						var ntd = domConstr.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
-						var ntd2 = domConstr.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyyrow'></div>"},ntr);
+						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
 				}));

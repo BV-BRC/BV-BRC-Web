@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div id="selectedinfo">
+    Read files placed here will contribute to a single assembly.
+    </div>
+    <div id="pairinfo">
+<b><h3>Paired read library</h3></b>
+<!--<p>Paired-end sequencing has advantages over the use of single reads. Paired-end reads give added structure to the genome assembly problem which can be useful when dealing with ambiguous or low complexity regions.</p>-->
+<p><b>Read File 1 & 2</b></br>
+Many paired read libraries are given as file pairs, with each file containing half of each pair. Paired read files are expected to be sorted such that each read in a pair occurs in the same Nth position as its mate in their respective files. These files are specified as READ FILE 1 and READ FILE 2. For a given file pair the selection of which file is READ 1 and which is READ 2 does not matter.</p>
+<b><h4>Advanced Parameters</h4></b>
+<p><b>File 1 Interleaved</b></br>
+Some paired libaries are available in a single file where each read in a pair occurs in succession. To specify such a file set this parameter to 'True'.</p>
+<p><b>Mean Insert Size</b></br>
+This refers to the mean insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+<p><b>Std. Insert Size</b></br>
+This refers to the standard deviation of the insert size between paired reads. If you have this information you may provide it. If not the assembly algorithm will make an attempt to determine this value.</p>
+    </div>
+    <div id="parameterinfo">
+       <h3>Parameters</h3>
+       <h4>Benchmark Contigs</h4>
+       <p>This parameter can be used to specify a contigs file to evaluate the assembly against.</p>
+      <h4>Assembly Strategy</h4>
+<p><b>faster</b></p>
+<ol>
+  <li>Assembles with A6 and Velvet.</li>
+  <li>Results are sorted by ARAST quality Score.</li>
+  <li>Works for some short read datasets.</li>
+</ol>
+<p><b>auto</b></p>
+<ol>
+  <li>Runs BayesHammer on reads</li>
+  <li>Assembles with Velvet, IDBA and SPAdes</li>
+  <li>Sorts assemblies by ALE score</li>
+</ol>
+<p><b>rast</b></p>
+<ol>
+  <li>Assembles with A6, Velvet and SPAdes (with BayesHammer for error correction).</li>
+  <li>Results are sorted by ARAST quality Score.</li>
+</ol>
+<p><b>fast</b></p>
+<ol>
+  <li>Assembles with A6, Velvet and SPAdes (with BayesHammer for error correction).</li>
+  <li>Results are sorted by ARAST quality Score.</li>
+</ol>
+<p><b>full_spades</b></p>
+<ol>
+  <li>Runs BayesHammer on reads</li>
+  <li>Assembles with SPAdes.</li>
+</ol>
+<p><b>rast_fast</b></p>
+<ol>
+  <li>Assembles with A6 and Velvet.</li>
+  <li>Results are sorted by ARAST quality Score.</li>
+  <li>Works for some short read datasets.</li>
+</ol>
+<p><b>rast_slow</b></p>
+<ol>
+  <li>Runs BayesHammer on reads, Kmergenie to choose hash-length for Velvet</li>
+  <li>Assembles with Velvet, IDBA and SPAdes</li>
+  <li>Sorts assemblies by ALE score</li>
+  <li>Merges the two best assemblies with GAM-NGS</li>
+</ol>
+<p><b>miseq</b></p>
+<ol>
+  <li>Runs Velvet with hash length 35.</li>
+  <li>Runs BayesHammer on reads and assembles with SPAdes with k up to 99.</li>
+  <li>Results are sorted by ARAST quality score.</li>
+  <li>Works for Illumina MiSeq reads.</li>
+</ol>
+<p><b>smart</b></p>
+<ol>
+  <li>Runs BayesHammer on reads, Kmergenie to choose hash-length for Velvet</li>
+  <li>Assembles with Velvet, IDBA and SPAdes</li>
+  <li>Sorts assemblies by ALE score</li>
+  <li>Merges the two best assemblies with GAM-NGS</li>
+</ol>
+    </div>
+  </body>
+</html>
