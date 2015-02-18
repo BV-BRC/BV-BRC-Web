@@ -94,7 +94,9 @@ var profile = {
 				"dojo/parser",
 				"dijit/form/Form",
 				"dijit/form/TextBox",
-				"dijit/form/Button"
+				"dijit/form/Button",
+				"dojox/validate/web",
+				"dijit/form/DropDownButton"
 			]
 		},
 		"p3/layer/globalWSObject": {

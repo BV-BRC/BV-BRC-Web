@@ -8833,6 +8833,3479 @@ define([
 });
 
 },
+'dojox/validate/web':function(){
+define(["./_base", "./regexp"], function(validate, xregexp){
+
+validate.isIpAddress = function(value, flags) {
+	// summary:
+	//		Validates an IP address
+	// description:
+	//		Supports 5 formats for IPv4: dotted decimal, dotted hex, dotted octal, decimal and hexadecimal.
+	//		Supports 2 formats for Ipv6.
+	// value: String
+	// flags: Object?
+	//		All flags are boolean with default = true.
+	//
+	//		- flags.allowDottedDecimal  Example, 207.142.131.235.  No zero padding.
+	//		- flags.allowDottedHex  Example, 0x18.0x11.0x9b.0x28.  Case insensitive.  Zero padding allowed.
+	//		- flags.allowDottedOctal  Example, 0030.0021.0233.0050.  Zero padding allowed.
+	//		- flags.allowDecimal  Example, 3482223595.  A decimal number between 0-4294967295.
+	//		- flags.allowHex  Example, 0xCF8E83EB.  Hexadecimal number between 0x0-0xFFFFFFFF.
+	//		  Case insensitive.  Zero padding allowed.
+	//		- flags.allowIPv6   IPv6 address written as eight groups of four hexadecimal digits.
+	//		- flags.allowHybrid   IPv6 address written as six groups of four hexadecimal digits
+	//		  followed by the usual 4 dotted decimal digit notation of IPv4. x:x:x:x:x:x:d.d.d.d
+
+	var re = new RegExp("^" + xregexp.ipAddress(flags) + "$", "i");
+	return re.test(value); // Boolean
+};
+
+
+validate.isUrl = function(value, flags) {
+	// summary:
+	//		Checks if a string could be a valid URL
+	// value: String
+	// flags: Object?
+	//		- flags.scheme  Can be true, false, or [true, false].
+	//		  This means: required, not allowed, or either.
+	//		- flags in regexp.host can be applied.
+	//		- flags in regexp.ipAddress can be applied.
+	//		- flags in regexp.tld can be applied.
+
+	var re = new RegExp("^" + xregexp.url(flags) + "$", "i");
+	return re.test(value); // Boolean
+};
+
+validate.isEmailAddress = function(value, flags) {
+	// summary:
+	//		Checks if a string could be a valid email address
+	// value: String
+	// flags: Object?
+	//		- flags.allowCruft  Allow address like `<mailto:foo@yahoo.com>`.  Default is false.
+	//		- flags in regexp.host can be applied.
+	//		- flags in regexp.ipAddress can be applied.
+	//		- flags in regexp.tld can be applied.
+
+	var re = new RegExp("^" + xregexp.emailAddress(flags) + "$", "i");
+	return re.test(value); // Boolean
+};
+
+validate.isEmailAddressList = function(value, flags) {
+	// summary:
+	//		Checks if a string could be a valid email address list.
+	// value: String
+	// flags: Object?
+	//		- flags.listSeparator  The character used to separate email addresses.  Default is ";", ",", "\n" or " ".
+	//		- flags in regexp.emailAddress can be applied.
+	//		- flags in regexp.host can be applied.
+	//		- flags in regexp.ipAddress can be applied.
+	//		- flags in regexp.tld can be applied.
+
+	var re = new RegExp("^" + xregexp.emailAddressList(flags) + "$", "i");
+	return re.test(value); // Boolean
+};
+
+validate.getEmailAddressList = function(value, flags) {
+	// summary:
+	//		Check if value is an email address list. If an empty list
+	//		is returned, the value didn't pass the test or it was empty.
+	// value: String
+	// flags: Object?
+	//		An object (same as dojo.validate.isEmailAddressList)
+
+	if(!flags) { flags = {}; }
+	if(!flags.listSeparator) { flags.listSeparator = "\\s;,"; }
+
+	if ( validate.isEmailAddressList(value, flags) ) {
+		return value.split(new RegExp("\\s*[" + flags.listSeparator + "]\\s*")); // Array
+	}
+	return []; // Array
+};
+
+return validate;
+});
+
+},
+'dojox/validate/_base':function(){
+define([
+	"dojo/_base/lang",
+	"dojo/regexp", // dojo core expressions
+	"dojo/number", // dojo number expressions
+	"./regexp" // additional expressions
+], function(lang, regexp, number, xregexp) {
+
+var validate = lang.getObject("dojox.validate", true);
+
+validate.isText = function(value, flags){
+	// summary:
+	//		Checks if a string has non whitespace characters.
+	//		Parameters allow you to constrain the length.
+	// value: String
+	// flags: Object?
+	//		{length: Number, minlength: Number, maxlength: Number}
+	//
+	//		- flags.length  If set, checks if there are exactly flags.length number of characters.
+	//		- flags.minlength  If set, checks if there are at least flags.minlength number of characters.
+	//		- flags.maxlength  If set, checks if there are at most flags.maxlength number of characters.
+	
+	flags = (typeof flags == "object") ? flags : {};
+	
+	// test for text
+	if(/^\s*$/.test(value)){ return false; } // Boolean
+	
+	// length tests
+	if(typeof flags.length == "number" && flags.length != value.length){ return false; } // Boolean
+	if(typeof flags.minlength == "number" && flags.minlength > value.length){ return false; } // Boolean
+	if(typeof flags.maxlength == "number" && flags.maxlength < value.length){ return false; } // Boolean
+	
+	return true; // Boolean
+
+};
+
+validate._isInRangeCache = {};
+validate.isInRange = function(value, flags){
+	// summary:
+	//		Validates whether a string denoting a number
+	//		is between a max and min.
+	// value: String
+	// flags: Object?
+	//		{max:Number, min:Number, decimal:String}
+	//
+	//		- flags.max  A number, which the value must be less than or equal to for the validation to be true.
+	//		- flags.min  A number, which the value must be greater than or equal to for the validation to be true.
+	//		- flags.decimal  The character used for the decimal point.  Default is ".".
+	
+	value = number.parse(value, flags);
+	if(isNaN(value)){
+		return false; // Boolean
+	}
+    
+	// assign default values to missing parameters
+	flags = (typeof flags == "object") ? flags : {};
+	var max = (typeof flags.max == "number") ? flags.max : Infinity,
+		min = (typeof flags.min == "number") ? flags.min : -Infinity,
+		dec = (typeof flags.decimal == "string") ? flags.decimal : ".",
+	
+		cache = validate._isInRangeCache,
+		cacheIdx = value + "max" + max + "min" + min + "dec" + dec
+	;
+	if(typeof cache[cacheIdx] != "undefined"){
+		return cache[cacheIdx];
+	}
+
+	cache[cacheIdx] = !(value < min || value > max);
+	return cache[cacheIdx]; // Boolean
+
+};
+
+validate.isNumberFormat = function(value, flags){
+	// summary:
+	//		Validates any sort of number based format
+	// description:
+	//		Validates any sort of number based format. Use it for phone numbers,
+	//		social security numbers, zip-codes, etc. The value can be validated
+	//		against one format or one of multiple formats.
+	//
+	//		Format Definition
+	//		|   #        Stands for a digit, 0-9.
+	//		|   ?        Stands for an optional digit, 0-9 or nothing.
+	//		All other characters must appear literally in the expression.
+	// example:
+	// |  "(###) ###-####"       ->   (510) 542-9742
+	// |  "(###) ###-#### x#???" ->   (510) 542-9742 x153
+	// |  "###-##-####"          ->   506-82-1089       i.e. social security number
+	// |  "#####-####"           ->   98225-1649        i.e. zip code
+	// value: String
+	// flags: Object?
+	//		- flags.format  A string or an Array of strings for multiple formats.
+	// example:
+	// |	require(["dojox/validate/_base"], function(validate){
+	// |		// returns true:
+	// |		validate.isNumberFormat("123-45", { format:"###-##" });
+	// |	});		
+	// example:
+	//		Check Multiple formats:
+	// |	require(["dojox/validate/_base"], function(validate){
+	// |		validate.isNumberFormat("123-45", {
+	// |			format:["### ##","###-##","## ###"]
+	// |	});
+	//
+
+	var re = new RegExp("^" + xregexp.numberFormat(flags) + "$", "i");
+	return re.test(value); // Boolean
+};
+
+validate.isValidLuhn = function(/* String */value){
+	// summary:
+	//		Validate a String value against the Luhn algorithm.
+	// description:
+	//		Validate a String value against the Luhn algorithm to verify
+	//		its integrity.
+	
+	var sum = 0, parity, curDigit;
+	if(!lang.isString(value)){
+		value = String(value);
+	}
+	value = value.replace(/[- ]/g,''); //ignore dashes and whitespaces
+	parity = value.length % 2;
+
+	for(var i = 0; i < value.length; i++){
+		curDigit = parseInt(value.charAt(i));
+		if(i % 2 == parity){
+			curDigit *= 2;
+		}
+		if(curDigit > 9){
+			curDigit -= 9;
+		}
+		sum += curDigit;
+	}
+	return !(sum % 10); // Boolean
+};
+
+return validate;
+
+});
+
+},
+'dojo/regexp':function(){
+define(["./_base/kernel", "./_base/lang"], function(dojo, lang){
+
+// module:
+//		dojo/regexp
+
+var regexp = {
+	// summary:
+	//		Regular expressions and Builder resources
+};
+lang.setObject("dojo.regexp", regexp);
+
+regexp.escapeString = function(/*String*/str, /*String?*/except){
+	// summary:
+	//		Adds escape sequences for special characters in regular expressions
+	// except:
+	//		a String with special characters to be left unescaped
+
+	return str.replace(/([\.$?*|{}\(\)\[\]\\\/\+\-^])/g, function(ch){
+		if(except && except.indexOf(ch) != -1){
+			return ch;
+		}
+		return "\\" + ch;
+	}); // String
+};
+
+regexp.buildGroupRE = function(/*Object|Array*/arr, /*Function*/re, /*Boolean?*/nonCapture){
+	// summary:
+	//		Builds a regular expression that groups subexpressions
+	// description:
+	//		A utility function used by some of the RE generators. The
+	//		subexpressions are constructed by the function, re, in the second
+	//		parameter.  re builds one subexpression for each elem in the array
+	//		a, in the first parameter. Returns a string for a regular
+	//		expression that groups all the subexpressions.
+	// arr:
+	//		A single value or an array of values.
+	// re:
+	//		A function. Takes one parameter and converts it to a regular
+	//		expression.
+	// nonCapture:
+	//		If true, uses non-capturing match, otherwise matches are retained
+	//		by regular expression. Defaults to false
+
+	// case 1: a is a single value.
+	if(!(arr instanceof Array)){
+		return re(arr); // String
+	}
+
+	// case 2: a is an array
+	var b = [];
+	for(var i = 0; i < arr.length; i++){
+		// convert each elem to a RE
+		b.push(re(arr[i]));
+	}
+
+	 // join the REs as alternatives in a RE group.
+	return regexp.group(b.join("|"), nonCapture); // String
+};
+
+regexp.group = function(/*String*/expression, /*Boolean?*/nonCapture){
+	// summary:
+	//		adds group match to expression
+	// nonCapture:
+	//		If true, uses non-capturing match, otherwise matches are retained
+	//		by regular expression.
+	return "(" + (nonCapture ? "?:":"") + expression + ")"; // String
+};
+
+return regexp;
+});
+
+},
+'dojo/number':function(){
+define([/*===== "./_base/declare", =====*/ "./_base/lang", "./i18n", "./i18n!./cldr/nls/number", "./string", "./regexp"],
+	function(/*===== declare, =====*/ lang, i18n, nlsNumber, dstring, dregexp){
+
+// module:
+//		dojo/number
+
+var number = {
+	// summary:
+	//		localized formatting and parsing routines for Number
+};
+lang.setObject("dojo.number", number);
+
+/*=====
+number.__FormatOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// places: Number?
+	//		fixed number of decimal places to show.  This overrides any
+	//		information in the provided pattern.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means do not round.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// fractional: Boolean?
+	//		If false, show no decimal places, overriding places and pattern settings.
+});
+=====*/
+
+number.format = function(/*Number*/ value, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Format a Number as a String, using locale-specific settings
+	// description:
+	//		Create a string from a Number using a known localized pattern.
+	//		Formatting patterns appropriate to the locale are chosen from the
+	//		[Common Locale Data Repository](http://unicode.org/cldr) as well as the appropriate symbols and
+	//		delimiters.
+	//		If value is Infinity, -Infinity, or is not a valid JavaScript number, return null.
+	// value:
+	//		the number to be formatted
+
+	options = lang.mixin({}, options || {});
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale);
+	options.customs = bundle;
+	var pattern = options.pattern || bundle[(options.type || "decimal") + "Format"];
+	if(isNaN(value) || Math.abs(value) == Infinity){ return null; } // null
+	return number._applyPattern(value, pattern, options); // String
+};
+
+//number._numberPatternRE = /(?:[#0]*,?)*[#0](?:\.0*#*)?/; // not precise, but good enough
+number._numberPatternRE = /[#0,]*[#0](?:\.0*#*)?/; // not precise, but good enough
+
+number._applyPattern = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Apply pattern to format value as a string using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted.
+	// pattern:
+	//		a pattern string as described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	// options: number.__FormatOptions?
+	//		_applyPattern is usually called via `dojo/number.format()` which
+	//		populates an extra property in the options parameter, "customs".
+	//		The customs object specifies group and decimal parameters if set.
+
+	//TODO: support escapes
+	options = options || {};
+	var group = options.customs.group,
+		decimal = options.customs.decimal,
+		patternList = pattern.split(';'),
+		positivePattern = patternList[0];
+	pattern = patternList[(value < 0) ? 1 : 0] || ("-" + positivePattern);
+
+	//TODO: only test against unescaped
+	if(pattern.indexOf('%') != -1){
+		value *= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		value *= 1000; // per mille
+	}else if(pattern.indexOf('\u00a4') != -1){
+		group = options.customs.currencyGroup || group;//mixins instead?
+		decimal = options.customs.currencyDecimal || decimal;// Should these be mixins instead?
+		pattern = pattern.replace(/\u00a4{1,3}/, function(match){
+			var prop = ["symbol", "currency", "displayName"][match.length-1];
+			return options[prop] || options.currency || "";
+		});
+	}else if(pattern.indexOf('E') != -1){
+		throw new Error("exponential notation not supported");
+	}
+
+	//TODO: support @ sig figs?
+	var numberPatternRE = number._numberPatternRE;
+	var numberPattern = positivePattern.match(numberPatternRE);
+	if(!numberPattern){
+		throw new Error("unable to find a number expression in pattern: "+pattern);
+	}
+	if(options.fractional === false){ options.places = 0; }
+	return pattern.replace(numberPatternRE,
+		number._formatAbsolute(value, numberPattern[0], {decimal: decimal, group: group, places: options.places, round: options.round}));
+};
+
+number.round = function(/*Number*/ value, /*Number?*/ places, /*Number?*/ increment){
+	// summary:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero
+	// description:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero if equal.
+	//		Similar to Number.toFixed(), but compensates for browser quirks. Rounding can be done by
+	//		fractional increments also, such as the nearest quarter.
+	//		NOTE: Subject to floating point errors.  See dojox/math/round for experimental workaround.
+	// value:
+	//		The number to round
+	// places:
+	//		The number of decimal places where rounding takes place.  Defaults to 0 for whole rounding.
+	//		Must be non-negative.
+	// increment:
+	//		Rounds next place to nearest value of increment/10.  10 by default.
+	// example:
+	// |	>>> number.round(-0.5)
+	// |	-1
+	// |	>>> number.round(162.295, 2)
+	// |	162.29  // note floating point error.  Should be 162.3
+	// |	>>> number.round(10.71, 0, 2.5)
+	// |	10.75
+	var factor = 10 / (increment || 10);
+	return (factor * +value).toFixed(places) / factor; // Number
+};
+
+if((0.9).toFixed() == 0){
+	// (isIE) toFixed() bug workaround: Rounding fails on IE when most significant digit
+	// is just after the rounding place and is >=5
+	var round = number.round;
+	number.round = function(v, p, m){
+		var d = Math.pow(10, -p || 0), a = Math.abs(v);
+		if(!v || a >= d){
+			d = 0;
+		}else{
+			a /= d;
+			if(a < 0.5 || a >= 0.95){
+				d = 0;
+			}
+		}
+		return round(v, p, m) + (v > 0 ? d : -d);
+	};
+
+	// Use "doc hint" so the doc parser ignores this new definition of round(), and uses the one above.
+	/*===== number.round = round; =====*/
+}
+
+/*=====
+number.__FormatAbsoluteOptions = declare(null, {
+	// decimal: String?
+	//		the decimal separator
+	// group: String?
+	//		the group separator
+	// places: Number|String?
+	//		number of decimal places.  the range "n,m" will format to m places.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means don't round.
+});
+=====*/
+
+number._formatAbsolute = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatAbsoluteOptions?*/ options){
+	// summary:
+	//		Apply numeric pattern to absolute value using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted, ignores sign
+	// pattern:
+	//		the number portion of a pattern (e.g. `#,##0.00`)
+	options = options || {};
+	if(options.places === true){options.places=0;}
+	if(options.places === Infinity){options.places=6;} // avoid a loop; pick a limit
+
+	var patternParts = pattern.split("."),
+		comma = typeof options.places == "string" && options.places.indexOf(","),
+		maxPlaces = options.places;
+	if(comma){
+		maxPlaces = options.places.substring(comma + 1);
+	}else if(!(maxPlaces >= 0)){
+		maxPlaces = (patternParts[1] || []).length;
+	}
+	if(!(options.round < 0)){
+		value = number.round(value, maxPlaces, options.round);
+	}
+
+	var valueParts = String(Math.abs(value)).split("."),
+		fractional = valueParts[1] || "";
+	if(patternParts[1] || options.places){
+		if(comma){
+			options.places = options.places.substring(0, comma);
+		}
+		// Pad fractional with trailing zeros
+		var pad = options.places !== undefined ? options.places : (patternParts[1] && patternParts[1].lastIndexOf("0") + 1);
+		if(pad > fractional.length){
+			valueParts[1] = dstring.pad(fractional, pad, '0', true);
+		}
+
+		// Truncate fractional
+		if(maxPlaces < fractional.length){
+			valueParts[1] = fractional.substr(0, maxPlaces);
+		}
+	}else{
+		if(valueParts[1]){ valueParts.pop(); }
+	}
+
+	// Pad whole with leading zeros
+	var patternDigits = patternParts[0].replace(',', '');
+	pad = patternDigits.indexOf("0");
+	if(pad != -1){
+		pad = patternDigits.length - pad;
+		if(pad > valueParts[0].length){
+			valueParts[0] = dstring.pad(valueParts[0], pad);
+		}
+
+		// Truncate whole
+		if(patternDigits.indexOf("#") == -1){
+			valueParts[0] = valueParts[0].substr(valueParts[0].length - pad);
+		}
+	}
+
+	// Add group separators
+	var index = patternParts[0].lastIndexOf(','),
+		groupSize, groupSize2;
+	if(index != -1){
+		groupSize = patternParts[0].length - index - 1;
+		var remainder = patternParts[0].substr(0, index);
+		index = remainder.lastIndexOf(',');
+		if(index != -1){
+			groupSize2 = remainder.length - index - 1;
+		}
+	}
+	var pieces = [];
+	for(var whole = valueParts[0]; whole;){
+		var off = whole.length - groupSize;
+		pieces.push((off > 0) ? whole.substr(off) : whole);
+		whole = (off > 0) ? whole.slice(0, off) : "";
+		if(groupSize2){
+			groupSize = groupSize2;
+			delete groupSize2;
+		}
+	}
+	valueParts[0] = pieces.reverse().join(options.group || ",");
+
+	return valueParts.join(options.decimal || ".");
+};
+
+/*=====
+number.__RegexpOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// places: Number|String?
+	//		number of decimal places to accept: Infinity, a positive number, or
+	//		a range "n,m".  Defined by pattern or Infinity if pattern not provided.
+});
+=====*/
+number.regexp = function(/*number.__RegexpOptions?*/ options){
+	// summary:
+	//		Builds the regular needed to parse a number
+	// description:
+	//		Returns regular expression with positive and negative match, group
+	//		and decimal separators
+	return number._parseInfo(options).regexp; // String
+};
+
+number._parseInfo = function(/*Object?*/ options){
+	options = options || {};
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale),
+		pattern = options.pattern || bundle[(options.type || "decimal") + "Format"],
+//TODO: memoize?
+		group = bundle.group,
+		decimal = bundle.decimal,
+		factor = 1;
+
+	if(pattern.indexOf('%') != -1){
+		factor /= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		factor /= 1000; // per mille
+	}else{
+		var isCurrency = pattern.indexOf('\u00a4') != -1;
+		if(isCurrency){
+			group = bundle.currencyGroup || group;
+			decimal = bundle.currencyDecimal || decimal;
+		}
+	}
+
+	//TODO: handle quoted escapes
+	var patternList = pattern.split(';');
+	if(patternList.length == 1){
+		patternList.push("-" + patternList[0]);
+	}
+
+	var re = dregexp.buildGroupRE(patternList, function(pattern){
+		pattern = "(?:"+dregexp.escapeString(pattern, '.')+")";
+		return pattern.replace(number._numberPatternRE, function(format){
+			var flags = {
+				signed: false,
+				separator: options.strict ? group : [group,""],
+				fractional: options.fractional,
+				decimal: decimal,
+				exponent: false
+				},
+
+				parts = format.split('.'),
+				places = options.places;
+
+			// special condition for percent (factor != 1)
+			// allow decimal places even if not specified in pattern
+			if(parts.length == 1 && factor != 1){
+			    parts[1] = "###";
+			}
+			if(parts.length == 1 || places === 0){
+				flags.fractional = false;
+			}else{
+				if(places === undefined){ places = options.pattern ? parts[1].lastIndexOf('0') + 1 : Infinity; }
+				if(places && options.fractional == undefined){flags.fractional = true;} // required fractional, unless otherwise specified
+				if(!options.places && (places < parts[1].length)){ places += "," + parts[1].length; }
+				flags.places = places;
+			}
+			var groups = parts[0].split(',');
+			if(groups.length > 1){
+				flags.groupSize = groups.pop().length;
+				if(groups.length > 1){
+					flags.groupSize2 = groups.pop().length;
+				}
+			}
+			return "("+number._realNumberRegexp(flags)+")";
+		});
+	}, true);
+
+	if(isCurrency){
+		// substitute the currency symbol for the placeholder in the pattern
+		re = re.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/g, function(match, before, target, after){
+			var prop = ["symbol", "currency", "displayName"][target.length-1],
+				symbol = dregexp.escapeString(options[prop] || options.currency || "");
+			before = before ? "[\\s\\xa0]" : "";
+			after = after ? "[\\s\\xa0]" : "";
+			if(!options.strict){
+				if(before){before += "*";}
+				if(after){after += "*";}
+				return "(?:"+before+symbol+after+")?";
+			}
+			return before+symbol+after;
+		});
+	}
+
+//TODO: substitute localized sign/percent/permille/etc.?
+
+	// normalize whitespace and return
+	return {regexp: re.replace(/[\xa0 ]/g, "[\\s\\xa0]"), group: group, decimal: decimal, factor: factor}; // Object
+};
+
+/*=====
+number.__ParseOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// fractional: Boolean|Array?
+	//		Whether to include the fractional portion, where the number of decimal places are implied by pattern
+	//		or explicit 'places' parameter.  The value [true,false] makes the fractional portion optional.
+});
+=====*/
+number.parse = function(/*String*/ expression, /*number.__ParseOptions?*/ options){
+	// summary:
+	//		Convert a properly formatted string to a primitive Number, using
+	//		locale-specific settings.
+	// description:
+	//		Create a Number from a string using a known localized pattern.
+	//		Formatting patterns are chosen appropriate to the locale
+	//		and follow the syntax described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+    	//		Note that literal characters in patterns are not supported.
+	// expression:
+	//		A string representation of a Number
+	var info = number._parseInfo(options),
+		results = (new RegExp("^"+info.regexp+"$")).exec(expression);
+	if(!results){
+		return NaN; //NaN
+	}
+	var absoluteMatch = results[1]; // match for the positive expression
+	if(!results[1]){
+		if(!results[2]){
+			return NaN; //NaN
+		}
+		// matched the negative pattern
+		absoluteMatch =results[2];
+		info.factor *= -1;
+	}
+
+	// Transform it to something Javascript can parse as a number.  Normalize
+	// decimal point and strip out group separators or alternate forms of whitespace
+	absoluteMatch = absoluteMatch.
+		replace(new RegExp("["+info.group + "\\s\\xa0"+"]", "g"), "").
+		replace(info.decimal, ".");
+	// Adjust for negative sign, percent, etc. as necessary
+	return absoluteMatch * info.factor; //Number
+};
+
+/*=====
+number.__RealNumberRegexpFlags = declare(null, {
+	// places: Number?
+	//		The integer number of decimal places or a range given as "n,m".  If
+	//		not given, the decimal part is optional and the number of places is
+	//		unlimited.
+	// decimal: String?
+	//		A string for the character used as the decimal point.  Default
+	//		is ".".
+	// fractional: Boolean|Array?
+	//		Whether decimal places are used.  Can be true, false, or [true,
+	//		false].  Default is [true, false] which means optional.
+	// exponent: Boolean|Array?
+	//		Express in exponential notation.  Can be true, false, or [true,
+	//		false]. Default is [true, false], (i.e. will match if the
+	//		exponential part is present are not).
+	// eSigned: Boolean|Array?
+	//		The leading plus-or-minus sign on the exponent.  Can be true,
+	//		false, or [true, false].  Default is [true, false], (i.e. will
+	//		match if it is signed or unsigned).  flags in regexp.integer can be
+	//		applied.
+});
+=====*/
+
+number._realNumberRegexp = function(/*__RealNumberRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression to match a real number in exponential
+	//		notation
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	//TODO: use mixin instead?
+	if(!("places" in flags)){ flags.places = Infinity; }
+	if(typeof flags.decimal != "string"){ flags.decimal = "."; }
+	if(!("fractional" in flags) || /^0/.test(flags.places)){ flags.fractional = [true, false]; }
+	if(!("exponent" in flags)){ flags.exponent = [true, false]; }
+	if(!("eSigned" in flags)){ flags.eSigned = [true, false]; }
+
+	var integerRE = number._integerRegexp(flags),
+		decimalRE = dregexp.buildGroupRE(flags.fractional,
+		function(q){
+			var re = "";
+			if(q && (flags.places!==0)){
+				re = "\\" + flags.decimal;
+				if(flags.places == Infinity){
+					re = "(?:" + re + "\\d+)?";
+				}else{
+					re += "\\d{" + flags.places + "}";
+				}
+			}
+			return re;
+		},
+		true
+	);
+
+	var exponentRE = dregexp.buildGroupRE(flags.exponent,
+		function(q){
+			if(q){ return "([eE]" + number._integerRegexp({ signed: flags.eSigned}) + ")"; }
+			return "";
+		}
+	);
+
+	var realRE = integerRE + decimalRE;
+	// allow for decimals without integers, e.g. .25
+	if(decimalRE){realRE = "(?:(?:"+ realRE + ")|(?:" + decimalRE + "))";}
+	return realRE + exponentRE; // String
+};
+
+/*=====
+number.__IntegerRegexpFlags = declare(null, {
+	// signed: Boolean?
+	//		The leading plus-or-minus sign. Can be true, false, or `[true,false]`.
+	//		Default is `[true, false]`, (i.e. will match if it is signed
+	//		or unsigned).
+	// separator: String?
+	//		The character used as the thousands separator. Default is no
+	//		separator. For more than one symbol use an array, e.g. `[",", ""]`,
+	//		makes ',' optional.
+	// groupSize: Number?
+	//		group size between separators
+	// groupSize2: Number?
+	//		second grouping, where separators 2..n have a different interval than the first separator (for India)
+});
+=====*/
+
+number._integerRegexp = function(/*number.__IntegerRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression that matches an integer
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	if(!("signed" in flags)){ flags.signed = [true, false]; }
+	if(!("separator" in flags)){
+		flags.separator = "";
+	}else if(!("groupSize" in flags)){
+		flags.groupSize = 3;
+	}
+
+	var signRE = dregexp.buildGroupRE(flags.signed,
+		function(q){ return q ? "[-+]" : ""; },
+		true
+	);
+
+	var numberRE = dregexp.buildGroupRE(flags.separator,
+		function(sep){
+			if(!sep){
+				return "(?:\\d+)";
+			}
+
+			sep = dregexp.escapeString(sep);
+			if(sep == " "){ sep = "\\s"; }
+			else if(sep == "\xa0"){ sep = "\\s\\xa0"; }
+
+			var grp = flags.groupSize, grp2 = flags.groupSize2;
+			//TODO: should we continue to enforce that numbers with separators begin with 1-9?  See #6933
+			if(grp2){
+				var grp2RE = "(?:0|[1-9]\\d{0," + (grp2-1) + "}(?:[" + sep + "]\\d{" + grp2 + "})*[" + sep + "]\\d{" + grp + "})";
+				return ((grp-grp2) > 0) ? "(?:" + grp2RE + "|(?:0|[1-9]\\d{0," + (grp-1) + "}))" : grp2RE;
+			}
+			return "(?:0|[1-9]\\d{0," + (grp-1) + "}(?:[" + sep + "]\\d{" + grp + "})*)";
+		},
+		true
+	);
+
+	return signRE + numberRE; // String
+};
+
+return number;
+});
+
+},
+'dojo/i18n':function(){
+define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config", "./_base/lang", "./_base/xhr", "./json", "module"],
+	function(dojo, require, has, array, config, lang, xhr, json, module){
+
+	// module:
+	//		dojo/i18n
+
+	has.add("dojo-preload-i18n-Api",
+		// if true, define the preload localizations machinery
+		1
+	);
+
+	 1 || has.add("dojo-v1x-i18n-Api",
+		// if true, define the v1.x i18n functions
+		1
+	);
+
+	var
+		thisModule = dojo.i18n =
+			{
+				// summary:
+				//		This module implements the dojo/i18n! plugin and the v1.6- i18n API
+				// description:
+				//		We choose to include our own plugin to leverage functionality already contained in dojo
+				//		and thereby reduce the size of the plugin compared to various loader implementations. Also, this
+				//		allows foreign AMD loaders to be used without their plugins.
+			},
+
+		nlsRe =
+			// regexp for reconstructing the master bundle name from parts of the regexp match
+			// nlsRe.exec("foo/bar/baz/nls/en-ca/foo") gives:
+			// ["foo/bar/baz/nls/en-ca/foo", "foo/bar/baz/nls/", "/", "/", "en-ca", "foo"]
+			// nlsRe.exec("foo/bar/baz/nls/foo") gives:
+			// ["foo/bar/baz/nls/foo", "foo/bar/baz/nls/", "/", "/", "foo", ""]
+			// so, if match[5] is blank, it means this is the top bundle definition.
+			// courtesy of http://requirejs.org
+			/(^.*(^|\/)nls)(\/|$)([^\/]*)\/?([^\/]*)/,
+
+		getAvailableLocales = function(
+			root,
+			locale,
+			bundlePath,
+			bundleName
+		){
+			// summary:
+			//		return a vector of module ids containing all available locales with respect to the target locale
+			//		For example, assuming:
+			//
+			//		- the root bundle indicates specific bundles for "fr" and "fr-ca",
+			//		-  bundlePath is "myPackage/nls"
+			//		- bundleName is "myBundle"
+			//
+			//		Then a locale argument of "fr-ca" would return
+			//
+			//			["myPackage/nls/myBundle", "myPackage/nls/fr/myBundle", "myPackage/nls/fr-ca/myBundle"]
+			//
+			//		Notice that bundles are returned least-specific to most-specific, starting with the root.
+			//
+			//		If root===false indicates we're working with a pre-AMD i18n bundle that doesn't tell about the available locales;
+			//		therefore, assume everything is available and get 404 errors that indicate a particular localization is not available
+
+			for(var result = [bundlePath + bundleName], localeParts = locale.split("-"), current = "", i = 0; i<localeParts.length; i++){
+				current += (current ? "-" : "") + localeParts[i];
+				if(!root || root[current]){
+					result.push(bundlePath + current + "/" + bundleName);
+					result.specificity = current;
+				}
+			}
+			return result;
+		},
+
+		cache = {},
+
+		getBundleName = function(moduleName, bundleName, locale){
+			locale = locale ? locale.toLowerCase() : dojo.locale;
+			moduleName = moduleName.replace(/\./g, "/");
+			bundleName = bundleName.replace(/\./g, "/");
+			return (/root/i.test(locale)) ?
+				(moduleName + "/nls/" + bundleName) :
+				(moduleName + "/nls/" + locale + "/" + bundleName);
+		},
+
+		getL10nName = dojo.getL10nName = function(moduleName, bundleName, locale){
+			return moduleName = module.id + "!" + getBundleName(moduleName, bundleName, locale);
+		},
+
+		doLoad = function(require, bundlePathAndName, bundlePath, bundleName, locale, load){
+			// summary:
+			//		get the root bundle which instructs which other bundles are required to construct the localized bundle
+			require([bundlePathAndName], function(root){
+				var current = lang.clone(root.root || root.ROOT),// 1.6 built bundle defined ROOT
+					availableLocales = getAvailableLocales(!root._v1x && root, locale, bundlePath, bundleName);
+				require(availableLocales, function(){
+					for (var i = 1; i<availableLocales.length; i++){
+						current = lang.mixin(lang.clone(current), arguments[i]);
+					}
+					// target may not have been resolve (e.g., maybe only "fr" exists when "fr-ca" was requested)
+					var target = bundlePathAndName + "/" + locale;
+					cache[target] = current;
+					current.$locale = availableLocales.specificity;
+					load();
+				});
+			});
+		},
+
+		normalize = function(id, toAbsMid){
+			// summary:
+			//		id may be relative.
+			//		preload has form `*preload*<path>/nls/<module>*<flattened locales>` and
+			//		therefore never looks like a relative
+			return /^\./.test(id) ? toAbsMid(id) : id;
+		},
+
+		getLocalesToLoad = function(targetLocale){
+			var list = config.extraLocale || [];
+			list = lang.isArray(list) ? list : [list];
+			list.push(targetLocale);
+			return list;
+		},
+
+		load = function(id, require, load){
+			// summary:
+			//		id is in one of the following formats
+			//
+			//		1. <path>/nls/<bundle>
+			//			=> load the bundle, localized to config.locale; load all bundles localized to
+			//			config.extraLocale (if any); return the loaded bundle localized to config.locale.
+			//
+			//		2. <path>/nls/<locale>/<bundle>
+			//			=> load then return the bundle localized to <locale>
+			//
+			//		3. *preload*<path>/nls/<module>*<JSON array of available locales>
+			//			=> for config.locale and all config.extraLocale, load all bundles found
+			//			in the best-matching bundle rollup. A value of 1 is returned, which
+			//			is meaningless other than to say the plugin is executing the requested
+			//			preloads
+			//
+			//		In cases 1 and 2, <path> is always normalized to an absolute module id upon entry; see
+			//		normalize. In case 3, it <path> is assumed to be absolute; this is arranged by the builder.
+			//
+			//		To load a bundle means to insert the bundle into the plugin's cache and publish the bundle
+			//		value to the loader. Given <path>, <bundle>, and a particular <locale>, the cache key
+			//
+			//			<path>/nls/<bundle>/<locale>
+			//
+			//		will hold the value. Similarly, then plugin will publish this value to the loader by
+			//
+			//			define("<path>/nls/<bundle>/<locale>", <bundle-value>);
+			//
+			//		Given this algorithm, other machinery can provide fast load paths be preplacing
+			//		values in the plugin's cache, which is public. When a load is demanded the
+			//		cache is inspected before starting any loading. Explicitly placing values in the plugin
+			//		cache is an advanced/experimental feature that should not be needed; use at your own risk.
+			//
+			//		For the normal AMD algorithm, the root bundle is loaded first, which instructs the
+			//		plugin what additional localized bundles are required for a particular locale. These
+			//		additional locales are loaded and a mix of the root and each progressively-specific
+			//		locale is returned. For example:
+			//
+			//		1. The client demands "dojo/i18n!some/path/nls/someBundle
+			//
+			//		2. The loader demands load(some/path/nls/someBundle)
+			//
+			//		3. This plugin require's "some/path/nls/someBundle", which is the root bundle.
+			//
+			//		4. Assuming config.locale is "ab-cd-ef" and the root bundle indicates that localizations
+			//		are available for "ab" and "ab-cd-ef" (note the missing "ab-cd", then the plugin
+			//		requires "some/path/nls/ab/someBundle" and "some/path/nls/ab-cd-ef/someBundle"
+			//
+			//		5. Upon receiving all required bundles, the plugin constructs the value of the bundle
+			//		ab-cd-ef as...
+			//
+			//				mixin(mixin(mixin({}, require("some/path/nls/someBundle"),
+			//		  			require("some/path/nls/ab/someBundle")),
+			//					require("some/path/nls/ab-cd-ef/someBundle"));
+			//
+			//		This value is inserted into the cache and published to the loader at the
+			//		key/module-id some/path/nls/someBundle/ab-cd-ef.
+			//
+			//		The special preload signature (case 3) instructs the plugin to stop servicing all normal requests
+			//		(further preload requests will be serviced) until all ongoing preloading has completed.
+			//
+			//		The preload signature instructs the plugin that a special rollup module is available that contains
+			//		one or more flattened, localized bundles. The JSON array of available locales indicates which locales
+			//		are available. Here is an example:
+			//
+			//			*preload*some/path/nls/someModule*["root", "ab", "ab-cd-ef"]
+			//
+			//		This indicates the following rollup modules are available:
+			//
+			//			some/path/nls/someModule_ROOT
+			//			some/path/nls/someModule_ab
+			//			some/path/nls/someModule_ab-cd-ef
+			//
+			//		Each of these modules is a normal AMD module that contains one or more flattened bundles in a hash.
+			//		For example, assume someModule contained the bundles some/bundle/path/someBundle and
+			//		some/bundle/path/someOtherBundle, then some/path/nls/someModule_ab would be expressed as follows:
+			//
+			//			define({
+			//				some/bundle/path/someBundle:<value of someBundle, flattened with respect to locale ab>,
+			//				some/bundle/path/someOtherBundle:<value of someOtherBundle, flattened with respect to locale ab>,
+			//			});
+			//
+			//		E.g., given this design, preloading for locale=="ab" can execute the following algorithm:
+			//
+			//			require(["some/path/nls/someModule_ab"], function(rollup){
+			//				for(var p in rollup){
+			//					var id = p + "/ab",
+			//					cache[id] = rollup[p];
+			//					define(id, rollup[p]);
+			//				}
+			//			});
+			//
+			//		Similarly, if "ab-cd" is requested, the algorithm can determine that "ab" is the best available and
+			//		load accordingly.
+			//
+			//		The builder will write such rollups for every layer if a non-empty localeList  profile property is
+			//		provided. Further, the builder will include the following cache entry in the cache associated with
+			//		any layer.
+			//
+			//			"*now":function(r){r(['dojo/i18n!*preload*<path>/nls/<module>*<JSON array of available locales>']);}
+			//
+			//		The *now special cache module instructs the loader to apply the provided function to context-require
+			//		with respect to the particular layer being defined. This causes the plugin to hold all normal service
+			//		requests until all preloading is complete.
+			//
+			//		Notice that this algorithm is rarely better than the standard AMD load algorithm. Consider the normal case
+			//		where the target locale has a single segment and a layer depends on a single bundle:
+			//
+			//		Without Preloads:
+			//
+			//		1. Layer loads root bundle.
+			//		2. bundle is demanded; plugin loads single localized bundle.
+			//
+			//		With Preloads:
+			//
+			//		1. Layer causes preloading of target bundle.
+			//		2. bundle is demanded; service is delayed until preloading complete; bundle is returned.
+			//
+			//		In each case a single transaction is required to load the target bundle. In cases where multiple bundles
+			//		are required and/or the locale has multiple segments, preloads still requires a single transaction whereas
+			//		the normal path requires an additional transaction for each additional bundle/locale-segment. However all
+			//		of these additional transactions can be done concurrently. Owing to this analysis, the entire preloading
+			//		algorithm can be discard during a build by setting the has feature dojo-preload-i18n-Api to false.
+
+			if(has("dojo-preload-i18n-Api")){
+				var split = id.split("*"),
+					preloadDemand = split[1] == "preload";
+				if(preloadDemand){
+					if(!cache[id]){
+						// use cache[id] to prevent multiple preloads of the same preload; this shouldn't happen, but
+						// who knows what over-aggressive human optimizers may attempt
+						cache[id] = 1;
+						preloadL10n(split[2], json.parse(split[3]), 1, require);
+					}
+					// don't stall the loader!
+					load(1);
+				}
+				if(preloadDemand || waitForPreloads(id, require, load)){
+					return;
+				}
+			}
+
+			var match = nlsRe.exec(id),
+				bundlePath = match[1] + "/",
+				bundleName = match[5] || match[4],
+				bundlePathAndName = bundlePath + bundleName,
+				localeSpecified = (match[5] && match[4]),
+				targetLocale =	localeSpecified || dojo.locale || "",
+				loadTarget = bundlePathAndName + "/" + targetLocale,
+				loadList = localeSpecified ? [targetLocale] : getLocalesToLoad(targetLocale),
+				remaining = loadList.length,
+				finish = function(){
+					if(!--remaining){
+						load(lang.delegate(cache[loadTarget]));
+					}
+				};
+			array.forEach(loadList, function(locale){
+				var target = bundlePathAndName + "/" + locale;
+				if(has("dojo-preload-i18n-Api")){
+					checkForLegacyModules(target);
+				}
+				if(!cache[target]){
+					doLoad(require, bundlePathAndName, bundlePath, bundleName, locale, finish);
+				}else{
+					finish();
+				}
+			});
+		};
+
+	if(has("dojo-unit-tests")){
+		var unitTests = thisModule.unitTests = [];
+	}
+
+	if(has("dojo-preload-i18n-Api") ||  1 ){
+		var normalizeLocale = thisModule.normalizeLocale = function(locale){
+				var result = locale ? locale.toLowerCase() : dojo.locale;
+				return result == "root" ? "ROOT" : result;
+			},
+
+			isXd = function(mid, contextRequire){
+				return ( 1  &&  1 ) ?
+					contextRequire.isXdUrl(require.toUrl(mid + ".js")) :
+					true;
+			},
+
+			preloading = 0,
+
+			preloadWaitQueue = [],
+
+			preloadL10n = thisModule._preloadLocalizations = function(/*String*/bundlePrefix, /*Array*/localesGenerated, /*boolean?*/ guaranteedAmdFormat, /*function?*/ contextRequire){
+				// summary:
+				//		Load available flattened resource bundles associated with a particular module for dojo/locale and all dojo/config.extraLocale (if any)
+				// description:
+				//		Only called by built layer files. The entire locale hierarchy is loaded. For example,
+				//		if locale=="ab-cd", then ROOT, "ab", and "ab-cd" are loaded. This is different than v1.6-
+				//		in that the v1.6- would only load ab-cd...which was *always* flattened.
+				//
+				//		If guaranteedAmdFormat is true, then the module can be loaded with require thereby circumventing the detection algorithm
+				//		and the extra possible extra transaction.
+
+				// If this function is called from legacy code, then guaranteedAmdFormat and contextRequire will be undefined. Since the function
+				// needs a require in order to resolve module ids, fall back to the context-require associated with this dojo/i18n module, which
+				// itself may have been mapped.
+				contextRequire = contextRequire || require;
+
+				function doRequire(mid, callback){
+					if(isXd(mid, contextRequire) || guaranteedAmdFormat){
+						contextRequire([mid], callback);
+					}else{
+						syncRequire([mid], callback, contextRequire);
+					}
+				}
+
+				function forEachLocale(locale, func){
+					// given locale= "ab-cd-ef", calls func on "ab-cd-ef", "ab-cd", "ab", "ROOT"; stops calling the first time func returns truthy
+					var parts = locale.split("-");
+					while(parts.length){
+						if(func(parts.join("-"))){
+							return;
+						}
+						parts.pop();
+					}
+					func("ROOT");
+				}
+
+					function preloadingAddLock(){
+						preloading++;
+					}
+
+					function preloadingRelLock(){
+						--preloading;
+						while(!preloading && preloadWaitQueue.length){
+							load.apply(null, preloadWaitQueue.shift());
+						}
+					}
+
+					function cacheId(path, name, loc, require){
+						// path is assumed to have a trailing "/"
+						return require.toAbsMid(path + name + "/" + loc)
+					}
+
+					function preload(locale){
+						locale = normalizeLocale(locale);
+						forEachLocale(locale, function(loc){
+							if(array.indexOf(localesGenerated, loc) >= 0){
+								var mid = bundlePrefix.replace(/\./g, "/") + "_" + loc;
+								preloadingAddLock();
+								doRequire(mid, function(rollup){
+									for(var p in rollup){
+										var bundle = rollup[p],
+											match = p.match(/(.+)\/([^\/]+)$/),
+											bundleName, bundlePath;
+											
+											// If there is no match, the bundle is not a regular bundle from an AMD layer.
+											if (!match){continue;}
+
+											bundleName = match[2];
+											bundlePath = match[1] + "/";
+
+										// backcompat
+										bundle._localized = bundle._localized || {};
+
+										var localized;
+										if(loc === "ROOT"){
+											var root = localized = bundle._localized;
+											delete bundle._localized;
+											root.root = bundle;
+											cache[require.toAbsMid(p)] = root;
+										}else{
+											localized = bundle._localized;
+											cache[cacheId(bundlePath, bundleName, loc, require)] = bundle;
+										}
+
+										if(loc !== locale){
+											// capture some locale variables
+											function improveBundle(bundlePath, bundleName, bundle, localized){
+												// locale was not flattened and we've fallen back to a less-specific locale that was flattened
+												// for example, we had a flattened 'fr', a 'fr-ca' is available for at least this bundle, and
+												// locale==='fr-ca'; therefore, we must improve the bundle as retrieved from the rollup by
+												// manually loading the fr-ca version of the bundle and mixing this into the already-retrieved 'fr'
+												// version of the bundle.
+												//
+												// Remember, different bundles may have different sets of locales available.
+												//
+												// we are really falling back on the regular algorithm here, but--hopefully--starting with most
+												// of the required bundles already on board as given by the rollup and we need to "manually" load
+												// only one locale from a few bundles...or even better...we won't find anything better to load.
+												// This algorithm ensures there is nothing better to load even when we can only load a less-specific rollup.
+												//
+												// note: this feature is only available in async mode
+
+												// inspect the loaded bundle that came from the rollup to see if something better is available
+												// for any bundle in a rollup, more-specific available locales are given at localized.
+												var requiredBundles = [],
+													cacheIds = [];
+												forEachLocale(locale, function(loc){
+													if(localized[loc]){
+														requiredBundles.push(require.toAbsMid(bundlePath + loc + "/" + bundleName));
+														cacheIds.push(cacheId(bundlePath, bundleName, loc, require));
+													}
+												});
+
+												if(requiredBundles.length){
+													preloadingAddLock();
+													contextRequire(requiredBundles, function(){
+														for(var i = 0; i < requiredBundles.length; i++){
+															bundle = lang.mixin(lang.clone(bundle), arguments[i]);
+															cache[cacheIds[i]] = bundle;
+														}
+														// this is the best possible (maybe a perfect match, maybe not), accept it
+														cache[cacheId(bundlePath, bundleName, locale, require)] = lang.clone(bundle);
+														preloadingRelLock();
+													});
+												}else{
+													// this is the best possible (definitely not a perfect match), accept it
+													cache[cacheId(bundlePath, bundleName, locale, require)] = bundle;
+												}
+											}
+											improveBundle(bundlePath, bundleName, bundle, localized);
+										}
+									}
+									preloadingRelLock();
+								});
+								return true;
+							}
+							return false;
+						});
+					}
+
+				preload();
+				array.forEach(dojo.config.extraLocale, preload);
+			},
+
+			waitForPreloads = function(id, require, load){
+				if(preloading){
+					preloadWaitQueue.push([id, require, load]);
+				}
+				return preloading;
+			},
+
+			checkForLegacyModules = function()
+				{};
+	}
+
+	if( 1 ){
+		// this code path assumes the dojo loader and won't work with a standard AMD loader
+		var amdValue = {},
+			evalBundle =
+				// use the function ctor to keep the minifiers away (also come close to global scope, but this is secondary)
+				new Function(
+					"__bundle",				   // the bundle to evalutate
+					"__checkForLegacyModules", // a function that checks if __bundle defined __mid in the global space
+					"__mid",				   // the mid that __bundle is intended to define
+					"__amdValue",
+
+					// returns one of:
+					//		1 => the bundle was an AMD bundle
+					//		a legacy bundle object that is the value of __mid
+					//		instance of Error => could not figure out how to evaluate bundle
+
+					  // used to detect when __bundle calls define
+					  "var define = function(mid, factory){define.called = 1; __amdValue.result = factory || mid;},"
+					+ "	   require = function(){define.called = 1;};"
+
+					+ "try{"
+					+		"define.called = 0;"
+					+		"eval(__bundle);"
+					+		"if(define.called==1)"
+								// bundle called define; therefore signal it's an AMD bundle
+					+			"return __amdValue;"
+
+					+		"if((__checkForLegacyModules = __checkForLegacyModules(__mid)))"
+								// bundle was probably a v1.6- built NLS flattened NLS bundle that defined __mid in the global space
+					+			"return __checkForLegacyModules;"
+
+					+ "}catch(e){}"
+					// evaulating the bundle was *neither* an AMD *nor* a legacy flattened bundle
+					// either way, re-eval *after* surrounding with parentheses
+
+					+ "try{"
+					+		"return eval('('+__bundle+')');"
+					+ "}catch(e){"
+					+		"return e;"
+					+ "}"
+				),
+
+			syncRequire = function(deps, callback, require){
+				var results = [];
+				array.forEach(deps, function(mid){
+					var url = require.toUrl(mid + ".js");
+
+					function load(text){
+						var result = evalBundle(text, checkForLegacyModules, mid, amdValue);
+						if(result===amdValue){
+							// the bundle was an AMD module; re-inject it through the normal AMD path
+							// we gotta do this since it could be an anonymous module and simply evaluating
+							// the text here won't provide the loader with the context to know what
+							// module is being defined()'d. With browser caching, this should be free; further
+							// this entire code path can be circumvented by using the AMD format to begin with
+							results.push(cache[url] = amdValue.result);
+						}else{
+							if(result instanceof Error){
+								console.error("failed to evaluate i18n bundle; url=" + url, result);
+								result = {};
+							}
+							// nls/<locale>/<bundle-name> indicates not the root.
+							results.push(cache[url] = (/nls\/[^\/]+\/[^\/]+$/.test(url) ? result : {root:result, _v1x:1}));
+						}
+					}
+
+					if(cache[url]){
+						results.push(cache[url]);
+					}else{
+						var bundle = require.syncLoadNls(mid);
+						// don't need to check for legacy since syncLoadNls returns a module if the module
+						// (1) was already loaded, or (2) was in the cache. In case 1, if syncRequire is called
+						// from getLocalization --> load, then load will have called checkForLegacyModules() before
+						// calling syncRequire; if syncRequire is called from preloadLocalizations, then we
+						// don't care about checkForLegacyModules() because that will be done when a particular
+						// bundle is actually demanded. In case 2, checkForLegacyModules() is never relevant
+						// because cached modules are always v1.7+ built modules.
+						if(bundle){
+							results.push(bundle);
+						}else{
+							if(!xhr){
+								try{
+									require.getText(url, true, load);
+								}catch(e){
+									results.push(cache[url] = {});
+								}
+							}else{
+								xhr.get({
+									url:url,
+									sync:true,
+									load:load,
+									error:function(){
+										results.push(cache[url] = {});
+									}
+								});
+							}
+						}
+					}
+				});
+				callback && callback.apply(null, results);
+			};
+
+		checkForLegacyModules = function(target){
+			// legacy code may have already loaded [e.g] the raw bundle x/y/z at x.y.z; when true, push into the cache
+			for(var result, names = target.split("/"), object = dojo.global[names[0]], i = 1; object && i<names.length-1; object = object[names[i++]]){}
+			if(object){
+				result = object[names[i]];
+				if(!result){
+					// fallback for incorrect bundle build of 1.6
+					result = object[names[i].replace(/-/g,"_")];
+				}
+				if(result){
+					cache[target] = result;
+				}
+			}
+			return result;
+		};
+
+		thisModule.getLocalization = function(moduleName, bundleName, locale){
+			var result,
+				l10nName = getBundleName(moduleName, bundleName, locale);
+			load(
+				l10nName,
+
+				// isXd() and syncRequire() need a context-require in order to resolve the mid with respect to a reference module.
+				// Since this legacy function does not have the concept of a reference module, resolve with respect to this
+				// dojo/i18n module, which, itself may have been mapped.
+				(!isXd(l10nName, require) ? function(deps, callback){ syncRequire(deps, callback, require); } : require),
+
+				function(result_){ result = result_; }
+			);
+			return result;
+		};
+
+		if(has("dojo-unit-tests")){
+			unitTests.push(function(doh){
+				doh.register("tests.i18n.unit", function(t){
+					var check;
+
+					check = evalBundle("{prop:1}", checkForLegacyModules, "nonsense", amdValue);
+					t.is({prop:1}, check); t.is(undefined, check[1]);
+
+					check = evalBundle("({prop:1})", checkForLegacyModules, "nonsense", amdValue);
+					t.is({prop:1}, check); t.is(undefined, check[1]);
+
+					check = evalBundle("{'prop-x':1}", checkForLegacyModules, "nonsense", amdValue);
+					t.is({'prop-x':1}, check); t.is(undefined, check[1]);
+
+					check = evalBundle("({'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
+					t.is({'prop-x':1}, check); t.is(undefined, check[1]);
+
+					check = evalBundle("define({'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
+					t.is(amdValue, check); t.is({'prop-x':1}, amdValue.result);
+
+					check = evalBundle("define('some/module', {'prop-x':1})", checkForLegacyModules, "nonsense", amdValue);
+					t.is(amdValue, check); t.is({'prop-x':1}, amdValue.result);
+
+					check = evalBundle("this is total nonsense and should throw an error", checkForLegacyModules, "nonsense", amdValue);
+					t.is(check instanceof Error, true);
+				});
+			});
+		}
+	}
+
+	return lang.mixin(thisModule, {
+		dynamic:true,
+		normalize:normalize,
+		load:load,
+		cache:cache,
+		getL10nName: getL10nName
+	});
+});
+
+},
+'dojox/validate/regexp':function(){
+define(["dojo/_base/lang", "dojo/regexp", "dojox/main"], 
+  function(lang, regexp, dojox){
+
+var dxregexp = lang.getObject("validate.regexp", true, dojox);
+dxregexp = dojox.validate.regexp = {
+	
+	ipAddress: function(flags){
+		// summary:
+		//		Builds a RE that matches an IP Address
+		// description:
+		//		Supports 5 formats for IPv4: dotted decimal, dotted hex, dotted octal, decimal and hexadecimal.
+		//		Supports 2 formats for Ipv6.
+		// flags: Object?
+		//		All flags are boolean with default = true.
+		//
+		//		- flags.allowDottedDecimal  Example, 207.142.131.235.  No zero padding.
+		//		- flags.allowDottedHex  Example, 0x18.0x11.0x9b.0x28.  Case insensitive.  Zero padding allowed.
+		//		- flags.allowDottedOctal  Example, 0030.0021.0233.0050.  Zero padding allowed.
+		//		- flags.allowDecimal  Example, 3482223595.  A decimal number between 0-4294967295.
+		//		- flags.allowHex  Example, 0xCF8E83EB.  Hexadecimal number between 0x0-0xFFFFFFFF.
+		//		  Case insensitive.  Zero padding allowed.
+		//		- flags.allowIPv6   IPv6 address written as eight groups of four hexadecimal digits.
+		
+		//	FIXME: ipv6 can be written multiple ways IIRC
+		//		- flags.allowHybrid   IPv6 address written as six groups of four hexadecimal digits
+		//		-   followed by the usual 4 dotted decimal digit notation of IPv4. x:x:x:x:x:x:d.d.d.d
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+		if(typeof flags.allowDottedDecimal != "boolean"){ flags.allowDottedDecimal = true; }
+		if(typeof flags.allowDottedHex != "boolean"){ flags.allowDottedHex = true; }
+		if(typeof flags.allowDottedOctal != "boolean"){ flags.allowDottedOctal = true; }
+		if(typeof flags.allowDecimal != "boolean"){ flags.allowDecimal = true; }
+		if(typeof flags.allowHex != "boolean"){ flags.allowHex = true; }
+		if(typeof flags.allowIPv6 != "boolean"){ flags.allowIPv6 = true; }
+		if(typeof flags.allowHybrid != "boolean"){ flags.allowHybrid = true; }
+
+		// decimal-dotted IP address RE.
+		var dottedDecimalRE =
+			// Each number is between 0-255.  Zero padding is not allowed.
+			"((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])";
+
+		// dotted hex IP address RE.  Each number is between 0x0-0xff.  Zero padding is allowed, e.g. 0x00.
+		var dottedHexRE = "(0[xX]0*[\\da-fA-F]?[\\da-fA-F]\\.){3}0[xX]0*[\\da-fA-F]?[\\da-fA-F]";
+
+		// dotted octal IP address RE.  Each number is between 0000-0377.
+		// Zero padding is allowed, but each number must have at least 4 characters.
+		var dottedOctalRE = "(0+[0-3][0-7][0-7]\\.){3}0+[0-3][0-7][0-7]";
+
+		// decimal IP address RE.  A decimal number between 0-4294967295.
+		var decimalRE =  "(0|[1-9]\\d{0,8}|[1-3]\\d{9}|4[01]\\d{8}|42[0-8]\\d{7}|429[0-3]\\d{6}|" +
+			"4294[0-8]\\d{5}|42949[0-5]\\d{4}|429496[0-6]\\d{3}|4294967[01]\\d{2}|42949672[0-8]\\d|429496729[0-5])";
+
+		// hexadecimal IP address RE.
+		// A hexadecimal number between 0x0-0xFFFFFFFF. Case insensitive.  Zero padding is allowed.
+		var hexRE = "0[xX]0*[\\da-fA-F]{1,8}";
+
+		// IPv6 address RE.
+		// The format is written as eight groups of four hexadecimal digits, x:x:x:x:x:x:x:x,
+		// where x is between 0000-ffff. Zero padding is optional. Case insensitive.
+		var ipv6RE = "([\\da-fA-F]{1,4}\\:){7}[\\da-fA-F]{1,4}";
+
+		// IPv6/IPv4 Hybrid address RE.
+		// The format is written as six groups of four hexadecimal digits,
+		// followed by the 4 dotted decimal IPv4 format. x:x:x:x:x:x:d.d.d.d
+		var hybridRE = "([\\da-fA-F]{1,4}\\:){6}" +
+			"((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5])";
+
+		// Build IP Address RE
+		var a = [];
+		if(flags.allowDottedDecimal){ a.push(dottedDecimalRE); }
+		if(flags.allowDottedHex){ a.push(dottedHexRE); }
+		if(flags.allowDottedOctal){ a.push(dottedOctalRE); }
+		if(flags.allowDecimal){ a.push(decimalRE); }
+		if(flags.allowHex){ a.push(hexRE); }
+		if(flags.allowIPv6){ a.push(ipv6RE); }
+		if(flags.allowHybrid){ a.push(hybridRE); }
+
+		var ipAddressRE = "";
+		if(a.length > 0){
+			ipAddressRE = "(" + a.join("|") + ")";
+		}
+		return ipAddressRE; // String
+	},
+
+	host: function(flags){
+		// summary:
+		//		Builds a RE that matches a host
+		// description:
+		//		A host is a named host (A-z0-9_- but not starting with -), a domain name or an IP address, possibly followed by a port number.
+		// flags: Object?
+		//		- flags.allowNamed Allow a named host for local networks. Default is false.
+		//		- flags.allowIP  Allow an IP address for hostname.  Default is true.
+		//		- flags.allowLocal  Allow the host to be "localhost".  Default is false.
+		//		- flags.allowPort  Allow a port number to be present.  Default is true.
+		//		- flags in regexp.ipAddress can be applied.
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+
+		if(typeof flags.allowIP != "boolean"){ flags.allowIP = true; }
+		if(typeof flags.allowLocal != "boolean"){ flags.allowLocal = false; }
+		if(typeof flags.allowPort != "boolean"){ flags.allowPort = true; }
+		if(typeof flags.allowNamed != "boolean"){ flags.allowNamed = false; }
+
+		//TODO: support unicode hostnames?
+		// Domain name labels can not end with a dash.
+		var domainLabelRE = "(?:[\\da-zA-Z](?:[-\\da-zA-Z]{0,61}[\\da-zA-Z])?)";
+		var domainNameRE = "(?:[a-zA-Z](?:[-\\da-zA-Z]{0,6}[\\da-zA-Z])?)"; // restricted version to allow backwards compatibility with allowLocal, allowIP
+
+		// port number RE
+		var portRE = flags.allowPort ? "(\\:\\d+)?" : "";
+
+		// build host RE
+		var hostNameRE = "((?:" + domainLabelRE + "\\.)+" + domainNameRE + "\\.?)";
+		if(flags.allowIP){ hostNameRE += "|" +  dxregexp.ipAddress(flags); }
+		if(flags.allowLocal){ hostNameRE += "|localhost"; }
+		if(flags.allowNamed){ hostNameRE += "|^[^-][a-zA-Z0-9_-]*"; }
+		return "(" + hostNameRE + ")" + portRE; // String
+
+	},
+
+	url: function(flags){
+		// summary:
+		//		Builds a regular expression that matches a URL
+		// flags: Object?
+		//		- flags.scheme  Can be true, false, or [true, false].
+		//		-   This means: required, not allowed, or match either one.
+		//		- flags in regexp.host can be applied.
+		//		- flags in regexp.ipAddress can be applied.
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+		if(!("scheme" in flags)){ flags.scheme = [true, false]; }
+
+		// Scheme RE
+		var protocolRE = regexp.buildGroupRE(flags.scheme,
+			function(q){ if(q){ return "(https?|ftps?)\\://"; } return ""; }
+		);
+
+		// Path and query and anchor RE
+		var pathRE = "(/(?:[^?#\\s/]+/)*(?:[^?#\\s/]+(?:\\?[^?#\\s/]*)?(?:#[A-Za-z][\\w.:-]*)?)?)?";
+
+		return protocolRE + dxregexp.host(flags) + pathRE;
+	},
+
+	emailAddress: function(flags){
+		// summary:
+		//		Builds a regular expression that matches an email address
+		// flags: Object?
+		//		- flags.allowCruft  Allow address like `<mailto:foo@yahoo.com>`.  Default is false.
+		//		- flags in regexp.host can be applied.
+		//		- flags in regexp.ipAddress can be applied.
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+		if (typeof flags.allowCruft != "boolean") { flags.allowCruft = false; }
+		flags.allowPort = false; // invalid in email addresses
+
+		// user name RE per rfc5322
+		var usernameRE = "([!#-'*+\\-\\/-9=?A-Z^-~]+[.])*[!#-'*+\\-\\/-9=?A-Z^-~]+";
+
+		// build emailAddress RE
+		var emailAddressRE = usernameRE + "@" + dxregexp.host(flags);
+
+		// Allow email addresses with cruft
+		if ( flags.allowCruft ) {
+			emailAddressRE = "<?(mailto\\:)?" + emailAddressRE + ">?";
+		}
+
+		return emailAddressRE; // String
+	},
+
+	emailAddressList: function(flags){
+		// summary:
+		//		Builds a regular expression that matches a list of email addresses.
+		// flags: Object?
+		//		- flags.listSeparator  The character used to separate email addresses.  Default is ";", ",", "\n" or " ".
+		//		- flags in regexp.emailAddress can be applied.
+		//		- flags in regexp.host can be applied.
+		//		- flags in regexp.ipAddress can be applied.
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+		if(typeof flags.listSeparator != "string"){ flags.listSeparator = "\\s;,"; }
+
+		// build a RE for an Email Address List
+		var emailAddressRE = dxregexp.emailAddress(flags);
+		var emailAddressListRE = "(" + emailAddressRE + "\\s*[" + flags.listSeparator + "]\\s*)*" +
+			emailAddressRE + "\\s*[" + flags.listSeparator + "]?\\s*";
+
+		return emailAddressListRE; // String
+	},
+	
+	numberFormat: function(flags){
+		// summary:
+		//		Builds a regular expression to match any sort of number based format
+		// description:
+		//		Use this method for phone numbers, social security numbers, zip-codes, etc.
+		//		The RE can match one format or one of multiple formats.
+		//
+		//		Format:
+		//
+		//		- #        Stands for a digit, 0-9.
+		//		- ?        Stands for an optional digit, 0-9 or nothing.
+		//		- All other characters must appear literally in the expression.
+		//
+		// example:
+		//		- "(###) ###-####"		-    ->   (510) 542-9742
+		//		- "(###) ###-#### x#???" ->   (510) 542-9742 x153
+		//		- "###-##-####"		- 		-   ->   506-82-1089		-    i.e. social security number
+		//		- "#####-####"		- 		-    ->   98225-1649		- 		- i.e. zip code
+		//
+		// flags:  Object?
+		//		- flags.format  A string or an Array of strings for multiple formats.
+
+		// assign default values to missing parameters
+		flags = (typeof flags == "object") ? flags : {};
+		if(typeof flags.format == "undefined"){ flags.format = "###-###-####"; }
+
+		// Converts a number format to RE.
+		var digitRE = function(format){
+			// escape all special characters, except '?'
+			return regexp.escapeString(format, "?")
+				// Now replace '?' with Regular Expression
+				.replace(/\?/g, "\\d?")
+				// replace # with Regular Expression
+				.replace(/#/g, "\\d")
+			;
+		};
+
+		// build RE for multiple number formats
+		return regexp.buildGroupRE(flags.format, digitRE); //String
+	},
+	
+	ca: {
+
+		postalCode: function(){
+			// summary:
+			//		String regular Express to match Canadain Postal Codes
+			return "([A-Z][0-9][A-Z] [0-9][A-Z][0-9])";
+		},
+
+		province: function(){
+			// summary:
+			//		a regular expression to match Canadian Province Abbreviations
+			return "(AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT)";
+		}
+
+	},
+	
+	us:{
+		state: function(flags){
+			// summary:
+			//		A regular expression to match US state and territory abbreviations
+			// flags: Object?
+			//		- flags.allowTerritories  Allow Guam, Puerto Rico, etc.  Default is true.
+			//		- flags.allowMilitary  Allow military 'states', e.g. Armed Forces Europe (AE).  Default is true.
+
+			// assign default values to missing parameters
+			flags = (typeof flags == "object") ? flags : {};
+			if(typeof flags.allowTerritories != "boolean"){ flags.allowTerritories = true; }
+			if(typeof flags.allowMilitary != "boolean"){ flags.allowMilitary = true; }
+
+			// state RE
+			var statesRE =
+				"AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|" +
+				"NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY";
+
+			// territories RE
+			var territoriesRE = "AS|FM|GU|MH|MP|PW|PR|VI";
+
+			// military states RE
+			var militaryRE = "AA|AE|AP";
+
+			// Build states and territories RE
+			if(flags.allowTerritories){ statesRE += "|" + territoriesRE; }
+			if(flags.allowMilitary){ statesRE += "|" + militaryRE; }
+
+			return "(" + statesRE + ")"; // String
+		}
+
+	}
+	
+};
+
+return dxregexp;
+
+});
+
+},
+'dojox/main':function(){
+define(["dojo/_base/kernel"], function(dojo) {
+	// module:
+	//		dojox/main
+
+	/*=====
+	return {
+		// summary:
+		//		The dojox package main module; dojox package is somewhat unusual in that the main module currently just provides an empty object.
+		//		Apps should require modules from the dojox packages directly, rather than loading this module.
+	};
+	=====*/
+
+	return dojo.dojox;
+});
+},
+'dijit/form/DropDownButton':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // hitch
+	"dojo/query", // query
+	"../registry", // registry.byNode
+	"../popup", // dijit.popup2.hide
+	"./Button",
+	"../_Container",
+	"../_HasDropDown",
+	"dojo/text!./templates/DropDownButton.html",
+	"../a11yclick"	// template uses ondijitclick
+], function(declare, lang, query, registry, popup, Button, _Container, _HasDropDown, template){
+
+	// module:
+	//		dijit/form/DropDownButton
+
+	return declare("dijit.form.DropDownButton", [Button, _Container, _HasDropDown], {
+		// summary:
+		//		A button with a drop down
+		//
+		// example:
+		// |	<button data-dojo-type="dijit/form/DropDownButton">
+		// |		Hello world
+		// |		<div data-dojo-type="dijit/Menu">...</div>
+		// |	</button>
+		//
+		// example:
+		// |	var button1 = new DropDownButton({ label: "hi", dropDown: new dijit.Menu(...) });
+		// |	win.body().appendChild(button1);
+		//
+
+		baseClass: "dijitDropDownButton",
+
+		templateString: template,
+
+		_fillContent: function(){
+			// Overrides Button._fillContent().
+			//
+			// My inner HTML contains both the button contents and a drop down widget, like
+			// <DropDownButton>  <span>push me</span>  <Menu> ... </Menu> </DropDownButton>
+			// The first node is assumed to be the button content. The widget is the popup.
+
+			if(this.srcNodeRef){ // programatically created buttons might not define srcNodeRef
+				//FIXME: figure out how to filter out the widget and use all remaining nodes as button
+				//	content, not just nodes[0]
+				var nodes = query("*", this.srcNodeRef);
+				this.inherited(arguments, [nodes[0]]);
+
+				// save pointer to srcNode so we can grab the drop down widget after it's instantiated
+				this.dropDownContainer = this.srcNodeRef;
+			}
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+
+			// the child widget from srcNodeRef is the dropdown widget.  Insert it in the page DOM,
+			// make it invisible, and store a reference to pass to the popup code.
+			if(!this.dropDown && this.dropDownContainer){
+				var dropDownNode = query("[widgetId]", this.dropDownContainer)[0];
+				if(dropDownNode){
+					this.dropDown = registry.byNode(dropDownNode);
+				}
+				delete this.dropDownContainer;
+			}
+			if(this.dropDown){
+				popup.hide(this.dropDown);
+			}
+
+			this.inherited(arguments);
+		},
+
+		isLoaded: function(){
+			// Returns whether or not we are loaded - if our dropdown has an href,
+			// then we want to check that.
+			var dropDown = this.dropDown;
+			return (!!dropDown && (!dropDown.href || dropDown.isLoaded));
+		},
+
+		loadDropDown: function(/*Function*/ callback){
+			// Default implementation assumes that drop down already exists,
+			// but hasn't loaded it's data (ex: ContentPane w/href).
+			// App must override if the drop down is lazy-created.
+			var dropDown = this.dropDown;
+			var handler = dropDown.on("load", lang.hitch(this, function(){
+				handler.remove();
+				callback();
+			}));
+			dropDown.refresh();		// tell it to load
+		},
+
+		isFocusable: function(){
+			// Overridden so that focus is handled by the _HasDropDown mixin, not by
+			// the _FormWidget mixin.
+			return this.inherited(arguments) && !this._mouseDown;
+		}
+	});
+});
+
+},
+'dijit/popup':function(){
+define([
+	"dojo/_base/array", // array.forEach array.some
+	"dojo/aspect",
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.isDescendant
+	"dojo/dom-attr", // domAttr.set
+	"dojo/dom-construct", // domConstruct.create domConstruct.destroy
+	"dojo/dom-geometry", // domGeometry.isBodyLtr
+	"dojo/dom-style", // domStyle.set
+	"dojo/has", // has("config-bgIframe")
+	"dojo/keys",
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"./place",
+	"./BackgroundIframe",
+	"./Viewport",
+	"./main",    // dijit (defining dijit.popup to match API doc)
+	"dojo/touch"		// use of dojoClick
+], function(array, aspect, declare, dom, domAttr, domConstruct, domGeometry, domStyle, has, keys, lang, on,
+			place, BackgroundIframe, Viewport, dijit){
+
+	// module:
+	//		dijit/popup
+
+	/*=====
+	 var __OpenArgs = {
+		 // popup: Widget
+		 //		widget to display
+		 // parent: Widget
+		 //		the button etc. that is displaying this popup
+		 // around: DomNode
+		 //		DOM node (typically a button); place popup relative to this node.  (Specify this *or* "x" and "y" parameters.)
+		 // x: Integer
+		 //		Absolute horizontal position (in pixels) to place node at.  (Specify this *or* "around" parameter.)
+		 // y: Integer
+		 //		Absolute vertical position (in pixels) to place node at.  (Specify this *or* "around" parameter.)
+		 // orient: Object|String
+		 //		When the around parameter is specified, orient should be a list of positions to try, ex:
+		 //	|	[ "below", "above" ]
+		 //		For backwards compatibility it can also be an (ordered) hash of tuples of the form
+		 //		(around-node-corner, popup-node-corner), ex:
+		 //	|	{ "BL": "TL", "TL": "BL" }
+		 //		where BL means "bottom left" and "TL" means "top left", etc.
+		 //
+		 //		dijit/popup.open() tries to position the popup according to each specified position, in order,
+		 //		until the popup appears fully within the viewport.
+		 //
+		 //		The default value is ["below", "above"]
+		 //
+		 //		When an (x,y) position is specified rather than an around node, orient is either
+		 //		"R" or "L".  R (for right) means that it tries to put the popup to the right of the mouse,
+		 //		specifically positioning the popup's top-right corner at the mouse position, and if that doesn't
+		 //		fit in the viewport, then it tries, in order, the bottom-right corner, the top left corner,
+		 //		and the top-right corner.
+		 // onCancel: Function
+		 //		callback when user has canceled the popup by:
+		 //
+		 //		1. hitting ESC or
+		 //		2. by using the popup widget's proprietary cancel mechanism (like a cancel button in a dialog);
+		 //		   i.e. whenever popupWidget.onCancel() is called, args.onCancel is called
+		 // onClose: Function
+		 //		callback whenever this popup is closed
+		 // onExecute: Function
+		 //		callback when user "executed" on the popup/sub-popup by selecting a menu choice, etc. (top menu only)
+		 // padding: place.__Position
+		 //		adding a buffer around the opening position. This is only useful when around is not set.
+		 // maxHeight: Integer
+		 //		The max height for the popup.  Any popup taller than this will have scrollbars.
+		 //		Set to Infinity for no max height.  Default is to limit height to available space in viewport,
+		 //		above or below the aroundNode or specified x/y position.
+	 };
+	 =====*/
+
+	function destroyWrapper(){
+		// summary:
+		//		Function to destroy wrapper when popup widget is destroyed.
+		//		Left in this scope to avoid memory leak on IE8 on refresh page, see #15206.
+		if(this._popupWrapper){
+			domConstruct.destroy(this._popupWrapper);
+			delete this._popupWrapper;
+		}
+	}
+
+	var PopupManager = declare(null, {
+		// summary:
+		//		Used to show drop downs (ex: the select list of a ComboBox)
+		//		or popups (ex: right-click context menus).
+
+		// _stack: dijit/_WidgetBase[]
+		//		Stack of currently popped up widgets.
+		//		(someone opened _stack[0], and then it opened _stack[1], etc.)
+		_stack: [],
+
+		// _beginZIndex: Number
+		//		Z-index of the first popup.   (If first popup opens other
+		//		popups they get a higher z-index.)
+		_beginZIndex: 1000,
+
+		_idGen: 1,
+
+		_repositionAll: function(){
+			// summary:
+			//		If screen has been scrolled, reposition all the popups in the stack.
+			//		Then set timer to check again later.
+
+			if(this._firstAroundNode){	// guard for when clearTimeout() on IE doesn't work
+				var oldPos = this._firstAroundPosition,
+					newPos = domGeometry.position(this._firstAroundNode, true),
+					dx = newPos.x - oldPos.x,
+					dy = newPos.y - oldPos.y;
+
+				if(dx || dy){
+					this._firstAroundPosition = newPos;
+					for(var i = 0; i < this._stack.length; i++){
+						var style = this._stack[i].wrapper.style;
+						style.top = (parseFloat(style.top) + dy) + "px";
+						if(style.right == "auto"){
+							style.left = (parseFloat(style.left) + dx) + "px";
+						}else{
+							style.right = (parseFloat(style.right) - dx) + "px";
+						}
+					}
+				}
+
+				this._aroundMoveListener = setTimeout(lang.hitch(this, "_repositionAll"), dx || dy ? 10 : 50);
+			}
+		},
+
+		_createWrapper: function(/*Widget*/ widget){
+			// summary:
+			//		Initialization for widgets that will be used as popups.
+			//		Puts widget inside a wrapper DIV (if not already in one),
+			//		and returns pointer to that wrapper DIV.
+
+			var wrapper = widget._popupWrapper,
+				node = widget.domNode;
+
+			if(!wrapper){
+				// Create wrapper <div> for when this widget [in the future] will be used as a popup.
+				// This is done early because of IE bugs where creating/moving DOM nodes causes focus
+				// to go wonky, see tests/robot/Toolbar.html to reproduce
+				wrapper = domConstruct.create("div", {
+					"class": "dijitPopup",
+					style: { display: "none"},
+					role: "region",
+					"aria-label": widget["aria-label"] || widget.label || widget.name || widget.id
+				}, widget.ownerDocumentBody);
+				wrapper.appendChild(node);
+
+				var s = node.style;
+				s.display = "";
+				s.visibility = "";
+				s.position = "";
+				s.top = "0px";
+
+				widget._popupWrapper = wrapper;
+				aspect.after(widget, "destroy", destroyWrapper, true);
+
+				// Workaround iOS problem where clicking a Menu can focus an <input> (or click a button) behind it.
+				// Need to be careful though that you can still focus <input>'s and click <button>'s in a TooltipDialog.
+				// Also, be careful not to break (native) scrolling of dropdown like ComboBox's options list.
+				if("ontouchend" in document) {
+					on(wrapper, "touchend", function (evt){
+						if(!/^(input|button|textarea)$/i.test(evt.target.tagName)) {
+							evt.preventDefault();
+						}
+					});
+				}
+
+				// Calling evt.preventDefault() suppresses the native click event on most browsers.  However, it doesn't
+				// suppress the synthetic click event emitted by dojo/touch.  In order for clicks in popups to work
+				// consistently, always use dojo/touch in popups.  See #18150.
+				wrapper.dojoClick = true;
+			}
+
+			return wrapper;
+		},
+
+		moveOffScreen: function(/*Widget*/ widget){
+			// summary:
+			//		Moves the popup widget off-screen.
+			//		Do not use this method to hide popups when not in use, because
+			//		that will create an accessibility issue: the offscreen popup is
+			//		still in the tabbing order.
+
+			// Create wrapper if not already there
+			var wrapper = this._createWrapper(widget);
+
+			// Besides setting visibility:hidden, move it out of the viewport, see #5776, #10111, #13604
+			var ltr = domGeometry.isBodyLtr(widget.ownerDocument),
+				style = {
+					visibility: "hidden",
+					top: "-9999px",
+					display: ""
+				};
+			style[ltr ? "left" : "right"] = "-9999px";
+			style[ltr ? "right" : "left"] = "auto";
+			domStyle.set(wrapper, style);
+
+			return wrapper;
+		},
+
+		hide: function(/*Widget*/ widget){
+			// summary:
+			//		Hide this popup widget (until it is ready to be shown).
+			//		Initialization for widgets that will be used as popups
+			//
+			//		Also puts widget inside a wrapper DIV (if not already in one)
+			//
+			//		If popup widget needs to layout it should
+			//		do so when it is made visible, and popup._onShow() is called.
+
+			// Create wrapper if not already there
+			var wrapper = this._createWrapper(widget);
+
+			domStyle.set(wrapper, {
+				display: "none",
+				height: "auto",		// Open may have limited the height to fit in the viewport
+				overflow: "visible",
+				border: ""			// Open() may have moved border from popup to wrapper.
+			});
+
+			// Open() may have moved border from popup to wrapper.  Move it back.
+			var node = widget.domNode;
+			if("_originalStyle" in node){
+				node.style.cssText = node._originalStyle;
+			}
+		},
+
+		getTopPopup: function(){
+			// summary:
+			//		Compute the closest ancestor popup that's *not* a child of another popup.
+			//		Ex: For a TooltipDialog with a button that spawns a tree of menus, find the popup of the button.
+			var stack = this._stack;
+			for(var pi = stack.length - 1; pi > 0 && stack[pi].parent === stack[pi - 1].widget; pi--){
+				/* do nothing, just trying to get right value for pi */
+			}
+			return stack[pi];
+		},
+
+		open: function(/*__OpenArgs*/ args){
+			// summary:
+			//		Popup the widget at the specified position
+			//
+			// example:
+			//		opening at the mouse position
+			//		|		popup.open({popup: menuWidget, x: evt.pageX, y: evt.pageY});
+			//
+			// example:
+			//		opening the widget as a dropdown
+			//		|		popup.open({parent: this, popup: menuWidget, around: this.domNode, onClose: function(){...}});
+			//
+			//		Note that whatever widget called dijit/popup.open() should also listen to its own _onBlur callback
+			//		(fired from _base/focus.js) to know that focus has moved somewhere else and thus the popup should be closed.
+
+			var stack = this._stack,
+				widget = args.popup,
+				node = widget.domNode,
+				orient = args.orient || ["below", "below-alt", "above", "above-alt"],
+				ltr = args.parent ? args.parent.isLeftToRight() : domGeometry.isBodyLtr(widget.ownerDocument),
+				around = args.around,
+				id = (args.around && args.around.id) ? (args.around.id + "_dropdown") : ("popup_" + this._idGen++);
+
+			// If we are opening a new popup that isn't a child of a currently opened popup, then
+			// close currently opened popup(s).   This should happen automatically when the old popups
+			// gets the _onBlur() event, except that the _onBlur() event isn't reliable on IE, see [22198].
+			while(stack.length && (!args.parent || !dom.isDescendant(args.parent.domNode, stack[stack.length - 1].widget.domNode))){
+				this.close(stack[stack.length - 1].widget);
+			}
+
+			// Get pointer to popup wrapper, and create wrapper if it doesn't exist.  Remove display:none (but keep
+			// off screen) so we can do sizing calculations.
+			var wrapper = this.moveOffScreen(widget);
+
+			if(widget.startup && !widget._started){
+				widget.startup(); // this has to be done after being added to the DOM
+			}
+
+			// Limit height to space available in viewport either above or below aroundNode (whichever side has more
+			// room), adding scrollbar if necessary. Can't add scrollbar to widget because it may be a <table> (ex:
+			// dijit/Menu), so add to wrapper, and then move popup's border to wrapper so scroll bar inside border.
+			var maxHeight, popupSize = domGeometry.position(node);
+			if("maxHeight" in args && args.maxHeight != -1){
+				maxHeight = args.maxHeight || Infinity;	// map 0 --> infinity for back-compat of _HasDropDown.maxHeight
+			}else{
+				var viewport = Viewport.getEffectiveBox(this.ownerDocument),
+					aroundPos = around ? domGeometry.position(around, false) : {y: args.y - (args.padding||0), h: (args.padding||0) * 2};
+				maxHeight = Math.floor(Math.max(aroundPos.y, viewport.h - (aroundPos.y + aroundPos.h)));
+			}
+			if(popupSize.h > maxHeight){
+				// Get style of popup's border.  Unfortunately domStyle.get(node, "border") doesn't work on FF or IE,
+				// and domStyle.get(node, "borderColor") etc. doesn't work on FF, so need to use fully qualified names.
+				var cs = domStyle.getComputedStyle(node),
+					borderStyle = cs.borderLeftWidth + " " + cs.borderLeftStyle + " " + cs.borderLeftColor;
+				domStyle.set(wrapper, {
+					overflowY: "scroll",
+					height: maxHeight + "px",
+					border: borderStyle	// so scrollbar is inside border
+				});
+				node._originalStyle = node.style.cssText;
+				node.style.border = "none";
+			}
+
+			domAttr.set(wrapper, {
+				id: id,
+				style: {
+					zIndex: this._beginZIndex + stack.length
+				},
+				"class": "dijitPopup " + (widget.baseClass || widget["class"] || "").split(" ")[0] + "Popup",
+				dijitPopupParent: args.parent ? args.parent.id : ""
+			});
+
+			if(stack.length == 0 && around){
+				// First element on stack. Save position of aroundNode and setup listener for changes to that position.
+				this._firstAroundNode = around;
+				this._firstAroundPosition = domGeometry.position(around, true);
+				this._aroundMoveListener = setTimeout(lang.hitch(this, "_repositionAll"), 50);
+			}
+
+			if(has("config-bgIframe") && !widget.bgIframe){
+				// setting widget.bgIframe triggers cleanup in _WidgetBase.destroyRendering()
+				widget.bgIframe = new BackgroundIframe(wrapper);
+			}
+
+			// position the wrapper node and make it visible
+			var layoutFunc = widget.orient ? lang.hitch(widget, "orient") : null,
+				best = around ?
+					place.around(wrapper, around, orient, ltr, layoutFunc) :
+					place.at(wrapper, args, orient == 'R' ? ['TR', 'BR', 'TL', 'BL'] : ['TL', 'BL', 'TR', 'BR'], args.padding,
+						layoutFunc);
+
+			wrapper.style.visibility = "visible";
+			node.style.visibility = "visible";	// counteract effects from _HasDropDown
+
+			var handlers = [];
+
+			// provide default escape and tab key handling
+			// (this will work for any widget, not just menu)
+			handlers.push(on(wrapper, "keydown", lang.hitch(this, function(evt){
+				if(evt.keyCode == keys.ESCAPE && args.onCancel){
+					evt.stopPropagation();
+					evt.preventDefault();
+					args.onCancel();
+				}else if(evt.keyCode == keys.TAB){
+					evt.stopPropagation();
+					evt.preventDefault();
+					var topPopup = this.getTopPopup();
+					if(topPopup && topPopup.onCancel){
+						topPopup.onCancel();
+					}
+				}
+			})));
+
+			// watch for cancel/execute events on the popup and notify the caller
+			// (for a menu, "execute" means clicking an item)
+			if(widget.onCancel && args.onCancel){
+				handlers.push(widget.on("cancel", args.onCancel));
+			}
+
+			handlers.push(widget.on(widget.onExecute ? "execute" : "change", lang.hitch(this, function(){
+				var topPopup = this.getTopPopup();
+				if(topPopup && topPopup.onExecute){
+					topPopup.onExecute();
+				}
+			})));
+
+			stack.push({
+				widget: widget,
+				wrapper: wrapper,
+				parent: args.parent,
+				onExecute: args.onExecute,
+				onCancel: args.onCancel,
+				onClose: args.onClose,
+				handlers: handlers
+			});
+
+			if(widget.onOpen){
+				// TODO: in 2.0 standardize onShow() (used by StackContainer) and onOpen() (used here)
+				widget.onOpen(best);
+			}
+
+			return best;
+		},
+
+		close: function(/*Widget?*/ popup){
+			// summary:
+			//		Close specified popup and any popups that it parented.
+			//		If no popup is specified, closes all popups.
+
+			var stack = this._stack;
+
+			// Basically work backwards from the top of the stack closing popups
+			// until we hit the specified popup, but IIRC there was some issue where closing
+			// a popup would cause others to close too.  Thus if we are trying to close B in [A,B,C]
+			// closing C might close B indirectly and then the while() condition will run where stack==[A]...
+			// so the while condition is constructed defensively.
+			while((popup && array.some(stack, function(elem){
+				return elem.widget == popup;
+			})) ||
+				(!popup && stack.length)){
+				var top = stack.pop(),
+					widget = top.widget,
+					onClose = top.onClose;
+
+				if (widget.bgIframe) {
+					// push the iframe back onto the stack.
+					widget.bgIframe.destroy();
+					delete widget.bgIframe;
+				}
+
+				if(widget.onClose){
+					// TODO: in 2.0 standardize onHide() (used by StackContainer) and onClose() (used here).
+					// Actually, StackContainer also calls onClose(), but to mean that the pane is being deleted
+					// (i.e. that the TabContainer's tab's [x] icon was clicked)
+					widget.onClose();
+				}
+
+				var h;
+				while(h = top.handlers.pop()){
+					h.remove();
+				}
+
+				// Hide the widget and it's wrapper unless it has already been destroyed in above onClose() etc.
+				if(widget && widget.domNode){
+					this.hide(widget);
+				}
+
+				if(onClose){
+					onClose();
+				}
+			}
+
+			if(stack.length == 0 && this._aroundMoveListener){
+				clearTimeout(this._aroundMoveListener);
+				this._firstAroundNode = this._firstAroundPosition = this._aroundMoveListener = null;
+			}
+		}
+	});
+
+	return (dijit.popup = new PopupManager());
+});
+
+},
+'dijit/place':function(){
+define([
+	"dojo/_base/array", // array.forEach array.map array.some
+	"dojo/dom-geometry", // domGeometry.position
+	"dojo/dom-style", // domStyle.getComputedStyle
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/window", // win.body
+	"./Viewport", // getEffectiveBox
+	"./main"	// dijit (defining dijit.place to match API doc)
+], function(array, domGeometry, domStyle, kernel, win, Viewport, dijit){
+
+	// module:
+	//		dijit/place
+
+
+	function _place(/*DomNode*/ node, choices, layoutNode, aroundNodeCoords){
+		// summary:
+		//		Given a list of spots to put node, put it at the first spot where it fits,
+		//		of if it doesn't fit anywhere then the place with the least overflow
+		// choices: Array
+		//		Array of elements like: {corner: 'TL', pos: {x: 10, y: 20} }
+		//		Above example says to put the top-left corner of the node at (10,20)
+		// layoutNode: Function(node, aroundNodeCorner, nodeCorner, size)
+		//		for things like tooltip, they are displayed differently (and have different dimensions)
+		//		based on their orientation relative to the parent.	 This adjusts the popup based on orientation.
+		//		It also passes in the available size for the popup, which is useful for tooltips to
+		//		tell them that their width is limited to a certain amount.	 layoutNode() may return a value expressing
+		//		how much the popup had to be modified to fit into the available space.	 This is used to determine
+		//		what the best placement is.
+		// aroundNodeCoords: Object
+		//		Size of aroundNode, ex: {w: 200, h: 50}
+
+		// get {x: 10, y: 10, w: 100, h:100} type obj representing position of
+		// viewport over document
+		var view = Viewport.getEffectiveBox(node.ownerDocument);
+
+		// This won't work if the node is inside a <div style="position: relative">,
+		// so reattach it to <body>.	 (Otherwise, the positioning will be wrong
+		// and also it might get cutoff.)
+		if(!node.parentNode || String(node.parentNode.tagName).toLowerCase() != "body"){
+			win.body(node.ownerDocument).appendChild(node);
+		}
+
+		var best = null;
+		array.some(choices, function(choice){
+			var corner = choice.corner;
+			var pos = choice.pos;
+			var overflow = 0;
+
+			// calculate amount of space available given specified position of node
+			var spaceAvailable = {
+				w: {
+					'L': view.l + view.w - pos.x,
+					'R': pos.x - view.l,
+					'M': view.w
+				}[corner.charAt(1)],
+				h: {
+					'T': view.t + view.h - pos.y,
+					'B': pos.y - view.t,
+					'M': view.h
+				}[corner.charAt(0)]
+			};
+
+			// Clear left/right position settings set earlier so they don't interfere with calculations,
+			// specifically when layoutNode() (a.k.a. Tooltip.orient()) measures natural width of Tooltip
+			var s = node.style;
+			s.left = s.right = "auto";
+
+			// configure node to be displayed in given position relative to button
+			// (need to do this in order to get an accurate size for the node, because
+			// a tooltip's size changes based on position, due to triangle)
+			if(layoutNode){
+				var res = layoutNode(node, choice.aroundCorner, corner, spaceAvailable, aroundNodeCoords);
+				overflow = typeof res == "undefined" ? 0 : res;
+			}
+
+			// get node's size
+			var style = node.style;
+			var oldDisplay = style.display;
+			var oldVis = style.visibility;
+			if(style.display == "none"){
+				style.visibility = "hidden";
+				style.display = "";
+			}
+			var bb = domGeometry.position(node);
+			style.display = oldDisplay;
+			style.visibility = oldVis;
+
+			// coordinates and size of node with specified corner placed at pos,
+			// and clipped by viewport
+			var
+				startXpos = {
+					'L': pos.x,
+					'R': pos.x - bb.w,
+					'M': Math.max(view.l, Math.min(view.l + view.w, pos.x + (bb.w >> 1)) - bb.w) // M orientation is more flexible
+				}[corner.charAt(1)],
+				startYpos = {
+					'T': pos.y,
+					'B': pos.y - bb.h,
+					'M': Math.max(view.t, Math.min(view.t + view.h, pos.y + (bb.h >> 1)) - bb.h)
+				}[corner.charAt(0)],
+				startX = Math.max(view.l, startXpos),
+				startY = Math.max(view.t, startYpos),
+				endX = Math.min(view.l + view.w, startXpos + bb.w),
+				endY = Math.min(view.t + view.h, startYpos + bb.h),
+				width = endX - startX,
+				height = endY - startY;
+
+			overflow += (bb.w - width) + (bb.h - height);
+
+			if(best == null || overflow < best.overflow){
+				best = {
+					corner: corner,
+					aroundCorner: choice.aroundCorner,
+					x: startX,
+					y: startY,
+					w: width,
+					h: height,
+					overflow: overflow,
+					spaceAvailable: spaceAvailable
+				};
+			}
+
+			return !overflow;
+		});
+
+		// In case the best position is not the last one we checked, need to call
+		// layoutNode() again.
+		if(best.overflow && layoutNode){
+			layoutNode(node, best.aroundCorner, best.corner, best.spaceAvailable, aroundNodeCoords);
+		}
+
+		// And then position the node.  Do this last, after the layoutNode() above
+		// has sized the node, due to browser quirks when the viewport is scrolled
+		// (specifically that a Tooltip will shrink to fit as though the window was
+		// scrolled to the left).
+
+		var top = best.y,
+			side = best.x,
+			body = win.body(node.ownerDocument);
+
+		if(/relative|absolute/.test(domStyle.get(body, "position"))){
+			// compensate for margin on <body>, see #16148
+			top -= domStyle.get(body, "marginTop");
+			side -= domStyle.get(body, "marginLeft");
+		}
+
+		var s = node.style;
+		s.top = top + "px";
+		s.left = side + "px";
+		s.right = "auto";	// needed for FF or else tooltip goes to far left
+
+		return best;
+	}
+
+	var reverse = {
+		// Map from corner to kitty-corner
+		"TL": "BR",
+		"TR": "BL",
+		"BL": "TR",
+		"BR": "TL"
+	};
+
+	var place = {
+		// summary:
+		//		Code to place a DOMNode relative to another DOMNode.
+		//		Load using require(["dijit/place"], function(place){ ... }).
+
+		at: function(node, pos, corners, padding, layoutNode){
+			// summary:
+			//		Positions node kitty-corner to the rectangle centered at (pos.x, pos.y) with width and height of
+			//		padding.x * 2 and padding.y * 2, or zero if padding not specified.  Picks first corner in corners[]
+			//		where node is fully visible, or the corner where it's most visible.
+			//
+			//		Node is assumed to be absolutely or relatively positioned.
+			// node: DOMNode
+			//		The node to position
+			// pos: dijit/place.__Position
+			//		Object like {x: 10, y: 20}
+			// corners: String[]
+			//		Array of Strings representing order to try corners of the node in, like ["TR", "BL"].
+			//		Possible values are:
+			//
+			//		- "BL" - bottom left
+			//		- "BR" - bottom right
+			//		- "TL" - top left
+			//		- "TR" - top right
+			// padding: dijit/place.__Position?
+			//		Optional param to set padding, to put some buffer around the element you want to position.
+			//		Defaults to zero.
+			// layoutNode: Function(node, aroundNodeCorner, nodeCorner)
+			//		For things like tooltip, they are displayed differently (and have different dimensions)
+			//		based on their orientation relative to the parent.  This adjusts the popup based on orientation.
+			// example:
+			//		Try to place node's top right corner at (10,20).
+			//		If that makes node go (partially) off screen, then try placing
+			//		bottom left corner at (10,20).
+			//	|	place(node, {x: 10, y: 20}, ["TR", "BL"])
+			var choices = array.map(corners, function(corner){
+				var c = {
+					corner: corner,
+					aroundCorner: reverse[corner],	// so TooltipDialog.orient() gets aroundCorner argument set
+					pos: {x: pos.x,y: pos.y}
+				};
+				if(padding){
+					c.pos.x += corner.charAt(1) == 'L' ? padding.x : -padding.x;
+					c.pos.y += corner.charAt(0) == 'T' ? padding.y : -padding.y;
+				}
+				return c;
+			});
+
+			return _place(node, choices, layoutNode);
+		},
+
+		around: function(
+			/*DomNode*/		node,
+			/*DomNode|dijit/place.__Rectangle*/ anchor,
+			/*String[]*/	positions,
+			/*Boolean*/		leftToRight,
+			/*Function?*/	layoutNode){
+
+			// summary:
+			//		Position node adjacent or kitty-corner to anchor
+			//		such that it's fully visible in viewport.
+			// description:
+			//		Place node such that corner of node touches a corner of
+			//		aroundNode, and that node is fully visible.
+			// anchor:
+			//		Either a DOMNode or a rectangle (object with x, y, width, height).
+			// positions:
+			//		Ordered list of positions to try matching up.
+			//
+			//		- before: places drop down to the left of the anchor node/widget, or to the right in the case
+			//			of RTL scripts like Hebrew and Arabic; aligns either the top of the drop down
+			//			with the top of the anchor, or the bottom of the drop down with bottom of the anchor.
+			//		- after: places drop down to the right of the anchor node/widget, or to the left in the case
+			//			of RTL scripts like Hebrew and Arabic; aligns either the top of the drop down
+			//			with the top of the anchor, or the bottom of the drop down with bottom of the anchor.
+			//		- before-centered: centers drop down to the left of the anchor node/widget, or to the right
+			//			in the case of RTL scripts like Hebrew and Arabic
+			//		- after-centered: centers drop down to the right of the anchor node/widget, or to the left
+			//			in the case of RTL scripts like Hebrew and Arabic
+			//		- above-centered: drop down is centered above anchor node
+			//		- above: drop down goes above anchor node, left sides aligned
+			//		- above-alt: drop down goes above anchor node, right sides aligned
+			//		- below-centered: drop down is centered above anchor node
+			//		- below: drop down goes below anchor node
+			//		- below-alt: drop down goes below anchor node, right sides aligned
+			// layoutNode: Function(node, aroundNodeCorner, nodeCorner)
+			//		For things like tooltip, they are displayed differently (and have different dimensions)
+			//		based on their orientation relative to the parent.	 This adjusts the popup based on orientation.
+			// leftToRight:
+			//		True if widget is LTR, false if widget is RTL.   Affects the behavior of "above" and "below"
+			//		positions slightly.
+			// example:
+			//	|	placeAroundNode(node, aroundNode, {'BL':'TL', 'TR':'BR'});
+			//		This will try to position node such that node's top-left corner is at the same position
+			//		as the bottom left corner of the aroundNode (ie, put node below
+			//		aroundNode, with left edges aligned).	If that fails it will try to put
+			//		the bottom-right corner of node where the top right corner of aroundNode is
+			//		(ie, put node above aroundNode, with right edges aligned)
+			//
+
+			// If around is a DOMNode (or DOMNode id), convert to coordinates.
+			var aroundNodePos;
+			if(typeof anchor == "string" || "offsetWidth" in anchor || "ownerSVGElement" in anchor){
+				aroundNodePos = domGeometry.position(anchor, true);
+
+				// For above and below dropdowns, subtract width of border so that popup and aroundNode borders
+				// overlap, preventing a double-border effect.  Unfortunately, difficult to measure the border
+				// width of either anchor or popup because in both cases the border may be on an inner node.
+				if(/^(above|below)/.test(positions[0])){
+					var anchorBorder = domGeometry.getBorderExtents(anchor),
+						anchorChildBorder = anchor.firstChild ? domGeometry.getBorderExtents(anchor.firstChild) : {t:0,l:0,b:0,r:0},
+						nodeBorder =  domGeometry.getBorderExtents(node),
+						nodeChildBorder = node.firstChild ? domGeometry.getBorderExtents(node.firstChild) : {t:0,l:0,b:0,r:0};
+					aroundNodePos.y += Math.min(anchorBorder.t + anchorChildBorder.t, nodeBorder.t + nodeChildBorder.t);
+					aroundNodePos.h -=  Math.min(anchorBorder.t + anchorChildBorder.t, nodeBorder.t+ nodeChildBorder.t) +
+						Math.min(anchorBorder.b + anchorChildBorder.b, nodeBorder.b + nodeChildBorder.b);
+				}
+			}else{
+				aroundNodePos = anchor;
+			}
+
+			// Compute position and size of visible part of anchor (it may be partially hidden by ancestor nodes w/scrollbars)
+			if(anchor.parentNode){
+				// ignore nodes between position:relative and position:absolute
+				var sawPosAbsolute = domStyle.getComputedStyle(anchor).position == "absolute";
+				var parent = anchor.parentNode;
+				while(parent && parent.nodeType == 1 && parent.nodeName != "BODY"){  //ignoring the body will help performance
+					var parentPos = domGeometry.position(parent, true),
+						pcs = domStyle.getComputedStyle(parent);
+					if(/relative|absolute/.test(pcs.position)){
+						sawPosAbsolute = false;
+					}
+					if(!sawPosAbsolute && /hidden|auto|scroll/.test(pcs.overflow)){
+						var bottomYCoord = Math.min(aroundNodePos.y + aroundNodePos.h, parentPos.y + parentPos.h);
+						var rightXCoord = Math.min(aroundNodePos.x + aroundNodePos.w, parentPos.x + parentPos.w);
+						aroundNodePos.x = Math.max(aroundNodePos.x, parentPos.x);
+						aroundNodePos.y = Math.max(aroundNodePos.y, parentPos.y);
+						aroundNodePos.h = bottomYCoord - aroundNodePos.y;
+						aroundNodePos.w = rightXCoord - aroundNodePos.x;
+					}
+					if(pcs.position == "absolute"){
+						sawPosAbsolute = true;
+					}
+					parent = parent.parentNode;
+				}
+			}			
+
+			var x = aroundNodePos.x,
+				y = aroundNodePos.y,
+				width = "w" in aroundNodePos ? aroundNodePos.w : (aroundNodePos.w = aroundNodePos.width),
+				height = "h" in aroundNodePos ? aroundNodePos.h : (kernel.deprecated("place.around: dijit/place.__Rectangle: { x:"+x+", y:"+y+", height:"+aroundNodePos.height+", width:"+width+" } has been deprecated.  Please use { x:"+x+", y:"+y+", h:"+aroundNodePos.height+", w:"+width+" }", "", "2.0"), aroundNodePos.h = aroundNodePos.height);
+
+			// Convert positions arguments into choices argument for _place()
+			var choices = [];
+			function push(aroundCorner, corner){
+				choices.push({
+					aroundCorner: aroundCorner,
+					corner: corner,
+					pos: {
+						x: {
+							'L': x,
+							'R': x + width,
+							'M': x + (width >> 1)
+						}[aroundCorner.charAt(1)],
+						y: {
+							'T': y,
+							'B': y + height,
+							'M': y + (height >> 1)
+						}[aroundCorner.charAt(0)]
+					}
+				})
+			}
+			array.forEach(positions, function(pos){
+				var ltr =  leftToRight;
+				switch(pos){
+					case "above-centered":
+						push("TM", "BM");
+						break;
+					case "below-centered":
+						push("BM", "TM");
+						break;
+					case "after-centered":
+						ltr = !ltr;
+						// fall through
+					case "before-centered":
+						push(ltr ? "ML" : "MR", ltr ? "MR" : "ML");
+						break;
+					case "after":
+						ltr = !ltr;
+						// fall through
+					case "before":
+						push(ltr ? "TL" : "TR", ltr ? "TR" : "TL");
+						push(ltr ? "BL" : "BR", ltr ? "BR" : "BL");
+						break;
+					case "below-alt":
+						ltr = !ltr;
+						// fall through
+					case "below":
+						// first try to align left borders, next try to align right borders (or reverse for RTL mode)
+						push(ltr ? "BL" : "BR", ltr ? "TL" : "TR");
+						push(ltr ? "BR" : "BL", ltr ? "TR" : "TL");
+						break;
+					case "above-alt":
+						ltr = !ltr;
+						// fall through
+					case "above":
+						// first try to align left borders, next try to align right borders (or reverse for RTL mode)
+						push(ltr ? "TL" : "TR", ltr ? "BL" : "BR");
+						push(ltr ? "TR" : "TL", ltr ? "BR" : "BL");
+						break;
+					default:
+						// To assist dijit/_base/place, accept arguments of type {aroundCorner: "BL", corner: "TL"}.
+						// Not meant to be used directly.  Remove for 2.0.
+						push(pos.aroundCorner, pos.corner);
+				}
+			});
+
+			var position = _place(node, choices, layoutNode, {w: width, h: height});
+			position.aroundNodePos = aroundNodePos;
+
+			return position;
+		}
+	};
+
+	/*=====
+	place.__Position = {
+		// x: Integer
+		//		horizontal coordinate in pixels, relative to document body
+		// y: Integer
+		//		vertical coordinate in pixels, relative to document body
+	};
+	place.__Rectangle = {
+		// x: Integer
+		//		horizontal offset in pixels, relative to document body
+		// y: Integer
+		//		vertical offset in pixels, relative to document body
+		// w: Integer
+		//		width in pixels.   Can also be specified as "width" for backwards-compatibility.
+		// h: Integer
+		//		height in pixels.   Can also be specified as "height" for backwards-compatibility.
+	};
+	=====*/
+
+	return dijit.place = place;	// setting dijit.place for back-compat, remove for 2.0
+});
+
+},
+'dijit/BackgroundIframe':function(){
+define([
+	"require",			// require.toUrl
+	"./main",	// to export dijit.BackgroundIframe
+	"dojo/_base/config",
+	"dojo/dom-construct", // domConstruct.create
+	"dojo/dom-style", // domStyle.set
+	"dojo/_base/lang", // lang.extend lang.hitch
+	"dojo/on",
+	"dojo/sniff" // has("ie"), has("trident"), has("quirks")
+], function(require, dijit, config, domConstruct, domStyle, lang, on, has){
+
+	// module:
+	//		dijit/BackgroundIFrame
+
+	// Flag for whether to create background iframe behind popups like Menus and Dialog.
+	// A background iframe is useful to prevent problems with popups appearing behind applets/pdf files,
+	// and is also useful on older versions of IE (IE6 and IE7) to prevent the "bleed through select" problem.
+	// By default, it's enabled for IE6-10, excluding Windows Phone 8,
+	// and it's also enabled for IE11 on Windows 7 and Windows 2008 Server.
+	// TODO: For 2.0, make this false by default.  Also, possibly move definition to has.js so that this module can be
+	// conditionally required via  dojo/has!bgIfame?dijit/BackgroundIframe
+	has.add("config-bgIframe",
+		(has("ie") && !/IEMobile\/10\.0/.test(navigator.userAgent)) || // No iframe on WP8, to match 1.9 behavior
+		(has("trident") && /Windows NT 6.[01]/.test(navigator.userAgent)));
+
+	var _frames = new function(){
+		// summary:
+		//		cache of iframes
+
+		var queue = [];
+
+		this.pop = function(){
+			var iframe;
+			if(queue.length){
+				iframe = queue.pop();
+				iframe.style.display="";
+			}else{
+				// transparency needed for DialogUnderlay and for tooltips on IE (to see screen near connector)
+				if(has("ie") < 9){
+					var burl = config["dojoBlankHtmlUrl"] || require.toUrl("dojo/resources/blank.html") || "javascript:\"\"";
+					var html="<iframe src='" + burl + "' role='presentation'"
+						+ " style='position: absolute; left: 0px; top: 0px;"
+						+ "z-index: -1; filter:Alpha(Opacity=\"0\");'>";
+					iframe = document.createElement(html);
+				}else{
+					iframe = domConstruct.create("iframe");
+					iframe.src = 'javascript:""';
+					iframe.className = "dijitBackgroundIframe";
+					iframe.setAttribute("role", "presentation");
+					domStyle.set(iframe, "opacity", 0.1);
+				}
+				iframe.tabIndex = -1; // Magic to prevent iframe from getting focus on tab keypress - as style didn't work.
+			}
+			return iframe;
+		};
+
+		this.push = function(iframe){
+			iframe.style.display="none";
+			queue.push(iframe);
+		}
+	}();
+
+
+	dijit.BackgroundIframe = function(/*DomNode*/ node){
+		// summary:
+		//		For IE/FF z-index shenanigans. id attribute is required.
+		//
+		// description:
+		//		new dijit.BackgroundIframe(node).
+		//
+		//		Makes a background iframe as a child of node, that fills
+		//		area (and position) of node
+
+		if(!node.id){ throw new Error("no id"); }
+		if(has("config-bgIframe")){
+			var iframe = (this.iframe = _frames.pop());
+			node.appendChild(iframe);
+			if(has("ie")<7 || has("quirks")){
+				this.resize(node);
+				this._conn = on(node, 'resize', lang.hitch(this, "resize", node));
+			}else{
+				domStyle.set(iframe, {
+					width: '100%',
+					height: '100%'
+				});
+			}
+		}
+	};
+
+	lang.extend(dijit.BackgroundIframe, {
+		resize: function(node){
+			// summary:
+			//		Resize the iframe so it's the same size as node.
+			//		Needed on IE6 and IE/quirks because height:100% doesn't work right.
+			if(this.iframe){
+				domStyle.set(this.iframe, {
+					width: node.offsetWidth + 'px',
+					height: node.offsetHeight + 'px'
+				});
+			}
+		},
+		destroy: function(){
+			// summary:
+			//		destroy the iframe
+			if(this._conn){
+				this._conn.remove();
+				this._conn = null;
+			}
+			if(this.iframe){
+				this.iframe.parentNode.removeChild(this.iframe);
+				_frames.push(this.iframe);
+				delete this.iframe;
+			}
+		}
+	});
+
+	return dijit.BackgroundIframe;
+});
+
+},
+'dijit/_Container':function(){
+define([
+	"dojo/_base/array", // array.forEach array.indexOf
+	"dojo/_base/declare", // declare
+	"dojo/dom-construct", // domConstruct.place
+	"dojo/_base/kernel" // kernel.deprecated
+], function(array, declare, domConstruct, kernel){
+
+	// module:
+	//		dijit/_Container
+
+	return declare("dijit._Container", null, {
+		// summary:
+		//		Mixin for widgets that contain HTML and/or a set of widget children.
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			if(!this.containerNode){
+				// All widgets with descendants must set containerNode.
+				// NB: this code doesn't quite work right because for TabContainer it runs before
+				// _TemplatedMixin::buildRendering(), and thus
+				// sets this.containerNode to this.domNode, later to be overridden by the assignment in the template.
+				this.containerNode = this.domNode;
+			}
+		},
+
+		addChild: function(/*dijit/_WidgetBase*/ widget, /*int?*/ insertIndex){
+			// summary:
+			//		Makes the given widget a child of this widget.
+			// description:
+			//		Inserts specified child widget's dom node as a child of this widget's
+			//		container node, and possibly does other processing (such as layout).
+
+			// I want to just call domConstruct.place(widget.domNode, this.containerNode, insertIndex), but the counting
+			// is thrown off by text nodes and comment nodes that show up when constructed by markup.
+			// In the future consider stripping those nodes on construction, either in the parser or this widget code.
+			var refNode = this.containerNode;
+			if(insertIndex > 0){
+				// Old-school way to get nth child; dojo.query would be easier but _Container was weened from dojo.query
+				// in #10087 to minimize download size.   Not sure if that's still and issue with new smaller dojo/query.
+				refNode = refNode.firstChild;
+				while(insertIndex > 0){
+					if(refNode.nodeType == 1){ insertIndex--; }
+					refNode = refNode.nextSibling;
+				}
+				if(refNode){
+					insertIndex = "before";
+				}else{
+					// to support addChild(child, n-1) where there are n children (should add child at end)
+					refNode = this.containerNode;
+					insertIndex = "last";
+				}
+			}
+
+			domConstruct.place(widget.domNode, refNode, insertIndex);
+
+			// If I've been started but the child widget hasn't been started,
+			// start it now.  Make sure to do this after widget has been
+			// inserted into the DOM tree, so it can see that it's being controlled by me,
+			// so it doesn't try to size itself.
+			if(this._started && !widget._started){
+				widget.startup();
+			}
+		},
+
+		removeChild: function(/*Widget|int*/ widget){
+			// summary:
+			//		Removes the passed widget instance from this widget but does
+			//		not destroy it.  You can also pass in an integer indicating
+			//		the index within the container to remove (ie, removeChild(5) removes the sixth widget).
+
+			if(typeof widget == "number"){
+				widget = this.getChildren()[widget];
+			}
+
+			if(widget){
+				var node = widget.domNode;
+				if(node && node.parentNode){
+					node.parentNode.removeChild(node); // detach but don't destroy
+				}
+			}
+		},
+
+		hasChildren: function(){
+			// summary:
+			//		Returns true if widget has child widgets, i.e. if this.containerNode contains widgets.
+			return this.getChildren().length > 0;	// Boolean
+		},
+
+		_getSiblingOfChild: function(/*dijit/_WidgetBase*/ child, /*int*/ dir){
+			// summary:
+			//		Get the next or previous widget sibling of child
+			// dir:
+			//		if 1, get the next sibling
+			//		if -1, get the previous sibling
+			// tags:
+			//		private
+			kernel.deprecated(this.declaredClass+"::_getSiblingOfChild() is deprecated. Use _KeyNavMixin::_getNext() instead.", "", "2.0");
+			var children = this.getChildren(),
+				idx = array.indexOf(children, child);	// int
+			return children[idx + dir];
+		},
+
+		getIndexOfChild: function(/*dijit/_WidgetBase*/ child){
+			// summary:
+			//		Gets the index of the child in this container or -1 if not found
+			return array.indexOf(this.getChildren(), child);	// int
+		}
+	});
+});
+
+},
+'dijit/_HasDropDown':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/Deferred",
+	"dojo/dom", // dom.isDescendant
+	"dojo/dom-attr", // domAttr.set
+	"dojo/dom-class", // domClass.add domClass.contains domClass.remove
+	"dojo/dom-geometry", // domGeometry.marginBox domGeometry.position
+	"dojo/dom-style", // domStyle.set
+	"dojo/has", // has("touch")
+	"dojo/keys", // keys.DOWN_ARROW keys.ENTER keys.ESCAPE
+	"dojo/_base/lang", // lang.hitch lang.isFunction
+	"dojo/on",
+	"dojo/touch",
+	"./registry", // registry.byNode()
+	"./focus",
+	"./popup",
+	"./_FocusMixin"
+], function(declare, Deferred, dom, domAttr, domClass, domGeometry, domStyle, has, keys, lang, on, touch,
+			registry, focus, popup, _FocusMixin){
+
+
+	// module:
+	//		dijit/_HasDropDown
+
+	return declare("dijit._HasDropDown", _FocusMixin, {
+		// summary:
+		//		Mixin for widgets that need drop down ability.
+
+		// _buttonNode: [protected] DomNode
+		//		The button/icon/node to click to display the drop down.
+		//		Can be set via a data-dojo-attach-point assignment.
+		//		If missing, then either focusNode or domNode (if focusNode is also missing) will be used.
+		_buttonNode: null,
+
+		// _arrowWrapperNode: [protected] DomNode
+		//		Will set CSS class dijitUpArrow, dijitDownArrow, dijitRightArrow etc. on this node depending
+		//		on where the drop down is set to be positioned.
+		//		Can be set via a data-dojo-attach-point assignment.
+		//		If missing, then _buttonNode will be used.
+		_arrowWrapperNode: null,
+
+		// _popupStateNode: [protected] DomNode
+		//		The node to set the aria-expanded class on.
+		//		Also sets popupActive class but that will be removed in 2.0.
+		//		Can be set via a data-dojo-attach-point assignment.
+		//		If missing, then focusNode or _buttonNode (if focusNode is missing) will be used.
+		_popupStateNode: null,
+
+		// _aroundNode: [protected] DomNode
+		//		The node to display the popup around.
+		//		Can be set via a data-dojo-attach-point assignment.
+		//		If missing, then domNode will be used.
+		_aroundNode: null,
+
+		// dropDown: [protected] Widget
+		//		The widget to display as a popup.  This widget *must* be
+		//		defined before the startup function is called.
+		dropDown: null,
+
+		// autoWidth: [protected] Boolean
+		//		Set to true to make the drop down at least as wide as this
+		//		widget.  Set to false if the drop down should just be its
+		//		default width.
+		autoWidth: true,
+
+		// forceWidth: [protected] Boolean
+		//		Set to true to make the drop down exactly as wide as this
+		//		widget.  Overrides autoWidth.
+		forceWidth: false,
+
+		// maxHeight: [protected] Integer
+		//		The max height for our dropdown.
+		//		Any dropdown taller than this will have scrollbars.
+		//		Set to 0 for no max height, or -1 to limit height to available space in viewport
+		maxHeight: -1,
+
+		// dropDownPosition: [const] String[]
+		//		This variable controls the position of the drop down.
+		//		It's an array of strings with the following values:
+		//
+		//		- before: places drop down to the left of the target node/widget, or to the right in
+		//		  the case of RTL scripts like Hebrew and Arabic
+		//		- after: places drop down to the right of the target node/widget, or to the left in
+		//		  the case of RTL scripts like Hebrew and Arabic
+		//		- above: drop down goes above target node
+		//		- below: drop down goes below target node
+		//
+		//		The list is positions is tried, in order, until a position is found where the drop down fits
+		//		within the viewport.
+		//
+		dropDownPosition: ["below", "above"],
+
+		// _stopClickEvents: Boolean
+		//		When set to false, the click events will not be stopped, in
+		//		case you want to use them in your subclass
+		_stopClickEvents: true,
+
+		_onDropDownMouseDown: function(/*Event*/ e){
+			// summary:
+			//		Callback when the user mousedown/touchstart on the arrow icon.
+
+			if(this.disabled || this.readOnly){
+				return;
+			}
+
+			// Prevent default to stop things like text selection, but don't stop propagation, so that:
+			//		1. TimeTextBox etc. can focus the <input> on mousedown
+			//		2. dropDownButtonActive class applied by _CssStateMixin (on button depress)
+			//		3. user defined onMouseDown handler fires
+			//
+			// Also, don't call preventDefault() on MSPointerDown event (on IE10) because that prevents the button
+			// from getting focus, and then the focus manager doesn't know what's going on (#17262)
+			if(e.type != "MSPointerDown" && e.type != "pointerdown"){
+				e.preventDefault();
+			}
+
+			this.own(on.once(this.ownerDocument, touch.release, lang.hitch(this, "_onDropDownMouseUp")));
+
+			this.toggleDropDown();
+		},
+
+		_onDropDownMouseUp: function(/*Event?*/ e){
+			// summary:
+			//		Callback on mouseup/touchend after mousedown/touchstart on the arrow icon.
+			//		Note that this function is called regardless of what node the event occurred on (but only after
+			//		a mousedown/touchstart on the arrow).
+			//
+			//		If the drop down is a simple menu and the cursor is over the menu, we execute it, otherwise, we focus our
+			//		drop down widget.  If the event is missing, then we are not
+			//		a mouseup event.
+			//
+			//		This is useful for the common mouse movement pattern
+			//		with native browser `<select>` nodes:
+			//
+			//		1. mouse down on the select node (probably on the arrow)
+			//		2. move mouse to a menu item while holding down the mouse button
+			//		3. mouse up.  this selects the menu item as though the user had clicked it.
+
+			var dropDown = this.dropDown, overMenu = false;
+
+			if(e && this._opened){
+				// This code deals with the corner-case when the drop down covers the original widget,
+				// because it's so large.  In that case mouse-up shouldn't select a value from the menu.
+				// Find out if our target is somewhere in our dropdown widget,
+				// but not over our _buttonNode (the clickable node)
+				var c = domGeometry.position(this._buttonNode, true);
+				if(!(e.pageX >= c.x && e.pageX <= c.x + c.w) || !(e.pageY >= c.y && e.pageY <= c.y + c.h)){
+					var t = e.target;
+					while(t && !overMenu){
+						if(domClass.contains(t, "dijitPopup")){
+							overMenu = true;
+						}else{
+							t = t.parentNode;
+						}
+					}
+					if(overMenu){
+						t = e.target;
+						if(dropDown.onItemClick){
+							var menuItem;
+							while(t && !(menuItem = registry.byNode(t))){
+								t = t.parentNode;
+							}
+							if(menuItem && menuItem.onClick && menuItem.getParent){
+								menuItem.getParent().onItemClick(menuItem, e);
+							}
+						}
+						return;
+					}
+				}
+			}
+			if(this._opened){
+				// Focus the dropdown widget unless it's a menu (in which case autoFocus is set to false).
+				// Even if it's a menu, we need to focus it if this is a fake mouse event caused by the user typing
+				// SPACE/ENTER while using JAWS.  Jaws converts the SPACE/ENTER key into mousedown/mouseup events.
+				// If this.hovering is false then it's presumably actually a keyboard event.
+				if(dropDown.focus && (dropDown.autoFocus !== false || (e.type == "mouseup" && !this.hovering))){
+					// Do it on a delay so that we don't steal back focus from the dropdown.
+					this._focusDropDownTimer = this.defer(function(){
+						dropDown.focus();
+						delete this._focusDropDownTimer;
+					});
+				}
+			}else{
+				// The drop down arrow icon probably can't receive focus, but widget itself should get focus.
+				// defer() needed to make it work on IE (test DateTextBox)
+				if(this.focus){
+					this.defer("focus");
+				}
+			}
+		},
+
+		_onDropDownClick: function(/*Event*/ e){
+			// The drop down was already opened on mousedown/keydown; just need to stop the event
+			if(this._stopClickEvents){
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			this._buttonNode = this._buttonNode || this.focusNode || this.domNode;
+			this._popupStateNode = this._popupStateNode || this.focusNode || this._buttonNode;
+
+			// Add a class to the "dijitDownArrowButton" type class to _buttonNode so theme can set direction of arrow
+			// based on where drop down will normally appear
+			var defaultPos = {
+				"after": this.isLeftToRight() ? "Right" : "Left",
+				"before": this.isLeftToRight() ? "Left" : "Right",
+				"above": "Up",
+				"below": "Down",
+				"left": "Left",
+				"right": "Right"
+			}[this.dropDownPosition[0]] || this.dropDownPosition[0] || "Down";
+			domClass.add(this._arrowWrapperNode || this._buttonNode, "dijit" + defaultPos + "ArrowButton");
+		},
+
+		postCreate: function(){
+			// summary:
+			//		set up nodes and connect our mouse and keyboard events
+
+			this.inherited(arguments);
+
+			var keyboardEventNode = this.focusNode || this.domNode;
+			this.own(
+				on(this._buttonNode, touch.press, lang.hitch(this, "_onDropDownMouseDown")),
+				on(this._buttonNode, "click", lang.hitch(this, "_onDropDownClick")),
+				on(keyboardEventNode, "keydown", lang.hitch(this, "_onKey")),
+				on(keyboardEventNode, "keyup", lang.hitch(this, "_onKeyUp"))
+			);
+		},
+
+		destroy: function(){
+			// If dropdown is open, close it, to avoid leaving dijit/focus in a strange state.
+			// Put focus back on me to avoid the focused node getting destroyed, which flummoxes IE.
+			if(this._opened){
+				this.closeDropDown(true);
+			}
+
+			if(this.dropDown){
+				// Destroy the drop down, unless it's already been destroyed.  This can happen because
+				// the drop down is a direct child of <body> even though it's logically my child.
+				if(!this.dropDown._destroyed){
+					this.dropDown.destroyRecursive();
+				}
+				delete this.dropDown;
+			}
+			this.inherited(arguments);
+		},
+
+		_onKey: function(/*Event*/ e){
+			// summary:
+			//		Callback when the user presses a key while focused on the button node
+
+			if(this.disabled || this.readOnly){
+				return;
+			}
+			var d = this.dropDown, target = e.target;
+			if(d && this._opened && d.handleKey){
+				if(d.handleKey(e) === false){
+					/* false return code means that the drop down handled the key */
+					e.stopPropagation();
+					e.preventDefault();
+					return;
+				}
+			}
+			if(d && this._opened && e.keyCode == keys.ESCAPE){
+				this.closeDropDown();
+				e.stopPropagation();
+				e.preventDefault();
+			}else if(!this._opened &&
+				(e.keyCode == keys.DOWN_ARROW ||
+					// ignore unmodified SPACE if _KeyNavMixin has active searching in progress
+					( (e.keyCode == keys.ENTER || (e.keyCode == keys.SPACE && (!this._searchTimer || (e.ctrlKey || e.altKey || e.metaKey)))) &&
+						//ignore enter and space if the event is for a text input
+						((target.tagName || "").toLowerCase() !== 'input' ||
+							(target.type && target.type.toLowerCase() !== 'text'))))){
+				// Toggle the drop down, but wait until keyup so that the drop down doesn't
+				// get a stray keyup event, or in the case of key-repeat (because user held
+				// down key for too long), stray keydown events
+				this._toggleOnKeyUp = true;
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		},
+
+		_onKeyUp: function(){
+			if(this._toggleOnKeyUp){
+				delete this._toggleOnKeyUp;
+				this.toggleDropDown();
+				var d = this.dropDown;	// drop down may not exist until toggleDropDown() call
+				if(d && d.focus){
+					this.defer(lang.hitch(d, "focus"), 1);
+				}
+			}
+		},
+
+		_onBlur: function(){
+			// summary:
+			//		Called magically when focus has shifted away from this widget and it's dropdown
+
+			// Close dropdown but don't focus my <input>.  User may have focused somewhere else (ex: clicked another
+			// input), and even if they just clicked a blank area of the screen, focusing my <input> will unwantedly
+			// popup the keyboard on mobile.
+			this.closeDropDown(false);
+
+			this.inherited(arguments);
+		},
+
+		isLoaded: function(){
+			// summary:
+			//		Returns true if the dropdown exists and it's data is loaded.  This can
+			//		be overridden in order to force a call to loadDropDown().
+			// tags:
+			//		protected
+
+			return true;
+		},
+
+		loadDropDown: function(/*Function*/ loadCallback){
+			// summary:
+			//		Creates the drop down if it doesn't exist, loads the data
+			//		if there's an href and it hasn't been loaded yet, and then calls
+			//		the given callback.
+			// tags:
+			//		protected
+
+			// TODO: for 2.0, change API to return a Deferred, instead of calling loadCallback?
+			loadCallback();
+		},
+
+		loadAndOpenDropDown: function(){
+			// summary:
+			//		Creates the drop down if it doesn't exist, loads the data
+			//		if there's an href and it hasn't been loaded yet, and
+			//		then opens the drop down.  This is basically a callback when the
+			//		user presses the down arrow button to open the drop down.
+			// returns: Deferred
+			//		Deferred for the drop down widget that
+			//		fires when drop down is created and loaded
+			// tags:
+			//		protected
+			var d = new Deferred(),
+				afterLoad = lang.hitch(this, function(){
+					this.openDropDown();
+					d.resolve(this.dropDown);
+				});
+			if(!this.isLoaded()){
+				this.loadDropDown(afterLoad);
+			}else{
+				afterLoad();
+			}
+			return d;
+		},
+
+		toggleDropDown: function(){
+			// summary:
+			//		Callback when the user presses the down arrow button or presses
+			//		the down arrow key to open/close the drop down.
+			//		Toggle the drop-down widget; if it is up, close it, if not, open it
+			// tags:
+			//		protected
+
+			if(this.disabled || this.readOnly){
+				return;
+			}
+			if(!this._opened){
+				this.loadAndOpenDropDown();
+			}else{
+				this.closeDropDown(true);	// refocus button to avoid hiding node w/focus
+			}
+		},
+
+		openDropDown: function(){
+			// summary:
+			//		Opens the dropdown for this widget.   To be called only when this.dropDown
+			//		has been created and is ready to display (ie, it's data is loaded).
+			// returns:
+			//		return value of dijit/popup.open()
+			// tags:
+			//		protected
+
+			var dropDown = this.dropDown,
+				ddNode = dropDown.domNode,
+				aroundNode = this._aroundNode || this.domNode,
+				self = this;
+
+			var retVal = popup.open({
+				parent: this,
+				popup: dropDown,
+				around: aroundNode,
+				orient: this.dropDownPosition,
+				maxHeight: this.maxHeight,
+				onExecute: function(){
+					self.closeDropDown(true);
+				},
+				onCancel: function(){
+					self.closeDropDown(true);
+				},
+				onClose: function(){
+					domAttr.set(self._popupStateNode, "popupActive", false);
+					domClass.remove(self._popupStateNode, "dijitHasDropDownOpen");
+					self._set("_opened", false);	// use set() because _CssStateMixin is watching
+				}
+			});
+
+			// Set width of drop down if necessary, so that dropdown width + width of scrollbar (from popup wrapper)
+			// matches width of aroundNode
+			if(this.forceWidth || (this.autoWidth && aroundNode.offsetWidth > dropDown._popupWrapper.offsetWidth)){
+				var widthAdjust = aroundNode.offsetWidth - dropDown._popupWrapper.offsetWidth;
+				var resizeArgs = {
+					w: dropDown.domNode.offsetWidth + widthAdjust
+				};
+				if(lang.isFunction(dropDown.resize)){
+					dropDown.resize(resizeArgs);
+				}else{
+					domGeometry.setMarginBox(ddNode, resizeArgs);
+				}
+
+				// If dropdown is right-aligned then compensate for width change by changing horizontal position
+				if(retVal.corner[1] == "R"){
+					dropDown._popupWrapper.style.left =
+						(dropDown._popupWrapper.style.left.replace("px", "") - widthAdjust) + "px";
+				}
+			}
+
+			domAttr.set(this._popupStateNode, "popupActive", "true");
+			domClass.add(this._popupStateNode, "dijitHasDropDownOpen");
+			this._set("_opened", true);	// use set() because _CssStateMixin is watching
+
+			this._popupStateNode.setAttribute("aria-expanded", "true");
+			this._popupStateNode.setAttribute("aria-owns", dropDown.id);
+
+			// Set aria-labelledby on dropdown if it's not already set to something more meaningful
+			if(ddNode.getAttribute("role") !== "presentation" && !ddNode.getAttribute("aria-labelledby")){
+				ddNode.setAttribute("aria-labelledby", this.id);
+			}
+
+			return retVal;
+		},
+
+		closeDropDown: function(/*Boolean*/ focus){
+			// summary:
+			//		Closes the drop down on this widget
+			// focus:
+			//		If true, refocuses the button widget
+			// tags:
+			//		protected
+
+			if(this._focusDropDownTimer){
+				this._focusDropDownTimer.remove();
+				delete this._focusDropDownTimer;
+			}
+
+			if(this._opened){
+				this._popupStateNode.setAttribute("aria-expanded", "false");
+				if(focus && this.focus){
+					this.focus();
+				}
+				popup.close(this.dropDown);
+				this._opened = false;
+			}
+		}
+
+	});
+});
+
+},
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
-'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n"}});
+'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
+'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
+'*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/p3user*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
+}});
 define("p3/layer/p3user", [], 1);
