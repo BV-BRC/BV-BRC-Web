@@ -17,7 +17,7 @@ var defaults =  {
 	},
 
 	"cookieSecret": "patric3",
-	"cookieKey": "patric3",
+	"cookieKey": "JSESSIONID",
 	"cookieDomain": ".patric.local",
 
 	"sessionTTL": 2628000000,

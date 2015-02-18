@@ -5,7 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var config = require("./config");
-var session = require("express-session");
+var session = require("express-session-unsigned");
 var RedisStore = require('connect-redis')(session);
 var passport = require('passport');
 
@@ -35,7 +35,7 @@ app.use(session({
     store: sessionStore,
     name: config.get("cookieKey"),
     cookie: { domain: config.get('cookieDomain'),  maxAge: config.get("sessionTTL")},
-    secret: config.get('cookieSecret'),
+//    secret: config.get('cookieSecret'),
     resave:false,
     saveUninitialized:true
 }));
