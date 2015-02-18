@@ -65,6 +65,12 @@ define([
 				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
 			});
 
+                        if (!this.path) {
+                                Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+                                        console.log("CURRENT PATH: ", path);
+                                        _self.set('path', path);
+                                });
+			}
 
 			if ((state == "Incomplete") || (state == "Error")) {
 			        this.saveButton.set("disabled", true);
