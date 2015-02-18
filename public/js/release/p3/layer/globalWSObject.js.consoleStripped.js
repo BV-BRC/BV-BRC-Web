@@ -16450,12 +16450,12 @@ define([
 
 		create: function(obj, createUploadNode){
 			var _self=this;
-			// 0 && console.log("WorkspaceManager.create(): ", obj);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.typetype||"unspecified"),obj.userMeta||{},(obj.userData||"")]],createUploadNodes:createUploadNode}]), function(results){
+			 0 && console.log("WorkspaceManager.create(): ", obj);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode}]), function(results){
                                         var res;
-
+					 0 && console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {
-                                                throw new Error("Error Creating Folder");
+                                                throw new Error("Error Creating Object");
                                         }else{
                                                 var r = results[0][0];
                                                 var out = {
@@ -16476,6 +16476,22 @@ define([
                                                 return out;
                                         }
 			});
+		},
+
+		createGroup: function(name, type, path, idType, ids){
+			var group = {
+				name: name,
+				id_list: {id_type: idType, ids: ids}	
+			}
+			 0 && console.log("Creating Group: ", group);
+			return this.create({
+				path: path,
+				name: name,
+				type: type,
+				userMeta: {},
+				content: group
+			})
+			
 		},
 
 		createFolder: function(paths){

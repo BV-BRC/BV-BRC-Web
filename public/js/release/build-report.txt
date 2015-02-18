@@ -1,4 +1,4 @@
-Build started: Wed Feb 18 2015 00:40:37 GMT-0500 (EST)
+Build started: Wed Feb 18 2015 12:02:17 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,10 +126,10 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:0.965s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.805s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:7.141s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:8.528s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.588s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:8.086s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:8.316s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:10.741s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1646,9 +1646,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.965s)
+Done (compile time:2.588s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.965s)
+Done (compile time:2.588s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1771,9 +1771,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:6.805s)
+Done (compile time:8.086s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.965s)
+Done (compile time:2.588s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1896,7 +1896,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:6.805s)
+Done (compile time:8.086s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2018,18 +2018,18 @@ globalWSObject.js.uncompressed.js:15600: WARNING - unreachable code
 	if (! 1 ){
 	         ^
 
-globalWSObject.js.uncompressed.js:16512: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16528: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-globalWSObject.js.uncompressed.js:16838: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16854: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.141s)
+Done (compile time:8.316s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.965s)
+Done (compile time:2.588s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2152,7 +2152,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:6.805s)
+Done (compile time:8.086s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2274,16 +2274,16 @@ globalWSObject.js.uncompressed.js:15600: WARNING - unreachable code
 	if (! 1 ){
 	         ^
 
-globalWSObject.js.uncompressed.js:16512: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16528: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-globalWSObject.js.uncompressed.js:16838: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16854: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.141s)
+Done (compile time:8.316s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:471: WARNING - unreachable code
 	}else if( 0 ){
@@ -2297,36 +2297,36 @@ core.js.uncompressed.js:11372: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:13420: WARNING - unreachable code
+core.js.uncompressed.js:13436: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-core.js.uncompressed.js:26365: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:26389: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:28029: WARNING - unreachable code
+core.js.uncompressed.js:28053: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:28068: WARNING - unreachable code
+core.js.uncompressed.js:28092: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:28416: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:28440: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:29890: WARNING - unreachable code
+core.js.uncompressed.js:29914: WARNING - unreachable code
 			switch (val) {
 			^
 
-core.js.uncompressed.js:34167: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:34191: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
 0 error(s), 10 warning(s)
-Done (compile time:8.528s)
+Done (compile time:10.741s)
 
 
 Has Features Detected
@@ -2778,4 +2778,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 78.426 seconds
+	build time: 83.923 seconds

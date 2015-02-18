@@ -13358,12 +13358,12 @@ define([
 
 		create: function(obj, createUploadNode){
 			var _self=this;
-			//console.log("WorkspaceManager.create(): ", obj);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.typetype||"unspecified"),obj.userMeta||{},(obj.userData||"")]],createUploadNodes:createUploadNode}]), function(results){
+			console.log("WorkspaceManager.create(): ", obj);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode}]), function(results){
                                         var res;
-
+					console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {
-                                                throw new Error("Error Creating Folder");
+                                                throw new Error("Error Creating Object");
                                         }else{
                                                 var r = results[0][0];
                                                 var out = {
@@ -13384,6 +13384,22 @@ define([
                                                 return out;
                                         }
 			});
+		},
+
+		createGroup: function(name, type, path, idType, ids){
+			var group = {
+				name: name,
+				id_list: {id_type: idType, ids: ids}	
+			}
+			console.log("Creating Group: ", group);
+			return this.create({
+				path: path,
+				name: name,
+				type: type,
+				userMeta: {},
+				content: group
+			})
+			
 		},
 
 		createFolder: function(paths){
@@ -25862,6 +25878,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -26055,13 +26072,17 @@ define([
 
 						newPanel.on("ItemDblClick", lang.hitch(this,function(evt){
 							console.log("ItemDblClick: ", evt);
-							Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
-							this.actionPanel.set("selection", []);
-							newPanel.clearSelection();
-							hideTimer = setTimeout(lang.hitch(this,function(){
-								this.removeChild(this.actionPanel);
-								this.removeChild(this.itemDetailPanel);
-							}),500);	
+							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
+								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
+								this.actionPanel.set("selection", []);
+								newPanel.clearSelection();
+								hideTimer = setTimeout(lang.hitch(this,function(){
+									this.removeChild(this.actionPanel);
+									this.removeChild(this.itemDetailPanel);
+								}),500);	
+							}else{
+								console.log("non-navigable type, todo: show info panel when dblclick");
+							}
 	
 						}));
 						}
@@ -26196,9 +26217,12 @@ define([
 	
 		},
 
-		postCreate: function() {
-			this.inherited(arguments);
+		allowSelect: function(row){
+			if (row.data && row.data.type && row.data.type=="parentfolder") { return false; }
+
+			return true;
 		},
+
 		addNewFolder: function(item){
 			var items = this._items;
 			var list = [item].concat(items);

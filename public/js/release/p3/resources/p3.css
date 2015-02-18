@@ -5298,6 +5298,9 @@ div.dijitNumberTextBoxRtl {
 .TypeContainer > DIV {
 	text-align: center;
 }
+.WorkspaceExplorerView .dgrid-row {
+	cursor: pointer;
+}
 .dgrid-cell.wsItemType,
 .wsItemType {
 	width: 32px;
@@ -5531,7 +5534,6 @@ font-weight: bold;
     
 }
 .GenomeList {
-	font-size: .9em;
 }
 .zero_result_mask {
   background-image: none;
