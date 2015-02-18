@@ -30,6 +30,9 @@ define([
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
+		reset: function(){
+			this.searchBox.set('value','');
+		},
 		_setDisabledAttr: function(val){
 			this.disabled=val;
 			if (val) {
