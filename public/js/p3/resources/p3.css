@@ -189,5 +189,16 @@ body.patric *:focus {
 
 
 .fileUploadButton > input { 
-	position:absolute;top:0;right:0;margin:0;padding:0;font-size:.9em;cursor:pointer;opacity:0;filter: alpha(opacity=0);
+	position:absolute;top:0;right:0;margin:0;padding:0;font-size:1em;cursor:pointer;opacity:0;filter: alpha(opacity=0);
+}
+
+.claro .dijitSelect .dijitInputField {
+	font-size:1em;
+	padding-top: 2px;
+	padding-bottom:2px;
+}
+
+.disabled > .fa {
+	color: #aaa;
+	cursor: default ;
 }

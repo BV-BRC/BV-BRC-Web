@@ -20,9 +20,28 @@ define([
 		types: false, 
 		pathLabel: "Upload file to: ", 
 		buttonLabel: "Choose File",
+		knownTypes: {
+			unspecified: {label: "Unspecified",formats: ["*.*"]},
+			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
+			reads: {label: "Reads", formats: [".fa",".fasta",".fq",".fastq"]},
+			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_gene_list: {label: "Proteomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_gene_matrix: {label: "Proteomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_experiment_metadata:{label: "Proteomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_gene_list: {label: "Transcriptomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_gene_matrix: {label: "Transcriptomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_experiment_metadata:{label: "Transcriptomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+		},
 		_setPathAttr: function(val){
 			this.path = val;
 			this.destinationPath.innerHTML=val;
+		},
+		onUploadTypeChanged: function(val){
+			var formats = this.knownTypes[val].formats;
+			console.log("formats: ", val, formats);
+			domAttr.set(this.fileInput, "accept", formats.join(","));
 		},
 		startup: function(){
 			if (this._started){return;}
@@ -35,6 +54,17 @@ define([
 			}else{
 				domAttr.set(this.fileInput, "multiple", false);
 			}
+		
+			var _self=this;
+			console.log("Add Dropdown Options");
+			Object.keys(this.knownTypes).filter(function(t){
+				console.log("CHECKING: ", t);
+				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
+			}).forEach(function(t){
+				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
+				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
+			});
+
 
 			if ((state == "Incomplete") || (state == "Error")) {
 			        this.saveButton.set("disabled", true);

@@ -109,11 +109,13 @@ define([
 			on(this.interleaved, 'change', lang.hitch(this, function(){
 				if(this.interleaved.turnedOn){
 					this.interleaved.turnedOn=false;
-					this.read2block.style.visibility='visible';
+					//this.read2block.style.visibility='visible';
+					this.read2.set('disabled', false);		
 				}
 				else{
 					this.interleaved.turnedOn=true;
-					this.read2block.style.visibility='hidden';
+//					this.read2block.style.visibility='hidden';
+					this.read2.set('disabled', true);		
 				}	
 			}));
 				

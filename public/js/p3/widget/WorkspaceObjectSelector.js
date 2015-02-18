@@ -5,7 +5,7 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-class","dojo/dom-attr",
-	"dijit/form/Button"
+	"dijit/form/Button","dojo/_base/Deferred"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -13,7 +13,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domClass,domAttr,
-	Button
+	Button,Deferred
 ){
 
 
@@ -24,10 +24,36 @@ define([
 		workspace: "",
 		selection: "",
 		value: "",
-		path: "/",
+		path: "",
+		disabled: false,
+		required: false,
+		promptMessage:"",
+		missingMessage: "A valid workspace item is required.",
+		promptMessage: "Please choose or upload a workspace item",
+		_setDisabledAttr: function(val){
+			this.disabled=val;
+			if (val) {
+				domClass.add(this.domNode,"disabled");
+			}else{
+				domClass.remove(this.domNode,"disabled");
+			}
+
+			if (this.searchBox){
+				this.searchBox.set("disabled",val);
+			}
+		},
+		_setRequiredAttr: function(val){
+			this.required=val;
+			if (this.searchBox){
+				this.searchBox.set("required",val);
+			}
+		},
+	
 		_setPathAttr: function(val){
+			console.log("_setPathAttr: ", val);
 			this.path=val;
 			if (this.grid) {
+				console.log("set Grid Path: ", val);
 				this.grid.set('path', val);
 			}
 			if (this.uploader){
@@ -88,6 +114,7 @@ define([
 		},
 
 		openChooser: function(){
+			if (this.disabled) { return; }
 			if (!this.dialog){
 				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
 				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
@@ -121,7 +148,7 @@ define([
 					}
 				});
 				var _self=this;
-				var grid = this.grid = new Grid({region: "center",selectionMode:"single",deselectOnRefresh:true, types: this.type?(["folder"].concat(this.type)):false});
+				var grid = this.grid = new Grid({region: "center",path: this.path, selectionMode:"single",deselectOnRefresh:true, types: this.type?(["folder"].concat(this.type)):false});
 
 				grid.allowSelect = function(row){
 					if (row.data.type && (_self.type.indexOf(row.data.type)>=0)){
@@ -169,17 +196,18 @@ define([
 
 				on(uploader.domNode,"dialogAction", function(evt){
 					console.log("Uploader Dialog Action: ",evt);
-					var file = evt.files[0]
-					if (file && evt.action=="close") {
+					if (evt.files && evt.files[0] && evt.action=="close") {
+						var files = evt.files[0];
 						_self.set("selection",file);
 						_self.set('value',file.id,true);	
 						_self.dialog.hide();
 					}else{
-						_self.dialog.hide()		
+						_self.dialog.flip()		
 					}
 				});
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
+				uploader.startup();
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
 				var _self=this;
 
@@ -200,25 +228,25 @@ define([
 				}	
 			}));
 		},
-		onSearchChange: function(){},
+		onSearchChange: function(value){
+			this.set("value", value);	
+		},
 		startup: function(){
 			if (this._started){return;}
 			console.log("call getObjectsByType(); ", this.type);
 			this.inherited(arguments);	
-			this.refreshWorkspaceItems();
-			/*
-			WorkspaceManager.getObjectsByType(this.type).then(lang.hitch(this,function(items){
-				console.log("Ws Objects: ", items);
-
-				var store= new Memory({data: items});
-				console.log('store: ', store);
-				console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store",store);
-				if (this.value) {	
-					this.searchBox.set('value', this.value);
-				}	
-			}));
-			*/
+			var _self=this;
+			if (!this.path) {
+				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+					console.log("CURRENT PATH: ", path);
+					_self.set('path', path);
+					_self.refreshWorkspaceItems();
+				});
+			}else{
+				this.refreshWorkspaceItems();
+			}
+			this.searchBox.set('disabled', this.disabled);
+			this.searchBox.set('required', this.required);
 		}
 	});
 });

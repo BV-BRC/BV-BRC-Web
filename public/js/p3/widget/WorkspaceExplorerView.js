@@ -108,10 +108,10 @@ define([
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			var _self = this;
-
-			this.listWorkspaceContents(this.path).then(function(contents) {
-				_self.render(_self.path, contents);
-			})
+			this.refreshWorkspace();
+//			this.listWorkspaceContents(this.path).then(function(contents) {
+//				_self.render(_self.path, contents);
+//			})
 
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
@@ -126,19 +126,14 @@ define([
 				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
 				// }
 			});
-
 		},
 
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
-			//console.log("WorkspaceExplorerView setPath", val)
+			console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
 				this.refreshWorkspace();
-//				this.listWorkspaceContents(this.path).then(function(contents) {
-			//		console.log("Workspace Contents", contents);
-//					_self.render(_self.path, contents);
-//				});
 			}
 		}
 	});
