@@ -75,6 +75,10 @@
 	text-align: center;
 }
 
+.WorkspaceExplorerView .dgrid-row {
+	cursor: pointer;
+}
+
 .dgrid-cell.wsItemType,
 .wsItemType {
 	width: 32px;

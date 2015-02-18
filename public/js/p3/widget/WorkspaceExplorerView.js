@@ -61,9 +61,12 @@ define([
 	
 		},
 
-		postCreate: function() {
-			this.inherited(arguments);
+		allowSelect: function(row){
+			if (row.data && row.data.type && row.data.type=="parentfolder") { return false; }
+
+			return true;
 		},
+
 		addNewFolder: function(item){
 			var items = this._items;
 			var list = [item].concat(items);

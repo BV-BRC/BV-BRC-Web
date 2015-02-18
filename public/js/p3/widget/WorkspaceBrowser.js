@@ -14,6 +14,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -207,13 +208,17 @@ define([
 
 						newPanel.on("ItemDblClick", lang.hitch(this,function(evt){
 							console.log("ItemDblClick: ", evt);
-							Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
-							this.actionPanel.set("selection", []);
-							newPanel.clearSelection();
-							hideTimer = setTimeout(lang.hitch(this,function(){
-								this.removeChild(this.actionPanel);
-								this.removeChild(this.itemDetailPanel);
-							}),500);	
+							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
+								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
+								this.actionPanel.set("selection", []);
+								newPanel.clearSelection();
+								hideTimer = setTimeout(lang.hitch(this,function(){
+									this.removeChild(this.actionPanel);
+									this.removeChild(this.itemDetailPanel);
+								}),500);	
+							}else{
+								console.log("non-navigable type, todo: show info panel when dblclick");
+							}
 	
 						}));
 						}
