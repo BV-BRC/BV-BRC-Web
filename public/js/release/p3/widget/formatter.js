@@ -39,6 +39,7 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 			return val;	
 		},
 		baseUsername: function(val){
+			if (!val) { return "" }
 			var parts = val.split("@");
 			return parts[0];
 		},
@@ -53,6 +54,8 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 		},	
 		wsItemType: function(val){
 			switch (val) {
+				case "parentfolder":
+					return '<i class="fa fa-level-up fa-1x" title="Folder" />'
 				case "folder":
 					return '<i class="fa fa-folder fa-1x" title="Folder" />'
 				case "contigs":

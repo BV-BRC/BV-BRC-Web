@@ -13356,6 +13356,36 @@ define([
 			return this.userWorkspaces;
 		},
 
+		create: function(obj, createUploadNode){
+			var _self=this;
+			// 0 && console.log("WorkspaceManager.create(): ", obj);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.typetype||"unspecified"),obj.userMeta||{},(obj.userData||"")]],createUploadNodes:createUploadNode}]), function(results){
+                                        var res;
+
+                                        if (!results[0][0] || !results[0][0]) {
+                                                throw new Error("Error Creating Folder");
+                                        }else{
+                                                var r = results[0][0];
+                                                var out = {
+                                                        id: r[4],
+                                                        path: r[2] + r[0],
+                                                        name: r[0],
+                                                        type: r[1],
+                                                        creation_time: r[3],
+                                                        link_reference: r[11],
+                                                        owner_id: r[5],
+                                                        size: r[6],
+                                                        userMeta: r[7],
+                                                        autoMeta: r[8],
+                                                        user_permission: r[9],
+                                                        global_permission: r[10]
+                                                }
+                                		Topic.publish("/refreshWorkspace",{});
+                                                return out;
+                                        }
+			});
+		},
+
 		createFolder: function(paths){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -13424,7 +13454,7 @@ define([
 
 
 		createWorkspace: function(name){
-			 0 && console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
+			// 0 && console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
 				if (name=="home"){
 					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments"]),function(){
@@ -13436,30 +13466,27 @@ define([
 
 		getObjectsByType: function(types, ws){
 			types= (types instanceof Array)?types:[types];
-			 0 && console.log("Get ObjectsByType: ", types);
+			// 0 && console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
-				 0 && console.log("current: ", current, current.path);
+				// 0 && console.log("current: ", current, current.path);
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls",[{
 					paths: [current.path],
 					excludeDirectories: false,
 					excludeObjects: false,
-					recursive: true,
-					query: {
-						type: types[0]
-					}
+					recursive: true
 				}]), function(results){
-					 0 && console.log("getObjectsByType Results: ", results);
+					// 0 && console.log("getObjectsByType Results: ", results);
 					if (!results[0] || !results[0][path]) {
 						return [];
 					}
 					var res = results[0][path];
 		
-					 0 && console.log("array res", res);
+					// 0 && console.log("array res", res);
 	
 					res = res.map(function(r) {
-						 0 && console.log("r: ", r);
+						// 0 && console.log("r: ", r);
 						return {
 							id: r[4],
 							path: r[2] + r[0],
@@ -13474,12 +13501,14 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
+					}).filter(function(r){
+						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
 						return true;
 					})*/
 
-					 0 && console.log("Final getObjectsByType()", res)
+					// 0 && console.log("Final getObjectsByType()", res)
 					return res;
 				})
 			}));
@@ -13493,9 +13522,9 @@ define([
 				paths = [paths];
 			}
 			paths = paths.map(function(p){ return decodeURIComponent(p); })
-			 0 && console.log('getObjects: ', paths)
+			// 0 && console.log('getObjects: ', paths)
 			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
-				 0 && console.log("results[0]", results[0])
+				// 0 && console.log("results[0]", results[0])
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -13526,14 +13555,14 @@ define([
 					includeSubDirs: false,
 					Recursive: false
 				}]), function(results) {
-					 0 && console.log("path: ", path);
+					// 0 && console.log("path: ", path);
 
 					if (!results[0] || !results[0][path]) {
 						return [];
 					}
 					var res = results[0][path];
 		
-					 0 && console.log("array res", res);
+					// 0 && console.log("array res", res);
 
 					res = res.map(function(r) {
 						return {
@@ -13554,12 +13583,12 @@ define([
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
 						return true;
 					})
-					 0 && console.log("Final getFolderContents()", res)
+					// 0 && console.log("Final getFolderContents()", res)
 					return res;
 				},
 
 				function(err) {
-					 0 && console.log("Error Loading Workspace:", err);
+					// 0 && console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
 		},
@@ -26118,7 +26147,15 @@ define([
 	return declare([WorkspaceGrid], {
 		"disabled": false,
 		path: "/",
+		types: null,
 
+		_setTypesAttr: function(val){
+			if (!(val instanceof Array)){
+				this.types=[val];
+			}else{
+				this.types=val;
+			}
+		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
 			if (ws[ws.length - 1] == "/") {
@@ -26126,10 +26163,17 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ return res; }, function(err) {
-					 0 && console.log("Error Loading Workspace:", err);
-					_self.showError(err);
-				})
+			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+				if (_self.types){
+					res = res.filter(function(r){
+						return (r && r.type && (_self.types.indexOf(r.type)>=0))
+					});
+				}
+				return res;
+			}, function(err) {
+				 0 && console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
 		},
 
 		showError: function(err) {
@@ -26155,9 +26199,19 @@ define([
 		postCreate: function() {
 			this.inherited(arguments);
 		},
-
+		addNewFolder: function(item){
+			var items = this._items;
+			var list = [item].concat(items);
+			this.render(this.path,list);
+			this._items = items;	
+//			 0 && console.log("Cell: ", this.cell("untitled","name"));
+//			var row = this.row(0);
+			var cell = this.cell(0, "name");
+			this.edit(cell);
+		},
 		render: function(val, items) {
 			this.refresh();
+			this._items = items;
 			this.renderArray(items);
 			// this.refresh();	
 		},
@@ -26165,6 +26219,26 @@ define([
 		refreshWorkspace: function(){
 			var _self=this;
 			this.listWorkspaceContents(this.path).then(function(contents) {
+				 0 && console.log("listWSContents: ", contents);
+				var parts = _self.path.split("/").filter(function(x){ return !!x});
+				 0 && console.log("Path Parts: ", parts);
+				if (parts.length>1){
+					parts.pop();
+					var parentPath = "/" + parts.join("/");
+					 0 && console.log("parentPath: ", parentPath);
+
+					var p= {
+						name: "Parent Folder",
+						path: parentPath,
+						type: "parentfolder",
+						id: parentPath,
+						owner_id: "@"
+					};
+					 0 && console.log("p: ",p);
+					contents.unshift(p);
+				}
+
+				 0 && console.log("Revised Contents:", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -26179,10 +26253,10 @@ define([
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			var _self = this;
-
-			this.listWorkspaceContents(this.path).then(function(contents) {
-				_self.render(_self.path, contents);
-			})
+			this.refreshWorkspace();
+//			this.listWorkspaceContents(this.path).then(function(contents) {
+//				_self.render(_self.path, contents);
+//			})
 
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
@@ -26197,19 +26271,19 @@ define([
 				// 	 0 && console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
 				// }
 			});
-
 		},
 
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
-			// 0 && console.log("WorkspaceExplorerView setPath", val)
+			 0 && console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
-				this.listWorkspaceContents(this.path).then(function(contents) {
-			//		 0 && console.log("Workspace Contents", contents);
-					_self.render(_self.path, contents);
-				});
+				this.refreshWorkspace();
 			}
+		},
+
+		save: function(){
+			 0 && console.log("Save Arguments: ", arguments);
 		}
 	});
 });
@@ -26220,14 +26294,14 @@ define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on","dijit/form/TextBox"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on,TextBox
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
@@ -26237,11 +26311,18 @@ define([
 					className: "wsItemType",
 					formatter: formatter.wsItemType
 				},
-				"name": {
+				"name": editor({
 					label: "Name",
 					field: "name",
-					className: "wsItemName"
-				},
+					className: "wsItemName",
+					canEdit: function(obj,val){
+						return obj.id=='untitled';
+					},
+					autoSave: true,
+					editOn: "click",
+					editor: TextBox,
+					editorArgs: {placeHolder: "Untitled Folder", trim: true}
+				}),
 				size: {
 					label: "Size",
 					field: "size",
@@ -26352,9 +26433,11 @@ define([
 				     0 && console.log("dblclick row:", row)
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
+						item: row.data,
 						bubbles: true,
 						cancelable: true
 					});	
+					 0 && console.log('after emit');
 				    //if (row.data.type == "folder"){
 		//				Topic.publish("/select", []);
 
@@ -29798,6 +29881,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return val;	
 		},
 		baseUsername: function(val){
+			if (!val) { return "" }
 			var parts = val.split("@");
 			return parts[0];
 		},
@@ -29812,6 +29896,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		},	
 		wsItemType: function(val){
 			switch (val) {
+				case "parentfolder":
+					return '<i class="fa fa-level-up fa-1x" title="Folder" />'
 				case "folder":
 					return '<i class="fa fa-folder fa-1x" title="Folder" />'
 				case "contigs":
@@ -32520,7 +32606,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	 0 && console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -32536,7 +32623,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
@@ -35416,14 +35503,18 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
-	"dijit/Dialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
-	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory"
+	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
+	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
+	"dijit/form/Button","dojo/_base/Deferred"
 
 ], function(
 	declare, WidgetBase, on,lang,
 	domClass,Templated,WidgetsInTemplate,
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
-	Grid,domConstr,WorkspaceManager,Memory
+	Grid,domConstr,WorkspaceManager,Memory,
+	Uploader, BorderContainer,domAttr,
+	Button,Deferred
 ){
 
 
@@ -35432,22 +35523,78 @@ define([
 		"disabled":false,
 		templateString: Template,
 		workspace: "",
+		selection: "",
 		value: "",
+		path: "",
+		disabled: false,
+		required: false,
+		promptMessage:"",
+		missingMessage: "A valid workspace item is required.",
+		promptMessage: "Please choose or upload a workspace item",
+		reset: function(){
+			this.searchBox.set('value','');
+		},
+		_setDisabledAttr: function(val){
+			this.disabled=val;
+			if (val) {
+				domClass.add(this.domNode,"disabled");
+			}else{
+				domClass.remove(this.domNode,"disabled");
+			}
+
+			if (this.searchBox){
+				this.searchBox.set("disabled",val);
+			}
+		},
+		_setRequiredAttr: function(val){
+			this.required=val;
+			if (this.searchBox){
+				this.searchBox.set("required",val);
+			}
+		},
+	
+		_setPathAttr: function(val){
+			 0 && console.log("_setPathAttr: ", val);
+			this.path=val;
+			if (this.grid) {
+				 0 && console.log("set Grid Path: ", val);
+				this.grid.set('path', val);
+			}
+			if (this.uploader){
+				this.uploader.set('path', val);
+			}
+		},		
 		_setTypeAttr: function(type){
 			if (!(type instanceof Array)){
 				type = [type];
 			}
 			this.type = type;
 		},
-		_setValueAttr: function(value){
+		_setValueAttr: function(value,refresh){
 			this.value = value;
 			if (this._started) {
-				this.searchBox.set('value', value);
+				if (refresh) {
+					this.refreshWorkspaceItems()
+				}else{
+					this.searchBox.set('value', value);
+				}
 			}
 		},
 
 		_getValueAttr: function(value){
 			return this.searchBox.get('value', value);
+		},
+
+		_setSelectionAttr: function(val){
+			this.selection=val;
+			 0 && console.log("this.selection: ", this.selection);
+			if (!val) {
+				this.selValNode.innerHTML="None.";
+				this.okButton.set('disabled', true);
+			}else{
+				this.selValNode.innerHTML=val.name;
+				this.okButton.set('disabled', false);
+			}
 		},
 
 		postMixinProperties: function(){
@@ -35457,33 +35604,142 @@ define([
 			this.inherited(arguments);
 		},
 
+		createSelectedPane: function(){
+			var wrap= domConstr.create("div",{});
+			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
+			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
+//			domConstr.place(this.selValNode, sel, "last");
+			var buttonContainer = domConstr.create("div", {
+				style: {"font-size":".85em",display: "inline-block","float":"right","text-align":"right"}, 
+				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
+			},wrap);
+			
+			return wrap;	
+		},
+
 		openChooser: function(){
+			if (this.disabled) { return; }
 			if (!this.dialog){
-				this.dialog = new Dialog({title:"Workspace Explorer"});
-				var gnode = domConstr.create("div", {style: {width: "500px",height:"400px"}},this.dialog.containerNode,"last");
-				var grid = new Grid({style:"width:300px;height:400px;"},gnode);
+				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
+				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
+				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
+				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
+
+				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
+				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
+				var cancelButton = new Button({label: "Cancel"});
+				cancelButton.on('click', function(){
+					_self.dialog.hide();
+				});
+				var okButton= this.okButton = new Button({label: "OK"});
+
+				okButton.on("click", function(evt){
+					if (_self.selection){
+						_self.set("value", _self.selection.id);
+					}
+					_self.dialog.hide();
+				});
+				domConstr.place(okButton.domNode, buttonsPane.containerNode,"first");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"first");
 				
+				on(selectionPane.domNode, "i:click", function(evt){
+					 0 && console.log("Click: ", evt);
+					var rel = domAttr.get(evt.target,"rel");	
+					switch(rel){
+						case "upload":
+							_self.dialog.flip();
+							break;
+						case "createFolder":
+							 0 && console.log("Create Folder", _self.grid.row(0));
+							var element=_self.grid.row(0).element;
+							 0 && console.log("element: ", element);
+							_self.grid.addNewFolder({id:"untitled"});
+					
+							break;
+					}
+				});
 				var _self=this;
-				/*
-				on(this.dialog.domNode, "click", function(evt){
-					 0 && console.log(evt);
-					domClass.toggle(_self.dialog.domNode,"flipped");
-				});*/
+				var grid = this.grid = new Grid({region: "center",path: this.path, selectionMode:"single",deselectOnRefresh:true, types: this.type?(["folder"].concat(this.type)):false});
+				_self.grid.on("dgrid-datachange", function(evt){
+					var name = evt.value;
+					if (!name) { return; }
+					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name),function(){
+						_self.grid.refreshWorkspace();
+						_self.refreshWorkspaceItems();
+					});
+				});
+				grid.allowSelect = function(row){
+					if (row.data.type && (_self.type.indexOf(row.data.type)>=0)){
+						return true;	
+					}
+					return false;
+				}
+
+				grid.on("ItemDblClick", function(evt){
+					if (evt.item && evt.item.type=="folder" || evt.item.type=="parentfolder"){		
+						_self.set('path', evt.item_path);
+					}else{
+						if (_self.selection) {
+							_self.set('value', _self.selection.id);
+							_self.dialog.hide()
+						}
+					}
+					 0 && console.log("ItemDblClick for chooser: ", evt);
+				//	var row = evt.rows[0];
+				//	var data = row.data;
+				//	 0 && console.log("selected: ", data);
+				});
+
+				grid.on("select", function(evt){
+					var row = evt.rows[0];
+					_self.set("selection", row.data);
+				});
+
+				grid.on("deselect", function(evt){
+					_self.set('selection', "");
+				});
+
+				frontBC.addChild(selectionPane);	
+				frontBC.addChild(grid);	
+				frontBC.addChild(buttonsPane);	
+				frontBC.startup();
+				var backhead= new ContentPane({region:"top", content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Return</span>' });
+				on(backhead.domNode, "span:click", function(evt){
+                                         0 && console.log("Click: ", evt);
+                                        var rel = domAttr.get(evt.target,"rel");
+                                        switch(rel){
+                                                case "flip":
+                                                        _self.dialog.flip();
+                                                        break;
+                                        }
+                                });	
+				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Choose File"});
+
+				on(uploader.domNode,"dialogAction", function(evt){
+					 0 && console.log("Uploader Dialog Action: ",evt);
+					if (evt.files && evt.files[0] && evt.action=="close") {
+						var file = evt.files[0];
+						_self.set("selection",file);
+						_self.set('value',file.id,true);	
+						_self.dialog.hide();
+					}else{
+						_self.dialog.flip()		
+					}
+				});
+				backBC.addChild(backhead);
+				backBC.addChild(uploader);
+				uploader.startup();
+				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
+				var _self=this;
+
 			}
+			this.dialog.flip("front");
 			this.dialog.show();
 		},
-		onSearchChange: function(val){
-//			dropDown.set("content","Searching for '"+val+"' in '" + this.workspace + "'")
-			 0 && console.log(arguments)			
-		},
 
-		startup: function(){
-			if (this._started){return;}
-			 0 && console.log("call getObjectsByType(); ", this.type);
-			this.inherited(arguments);	
+		refreshWorkspaceItems: function(){
 			WorkspaceManager.getObjectsByType(this.type).then(lang.hitch(this,function(items){
 				 0 && console.log("Ws Objects: ", items);
-
 				var store= new Memory({data: items});
 				 0 && console.log('store: ', store);
 				 0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
@@ -35492,9 +35748,158 @@ define([
 					this.searchBox.set('value', this.value);
 				}	
 			}));
+		},
+		onSearchChange: function(value){
+			this.set("value", value);	
+		},
+		startup: function(){
+			if (this._started){return;}
+			 0 && console.log("call getObjectsByType(); ", this.type);
+			this.inherited(arguments);	
+			var _self=this;
+			if (!this.path) {
+				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+					 0 && console.log("CURRENT PATH: ", path);
+					_self.set('path', path);
+					_self.refreshWorkspaceItems();
+				});
+			}else{
+				this.refreshWorkspaceItems();
+			}
+			this.searchBox.set('disabled', this.disabled);
+			this.searchBox.set('required', this.required);
 		}
 	});
 });
+
+},
+'p3/widget/FlippableDialog':function(){
+define([
+	"dojo/_base/declare", "dijit/Dialog","dojo/dom-construct",
+	"dojo/dom-geometry","dojo/dom-style", "dojo/window", "dojo/sniff",
+	"dojo/text!./templates/FlippableDialog.html","dojo/on","dojo/dom-class",
+	"dojo/_base/lang","dijit/layout/utils"
+
+], function(
+	declare, Dialog, domConstr,
+	domGeometry, domStyle,winUtils,has,
+	template,on,domClass,lang,utils
+){
+	return declare([Dialog],{
+		templateString: template,
+		flip: function(side){
+			if (side=="front") {
+				domClass.remove(this.domNode,"flipped");
+			}else if (side=="back"){
+				domClass.add(this.domNode, "flipped")
+			}else{
+				domClass.toggle(this.domNode,"flipped");
+			}
+		},
+
+		_setBackpaneContentAttr: function(content){
+			this.backPane.innerHTML=content;
+		},
+
+		resize: function(dim){
+                        // summary:
+                        //              Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
+                        //              necessary to keep it visible.
+                        //
+                        //              Can also be called with an argument (by dojox/layout/ResizeHandle etc.) to explicitly set the
+                        //              size of the dialog.
+                        // dim: Object?
+                        //              Optional dimension object like {w: 200, h: 300}
+
+                        if(this.domNode.style.display != "none"){
+
+                                this._checkIfSingleChild();
+
+                                if(!dim){
+                                        if(this._shrunk){
+                                                // If we earlier shrunk the dialog to fit in the viewport, reset it to its natural size
+                                                if(this._singleChild){
+                                                        if(typeof this._singleChildOriginalStyle != "undefined"){
+                                                                this._singleChild.domNode.style.cssText = this._singleChildOriginalStyle;
+                                                                delete this._singleChildOriginalStyle;
+                                                        }
+                                                }
+                                                array.forEach([this.domNode, this.containerNode, this.titleBar], function(node){
+                                                        domStyle.set(node, {
+                                                                position: "static",
+                                                                width: "auto",
+                                                                height: "auto"
+                                                        });
+                                                });
+                                                this.domNode.style.position = "absolute";
+                                        }
+
+                                        // If necessary, shrink Dialog to fit in viewport and have some space around it
+                                        // to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
+                                        var viewport = winUtils.getBox(this.ownerDocument);
+                                        viewport.w *= this.maxRatio;
+                                        viewport.h *= this.maxRatio;
+
+                                        var bb = domGeometry.position(this.domNode);
+                                        if(bb.w >= viewport.w || bb.h >= viewport.h){
+                                                dim = {
+                                                        w: Math.min(bb.w, viewport.w),
+                                                        h: Math.min(bb.h, viewport.h)
+                                                };
+                                                this._shrunk = true;
+                                        }else{
+                                                this._shrunk = false;
+                                        }
+                                }
+
+                                // Code to run if user has requested an explicit size, or the shrinking code above set an implicit size
+                                if(dim){
+                                        // Set this.domNode to specified size
+                                        domGeometry.setMarginBox(this.domNode, dim);
+ 
+                                        // And then size this.containerNode
+                                        var contentDim = utils.marginBox2contentBox(this.domNode, dim),
+                                                centerSize = {domNode: this.containerNode, region: "center"};
+                                        utils.layoutChildren(this.domNode, contentDim,
+                                                [ {domNode: this.titleBar, region: "top"}, centerSize ]);
+
+
+                                        // And then if this.containerNode has a single layout widget child, size it too.
+                                        // Otherwise, make this.containerNode show a scrollbar if it's overflowing.
+                                        if(this._singleChild){
+                                                var cb = utils.marginBox2contentBox(this.containerNode, centerSize);
+                                                // note: if containerNode has padding singleChildSize will have l and t set,
+                                                // but don't pass them to resize() or it will doubly-offset the child
+                                                this._singleChild.resize({w: cb.w, h: cb.h});
+                                                // TODO: save original size for restoring it on another show()?
+                                        }else{
+                                                this.containerNode.style.overflow = "auto";
+                                                this._layoutChildren();         // send resize() event to all child widgets
+                                        }
+                                }else{
+                                        this._layoutChildren();         // send resize() event to all child widgets
+
+                                }
+				var titleDim= domGeometry.getMarginBox(this.titleBar);
+				 0 && console.log("titleContent: ", titleDim);
+				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
+				var dim = domGeometry.getMarginBox(this.domNode);
+				var contentDim = utils.marginBox2contentBox(this.domNode, dim)		
+				utils.layoutChildren(this.domNode, contentDim, [{domNode:this.backpaneTitleBar,region:"top"},{domNode:this.backPane,region:"center"}]);	
+
+                                if(!has("touch") && !dim){
+                                        // If the user has scrolled the viewport then reposition the Dialog.  But don't do it for touch
+                                        // devices, because it will counteract when a keyboard pops up and then the browser auto-scrolls
+                                        // the focused node into view.
+                                        this._position();
+                                }
+                        }
+                }
+
+
+	});
+});
+
 
 },
 'dojo/store/Memory':function(){
@@ -35780,6 +36185,1032 @@ return function(query, options){
 });
 
 },
+'p3/widget/Uploader':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Uploader.html","dijit/form/Form","dojo/_base/Deferred",
+	"dijit/ProgressBar","dojo/dom-construct","p3/UploadManager","dojo/query","dojo/dom-attr",
+	"dojo/_base/lang","dojo/dom-geometry", "dojo/dom-style","dojo/promise/all","../WorkspaceManager"
+], function(
+	declare, WidgetBase, on,
+	domClass,Templated,WidgetsInTemplate,
+	Template,FormMixin,Deferred,
+	ProgressBar,domConstruct,UploadManager,Query,domAttr,
+	lang,domGeometry,domStyle,All,WorkspaceManager
+){
+	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
+		"baseClass": "CreateWorkspace",
+		templateString: Template,
+		path: "",
+		overwrite: false,
+		multiple:false, 
+		types: false, 
+		pathLabel: "Upload file to: ", 
+		buttonLabel: "Choose File",
+		knownTypes: {
+			unspecified: {label: "Unspecified",formats: ["*.*"]},
+			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
+			reads: {label: "Reads", formats: [".fa",".fasta",".fq",".fastq"]},
+			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_gene_list: {label: "Proteomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_gene_matrix: {label: "Proteomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			proteomics_experiment_metadata:{label: "Proteomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_gene_list: {label: "Transcriptomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_gene_matrix: {label: "Transcriptomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			transcriptomics_experiment_metadata:{label: "Transcriptomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+		},
+		_setPathAttr: function(val){
+			this.path = val;
+			this.destinationPath.innerHTML=val;
+		},
+		onUploadTypeChanged: function(val){
+			var formats = this.knownTypes[val].formats;
+			 0 && console.log("formats: ", val, formats);
+			domAttr.set(this.fileInput, "accept", formats.join(","));
+		},
+		startup: function(){
+			if (this._started){return;}
+
+			this.inherited(arguments);
+			var state = this.get("state")
+
+			if (this.multiple) {
+				domAttr.set(this.fileInput, "multiple", true);
+			}else{
+				domAttr.set(this.fileInput, "multiple", false);
+			}
+		
+			var _self=this;
+			 0 && console.log("Add Dropdown Options");
+			Object.keys(this.knownTypes).filter(function(t){
+				 0 && console.log("CHECKING: ", t);
+				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
+			}).forEach(function(t){
+				 0 && console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
+				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
+			});
+
+                        if (!this.path) {
+                                Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+                                         0 && console.log("CURRENT PATH: ", path);
+                                        _self.set('path', path);
+                                });
+			}
+
+			if ((state == "Incomplete") || (state == "Error")) {
+			        this.saveButton.set("disabled", true);
+			}
+
+			this.watch("state", function(prop, val, val2){
+			         0 && console.log("Uplosd Form State: ",prop, val, val2);
+			        if (val2=="Incomplete" || val2=="Error") {
+			                this.saveButton.set("disabled", true);
+			        }else{
+			                this.saveButton.set('disabled',false);
+			        }
+			});
+		},
+		validate: function(){
+			 0 && console.log("this.validate()",this);
+			var valid = this.inherited(arguments);
+			var validFiles = []
+			Query("TR.fileRow",this.uploadTable).map(function(tr){
+					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
+			})
+			if (!validFiles || validFiles.length<1){
+				valid = false;
+			}
+
+			if (valid){
+				this.saveButton.set("disabled", false)
+			}else{
+				this.saveButton.set("disabled",true);
+			}
+			return valid;
+		},
+
+		uploadFile: function(file, uploadDirectory,type){
+			if (!this._uploading){ this._uploading=[]}
+
+			var _self=this;
+			var obj = {path: uploadDirectory, name: file.name, type: type}
+			return Deferred.when(WorkspaceManager.create(obj,true), function(obj){
+				domClass.add(_self.domNode,"Working");
+				 0 && console.log("obj: ", obj);
+				 0 && console.log("obj.link_reference: ", obj.link_reference);
+//				 0 && console.log("getUrlRes",getUrlRes, getUrlRes[0]);
+//				var uploadUrl = getUrlRes[0][0][11];
+				var uploadUrl = obj.link_reference;
+//				 0 && console.log("uploadUrl: ", uploadUrl);
+				if (!_self.uploadTable){
+					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.fileTableContainer);
+					_self.uploadTable = domConstruct.create('tbody',{}, table)
+				}
+
+				var row = domConstruct.create("tr",{},_self.uploadTable);
+				var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
+
+//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
+				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
+				UploadManager.upload(msg, window.App.authorizationToken);
+				return obj;	
+			});
+
+		},
+		onFileSelectionChange: function(evt){
+			 0 && console.log("onFileSelectionChange",evt, this.fileInput);
+	
+			if (this.uploadTable && !this.multiple){
+				domConstruct.empty(this.uploadTable);
+				delete this.uploadTable;
+			}
+	
+			if (!this.uploadTable){
+				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody',{}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML: "File"}, htr);
+				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Type"},htr);
+				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Size"},htr);
+				domConstruct.create("th",{style: {"text-align": "right"}},htr);
+			}
+
+			var files = evt.target.files;
+			 0 && console.log("files: ", files);
+			var _self=this;
+			
+			Object.keys(files).forEach(function(idx) {
+				var file = files[idx];
+				if (file && file.name && file.size) {
+					 0 && console.log("file: ", file);
+					var row = domConstruct.create("tr",{"class":"fileRow"},_self.uploadTable);
+					 0 && console.log('setfiletype: ', _self.uploadType.get('value'))
+					domAttr.set(row,"data-filename",file.name);
+					domAttr.set(row,"data-filetype",_self.uploadType.get('value'));
+					var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
+					var typeNode = domConstruct.create("td",{innerHTML: _self.uploadType.get("value")},row);
+					var sizeNode = domConstruct.create("td",{innerHTML: file.size},row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'},row);
+					var handle=on(delNode,"click", lang.hitch(this,function(evt){
+						handle.remove();	
+						domConstruct.destroy(row);
+						this.validate()
+					}));
+				}
+			},this);
+		},
+
+		onSubmit: function(evt){
+			var _self =this;
+			evt.preventDefault();
+			evt.stopPropagation();
+
+			if (!_self.path) {
+				 0 && console.error("Missing Path for Upload: ", _self.path);
+				return;
+			}
+
+//			domClass.add(_self.domNode, "working");
+			var validFiles=[]
+			Query("TR.fileRow",this.uploadTable).map(function(tr){
+					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
+			})
+			 0 && console.log("Valid Files: ", validFiles, this.fileInput.files);
+			var files={};
+
+			Object.keys(_self.fileInput.files).forEach(function(key){
+				files[_self.fileInput.files[key].name] = _self.fileInput.files[key];
+			})
+
+			var defs=[];
+			var wsFiles=[]
+			validFiles.forEach(function(valid){
+				var key = valid.filename;
+				var f = files[key];
+				if (f.name){
+					defs.push(Deferred.when(this.uploadFile(f,_self.path,valid.type), function(res){
+						wsFiles.push(res);
+						return true;
+					}));
+				}
+			},this)
+			All(defs).then(function(results){	
+				 0 && console.log("UPLOAD Create WS files results: ", wsFiles);	
+				on.emit(_self.domNode, "dialogAction", {action:"close",files: wsFiles, bubbles:true});
+			});
+		},
+
+		onCancel: function(evt){
+			 0 && console.log("Cancel/Close Dialog", evt)
+			on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+		},
+                resize: function(changeSize, resultSize){
+                        // summary:
+                        //              Call this to resize a widget, or after its size has changed.
+                        // description:
+                        //              ####Change size mode:
+                        //
+                        //              When changeSize is specified, changes the marginBox of this widget
+                        //              and forces it to re-layout its contents accordingly.
+                        //              changeSize may specify height, width, or both.
+                        //
+                        //              If resultSize is specified it indicates the size the widget will
+                        //              become after changeSize has been applied.
+                        //
+                        //              ####Notification mode:
+                        //
+                        //              When changeSize is null, indicates that the caller has already changed
+                        //              the size of the widget, or perhaps it changed because the browser
+                        //              window was resized.  Tells widget to re-layout its contents accordingly.
+                        //
+                        //              If resultSize is also specified it indicates the size the widget has
+                        //              become.
+                        //
+                        //              In either mode, this method also:
+                        //
+                        //              1. Sets this._borderBox and this._contentBox to the new size of
+                        //                      the widget.  Queries the current domNode size if necessary.
+                        //              2. Calls layout() to resize contents (and maybe adjust child widgets).
+                        // changeSize: Object?
+                        //              Sets the widget to this margin-box size and position.
+                        //              May include any/all of the following properties:
+                        //      |       {w: int, h: int, l: int, t: int}
+                        // resultSize: Object?
+                        //              The margin-box size of this widget after applying changeSize (if
+                        //              changeSize is specified).  If caller knows this size and
+                        //              passes it in, we don't need to query the browser to get the size.
+                        //      |       {w: int, h: int}
+
+                        var node = this.domNode;
+
+                        // set margin box size, unless it wasn't specified, in which case use current size
+                        if(changeSize){
+                                domGeometry.setMarginBox(node, changeSize);
+                        }
+
+                        // If either height or width wasn't specified by the user, then query node for it.
+                        // But note that setting the margin box and then immediately querying dimensions may return
+                        // inaccurate results, so try not to depend on it.
+                        var mb = resultSize || {};
+                        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+                        if( !("h" in mb) || !("w" in mb) ){
+                                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+                        }
+
+                        // Compute and save the size of my border box and content box
+                        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+                        var cs = domStyle.getComputedStyle(node);
+                        var me = domGeometry.getMarginExtents(node, cs);
+                        var be = domGeometry.getBorderExtents(node, cs);
+                        var bb = (this._borderBox = {
+                                w: mb.w - (me.w + be.w),
+                                h: mb.h - (me.h + be.h)
+                        });
+                        var pe = domGeometry.getPadExtents(node, cs);
+                        this._contentBox = {
+                                l: domStyle.toPixelValue(node, cs.paddingLeft),
+                                t: domStyle.toPixelValue(node, cs.paddingTop),
+                                w: bb.w - pe.w,
+                                h: bb.h - pe.h
+                        };
+
+                }
+	});
+});
+
+},
+'dijit/ProgressBar':function(){
+define([
+	"require", // require.toUrl
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.toggle
+	"dojo/_base/lang", // lang.mixin
+	"dojo/number", // number.format
+	"./_Widget",
+	"./_TemplatedMixin",
+	"dojo/text!./templates/ProgressBar.html"
+], function(require, declare, domClass, lang, number, _Widget, _TemplatedMixin, template){
+
+	// module:
+	//		dijit/ProgressBar
+
+	return declare("dijit.ProgressBar", [_Widget, _TemplatedMixin], {
+		// summary:
+		//		A progress indication widget, showing the amount completed
+		//		(often the percentage completed) of a task.
+
+		// progress: [const] String (Percentage or Number)
+		//		Number or percentage indicating amount of task completed.
+		//		Deprecated.   Use "value" instead.
+		progress: "0",
+
+		// value: String (Percentage or Number)
+		//		Number or percentage indicating amount of task completed.
+		//		With "%": percentage value, 0% <= progress <= 100%, or
+		//		without "%": absolute value, 0 <= progress <= maximum.
+		//		Infinity means that the progress bar is indeterminate.
+		value: "",
+
+		// maximum: [const] Float
+		//		Max sample number
+		maximum: 100,
+
+		// places: [const] Number
+		//		Number of places to show in values; 0 by default
+		places: 0,
+
+		// indeterminate: [const] Boolean
+		//		If false: show progress value (number or percentage).
+		//		If true: show that a process is underway but that the amount completed is unknown.
+		//		Deprecated.   Use "value" instead.
+		indeterminate: false,
+
+		// label: String?
+		//		HTML label on progress bar.   Defaults to percentage for determinate progress bar and
+		//		blank for indeterminate progress bar.
+		label: "",
+
+		// name: String
+		//		this is the field name (for a form) if set. This needs to be set if you want to use
+		//		this widget in a dijit/form/Form widget (such as dijit/Dialog)
+		name: '',
+
+		templateString: template,
+
+		// _indeterminateHighContrastImagePath: [private] URL
+		//		URL to image to use for indeterminate progress bar when display is in high contrast mode
+		_indeterminateHighContrastImagePath: require.toUrl("./themes/a11y/indeterminate_progress.gif"),
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+
+			// Back-compat for when constructor specifies indeterminate or progress, rather than value.   Remove for 2.0.
+			if(!(this.params && "value" in this.params)){
+				this.value = this.indeterminate ? Infinity : this.progress;
+			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			this.indeterminateHighContrastImage.setAttribute("src",
+				this._indeterminateHighContrastImagePath.toString());
+			this.update();
+		},
+
+		_setDirAttr: function(val){
+			// Normally _CssStateMixin takes care of this, but we aren't extending it
+			var rtl = val.toLowerCase() == "rtl";
+			domClass.toggle(this.domNode, "dijitProgressBarRtl", rtl);
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && rtl);
+			this.inherited(arguments);
+		},
+
+		update: function(/*Object?*/attributes){
+			// summary:
+			//		Internal method to change attributes of ProgressBar, similar to set(hash).  Users should call
+			//		set("value", ...) rather than calling this method directly.
+			// attributes:
+			//		May provide progress and/or maximum properties on this parameter;
+			//		see attribute specs for details.
+			// example:
+			//	|	myProgressBar.update({'indeterminate': true});
+			//	|	myProgressBar.update({'progress': 80});
+			//	|	myProgressBar.update({'indeterminate': true, label:"Loading ..." })
+			// tags:
+			//		private
+
+			// TODO: deprecate this method and use set() instead
+
+			lang.mixin(this, attributes || {});
+			var tip = this.internalProgress, ap = this.domNode;
+			var percent = 1;
+			if(this.indeterminate){
+				ap.removeAttribute("aria-valuenow");
+			}else{
+				if(String(this.progress).indexOf("%") != -1){
+					percent = Math.min(parseFloat(this.progress) / 100, 1);
+					this.progress = percent * this.maximum;
+				}else{
+					this.progress = Math.min(this.progress, this.maximum);
+					percent = this.maximum ? this.progress / this.maximum : 0;
+				}
+				ap.setAttribute("aria-valuenow", this.progress);
+			}
+
+			// Even indeterminate ProgressBars should have these attributes
+			ap.setAttribute("aria-labelledby", this.labelNode.id);
+			ap.setAttribute("aria-valuemin", 0);
+			ap.setAttribute("aria-valuemax", this.maximum);
+
+			this.labelNode.innerHTML = this.report(percent);
+
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminate", this.indeterminate);
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && !this.isLeftToRight());
+
+			tip.style.width = (percent * 100) + "%";
+			this.onChange();
+		},
+
+		_setValueAttr: function(v){
+			this._set("value", v);
+			if(v == Infinity){
+				this.update({indeterminate: true});
+			}else{
+				this.update({indeterminate: false, progress: v});
+			}
+		},
+
+		_setLabelAttr: function(label){
+			this._set("label", label);
+			this.update();
+		},
+
+		_setIndeterminateAttr: function(indeterminate){
+			// Deprecated, use set("value", ...) instead
+			this._set("indeterminate", indeterminate);
+			this.update();
+		},
+
+		report: function(/*float*/percent){
+			// summary:
+			//		Generates HTML message to show inside progress bar (normally indicating amount of task completed).
+			//		May be overridden.
+			// tags:
+			//		extension
+
+			return this.label ? this.label :
+				(this.indeterminate ? "&#160;" : number.format(percent, { type: "percent", places: this.places, locale: this.lang }));
+		},
+
+		onChange: function(){
+			// summary:
+			//		Callback fired when progress updates.
+			// tags:
+			//		extension
+		}
+	});
+});
+
+},
+'dojo/number':function(){
+define([/*===== "./_base/declare", =====*/ "./_base/lang", "./i18n", "./i18n!./cldr/nls/number", "./string", "./regexp"],
+	function(/*===== declare, =====*/ lang, i18n, nlsNumber, dstring, dregexp){
+
+// module:
+//		dojo/number
+
+var number = {
+	// summary:
+	//		localized formatting and parsing routines for Number
+};
+lang.setObject("dojo.number", number);
+
+/*=====
+number.__FormatOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// places: Number?
+	//		fixed number of decimal places to show.  This overrides any
+	//		information in the provided pattern.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means do not round.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// fractional: Boolean?
+	//		If false, show no decimal places, overriding places and pattern settings.
+});
+=====*/
+
+number.format = function(/*Number*/ value, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Format a Number as a String, using locale-specific settings
+	// description:
+	//		Create a string from a Number using a known localized pattern.
+	//		Formatting patterns appropriate to the locale are chosen from the
+	//		[Common Locale Data Repository](http://unicode.org/cldr) as well as the appropriate symbols and
+	//		delimiters.
+	//		If value is Infinity, -Infinity, or is not a valid JavaScript number, return null.
+	// value:
+	//		the number to be formatted
+
+	options = lang.mixin({}, options || {});
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale);
+	options.customs = bundle;
+	var pattern = options.pattern || bundle[(options.type || "decimal") + "Format"];
+	if(isNaN(value) || Math.abs(value) == Infinity){ return null; } // null
+	return number._applyPattern(value, pattern, options); // String
+};
+
+//number._numberPatternRE = /(?:[#0]*,?)*[#0](?:\.0*#*)?/; // not precise, but good enough
+number._numberPatternRE = /[#0,]*[#0](?:\.0*#*)?/; // not precise, but good enough
+
+number._applyPattern = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Apply pattern to format value as a string using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted.
+	// pattern:
+	//		a pattern string as described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	// options: number.__FormatOptions?
+	//		_applyPattern is usually called via `dojo/number.format()` which
+	//		populates an extra property in the options parameter, "customs".
+	//		The customs object specifies group and decimal parameters if set.
+
+	//TODO: support escapes
+	options = options || {};
+	var group = options.customs.group,
+		decimal = options.customs.decimal,
+		patternList = pattern.split(';'),
+		positivePattern = patternList[0];
+	pattern = patternList[(value < 0) ? 1 : 0] || ("-" + positivePattern);
+
+	//TODO: only test against unescaped
+	if(pattern.indexOf('%') != -1){
+		value *= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		value *= 1000; // per mille
+	}else if(pattern.indexOf('\u00a4') != -1){
+		group = options.customs.currencyGroup || group;//mixins instead?
+		decimal = options.customs.currencyDecimal || decimal;// Should these be mixins instead?
+		pattern = pattern.replace(/\u00a4{1,3}/, function(match){
+			var prop = ["symbol", "currency", "displayName"][match.length-1];
+			return options[prop] || options.currency || "";
+		});
+	}else if(pattern.indexOf('E') != -1){
+		throw new Error("exponential notation not supported");
+	}
+
+	//TODO: support @ sig figs?
+	var numberPatternRE = number._numberPatternRE;
+	var numberPattern = positivePattern.match(numberPatternRE);
+	if(!numberPattern){
+		throw new Error("unable to find a number expression in pattern: "+pattern);
+	}
+	if(options.fractional === false){ options.places = 0; }
+	return pattern.replace(numberPatternRE,
+		number._formatAbsolute(value, numberPattern[0], {decimal: decimal, group: group, places: options.places, round: options.round}));
+};
+
+number.round = function(/*Number*/ value, /*Number?*/ places, /*Number?*/ increment){
+	// summary:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero
+	// description:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero if equal.
+	//		Similar to Number.toFixed(), but compensates for browser quirks. Rounding can be done by
+	//		fractional increments also, such as the nearest quarter.
+	//		NOTE: Subject to floating point errors.  See dojox/math/round for experimental workaround.
+	// value:
+	//		The number to round
+	// places:
+	//		The number of decimal places where rounding takes place.  Defaults to 0 for whole rounding.
+	//		Must be non-negative.
+	// increment:
+	//		Rounds next place to nearest value of increment/10.  10 by default.
+	// example:
+	// |	>>> number.round(-0.5)
+	// |	-1
+	// |	>>> number.round(162.295, 2)
+	// |	162.29  // note floating point error.  Should be 162.3
+	// |	>>> number.round(10.71, 0, 2.5)
+	// |	10.75
+	var factor = 10 / (increment || 10);
+	return (factor * +value).toFixed(places) / factor; // Number
+};
+
+if((0.9).toFixed() == 0){
+	// (isIE) toFixed() bug workaround: Rounding fails on IE when most significant digit
+	// is just after the rounding place and is >=5
+	var round = number.round;
+	number.round = function(v, p, m){
+		var d = Math.pow(10, -p || 0), a = Math.abs(v);
+		if(!v || a >= d){
+			d = 0;
+		}else{
+			a /= d;
+			if(a < 0.5 || a >= 0.95){
+				d = 0;
+			}
+		}
+		return round(v, p, m) + (v > 0 ? d : -d);
+	};
+
+	// Use "doc hint" so the doc parser ignores this new definition of round(), and uses the one above.
+	/*===== number.round = round; =====*/
+}
+
+/*=====
+number.__FormatAbsoluteOptions = declare(null, {
+	// decimal: String?
+	//		the decimal separator
+	// group: String?
+	//		the group separator
+	// places: Number|String?
+	//		number of decimal places.  the range "n,m" will format to m places.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means don't round.
+});
+=====*/
+
+number._formatAbsolute = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatAbsoluteOptions?*/ options){
+	// summary:
+	//		Apply numeric pattern to absolute value using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted, ignores sign
+	// pattern:
+	//		the number portion of a pattern (e.g. `#,##0.00`)
+	options = options || {};
+	if(options.places === true){options.places=0;}
+	if(options.places === Infinity){options.places=6;} // avoid a loop; pick a limit
+
+	var patternParts = pattern.split("."),
+		comma = typeof options.places == "string" && options.places.indexOf(","),
+		maxPlaces = options.places;
+	if(comma){
+		maxPlaces = options.places.substring(comma + 1);
+	}else if(!(maxPlaces >= 0)){
+		maxPlaces = (patternParts[1] || []).length;
+	}
+	if(!(options.round < 0)){
+		value = number.round(value, maxPlaces, options.round);
+	}
+
+	var valueParts = String(Math.abs(value)).split("."),
+		fractional = valueParts[1] || "";
+	if(patternParts[1] || options.places){
+		if(comma){
+			options.places = options.places.substring(0, comma);
+		}
+		// Pad fractional with trailing zeros
+		var pad = options.places !== undefined ? options.places : (patternParts[1] && patternParts[1].lastIndexOf("0") + 1);
+		if(pad > fractional.length){
+			valueParts[1] = dstring.pad(fractional, pad, '0', true);
+		}
+
+		// Truncate fractional
+		if(maxPlaces < fractional.length){
+			valueParts[1] = fractional.substr(0, maxPlaces);
+		}
+	}else{
+		if(valueParts[1]){ valueParts.pop(); }
+	}
+
+	// Pad whole with leading zeros
+	var patternDigits = patternParts[0].replace(',', '');
+	pad = patternDigits.indexOf("0");
+	if(pad != -1){
+		pad = patternDigits.length - pad;
+		if(pad > valueParts[0].length){
+			valueParts[0] = dstring.pad(valueParts[0], pad);
+		}
+
+		// Truncate whole
+		if(patternDigits.indexOf("#") == -1){
+			valueParts[0] = valueParts[0].substr(valueParts[0].length - pad);
+		}
+	}
+
+	// Add group separators
+	var index = patternParts[0].lastIndexOf(','),
+		groupSize, groupSize2;
+	if(index != -1){
+		groupSize = patternParts[0].length - index - 1;
+		var remainder = patternParts[0].substr(0, index);
+		index = remainder.lastIndexOf(',');
+		if(index != -1){
+			groupSize2 = remainder.length - index - 1;
+		}
+	}
+	var pieces = [];
+	for(var whole = valueParts[0]; whole;){
+		var off = whole.length - groupSize;
+		pieces.push((off > 0) ? whole.substr(off) : whole);
+		whole = (off > 0) ? whole.slice(0, off) : "";
+		if(groupSize2){
+			groupSize = groupSize2;
+			delete groupSize2;
+		}
+	}
+	valueParts[0] = pieces.reverse().join(options.group || ",");
+
+	return valueParts.join(options.decimal || ".");
+};
+
+/*=====
+number.__RegexpOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// places: Number|String?
+	//		number of decimal places to accept: Infinity, a positive number, or
+	//		a range "n,m".  Defined by pattern or Infinity if pattern not provided.
+});
+=====*/
+number.regexp = function(/*number.__RegexpOptions?*/ options){
+	// summary:
+	//		Builds the regular needed to parse a number
+	// description:
+	//		Returns regular expression with positive and negative match, group
+	//		and decimal separators
+	return number._parseInfo(options).regexp; // String
+};
+
+number._parseInfo = function(/*Object?*/ options){
+	options = options || {};
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale),
+		pattern = options.pattern || bundle[(options.type || "decimal") + "Format"],
+//TODO: memoize?
+		group = bundle.group,
+		decimal = bundle.decimal,
+		factor = 1;
+
+	if(pattern.indexOf('%') != -1){
+		factor /= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		factor /= 1000; // per mille
+	}else{
+		var isCurrency = pattern.indexOf('\u00a4') != -1;
+		if(isCurrency){
+			group = bundle.currencyGroup || group;
+			decimal = bundle.currencyDecimal || decimal;
+		}
+	}
+
+	//TODO: handle quoted escapes
+	var patternList = pattern.split(';');
+	if(patternList.length == 1){
+		patternList.push("-" + patternList[0]);
+	}
+
+	var re = dregexp.buildGroupRE(patternList, function(pattern){
+		pattern = "(?:"+dregexp.escapeString(pattern, '.')+")";
+		return pattern.replace(number._numberPatternRE, function(format){
+			var flags = {
+				signed: false,
+				separator: options.strict ? group : [group,""],
+				fractional: options.fractional,
+				decimal: decimal,
+				exponent: false
+				},
+
+				parts = format.split('.'),
+				places = options.places;
+
+			// special condition for percent (factor != 1)
+			// allow decimal places even if not specified in pattern
+			if(parts.length == 1 && factor != 1){
+			    parts[1] = "###";
+			}
+			if(parts.length == 1 || places === 0){
+				flags.fractional = false;
+			}else{
+				if(places === undefined){ places = options.pattern ? parts[1].lastIndexOf('0') + 1 : Infinity; }
+				if(places && options.fractional == undefined){flags.fractional = true;} // required fractional, unless otherwise specified
+				if(!options.places && (places < parts[1].length)){ places += "," + parts[1].length; }
+				flags.places = places;
+			}
+			var groups = parts[0].split(',');
+			if(groups.length > 1){
+				flags.groupSize = groups.pop().length;
+				if(groups.length > 1){
+					flags.groupSize2 = groups.pop().length;
+				}
+			}
+			return "("+number._realNumberRegexp(flags)+")";
+		});
+	}, true);
+
+	if(isCurrency){
+		// substitute the currency symbol for the placeholder in the pattern
+		re = re.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/g, function(match, before, target, after){
+			var prop = ["symbol", "currency", "displayName"][target.length-1],
+				symbol = dregexp.escapeString(options[prop] || options.currency || "");
+			before = before ? "[\\s\\xa0]" : "";
+			after = after ? "[\\s\\xa0]" : "";
+			if(!options.strict){
+				if(before){before += "*";}
+				if(after){after += "*";}
+				return "(?:"+before+symbol+after+")?";
+			}
+			return before+symbol+after;
+		});
+	}
+
+//TODO: substitute localized sign/percent/permille/etc.?
+
+	// normalize whitespace and return
+	return {regexp: re.replace(/[\xa0 ]/g, "[\\s\\xa0]"), group: group, decimal: decimal, factor: factor}; // Object
+};
+
+/*=====
+number.__ParseOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// fractional: Boolean|Array?
+	//		Whether to include the fractional portion, where the number of decimal places are implied by pattern
+	//		or explicit 'places' parameter.  The value [true,false] makes the fractional portion optional.
+});
+=====*/
+number.parse = function(/*String*/ expression, /*number.__ParseOptions?*/ options){
+	// summary:
+	//		Convert a properly formatted string to a primitive Number, using
+	//		locale-specific settings.
+	// description:
+	//		Create a Number from a string using a known localized pattern.
+	//		Formatting patterns are chosen appropriate to the locale
+	//		and follow the syntax described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+    	//		Note that literal characters in patterns are not supported.
+	// expression:
+	//		A string representation of a Number
+	var info = number._parseInfo(options),
+		results = (new RegExp("^"+info.regexp+"$")).exec(expression);
+	if(!results){
+		return NaN; //NaN
+	}
+	var absoluteMatch = results[1]; // match for the positive expression
+	if(!results[1]){
+		if(!results[2]){
+			return NaN; //NaN
+		}
+		// matched the negative pattern
+		absoluteMatch =results[2];
+		info.factor *= -1;
+	}
+
+	// Transform it to something Javascript can parse as a number.  Normalize
+	// decimal point and strip out group separators or alternate forms of whitespace
+	absoluteMatch = absoluteMatch.
+		replace(new RegExp("["+info.group + "\\s\\xa0"+"]", "g"), "").
+		replace(info.decimal, ".");
+	// Adjust for negative sign, percent, etc. as necessary
+	return absoluteMatch * info.factor; //Number
+};
+
+/*=====
+number.__RealNumberRegexpFlags = declare(null, {
+	// places: Number?
+	//		The integer number of decimal places or a range given as "n,m".  If
+	//		not given, the decimal part is optional and the number of places is
+	//		unlimited.
+	// decimal: String?
+	//		A string for the character used as the decimal point.  Default
+	//		is ".".
+	// fractional: Boolean|Array?
+	//		Whether decimal places are used.  Can be true, false, or [true,
+	//		false].  Default is [true, false] which means optional.
+	// exponent: Boolean|Array?
+	//		Express in exponential notation.  Can be true, false, or [true,
+	//		false]. Default is [true, false], (i.e. will match if the
+	//		exponential part is present are not).
+	// eSigned: Boolean|Array?
+	//		The leading plus-or-minus sign on the exponent.  Can be true,
+	//		false, or [true, false].  Default is [true, false], (i.e. will
+	//		match if it is signed or unsigned).  flags in regexp.integer can be
+	//		applied.
+});
+=====*/
+
+number._realNumberRegexp = function(/*__RealNumberRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression to match a real number in exponential
+	//		notation
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	//TODO: use mixin instead?
+	if(!("places" in flags)){ flags.places = Infinity; }
+	if(typeof flags.decimal != "string"){ flags.decimal = "."; }
+	if(!("fractional" in flags) || /^0/.test(flags.places)){ flags.fractional = [true, false]; }
+	if(!("exponent" in flags)){ flags.exponent = [true, false]; }
+	if(!("eSigned" in flags)){ flags.eSigned = [true, false]; }
+
+	var integerRE = number._integerRegexp(flags),
+		decimalRE = dregexp.buildGroupRE(flags.fractional,
+		function(q){
+			var re = "";
+			if(q && (flags.places!==0)){
+				re = "\\" + flags.decimal;
+				if(flags.places == Infinity){
+					re = "(?:" + re + "\\d+)?";
+				}else{
+					re += "\\d{" + flags.places + "}";
+				}
+			}
+			return re;
+		},
+		true
+	);
+
+	var exponentRE = dregexp.buildGroupRE(flags.exponent,
+		function(q){
+			if(q){ return "([eE]" + number._integerRegexp({ signed: flags.eSigned}) + ")"; }
+			return "";
+		}
+	);
+
+	var realRE = integerRE + decimalRE;
+	// allow for decimals without integers, e.g. .25
+	if(decimalRE){realRE = "(?:(?:"+ realRE + ")|(?:" + decimalRE + "))";}
+	return realRE + exponentRE; // String
+};
+
+/*=====
+number.__IntegerRegexpFlags = declare(null, {
+	// signed: Boolean?
+	//		The leading plus-or-minus sign. Can be true, false, or `[true,false]`.
+	//		Default is `[true, false]`, (i.e. will match if it is signed
+	//		or unsigned).
+	// separator: String?
+	//		The character used as the thousands separator. Default is no
+	//		separator. For more than one symbol use an array, e.g. `[",", ""]`,
+	//		makes ',' optional.
+	// groupSize: Number?
+	//		group size between separators
+	// groupSize2: Number?
+	//		second grouping, where separators 2..n have a different interval than the first separator (for India)
+});
+=====*/
+
+number._integerRegexp = function(/*number.__IntegerRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression that matches an integer
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	if(!("signed" in flags)){ flags.signed = [true, false]; }
+	if(!("separator" in flags)){
+		flags.separator = "";
+	}else if(!("groupSize" in flags)){
+		flags.groupSize = 3;
+	}
+
+	var signRE = dregexp.buildGroupRE(flags.signed,
+		function(q){ return q ? "[-+]" : ""; },
+		true
+	);
+
+	var numberRE = dregexp.buildGroupRE(flags.separator,
+		function(sep){
+			if(!sep){
+				return "(?:\\d+)";
+			}
+
+			sep = dregexp.escapeString(sep);
+			if(sep == " "){ sep = "\\s"; }
+			else if(sep == "\xa0"){ sep = "\\s\\xa0"; }
+
+			var grp = flags.groupSize, grp2 = flags.groupSize2;
+			//TODO: should we continue to enforce that numbers with separators begin with 1-9?  See #6933
+			if(grp2){
+				var grp2RE = "(?:0|[1-9]\\d{0," + (grp2-1) + "}(?:[" + sep + "]\\d{" + grp2 + "})*[" + sep + "]\\d{" + grp + "})";
+				return ((grp-grp2) > 0) ? "(?:" + grp2RE + "|(?:0|[1-9]\\d{0," + (grp-1) + "}))" : grp2RE;
+			}
+			return "(?:0|[1-9]\\d{0," + (grp-1) + "}(?:[" + sep + "]\\d{" + grp + "})*)";
+		},
+		true
+	);
+
+	return signRE + numberRE; // String
+};
+
+return number;
+});
+
+},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
 'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
@@ -35804,11 +37235,14 @@ return function(query, options){
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
-'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa fa-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:/\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
+'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa fa-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['unspecified','contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
+'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div>\n\t\t<div style=\"margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:300px\" required=\"true\" data-dojo-props=\"\">\n\t\t</select>\n\t\t<div class=\"fileUploadButton\">\n\t\t\t<span>${buttonLabel}</span>\n\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t</div>\n\t\n\t</div>\n\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t</div>\t\n</form>\n",
+'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/core", [], 1);

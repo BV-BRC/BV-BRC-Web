@@ -1,4 +1,4 @@
-Build started: Mon Feb 16 2015 14:36:06 GMT-0500 (EST)
+Build started: Wed Feb 18 2015 00:40:37 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,10 +126,10 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.906s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:7.334s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:7.567s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:9.922s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:0.965s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.805s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:7.141s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:8.528s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1617,8 +1617,16 @@ p3/layer/core:
 	dijit/form/Form
 	p3/widget/WorkspaceObjectSelector
 	p3/widget/templates/WorkspaceObjectSelector.html
+	p3/widget/FlippableDialog
+	p3/widget/templates/FlippableDialog.html
 	dojo/store/Memory
 	dojo/store/util/SimpleQueryEngine
+	p3/widget/Uploader
+	p3/widget/templates/Uploader.html
+	dijit/ProgressBar
+	dojo/number
+	dojo/cldr/nls/number
+	dijit/templates/ProgressBar.html
 
 p3/layer/panels:
 	p3/layer/panels
@@ -1626,12 +1634,6 @@ p3/layer/panels:
 	p3/widget/templates/CreateFolder.html
 	p3/widget/CreateWorkspace
 	p3/widget/templates/CreateWorkspace.html
-	p3/widget/Uploader
-	p3/widget/templates/Uploader.html
-	dijit/ProgressBar
-	dojo/number
-	dojo/cldr/nls/number
-	dijit/templates/ProgressBar.html
 
 p3/layer/globalWSObject:
 	p3/layer/globalWSObject
@@ -1644,9 +1646,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.906s)
+Done (compile time:0.965s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.906s)
+Done (compile time:0.965s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1769,9 +1771,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.334s)
+Done (compile time:6.805s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.906s)
+Done (compile time:0.965s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1894,7 +1896,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.334s)
+Done (compile time:6.805s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2016,18 +2018,18 @@ globalWSObject.js.uncompressed.js:15600: WARNING - unreachable code
 	if (! 1 ){
 	         ^
 
-globalWSObject.js.uncompressed.js:16482: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16512: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-globalWSObject.js.uncompressed.js:16809: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16838: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.567s)
+Done (compile time:7.141s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.906s)
+Done (compile time:0.965s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2150,7 +2152,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.334s)
+Done (compile time:6.805s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2272,16 +2274,16 @@ globalWSObject.js.uncompressed.js:15600: WARNING - unreachable code
 	if (! 1 ){
 	         ^
 
-globalWSObject.js.uncompressed.js:16482: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16512: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-globalWSObject.js.uncompressed.js:16809: WARNING - unreachable code
+globalWSObject.js.uncompressed.js:16838: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.567s)
+Done (compile time:7.141s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:471: WARNING - unreachable code
 	}else if( 0 ){
@@ -2295,36 +2297,36 @@ core.js.uncompressed.js:11372: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:13390: WARNING - unreachable code
+core.js.uncompressed.js:13420: WARNING - unreachable code
 				Topic.publish("/refreshWorkspace",{});
 				^
 
-core.js.uncompressed.js:26284: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:26365: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:27946: WARNING - unreachable code
+core.js.uncompressed.js:28029: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:27985: WARNING - unreachable code
+core.js.uncompressed.js:28068: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:28333: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:28416: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:29806: WARNING - unreachable code
+core.js.uncompressed.js:29890: WARNING - unreachable code
 			switch (val) {
 			^
 
-core.js.uncompressed.js:34080: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:34167: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
 0 error(s), 10 warning(s)
-Done (compile time:9.922s)
+Done (compile time:8.528s)
 
 
 Has Features Detected
@@ -2739,7 +2741,7 @@ Has Features Detected
 	// dijit/form/_ExpandingTextAreaMixin
 	 'textarea-needs-help-shrinking':1,
 
-	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable
+	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog
 	 'touch':1,
 
 	// dojo/on
@@ -2776,4 +2778,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 79.287 seconds
+	build time: 78.426 seconds

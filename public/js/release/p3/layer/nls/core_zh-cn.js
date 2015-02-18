@@ -8,4 +8,6 @@ define('p3/layer/nls/core_zh-cn',{
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} 共 ${total} 条结果","gotoFirst":"首页","gotoNext":"后一页","gotoPrev":"前一页","gotoLast":"末页","gotoPage":"到这页","jumpPage":"跳到页","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000兆","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000兆","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 });

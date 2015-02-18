@@ -8,4 +8,6 @@ define('p3/layer/nls/core_ar',{
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} من ${total} نتائج","gotoFirst":"الصفحة الأولى","gotoNext":"التالي","gotoPrev":"السابق","gotoLast":"الصفحة الأخيرة","gotoPage":"صفحة","jumpPage":"إذهب لصفحة ","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"‎-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 ترليو","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"‎+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000 تريليون","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 });

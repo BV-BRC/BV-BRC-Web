@@ -12,7 +12,15 @@ define("p3/widget/WorkspaceExplorerView", [
 	return declare([WorkspaceGrid], {
 		"disabled": false,
 		path: "/",
+		types: null,
 
+		_setTypesAttr: function(val){
+			if (!(val instanceof Array)){
+				this.types=[val];
+			}else{
+				this.types=val;
+			}
+		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
 			if (ws[ws.length - 1] == "/") {
@@ -20,10 +28,17 @@ define("p3/widget/WorkspaceExplorerView", [
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ return res; }, function(err) {
-					console.log("Error Loading Workspace:", err);
-					_self.showError(err);
-				})
+			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+				if (_self.types){
+					res = res.filter(function(r){
+						return (r && r.type && (_self.types.indexOf(r.type)>=0))
+					});
+				}
+				return res;
+			}, function(err) {
+				console.log("Error Loading Workspace:", err);
+				_self.showError(err);
+			})
 		},
 
 		showError: function(err) {
@@ -49,9 +64,19 @@ define("p3/widget/WorkspaceExplorerView", [
 		postCreate: function() {
 			this.inherited(arguments);
 		},
-
+		addNewFolder: function(item){
+			var items = this._items;
+			var list = [item].concat(items);
+			this.render(this.path,list);
+			this._items = items;	
+//			console.log("Cell: ", this.cell("untitled","name"));
+//			var row = this.row(0);
+			var cell = this.cell(0, "name");
+			this.edit(cell);
+		},
 		render: function(val, items) {
 			this.refresh();
+			this._items = items;
 			this.renderArray(items);
 			// this.refresh();	
 		},
@@ -59,6 +84,26 @@ define("p3/widget/WorkspaceExplorerView", [
 		refreshWorkspace: function(){
 			var _self=this;
 			this.listWorkspaceContents(this.path).then(function(contents) {
+				console.log("listWSContents: ", contents);
+				var parts = _self.path.split("/").filter(function(x){ return !!x});
+				console.log("Path Parts: ", parts);
+				if (parts.length>1){
+					parts.pop();
+					var parentPath = "/" + parts.join("/");
+					console.log("parentPath: ", parentPath);
+
+					var p= {
+						name: "Parent Folder",
+						path: parentPath,
+						type: "parentfolder",
+						id: parentPath,
+						owner_id: "@"
+					};
+					console.log("p: ",p);
+					contents.unshift(p);
+				}
+
+				console.log("Revised Contents:", contents);
 				_self.render(_self.path, contents);
 			})
 
@@ -73,10 +118,10 @@ define("p3/widget/WorkspaceExplorerView", [
 			domClass.add(this.domNode, "WorkspaceExplorerView");
 
 			var _self = this;
-
-			this.listWorkspaceContents(this.path).then(function(contents) {
-				_self.render(_self.path, contents);
-			})
+			this.refreshWorkspace();
+//			this.listWorkspaceContents(this.path).then(function(contents) {
+//				_self.render(_self.path, contents);
+//			})
 
 			Topic.subscribe("/refreshWorkspace", function(msg){
 				_self.refreshWorkspace();
@@ -91,19 +136,19 @@ define("p3/widget/WorkspaceExplorerView", [
 				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
 				// }
 			});
-
 		},
 
 		_setPath: function(val) {
 			this.path = val;
 			var _self = this;
-			//console.log("WorkspaceExplorerView setPath", val)
+			console.log("WorkspaceExplorerView setPath", val)
 			if (this._started) {
-				this.listWorkspaceContents(this.path).then(function(contents) {
-			//		console.log("Workspace Contents", contents);
-					_self.render(_self.path, contents);
-				});
+				this.refreshWorkspace();
 			}
+		},
+
+		save: function(){
+			console.log("Save Arguments: ", arguments);
 		}
 	});
 });

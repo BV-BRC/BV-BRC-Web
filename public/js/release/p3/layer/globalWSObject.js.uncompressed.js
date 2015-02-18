@@ -16461,6 +16461,36 @@ define([
 			return this.userWorkspaces;
 		},
 
+		create: function(obj, createUploadNode){
+			var _self=this;
+			//console.log("WorkspaceManager.create(): ", obj);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.typetype||"unspecified"),obj.userMeta||{},(obj.userData||"")]],createUploadNodes:createUploadNode}]), function(results){
+                                        var res;
+
+                                        if (!results[0][0] || !results[0][0]) {
+                                                throw new Error("Error Creating Folder");
+                                        }else{
+                                                var r = results[0][0];
+                                                var out = {
+                                                        id: r[4],
+                                                        path: r[2] + r[0],
+                                                        name: r[0],
+                                                        type: r[1],
+                                                        creation_time: r[3],
+                                                        link_reference: r[11],
+                                                        owner_id: r[5],
+                                                        size: r[6],
+                                                        userMeta: r[7],
+                                                        autoMeta: r[8],
+                                                        user_permission: r[9],
+                                                        global_permission: r[10]
+                                                }
+                                		Topic.publish("/refreshWorkspace",{});
+                                                return out;
+                                        }
+			});
+		},
+
 		createFolder: function(paths){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -16529,7 +16559,7 @@ define([
 
 
 		createWorkspace: function(name){
-			console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
+			//console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
 				if (name=="home"){
 					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments"]),function(){
@@ -16541,30 +16571,27 @@ define([
 
 		getObjectsByType: function(types, ws){
 			types= (types instanceof Array)?types:[types];
-			console.log("Get ObjectsByType: ", types);
+			//console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
-				console.log("current: ", current, current.path);
+				//console.log("current: ", current, current.path);
 				var path = current.path;
 				return Deferred.when(this.api("Workspace.ls",[{
 					paths: [current.path],
 					excludeDirectories: false,
 					excludeObjects: false,
-					recursive: true,
-					query: {
-						type: types[0]
-					}
+					recursive: true
 				}]), function(results){
-					console.log("getObjectsByType Results: ", results);
+					//console.log("getObjectsByType Results: ", results);
 					if (!results[0] || !results[0][path]) {
 						return [];
 					}
 					var res = results[0][path];
 		
-					console.log("array res", res);
+					//console.log("array res", res);
 	
 					res = res.map(function(r) {
-						console.log("r: ", r);
+						//console.log("r: ", r);
 						return {
 							id: r[4],
 							path: r[2] + r[0],
@@ -16579,12 +16606,14 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
+					}).filter(function(r){
+						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
 						return true;
 					})*/
 
-					console.log("Final getObjectsByType()", res)
+					//console.log("Final getObjectsByType()", res)
 					return res;
 				})
 			}));
@@ -16598,9 +16627,9 @@ define([
 				paths = [paths];
 			}
 			paths = paths.map(function(p){ return decodeURIComponent(p); })
-			console.log('getObjects: ', paths)
+			//console.log('getObjects: ', paths)
 			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
-				console.log("results[0]", results[0])
+				//console.log("results[0]", results[0])
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -16631,14 +16660,14 @@ define([
 					includeSubDirs: false,
 					Recursive: false
 				}]), function(results) {
-					console.log("path: ", path);
+					//console.log("path: ", path);
 
 					if (!results[0] || !results[0][path]) {
 						return [];
 					}
 					var res = results[0][path];
 		
-					console.log("array res", res);
+					//console.log("array res", res);
 
 					res = res.map(function(r) {
 						return {
@@ -16659,12 +16688,12 @@ define([
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
 						return true;
 					})
-					console.log("Final getFolderContents()", res)
+					//console.log("Final getFolderContents()", res)
 					return res;
 				},
 
 				function(err) {
-					console.log("Error Loading Workspace:", err);
+					//console.log("Error Loading Workspace:", err);
 					_self.showError(err);
 				})
 		},

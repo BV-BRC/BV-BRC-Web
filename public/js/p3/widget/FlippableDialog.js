@@ -25,7 +25,7 @@ define([
 			this.backPane.innerHTML=content;
 		},
 
-       resize: function(dim){
+		resize: function(dim){
                         // summary:
                         //              Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
                         //              necessary to keep it visible.
@@ -118,7 +118,7 @@ define([
                                         this._position();
                                 }
                         }
-                },
+                }
 
 
 	});
