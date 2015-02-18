@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div>\n\t\t<div style=\"margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:300px\" required=\"true\" data-dojo-props=\"\">\n\t\t</select>\n\t\t<div class=\"fileUploadButton\">\n\t\t\t<span>${buttonLabel}</span>\n\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t</div>\n\t\n\t</div>\n\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t</div>\n\n\t\t<div style=\"margin:4px;margin-top:8px;text-align:right;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t</div>\t\n</form>\n"}});
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div class=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n"}});
 define("p3/widget/Uploader", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
@@ -21,7 +21,8 @@ define("p3/widget/Uploader", [
 		multiple:false, 
 		types: false, 
 		pathLabel: "Upload file to: ", 
-		buttonLabel: "Choose File",
+		buttonLabel: "Select Files",
+		typeLabel: "Upload type: ",
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
@@ -44,6 +45,25 @@ define("p3/widget/Uploader", [
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
 			domAttr.set(this.fileInput, "accept", formats.join(","));
+		},
+                createUploadTable: function(empty){
+
+			if (!this.uploadTable){
+				var table = domConstruct.create("table",{style: {border: "1px solid #eee", width: "100%"}}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody',{}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML: "File Selected"}, htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Type"},htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Size"},htr);
+				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align": "right"}},htr);
+				if(empty){
+					var row = domConstruct.create("tr",{"class":"fileRow"},this.uploadTable);
+					domConstruct.create("td",{style: {"padding-left":"5px","text-align":"left"}, innerHTML: "<i>None</i>"}, row);
+					domConstruct.create("td",{style: {"text-align":"left"}},row);
+					domConstruct.create("td",{style: {"text-align":"left"}},row);
+					domConstruct.create("td",{style: {"text-align": "right"}},row);
+				}
+			}
 		},
 		startup: function(){
 			if (this._started){return;}
@@ -79,13 +99,14 @@ define("p3/widget/Uploader", [
 			}
 
 			this.watch("state", function(prop, val, val2){
-			        console.log("Uplosd Form State: ",prop, val, val2);
+			        console.log("Upload Form State: ",prop, val, val2);
 			        if (val2=="Incomplete" || val2=="Error") {
 			                this.saveButton.set("disabled", true);
 			        }else{
 			                this.saveButton.set('disabled',false);
 			        }
 			});
+			this.createUploadTable(true);
 		},
 		validate: function(){
 			console.log("this.validate()",this);
@@ -141,8 +162,10 @@ define("p3/widget/Uploader", [
 				domConstruct.empty(this.uploadTable);
 				delete this.uploadTable;
 			}
+
+			this.createUploadTable(false);
 	
-			if (!this.uploadTable){
+/*			if (!this.uploadTable){
 				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
 				this.uploadTable = domConstruct.create('tbody',{}, table)
 				var htr = domConstruct.create("tr", {}, this.uploadTable);
@@ -150,7 +173,7 @@ define("p3/widget/Uploader", [
 				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Type"},htr);
 				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Size"},htr);
 				domConstruct.create("th",{style: {"text-align": "right"}},htr);
-			}
+			}*/
 
 			var files = evt.target.files;
 			console.log("files: ", files);

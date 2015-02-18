@@ -5503,16 +5503,15 @@ margin:10px 0 0 10px;
 .iconbox{
 display:inline-block;
 margin-left:5px;
-vertical-align:bottom;
+vertical-align:middle;
 }
-div.iconbox i{color: rgb(52, 105, 142);}
+div.infobox i{color: rgb(52, 105, 142);}
 label.appboxlabel {
 text-align:left;
 margin: 10px 0 10px 10px;
 font-size: 14px;
 line-height: 16px;
 text-transform: none;
-vertical-align: top;
 font-weight: bold;
 }
 .round-button {
