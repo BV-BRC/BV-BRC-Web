@@ -4,7 +4,7 @@ define([
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
-	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-class","dojo/dom-attr",
+	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
 	"dijit/form/Button","dojo/_base/Deferred"
 
 ], function(
@@ -12,7 +12,7 @@ define([
 	domClass,Templated,WidgetsInTemplate,
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
-	Uploader, BorderContainer,domClass,domAttr,
+	Uploader, BorderContainer,domAttr,
 	Button,Deferred
 ){
 
