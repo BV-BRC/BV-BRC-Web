@@ -35718,7 +35718,7 @@ define([
 				on(uploader.domNode,"dialogAction", function(evt){
 					console.log("Uploader Dialog Action: ",evt);
 					if (evt.files && evt.files[0] && evt.action=="close") {
-						var files = evt.files[0];
+						var file = evt.files[0];
 						_self.set("selection",file);
 						_self.set('value',file.id,true);	
 						_self.dialog.hide();
