@@ -178,7 +178,10 @@ define([
 					if (evt.item && evt.item.type=="folder" || evt.item.type=="parentfolder"){		
 						_self.set('path', evt.item_path);
 					}else{
-						_self.set("selection", evt.item);
+						if (_self.selection) {
+							_self.set('value', _self.selection.id);
+							_self.dialog.hide()
+						}
 					}
 					console.log("ItemDblClick for chooser: ", evt);
 				//	var row = evt.rows[0];
@@ -209,7 +212,7 @@ define([
                                                         break;
                                         }
                                 });	
-				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "UPLOAD"});
+				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Choose File"});
 
 				on(uploader.domNode,"dialogAction", function(evt){
 					console.log("Uploader Dialog Action: ",evt);
