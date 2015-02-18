@@ -1,4 +1,4 @@
-Build started: Wed Feb 18 2015 12:31:17 GMT-0500 (EST)
+Build started: Wed Feb 18 2015 12:36:37 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,11 +126,11 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.04s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:6.5s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:7.858s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:8.04s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:9.898s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.113s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:7.553s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:8.167s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:8.306s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:10.965s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1696,6 +1696,23 @@ p3/layer/p3user:
 	dijit/_Container
 	dijit/_HasDropDown
 	dijit/form/templates/DropDownButton.html
+	dijit/_base/manager
+	dijit/_base
+	dijit/WidgetSet
+	dijit/_base/focus
+	dijit/selection
+	dijit/_base/place
+	dijit/_base/popup
+	dijit/_base/scroll
+	dijit/_base/sniff
+	dijit/_base/typematic
+	dijit/typematic
+	dijit/_base/wai
+	dijit/_base/window
+	dijit/form/ComboButton
+	dijit/form/templates/ComboButton.html
+	dijit/form/ToggleButton
+	dijit/form/_ToggleButtonMixin
 
 p3/layer/globalWSObject:
 	p3/layer/globalWSObject
@@ -1708,9 +1725,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.04s)
+Done (compile time:1.113s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.04s)
+Done (compile time:1.113s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1725,9 +1742,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.5s)
+Done (compile time:7.553s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.04s)
+Done (compile time:1.113s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1742,7 +1759,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.5s)
+Done (compile time:7.553s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1865,9 +1882,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.858s)
+Done (compile time:8.167s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.04s)
+Done (compile time:1.113s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1882,7 +1899,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.5s)
+Done (compile time:7.553s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2005,7 +2022,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.858s)
+Done (compile time:8.167s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2136,9 +2153,9 @@ globalWSObject.js.uncompressed.js:16854: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:8.04s)
+Done (compile time:8.306s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.04s)
+Done (compile time:1.113s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2153,7 +2170,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.5s)
+Done (compile time:7.553s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2276,7 +2293,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.858s)
+Done (compile time:8.167s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2407,7 +2424,7 @@ globalWSObject.js.uncompressed.js:16854: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:8.04s)
+Done (compile time:8.306s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:471: WARNING - unreachable code
 	}else if( 0 ){
@@ -2450,7 +2467,7 @@ core.js.uncompressed.js:34191: WARNING - Suspicious code. This code lacks side-e
                                 ^
 
 0 error(s), 10 warning(s)
-Done (compile time:9.898s)
+Done (compile time:10.965s)
 
 
 Has Features Detected
@@ -2902,4 +2919,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 80.033 seconds
+	build time: 81.219 seconds

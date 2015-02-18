@@ -96,7 +96,13 @@ var profile = {
 				"dijit/form/TextBox",
 				"dijit/form/Button",
 				"dojox/validate/web",
-				"dijit/form/DropDownButton"
+				"dijit/form/DropDownButton",
+				"dijit/_base/manager",
+				"dijit/_base",
+				"dijit/WidgetSet",
+				"dijit/selection",
+				"dijit/form/ComboButton",
+				"dijit/form/ToggleButton"						
 			]
 		},
 		"p3/layer/globalWSObject": {
