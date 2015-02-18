@@ -89,6 +89,14 @@ var profile = {
 				"p3/layer/core"
 			]
 		},
+		"p3/layer/p3user": {
+			include: [
+				"dojo/parser",
+				"dijit/form/Form",
+				"dijit/form/TextBox",
+				"dijit/form/Button"
+			]
+		},
 		"p3/layer/globalWSObject": {
 			customBase: true,
 			boot: true,
