@@ -115,10 +115,16 @@ app.get("/login",
 );
 
 app.get("/logout", function(req,res,next){
+  req.session.destroy();
+  req.logout();
+  res.redirect('/');
+/*
 	req.logOut();
 	req.session.destroy(function(err){	
+		req.logOut();
 		res.redirect("/");
 	});
+*/
 });
 
 

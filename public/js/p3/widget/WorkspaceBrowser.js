@@ -181,7 +181,9 @@ define([
 									this.itemDetailPanel.set("item",sel[0]);	
 								}
 
-							}else{
+							}else if (sel.length>1) {
+
+							}else {
 								this.removeChild(this.actionPanel);
 							}
 						}));	
