@@ -34,6 +34,13 @@ define("p3/widget/JobsGrid", [
 					label: "App",
 					field: "app"
 				},
+				parameters: {
+					label: "Output Name",
+					field: "parameters",
+					formatter: function(val){
+						return val.output_file || "";
+					}
+				},
 
 				start_time: {
 					label: "Start",

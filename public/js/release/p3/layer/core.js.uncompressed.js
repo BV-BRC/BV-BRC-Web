@@ -26045,7 +26045,9 @@ define([
 									this.itemDetailPanel.set("item",sel[0]);	
 								}
 
-							}else{
+							}else if (sel.length>1) {
+
+							}else {
 								this.removeChild(this.actionPanel);
 							}
 						}));	
@@ -33034,11 +33036,13 @@ define([
 	
 			if (sel.length>1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
-				
+				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
-					return this._actions[an] && this._actions[an].options && this._actions[an].options.multiple && (!multiTypedSelection || this._actions[an].options.allowMultiTypes)
+					console.log("Check action: ", an, this._actions[an].options);
+					return this._actions[an] && this._actions[an].options && this._actions[an].options.multiple && (!multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes))
 				},this);	
 
+				console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){
 				valid = Object.keys(this._actions)
 			}else{
@@ -33054,6 +33058,7 @@ define([
 					return ((t=="*") || (types.indexOf(t)>=0));
 				});		
 			},this);
+
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
