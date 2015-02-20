@@ -33,7 +33,7 @@ app.use(cookieParser(config.get('cookieSecret')));
 var sessionStore = app.sessionStore = new RedisStore(config.get("redis"));
 app.use(session({
     store: sessionStore,
-    name: config.get("cookieKey"),
+    key: config.get("cookieKey"),
     cookie: { domain: config.get('cookieDomain'),  maxAge: config.get("sessionTTL")},
 //    secret: config.get('cookieSecret'),
     resave:false,
