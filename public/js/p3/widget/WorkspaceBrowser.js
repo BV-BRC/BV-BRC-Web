@@ -14,7 +14,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","unspecified"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -58,7 +58,7 @@ define([
 
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
-				validTypes: ["genome_group","feature_group"]
+				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
@@ -70,6 +70,10 @@ define([
 					case "feature_group":
 						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
 						break;
+					case "job_results":
+						Topic.publish("/navigate",{href:"/view/Experiment"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
+						break;
+	
 					default:
 						console.log("Type isn't setup with a viewer");
 				}
@@ -91,13 +95,22 @@ define([
 			}, true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified"]}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-				WorkspaceManager.deleteObject(objs,true);
+				WorkspaceManager.deleteObject(objs,true, false);
 			}, true);
+
+			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"]}, function(selection){
+				var objs = selection.map(function(s){
+					console.log('s: ', s, s.data);
+					return s.path||s.data.path;
+				});
+				WorkspaceManager.deleteObject(objs,true, true);
+			}, true);
+
 
 
 
@@ -127,22 +140,27 @@ define([
 			Deferred.when(obj, lang.hitch(this,function(obj){
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
-				console.log("Browse to Type: ", obj.metadata.type, obj);
-				switch(obj.metadata.type) {
+				console.log("Browse to Type: ", obj.type, obj);
+				switch(obj.type) {
 					case "folder": 
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
-						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path)+"))";
+						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "job_result":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
+						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					default:
-						panelCtor = ContentPane;
-						params.content = "Invalid Object";
+						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
+						params.file = {metadata: obj};
+						console.log("FileViewer Ctor params: ", params);
 				}	
 
 				console.log("params.query: ", params.query);

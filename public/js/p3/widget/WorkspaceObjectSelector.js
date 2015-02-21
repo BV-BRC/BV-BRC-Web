@@ -134,7 +134,7 @@ define([
 
 				okButton.on("click", function(evt){
 					if (_self.selection){
-						_self.set("value", _self.selection.id);
+						_self.set("value", _self.selection.path);
 					}
 					_self.dialog.hide();
 				});
@@ -179,7 +179,7 @@ define([
 						_self.set('path', evt.item_path);
 					}else{
 						if (_self.selection) {
-							_self.set('value', _self.selection.id);
+							_self.set('value', _self.selection.path);
 							_self.dialog.hide()
 						}
 					}
@@ -237,10 +237,11 @@ define([
 		},
 
 		refreshWorkspaceItems: function(){
-			WorkspaceManager.getObjectsByType(this.type).then(lang.hitch(this,function(items){
+			WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
 				console.log("Ws Objects: ", items);
-				var store= new Memory({data: items});
+				var store= new Memory({data: items,idProperty:"path"});
 				console.log('store: ', store);
+				
 				console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store",store);
 				if (this.value) {	

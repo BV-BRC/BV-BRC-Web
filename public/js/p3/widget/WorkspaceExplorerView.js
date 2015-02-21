@@ -28,7 +28,7 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+			return Deferred.when(WorkspaceManager.getFolderContents(ws,window.App&&window.App.showHiddenFiles),function(res){ 
 				if (_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type)>=0))
