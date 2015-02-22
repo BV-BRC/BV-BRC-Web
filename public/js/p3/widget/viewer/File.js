@@ -19,7 +19,8 @@ define([
 			if (typeof val=="string"){
 				this.set("filepath", val);
 			}else{
-				this.filepath=val.metadata.path + ((val.metadata.path.charAt(-1)=="/")?"":"/") + val.metadata.name;
+				this.filepath=val.metadata.path + ((val.metadata.path.charAt(val.metadata.path.length-1)=="/")?"":"/") + val.metadata.name;
+				console.log("filepath: ", this.filepath);
 				this.file=val;
 				console.log("this.file before refresh(): ", this.file);
 				this.refresh();
