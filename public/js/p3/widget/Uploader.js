@@ -24,7 +24,7 @@ define([
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
-			reads: {label: "Reads", formats: [".fa",".fasta",".fq",".fastq"]},
+			reads: {label: "Reads (FASTA)", formats: [".fa",".fasta",".fq",".fastq",".fna",".gz",".bz2"]},
 			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
 			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
 			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
@@ -42,8 +42,37 @@ define([
 		onUploadTypeChanged: function(val){
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
-			domAttr.set(this.fileInput, "accept", formats.join(","));
+			this.formatListNode.innerHTML=formats.join(", ");
+			if (!this.showAllFormats.get('value')) {
+				console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				if (formats == "*.*"){
+					domClass.add(this.fileFilterContainer,"dijitHidden");
+				}else{
+					domClass.remove(this.fileFilterContainer,"dijitHidden");
+				}
+				console.log("set formats to: ", formats.join(","));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+
+			}
 		},
+		onChangeShowAllFormats: function(val){
+			console.log("Show All Formats: ", val);
+			if (!val) {
+				console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				var type = this.uploadType.get('value');
+				console.log("uploadType value: ", type);
+				var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				console.log("uploadType: ", this.uploadType.get('value'));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
+
+		},
+
                 createUploadTable: function(empty){
 
 			if (!this.uploadTable){
@@ -82,7 +111,7 @@ define([
 				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
 			}).forEach(function(t){
 				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
-				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
+				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label, value: t});
 			});
 
                         if (!this.path) {
