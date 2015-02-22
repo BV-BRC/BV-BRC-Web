@@ -5,7 +5,7 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred"
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -13,7 +13,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred
+	Button,Deferred,CheckBox
 ){
 
 
@@ -27,12 +27,28 @@ define([
 		path: "",
 		disabled: false,
 		required: false,
+		showUnspecified: false,
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		reset: function(){
 			this.searchBox.set('value','');
 		},
+
+		_setShowUnspecifiedAttr: function(val){
+			this.showUnspecified = val;
+			if (val) {
+				if(!(this.type.indexOf("unspecified")>=0)){
+					this.type.push("unspecified");
+				}
+			}else{
+				this.type = this.type.filter(function(t){
+					return (t!="unspecified");
+				});
+			}
+			if (this.grid) { this.grid.set('types', this.type);}
+		},
+
 		_setDisabledAttr: function(val){
 			this.disabled=val;
 			if (val) {
@@ -119,13 +135,24 @@ define([
 		openChooser: function(){
 			if (this.disabled) { return; }
 			if (!this.dialog){
+				var _self=this;
 				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
 				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
 				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
+				this.dialog.backpaneTitleBar.innerHTML="Upload files to Workspace";
 				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
 
 				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
 				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
+				var span = domConstr.create("span", {style: {"float": 'left'}});
+				domConstr.place(span, buttonsPane.containerNode,"first");
+				this.showUnspecifiedWidget = 	new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+				this.showUnspecifiedWidget.on("change", function(val){
+					console.log("changed showUnspecifiedwidget: ", val);
+					_self.set("showUnspecified", val);
+				});
+				domConstr.place(this.showUnspecifiedWidget.domNode, span,"first");
+				domConstr.create("span",{innerHTML: "Show files with an unspecified type"}, span);
 				var cancelButton = new Button({label: "Cancel"});
 				cancelButton.on('click', function(){
 					_self.dialog.hide();
@@ -138,8 +165,8 @@ define([
 					}
 					_self.dialog.hide();
 				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode,"first");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"first");
+				domConstr.place(okButton.domNode, buttonsPane.containerNode,"last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"last");
 				
 				on(selectionPane.domNode, "i:click", function(evt){
 					console.log("Click: ", evt);
@@ -219,7 +246,7 @@ define([
 					if (evt.files && evt.files[0] && evt.action=="close") {
 						var file = evt.files[0];
 						_self.set("selection",file);
-						_self.set('value',file.id,true);	
+						_self.set('value',file.path,true);	
 						_self.dialog.hide();
 					}else{
 						_self.dialog.flip()		

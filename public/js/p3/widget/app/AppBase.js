@@ -63,6 +63,7 @@ define([
 				domClass.add(this.domNode,"Working");
 				domClass.remove(this.domNode,"Error");
 				domClass.remove(this.domNode,"Submitted");
+				return;
 				this.submitButton.set("disabled", true)
 				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
 					console.log("Job Submission Results: ", results);

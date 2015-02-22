@@ -14,12 +14,13 @@ define([
 		path: "/",
 		types: null,
 
-		_setTypesAttr: function(val){
+		_setTypes: function(val){
 			if (!(val instanceof Array)){
 				this.types=[val];
 			}else{
 				this.types=val;
 			}
+			this.refreshWorkspace();
 		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
