@@ -14,6 +14,10 @@ define([
 		constructor: function(){
 			this._selfSet=true;
 		},	
+
+		onOutputPathChange: function(val){
+			this.output_nameWidget.set("path", val);
+		},
 	
 		onSuggestNameChange: function(val){
 			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){

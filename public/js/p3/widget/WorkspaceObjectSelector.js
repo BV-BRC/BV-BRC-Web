@@ -280,7 +280,9 @@ define([
 		},
 		onSearchChange: function(value){
 			this.set("value", value);	
+			this.onChange(value);
 		},
+		onChange: function(){},
 		startup: function(){
 			if (this._started){return;}
 			console.log("call getObjectsByType(); ", this.type);
