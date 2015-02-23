@@ -2,7 +2,6 @@
 <html>
 	<head></head>
 	<body>
-		Login Successful
 	<script>
 		var message=<%- JSON.stringify({type: "AuthenticationSuccess", userProfile:request.session.userProfile,authorizationToken: request.session.authorizationToken,accessToken:request.session.authorizationToken}) %>
 		if (window.opener || window.parent){
