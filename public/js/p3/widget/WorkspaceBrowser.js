@@ -85,17 +85,15 @@ define([
 			}, true);
 
 
-			/*
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				console.log("Download Item Action", selection);
 			}, true);
-			*/
-
+			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
 				console.log("Replace Item Action", selection);
 				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
 			}, true);
-
+			*/
 
 			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
 				var objs = selection.map(function(s){
