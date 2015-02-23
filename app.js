@@ -22,6 +22,7 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+//app.set('query parser', 'extended');
 
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
@@ -114,18 +115,15 @@ app.get("/login",
 	}
 );
 
-app.get("/logout", function(req,res,next){
-  req.session.destroy();
-  req.logout();
-  res.redirect('/');
-/*
-	req.logOut();
-	req.session.destroy(function(err){	
-		req.logOut();
-		res.redirect("/");
-	});
-*/
-});
+app.get("/logout", [
+	function(req,res,next){
+		console.log("req.params.location: ",req.param('location'));
+		var redir = req.param('location');
+		req.session.destroy();
+		req.logout();
+		res.redirect(redir || '/');
+	}
+]);
 
 
 app.get("/auth/callback", 
