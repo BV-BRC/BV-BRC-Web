@@ -2,12 +2,14 @@ define("p3/widget/WorkspaceBrowser", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
-	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang"
+	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
+	"./Confirmation"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
-	ActionBar,Deferred,WorkspaceManager,lang
+	ActionBar,Deferred,WorkspaceManager,lang,
+	Confirmation
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -100,7 +102,18 @@ define("p3/widget/WorkspaceBrowser", [
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-				WorkspaceManager.deleteObject(objs,true, false);
+				var conf = "Are you sure you want to delete" +
+					   ((objs.length>1)?" these objects":" this object") +
+					   " from your workspace?"
+	
+				var dlg = new Confirmation({
+					content: conf,
+					onConfirm: function(evt){
+						WorkspaceManager.deleteObject(objs,true, false);
+					}
+				})
+				dlg.startup()
+				dlg.show();
 			}, true);
 
 			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"]}, function(selection){
@@ -108,7 +121,19 @@ define("p3/widget/WorkspaceBrowser", [
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-				WorkspaceManager.deleteObject(objs,true, true);
+				var conf = "Are you sure you want to delete" +
+					   ((objs.length>1)?" these folders":" this folder") +
+					   " and its contents from your workspace?"
+	
+				var dlg = new Confirmation({
+					content: conf,
+					onConfirm: function(evt){
+						WorkspaceManager.deleteObject(objs,true, true);
+					}
+				})
+				dlg.startup()
+				dlg.show();
+	
 			}, true);
 
 
