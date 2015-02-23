@@ -20,16 +20,8 @@ define([
 				this._selfSet=true;	
 				this.output_nameWidget.set('value', val);
 			}
-		},
-
-/*		getValues: function(){
-			var vals = this.inherited(arguments);
-			vals.contigs = "/_uuid/" + vals.contigs;
-			vals.output_location = "/_uuid/" + vals.output_location;
-			vals.code = parseInt(vals.code);
-			return vals;
 		}
-*/
+
 	});
 });
 
