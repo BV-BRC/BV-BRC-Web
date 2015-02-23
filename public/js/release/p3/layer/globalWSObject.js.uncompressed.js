@@ -16542,7 +16542,7 @@ define([
 			}));
 		},
 
-		deleteFolder: function(paths){
+		deleteFolder: function(paths, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -16552,12 +16552,12 @@ define([
 			if (paths.indexOf("home")>=0){
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
-			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true }]), function(results){
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true,force:force }]), function(results){
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
 
-		deleteObject: function(paths, deleteFolders){
+		deleteObject: function(paths, deleteFolders, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -16568,7 +16568,7 @@ define([
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
 
-			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: deleteFolders }]), function(results){
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,force:force, deleteDirectories: deleteFolders }]), function(results){
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
@@ -16585,7 +16585,7 @@ define([
 			}));
 		},
 
-		getObjectsByType: function(types, ws){
+		getObjectsByType: function(types, showHidden){
 			types= (types instanceof Array)?types:[types];
 			//console.log("Get ObjectsByType: ", types);
 
@@ -16623,6 +16623,10 @@ define([
 							global_permission: r[10]
 						}
 					}).filter(function(r){
+						if (r.path.split("/").some(function(p){
+							return p.charAt(0)==".";
+						})) { return false; }
+
 						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
@@ -16635,7 +16639,7 @@ define([
 			}));
 		},
 
-		getObjects: function(paths){
+		getObjects: function(paths,metadataOnly){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -16643,9 +16647,9 @@ define([
 				paths = [paths];
 			}
 			paths = paths.map(function(p){ return decodeURIComponent(p); })
-			//console.log('getObjects: ', paths)
-			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
-				//console.log("results[0]", results[0])
+			console.log('getObjects: ', paths, "metadata_only:", metadataOnly)
+			return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
+				console.log("results[0]", results[0])
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -16660,17 +16664,19 @@ define([
 					global_permission: results[0][0][0][10],
 					link_reference: results[0][0][0][11]
 				}
+				if (metadataOnly) { return meta; } 
+
 				var res = {
 					metadata: meta,
 					data: results[0][0][1]
 				}
+				console.log("getObjects() res", res);
 				return res;
 			});
 
 		},
 
 		getFolderContents: function(path,showHidden) {
-	
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
 					includeSubDirs: false,

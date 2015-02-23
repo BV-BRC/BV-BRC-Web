@@ -35,7 +35,8 @@ define("p3/widget/WorkspaceGrid", [
 					label: "Size",
 					field: "size",
 					className: "wsItemSize",
-					hidden: true
+					hidden: false,
+					formatter: formatter.humanFileSize
 				},
 	
 				owner_id: {

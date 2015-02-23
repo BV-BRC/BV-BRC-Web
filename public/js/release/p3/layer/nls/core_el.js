@@ -10,4 +10,6 @@ define('p3/layer/nls/core_el',{
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 τρισ'.'","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":".","percentFormat":"#,##0%","decimalFormat-long":"000 τρισεκατομμύρια","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"e","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Η τιμή που καταχωρήσατε δεν είναι έγκυρη.","missingMessage":"Η τιμή αυτή πρέπει απαραίτητα να καθοριστεί.","rangeMessage":"Η τιμή αυτή δεν ανήκει στο εύρος έγκυρων τιμών.","_localized":{}}
 });

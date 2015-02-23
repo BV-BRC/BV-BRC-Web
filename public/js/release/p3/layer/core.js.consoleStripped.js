@@ -8,7 +8,8 @@ define([
 	"dojo/store/JsonRest",
 	"dojo/ready","./app","../router",
 	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
-	"../jsonrpc", "../panels","../WorkspaceManager"
+	"../jsonrpc", "../panels","../WorkspaceManager","dojo/keys",
+	"dijit/Dialog"
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
@@ -18,7 +19,8 @@ define([
 	Ready,App,
 	Router,Window,
 	Drawer,ContentPane,
-	RPC, Panels, WorkspaceManager
+	RPC, Panels, WorkspaceManager,Keys,
+	Dialog
 ) {
 	return declare([App], {
 		panels: Panels,
@@ -41,6 +43,23 @@ define([
 					target = target.parentNode
 				}
 				domClass.remove(target, "hover");
+			});
+
+			on(document.body,"keypress", function(evt){
+				var charOrCode = evt.charCode || evt.keyCode;
+				 0 && console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+			
+				if ((charOrCode==4) && evt.ctrlKey && evt.shiftKey){
+					if (!this._devDlg) {
+						this._devDlg = new Dialog({title: "Debugging Panel", content:'<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'});
+					}
+					 0 && console.log("Dialog: ", this._devDlg);
+					if (this._devDlg.open){
+						this._devDlg.hide();
+					}else{
+						this._devDlg.show();
+					}
+				}	
 			});
 	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
@@ -13437,7 +13456,7 @@ define([
 			}));
 		},
 
-		deleteFolder: function(paths){
+		deleteFolder: function(paths, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -13447,12 +13466,12 @@ define([
 			if (paths.indexOf("home")>=0){
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
-			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true }]), function(results){
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true,force:force }]), function(results){
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
 
-		deleteObject: function(paths, deleteFolders){
+		deleteObject: function(paths, deleteFolders, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -13463,7 +13482,7 @@ define([
 				throw new Error("Cannot delete your 'home' Workspace");
 			}
 
-			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: deleteFolders }]), function(results){
+			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,force:force, deleteDirectories: deleteFolders }]), function(results){
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
@@ -13480,7 +13499,7 @@ define([
 			}));
 		},
 
-		getObjectsByType: function(types, ws){
+		getObjectsByType: function(types, showHidden){
 			types= (types instanceof Array)?types:[types];
 			// 0 && console.log("Get ObjectsByType: ", types);
 
@@ -13518,6 +13537,10 @@ define([
 							global_permission: r[10]
 						}
 					}).filter(function(r){
+						if (r.path.split("/").some(function(p){
+							return p.charAt(0)==".";
+						})) { return false; }
+
 						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
@@ -13530,7 +13553,7 @@ define([
 			}));
 		},
 
-		getObjects: function(paths){
+		getObjects: function(paths,metadataOnly){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
 			}
@@ -13538,9 +13561,9 @@ define([
 				paths = [paths];
 			}
 			paths = paths.map(function(p){ return decodeURIComponent(p); })
-			// 0 && console.log('getObjects: ', paths)
-			return Deferred.when(this.api("Workspace.get",[{objects: paths}]), function(results){
-				// 0 && console.log("results[0]", results[0])
+			 0 && console.log('getObjects: ', paths, "metadata_only:", metadataOnly)
+			return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
+				 0 && console.log("results[0]", results[0])
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -13555,17 +13578,19 @@ define([
 					global_permission: results[0][0][0][10],
 					link_reference: results[0][0][0][11]
 				}
+				if (metadataOnly) { return meta; } 
+
 				var res = {
 					metadata: meta,
 					data: results[0][0][1]
 				}
+				 0 && console.log("getObjects() res", res);
 				return res;
 			});
 
 		},
 
 		getFolderContents: function(path,showHidden) {
-	
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
 					includeSubDirs: false,
@@ -25878,7 +25903,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","unspecified"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -25922,7 +25947,7 @@ define([
 
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
-				validTypes: ["genome_group","feature_group"]
+				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
 			},function(selection){
 				 0 && console.log("selection: ", selection);
 				var sel = selection[0];
@@ -25934,6 +25959,10 @@ define([
 					case "feature_group":
 						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
 						break;
+					case "job_results":
+						Topic.publish("/navigate",{href:"/view/Experiment"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
+						break;
+	
 					default:
 						 0 && console.log("Type isn't setup with a viewer");
 				}
@@ -25955,13 +25984,22 @@ define([
 			}, true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
 				var objs = selection.map(function(s){
 					 0 && console.log('s: ', s, s.data);
 					return s.path||s.data.path;
 				});
-				WorkspaceManager.deleteObject(objs,true);
+				WorkspaceManager.deleteObject(objs,true, false);
 			}, true);
+
+			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"]}, function(selection){
+				var objs = selection.map(function(s){
+					 0 && console.log('s: ', s, s.data);
+					return s.path||s.data.path;
+				});
+				WorkspaceManager.deleteObject(objs,true, true);
+			}, true);
+
 
 
 
@@ -25991,22 +26029,27 @@ define([
 			Deferred.when(obj, lang.hitch(this,function(obj){
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
-				 0 && console.log("Browse to Type: ", obj.metadata.type, obj);
-				switch(obj.metadata.type) {
+				 0 && console.log("Browse to Type: ", obj.type, obj);
+				switch(obj.type) {
 					case "folder": 
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
-						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path)+"))";
+						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "job_result":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
+						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					default:
-						panelCtor = ContentPane;
-						params.content = "Invalid Object";
+						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
+						params.file = {metadata: obj};
+						 0 && console.log("FileViewer Ctor params: ", params);
 				}	
 
 				 0 && console.log("params.query: ", params.query);
@@ -26077,6 +26120,7 @@ define([
 							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
 								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
 								this.actionPanel.set("selection", []);
+								 0 && console.log("SHOW LOADING STATUS SOMEHOW");	
 								newPanel.clearSelection();
 								hideTimer = setTimeout(lang.hitch(this,function(){
 									this.removeChild(this.actionPanel);
@@ -26172,12 +26216,13 @@ define([
 		path: "/",
 		types: null,
 
-		_setTypesAttr: function(val){
+		_setTypes: function(val){
 			if (!(val instanceof Array)){
 				this.types=[val];
 			}else{
 				this.types=val;
 			}
+			this.refreshWorkspace();
 		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
@@ -26186,7 +26231,7 @@ define([
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+			return Deferred.when(WorkspaceManager.getFolderContents(ws,window.App&&window.App.showHiddenFiles),function(res){ 
 				if (_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type)>=0))
@@ -26353,7 +26398,8 @@ define([
 					label: "Size",
 					field: "size",
 					className: "wsItemSize",
-					hidden: true
+					hidden: false,
+					formatter: formatter.humanFileSize
 				},
 	
 				owner_id: {
@@ -29886,6 +29932,20 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
 		},
 		date: dateFormatter,
+
+		humanFileSize: function(bytes, si) {
+			if (!bytes && bytes !==0) { return "" }
+			var thresh = si ? 1000 : 1024;
+			if(bytes < thresh) return bytes + ' B';
+			var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+			var u = -1;
+			do {
+				bytes /= thresh;
+				++u;
+			} while(bytes >= thresh);
+			return bytes.toFixed(1)+' '+units[u];
+		},
+
 		multiDate: function(fields){
 			return function(obj){
 				var out=[];
@@ -34143,6 +34203,7 @@ define([
 				apiToken: window.App.authorizationToken,
 				apiServer: window.App.dataAPI,
 				dataModel: "genome",
+				deselectOnRefresh: true,
 				columns: {
 					id: {label: "Genome ID", field: "genome_id", hidden:true},
 					commonName: {label: "Name", field: "common_name", hidden:true},
@@ -34165,6 +34226,59 @@ define([
 					// "phylum","order","genus","species","kingdom","class","family","_version_","date_inserted","date_modified"
 				}
 			});
+				var _self = this
+                                this.viewer.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+                                    var row = _self.viewer.row(evt);
+                                     0 && console.log("dblclick row:", row)
+                                        on.emit(_self.domNode, "ItemDblClick", {
+                                                item_path: row.data.path,
+                                                item: row.data,
+                                                bubbles: true,
+                                                cancelable: true
+                                        });
+                                         0 && console.log('after emit');
+                                    //if (row.data.type == "folder"){
+                //                              Topic.publish("/select", []);
+
+                //                              Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+                //                              _selection={};
+                                        //}
+                                });
+                                //_selection={};
+                                //Topic.publish("/select", []);
+
+                                this.viewer.on("dgrid-select", function(evt) {
+                                         0 && console.log('dgrid-select: ', evt);
+                                        var newEvt = {
+                                                rows: event.rows,
+                                                selected: evt.grid.selection,
+                                                grid: _self.viewer,
+                                                bubbles: true,
+                                                cancelable: true
+                                        }
+                                        on.emit(_self.domNode, "select", newEvt);
+                                        // 0 && console.log("dgrid-select");
+                                        //var rows = event.rows;
+                                        //Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+                                        //var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+                                        //Topic.publish("/select", sel);
+                                });
+                                this.viewer.on("dgrid-deselect", function(evt) {
+                                         0 && console.log("dgrid-select");
+                                        var newEvt = {
+                                                rows: event.rows,
+                                                selected: evt.grid.selection,
+                                                grid: _self.viewer,
+                                                bubbles: true,
+                                                cancelable: true
+                                        }
+                                        on.emit(_self.domNode, "deselect", newEvt);
+                                        return;
+//                                      var rows = event.rows;
+//                                      Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
+//                                      var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+//                                      Topic.publish("/select", sel);
+                                });
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 			this.inherited(arguments);
@@ -35231,7 +35345,7 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase"
+	"dojo/text!./templates/Annotation.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
@@ -35250,15 +35364,8 @@ define([
 				this._selfSet=true;	
 				this.output_nameWidget.set('value', val);
 			}
-		},
-
-		getValues: function(){
-			var vals = this.inherited(arguments);
-			vals.contigs = "/_uuid/" + vals.contigs;
-			vals.output_location = "/_uuid/" + vals.output_location;
-			vals.code = parseInt(vals.code);
-			return vals;
 		}
+
 	});
 });
 
@@ -35268,11 +35375,13 @@ define([
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector"
+	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
+	"dijit/Dialog"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin,WorkspaceObjectSelector
+	Template,FormMixin,WorkspaceObjectSelector,
+	Dialog
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -35302,7 +35411,6 @@ define([
 			}
 
 			this.watch("state", function(prop, val, val2){
-			         0 && console.log("Registration Form State: ",prop, val, val2);
 			        if (val2=="Incomplete" || val2=="Error") {
 			                this.submitButton.set("disabled", true);
 			        }else{
@@ -35323,13 +35431,18 @@ define([
 			evt.preventDefault();
 			evt.stopPropagation();
 			if (this.validate()){
-				 0 && console.log("Validated");
 				var values = this.getValues();
 
-				 0 && console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
 				domClass.remove(this.domNode,"Error");
 				domClass.remove(this.domNode,"Submitted");
+
+				if (window.App.noJobSubmission) {
+					var dlg = new Dialog({title: "Job Submission Params: ", content: "<pre>"+JSON.stringify(values,null,4) + "</pre>"});
+					dlg.startup();
+					dlg.show();
+					return;
+				}
 				this.submitButton.set("disabled", true)
 				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
 					 0 && console.log("Job Submission Results: ", results);
@@ -35535,7 +35648,7 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred"
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -35543,7 +35656,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred
+	Button,Deferred,CheckBox,Topic
 ){
 
 
@@ -35557,12 +35670,28 @@ define([
 		path: "",
 		disabled: false,
 		required: false,
+		showUnspecified: false,
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		reset: function(){
 			this.searchBox.set('value','');
 		},
+
+		_setShowUnspecifiedAttr: function(val){
+			this.showUnspecified = val;
+			if (val) {
+				if(!(this.type.indexOf("unspecified")>=0)){
+					this.type.push("unspecified");
+				}
+			}else{
+				this.type = this.type.filter(function(t){
+					return (t!="unspecified");
+				});
+			}
+			if (this.grid) { this.grid.set('types', this.type);}
+		},
+
 		_setDisabledAttr: function(val){
 			this.disabled=val;
 			if (val) {
@@ -35649,13 +35778,24 @@ define([
 		openChooser: function(){
 			if (this.disabled) { return; }
 			if (!this.dialog){
+				var _self=this;
 				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
 				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
 				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
+				this.dialog.backpaneTitleBar.innerHTML="Upload files to Workspace";
 				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
 
 				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
 				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
+				var span = domConstr.create("span", {style: {"float": 'left'}});
+				domConstr.place(span, buttonsPane.containerNode,"first");
+				this.showUnspecifiedWidget = 	new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+				this.showUnspecifiedWidget.on("change", function(val){
+					 0 && console.log("changed showUnspecifiedwidget: ", val);
+					_self.set("showUnspecified", val);
+				});
+				domConstr.place(this.showUnspecifiedWidget.domNode, span,"first");
+				domConstr.create("span",{innerHTML: "Show files with an unspecified type"}, span);
 				var cancelButton = new Button({label: "Cancel"});
 				cancelButton.on('click', function(){
 					_self.dialog.hide();
@@ -35664,12 +35804,12 @@ define([
 
 				okButton.on("click", function(evt){
 					if (_self.selection){
-						_self.set("value", _self.selection.id);
+						_self.set("value", _self.selection.path);
 					}
 					_self.dialog.hide();
 				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode,"first");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"first");
+				domConstr.place(okButton.domNode, buttonsPane.containerNode,"last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"last");
 				
 				on(selectionPane.domNode, "i:click", function(evt){
 					 0 && console.log("Click: ", evt);
@@ -35709,7 +35849,7 @@ define([
 						_self.set('path', evt.item_path);
 					}else{
 						if (_self.selection) {
-							_self.set('value', _self.selection.id);
+							_self.set('value', _self.selection.path);
 							_self.dialog.hide()
 						}
 					}
@@ -35749,7 +35889,7 @@ define([
 					if (evt.files && evt.files[0] && evt.action=="close") {
 						var file = evt.files[0];
 						_self.set("selection",file);
-						_self.set('value',file.id,true);	
+						_self.set('value',file.path,true);	
 						_self.dialog.hide();
 					}else{
 						_self.dialog.flip()		
@@ -35767,10 +35907,13 @@ define([
 		},
 
 		refreshWorkspaceItems: function(){
-			WorkspaceManager.getObjectsByType(this.type).then(lang.hitch(this,function(items){
+			if (this._refreshing) { return; }
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
+				delete this._refreshing;
 				 0 && console.log("Ws Objects: ", items);
-				var store= new Memory({data: items});
+				var store= new Memory({data: items,idProperty:"path"});
 				 0 && console.log('store: ', store);
+				
 				 0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store",store);
 				if (this.value) {	
@@ -35795,6 +35938,7 @@ define([
 			}else{
 				this.refreshWorkspaceItems();
 			}
+			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 		}
@@ -36241,16 +36385,10 @@ define([
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
-			reads: {label: "Reads", formats: [".fa",".fasta",".fq",".fastq"]},
-			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_list: {label: "Proteomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_matrix: {label: "Proteomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_experiment_metadata:{label: "Proteomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_list: {label: "Transcriptomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_matrix: {label: "Transcriptomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_experiment_metadata:{label: "Transcriptomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			reads: {label: "Reads (FASTA)", formats: [".fa",".fasta",".fq",".fastq",".fna",".gz",".bz2"]},
+			expression_gene_list: {label: "Expression Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_gene_matrix: {label: "Expression Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_experiment_metadata:{label: "Expression Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
 		_setPathAttr: function(val){
 			this.path = val;
@@ -36259,8 +36397,37 @@ define([
 		onUploadTypeChanged: function(val){
 			var formats = this.knownTypes[val].formats;
 			 0 && console.log("formats: ", val, formats);
-			domAttr.set(this.fileInput, "accept", formats.join(","));
+			this.formatListNode.innerHTML=formats.join(", ");
+			if (!this.showAllFormats.get('value')) {
+				 0 && console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				if (formats == "*.*"){
+					domClass.add(this.fileFilterContainer,"dijitHidden");
+				}else{
+					domClass.remove(this.fileFilterContainer,"dijitHidden");
+				}
+				 0 && console.log("set formats to: ", formats.join(","));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+
+			}
 		},
+		onChangeShowAllFormats: function(val){
+			 0 && console.log("Show All Formats: ", val);
+			if (!val) {
+				 0 && console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				var type = this.uploadType.get('value');
+				 0 && console.log("uploadType value: ", type);
+				var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				 0 && console.log("uploadType: ", this.uploadType.get('value'));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
+
+		},
+
                 createUploadTable: function(empty){
 
 			if (!this.uploadTable){
@@ -36299,7 +36466,7 @@ define([
 				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
 			}).forEach(function(t){
 				 0 && console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
-				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
+				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label, value: t});
 			});
 
                         if (!this.path) {
@@ -37263,6 +37430,444 @@ return number;
 });
 
 },
+'p3/widget/WorkspaceFilenameValidationTextBox':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/WorkspaceFilenameValidationTextBox.html",
+	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
+	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dijit/form/ValidationTextBox"
+
+], function(
+	declare, WidgetBase, on,lang,
+	domClass,Templated,WidgetsInTemplate,
+	Template,Dialog,HasDropDown,ContentPane,TextBox,
+	Grid,domConstr,WorkspaceManager,Memory,
+	Uploader, BorderContainer,domAttr,
+	Button,Deferred,CheckBox,ValidationTextBox
+){
+
+
+	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+		"baseClass": "WorkspaceObjectSelector",
+		"disabled":false,
+		templateString: Template,
+		workspace: "",
+		selection: "",
+		value: "",
+		path: "",
+		disabled: false,
+		required: false,
+		showUnspecified: false,
+		promptMessage:"",
+		missingMessage: "A valid workspace item is required.",
+		promptMessage: "Please choose or upload a workspace item",
+		reset: function(){
+			this.textBox.set('value','');
+		},
+
+		_setDisabledAttr: function(val){
+			this.disabled=val;
+			if (val) {
+				domClass.add(this.domNode,"disabled");
+			}else{
+				domClass.remove(this.domNode,"disabled");
+			}
+
+			if (this.textBox){
+				this.textBox.set("disabled",val);
+			}
+		},
+		_setRequiredAttr: function(val){
+			this.required=val;
+			if (this.textBox){
+				this.textBox.set("required",val);
+			}
+		},
+	
+		_setPathAttr: function(val){
+			 0 && console.log("_setPathAttr: ", val);
+			this.path=val;
+		},	
+	
+		_setValueAttr: function(value,refresh){
+			this.value = value;
+			if (this._started) {
+				if (refresh) {
+					this.refreshWorkspaceItems()
+				}else{
+					this.textBox.set('value', value);
+				}
+			}
+		},
+
+		_getValueAttr: function(value){
+			return this.textBox.get('value', value);
+		},
+
+		postMixinProperties: function(){
+			if (!this.value && this.workspace){
+				this.value=this.workspace;
+			}
+			this.inherited(arguments);
+		},
+
+		onTextBoxChange: function(value){
+			this.set("value", value);	
+		},
+		startup: function(){
+			if (this._started){return;}
+			 0 && console.log("call getObjectsByType(); ", this.type);
+			this.inherited(arguments);	
+			this.textBox.set('disabled', this.disabled);
+			this.textBox.set('required', this.required);
+		}
+	});
+});
+
+},
+'dijit/form/ValidationTextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/lang",
+	"dojo/i18n", // i18n.getLocalization
+	"./TextBox",
+	"../Tooltip",
+	"dojo/text!./templates/ValidationTextBox.html",
+	"dojo/i18n!./nls/validate"
+], function(declare, kernel, lang, i18n, TextBox, Tooltip, template){
+
+	// module:
+	//		dijit/form/ValidationTextBox
+
+
+	/*=====
+	var __Constraints = {
+		// locale: String
+		//		locale used for validation, picks up value from this widget's lang attribute
+		// _flags_: anything
+		//		various flags passed to pattern function
+	};
+	=====*/
+
+	var ValidationTextBox;
+	return ValidationTextBox = declare("dijit.form.ValidationTextBox", TextBox, {
+		// summary:
+		//		Base class for textbox widgets with the ability to validate content of various types and provide user feedback.
+
+		templateString: template,
+
+		// required: Boolean
+		//		User is required to enter data into this field.
+		required: false,
+
+		// promptMessage: String
+		//		If defined, display this hint string immediately on focus to the textbox, if empty.
+		//		Also displays if the textbox value is Incomplete (not yet valid but will be with additional input).
+		//		Think of this like a tooltip that tells the user what to do, not an error message
+		//		that tells the user what they've done wrong.
+		//
+		//		Message disappears when user starts typing.
+		promptMessage: "",
+
+		// invalidMessage: String
+		//		The message to display if value is invalid.
+		//		The translated string value is read from the message file by default.
+		//		Set to "" to use the promptMessage instead.
+		invalidMessage: "$_unset_$",
+
+		// missingMessage: String
+		//		The message to display if value is empty and the field is required.
+		//		The translated string value is read from the message file by default.
+		//		Set to "" to use the invalidMessage instead.
+		missingMessage: "$_unset_$",
+
+		// message: String
+		//		Currently error/prompt message.
+		//		When using the default tooltip implementation, this will only be
+		//		displayed when the field is focused.
+		message: "",
+
+		// constraints: __Constraints
+		//		user-defined object needed to pass parameters to the validator functions
+		constraints: {},
+
+		// pattern: [extension protected] String|Function(constraints) returning a string.
+		//		This defines the regular expression used to validate the input.
+		//		Do not add leading ^ or $ characters since the widget adds these.
+		//		A function may be used to generate a valid pattern when dependent on constraints or other runtime factors.
+		//		set('pattern', String|Function).
+		pattern: ".*",
+
+		// regExp: Deprecated [extension protected] String.  Use "pattern" instead.
+		regExp: "",
+
+		regExpGen: function(/*__Constraints*/ /*===== constraints =====*/){
+			// summary:
+			//		Deprecated.  Use set('pattern', Function) instead.
+		},
+
+		// state: [readonly] String
+		//		Shows current state (ie, validation result) of input (""=Normal, Incomplete, or Error)
+		state: "",
+
+		// tooltipPosition: String[]
+		//		See description of `dijit/Tooltip.defaultPosition` for details on this parameter.
+		tooltipPosition: [],
+
+		_deprecateRegExp: function(attr, value){
+			if(value != ValidationTextBox.prototype[attr]){
+				kernel.deprecated("ValidationTextBox id="+this.id+", set('" + attr + "', ...) is deprecated.  Use set('pattern', ...) instead.", "", "2.0");
+				this.set('pattern', value);
+			}
+		},
+		_setRegExpGenAttr: function(/*Function*/ newFcn){
+			this._deprecateRegExp("regExpGen", newFcn);
+			this._set("regExpGen", this._computeRegexp); // backward compat with this.regExpGen(this.constraints)
+		},
+		_setRegExpAttr: function(/*String*/ value){
+			this._deprecateRegExp("regExp", value);
+		},
+
+		_setValueAttr: function(){
+			// summary:
+			//		Hook so set('value', ...) works.
+			this.inherited(arguments);
+			this._refreshState();
+		},
+
+		validator: function(/*anything*/ value, /*__Constraints*/ constraints){
+			// summary:
+			//		Overridable function used to validate the text input against the regular expression.
+			// tags:
+			//		protected
+			return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
+				(!this.required || !this._isEmpty(value)) &&
+				(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
+		},
+
+		_isValidSubset: function(){
+			// summary:
+			//		Returns true if the value is either already valid or could be made valid by appending characters.
+			//		This is used for validation while the user [may be] still typing.
+			return this.textbox.value.search(this._partialre) == 0;
+		},
+
+		isValid: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Tests if value is valid.
+			//		Can override with your own routine in a subclass.
+			// tags:
+			//		protected
+			return this.validator(this.textbox.value, this.get('constraints'));
+		},
+
+		_isEmpty: function(value){
+			// summary:
+			//		Checks for whitespace
+			return (this.trim ? /^\s*$/ : /^$/).test(value); // Boolean
+		},
+
+		getErrorMessage: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Return an error message to show if appropriate
+			// tags:
+			//		protected
+			var invalid = this.invalidMessage == "$_unset_$" ? this.messages.invalidMessage :
+				!this.invalidMessage ? this.promptMessage : this.invalidMessage;
+			var missing = this.missingMessage == "$_unset_$" ? this.messages.missingMessage :
+				!this.missingMessage ? invalid : this.missingMessage;
+			return (this.required && this._isEmpty(this.textbox.value)) ? missing : invalid; // String
+		},
+
+		getPromptMessage: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Return a hint message to show when widget is first focused
+			// tags:
+			//		protected
+			return this.promptMessage; // String
+		},
+
+		_maskValidSubsetError: true,
+		validate: function(/*Boolean*/ isFocused){
+			// summary:
+			//		Called by oninit, onblur, and onkeypress.
+			// description:
+			//		Show missing or invalid messages if appropriate, and highlight textbox field.
+			// tags:
+			//		protected
+			var message = "";
+			var isValid = this.disabled || this.isValid(isFocused);
+			if(isValid){ this._maskValidSubsetError = true; }
+			var isEmpty = this._isEmpty(this.textbox.value);
+			var isValidSubset = !isValid && isFocused && this._isValidSubset();
+			this._set("state", isValid ? "" : (((((!this._hasBeenBlurred || isFocused) && isEmpty) || isValidSubset) && (this._maskValidSubsetError || (isValidSubset && !this._hasBeenBlurred && isFocused))) ? "Incomplete" : "Error"));
+			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+
+			if(this.state == "Error"){
+				this._maskValidSubsetError = isFocused && isValidSubset; // we want the error to show up after a blur and refocus
+				message = this.getErrorMessage(isFocused);
+			}else if(this.state == "Incomplete"){
+				message = this.getPromptMessage(isFocused); // show the prompt whenever the value is not yet complete
+				this._maskValidSubsetError = !this._hasBeenBlurred || isFocused; // no Incomplete warnings while focused
+			}else if(isEmpty){
+				message = this.getPromptMessage(isFocused); // show the prompt whenever there's no error and no text
+			}
+			this.set("message", message);
+
+			return isValid;
+		},
+
+		displayMessage: function(/*String*/ message){
+			// summary:
+			//		Overridable method to display validation errors/hints.
+			//		By default uses a tooltip.
+			// tags:
+			//		extension
+			if(message && this.focused){
+				Tooltip.show(message, this.domNode, this.tooltipPosition, !this.isLeftToRight());
+			}else{
+				Tooltip.hide(this.domNode);
+			}
+		},
+
+		_refreshState: function(){
+			// Overrides TextBox._refreshState()
+			if(this._created){ // should instead be this._started but that would require all programmatic ValidationTextBox instantiations to call startup()
+				this.validate(this.focused);
+			}
+			this.inherited(arguments);
+		},
+
+		//////////// INITIALIZATION METHODS ///////////////////////////////////////
+
+		constructor: function(params /*===== , srcNodeRef =====*/){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String?
+			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree.
+
+			this.constraints = lang.clone(this.constraints);
+			this.baseClass += ' dijitValidationTextBox';
+		},
+
+		startup: function(){
+			this.inherited(arguments);
+			this._refreshState(); // after all _set* methods have run
+		},
+
+		_setConstraintsAttr: function(/*__Constraints*/ constraints){
+			if(!constraints.locale && this.lang){
+				constraints.locale = this.lang;
+			}
+			this._set("constraints", constraints);
+			this._refreshState();
+		},
+
+		_setPatternAttr: function(/*String|Function*/ pattern){
+			this._set("pattern", pattern); // don't set on INPUT to avoid native HTML5 validation
+			this._refreshState();
+		},
+
+		_computeRegexp: function(/*__Constraints*/ constraints){
+			// summary:
+			//		Hook to get the current regExp and to compute the partial validation RE.
+
+			var p = this.pattern;
+			if(typeof p == "function"){
+				p = p.call(this, constraints);
+			}
+			if(p != this._lastRegExp){
+				var partialre = "";
+				this._lastRegExp = p;
+				// parse the regexp and produce a new regexp that matches valid subsets
+				// if the regexp is .* then there's no use in matching subsets since everything is valid
+				if(p != ".*"){
+					p.replace(/\\.|\[\]|\[.*?[^\\]{1}\]|\{.*?\}|\(\?[=:!]|./g,
+					function(re){
+						switch(re.charAt(0)){
+							case '{':
+							case '+':
+							case '?':
+							case '*':
+							case '^':
+							case '$':
+							case '|':
+							case '(':
+								partialre += re;
+								break;
+							case ")":
+								partialre += "|$)";
+								break;
+							 default:
+								partialre += "(?:"+re+"|$)";
+								break;
+						}
+					});
+				}
+				try{ // this is needed for now since the above regexp parsing needs more test verification
+					"".search(partialre);
+				}catch(e){ // should never be here unless the original RE is bad or the parsing is bad
+					partialre = this.pattern;
+					 0 && console.warn('RegExp error in ' + this.declaredClass + ': ' + this.pattern);
+				} // should never be here unless the original RE is bad or the parsing is bad
+				this._partialre = "^(?:" + partialre + ")$";
+			}
+			return p;
+		},
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			this.messages = i18n.getLocalization("dijit.form", "validate", this.lang);
+			this._setConstraintsAttr(this.constraints); // this needs to happen now (and later) due to codependency on _set*Attr calls attachPoints
+		},
+
+		_setDisabledAttr: function(/*Boolean*/ value){
+			this.inherited(arguments);	// call FormValueWidget._setDisabledAttr()
+			this._refreshState();
+		},
+
+		_setRequiredAttr: function(/*Boolean*/ value){
+			this._set("required", value);
+			this.focusNode.setAttribute("aria-required", value);
+			this._refreshState();
+		},
+
+		_setMessageAttr: function(/*String*/ message){
+			this._set("message", message);
+			this.displayMessage(message);
+		},
+
+		reset:function(){
+			// Overrides dijit/form/TextBox.reset() by also
+			// hiding errors about partial matches
+			this._maskValidSubsetError = true;
+			this.inherited(arguments);
+		},
+
+		_onBlur: function(){
+			// the message still exists but for back-compat, and to erase the tooltip
+			// (if the message is being displayed as a tooltip), call displayMessage('')
+			this.displayMessage('');
+
+			this.inherited(arguments);
+		},
+
+		destroy: function(){
+			Tooltip.hide(this.domNode);	// in case tooltip show when ValidationTextBox (or enclosing Dialog) destroyed
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
 'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
@@ -37289,12 +37894,14 @@ return number;
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa fa-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['unspecified','contigs'],multi:false\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Scientific Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Location</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_location\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism being annotated.',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div class=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\t\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
+'url:p3/widget/templates/WorkspaceFilenameValidationTextBox.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"textBox\" data-dojo-type=\"dijit/form/ValidationTextBox\" data-dojo-attach-event=\"onChange:onTextBoxChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:90%\"/>&nbsp;<i style=\"color:green;\" class=\"fa fa-check fa-1x\" />\n</div>\n",
+'url:dijit/form/templates/ValidationTextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/core", [], 1);

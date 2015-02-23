@@ -14,12 +14,13 @@ define("p3/widget/WorkspaceExplorerView", [
 		path: "/",
 		types: null,
 
-		_setTypesAttr: function(val){
+		_setTypes: function(val){
 			if (!(val instanceof Array)){
 				this.types=[val];
 			}else{
 				this.types=val;
 			}
+			this.refreshWorkspace();
 		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
@@ -28,7 +29,7 @@ define("p3/widget/WorkspaceExplorerView", [
 			}
 			if (!ws) { ws = "/" }
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws),function(res){ 
+			return Deferred.when(WorkspaceManager.getFolderContents(ws,window.App&&window.App.showHiddenFiles),function(res){ 
 				if (_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type)>=0))

@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div class=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n"}});
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\t\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n"}});
 define("p3/widget/Uploader", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
@@ -26,16 +26,10 @@ define("p3/widget/Uploader", [
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
-			reads: {label: "Reads", formats: [".fa",".fasta",".fq",".fastq"]},
-			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_list: {label: "Proteomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_matrix: {label: "Proteomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_experiment_metadata:{label: "Proteomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_list: {label: "Transcriptomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_matrix: {label: "Transcriptomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_experiment_metadata:{label: "Transcriptomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			reads: {label: "Reads (FASTA)", formats: [".fa",".fasta",".fq",".fastq",".fna",".gz",".bz2"]},
+			expression_gene_list: {label: "Expression Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_gene_matrix: {label: "Expression Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_experiment_metadata:{label: "Expression Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
 		_setPathAttr: function(val){
 			this.path = val;
@@ -44,8 +38,37 @@ define("p3/widget/Uploader", [
 		onUploadTypeChanged: function(val){
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
-			domAttr.set(this.fileInput, "accept", formats.join(","));
+			this.formatListNode.innerHTML=formats.join(", ");
+			if (!this.showAllFormats.get('value')) {
+				console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				if (formats == "*.*"){
+					domClass.add(this.fileFilterContainer,"dijitHidden");
+				}else{
+					domClass.remove(this.fileFilterContainer,"dijitHidden");
+				}
+				console.log("set formats to: ", formats.join(","));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+
+			}
 		},
+		onChangeShowAllFormats: function(val){
+			console.log("Show All Formats: ", val);
+			if (!val) {
+				console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				var type = this.uploadType.get('value');
+				console.log("uploadType value: ", type);
+				var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				console.log("uploadType: ", this.uploadType.get('value'));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
+
+		},
+
                 createUploadTable: function(empty){
 
 			if (!this.uploadTable){
@@ -84,7 +107,7 @@ define("p3/widget/Uploader", [
 				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
 			}).forEach(function(t){
 				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
-				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label , value: t});
+				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label, value: t});
 			});
 
                         if (!this.path) {
