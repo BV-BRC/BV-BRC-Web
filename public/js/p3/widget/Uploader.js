@@ -25,15 +25,9 @@ define([
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
 			reads: {label: "Reads (FASTA)", formats: [".fa",".fasta",".fq",".fastq",".fna",".gz",".bz2"]},
-			phenomics_gene_list: {label: "Phenomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_gene_matrix: {label: "Phenomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			phenomics_experiment_metadata:{label: "Phenomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_list: {label: "Proteomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_gene_matrix: {label: "Proteomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			proteomics_experiment_metadata:{label: "Proteomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_list: {label: "Transcriptomics Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_gene_matrix: {label: "Transcriptomics Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			transcriptomics_experiment_metadata:{label: "Transcriptomics Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			expression_gene_list: {label: "Expression Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_gene_matrix: {label: "Expression Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
+			expression_experiment_metadata:{label: "Expression Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
 		_setPathAttr: function(val){
 			this.path = val;

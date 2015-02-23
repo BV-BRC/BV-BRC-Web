@@ -231,6 +231,7 @@ define([
 							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
 								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
 								this.actionPanel.set("selection", []);
+								console.log("SHOW LOADING STATUS SOMEHOW");	
 								newPanel.clearSelection();
 								hideTimer = setTimeout(lang.hitch(this,function(){
 									this.removeChild(this.actionPanel);

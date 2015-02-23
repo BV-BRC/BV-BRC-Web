@@ -32,7 +32,7 @@ define([
 		gethelp: function(){
 
 			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
-			   handleAs: "text",
+			   handleAs: "text"
                         });		
 			helprequest.then(function(data){
 				var help_doc=domConstruct.toDom(data);
@@ -44,7 +44,7 @@ define([
 					if (dojo.hasClass(item, "dialoginfo")){
 						item.info_dialog = new Dialog({
 							content: help_text,
-							class: 'nonModal',
+							"class": 'nonModal',
 							draggable: true,
 							style: "max-width: 350px;"
 						});
