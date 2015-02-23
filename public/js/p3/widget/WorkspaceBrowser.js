@@ -16,7 +16,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","unspecified"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -180,6 +180,11 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "experiment_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
+						params.group = obj.path;
+						break;
+	
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
