@@ -199,6 +199,15 @@ define([
 				}
 				else{
 					this[attachname]._set("state","");
+				}
+				if(target[attachname]!=""){
+					target[attachname]= target[attachname] || undefined;
+				}
+				else if (target[attachname] == "true"){
+					target[attachname]=true;
+				}
+				else if (target[attachname]=="false"){
+					target[attachname]=false;
 				}			 
 			}, this);
 			return(success);
