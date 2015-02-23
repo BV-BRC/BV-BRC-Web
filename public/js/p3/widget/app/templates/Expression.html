@@ -1,0 +1,110 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+
+    <div class="TitleSection">
+		<h3>Differential Expression</h3>
+  	  	<p>Transform expression data for viewing on PATRIC</p>
+    </div>
+  
+	<div style="width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;">
+		<div style="display:inline-block; padding:8px; border:1px solid #ddd;margin:auto" class="formFieldsContainer">
+
+			<div style="text-align:left;">
+				<label>Experiment Title</label><br>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Experiment Title'"></div>
+			</div>
+			<div style="text-align:left;">
+				<label>Experiment Description</label><br>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Experiment Title'"></div>
+			</div>
+
+			<div style="text-align:left;">
+				<label>Organism Name</label><br>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="organism" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Taxonomic name',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Taxonomic Name'"></div>
+			</div>
+			<div style="text-align:left;">
+				<label>Data Type</label><br>
+				<select data-dojo-type="dijit/form/Select" name="data_type" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="Transcriptomics">transcriptomics</option>
+					<option value="Proteomics">proteomics</option>
+					<option value="Phenomics">phenomics</option>
+				</select>
+			</div>
+
+			<div style="text-align:left;">
+				<label>File Type</label><br>
+				<select data-dojo-type="dijit/form/Select" name="xformat" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="Tab delimited (.tsv, .txt)">.tsv</option>
+					<option value="Comma delimited (.csv, .txt)">.csv</option>
+					<option value="Excel (.xls, .xlsx)">.xls</option>
+				</select>
+			</div>
+			<div style="text-align:left;">
+				<label>File Format</label><br>
+				<select data-dojo-type="dijit/form/Select" name="xsetup" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="Expression Gene Matrix">gene_matrix</option>
+					<option value="Expression Gene List">gene_list</option>
+				</select>
+			</div>
+			<div style="text-align:left;">
+				<label>Comparison Data</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
+			</div>
+			<div style="text-align:left;">
+				<label>File Type</label><br>
+				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="Tab delimited (.tsv, .txt)">.tsv</option>
+					<option value="Comma delimited (.csv, .txt)">.csv</option>
+					<option value="Excel (.xls, .xlsx)">.xls</option>
+				</select>
+			</div>
+			<div style="text-align:left;">
+				<label>Comparison Metadata</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="metadata_template" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
+			</div>
+			<div style="text-align:left;">
+				<label>Source Identifiers</label><br>
+				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value="RefSeq Locus Tag">refseq_locus_tag</option>
+					<option value="PATRIC Feature ID">feature_id</option>
+					<option value="NCBI GI Number">gi</option>
+					<option value="NCBI Protein ID (accesson.version)">protein_id</option>
+					<option value="SEED ID">seed_id</option>
+					<option value="PATRIC Legacy ID">alt_locus_tag</option>
+				</select>
+			</div>
+
+			<div style="text-align:left;">
+				<label>Output Folder</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
+			</div>
+			
+			<div style="text-align:left;">
+				<label>Output Name</label><br>
+				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+			</div>
+			<div style="text-align:left;">
+				<label>Pubmed ID</label><br>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Taxonomic name',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Taxonomic Name'"></div>
+			</div>
+			
+		</div>
+
+		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+            Converting Expression Data
+        </div>
+
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+                Error Submitting Job
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+                Conversion should be finished shortly. Check workspace for results.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Annotate</div>
+        </div>
+	</div>
+</form>
+
