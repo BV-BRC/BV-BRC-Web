@@ -87,6 +87,10 @@ define([
 						this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
 						return;
 					}
+
+					this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
+				}else{
+					this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
 				}
 			}
 		}

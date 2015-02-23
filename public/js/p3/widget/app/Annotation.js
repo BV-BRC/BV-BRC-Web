@@ -11,6 +11,8 @@ define([
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
+		required: true,
+
 		constructor: function(){
 			this._selfSet=true;
 		},	
