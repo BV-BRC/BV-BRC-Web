@@ -5,7 +5,7 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox"
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -13,7 +13,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox
+	Button,Deferred,CheckBox,Topic
 ){
 
 
@@ -264,7 +264,9 @@ define([
 		},
 
 		refreshWorkspaceItems: function(){
-			WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
+			if (this._refreshing) { return; }
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
+				delete this._refreshing;
 				console.log("Ws Objects: ", items);
 				var store= new Memory({data: items,idProperty:"path"});
 				console.log('store: ', store);
@@ -293,6 +295,7 @@ define([
 			}else{
 				this.refreshWorkspaceItems();
 			}
+			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 		}

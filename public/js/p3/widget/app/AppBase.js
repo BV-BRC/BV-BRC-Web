@@ -1,11 +1,13 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector"
+	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
+	"dijit/Dialog"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin,WorkspaceObjectSelector
+	Template,FormMixin,WorkspaceObjectSelector,
+	Dialog
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -35,7 +37,6 @@ define([
 			}
 
 			this.watch("state", function(prop, val, val2){
-			        console.log("Registration Form State: ",prop, val, val2);
 			        if (val2=="Incomplete" || val2=="Error") {
 			                this.submitButton.set("disabled", true);
 			        }else{
@@ -56,14 +57,18 @@ define([
 			evt.preventDefault();
 			evt.stopPropagation();
 			if (this.validate()){
-				console.log("Validated");
 				var values = this.getValues();
 
-				console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
 				domClass.remove(this.domNode,"Error");
 				domClass.remove(this.domNode,"Submitted");
-				return;
+
+				if (window.App.noJobSubmission) {
+					var dlg = new Dialog({title: "Job Submission Params: ", content: "<pre>"+JSON.stringify(values,null,4) + "</pre>"});
+					dlg.startup();
+					dlg.show();
+					return;
+				}
 				this.submitButton.set("disabled", true)
 				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
 					console.log("Job Submission Results: ", results);
