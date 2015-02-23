@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase"
+	"dojo/text!./templates/Annotation.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
@@ -22,13 +22,14 @@ define([
 			}
 		},
 
-		getValues: function(){
+/*		getValues: function(){
 			var vals = this.inherited(arguments);
 			vals.contigs = "/_uuid/" + vals.contigs;
 			vals.output_location = "/_uuid/" + vals.output_location;
 			vals.code = parseInt(vals.code);
 			return vals;
 		}
+*/
 	});
 });
 

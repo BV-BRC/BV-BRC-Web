@@ -35,7 +35,8 @@ define([
 					label: "Size",
 					field: "size",
 					className: "wsItemSize",
-					hidden: true
+					hidden: false,
+					formatter: formatter.humanFileSize,
 				},
 	
 				owner_id: {

@@ -76,6 +76,7 @@
 }
 
 .WorkspaceExplorerView .dgrid-row {
+	font-size: 1.2em;
 	cursor: pointer;
 }
 
@@ -96,7 +97,7 @@
 }
 
 .wsItemSize {
-	width: 48px;
+	width: 72px;
 }
 
 .wsItemCreationTime {

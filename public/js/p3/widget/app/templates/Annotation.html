@@ -10,12 +10,12 @@
 		<div style="display:inline-block; padding:8px; border:1px solid #ddd;margin:auto" class="formFieldsContainer">
 			<div style="text-align:left;">
 				<label>Contigs</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['unspecified','contigs'],multi:false"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'"></div>
 			</div>
 
 			<div style="text-align:left;">
-				<label>Scientific Name</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="scientific_name" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Scientific name of the organism',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'"></div>
+				<label>Organism Name</label><br>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="scientific_name" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Scientific name of the organism being annotated.',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'"></div>
 			</div>
 
 			<div style="text-align:left;">
@@ -35,13 +35,13 @@
 			</div>
 
 			<div style="text-align:left;">
-				<label>Output Location</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_location" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}'"></div>
+				<label>Output Folder</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
 			</div>
 			
 			<div style="text-align:left;">
 				<label>Output Name</label><br>
-				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="dijit/form/ValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Prefix for the output files',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
 			</div>
 			
 		</div>

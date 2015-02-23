@@ -6,7 +6,8 @@ define([
 	"dojo/store/JsonRest",
 	"dojo/ready","./app","../router",
 	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
-	"../jsonrpc", "../panels","../WorkspaceManager"
+	"../jsonrpc", "../panels","../WorkspaceManager","dojo/keys",
+	"dijit/Dialog"
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
@@ -16,7 +17,8 @@ define([
 	Ready,App,
 	Router,Window,
 	Drawer,ContentPane,
-	RPC, Panels, WorkspaceManager
+	RPC, Panels, WorkspaceManager,Keys,
+	Dialog
 ) {
 	return declare([App], {
 		panels: Panels,
@@ -39,6 +41,23 @@ define([
 					target = target.parentNode
 				}
 				domClass.remove(target, "hover");
+			});
+
+			on(document.body,"keypress", function(evt){
+				var charOrCode = evt.charCode || evt.keyCode;
+				console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+			
+				if ((charOrCode==4) && evt.ctrlKey && evt.shiftKey){
+					if (!this._devDlg) {
+						this._devDlg = new Dialog({title: "Debugging Panel", content:'<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'});
+					}
+					console.log("Dialog: ", this._devDlg);
+					if (this._devDlg.open){
+						this._devDlg.hide();
+					}else{
+						this._devDlg.show();
+					}
+				}	
 			});
 	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
