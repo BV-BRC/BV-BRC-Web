@@ -111,6 +111,7 @@ define([
 					return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
 					(!this._isEmpty(value)) &&
 					(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
+					var x=0;
 				}
 			)}));
 
@@ -200,8 +201,8 @@ define([
 				}
 				if(req && (!target[attachname] || incomplete)){
 					if(browser_select){
-						//this[attachname]._set("state","Error");
-						this[attachname].set("message", "Need a file.");
+						this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
+						this[attachname].searchBox._set("state","Error");
 						this[attachname].focus=true;
 					}
 					success=0;
