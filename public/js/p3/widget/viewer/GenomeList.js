@@ -19,7 +19,7 @@ define([
 		},
 		startup: function(){
 			if (this._started) {return;}
-			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
+//			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
 				query: (this.query||""),
@@ -102,7 +102,7 @@ define([
 //                                      var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 //                                      Topic.publish("/select", sel);
                                 });
-			this.addChild(this.viewHeader);
+//			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 			this.inherited(arguments);
 			this.viewer.refresh();
