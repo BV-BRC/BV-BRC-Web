@@ -13552,7 +13552,44 @@ define([
 				})
 			}));
 		},
+		getObject: function(path,metadataOnly){
+			if (!path){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			path = decodeURIComponent(path);
+			 0 && console.log('getObjects: ', path, "metadata_only:", metadataOnly)
+			return Deferred.when(this.api("Workspace.get",[{objects: [path], metadata_only:metadataOnly}]), function(results){
+				if (!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]) {
+					throw new Error("Object not found: ");
+				}
+				 0 && console.log("results[0]", results[0])
+				var meta = {
+					name: results[0][0][0][0],
+					type: results[0][0][0][1],
+					path: results[0][0][0][2],
+					creation_time: results[0][0][0][3],
+					id: results[0][0][0][4],
+					owner_id: results[0][0][0][5],
+					size: results[0][0][0][6],
+					userMeta: results[0][0][0][7],
+					autoMeta: results[0][0][0][8],
+					user_permissions: results[0][0][0][9],
+					global_permission: results[0][0][0][10],
+					link_reference: results[0][0][0][11]
+				}
+				if (metadataOnly) { return meta; } 
 
+				var res = {
+					metadata: meta,
+					data: results[0][0][1]
+				}
+				 0 && console.log("getObjects() res", res);
+				return res;
+			});
+
+		},
+
+	
 		getObjects: function(paths,metadataOnly){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -25905,7 +25942,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","unspecified"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -25956,7 +25993,7 @@ define([
 
 				switch (sel.type) {
 					case "genome_group":
-						Topic.publish("/navigate",{href:"/view/GenomeList"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
+						Topic.publish("/navigate",{href:"/view/GenomeGroup"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
 						break;
 					case "feature_group":
 						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
@@ -25974,16 +26011,49 @@ define([
 			}, true);
 
 
-			/*
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				 0 && console.log("Download Item Action", selection);
 			}, true);
-			*/
 
+			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
 				 0 && console.log("Replace Item Action", selection);
 				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
 			}, true);
+			*/
+
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+				 0 && console.log("Remove Items from Group", selection);
+				 0 && console.log("currentContainerWidget: ", this.currentContainerWidget);
+				var type = selection[0].document_type;
+				var idType = (type=="genome")?"genome_id":((type=="feature")?"feature_id":"document_id")
+				var objs = selection.map(function(s){
+					 0 && console.log('s: ', s, s.data);
+					return s[idType];
+				});
+	
+				var conf = "Are you sure you want to remove " + objs.length + " " + type + 
+					   ((objs.length>1)?"s":"") +
+					   " from this group?"
+				var _self=this;	
+				var dlg = new Confirmation({
+					content: conf,
+					onConfirm: function(evt){
+						//WorkspaceManager.deleteObject(objs,true, false);
+						 0 && console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
+					}
+				})
+				dlg.startup()
+				dlg.show();
+	
+			},true);
+
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+				 0 && console.log("Remove Items from Group", selection);
+			},true);
+			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
+				 0 && console.log("Remove Items from Group", selection);
+			},true);
 
 
 			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
@@ -26060,17 +26130,22 @@ define([
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeGroup");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
-					case "job_result":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
-						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+//					case "job_result":
+//						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
+//						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+//						break;
+					case "experiment_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
+						params.group = obj.path;
 						break;
+	
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
@@ -26087,6 +26162,7 @@ define([
 						 0 && console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
+						this.actionPanel.set("currentContainerWidget", newPanel);
 
 						if (newPanel.on) {
 						newPanel.on("select", lang.hitch(this,function(evt){
@@ -29940,7 +30016,6 @@ return declare(null, {
 define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
 
 	var dateFormatter =  function(obj,format){
-		 0 && console.log("dateFormatter: ", obj);
 		if (!obj || obj=="0001-01-01T00:00:00Z") { return "" }
 		if (typeof obj == "string") {
 			obj = new Date(Date.parse(obj));
@@ -33029,25 +33104,30 @@ function(Deferred,Topic){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template
+	Template,lang
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
 		"disabled":false,
 		templateString: Template,
 		item: null,
+		property_aliases: {
+			document_type: "type",
+			"organism_name": "name"
+		},
 		startup: function(){
 			var _self=this;
 			//if (this._started) { return; }
 			var currentIcon;
-			this.watch("item", function(prop,oldVal,item){
+			this.watch("item", lang.hitch(this,function(prop,oldVal,item){
 				 0 && console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon,currentIcon)
-				switch(item.type){
+				var t = item.document_type || item.type;
+				switch(t){
 					case "folder": 
 						domClass.add(_self.typeIcon,"fa fa-folder fa-3x")
 						currentIcon="fa fa-folder fa-3x";
@@ -33080,13 +33160,17 @@ define([
 				}	
 				Object.keys(item).forEach(function(key){
        	                		var val = item[key]; 
-					if (_self[key + "Node"]){
+					if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						_self[this.property_aliases[key] + "Node"].innerHTML=val;
+					}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
+						_self[this.property_aliases[key] + "Widget"].set("value",val);
+					}else if (_self[key + "Node"]){
 						_self[key+"Node"].innerHTML=val;
 					}else if (_self[key +"Widget"]){
 						_self[key+"Widget"].set("value",val);
 					}
-				});
-			})
+				},this);
+			}))
 			this.inherited(arguments);
 		}
 
@@ -33108,6 +33192,17 @@ define([
 			this._actions={}
 		},
 		selection: null,
+		currentContainerType: null,
+		currentContainerWidget: null,
+		_setCurrentContainerWidgetAttr: function(widget){
+			 0 && console.log("_set Current Container Widget: ", widget);
+			 0 && console.log("Widget: ", widget.containerType, widget);
+			
+			if (widget === this.currentContainerWidget) { return; }
+			this.currentContainerType=widget.containerType;
+			this.currentContainerWidget = widget;
+			this.set("selection", []);
+		},
 		_setSelectionAttr: function(sel){
 			 0 && console.log("setSelection", sel);
 			this.selection = sel;
@@ -33116,7 +33211,7 @@ define([
 			var valid;
 			var selectionTypes = {}
 			sel.forEach(function(s){
-				selectionTypes[s.type]=true;
+				selectionTypes[s.document_type || s.type]=true;
 			});
 	
 			if (sel.length>1){
@@ -33139,6 +33234,19 @@ define([
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
+				var validContainerTypes = act.options.validContainerTypes || null;
+
+				if (validContainerTypes){
+					 0 && console.log("checkValidContainerTypes", validContainerTypes);
+					 0 && console.log("Current ContainerType: ", this.currentContainerType);
+					 0 && console.log("Current Container Widget: ", this.currentContainerWidget);
+					if (!validContainerTypes.some(function(t){
+						return ((t=="*") || (t==this.currentContainerType))
+					},this)){
+						return false;
+					};		
+				}
+	
 				return validTypes.some(function(t){
 					return ((t=="*") || (types.indexOf(t)>=0));
 				});		
@@ -33216,12 +33324,19 @@ define([
 		_onCancel: function(){
 			this.onCancel();
 			this.hide();
-			this.destroy();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
 		},
 		_onSubmit: function(){
 			this.onConfirm();
 			this.hide();
-			this.destroy();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
+	
 		},
 		startup: function(){
 			this.inherited(arguments);
@@ -34270,7 +34385,7 @@ define([
 		},
 		startup: function(){
 			if (this._started) {return;}
-			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
+//			this.viewHeader = new ContentPane({content: "GenomeList Viewer", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
 				query: (this.query||""),
@@ -34353,7 +34468,7 @@ define([
 //                                      var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 //                                      Topic.publish("/select", sel);
                                 });
-			this.addChild(this.viewHeader);
+//			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 			this.inherited(arguments);
 			this.viewer.refresh();
@@ -35419,24 +35534,31 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox"
+	"dojo/text!./templates/Annotation.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox",
+	"p3/widget/TaxonNameSelector"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase
+	Template,AppBase,TaxonNameSelector
 ){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
+		required: true,
+
 		constructor: function(){
 			this._selfSet=true;
 		},	
+
+		onOutputPathChange: function(val){
+			this.output_nameWidget.set("path", val);
+		},
 	
 		onSuggestNameChange: function(val){
 			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				this._selfSet=true;	
-				this.output_nameWidget.set('value', val);
+				this.output_nameWidget.set('value',this.scientific_nameWidget.get('displayedValue'));
 			}
 		}
 
@@ -35997,7 +36119,9 @@ define([
 		},
 		onSearchChange: function(value){
 			this.set("value", value);	
+			this.onChange(value);
 		},
+		onChange: function(){},
 		startup: function(){
 			if (this._started){return;}
 			 0 && console.log("call getObjectsByType(); ", this.type);
@@ -37508,7 +37632,6 @@ return number;
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/WorkspaceFilenameValidationTextBox.html",
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
@@ -37517,19 +37640,17 @@ define([
 ], function(
 	declare, WidgetBase, on,lang,
 	domClass,Templated,WidgetsInTemplate,
-	Template,Dialog,HasDropDown,ContentPane,TextBox,
+	Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
 	Button,Deferred,CheckBox,ValidationTextBox
 ){
 
 
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
-		"baseClass": "WorkspaceObjectSelector",
+	return declare([ValidationTextBox], {
+/*		"baseClass": "WorkspaceObjectSelector",*/
 		"disabled":false,
-		templateString: Template,
 		workspace: "",
-		selection: "",
 		value: "",
 		path: "",
 		disabled: false,
@@ -37538,49 +37659,17 @@ define([
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
-		reset: function(){
-			this.textBox.set('value','');
-		},
+		nameIsValid: false,
 
-		_setDisabledAttr: function(val){
-			this.disabled=val;
-			if (val) {
-				domClass.add(this.domNode,"disabled");
-			}else{
-				domClass.remove(this.domNode,"disabled");
-			}
-
-			if (this.textBox){
-				this.textBox.set("disabled",val);
-			}
-		},
-		_setRequiredAttr: function(val){
-			this.required=val;
-			if (this.textBox){
-				this.textBox.set("required",val);
-			}
-		},
-	
 		_setPathAttr: function(val){
 			 0 && console.log("_setPathAttr: ", val);
 			this.path=val;
+
+			if (this.value) {
+				this.checkForName(val);
+			}
 		},	
 	
-		_setValueAttr: function(value,refresh){
-			this.value = value;
-			if (this._started) {
-				if (refresh) {
-					this.refreshWorkspaceItems()
-				}else{
-					this.textBox.set('value', value);
-				}
-			}
-		},
-
-		_getValueAttr: function(value){
-			return this.textBox.get('value', value);
-		},
-
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){
 				this.value=this.workspace;
@@ -37588,15 +37677,52 @@ define([
 			this.inherited(arguments);
 		},
 
-		onTextBoxChange: function(value){
-			this.set("value", value);	
+		checkForName: function(val){
+			if (!this.path) { return; }
+			this.externalCheck="checking";
+			this.externalCheckValue = val;
+			return Deferred.when(WorkspaceManager.getObject(this.path+"/"+val),lang.hitch(this,function(obj){
+				if (obj) {
+					 0 && console.log("Found Existing Object",obj);
+					this.externalCheck="exists";
+					this.set('invalidMessage',"A file with this name already exists in " + this.path);
+					this.validate();
+				}else{
+					this.externalCheck="empty";
+				}
+//				this.displayMessage();
+			}), lang.hitch(this, function(err){
+				 0 && console.log("FileNot Found...good");
+				this.externalCheck="empty";
+			}));
 		},
-		startup: function(){
-			if (this._started){return;}
-			 0 && console.log("call getObjectsByType(); ", this.type);
-			this.inherited(arguments);	
-			this.textBox.set('disabled', this.disabled);
-			this.textBox.set('required', this.required);
+
+		validator: function(val,constraints){
+			var valid = false;				
+			var re=/(\(|\)|\/|\:)/g
+			var match = val.match(re);
+
+			if ( this.required && this._isEmpty(val) ) { return false; }
+
+			if (!this.path) {
+				this.set('invalidMessage', "The output folder has not been selected");
+				return false;
+			}
+
+			if (val.match(re)){
+				this.set('invalidMessage',"This name contains invalid characters: '" + match[0]+"'")
+				return false;
+			}
+			 0 && console.log("ExternalCheck: ", this.externalCheck);
+			 0 && console.log("Val: ", val, "ExternalCheckVal: ", this.externalCheckValue)
+			if (this.externalCheckValue && val==this.externalCheckValue){
+				if (this.externalCheck=="exists") { return false; }
+				return true;
+			}else if (val) {
+				this.checkForName(val);
+			}
+
+			return true;
 		}
 	});
 });
@@ -37942,6 +38068,2057 @@ define([
 });
 
 },
+'p3/widget/TaxonNameSelector':function(){
+define([
+	"dijit/form/FilteringSelect","dojo/_base/declare",
+	"dojo/store/JsonRest"
+], function(
+	FilteringSelect, declare, 
+	Store
+){
+	
+	return declare([FilteringSelect], {
+		apiServiceUrl: window.App.dataAPI,
+		promptMessage:'Scientific name of the organism being annotated.',
+		missingMessage:'Scientific Name must be provided.',
+		placeHolder:'Bacillus Cereus',
+		searchAttr: "taxon_name",
+		query: "?&select(taxon_name)",
+		store: null,
+
+		constructor: function(){
+			if (!this.store){
+				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json"}});
+			}
+		}
+	});
+});
+
+},
+'dijit/form/FilteringSelect':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // lang.mixin
+	"dojo/when",
+	"./MappedTextBox",
+	"./ComboBoxMixin"
+], function(declare, lang, when, MappedTextBox, ComboBoxMixin){
+
+	// module:
+	//		dijit/form/FilteringSelect
+
+	return declare("dijit.form.FilteringSelect", [MappedTextBox, ComboBoxMixin], {
+		// summary:
+		//		An enhanced version of the HTML SELECT tag, populated dynamically
+		//
+		// description:
+		//		An enhanced version of the HTML SELECT tag, populated dynamically. It works
+		//		very nicely with very large data sets because it can load and page data as needed.
+		//		It also resembles ComboBox, but does not allow values outside of the provided ones.
+		//		If OPTION tags are used as the data provider via markup, then the
+		//		OPTION tag's child text node is used as the displayed value when selected
+		//		while the OPTION tag's value attribute is used as the widget value on form submit.
+		//		To set the default value when using OPTION tags, specify the selected
+		//		attribute on 1 of the child OPTION tags.
+		//
+		//		Similar features:
+		//
+		//		- There is a drop down list of possible values.
+		//		- You can only enter a value from the drop down list.  (You can't
+		//			enter an arbitrary value.)
+		//		- The value submitted with the form is the hidden value (ex: CA),
+		//			not the displayed value a.k.a. label (ex: California)
+		//
+		//		Enhancements over plain HTML version:
+		//
+		//		- If you type in some text then it will filter down the list of
+		//			possible values in the drop down list.
+		//		- List can be specified either as a static list or via a javascript
+		//			function (that can get the list from a server)
+
+		// required: Boolean
+		//		True (default) if user is required to enter a value into this field.
+		required: true,
+
+		_lastDisplayedValue: "",
+
+		_isValidSubset: function(){
+			return this._opened;
+		},
+
+		isValid: function(){
+			// Overrides ValidationTextBox.isValid()
+			return !!this.item || (!this.required && this.get('displayedValue') == ""); // #5974
+		},
+
+		_refreshState: function(){
+			if(!this.searchTimer){ // state will be refreshed after results are returned
+				this.inherited(arguments);
+			}
+		},
+
+		_callbackSetLabel: function(
+						/*Array*/ result,
+						/*Object*/ query,
+						/*Object*/ options,
+						/*Boolean?*/ priorityChange){
+			// summary:
+			//		Callback from dojo.store after lookup of user entered value finishes
+
+			// setValue does a synchronous lookup,
+			// so it calls _callbackSetLabel directly,
+			// and so does not pass dataObject
+			// still need to test against _lastQuery in case it came too late
+			if((query && query[this.searchAttr] !== this._lastQuery) || (!query && result.length && this.store.getIdentity(result[0]) != this._lastQuery)){
+				return;
+			}
+			if(!result.length){
+				//#3268: don't modify display value on bad input
+				//#3285: change CSS to indicate error
+				this.set("value", '', priorityChange || (priorityChange === undefined && !this.focused), this.textbox.value, null);
+			}else{
+				this.set('item', result[0], priorityChange);
+			}
+		},
+
+		_openResultList: function(/*Object*/ results, /*Object*/ query, /*Object*/ options){
+			// Callback when a data store query completes.
+			// Overrides ComboBox._openResultList()
+
+			// #3285: tap into search callback to see if user's query resembles a match
+			if(query[this.searchAttr] !== this._lastQuery){
+				return;
+			}
+			this.inherited(arguments);
+
+			if(this.item === undefined){ // item == undefined for keyboard search
+				// If the search returned no items that means that the user typed
+				// in something invalid (and they can't make it valid by typing more characters),
+				// so flag the FilteringSelect as being in an invalid state
+				this.validate(true);
+			}
+		},
+
+		_getValueAttr: function(){
+			// summary:
+			//		Hook for get('value') to work.
+
+			// don't get the textbox value but rather the previously set hidden value.
+			// Use this.valueNode.value which isn't always set for other MappedTextBox widgets until blur
+			return this.valueNode.value;
+		},
+
+		_getValueField: function(){
+			// Overrides ComboBox._getValueField()
+			return "value";
+		},
+
+		_setValueAttr: function(/*String*/ value, /*Boolean?*/ priorityChange, /*String?*/ displayedValue, /*item?*/ item){
+			// summary:
+			//		Hook so set('value', value) works.
+			// description:
+			//		Sets the value of the select.
+			//		Also sets the label to the corresponding value by reverse lookup.
+			if(!this._onChangeActive){ priorityChange = null; }
+
+			if(item === undefined){
+				if(value === null || value === ''){
+					value = '';
+					if(!lang.isString(displayedValue)){
+						this._setDisplayedValueAttr(displayedValue||'', priorityChange);
+						return;
+					}
+				}
+
+				var self = this;
+				this._lastQuery = value;
+				when(this.store.get(value), function(item){
+					self._callbackSetLabel(item? [item] : [], undefined, undefined, priorityChange);
+				});
+			}else{
+				this.valueNode.value = value;
+				this.inherited(arguments, [value, priorityChange, displayedValue, item]);
+			}
+		},
+
+		_setItemAttr: function(/*item*/ item, /*Boolean?*/ priorityChange, /*String?*/ displayedValue){
+			// summary:
+			//		Set the displayed valued in the input box, and the hidden value
+			//		that gets submitted, based on a dojo.data store item.
+			// description:
+			//		Users shouldn't call this function; they should be calling
+			//		set('item', value)
+			// tags:
+			//		private
+			this.inherited(arguments);
+			this._lastDisplayedValue = this.textbox.value;
+		},
+
+		_getDisplayQueryString: function(/*String*/ text){
+			return text.replace(/([\\\*\?])/g, "\\$1");
+		},
+
+		_setDisplayedValueAttr: function(/*String*/ label, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Hook so set('displayedValue', label) works.
+			// description:
+			//		Sets textbox to display label. Also performs reverse lookup
+			//		to set the hidden value.  label should corresponding to item.searchAttr.
+
+			if(label == null){ label = ''; }
+
+			// This is called at initialization along with every custom setter.
+			// Usually (or always?) the call can be ignored.   If it needs to be
+			// processed then at least make sure that the XHR request doesn't trigger an onChange()
+			// event, even if it returns after creation has finished
+			if(!this._created){
+				if(!("displayedValue" in this.params)){
+					return;
+				}
+				priorityChange = false;
+			}
+
+			// Do a reverse lookup to map the specified displayedValue to the hidden value.
+			// Note that if there's a custom labelFunc() this code
+			if(this.store){
+				this.closeDropDown();
+				var query = lang.clone(this.query); // #6196: populate query with user-specifics
+
+				// Generate query
+				var qs = this._getDisplayQueryString(label), q;
+				if(this.store._oldAPI){
+					// remove this branch for 2.0
+					q = qs;
+				}else{
+					// Query on searchAttr is a regex for benefit of dojo/store/Memory,
+					// but with a toString() method to help dojo/store/JsonRest.
+					// Search string like "Co*" converted to regex like /^Co.*$/i.
+					q = this._patternToRegExp(qs);
+					q.toString = function(){ return qs; };
+				}
+				this._lastQuery = query[this.searchAttr] = q;
+
+				// If the label is not valid, the callback will never set it,
+				// so the last valid value will get the warning textbox.   Set the
+				// textbox value now so that the impending warning will make
+				// sense to the user
+				this.textbox.value = label;
+				this._lastDisplayedValue = label;
+				this._set("displayedValue", label);	// for watch("displayedValue") notification
+				var _this = this;
+				var options = {
+					queryOptions: {
+						ignoreCase: this.ignoreCase,
+						deep: true
+					}
+				};
+				lang.mixin(options, this.fetchProperties);
+				this._fetchHandle = this.store.query(query, options);
+				when(this._fetchHandle, function(result){
+					_this._fetchHandle = null;
+					_this._callbackSetLabel(result || [], query, options, priorityChange);
+				}, function(err){
+					_this._fetchHandle = null;
+					if(!_this._cancelingQuery){	// don't treat canceled query as an error
+						 0 && console.error('dijit.form.FilteringSelect: ' + err.toString());
+					}
+				});
+			}
+		},
+
+		undo: function(){
+			this.set('displayedValue', this._lastDisplayedValue);
+		}
+	});
+});
+
+},
+'dijit/form/MappedTextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/sniff", // has("msapp")
+	"dojo/dom-construct", // domConstruct.place
+	"./ValidationTextBox"
+], function(declare, has, domConstruct, ValidationTextBox){
+
+	// module:
+	//		dijit/form/MappedTextBox
+
+	return declare("dijit.form.MappedTextBox", ValidationTextBox, {
+		// summary:
+		//		A dijit/form/ValidationTextBox subclass which provides a base class for widgets that have
+		//		a visible formatted display value, and a serializable
+		//		value in a hidden input field which is actually sent to the server.
+		// description:
+		//		The visible display may
+		//		be locale-dependent and interactive.  The value sent to the server is stored in a hidden
+		//		input field which uses the `name` attribute declared by the original widget.  That value sent
+		//		to the server is defined by the dijit/form/MappedTextBox.serialize() method and is typically
+		//		locale-neutral.
+		// tags:
+		//		protected
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+
+			// We want the name attribute to go to the hidden <input>, not the displayed <input>,
+			// so override _FormWidget.postMixInProperties() setting of nameAttrSetting for IE.
+			this.nameAttrSetting = "";
+		},
+
+		// Remap name attribute to be mapped to hidden node created in buildRendering(), rather than this.focusNode
+		_setNameAttr: "valueNode",
+
+		serialize: function(val /*=====, options =====*/){
+			// summary:
+			//		Overridable function used to convert the get('value') result to a canonical
+			//		(non-localized) string.  For example, will print dates in ISO format, and
+			//		numbers the same way as they are represented in javascript.
+			// val: anything
+			// options: Object?
+			// tags:
+			//		protected extension
+			return val.toString ? val.toString() : ""; // String
+		},
+
+		toString: function(){
+			// summary:
+			//		Returns widget as a printable string using the widget's value
+			// tags:
+			//		protected
+			var val = this.filter(this.get('value')); // call filter in case value is nonstring and filter has been customized
+			return val != null ? (typeof val == "string" ? val : this.serialize(val, this.constraints)) : ""; // String
+		},
+
+		validate: function(){
+			// Overrides `dijit/form/TextBox.validate`
+			this.valueNode.value = this.toString();
+			return this.inherited(arguments);
+		},
+
+		buildRendering: function(){
+			// Overrides `dijit/_TemplatedMixin/buildRendering`
+
+			this.inherited(arguments);
+
+			// Create a hidden <input> node with the serialized value used for submit
+			// (as opposed to the displayed value).
+			// Passing in name as markup rather than relying on _setNameAttr custom setter above
+			// to make query(input[name=...]) work on IE. (see #8660).
+			// But not doing that for Windows 8 Store apps because it causes a security exception (see #16452).
+			this.valueNode = domConstruct.place("<input type='hidden'" +
+				((this.name && !has("msapp")) ? ' name="' + this.name.replace(/"/g, "&quot;") + '"' : "") + "/>",
+				this.textbox, "after");
+		},
+
+		reset: function(){
+			// Overrides `dijit/form/ValidationTextBox.reset` to
+			// reset the hidden textbox value to ''
+			this.valueNode.value = '';
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
+'dijit/form/ComboBoxMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/Deferred",
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/lang", // lang.mixin
+	"dojo/store/util/QueryResults",
+	"./_AutoCompleterMixin",
+	"./_ComboBoxMenu",
+	"../_HasDropDown",
+	"dojo/text!./templates/DropDownBox.html"
+], function(declare, Deferred, kernel, lang, QueryResults, _AutoCompleterMixin, _ComboBoxMenu, _HasDropDown, template){
+
+
+	// module:
+	//		dijit/form/ComboBoxMixin
+
+	return declare("dijit.form.ComboBoxMixin", [_HasDropDown, _AutoCompleterMixin], {
+		// summary:
+		//		Provides main functionality of ComboBox widget
+
+		// dropDownClass: [protected extension] Function String
+		//		Dropdown widget class used to select a date/time.
+		//		Subclasses should specify this.
+		dropDownClass: _ComboBoxMenu,
+
+		// hasDownArrow: Boolean
+		//		Set this textbox to have a down arrow button, to display the drop down list.
+		//		Defaults to true.
+		hasDownArrow: true,
+
+		templateString: template,
+
+		baseClass: "dijitTextBox dijitComboBox",
+
+		/*=====
+		// store: [const] dojo/store/api/Store|dojo/data/api/Read
+		//		Reference to data provider object used by this ComboBox.
+		//
+		//		Should be dojo/store/api/Store, but dojo/data/api/Read supported
+		//		for backwards compatibility.
+		store: null,
+		=====*/
+
+		// Set classes like dijitDownArrowButtonHover depending on
+		// mouse action over button node
+		cssStateNodes: {
+			"_buttonNode": "dijitDownArrowButton"
+		},
+
+		_setHasDownArrowAttr: function(/*Boolean*/ val){
+			this._set("hasDownArrow", val);
+			this._buttonNode.style.display = val ? "" : "none";
+		},
+
+		_showResultList: function(){
+			// hide the tooltip
+			this.displayMessage("");
+			this.inherited(arguments);
+		},
+
+		_setStoreAttr: function(store){
+			// For backwards-compatibility, accept dojo.data store in addition to dojo/store/api/Store.  Remove in 2.0.
+			if(!store.get){
+				lang.mixin(store, {
+					_oldAPI: true,
+					get: function(id){
+						// summary:
+						//		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity.
+						//		Like dojo/store/DataStore.get() except returns native item.
+						var deferred = new Deferred();
+						this.fetchItemByIdentity({
+							identity: id,
+							onItem: function(object){
+								deferred.resolve(object);
+							},
+							onError: function(error){
+								deferred.reject(error);
+							}
+						});
+						return deferred.promise;
+					},
+					query: function(query, options){
+						// summary:
+						//		Queries the store for objects.   Like dojo/store/DataStore.query()
+						//		except returned Deferred contains array of native items.
+						var deferred = new Deferred(function(){ fetchHandle.abort && fetchHandle.abort(); });
+						deferred.total = new Deferred();
+						var fetchHandle = this.fetch(lang.mixin({
+							query: query,
+							onBegin: function(count){
+								deferred.total.resolve(count);
+							},
+							onComplete: function(results){
+								deferred.resolve(results);
+							},
+							onError: function(error){
+								deferred.reject(error);
+							}
+						}, options));
+						return QueryResults(deferred);
+					}
+				});
+			}
+			this._set("store", store);
+		},
+
+		postMixInProperties: function(){
+			// Since _setValueAttr() depends on this.store, _setStoreAttr() needs to execute first.
+			// Unfortunately, without special code, it ends up executing second.
+			var store = this.params.store || this.store;
+			if(store){
+				this._setStoreAttr(store);
+			}
+
+			this.inherited(arguments);
+
+			// User may try to access this.store.getValue() etc.  in a custom labelFunc() function.
+			// It's not available with the new data store for handling inline <option> tags, so add it.
+			if(!this.params.store && this.store && !this.store._oldAPI){
+				var clazz = this.declaredClass;
+				lang.mixin(this.store, {
+					getValue: function(item, attr){
+						kernel.deprecated(clazz + ".store.getValue(item, attr) is deprecated for builtin store.  Use item.attr directly", "", "2.0");
+						return item[attr];
+					},
+					getLabel: function(item){
+						kernel.deprecated(clazz + ".store.getLabel(item) is deprecated for builtin store.  Use item.label directly", "", "2.0");
+						return item.name;
+					},
+					fetch: function(args){
+						kernel.deprecated(clazz + ".store.fetch() is deprecated for builtin store.", "Use store.query()", "2.0");
+						var shim = ["dojo/data/ObjectStore"];	// indirection so it doesn't get rolled into a build
+						require(shim, lang.hitch(this, function(ObjectStore){
+							new ObjectStore({objectStore: this}).fetch(args);
+						}));
+					}
+				});
+			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			this.focusNode.setAttribute("aria-autocomplete", this.autoComplete ? "both" : "list");
+		}
+	});
+});
+
+},
+'dijit/form/_AutoCompleterMixin':function(){
+define([
+	"dojo/aspect",
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.get
+	"dojo/keys",
+	"dojo/_base/lang", // lang.clone lang.hitch
+	"dojo/query", // query
+	"dojo/regexp", // regexp.escapeString
+	"dojo/sniff", // has("ie")
+	"./DataList",
+	"./_TextBoxMixin", // defines _TextBoxMixin.selectInputText
+	"./_SearchMixin"
+], function(aspect, declare, domAttr, keys, lang, query, regexp, has, DataList, _TextBoxMixin, SearchMixin){
+
+	// module:
+	//		dijit/form/_AutoCompleterMixin
+
+	var AutoCompleterMixin = declare("dijit.form._AutoCompleterMixin", SearchMixin, {
+		// summary:
+		//		A mixin that implements the base functionality for `dijit/form/ComboBox`/`dijit/form/FilteringSelect`
+		// description:
+		//		All widgets that mix in dijit/form/_AutoCompleterMixin must extend `dijit/form/_FormValueWidget`.
+		// tags:
+		//		protected
+
+		// item: Object
+		//		This is the item returned by the dojo/store/api/Store implementation that
+		//		provides the data for this ComboBox, it's the currently selected item.
+		item: null,
+
+		// autoComplete: Boolean
+		//		If user types in a partial string, and then tab out of the `<input>` box,
+		//		automatically copy the first entry displayed in the drop down list to
+		//		the `<input>` field
+		autoComplete: true,
+
+		// highlightMatch: String
+		//		One of: "first", "all" or "none".
+		//
+		//		If the ComboBox/FilteringSelect opens with the search results and the searched
+		//		string can be found, it will be highlighted.  If set to "all"
+		//		then will probably want to change `queryExpr` parameter to '*${0}*'
+		//
+		//		Highlighting is only performed when `labelType` is "text", so as to not
+		//		interfere with any HTML markup an HTML label might contain.
+		highlightMatch: "first",
+
+		// labelAttr: String?
+		//		The entries in the drop down list come from this attribute in the
+		//		dojo.data items.
+		//		If not specified, the searchAttr attribute is used instead.
+		labelAttr: "",
+
+		// labelType: String
+		//		Specifies how to interpret the labelAttr in the data store items.
+		//		Can be "html" or "text".
+		labelType: "text",
+
+		// Flags to _HasDropDown to limit height of drop down to make it fit in viewport
+		maxHeight: -1,
+
+		// For backwards compatibility let onClick events propagate, even clicks on the down arrow button
+		_stopClickEvents: false,
+
+		_getCaretPos: function(/*DomNode*/ element){
+			// khtml 3.5.2 has selection* methods as does webkit nightlies from 2005-06-22
+			var pos = 0;
+			if(typeof(element.selectionStart) == "number"){
+				// FIXME: this is totally borked on Moz < 1.3. Any recourse?
+				pos = element.selectionStart;
+			}else if(has("ie")){
+				// in the case of a mouse click in a popup being handled,
+				// then the document.selection is not the textarea, but the popup
+				// var r = document.selection.createRange();
+				// hack to get IE 6 to play nice. What a POS browser.
+				var tr = element.ownerDocument.selection.createRange().duplicate();
+				var ntr = element.createTextRange();
+				tr.move("character", 0);
+				ntr.move("character", 0);
+				try{
+					// If control doesn't have focus, you get an exception.
+					// Seems to happen on reverse-tab, but can also happen on tab (seems to be a race condition - only happens sometimes).
+					// There appears to be no workaround for this - googled for quite a while.
+					ntr.setEndPoint("EndToEnd", tr);
+					pos = String(ntr.text).replace(/\r/g, "").length;
+				}catch(e){
+					// If focus has shifted, 0 is fine for caret pos.
+				}
+			}
+			return pos;
+		},
+
+		_setCaretPos: function(/*DomNode*/ element, /*Number*/ location){
+			location = parseInt(location);
+			_TextBoxMixin.selectInputText(element, location, location);
+		},
+
+		_setDisabledAttr: function(/*Boolean*/ value){
+			// Additional code to set disabled state of ComboBox node.
+			// Overrides _FormValueWidget._setDisabledAttr() or ValidationTextBox._setDisabledAttr().
+			this.inherited(arguments);
+			this.domNode.setAttribute("aria-disabled", value ? "true" : "false");
+		},
+
+		_onKey: function(/*Event*/ evt){
+			// summary:
+			//		Handles keyboard events
+
+			if(evt.charCode >= 32){
+				return;
+			} // alphanumeric reserved for searching
+
+			var key = evt.charCode || evt.keyCode;
+
+			// except for cutting/pasting case - ctrl + x/v
+			if(key == keys.ALT || key == keys.CTRL || key == keys.META || key == keys.SHIFT){
+				return; // throw out spurious events
+			}
+
+			var pw = this.dropDown;
+			var highlighted = null;
+			this._abortQuery();
+
+			// _HasDropDown will do some of the work:
+			//
+			//	1. when drop down is not yet shown:
+			//		- if user presses the down arrow key, call loadDropDown()
+			//	2. when drop down is already displayed:
+			//		- on ESC key, call closeDropDown()
+			//		- otherwise, call dropDown.handleKey() to process the keystroke
+			this.inherited(arguments);
+
+			if(evt.altKey || evt.ctrlKey || evt.metaKey){
+				return;
+			} // don't process keys with modifiers  - but we want shift+TAB
+
+			if(this._opened){
+				highlighted = pw.getHighlightedOption();
+			}
+			switch(key){
+				case keys.PAGE_DOWN:
+				case keys.DOWN_ARROW:
+				case keys.PAGE_UP:
+				case keys.UP_ARROW:
+					// Keystroke caused ComboBox_menu to move to a different item.
+					// Copy new item to <input> box.
+					if(this._opened){
+						this._announceOption(highlighted);
+					}
+					evt.stopPropagation();
+					evt.preventDefault();
+					break;
+
+				case keys.ENTER:
+					// prevent submitting form if user presses enter. Also
+					// prevent accepting the value if either Next or Previous
+					// are selected
+					if(highlighted){
+						// only stop event on prev/next
+						if(highlighted == pw.nextButton){
+							this._nextSearch(1);
+							// prevent submit
+							evt.stopPropagation();
+							evt.preventDefault();
+							break;
+						}else if(highlighted == pw.previousButton){
+							this._nextSearch(-1);
+							// prevent submit
+							evt.stopPropagation();
+							evt.preventDefault();
+							break;
+						}
+						// prevent submit if ENTER was to choose an item
+						evt.stopPropagation();
+						evt.preventDefault();
+					}else{
+						// Update 'value' (ex: KY) according to currently displayed text
+						this._setBlurValue(); // set value if needed
+						this._setCaretPos(this.focusNode, this.focusNode.value.length); // move cursor to end and cancel highlighting
+					}
+				// fall through
+
+				case keys.TAB:
+					var newvalue = this.get('displayedValue');
+					//	if the user had More Choices selected fall into the
+					//	_onBlur handler
+					if(pw && (newvalue == pw._messages["previousMessage"] || newvalue == pw._messages["nextMessage"])){
+						break;
+					}
+					if(highlighted){
+						this._selectOption(highlighted);
+					}
+				// fall through
+
+				case keys.ESCAPE:
+					if(this._opened){
+						this._lastQuery = null; // in case results come back later
+						this.closeDropDown();
+					}
+					break;
+			}
+		},
+
+		_autoCompleteText: function(/*String*/ text){
+			// summary:
+			//		Fill in the textbox with the first item from the drop down
+			//		list, and highlight the characters that were
+			//		auto-completed. For example, if user typed "CA" and the
+			//		drop down list appeared, the textbox would be changed to
+			//		"California" and "ifornia" would be highlighted.
+
+			var fn = this.focusNode;
+
+			// IE7: clear selection so next highlight works all the time
+			_TextBoxMixin.selectInputText(fn, fn.value.length);
+			// does text autoComplete the value in the textbox?
+			var caseFilter = this.ignoreCase ? 'toLowerCase' : 'substr';
+			if(text[caseFilter](0).indexOf(this.focusNode.value[caseFilter](0)) == 0){
+				var cpos = this.autoComplete ? this._getCaretPos(fn) : fn.value.length;
+				// only try to extend if we added the last character at the end of the input
+				if((cpos + 1) > fn.value.length){
+					// only add to input node as we would overwrite Capitalisation of chars
+					// actually, that is ok
+					fn.value = text;//.substr(cpos);
+					// visually highlight the autocompleted characters
+					_TextBoxMixin.selectInputText(fn, cpos);
+				}
+			}else{
+				// text does not autoComplete; replace the whole value and highlight
+				fn.value = text;
+				_TextBoxMixin.selectInputText(fn);
+			}
+		},
+
+		_openResultList: function(/*Object*/ results, /*Object*/ query, /*Object*/ options){
+			// summary:
+			//		Callback when a search completes.
+			// description:
+			//		1. generates drop-down list and calls _showResultList() to display it
+			//		2. if this result list is from user pressing "more choices"/"previous choices"
+			//			then tell screen reader to announce new option
+			var wasSelected = this.dropDown.getHighlightedOption();
+			this.dropDown.clearResultList();
+			if(!results.length && options.start == 0){ // if no results and not just the previous choices button
+				this.closeDropDown();
+				return;
+			}
+			this._nextSearch = this.dropDown.onPage = lang.hitch(this, function(direction){
+				results.nextPage(direction !== -1);
+				this.focus();
+			});
+
+			// Fill in the textbox with the first item from the drop down list,
+			// and highlight the characters that were auto-completed. For
+			// example, if user typed "CA" and the drop down list appeared, the
+			// textbox would be changed to "California" and "ifornia" would be
+			// highlighted.
+
+			this.dropDown.createOptions(
+				results,
+				options,
+				lang.hitch(this, "_getMenuLabelFromItem")
+			);
+
+			// show our list (only if we have content, else nothing)
+			this._showResultList();
+
+			// #4091:
+			//		tell the screen reader that the paging callback finished by
+			//		shouting the next choice
+			if("direction" in options){
+				if(options.direction){
+					this.dropDown.highlightFirstOption();
+				}else if(!options.direction){
+					this.dropDown.highlightLastOption();
+				}
+				if(wasSelected){
+					this._announceOption(this.dropDown.getHighlightedOption());
+				}
+			}else if(this.autoComplete && !this._prev_key_backspace
+				// when the user clicks the arrow button to show the full list,
+				// startSearch looks for "*".
+				// it does not make sense to autocomplete
+				// if they are just previewing the options available.
+				&& !/^[*]+$/.test(query[this.searchAttr].toString())){
+				this._announceOption(this.dropDown.containerNode.firstChild.nextSibling); // 1st real item
+			}
+		},
+
+		_showResultList: function(){
+			// summary:
+			//		Display the drop down if not already displayed, or if it is displayed, then
+			//		reposition it if necessary (reposition may be necessary if drop down's height changed).
+			this.closeDropDown(true);
+			this.openDropDown();
+			this.domNode.setAttribute("aria-expanded", "true");
+		},
+
+		loadDropDown: function(/*Function*/ /*===== callback =====*/){
+			// Overrides _HasDropDown.loadDropDown().
+			// This is called when user has pressed button icon or pressed the down arrow key
+			// to open the drop down.
+			this._startSearchAll();
+		},
+
+		isLoaded: function(){
+			// signal to _HasDropDown that it needs to call loadDropDown() to load the
+			// drop down asynchronously before displaying it
+			return false;
+		},
+
+		closeDropDown: function(){
+			// Overrides _HasDropDown.closeDropDown().  Closes the drop down (assuming that it's open).
+			// This method is the callback when the user types ESC or clicking
+			// the button icon while the drop down is open.  It's also called by other code.
+			this._abortQuery();
+			if(this._opened){
+				this.inherited(arguments);
+				this.domNode.setAttribute("aria-expanded", "false");
+			}
+		},
+
+		_setBlurValue: function(){
+			// if the user clicks away from the textbox OR tabs away, set the
+			// value to the textbox value
+			// #4617:
+			//		if value is now more choices or previous choices, revert
+			//		the value
+			var newvalue = this.get('displayedValue');
+			var pw = this.dropDown;
+			if(pw && (newvalue == pw._messages["previousMessage"] || newvalue == pw._messages["nextMessage"])){
+				this._setValueAttr(this._lastValueReported, true);
+			}else if(typeof this.item == "undefined"){
+				// Update 'value' (ex: KY) according to currently displayed text
+				this.item = null;
+				this.set('displayedValue', newvalue);
+			}else{
+				if(this.value != this._lastValueReported){
+					this._handleOnChange(this.value, true);
+				}
+				this._refreshState();
+			}
+			// Remove aria-activedescendant since it may not be removed if they select with arrows then blur with mouse
+			this.focusNode.removeAttribute("aria-activedescendant");
+		},
+
+		_setItemAttr: function(/*item*/ item, /*Boolean?*/ priorityChange, /*String?*/ displayedValue){
+			// summary:
+			//		Set the displayed valued in the input box, and the hidden value
+			//		that gets submitted, based on a dojo.data store item.
+			// description:
+			//		Users shouldn't call this function; they should be calling
+			//		set('item', value)
+			// tags:
+			//		private
+			var value = '';
+			if(item){
+				if(!displayedValue){
+					displayedValue = this.store._oldAPI ? // remove getValue() for 2.0 (old dojo.data API)
+						this.store.getValue(item, this.searchAttr) : item[this.searchAttr];
+				}
+				value = this._getValueField() != this.searchAttr ? this.store.getIdentity(item) : displayedValue;
+			}
+			this.set('value', value, priorityChange, displayedValue, item);
+		},
+
+		_announceOption: function(/*Node*/ node){
+			// summary:
+			//		a11y code that puts the highlighted option in the textbox.
+			//		This way screen readers will know what is happening in the
+			//		menu.
+
+			if(!node){
+				return;
+			}
+			// pull the text value from the item attached to the DOM node
+			var newValue;
+			if(node == this.dropDown.nextButton ||
+				node == this.dropDown.previousButton){
+				newValue = node.innerHTML;
+				this.item = undefined;
+				this.value = '';
+			}else{
+				var item = this.dropDown.items[node.getAttribute("item")];
+				newValue = (this.store._oldAPI ? // remove getValue() for 2.0 (old dojo.data API)
+					this.store.getValue(item, this.searchAttr) : item[this.searchAttr]).toString();
+				this.set('item', item, false, newValue);
+			}
+			// get the text that the user manually entered (cut off autocompleted text)
+			this.focusNode.value = this.focusNode.value.substring(0, this._lastInput.length);
+			// set up ARIA activedescendant
+			this.focusNode.setAttribute("aria-activedescendant", domAttr.get(node, "id"));
+			// autocomplete the rest of the option to announce change
+			this._autoCompleteText(newValue);
+		},
+
+		_selectOption: function(/*DomNode*/ target){
+			// summary:
+			//		Menu callback function, called when an item in the menu is selected.
+			this.closeDropDown();
+			if(target){
+				this._announceOption(target);
+			}
+			this._setCaretPos(this.focusNode, this.focusNode.value.length);
+			this._handleOnChange(this.value, true);
+			// Remove aria-activedescendant since the drop down is no loner visible
+			// after closeDropDown() but _announceOption() adds it back in
+			this.focusNode.removeAttribute("aria-activedescendant");
+		},
+
+		_startSearchAll: function(){
+			this._startSearch('');
+		},
+
+		_startSearchFromInput: function(){
+			this.item = undefined; // undefined means item needs to be set
+			this.inherited(arguments);
+		},
+
+		_startSearch: function(/*String*/ key){
+			// summary:
+			//		Starts a search for elements matching key (key=="" means to return all items),
+			//		and calls _openResultList() when the search completes, to display the results.
+			if(!this.dropDown){
+				var popupId = this.id + "_popup",
+					dropDownConstructor = lang.isString(this.dropDownClass) ?
+						lang.getObject(this.dropDownClass, false) : this.dropDownClass;
+				this.dropDown = new dropDownConstructor({
+					onChange: lang.hitch(this, this._selectOption),
+					id: popupId,
+					dir: this.dir,
+					textDir: this.textDir
+				});
+			}
+			this._lastInput = key; // Store exactly what was entered by the user.
+			this.inherited(arguments);
+		},
+
+		_getValueField: function(){
+			// summary:
+			//		Helper for postMixInProperties() to set this.value based on data inlined into the markup.
+			//		Returns the attribute name in the item (in dijit/form/_ComboBoxDataStore) to use as the value.
+			return this.searchAttr;
+		},
+
+		//////////// INITIALIZATION METHODS ///////////////////////////////////////
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			if(!this.store && this.srcNodeRef){
+				var srcNodeRef = this.srcNodeRef;
+				// if user didn't specify store, then assume there are option tags
+				this.store = new DataList({}, srcNodeRef);
+
+				// if there is no value set and there is an option list, set
+				// the value to the first value to be consistent with native Select
+				// Firefox and Safari set value
+				// IE6 and Opera set selectedIndex, which is automatically set
+				// by the selected attribute of an option tag
+				// IE6 does not set value, Opera sets value = selectedIndex
+				if(!("value" in this.params)){
+					var item = (this.item = this.store.fetchSelectedItem());
+					if(item){
+						var valueField = this._getValueField();
+						// remove getValue() for 2.0 (old dojo.data API)
+						this.value = this.store._oldAPI ? this.store.getValue(item, valueField) : item[valueField];
+					}
+				}
+			}
+		},
+
+		postCreate: function(){
+			// summary:
+			//		Subclasses must call this method from their postCreate() methods
+			// tags:
+			//		protected
+
+			// find any associated label element and add to ComboBox node.
+			var label = query('label[for="' + this.id + '"]');
+			if(label.length){
+				if(!label[0].id){
+					label[0].id = this.id + "_label";
+				}
+				this.domNode.setAttribute("aria-labelledby", label[0].id);
+
+			}
+			this.inherited(arguments);
+			aspect.after(this, "onSearch", lang.hitch(this, "_openResultList"), true);
+		},
+
+		_getMenuLabelFromItem: function(/*Item*/ item){
+			var label = this.labelFunc(item, this.store),
+				labelType = this.labelType;
+			// If labelType is not "text" we don't want to screw any markup ot whatever.
+			if(this.highlightMatch != "none" && this.labelType == "text" && this._lastInput){
+				label = this.doHighlight(label, this._lastInput);
+				labelType = "html";
+			}
+			return {html: labelType == "html", label: label};
+		},
+
+		doHighlight: function(/*String*/ label, /*String*/ find){
+			// summary:
+			//		Highlights the string entered by the user in the menu.  By default this
+			//		highlights the first occurrence found. Override this method
+			//		to implement your custom highlighting.
+			// tags:
+			//		protected
+
+			var
+			// Add (g)lobal modifier when this.highlightMatch == "all" and (i)gnorecase when this.ignoreCase == true
+				modifiers = (this.ignoreCase ? "i" : "") + (this.highlightMatch == "all" ? "g" : ""),
+				i = this.queryExpr.indexOf("${0}");
+			find = regexp.escapeString(find); // escape regexp special chars
+			//If < appears in label, and user presses t, we don't want to highlight the t in the escaped "&lt;"
+			//first find out every occurrences of "find", wrap each occurrence in a pair of "\uFFFF" characters (which
+			//should not appear in any string). then html escape the whole string, and replace '\uFFFF" with the
+			//HTML highlight markup.
+			return this._escapeHtml(label.replace(
+				new RegExp((i == 0 ? "^" : "") + "(" + find + ")" + (i == (this.queryExpr.length - 4) ? "$" : ""), modifiers),
+				'\uFFFF$1\uFFFF')).replace(
+				/\uFFFF([^\uFFFF]+)\uFFFF/g, '<span class="dijitComboBoxHighlightMatch">$1</span>'
+			); // returns String, (almost) valid HTML (entities encoded)
+		},
+
+		_escapeHtml: function(/*String*/ str){
+			// TODO Should become dojo.html.entities(), when exists use instead
+			// summary:
+			//		Adds escape sequences for special characters in XML: `&<>"'`
+			str = String(str).replace(/&/gm, "&amp;").replace(/</gm, "&lt;")
+				.replace(/>/gm, "&gt;").replace(/"/gm, "&quot;"); //balance"
+			return str; // string
+		},
+
+		reset: function(){
+			// Overrides the _FormWidget.reset().
+			// Additionally reset the .item (to clean up).
+			this.item = null;
+			this.inherited(arguments);
+		},
+
+		labelFunc: function(item, store){
+			// summary:
+			//		Computes the label to display based on the dojo.data store item.
+			// item: Object
+			//		The item from the store
+			// store: dojo/store/api/Store
+			//		The store.
+			// returns:
+			//		The label that the ComboBox should display
+			// tags:
+			//		private
+
+			// Use toString() because XMLStore returns an XMLItem whereas this
+			// method is expected to return a String (#9354).
+			// Remove getValue() for 2.0 (old dojo.data API)
+			return (store._oldAPI ? store.getValue(item, this.labelAttr || this.searchAttr) :
+				item[this.labelAttr || this.searchAttr]).toString(); // String
+		},
+
+		_setValueAttr: function(/*String*/ value, /*Boolean?*/ priorityChange, /*String?*/ displayedValue, /*item?*/ item){
+			// summary:
+			//		Hook so set('value', value) works.
+			// description:
+			//		Sets the value of the select.
+			this._set("item", item || null); // value not looked up in store
+			if(value == null /* or undefined */){
+				value = '';
+			} // null translates to blank
+			this.inherited(arguments);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		AutoCompleterMixin.extend({
+			_setTextDirAttr: function(/*String*/ textDir){
+				// summary:
+				//		Setter for textDir, needed for the dropDown's textDir update.
+				// description:
+				//		Users shouldn't call this function; they should be calling
+				//		set('textDir', value)
+				// tags:
+				//		private
+				this.inherited(arguments);
+				// update the drop down also (_ComboBoxMenuMixin)
+				if(this.dropDown){
+					this.dropDown._set("textDir", textDir);
+				}
+			}
+		});
+	}
+
+	return AutoCompleterMixin;
+});
+
+},
+'dijit/form/DataList':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.byId
+	"dojo/_base/lang", // lang.trim
+	"dojo/query", // query
+	"dojo/store/Memory",
+	"../registry"	// registry.add registry.remove
+], function(declare, dom, lang, query, MemoryStore, registry){
+
+	// module:
+	//		dijit/form/DataList
+
+	function toItem(/*DOMNode*/ option){
+		// summary:
+		//		Convert `<option>` node to hash
+		return {
+			id: option.value,
+			value: option.value,
+			name: lang.trim(option.innerText || option.textContent || '')
+		};
+	}
+
+	return declare("dijit.form.DataList", MemoryStore, {
+		// summary:
+		//		Inefficient but small data store specialized for inlined data via OPTION tags
+		//
+		// description:
+		//		Provides a store for inlined data like:
+		//
+		//	|	<datalist>
+		//	|		<option value="AL">Alabama</option>
+		//	|		...
+
+		constructor: function(params, srcNodeRef){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String
+			//		Attach widget to this DOM node.
+
+			// store pointer to original DOM tree
+			this.domNode = dom.byId(srcNodeRef);
+
+			lang.mixin(this, params);
+			if(this.id){
+				registry.add(this); // add to registry so it can be easily found by id
+			}
+			this.domNode.style.display = "none";
+
+			this.inherited(arguments, [{
+				data: query("option", this.domNode).map(toItem)
+			}]);
+		},
+
+		destroy: function(){
+			registry.remove(this.id);
+		},
+
+		fetchSelectedItem: function(){
+			// summary:
+			//		Get the option marked as selected, like `<option selected>`.
+			//		Not part of dojo.data API.
+			var option = query("> option[selected]", this.domNode)[0] || query("> option", this.domNode)[0];
+			return option && toItem(option);
+		}
+	});
+});
+
+},
+'dijit/form/_SearchMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/keys", // keys
+	"dojo/_base/lang", // lang.clone lang.hitch
+	"dojo/query", // query
+	"dojo/string", // string.substitute
+	"dojo/when",
+	"../registry"	// registry.byId
+], function(declare, keys, lang, query, string, when, registry){
+
+	// module:
+	//		dijit/form/_SearchMixin
+
+
+	return declare("dijit.form._SearchMixin", null, {
+		// summary:
+		//		A mixin that implements the base functionality to search a store based upon user-entered text such as
+		//		with `dijit/form/ComboBox` or `dijit/form/FilteringSelect`
+		// tags:
+		//		protected
+
+		// pageSize: Integer
+		//		Argument to data provider.
+		//		Specifies maximum number of search results to return per query
+		pageSize: Infinity,
+
+		// store: [const] dojo/store/api/Store
+		//		Reference to data provider object used by this ComboBox.
+		//		The store must accept an object hash of properties for its query. See `query` and `queryExpr` for details.
+		store: null,
+
+		// fetchProperties: Object
+		//		Mixin to the store's fetch.
+		//		For example, to set the sort order of the ComboBox menu, pass:
+		//	|	{ sort: [{attribute:"name",descending: true}] }
+		//		To override the default queryOptions so that deep=false, do:
+		//	|	{ queryOptions: {ignoreCase: true, deep: false} }
+		fetchProperties:{},
+
+		// query: Object
+		//		A query that can be passed to `store` to initially filter the items.
+		//		ComboBox overwrites any reference to the `searchAttr` and sets it to the `queryExpr` with the user's input substituted.
+		query: {},
+
+		// list: [const] String
+		//		Alternate to specifying a store.  Id of a dijit/form/DataList widget.
+		list: "",
+		_setListAttr: function(list){
+			// Avoid having list applied to the DOM node, since it has native meaning in modern browsers
+			this._set("list", list);
+		},
+
+		// searchDelay: Integer
+		//		Delay in milliseconds between when user types something and we start
+		//		searching based on that value
+		searchDelay: 200,
+
+		// searchAttr: String
+		//		Search for items in the data store where this attribute (in the item)
+		//		matches what the user typed
+		searchAttr: "name",
+
+		// queryExpr: String
+		//		This specifies what query is sent to the data store,
+		//		based on what the user has typed.  Changing this expression will modify
+		//		whether the results are only exact matches, a "starting with" match,
+		//		etc.
+		//		`${0}` will be substituted for the user text.
+		//		`*` is used for wildcards.
+		//		`${0}*` means "starts with", `*${0}*` means "contains", `${0}` means "is"
+		queryExpr: "${0}*",
+
+		// ignoreCase: Boolean
+		//		Set true if the query should ignore case when matching possible items
+		ignoreCase: true,
+
+		_patternToRegExp: function(pattern){
+			// summary:
+			//		Helper function to convert a simple pattern to a regular expression for matching.
+			// description:
+			//		Returns a regular expression object that conforms to the defined conversion rules.
+			//		For example:
+			//
+			//		- ca*   -> /^ca.*$/
+			//		- *ca*  -> /^.*ca.*$/
+			//		- *c\*a*  -> /^.*c\*a.*$/
+			//		- *c\*a?*  -> /^.*c\*a..*$/
+			//
+			//		and so on.
+			// pattern: string
+			//		A simple matching pattern to convert that follows basic rules:
+			//
+			//		- * Means match anything, so ca* means match anything starting with ca
+			//		- ? Means match single character.  So, b?b will match to bob and bab, and so on.
+			//		- \ is an escape character.  So for example, \* means do not treat * as a match, but literal character *.
+			//
+			//		To use a \ as a character in the string, it must be escaped.  So in the pattern it should be
+			//		represented by \\ to be treated as an ordinary \ character instead of an escape.
+
+			return new RegExp("^" + pattern.replace(/(\\.)|(\*)|(\?)|\W/g, function(str, literal, star, question){
+				return star ? ".*" : question ? "." : literal ? literal : "\\" + str;
+			}) + "$", this.ignoreCase ? "mi" : "m");
+		},
+
+		_abortQuery: function(){
+			// stop in-progress query
+			if(this.searchTimer){
+				this.searchTimer = this.searchTimer.remove();
+			}
+			if(this._queryDeferHandle){
+				this._queryDeferHandle = this._queryDeferHandle.remove();
+			}
+			if(this._fetchHandle){
+				if(this._fetchHandle.abort){
+					this._cancelingQuery = true;
+					this._fetchHandle.abort();
+					this._cancelingQuery = false;
+				}
+				if(this._fetchHandle.cancel){
+					this._cancelingQuery = true;
+					this._fetchHandle.cancel();
+					this._cancelingQuery = false;
+				}
+				this._fetchHandle = null;
+			}
+		},
+
+		_processInput: function(/*Event*/ evt){
+			// summary:
+			//		Handles input (keyboard/paste) events
+			if(this.disabled || this.readOnly){ return; }
+			var key = evt.charOrCode;
+
+			// except for cutting/pasting case - ctrl + x/v
+			if("type" in evt && evt.type.substring(0,3) == "key" && (evt.altKey || ((evt.ctrlKey || evt.metaKey) && (key != 'x' && key != 'v')) || key == keys.SHIFT)){
+				return; // throw out weird key combinations and spurious events
+			}
+
+			var doSearch = false;
+			this._prev_key_backspace = false;
+
+			switch(key){
+				case keys.DELETE:
+				case keys.BACKSPACE:
+					this._prev_key_backspace = true;
+					this._maskValidSubsetError = true;
+					doSearch = true;
+					break;
+
+				default:
+					// Non char keys (F1-F12 etc..) shouldn't start a search..
+					// Ascii characters and IME input (Chinese, Japanese etc.) should.
+					//IME input produces keycode == 229.
+					doSearch = typeof key == 'string' || key == 229;
+			}
+			if(doSearch){
+				// need to wait a tad before start search so that the event
+				// bubbles through DOM and we have value visible
+				if(!this.store){
+					this.onSearch();
+				}else{
+					this.searchTimer = this.defer("_startSearchFromInput", 1);
+				}
+			}
+		},
+
+		onSearch: function(/*===== results, query, options =====*/){
+			// summary:
+			//		Callback when a search completes.
+			//
+			// results: Object
+			//		An array of items from the originating _SearchMixin's store.
+			//
+			// query: Object
+			//		A copy of the originating _SearchMixin's query property.
+			//
+			// options: Object
+			//		The additional parameters sent to the originating _SearchMixin's store, including: start, count, queryOptions.
+			//
+			// tags:
+			//		callback
+		},
+
+		_startSearchFromInput: function(){
+			this._startSearch(this.focusNode.value);
+		},
+
+		_startSearch: function(/*String*/ text){
+			// summary:
+			//		Starts a search for elements matching text (text=="" means to return all items),
+			//		and calls onSearch(...) when the search completes, to display the results.
+
+			this._abortQuery();
+			var
+				_this = this,
+				// Setup parameters to be passed to store.query().
+				// Create a new query to prevent accidentally querying for a hidden
+				// value from FilteringSelect's keyField
+				query = lang.clone(this.query), // #5970
+				options = {
+					start: 0,
+					count: this.pageSize,
+					queryOptions: {		// remove for 2.0
+						ignoreCase: this.ignoreCase,
+						deep: true
+					}
+				},
+				qs = string.substitute(this.queryExpr, [text.replace(/([\\\*\?])/g, "\\$1")]),
+				q,
+				startQuery = function(){
+					var resPromise = _this._fetchHandle = _this.store.query(query, options);
+					if(_this.disabled || _this.readOnly || (q !== _this._lastQuery)){
+						return;
+					} // avoid getting unwanted notify
+					when(resPromise, function(res){
+						_this._fetchHandle = null;
+						if(!_this.disabled && !_this.readOnly && (q === _this._lastQuery)){ // avoid getting unwanted notify
+							when(resPromise.total, function(total){
+								res.total = total;
+								var pageSize = _this.pageSize;
+								if(isNaN(pageSize) || pageSize > res.total){ pageSize = res.total; }
+								// Setup method to fetching the next page of results
+								res.nextPage = function(direction){
+									//	tell callback the direction of the paging so the screen
+									//	reader knows which menu option to shout
+									options.direction = direction = direction !== false;
+									options.count = pageSize;
+									if(direction){
+										options.start += res.length;
+										if(options.start >= res.total){
+											options.count = 0;
+										}
+									}else{
+										options.start -= pageSize;
+										if(options.start < 0){
+											options.count = Math.max(pageSize + options.start, 0);
+											options.start = 0;
+										}
+									}
+									if(options.count <= 0){
+										res.length = 0;
+										_this.onSearch(res, query, options);
+									}else{
+										startQuery();
+									}
+								};
+								_this.onSearch(res, query, options);
+							});
+						}
+					}, function(err){
+						_this._fetchHandle = null;
+						if(!_this._cancelingQuery){	// don't treat canceled query as an error
+							 0 && console.error(_this.declaredClass + ' ' + err.toString());
+						}
+					});
+				};
+
+			lang.mixin(options, this.fetchProperties);
+
+			// Generate query
+			if(this.store._oldAPI){
+				// remove this branch for 2.0
+				q = qs;
+			}else{
+				// Query on searchAttr is a regex for benefit of dojo/store/Memory,
+				// but with a toString() method to help dojo/store/JsonRest.
+				// Search string like "Co*" converted to regex like /^Co.*$/i.
+				q = this._patternToRegExp(qs);
+				q.toString = function(){ return qs; };
+			}
+
+			// set _lastQuery, *then* start the timeout
+			// otherwise, if the user types and the last query returns before the timeout,
+			// _lastQuery won't be set and their input gets rewritten
+			this._lastQuery = query[this.searchAttr] = q;
+			this._queryDeferHandle = this.defer(startQuery, this.searchDelay);
+		},
+
+		//////////// INITIALIZATION METHODS ///////////////////////////////////////
+
+		constructor: function(){
+			this.query={};
+			this.fetchProperties={};
+		},
+
+		postMixInProperties: function(){
+			if(!this.store){
+				var list = this.list;
+				if(list){
+					this.store = registry.byId(list);
+				}
+			}
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
+'dijit/form/_ComboBoxMenu':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.add domClass.remove
+	"dojo/dom-style", // domStyle.get
+	"dojo/keys", // keys.DOWN_ARROW keys.PAGE_DOWN keys.PAGE_UP keys.UP_ARROW
+	"../_WidgetBase",
+	"../_TemplatedMixin",
+	"./_ComboBoxMenuMixin",
+	"./_ListMouseMixin"
+], function(declare, domClass, domStyle, keys,
+			_WidgetBase, _TemplatedMixin, _ComboBoxMenuMixin, _ListMouseMixin){
+
+
+	// module:
+	//		dijit/form/_ComboBoxMenu
+
+	return declare("dijit.form._ComboBoxMenu",[_WidgetBase, _TemplatedMixin, _ListMouseMixin, _ComboBoxMenuMixin], {
+		// summary:
+		//		Focus-less menu for internal use in `dijit/form/ComboBox`
+		//		Abstract methods that must be defined externally:
+		//
+		//		- onChange: item was explicitly chosen (mousedown somewhere on the menu and mouseup somewhere on the menu)
+		//		- onPage: next(1) or previous(-1) button pressed
+		// tags:
+		//		private
+
+		// TODO for 2.0 or earlier: stop putting stuff inside this.containerNode.   Switch to using this.domNode
+		// or a different attach point.    See _TemplatedMixin::searchContainerNode.
+		templateString: "<div class='dijitReset dijitMenu' data-dojo-attach-point='containerNode' style='overflow: auto; overflow-x: hidden;' role='listbox'>"
+				+"<div class='dijitMenuItem dijitMenuPreviousButton' data-dojo-attach-point='previousButton' role='option'></div>"
+				+"<div class='dijitMenuItem dijitMenuNextButton' data-dojo-attach-point='nextButton' role='option'></div>"
+				+"</div>",
+
+		baseClass: "dijitComboBoxMenu",
+
+		postCreate: function(){
+			this.inherited(arguments);
+			if(!this.isLeftToRight()){
+				domClass.add(this.previousButton, "dijitMenuItemRtl");
+				domClass.add(this.nextButton, "dijitMenuItemRtl");
+			}
+			this.containerNode.setAttribute("role","listbox");
+		},
+
+		_createMenuItem: function(){
+			// note: not using domConstruct.create() because need to specify document
+			var item = this.ownerDocument.createElement("div");
+			item.className = "dijitReset dijitMenuItem" +(this.isLeftToRight() ? "" : " dijitMenuItemRtl");
+			item.setAttribute("role", "option");
+			return item;
+		},
+
+		onHover: function(/*DomNode*/ node){
+			// summary:
+			//		Add hover CSS
+			domClass.add(node, "dijitMenuItemHover");
+		},
+
+		onUnhover: function(/*DomNode*/ node){
+			// summary:
+			//		Remove hover CSS
+			domClass.remove(node, "dijitMenuItemHover");
+		},
+
+		onSelect: function(/*DomNode*/ node){
+			// summary:
+			//		Add selected CSS
+			domClass.add(node, "dijitMenuItemSelected");
+		},
+
+		onDeselect: function(/*DomNode*/ node){
+			// summary:
+			//		Remove selected CSS
+			domClass.remove(node, "dijitMenuItemSelected");
+		},
+
+		_page: function(/*Boolean*/ up){
+			// summary:
+			//		Handles page-up and page-down keypresses
+
+			var scrollamount = 0;
+			var oldscroll = this.domNode.scrollTop;
+			var height = domStyle.get(this.domNode, "height");
+			// if no item is highlighted, highlight the first option
+			if(!this.getHighlightedOption()){
+				this.selectNextNode();
+			}
+			while(scrollamount<height){
+				var highlighted_option = this.getHighlightedOption();
+				if(up){
+					// stop at option 1
+					if(!highlighted_option.previousSibling ||
+						highlighted_option.previousSibling.style.display == "none"){
+						break;
+					}
+					this.selectPreviousNode();
+				}else{
+					// stop at last option
+					if(!highlighted_option.nextSibling ||
+						highlighted_option.nextSibling.style.display == "none"){
+						break;
+					}
+					this.selectNextNode();
+				}
+				// going backwards
+				var newscroll = this.domNode.scrollTop;
+				scrollamount += (newscroll-oldscroll)*(up ? -1:1);
+				oldscroll = newscroll;
+			}
+		},
+
+		handleKey: function(evt){
+			// summary:
+			//		Handle keystroke event forwarded from ComboBox, returning false if it's
+			//		a keystroke I recognize and process, true otherwise.
+			switch(evt.keyCode){
+				case keys.DOWN_ARROW:
+					this.selectNextNode();
+					return false;
+				case keys.PAGE_DOWN:
+					this._page(false);
+					return false;
+				case keys.UP_ARROW:
+					this.selectPreviousNode();
+					return false;
+				case keys.PAGE_UP:
+					this._page(true);
+					return false;
+				default:
+					return true;
+			}
+		}
+	});
+});
+
+},
+'dijit/form/_ComboBoxMenuMixin':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/has",
+	"dojo/i18n", // i18n.getLocalization
+	"dojo/i18n!./nls/ComboBox"
+], function(array, declare, domAttr, has, i18n){
+
+	// module:
+	//		dijit/form/_ComboBoxMenuMixin
+
+	var ComboBoxMenuMixin = declare("dijit.form._ComboBoxMenuMixin" + (has("dojo-bidi") ? "_NoBidi" : ""), null, {
+		// summary:
+		//		Focus-less menu for internal use in `dijit/form/ComboBox`
+		// tags:
+		//		private
+
+		// _messages: Object
+		//		Holds "next" and "previous" text for paging buttons on drop down
+		_messages: null,
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			this._messages = i18n.getLocalization("dijit.form", "ComboBox", this.lang);
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			// fill in template with i18n messages
+			this.previousButton.innerHTML = this._messages["previousMessage"];
+			this.nextButton.innerHTML = this._messages["nextMessage"];
+		},
+
+		_setValueAttr: function(/*Object*/ value){
+			this._set("value", value);
+			this.onChange(value);
+		},
+
+		onClick: function(/*DomNode*/ node){
+			if(node == this.previousButton){
+				this._setSelectedAttr(null);
+				this.onPage(-1);
+			}else if(node == this.nextButton){
+				this._setSelectedAttr(null);
+				this.onPage(1);
+			}else{
+				this.onChange(node);
+			}
+		},
+
+		// stubs
+		onChange: function(/*Number*/ /*===== direction =====*/){
+			// summary:
+			//		Notifies ComboBox/FilteringSelect that user selected an option.
+			// tags:
+			//		callback
+		},
+
+		onPage: function(/*Number*/ /*===== direction =====*/){
+			// summary:
+			//		Notifies ComboBox/FilteringSelect that user clicked to advance to next/previous page.
+			// tags:
+			//		callback
+		},
+
+		onClose: function(){
+			// summary:
+			//		Callback from dijit.popup code to this widget, notifying it that it closed
+			// tags:
+			//		private
+			this._setSelectedAttr(null);
+		},
+
+		_createOption: function(/*Object*/ item, labelFunc){
+			// summary:
+			//		Creates an option to appear on the popup menu subclassed by
+			//		`dijit/form/FilteringSelect`.
+
+			var menuitem = this._createMenuItem();
+			var labelObject = labelFunc(item);
+			if(labelObject.html){
+				menuitem.innerHTML = labelObject.label;
+			}else{
+				menuitem.appendChild(
+					menuitem.ownerDocument.createTextNode(labelObject.label)
+				);
+			}
+			// #3250: in blank options, assign a normal height
+			if(menuitem.innerHTML == ""){
+				menuitem.innerHTML = "&#160;";	// &nbsp;
+			}
+
+			return menuitem;
+		},
+
+		createOptions: function(results, options, labelFunc){
+			// summary:
+			//		Fills in the items in the drop down list
+			// results:
+			//		Array of items
+			// options:
+			//		The options to the query function of the store
+			//
+			// labelFunc:
+			//		Function to produce a label in the drop down list from a dojo.data item
+
+			this.items = results;
+
+			// display "Previous . . ." button
+			this.previousButton.style.display = (options.start == 0) ? "none" : "";
+			domAttr.set(this.previousButton, "id", this.id + "_prev");
+			// create options using _createOption function defined by parent
+			// ComboBox (or FilteringSelect) class
+			// #2309:
+			//		iterate over cache nondestructively
+			array.forEach(results, function(item, i){
+				var menuitem = this._createOption(item, labelFunc);
+				menuitem.setAttribute("item", i);	// index to this.items; use indirection to avoid mem leak
+				domAttr.set(menuitem, "id", this.id + i);
+				this.nextButton.parentNode.insertBefore(menuitem, this.nextButton);
+			}, this);
+			// display "Next . . ." button
+			var displayMore = false;
+			// Try to determine if we should show 'more'...
+			if(results.total && !results.total.then && results.total != -1){
+				if((options.start + options.count) < results.total){
+					displayMore = true;
+				}else if((options.start + options.count) > results.total && options.count == results.length){
+					// Weird return from a data store, where a start + count > maxOptions
+					// implies maxOptions isn't really valid and we have to go into faking it.
+					// And more or less assume more if count == results.length
+					displayMore = true;
+				}
+			}else if(options.count == results.length){
+				//Don't know the size, so we do the best we can based off count alone.
+				//So, if we have an exact match to count, assume more.
+				displayMore = true;
+			}
+
+			this.nextButton.style.display = displayMore ? "" : "none";
+			domAttr.set(this.nextButton, "id", this.id + "_next");
+		},
+
+		clearResultList: function(){
+			// summary:
+			//		Clears the entries in the drop down list, but of course keeps the previous and next buttons.
+			var container = this.containerNode;
+			while(container.childNodes.length > 2){
+				container.removeChild(container.childNodes[container.childNodes.length - 2]);
+			}
+			this._setSelectedAttr(null);
+		},
+
+		highlightFirstOption: function(){
+			// summary:
+			//		Highlight the first real item in the list (not Previous Choices).
+			this.selectFirstNode();
+		},
+
+		highlightLastOption: function(){
+			// summary:
+			//		Highlight the last real item in the list (not More Choices).
+			this.selectLastNode();
+		},
+
+		selectFirstNode: function(){
+			this.inherited(arguments);
+			if(this.getHighlightedOption() == this.previousButton){
+				this.selectNextNode();
+			}
+		},
+
+		selectLastNode: function(){
+			this.inherited(arguments);
+			if(this.getHighlightedOption() == this.nextButton){
+				this.selectPreviousNode();
+			}
+		},
+
+		getHighlightedOption: function(){
+			return this.selected;
+		}
+	});
+
+	if(has("dojo-bidi")){
+		ComboBoxMenuMixin = declare("dijit.form._ComboBoxMenuMixin", ComboBoxMenuMixin, {
+			_createOption: function(){
+				var menuitem = this.inherited(arguments);
+
+				// update menuitem.dir if BidiSupport was required
+				this.applyTextDir(menuitem);
+
+				return menuitem;
+			}
+		});
+	}
+
+	return ComboBoxMenuMixin;
+});
+
+},
+'dijit/form/_ListMouseMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/on",
+	"dojo/touch",
+	"./_ListBase"
+], function(declare, on, touch, _ListBase){
+
+	// module:
+	//		dijit/form/_ListMouseMixin
+
+	return declare("dijit.form._ListMouseMixin", _ListBase, {
+		// summary:
+		//		A mixin to handle mouse or touch events for a focus-less menu
+		//		Abstract methods that must be defined externally:
+		//
+		//		- onClick: item was chosen (mousedown somewhere on the menu and mouseup somewhere on the menu)
+		// tags:
+		//		private
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// Add flag to use normalized click handling from dojo/touch
+			this.domNode.dojoClick = true;
+
+			this._listConnect("click", "_onClick");
+			this._listConnect("mousedown", "_onMouseDown");
+			this._listConnect("mouseup", "_onMouseUp");
+			this._listConnect("mouseover", "_onMouseOver");
+			this._listConnect("mouseout", "_onMouseOut");
+		},
+
+		_onClick: function(/*Event*/ evt, /*DomNode*/ target){
+			this._setSelectedAttr(target, false);
+			if(this._deferredClick){
+				this._deferredClick.remove();
+			}
+			this._deferredClick = this.defer(function(){
+				this._deferredClick = null;
+				this.onClick(target);
+			});
+		},
+
+		_onMouseDown: function(/*Event*/ evt, /*DomNode*/ target){
+			if(this._hoveredNode){
+				this.onUnhover(this._hoveredNode);
+				this._hoveredNode = null;
+			}
+			this._isDragging = true;
+			this._setSelectedAttr(target, false);
+		},
+
+		_onMouseUp: function(/*Event*/ evt, /*DomNode*/ target){
+			this._isDragging = false;
+			var selectedNode = this.selected;
+			var hoveredNode = this._hoveredNode;
+			if(selectedNode && target == selectedNode){
+				this.defer(function(){
+					this._onClick(evt, selectedNode);
+				});
+			}else if(hoveredNode){ // drag to select
+				this.defer(function(){
+					this._onClick(evt, hoveredNode);
+				});
+			}
+		},
+
+		_onMouseOut: function(/*Event*/ evt, /*DomNode*/ target){
+			if(this._hoveredNode){
+				this.onUnhover(this._hoveredNode);
+				this._hoveredNode = null;
+			}
+			if(this._isDragging){
+				this._cancelDrag = (new Date()).getTime() + 1000; // cancel in 1 second if no _onMouseOver fires
+			}
+		},
+
+		_onMouseOver: function(/*Event*/ evt, /*DomNode*/ target){
+			if(this._cancelDrag){
+				var time = (new Date()).getTime();
+				if(time > this._cancelDrag){
+					this._isDragging = false;
+				}
+				this._cancelDrag = null;
+			}
+			this._hoveredNode = target;
+			this.onHover(target);
+			if(this._isDragging){
+				this._setSelectedAttr(target, false);
+			}
+		}
+	});
+});
+
+},
+'dijit/form/_ListBase':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/on",
+	"dojo/window" // winUtils.scrollIntoView
+], function(declare, on, winUtils){
+
+	// module:
+	//		dijit/form/_ListBase
+
+	return declare("dijit.form._ListBase", null, {
+		// summary:
+		//		Focus-less menu to handle UI events consistently.
+		//		Abstract methods that must be defined externally:
+		//
+		//		- onSelect: item is active (mousedown but not yet mouseup, or keyboard arrow selected but no Enter)
+		//		- onDeselect:  cancels onSelect
+		// tags:
+		//		private
+
+		// selected: DOMNode
+		//		currently selected node
+		selected: null,
+
+		_listConnect: function(/*String|Function*/ eventType, /*String*/ callbackFuncName){
+			// summary:
+			//		Connects 'containerNode' to specified method of this object
+			//		and automatically registers for 'disconnect' on widget destroy.
+			// description:
+			//		Provide widget-specific analog to 'connect'.
+			//		The callback function is called with the normal event object,
+			//		but also a second parameter is passed that indicates which list item
+			//		actually received the event.
+			// returns:
+			//		A handle that can be passed to `disconnect` in order to disconnect
+			//		before the widget is destroyed.
+			// tags:
+			//		private
+
+			var self = this;
+			return self.own(on(self.containerNode,
+				on.selector(
+					function(eventTarget, selector, target){
+						return eventTarget.parentNode == target;
+					},
+					eventType
+				),
+				function(evt){
+					self[callbackFuncName](evt, this);
+				}
+			));
+		},
+
+		selectFirstNode: function(){
+			// summary:
+			//		Select the first displayed item in the list.
+			var first = this.containerNode.firstChild;
+			while(first && first.style.display == "none"){
+				first = first.nextSibling;
+			}
+			this._setSelectedAttr(first, true);
+		},
+
+		selectLastNode: function(){
+			// summary:
+			//		Select the last displayed item in the list
+			var last = this.containerNode.lastChild;
+			while(last && last.style.display == "none"){
+				last = last.previousSibling;
+			}
+			this._setSelectedAttr(last, true);
+		},
+
+		selectNextNode: function(){
+			// summary:
+			//		Select the item just below the current selection.
+			//		If nothing selected, select first node.
+			var selectedNode = this.selected;
+			if(!selectedNode){
+				this.selectFirstNode();
+			}else{
+				var next = selectedNode.nextSibling;
+				while(next && next.style.display == "none"){
+					next = next.nextSibling;
+				}
+				if(!next){
+					this.selectFirstNode();
+				}else{
+					this._setSelectedAttr(next, true);
+				}
+			}
+		},
+
+		selectPreviousNode: function(){
+			// summary:
+			//		Select the item just above the current selection.
+			//		If nothing selected, select last node (if
+			//		you select Previous and try to keep scrolling up the list).
+			var selectedNode = this.selected;
+			if(!selectedNode){
+				this.selectLastNode();
+			}else{
+				var prev = selectedNode.previousSibling;
+				while(prev && prev.style.display == "none"){
+					prev = prev.previousSibling;
+				}
+				if(!prev){
+					this.selectLastNode();
+				}else{
+					this._setSelectedAttr(prev, true);
+				}
+			}
+		},
+
+		_setSelectedAttr: function(/*DomNode*/ node, /*Boolean*/ scroll){
+			// summary:
+			//		Does the actual select.
+			// node:
+			//		The option to select
+			// scroll:
+			//		If necessary, scroll node into view.  Set to false for mouse/touch to
+			//		avoid jumping problems on mobile/RTL, see https://bugs.dojotoolkit.org/ticket/17739.
+			if(this.selected != node){
+				var selectedNode = this.selected;
+				if(selectedNode){
+					this.onDeselect(selectedNode);
+				}
+				if(node){
+					if(scroll){
+						winUtils.scrollIntoView(node);
+					}
+					this.onSelect(node);
+				}
+				this._set("selected", node);
+			}else if(node){
+				this.onSelect(node);
+			}
+		}
+	});
+});
+
+},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
 'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
@@ -37962,21 +40139,21 @@ define([
 'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table style=\"width:100%\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div style=\"font-size:1.2em;font-weight:900;\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\"></div>\n\t\t\t\t\t\t<span data-dojo-attach-point=\"typeNode\"></span> &middot; <span data-dojo-attach-point=\"owner_idNode\"></span>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:.85em\">\n\t\t<div data-dojo-attach-point=\"idNode\"></div>\n\t\t<div data-dojo-attach-point=\"pathNode\"></div>\n\t\t<div>Created <span data-dojo-attach-point=\"creation_timeNode\"></span></div>\n\t</div> \n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table style=\"width:100%\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div style=\"font-size:1em;font-weight:900;\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t\t<span data-dojo-attach-point=\"typeNode\"></span> &middot; <span data-dojo-attach-point=\"owner_idNode\"></span>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:.85em\">\n\t\t<div data-dojo-attach-point=\"idNode\"></div>\n\t\t<div data-dojo-attach-point=\"pathNode\"></div>\n\t\t<div>Created <span data-dojo-attach-point=\"creation_timeNode\"></span></div>\n\t</div> \n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa fa-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"dijit/form/ValidationTextBox\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'Scientific name of the organism being annotated.',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div class=\"TitleSection\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RAST.</p>\n    </div>\n  \n\t<div style=\"width:300px;margin:auto;padding:10px; border-radius:4px; text-align:left;\">\n\t\t<div style=\"display:inline-block; padding:8px; border:1px solid #ddd;margin:auto\" class=\"formFieldsContainer\">\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div> \n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"11\">11</option>\n\t\t\t\t\t<option value=\"4\">4</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Domain</label><br>\n\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t</select>\n\t\t\t</div>\n\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div style=\"text-align:left;\">\n\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\t\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
-'url:p3/widget/templates/WorkspaceFilenameValidationTextBox.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"textBox\" data-dojo-type=\"dijit/form/ValidationTextBox\" data-dojo-attach-event=\"onChange:onTextBoxChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:90%\"/>&nbsp;<i style=\"color:green;\" class=\"fa fa-check fa-1x\" />\n</div>\n",
 'url:dijit/form/templates/ValidationTextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
+'url:dijit/form/templates/DropDownBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\"\n\trole=\"combobox\"\n\taria-haspopup=\"true\"\n\tdata-dojo-attach-point=\"_popupStateNode\"\n\t><div class='dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer'\n\t\tdata-dojo-attach-point=\"_buttonNode\" role=\"presentation\"\n\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"button presentation\" aria-hidden=\"true\"\n\t\t\t${_buttonInputDisabled}\n\t/></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' ${!nameAttrSetting} type=\"text\" autocomplete=\"off\"\n\t\t\tdata-dojo-attach-point=\"textbox,focusNode\" role=\"textbox\"\n\t/></div\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/core", [], 1);

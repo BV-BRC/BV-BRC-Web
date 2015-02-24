@@ -1,7 +1,6 @@
 define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
 
 	var dateFormatter =  function(obj,format){
-		console.log("dateFormatter: ", obj);
 		if (!obj || obj=="0001-01-01T00:00:00Z") { return "" }
 		if (typeof obj == "string") {
 			obj = new Date(Date.parse(obj));

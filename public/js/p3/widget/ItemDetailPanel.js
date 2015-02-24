@@ -1,25 +1,30 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template
+	Template,lang
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
 		"disabled":false,
 		templateString: Template,
 		item: null,
+		property_aliases: {
+			document_type: "type",
+			"organism_name": "name"
+		},
 		startup: function(){
 			var _self=this;
 			//if (this._started) { return; }
 			var currentIcon;
-			this.watch("item", function(prop,oldVal,item){
+			this.watch("item", lang.hitch(this,function(prop,oldVal,item){
 				console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon,currentIcon)
-				switch(item.type){
+				var t = item.document_type || item.type;
+				switch(t){
 					case "folder": 
 						domClass.add(_self.typeIcon,"fa fa-folder fa-3x")
 						currentIcon="fa fa-folder fa-3x";
@@ -52,13 +57,17 @@ define([
 				}	
 				Object.keys(item).forEach(function(key){
        	                		var val = item[key]; 
-					if (_self[key + "Node"]){
+					if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						_self[this.property_aliases[key] + "Node"].innerHTML=val;
+					}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
+						_self[this.property_aliases[key] + "Widget"].set("value",val);
+					}else if (_self[key + "Node"]){
 						_self[key+"Node"].innerHTML=val;
 					}else if (_self[key +"Widget"]){
 						_self[key+"Widget"].set("value",val);
 					}
-				});
-			})
+				},this);
+			}))
 			this.inherited(arguments);
 		}
 

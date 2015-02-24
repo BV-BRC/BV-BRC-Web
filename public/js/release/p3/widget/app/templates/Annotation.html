@@ -15,7 +15,7 @@
 
 			<div style="text-align:left;">
 				<label>Organism Name</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="scientific_name" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Scientific name of the organism being annotated.',missingMessage:'Scientific Name must be provided.',trim:true,placeHolder:'Bacillus Cereus'"></div>
+				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div> 
 			</div>
 
 			<div style="text-align:left;">
@@ -29,14 +29,14 @@
 			<div style="text-align:left;">
 				<label>Domain</label><br>
 				<select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-					<option value="bacteria">Bacteria</option>
-					<option value="archaea">Archaea</option>
+					<option value="Bacteria">Bacteria</option>
+					<option value="Archaea">Archaea</option>
 				</select>
 			</div>
 
 			<div style="text-align:left;">
 				<label>Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
+				<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
 			</div>
 			
 			<div style="text-align:left;">

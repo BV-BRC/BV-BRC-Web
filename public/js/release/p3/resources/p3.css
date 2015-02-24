@@ -5425,6 +5425,9 @@ background-color: #F0F1F3;
 .nonModal_underlay {
     display:none
 }
+.appField{
+width:300px;
+}
 .apptitle{
 margin-top:20px;
 margin-left:20px;
@@ -5464,6 +5467,15 @@ margin-top:5px;
 width: 100%;
 margin-top:5px;
 }
+.halfAppRow{
+width:150px;
+display:inline-block;
+}
+.half2AppRow{
+width:150px;
+display:inline-block;
+margin-left:10px;
+}
 .infobuttoninfo{
 overflow: auto;
 }
@@ -5477,7 +5489,7 @@ background-color: #F0F1F3;
 .appbox{
 background-color: #F0F1F3;
 margin: 0 0 10px 10px;
-width: auto;
+width: 340px;
 padding: 5px 0px 10px 10px;
 text-align: left;
 }
@@ -7902,6 +7914,7 @@ body.patric *:focus {
 	margin-bottom:6px;
 	margin-top:4px;
 	color: #fff;
+	margin-right:4px;
 }
 .ActionBar .fa:hover {
 	color: #000;
