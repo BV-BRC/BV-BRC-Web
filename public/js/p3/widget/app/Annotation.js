@@ -25,7 +25,7 @@ define([
 		onSuggestNameChange: function(val){
 			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				this._selfSet=true;	
-				this.output_nameWidget.set('value', val);
+				this.output_nameWidget.set('value',this.scientific_nameWidget.get('displayedValue'));
 			}
 		}
 
