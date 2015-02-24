@@ -16,7 +16,7 @@ define("p3/widget/WorkspaceBrowser", [
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","unspecified"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -67,7 +67,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 				switch (sel.type) {
 					case "genome_group":
-						Topic.publish("/navigate",{href:"/view/GenomeList"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
+						Topic.publish("/navigate",{href:"/view/GenomeGroup"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
 						break;
 					case "feature_group":
 						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
@@ -85,16 +85,49 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 
-			/*
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				console.log("Download Item Action", selection);
 			}, true);
-			*/
 
+			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
 				console.log("Replace Item Action", selection);
 				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
 			}, true);
+			*/
+
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+				console.log("Remove Items from Group", selection);
+				console.log("currentContainerWidget: ", this.currentContainerWidget);
+				var type = selection[0].document_type;
+				var idType = (type=="genome")?"genome_id":((type=="feature")?"feature_id":"document_id")
+				var objs = selection.map(function(s){
+					console.log('s: ', s, s.data);
+					return s[idType];
+				});
+	
+				var conf = "Are you sure you want to remove " + objs.length + " " + type + 
+					   ((objs.length>1)?"s":"") +
+					   " from this group?"
+				var _self=this;	
+				var dlg = new Confirmation({
+					content: conf,
+					onConfirm: function(evt){
+						//WorkspaceManager.deleteObject(objs,true, false);
+						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
+					}
+				})
+				dlg.startup()
+				dlg.show();
+	
+			},true);
+
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+				console.log("Remove Items from Group", selection);
+			},true);
+			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
+				console.log("Remove Items from Group", selection);
+			},true);
 
 
 			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
@@ -171,17 +204,22 @@ define("p3/widget/WorkspaceBrowser", [
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeList");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeGroup");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
-					case "job_result":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
-						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+//					case "job_result":
+//						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
+//						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+//						break;
+					case "experiment_group":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
+						params.group = obj.path;
 						break;
+	
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
@@ -198,6 +236,7 @@ define("p3/widget/WorkspaceBrowser", [
 						console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
+						this.actionPanel.set("currentContainerWidget", newPanel);
 
 						if (newPanel.on) {
 						newPanel.on("select", lang.hitch(this,function(evt){

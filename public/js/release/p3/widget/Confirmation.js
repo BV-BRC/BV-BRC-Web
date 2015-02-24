@@ -32,12 +32,19 @@ define("p3/widget/Confirmation", [
 		_onCancel: function(){
 			this.onCancel();
 			this.hide();
-			this.destroy();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
 		},
 		_onSubmit: function(){
 			this.onConfirm();
 			this.hide();
-			this.destroy();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
+	
 		},
 		startup: function(){
 			this.inherited(arguments);

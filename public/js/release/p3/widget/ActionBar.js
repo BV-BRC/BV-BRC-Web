@@ -11,6 +11,17 @@ define("p3/widget/ActionBar", [
 			this._actions={}
 		},
 		selection: null,
+		currentContainerType: null,
+		currentContainerWidget: null,
+		_setCurrentContainerWidgetAttr: function(widget){
+			console.log("_set Current Container Widget: ", widget);
+			console.log("Widget: ", widget.containerType, widget);
+			
+			if (widget === this.currentContainerWidget) { return; }
+			this.currentContainerType=widget.containerType;
+			this.currentContainerWidget = widget;
+			this.set("selection", []);
+		},
 		_setSelectionAttr: function(sel){
 			console.log("setSelection", sel);
 			this.selection = sel;
@@ -19,7 +30,7 @@ define("p3/widget/ActionBar", [
 			var valid;
 			var selectionTypes = {}
 			sel.forEach(function(s){
-				selectionTypes[s.type]=true;
+				selectionTypes[s.document_type || s.type]=true;
 			});
 	
 			if (sel.length>1){
@@ -42,6 +53,19 @@ define("p3/widget/ActionBar", [
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
+				var validContainerTypes = act.options.validContainerTypes || null;
+
+				if (validContainerTypes){
+					console.log("checkValidContainerTypes", validContainerTypes);
+					console.log("Current ContainerType: ", this.currentContainerType);
+					console.log("Current Container Widget: ", this.currentContainerWidget);
+					if (!validContainerTypes.some(function(t){
+						return ((t=="*") || (t==this.currentContainerType))
+					},this)){
+						return false;
+					};		
+				}
+	
 				return validTypes.some(function(t){
 					return ((t=="*") || (types.indexOf(t)>=0));
 				});		

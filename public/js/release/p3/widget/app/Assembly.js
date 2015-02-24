@@ -30,7 +30,7 @@ define("p3/widget/app/Assembly", [
 			this.paramToAttachPt=["recipe","output_path","output_file","reference_assembly"];
 			this.singleToAttachPt=["single_end_libs"];
 		},
-
+ 
 		gethelp: function(){
 
 			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
@@ -107,6 +107,16 @@ define("p3/widget/app/Assembly", [
 					this.advicon.className="fa fa-caret-down fa-1";
 				}
 			}));
+
+			this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function(attachname){
+				this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function(/*anything*/ value, /*__Constraints*/ constraints){
+					return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
+					(!this._isEmpty(value)) &&
+					(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
+					var x=0;
+				}
+			)}));
+
 			this.interleaved.turnedOn=(this.interleaved.value=="true");
 			on(this.interleaved, 'change', lang.hitch(this, function(){
 				if(this.interleaved.turnedOn){
@@ -193,8 +203,8 @@ define("p3/widget/app/Assembly", [
 				}
 				if(req && (!target[attachname] || incomplete)){
 					if(browser_select){
-						//this[attachname]._set("state","Error");
-						this[attachname].set("message", "Need a file.");;
+						this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
+						this[attachname].searchBox._set("state","Error");
 						this[attachname].focus=true;
 					}
 					success=0;

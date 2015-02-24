@@ -243,7 +243,44 @@ define("p3/WorkspaceManager", [
 				})
 			}));
 		},
+		getObject: function(path,metadataOnly){
+			if (!path){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			path = decodeURIComponent(path);
+			console.log('getObjects: ', path, "metadata_only:", metadataOnly)
+			return Deferred.when(this.api("Workspace.get",[{objects: [path], metadata_only:metadataOnly}]), function(results){
+				if (!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]) {
+					throw new Error("Object not found: ");
+				}
+				console.log("results[0]", results[0])
+				var meta = {
+					name: results[0][0][0][0],
+					type: results[0][0][0][1],
+					path: results[0][0][0][2],
+					creation_time: results[0][0][0][3],
+					id: results[0][0][0][4],
+					owner_id: results[0][0][0][5],
+					size: results[0][0][0][6],
+					userMeta: results[0][0][0][7],
+					autoMeta: results[0][0][0][8],
+					user_permissions: results[0][0][0][9],
+					global_permission: results[0][0][0][10],
+					link_reference: results[0][0][0][11]
+				}
+				if (metadataOnly) { return meta; } 
 
+				var res = {
+					metadata: meta,
+					data: results[0][0][1]
+				}
+				console.log("getObjects() res", res);
+				return res;
+			});
+
+		},
+
+	
 		getObjects: function(paths,metadataOnly){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
