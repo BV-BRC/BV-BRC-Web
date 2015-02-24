@@ -13,6 +13,7 @@ define([
 		placeHolder:'Bacillus Cereus',
 		searchAttr: "taxon_name",
 		query: "?&select(taxon_name)",
+		queryExpr: "*${0}*",
 		store: null,
 
 		constructor: function(){
