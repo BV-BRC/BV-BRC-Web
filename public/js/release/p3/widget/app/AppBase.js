@@ -4,12 +4,12 @@ define("p3/widget/app/AppBase", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
-	"dijit/Dialog"
+	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,WorkspaceObjectSelector,
-	Dialog
+	Dialog,xhr,domConstruct,query,TooltipDialog,popup
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -28,6 +28,56 @@ define("p3/widget/app/AppBase", [
 
 		_setValueAttr: function(val){
 			this.value = val || window.App.activeWorkspacePath;
+		},
+
+		gethelp: function(){
+
+			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
+			   handleAs: "text"
+                        });		
+			helprequest.then(function(data){
+				var help_doc=domConstruct.toDom(data);
+			        var ibuttons=query(".infobutton");
+				ibuttons.forEach(function(item){
+					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					help_text.style.overflowY='auto';
+					help_text.style.maxHeight='400px';
+					if (dojo.hasClass(item, "dialoginfo")){
+						item.info_dialog = new Dialog({
+							content: help_text,
+							"class": 'nonModal',
+							draggable: true,
+							style: "max-width: 350px;"
+						});
+						item.open=false;
+						on(item, 'click', function(){
+							if(! item.open){
+								item.open=true;
+								item.info_dialog.show();
+							}
+							else{
+								item.open=false;
+								item.info_dialog.hide();
+							}	
+						});
+					}
+					else if (dojo.hasClass(item, "tooltipinfo")){
+						item.info_dialog = new TooltipDialog({
+							content: help_text,
+							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
+							onMouseLeave: function(){
+								popup.close(item.info_dialog);
+							}
+						});
+						on(item, 'mouseover', function(){
+							popup.open({
+								popup: item.info_dialog,
+								around: item
+							});
+						});
+					}	
+				});
+			});
 		},
 
 		startup: function(){
@@ -50,6 +100,7 @@ define("p3/widget/app/AppBase", [
 					domClass.add(this.cancelButton.domNode, "dijitHidden");
 			}
 
+			this.gethelp();
 			this._started=true;
 		},
 
