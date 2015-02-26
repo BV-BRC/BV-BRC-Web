@@ -66,10 +66,10 @@ define([
 			return this.userWorkspaces;
 		},
 
-		create: function(obj, createUploadNode){
+		create: function(obj, createUploadNode,overwrite){
 			var _self=this;
 			console.log("WorkspaceManager.create(): ", obj);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode}]), function(results){
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
                                         var res;
 					console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {
@@ -93,6 +93,53 @@ define([
                                 		Topic.publish("/refreshWorkspace",{});
                                                 return out;
                                         }
+			});
+		},
+
+		updateObject: function(meta, data){
+			return this.create({
+				path: meta.path,
+				type: meta.type,
+				name: meta.name,
+				meta: meta.userMeta||{},
+				content: JSON.stringify(data)
+			},false,true);
+		},
+
+		addToGroup: function(groupPath, idType, ids){
+			var _self=this;
+			return Deferred.when(this.getObject(groupPath), function(res){
+				if (typeof res.data == "string") {
+					res.data = JSON.parse(res.data);
+				}
+				if (res && res.data && res.data.id_list){
+					if (res.data.id_list[idType]){
+						res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
+					}else{
+						res.data.id_list[idType] = ids;	
+					}
+					return _self.updateObject(res.metadata,res.data)
+				}
+				return new Error("Unable to append to group.  Group structure incomplete");	
+			});
+		},
+
+		removeFromGroup: function(groupPath, idType, ids){
+			var _self=this;
+			return Deferred.when(this.getObject(groupPath), function(res){
+				if (typeof res.data == "string") {
+					res.data = JSON.parse(res.data);
+				}
+				console.log("Data: ",res.data);	
+				if (res && res.data && res.data.id_list && res.data.id_list[idType]){
+					console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
+						return !(ids.indexOf(id)>=0);
+					});
+					console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					return _self.updateObject(res.metadata,res.data)
+				}
+				return new Error("Unable to remove from group.  Group structure incomplete");	
 			});
 		},
 
@@ -243,6 +290,14 @@ define([
 				})
 			}));
 		},
+
+		downloadFile: function(path){
+			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
+				console.log("download Urls: ", urls);
+				window.open(urls[0],"Download");
+			});	
+		},
+
 		getObject: function(path,metadataOnly){
 			if (!path){
 				throw new Error("Invalid Path(s) to delete");

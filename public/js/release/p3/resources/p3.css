@@ -5489,7 +5489,7 @@ background-color: #F0F1F3;
 .appbox{
 background-color: #F0F1F3;
 margin: 0 0 10px 10px;
-width: 340px;
+width: auto;
 padding: 5px 0px 10px 10px;
 text-align: left;
 }

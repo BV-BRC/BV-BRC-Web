@@ -13,6 +13,9 @@ define("p3/widget/TaxonNameSelector", [
 		placeHolder:'Bacillus Cereus',
 		searchAttr: "taxon_name",
 		query: "?&select(taxon_name)",
+		queryExpr: "*${0}*",
+		highlightMatch: "all",
+		autoComplete: false,
 		store: null,
 
 		constructor: function(){
