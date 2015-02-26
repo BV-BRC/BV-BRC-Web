@@ -3,13 +3,13 @@ define([
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse", "dojo/request"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstruct,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
-	dom, popup, Tooltip, Dialog, TooltipDialog, children, xhr
+	dom, popup, Tooltip, Dialog, TooltipDialog, children
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
@@ -29,55 +29,6 @@ define([
 			this.singleToAttachPt=["single_end_libs"];
 		},
  
-		gethelp: function(){
-
-			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
-			   handleAs: "text"
-                        });		
-			helprequest.then(function(data){
-				var help_doc=domConstruct.toDom(data);
-			        var ibuttons=query(".infobutton");
-				ibuttons.forEach(function(item){
-					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
-					help_text.style.overflowY='auto';
-					help_text.style.maxHeight='400px';
-					if (dojo.hasClass(item, "dialoginfo")){
-						item.info_dialog = new Dialog({
-							content: help_text,
-							"class": 'nonModal',
-							draggable: true,
-							style: "max-width: 350px;"
-						});
-						item.open=false;
-						on(item, 'click', function(){
-							if(! item.open){
-								item.open=true;
-								item.info_dialog.show();
-							}
-							else{
-								item.open=false;
-								item.info_dialog.hide();
-							}	
-						});
-					}
-					else if (dojo.hasClass(item, "tooltipinfo")){
-						item.info_dialog = new TooltipDialog({
-							content: help_text,
-							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
-							onMouseLeave: function(){
-								popup.close(item.info_dialog);
-							}
-						});
-						on(item, 'mouseover', function(){
-							popup.open({
-								popup: item.info_dialog,
-								around: item
-							});
-						});
-					}	
-				});
-			});
-		},	
 
 
                 startup: function(){
@@ -131,7 +82,6 @@ define([
 				
 				
 
-			this.gethelp();
 
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
 			//this.read2.set('value',"/" +  window.App.user.id +"/home/");
