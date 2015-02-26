@@ -200,7 +200,7 @@ define("p3/widget/WorkspaceBrowser", [
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
 			console.log("Workspace: ", workspace, parts[1], val)
-			if (!window.App.user || !window.app.user.id){
+			if (!window.App.user || !window.App.user.id){
 				Topic.publish("/login");
 				return;
 			}
