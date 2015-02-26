@@ -3,13 +3,13 @@ define("p3/widget/WorkspaceBrowser", [
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
-	"./Confirmation"
+	"./Confirmation","./SelectionToGroup","dijit/Dialog"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
-	Confirmation
+	Confirmation,SelectionToGroup,Dialog
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -87,6 +87,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				console.log("Download Item Action", selection);
+				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
 			/*
@@ -99,6 +100,7 @@ define("p3/widget/WorkspaceBrowser", [
 			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
+					
 				var type = selection[0].document_type;
 				var idType = (type=="genome")?"genome_id":((type=="feature")?"feature_id":"document_id")
 				var objs = selection.map(function(s){
@@ -113,8 +115,11 @@ define("p3/widget/WorkspaceBrowser", [
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						//WorkspaceManager.deleteObject(objs,true, false);
 						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
+						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'),idType, objs), function(){
+							_self.currentContainerWidget.refresh();
+						});
+//						if (_self.currentContainerWidget.removeRows) { _self.currentContainerWidget.removeRows(objs) }
 					}
 				})
 				dlg.startup()
@@ -124,6 +129,12 @@ define("p3/widget/WorkspaceBrowser", [
 
 			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
 				console.log("Remove Items from Group", selection);
+				var dlg = new Dialog({title:"Copy Selection to Group"});
+				var stg = new SelectionToGroup();
+				domConstruct.place(stg.domNode, dlg.containerNode,"first");
+				stg.startup();
+				dlg.startup();
+				dlg.show();
 			},true);
 			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
 				console.log("Remove Items from Group", selection);
