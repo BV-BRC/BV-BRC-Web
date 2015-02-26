@@ -17,7 +17,6 @@ var defaults =  {
 		"pass":""
 	},
 
-	"cookieSecret": "patric3",
 	"cookieKey": "JSESSIONID",
 	"cookieDomain": ".patric.local",
 
