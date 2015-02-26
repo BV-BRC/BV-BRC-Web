@@ -167,12 +167,12 @@ define([
 
 			if (!this.api) { this.api={}}
 
-			if (this.workspaceAPI){
+			if (this.workspaceAPI && this.user){
 				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user?this.user.id:"");				
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
 
-			if (this.serviceAPI){
+			if (this.serviceAPI && this.user){
 				 0 && console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
@@ -940,17 +940,23 @@ define([
 					Router.go(msg.href);
 			})
 
-			on(document, "A.loginLink:click", function(evt){
+			var showAuthDlg = function(evt){
 				 0 && console.log("Login Link Click", evt);
-				evt.preventDefault();
-				evt.stopPropagation();
-				 0 && console.log("Target", evt.target.href);
-				 0 && console.log("Create Dialog()", evt.target.href);
-				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="' + evt.target.href + '"></iframe>'});
+				if (evt) {
+					evt.preventDefault();
+					evt.stopPropagation();
+					 0 && console.log("Target", evt.target.href);
+					 0 && console.log("Create Dialog()", evt.target.href);
+				}
+				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="/login"></iframe>'});
 				dlg.show();
-//				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
 				 0 && console.log("end loginLink Lcik");
-			});
+			};
+
+
+			on(document, "A.loginLink:click", showAuthDlg);
+			Topic.subscribe("/login", showAuthDlg);
+
 
 			on(document, ".navigationLink:click", function(evt){
 				 0 && console.log("NavigationLink Click", evt);
@@ -26181,6 +26187,10 @@ define([
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
 			 0 && console.log("Workspace: ", workspace, parts[1], val)
+			if (!window.App.user || !window.app.user.id){
+				Topic.publish("/login");
+				return;
+			}
 			if (!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{

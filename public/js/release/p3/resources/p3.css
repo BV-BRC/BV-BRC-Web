@@ -7953,3 +7953,9 @@ body.patric *:focus {
 	color: #aaa;
 	cursor: default ;
 }
+.claro .dojoDndItemOver {
+	background: #95b1ce;	
+}
+.claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
+	background: #bfd6eb;	
+}
