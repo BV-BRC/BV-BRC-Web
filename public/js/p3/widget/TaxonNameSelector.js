@@ -1,20 +1,21 @@
 define([
-	"dijit/form/ComboBox","dojo/_base/declare",
+	"dijit/form/FilteringSelect","dojo/_base/declare",
 	"dojo/store/JsonRest"
 ], function(
-	ComboBox, declare, 
+	FilteringSelect, declare, 
 	Store
 ){
 	
-	return declare([ComboBox], {
+	return declare([FilteringSelect], {
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Scientific name of the organism being annotated.',
 		missingMessage:'Scientific Name must be provided.',
 		placeHolder:'Bacillus Cereus',
 		searchAttr: "taxon_name",
 		query: "?&select(taxon_name)",
-		/*queryExpr: "*${0}*",
-		highlightMatch: "all",*/
+		queryExpr: "*${0}*",
+		highlightMatch: "all",
+		autoComplete: false,
 		store: null,
 
 		constructor: function(){
