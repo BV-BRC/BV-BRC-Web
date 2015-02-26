@@ -32858,7 +32858,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	 0 && console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -32874,7 +32875,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
@@ -36314,7 +36315,7 @@ define([
 
 		refreshWorkspaceItems: function(){
 			if (this._refreshing) { return; }
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type,true).then(lang.hitch(this,function(items){
 				delete this._refreshing;
 				 0 && console.log("Ws Objects: ", items);
 				var store= new Memory({data: items,idProperty:"path"});

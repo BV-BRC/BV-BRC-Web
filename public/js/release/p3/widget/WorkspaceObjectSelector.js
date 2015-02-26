@@ -267,7 +267,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 
 		refreshWorkspaceItems: function(){
 			if (this._refreshing) { return; }
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type,false).then(lang.hitch(this,function(items){
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type,true).then(lang.hitch(this,function(items){
 				delete this._refreshing;
 				console.log("Ws Objects: ", items);
 				var store= new Memory({data: items,idProperty:"path"});
