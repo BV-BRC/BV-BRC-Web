@@ -200,6 +200,10 @@ define([
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
 			console.log("Workspace: ", workspace, parts[1], val)
+			if (!window.App.user || !window.app.user.id){
+				Topic.publish("/login");
+				return;
+			}
 			if (!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{

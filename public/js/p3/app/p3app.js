@@ -165,12 +165,12 @@ define([
 
 			if (!this.api) { this.api={}}
 
-			if (this.workspaceAPI){
+			if (this.workspaceAPI && this.user){
 				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user?this.user.id:"");				
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
 
-			if (this.serviceAPI){
+			if (this.serviceAPI && this.user){
 				console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}

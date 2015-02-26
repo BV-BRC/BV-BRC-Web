@@ -124,17 +124,23 @@ define([
 					Router.go(msg.href);
 			})
 
-			on(document, "A.loginLink:click", function(evt){
+			var showAuthDlg = function(evt){
 				console.log("Login Link Click", evt);
-				evt.preventDefault();
-				evt.stopPropagation();
-				console.log("Target", evt.target.href);
-				console.log("Create Dialog()", evt.target.href);
-				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="' + evt.target.href + '"></iframe>'});
+				if (evt) {
+					evt.preventDefault();
+					evt.stopPropagation();
+					console.log("Target", evt.target.href);
+					console.log("Create Dialog()", evt.target.href);
+				}
+				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="/login"></iframe>'});
 				dlg.show();
-//				_self.loginWindow = window.open(evt.target.href, "_blank", "width=640,height=400,toolbar=0,scrollbars=0,status=0,resizable=0,location=0,menuBar=0");
 				console.log("end loginLink Lcik");
-			});
+			};
+
+
+			on(document, "A.loginLink:click", showAuthDlg);
+			Topic.subscribe("/login", showAuthDlg);
+
 
 			on(document, ".navigationLink:click", function(evt){
 				console.log("NavigationLink Click", evt);
