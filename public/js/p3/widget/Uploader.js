@@ -23,8 +23,8 @@ define([
 		typeLabel: "Upload type: ",
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
-			contigs: {label: "Contigs", formats: [".fa",".fasta"]},
-			reads: {label: "Reads (FASTA)", formats: [".fa",".fasta",".fq",".fastq",".fna",".gz",".bz2"]},
+			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"]},
+			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"]},
 			expression_gene_list: {label: "Expression Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
 			expression_gene_matrix: {label: "Expression Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
 			expression_experiment_metadata:{label: "Expression Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
