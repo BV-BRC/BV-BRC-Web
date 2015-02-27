@@ -65,6 +65,10 @@ define([
 						_self[key+"Node"].innerHTML=val;
 					}else if (_self[key +"Widget"]){
 						_self[key+"Widget"].set("value",val);
+					}else if (key == "autoMeta"){
+						_self["autoMeta"].innerHTML="<pre>" +JSON.stringify(val,null,4) +"</pre>"	
+					//	Object.keys(val).forEach(function(aprop){
+					//	},this);
 					}
 				},this);
 			}))

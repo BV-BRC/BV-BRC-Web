@@ -12,11 +12,34 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		return locale.format(obj,format || {formatLenght: "short"});
 	} 
 
-	return {
+	var formatters = {
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
 		},
 		date: dateFormatter,
+
+		objectOrFileSize: function(obj){
+			if (obj.type=="folder") { return "" }
+			console.log("Has UserMeta: ", obj.userMeta);
+		
+			if (obj.autoMeta&& obj.autoMeta["item_count"]){
+				out = obj.autoMeta.item_count ;
+				switch (obj.type) {
+					case "genome_group":
+						out = out + " genomes";
+						break;
+					case "feature_group":
+						out = out + " features";
+						break;
+					case "experiment_group":
+						out = out + " experiments";
+						break;
+				}
+				return out;
+			}else{
+				return formatters.humanFileSize(obj.size);
+			}
+		},
 
 		humanFileSize: function(bytes, si) {
 			if (!bytes && bytes !==0) { return "" }
@@ -79,12 +102,16 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa icon-genome-features fa-1x" title="Contigs" />'
 				case "genome_group":
 					return '<i class="fa icon-genome fa-1x" title="Contigs" />'
+				case "job_result_DifferentialExpression":
+					return '<i class="fa icon-lab fa-1x" title="Contigs" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
 			}
 		}
 
 	}
+
+	return formatters;
 });
 
 

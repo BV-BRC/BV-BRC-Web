@@ -209,7 +209,7 @@ body.patric *:focus {
 }
 
 .claro .dojoDndItemOver {
-	background: #95b1ce;	
+	background: #ddd;	
 }
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
 	background: #bfd6eb;	
