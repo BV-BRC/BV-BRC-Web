@@ -1,12 +1,12 @@
 define([
-	"dijit/form/FilteringSelect","dojo/_base/declare",
+	"dijit/form/ComboBox","dojo/_base/declare",
 	"dojo/store/JsonRest"
 ], function(
-	FilteringSelect, declare, 
+	ComboBox, declare, 
 	Store
 ){
 	
-	return declare([FilteringSelect], {
+	return declare([ComboBox], {
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Scientific name of the organism being annotated.',
 		missingMessage:'Scientific Name must be provided.',

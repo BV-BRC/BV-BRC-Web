@@ -22,6 +22,8 @@ define([
 			this.output_nameWidget.set("path", val);
 		},
 	
+		onTaxIDChange: function(val){
+		},
 		onSuggestNameChange: function(val){
 			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				this._selfSet=true;

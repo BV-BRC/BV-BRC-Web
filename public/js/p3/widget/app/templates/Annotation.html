@@ -25,23 +25,6 @@
 
 			<div class="approw">
 				<div class="appField">
-					<label>Organism Name</label><br>
-					<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
-				</div> 
-			</div>
-
-			<div class="approw">
-				<div class="appField">
-					<label>Genetic Code</label><br>
-					<select data-dojo-type="dijit/form/Select" name="code" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="11">11</option>
-						<option value="4">4</option>
-					</select>
-				</div>
-			</div>
-
-			<div class="approw">
-				<div class="appField">
 					<label>Domain</label><br>
 					<select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 						<option value="Bacteria">Bacteria</option>
@@ -49,6 +32,29 @@
 					</select>
 				</div>
 			</div>
+			<div class="approw">
+				<div class="appField">
+					<label>Organism Name</label><br>
+					<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
+				</div> 
+			</div>
+
+			<div class="approw">
+				<div class="appField">
+					<label>Taxonomy ID</label><br>
+					<div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector" value=""  name="tax_id" maxHeight=200 style="width:100%" required="false" data-dojo-attach-point="tax_idWidget"></div>
+				</div> 
+			</div>
+			<div class="approw">
+				<div class="appField">
+					<label>Genetic Code</label><br>
+					<select data-dojo-type="dijit/form/Select" name="code" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+						<option value="11">11 (Archaea & most Bacteria)</option>
+						<option value="4">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>
+					</select>
+				</div>
+			</div>
+
 
 			<div class="approw">
 				<div class="appField">
