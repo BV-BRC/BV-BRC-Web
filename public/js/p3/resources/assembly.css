@@ -40,6 +40,14 @@ td.textcol{
 	padding-left:5px;
 	min-height:23px;
 }
+
+table.appHelpTable th{
+	border: none;
+}
+a.appHelpLink {
+color: #004c99;
+}
+
 .librarytable{
 	width: 300px;
 	border-collapse:collapse;
