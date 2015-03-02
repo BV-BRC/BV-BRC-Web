@@ -62,7 +62,6 @@ define([
 					return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
 					(!this._isEmpty(value)) &&
 					(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
-					var x=0;
 				}
 			)}));
 

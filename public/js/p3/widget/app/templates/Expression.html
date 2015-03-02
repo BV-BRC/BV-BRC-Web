@@ -10,63 +10,26 @@
 	<div style="width:700px; margin:auto" class="formFieldsContainer">
 		<table class="assemblyblocks" style="width:100%">
 		<tr>
-		<td rowspan="2">
-		<div id="experimentBox" class="appbox appshadow">
-			<div class="headerrow">
-				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Experiment Information</label>
-					<div name="experimentinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa fa-info-circle fa"></i>
-					</div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appField">
-				<label>Experiment Title</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Title'"></div>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appField">
-				<label>Experiment Description</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
-				</div>
-			</div>
-
-			<div class="approw">
-				<div class="appField">
-				<label>Organism Name</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="organism" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Taxonomic name',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Taxonomic Name'"></div>
-				</div>
-			</div>
-
-			<div class="approw">
-				<label>Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
-			</div>
-			
-			<div class="approw">
-				<div class="appField">
-				<label>Output Name</label><br>
-				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
-				</div>
-			</div>
-		</div>
-		</td>
 		<td>
 
 		<div id="dataBox" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Experiment Data</label>
-					<div name="experimentinfo" class="infobox iconbox infobutton dialoginfo">
+					<div name="datainfo" class="infobox iconbox infobutton dialoginfo">
 						<i class="fa fa-info-circle fa"></i>
 					</div>
 				</div>
 			</div>
 			<div class="approw">
+				<div style="text-align:left;">
+					<label>Experiment Data File</label><br>
+					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
+				</div>
+			</div>
+			<div class="approw">
 				<div class="halfAppRow">
-					<label>Data Type</label><br>
+					<label>Experiment Type</label><br>
 					<select data-dojo-type="dijit/form/Select" name="data_type" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 						<option value="transcriptomics">Transcriptomics</option>
 						<option value="proteomics">Proteomics</option>
@@ -83,12 +46,6 @@
 						<option value="seed_id">SEED ID</option>
 						<option value="alt_locus_tag">PATRIC Legacy ID</option>
 					</select>
-				</div>
-			</div>
-			<div class="approw">
-				<div style="text-align:left;">
-					<label>Experiment Data File</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" style="width:100%" required="true" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
 				</div>
 			</div>
 			<div class="approw">
@@ -111,6 +68,48 @@
 			
 		</div>
 		</td>
+		<td rowspan="2">
+		<div id="experimentBox" class="appbox appshadow">
+			<div class="headerrow">
+				<div style="width:85%;display:inline-block;">
+					<label class="appboxlabel">Experiment Information</label>
+					<div name="experimentinfo" class="infobox iconbox infobutton tooltipinfo">
+						<i class="fa fa-info-circle fa"></i>
+					</div>
+				</div>
+			</div>
+			<div class="approw">
+				<div class="appField">
+				<label>Experiment Title</label><br>
+				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="dijit/form/ValidationTextBox" name="title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
+				</div>
+			</div>
+			<div class="approw">
+				<div class="appField">
+				<label>Experiment Description</label><br>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
+				</div>
+			</div>
+                       <div class="approw">
+                                <div class="appField">
+                                        <label>Organism Name</label><br>
+                                        <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
+                                </div>
+                        </div>
+
+			<div class="approw">
+				<div class="appField">
+				<label>Pubmed ID</label><br>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
+				</div>
+			</div>
+			<div class="approw">
+				<label>Output Folder</label><br>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
+			</div>
+			
+		</div>
+		</td>
 		</tr>
 		<tr>
 		<td>
@@ -118,7 +117,7 @@
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Optional Metadata</label>
-					<div name="experimentinfo" class="infobox iconbox infobutton dialoginfo">
+					<div name="optionalinfo" class="infobox iconbox infobutton dialoginfo">
 						<i class="fa fa-info-circle fa"></i>
 					</div>
 				</div>
@@ -127,20 +126,14 @@
 				<label>Metadata File</label><br>
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="metadata_template" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
 			</div>
-			<div class="approw">
+			<div class="halfAppRow">
 				<div class="appField">
 				<label>File Type</label><br>
-				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-					<option value=".tsv">Tab delimited (.tsv, .txt)</option>
-					<option value=".csv">Comma delimited (.csv, .txt)</option>
+				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:148px" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value=".tsv">Tab sep. (.tsv)</option>
+					<option value=".csv">Comma sep. (.csv)</option>
 					<option value=".xls">Excel (.xls, .xlsx)</option>
 				</select>
-				</div>
-			</div>
-			<div class="approw">
-				<div class="appField">
-				<label>Pubmed ID</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
 				</div>
 			</div>
 		</td>
