@@ -81,13 +81,13 @@
 			<div class="approw">
 				<div class="appField">
 				<label>Experiment Title</label><br>
-				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
+				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="dijit/form/ValidationTextBox" name="title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
 				</div>
 			</div>
 			<div class="approw">
 				<div class="appField">
 				<label>Experiment Description</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
 				</div>
 			</div>
                        <div class="approw">
@@ -100,7 +100,7 @@
 			<div class="approw">
 				<div class="appField">
 				<label>Pubmed ID</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
 				</div>
 			</div>
 			<div class="approw">
