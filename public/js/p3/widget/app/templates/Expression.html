@@ -90,13 +90,12 @@
 				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="desc" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
 				</div>
 			</div>
-
-			<div class="approw">
-				<div class="appField">
-				<label>Organism Name</label><br>
-				<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="dijit/form/ValidationTextBox" name="organism" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Taxonomic name',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Taxonomic Name'"></div>
-				</div>
-			</div>
+                       <div class="approw">
+                                <div class="appField">
+                                        <label>Organism Name</label><br>
+                                        <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
+                                </div>
+                        </div>
 
 			<div class="approw">
 				<div class="appField">
@@ -127,12 +126,12 @@
 				<label>Metadata File</label><br>
 				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="metadata_template" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
 			</div>
-			<div class="approw">
+			<div class="halfAppRow">
 				<div class="appField">
 				<label>File Type</label><br>
-				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-					<option value=".tsv">Tab delimited (.tsv, .txt)</option>
-					<option value=".csv">Comma delimited (.csv, .txt)</option>
+				<select data-dojo-type="dijit/form/Select" name="metadata_format" style="width:148px" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+					<option value=".tsv">Tab sep. (.tsv)</option>
+					<option value=".csv">Comma sep. (.csv)</option>
 					<option value=".xls">Excel (.xls, .xlsx)</option>
 				</select>
 				</div>
