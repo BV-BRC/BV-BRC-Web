@@ -99,9 +99,10 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "fasta":
 					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
 				case "feature_group":
-					return '<i class="fa icon-genome-features fa-1x" title="Contigs" />'
+					return '<i class="icon-genome-features " title="Contigs" />'
 				case "genome_group":
-					return '<i class="fa icon-genome fa-1x" title="Contigs" />'
+					return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
+
 				case "job_result_DifferentialExpression":
 					return '<i class="fa icon-lab fa-1x" title="Contigs" />'
 				default: 
