@@ -10,7 +10,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Scientific name of the organism being annotated.',
 		missingMessage:'Scientific Name must be provided.',
-		placeHolder:'Bacillus Cereus',
+		placeHolder:'e.g. Bacillus Cereus',
 		searchAttr: "taxon_name",
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
