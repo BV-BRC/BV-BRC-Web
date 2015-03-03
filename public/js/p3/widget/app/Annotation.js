@@ -29,7 +29,8 @@ define([
 				this._selfSet=true;
 				var tax_id=this.scientific_nameWidget.value;
 				if(tax_id){
-					this.tax_idWidget.set('value',tax_id);
+					this.tax_idWidget.setDisplayedValue(tax_id.toString());
+					//this.tax_idWidget.set('value',tax_id);
 				}
 				/*var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
