@@ -1,28 +1,28 @@
 [submodule "public/js/xstyle"]
 	path = public/js/xstyle
-	url = git@github.com:/kriszyp/xstyle.git
+	url = https://github.com/kriszyp/xstyle.git
 [submodule "public/js/put-selector"]
 	path = public/js/put-selector
-	url = git@github.com:/kriszyp/put-selector.git
+	url = https://github.com/kriszyp/put-selector.git
 [submodule "public/js/dbind"]
 	path = public/js/dbind
-	url = git@github.com:/kriszyp/dbind.git
+	url = https://github.com/kriszyp/dbind.git
 [submodule "public/js/dgrid"]
 	path = public/js/dgrid
-	url = git@github.com:SitePen/dgrid.git
+	url = https://github.com/SitePen/dgrid.git
 	branch = dev-0.3
 [submodule "public/js/rql"]
 	path = public/js/rql
-	url = git@github.com:persvr/rql.git
+	url = https://github.com/persvr/rql.git
 [submodule "public/js/dojo"]
 	path = public/js/dojo
-	url = git@github.com:dojo/dojo.git
+	url = https://github.com/dojo/dojo.git
 [submodule "public/js/dijit"]
 	path = public/js/dijit
-	url = git@github.com:dojo/dijit.git
+	url = https://github.com/dojo/dijit.git
 [submodule "public/js/dojox"]
 	path = public/js/dojox
-	url = git@github.com:dojo/dojox.git
+	url = https://github.com/dojo/dojox.git
 [submodule "public/js/util"]
 	path = public/js/util
-	url = git@github.com:dojo/util.git
+	url = https://github.com/dojo/util.git
