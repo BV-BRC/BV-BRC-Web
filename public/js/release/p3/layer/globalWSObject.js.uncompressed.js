@@ -16541,8 +16541,10 @@ define([
 		createGroup: function(name, type, path, idType, ids){
 			var group = {
 				name: name,
-				id_list: {id_type: idType, ids: ids}	
+				id_list: {}
 			}
+			group.id_list[idType] = ids;
+
 			console.log("Creating Group: ", group);
 			return this.create({
 				path: path,

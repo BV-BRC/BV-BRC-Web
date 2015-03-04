@@ -15,7 +15,12 @@ define("p3/widget/WorkspaceGrid", [
 			columns: {
 				"type": {
 					label: "",
-					field: "type",
+					get: function(item) { 
+						if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
+							return item.type +"_"+ item.autoMeta.app
+						}
+						return item.type; 
+					},
 					className: "wsItemType",
 					formatter: formatter.wsItemType
 				},
@@ -34,9 +39,10 @@ define("p3/widget/WorkspaceGrid", [
 				size: {
 					label: "Size",
 					field: "size",
+					get: function(item) { return item; },
 					className: "wsItemSize",
 					hidden: false,
-					formatter: formatter.humanFileSize
+					formatter: formatter.objectOrFileSize
 				},
 	
 				owner_id: {
