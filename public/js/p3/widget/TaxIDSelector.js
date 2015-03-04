@@ -22,8 +22,8 @@ define([
 			if (!this.store){
 				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json"}});
 			}
-		},
-		validate: function (){
+		}
+		/*validate: function (){
 			// Overrides `dijit/form/TextBox.validate`
 			this.valueNode.value = this.toString();
 			return this.inherited(arguments);
@@ -31,6 +31,6 @@ define([
 		isValid: function (){
 			// Overrides ValidationTextBox.isValid()
 			return !!this.item || (!this.required && this.get('displayedValue') == ""); // #5974
-		}	
+		}*/	
 	});
 });

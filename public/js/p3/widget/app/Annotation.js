@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox",
-	"p3/widget/TaxonNameSelector"
+	"dojo/text!./templates/Annotation.html","./AppBase",
+	"dojo/_base/lang"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,TaxonNameSelector
+	Template,AppBase,lang
 ){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
@@ -26,10 +26,17 @@ define([
 		onTaxIDChange: function(val){
 			if (val && !this.scientific_nameWidget.get('value') || (this.scientific_nameWidget.get('value') && !this._autoTaxSet)  ){
 				this._autoNameSet=true;
-				var sci_name=this.tax_idWidget.get("item").taxon_name;
-				if(sci_name){
-					this.scientific_nameWidget.set('displayedValue',sci_name);
-					this.scientific_nameWidget.set('value',sci_name);
+				var tax_id=this.tax_idWidget.get("item").taxon_id;
+				//var sci_name=this.tax_idWidget.get("item").taxon_name;
+				if(tax_id){
+					var name_promise=this.scientific_nameWidget.store.get("?taxon_id="+tax_id);
+					name_promise.then(lang.hitch(this, function(tax_obj) {
+						if(tax_obj && tax_obj.length){
+							this.scientific_nameWidget.set('item',tax_obj[0]);
+						}
+					}));
+					//this.scientific_nameWidget.set('displayedValue',sci_name);
+					//this.scientific_nameWidget.set('value',sci_name);
 				}
 				/*var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
@@ -42,8 +49,13 @@ define([
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
 				if(tax_id){
-					this.tax_idWidget.set('displayedValue',tax_id.toString());
-					this.tax_idWidget.set('value',tax_id.toString());
+					var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+					tax_promise.then(lang.hitch(this, function(tax_obj) {
+						if(tax_obj && tax_obj.length){
+							this.tax_idWidget.set('item',tax_obj[0]);
+						}
+					}));
+					//this.tax_idWidget.set('displayedValue',tax_id);
 					//this.tax_idWidget.set('value',tax_id);
 				}
 			}
