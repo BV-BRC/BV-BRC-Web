@@ -15,13 +15,23 @@ define([
 			this._selfSet=true;
 		},	
 	
-		onSuggestNameChange: function(val){
-			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
-				this._selfSet=true;	
-				this.output_nameWidget.set('value', val);
-			}
+		getValues: function(){
+			var values = this.inherited(arguments);
+			var exp_values={};
+			var ustring_keys=["xformat","xsetup","source_id_type","data_type", "experiment_title", "experiment_description","organism","metadata_format"];
+			var ustring={};
+			ustring_keys.forEach(function(k){
+				ustring[k]=values[k];
+			});
+			//get xsetup from object type
+			exp_values["ustring"]=ustring;
+			exp_values["organism"]=this.scientific_nameWidget.get('displayedValue');
+			exp_values["xfile"]=values["xfile"];
+			exp_values["mfile"]=values["mfile"];
+				
+			return exp_values;
 		}
-
+		
 	});
 });
 
