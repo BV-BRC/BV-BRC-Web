@@ -5316,7 +5316,7 @@ div.dijitNumberTextBoxRtl {
 	width: 90px;
 }
 .wsItemSize {
-	width: 72px;
+	width: 150px;
 }
 .wsItemCreationTime {
 	width: 150px;
@@ -5444,6 +5444,12 @@ label.largelabel {
 td.textcol{
 	padding-left:5px;
 	min-height:23px;
+}
+table.appHelpTable th{
+	border: none;
+}
+a.appHelpLink {
+color: #004c99;
 }
 .librarytable{
 	width: 300px;
@@ -7954,7 +7960,7 @@ body.patric *:focus {
 	cursor: default ;
 }
 .claro .dojoDndItemOver {
-	background: #95b1ce;	
+	background: #ddd;	
 }
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
 	background: #bfd6eb;	
