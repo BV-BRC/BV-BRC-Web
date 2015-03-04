@@ -13,12 +13,22 @@ define([
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
 		required: true,
+		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
+		code_four: false,
 
 		constructor: function(){
 			this._autoTaxSet=false;
 			this._autoNameSet=false;
-		},	
-
+		},
+		changeCode: function(item){	
+			this.code_four=false;
+			item.lineage_names.forEach(lang.hitch(this, function(lname){
+				if (dojo.indexOf(this.genera_four, lname)>=0){
+					this.code_four=true;
+				};
+			}));
+			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
+		},
 		onOutputPathChange: function(val){
 			this.output_nameWidget.set("path", val);
 		},
@@ -38,9 +48,6 @@ define([
 					//this.scientific_nameWidget.set('displayedValue',sci_name);
 					//this.scientific_nameWidget.set('value',sci_name);
 				}
-				/*var abbrv=this.scientific_nameWidget.get('displayedValue');
-				abbrv=abbrv.match(/[^\s]+$/);
-				this.output_nameWidget.set('value',abbrv);*/
 			}
 			this._autoTaxSet=false;
 		},
@@ -59,6 +66,7 @@ define([
 					//this.tax_idWidget.set('value',tax_id);
 				}
 			}
+			this.changeCode(this.scientific_nameWidget.get("item"));
 			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
