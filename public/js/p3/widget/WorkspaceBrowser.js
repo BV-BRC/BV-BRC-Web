@@ -80,7 +80,7 @@ define([
 						console.log("Type isn't setup with a viewer");
 				}
 
-				WorkspaceManager.getObjects([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
+				WorkspaceManager.getObject([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
 
 			}, true);
 
@@ -207,7 +207,7 @@ define([
 			if (!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
-				obj = WorkspaceManager.getObjects(val,true)
+				obj = WorkspaceManager.getObject(val,true)
 			}
 
 			Deferred.when(obj, lang.hitch(this,function(obj){
@@ -226,10 +226,18 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
-//					case "job_result":
-//						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
-//						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
-//						break;
+					case "job_result":
+						var d = "p3/widget/viewer/JobResult"
+						console.log("job_result object: ", obj);
+						if (obj && obj.app && obj.app.id){
+							if (id=="DifferentialExpression"){
+								d = "p3/widget/viewer/Experiment"
+							}	
+						}			
+						panelCtor = window.App.getConstructor(d);
+						params.data = obj;
+						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
 						params.group = obj.path;
