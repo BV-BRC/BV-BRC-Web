@@ -25,8 +25,8 @@ define([
 			});
 			//get xsetup from object type
 			ustring["xsetup"]=this.xfile.searchBox.get("item").type; // should be this.xfile.get("selection").type but need to fix on quick drop
+			ustring["organism"]=this.scientific_nameWidget.get('displayedValue');
 			exp_values["ustring"]=ustring;
-			exp_values["organism"]=this.scientific_nameWidget.get('displayedValue');
 			exp_values["xfile"]=values["xfile"];
 			exp_values["mfile"]=values["mfile"];
 				
