@@ -36,7 +36,7 @@ define("p3/widget/app/Annotation", [
 		},
 	
 		onTaxIDChange: function(val){
-			if (val && !this.scientific_nameWidget.get('value') || (this.scientific_nameWidget.get('value') && !this._autoTaxSet)  ){
+			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
 				this._autoNameSet=true;
 				var tax_id=this.tax_idWidget.get("item").taxon_id;
 				//var sci_name=this.tax_idWidget.get("item").taxon_name;
@@ -51,10 +51,11 @@ define("p3/widget/app/Annotation", [
 					//this.scientific_nameWidget.set('value',sci_name);
 				}
 			}
+			this.changeCode(this.tax_idWidget.get("item"));
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			if (val && !this.tax_idWidget.get('value') || (this.tax_idWidget.get('value') && !this._autoNameSet) ){
+			if (val && !this._autoNameSet){
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
 				if(tax_id){

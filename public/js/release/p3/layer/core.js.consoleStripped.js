@@ -29,22 +29,6 @@ define([
 		startup: function(){
 			var _self=this;
 
-			/* these two on()s enable the p2 header mouse overs */
-			on(document.body, ".has-sub:mouseover", function(evt){
-				var target = evt.target;
-				while(!domClass.contains(target,"has-sub") && target.parentNode){
-					target = target.parentNode
-				}
-				domClass.add(target, "hover");
-			});
-			on(document.body, ".has-sub:mouseout", function(evt){
-				var target = evt.target;
-				while(!domClass.contains(target,"has-sub") && target.parentNode){
-					target = target.parentNode
-				}
-				domClass.remove(target, "hover");
-			});
-
 			on(document.body,"keypress", function(evt){
 				var charOrCode = evt.charCode || evt.keyCode;
 				 0 && console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
@@ -842,6 +826,22 @@ define([
 			this._containers={};
 			 0 && console.log("Launching Application...");
 
+                        /* these two on()s enable the p2 header mouse overs */
+                        on(document.body, ".has-sub:mouseover", function(evt){
+				 0 && console.log("has sub");
+                                var target = evt.target;
+                                while(!domClass.contains(target,"has-sub") && target.parentNode){
+                                        target = target.parentNode
+                                }
+                                domClass.add(target, "hover");
+                        });
+                        on(document.body, ".has-sub:mouseout", function(evt){
+                                var target = evt.target;
+                                while(!domClass.contains(target,"has-sub") && target.parentNode){
+                                        target = target.parentNode
+                                }
+                                domClass.remove(target, "hover");
+                        });
 
 			on(window,"message", function(evt){
 				var msg = evt.data;
@@ -35775,7 +35775,7 @@ define([
 		},
 	
 		onTaxIDChange: function(val){
-			if (val && !this.scientific_nameWidget.get('value') || (this.scientific_nameWidget.get('value') && !this._autoTaxSet)  ){
+			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
 				this._autoNameSet=true;
 				var tax_id=this.tax_idWidget.get("item").taxon_id;
 				//var sci_name=this.tax_idWidget.get("item").taxon_name;
@@ -35790,10 +35790,11 @@ define([
 					//this.scientific_nameWidget.set('value',sci_name);
 				}
 			}
+			this.changeCode(this.tax_idWidget.get("item"));
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			if (val && !this.tax_idWidget.get('value') || (this.tax_idWidget.get('value') && !this._autoNameSet) ){
+			if (val && !this._autoNameSet){
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
 				if(tax_id){
@@ -36460,12 +36461,12 @@ define([
 	"dojo/_base/declare", "dijit/Dialog","dojo/dom-construct",
 	"dojo/dom-geometry","dojo/dom-style", "dojo/window", "dojo/sniff",
 	"dojo/text!./templates/FlippableDialog.html","dojo/on","dojo/dom-class",
-	"dojo/_base/lang","dijit/layout/utils"
+	"dojo/_base/lang","dijit/layout/utils","dojo/_base/array"
 
 ], function(
 	declare, Dialog, domConstr,
 	domGeometry, domStyle,winUtils,has,
-	template,on,domClass,lang,utils
+	template,on,domClass,lang,utils,array
 ){
 	return declare([Dialog],{
 		templateString: template,
