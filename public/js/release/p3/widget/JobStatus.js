@@ -27,7 +27,7 @@ define("p3/widget/JobStatus", [
 				inProgress: 0,
 				complete: 0,
 				queued: 0,
-				suspended:0
+				failed:0
 			}
 		},
 		startup: function(){
@@ -45,12 +45,13 @@ define("p3/widget/JobStatus", [
 				//console.log("JobStatusSummary: ", msg.summary);
 				this._jobstatus.inProgress=msg.summary['in-progress']||0;
 				this._jobstatus.complete = msg.summary.completed||0;
-				this._jobstatus.queued= msg.summary.queued||0;
-				this._jobstatus.suspended = msg.summary.suspend||0;
+				this._jobstatus.queued= (msg.summary.queued)||0 + (msg.summary.pending||0) + (msg.summary.init||0);;
+				this._jobstatus.failed= msg.summary.failed||0;
+				//console.log("this._jobstatus: ", this._jobstatus);
 				this.jobsCompleteNode.innerHTML = this._jobstatus.complete;
 				this.jobsRunningNode.innerHTML = this._jobstatus.inProgress;
 				this.jobsQueuedNode.innerHTML = this._jobstatus.queued;
-				this.jobsSuspendedNode.innerHTML = this._jobstatus.suspended ;
+				this.jobsSuspendedNode.innerHTML = this._jobstatus.failed;
 				return;
 			}
 	
