@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/Dialog","dojo/dom-construct",
 	"dojo/dom-geometry","dojo/dom-style", "dojo/window", "dojo/sniff",
 	"dojo/text!./templates/FlippableDialog.html","dojo/on","dojo/dom-class",
-	"dojo/_base/lang","dijit/layout/utils"
+	"dojo/_base/lang","dijit/layout/utils","dojo/_base/array"
 
 ], function(
 	declare, Dialog, domConstr,
 	domGeometry, domStyle,winUtils,has,
-	template,on,domClass,lang,utils
+	template,on,domClass,lang,utils,array
 ){
 	return declare([Dialog],{
 		templateString: template,
