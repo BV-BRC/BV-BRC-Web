@@ -18,12 +18,13 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 			var exp_values={};
-			var ustring_keys=["xformat","xsetup","source_id_type","data_type", "experiment_title", "experiment_description","organism","metadata_format"];
+			var ustring_keys=["xformat","source_id_type","data_type", "experiment_title", "experiment_description","organism","metadata_format"];
 			var ustring={};
 			ustring_keys.forEach(function(k){
 				ustring[k]=values[k];
 			});
 			//get xsetup from object type
+			ustring["xsetup"]=this.xfile.searchBox.get("item").type; // should be this.xfile.get("selection").type but need to fix on quick drop
 			exp_values["ustring"]=ustring;
 			exp_values["organism"]=this.scientific_nameWidget.get('displayedValue');
 			exp_values["xfile"]=values["xfile"];
