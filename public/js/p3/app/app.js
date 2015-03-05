@@ -26,6 +26,22 @@ define([
 			this._containers={};
 			console.log("Launching Application...");
 
+                        /* these two on()s enable the p2 header mouse overs */
+                        on(document.body, ".has-sub:mouseover", function(evt){
+				console.log("has sub");
+                                var target = evt.target;
+                                while(!domClass.contains(target,"has-sub") && target.parentNode){
+                                        target = target.parentNode
+                                }
+                                domClass.add(target, "hover");
+                        });
+                        on(document.body, ".has-sub:mouseout", function(evt){
+                                var target = evt.target;
+                                while(!domClass.contains(target,"has-sub") && target.parentNode){
+                                        target = target.parentNode
+                                }
+                                domClass.remove(target, "hover");
+                        });
 
 			on(window,"message", function(evt){
 				var msg = evt.data;

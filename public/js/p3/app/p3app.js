@@ -27,22 +27,6 @@ define([
 		startup: function(){
 			var _self=this;
 
-			/* these two on()s enable the p2 header mouse overs */
-			on(document.body, ".has-sub:mouseover", function(evt){
-				var target = evt.target;
-				while(!domClass.contains(target,"has-sub") && target.parentNode){
-					target = target.parentNode
-				}
-				domClass.add(target, "hover");
-			});
-			on(document.body, ".has-sub:mouseout", function(evt){
-				var target = evt.target;
-				while(!domClass.contains(target,"has-sub") && target.parentNode){
-					target = target.parentNode
-				}
-				domClass.remove(target, "hover");
-			});
-
 			on(document.body,"keypress", function(evt){
 				var charOrCode = evt.charCode || evt.keyCode;
 				console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);

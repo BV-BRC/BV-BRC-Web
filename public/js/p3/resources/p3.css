@@ -214,3 +214,28 @@ body.patric *:focus {
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
 	background: #bfd6eb;	
 }
+
+.UserProfileForm {
+	width: 700px;
+	margin:auto;
+}
+
+.UserProfileForm Table {
+	border: 0px;
+	width: 100%;
+} 
+
+.RegistrationForm TD,
+.UserProfileForm  TD {
+	border: 0px;
+	padding: 4px;
+	padding-left: 0px;
+	padding-bottom: 8px;
+}
+
+.RegistrationForm TH,
+.UserProfileForm  TH {
+	font-size: .85em;
+	border: 0px;
+	pading:4px;
+}

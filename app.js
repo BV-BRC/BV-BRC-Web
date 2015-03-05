@@ -77,7 +77,8 @@ app.use(function(req,res,next){
     req.config = config;
     req.production = config.get("production") || false;
     req.productionLayers=["p3/layer/core"]
-    req.applicationOptions = {version: "3.0", workspaceServiceURL:config.get("workspaceServiceURL"),appServiceURL:config.get("appServiceURL"),dataServiceURL:config.get("dataServiceURL"),enableDevTools: config.get("enableDevTools")}
+    req.applicationOptions = {version: "3.0", workspaceServiceURL:config.get("workspaceServiceURL"),appServiceURL:config.get("appServiceURL"),dataServiceURL:config.get("dataServiceURL"),enableDevTools: config.get("enableDevTools"), accountURL: config.get("accountURL") }
+	console.log("Application Options: ", req.applicationOptions);
     next();
 })
 
