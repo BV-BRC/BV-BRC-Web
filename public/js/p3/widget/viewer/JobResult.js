@@ -15,7 +15,8 @@ define([
 		"query": null,
 		data: null,
 		_resultType: null,
-		_metaOut: {"start_time":{"label":"Start time"},"elapsed_time":{"label":"Run time"},"end_time":{"label":"End time"},"parameters":{"label":"Parameters"}},
+		_jobOut: {"start_time":{"label":"Start time", "format":formatter.date},"elapsed_time":{"label":"Run time"},"end_time":{"label":"End time", "format":formatter.date},"parameters":{"label":"Parameters","format":JSON.stringify}},
+		_jobOrder: ["start_time","end_time","elapsed_time","parameters"],
 		_appLabel: "",
 		_resultMetaTypes: {},
 		_autoLabels:{},
@@ -43,6 +44,9 @@ define([
 				this._appLabel="Genome Annotation";
 				this._autoLabels= {"scientific_name":{"label":"Organism"},"domain":{"label":"Domain"},"num_features":{"label":"Feature count"},"genome_id":{"label":"Annotation ID"}};
 			}
+			if (this._resultType=="GenomeAssembly"){
+				this._appLabel="Genome Assembly";
+			}
 		},
 		refresh: function(){
 			if (this.data) {
@@ -55,16 +59,20 @@ define([
 	
 				var output = [];
 				output.push(jobHeader+'<table class="basic stripe far2x" id="data-table"><tbody>');
+				var job_output=[];
 				
 				if (this.data.autoMeta) {
-					Object.keys(this.data.autoMeta).forEach(function(prop){
-						if (prop=="output_files") { return; }
+					this._jobOrder.forEach(function(prop){
+						/*if (prop=="output_files") { return; }
 						if (prop=="app") { return; }
 						if (prop=="job_output") { return; }
-						if (prop=="hostname") { return; }
-						if (this._metaOut.hasOwnProperty(prop)){
-							//this._metaOut[prop]["value"]=this.data.autoMeta[prop];
-						        output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._metaOut[prop]["label"]+ '</b></th><td class="last">' + this.data.autoMeta[prop] + "</td></tr>");
+						if (prop=="hostname") { return; }*/
+						if (!this.data.autoMeta[prop]){return;}
+						if (this._jobOut.hasOwnProperty(prop)){
+							//this._jobOut[prop]["value"]=this.data.autoMeta[prop];
+							var tableLabel=this._jobOut[prop].hasOwnProperty("label") ? this._jobOut[prop]["label"] : prop;
+							var tableValue = this._jobOut[prop].hasOwnProperty("format") ? this._jobOut[prop]["format"](this.data.autoMeta[prop]) : this.data.autoMeta[prop];
+						        job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._jobOut[prop]["label"]+ '</b></th><td class="last">' + tableValue + "</td></tr>");
 						}
 					},this);
 				}
@@ -73,7 +81,7 @@ define([
 				if (this._resultObjects) {
 					result_output.push('<div style="display:inline-block;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">Result Files</span></h3>');
 					result_output.push('<table class="basic stripe far2x"><tbody>');
-					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>Size (MB)</th>')
+					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>File size</th>')
 					var header_row=result_output.length-1;
 					result_output.push('</tr>');
 					this._resultObjects.forEach(function(obj){
@@ -82,7 +90,7 @@ define([
 							result_output.push('<th scope="row"><i class="fa fa-download fa" rel="' + obj.path + "/" + obj.name +  '" /></th>');
 							result_output.push('<td class="last">' + obj.name + "</td>");
 							result_output.push('<td class="last">' + obj.type+ "</td>");
-							result_output.push('<td class="last">' + obj.size + "</td>");
+							result_output.push('<td class="last">' + formatter.humanFileSize(obj.size,1) + "</td>");
 							var subRecord=[];
 							Object.keys(obj.autoMeta).forEach(function(prop){
 								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
@@ -104,12 +112,13 @@ define([
 								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
 								subRecord.push(label+" ("+obj.autoMeta[prop]+")");
 							},this);
-							output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._resultMetaTypes[obj.type]["label"]+ '</b></th><td class="last">' + subRecord.join(", ") + "</td></tr>");
+							job_output.unshift('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._resultMetaTypes[obj.type]["label"]+ '</b></th><td class="last">' + subRecord.join(", ") + "</td></tr>");
 						}
 					},this);
 					result_output.push("</tbody></table></div>");
 				}
 
+				output.push.apply(output,job_output);
 				output.push("</tbody></table></div>");
 				output.push.apply(output,result_output);
 				
