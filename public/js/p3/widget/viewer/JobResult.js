@@ -14,6 +14,11 @@ define([
 		"disabled":false,
 		"query": null,
 		data: null,
+		_resultType: null,
+		_metaOut: {"start_time":{"label":"Start time"},"elapsed_time":{"label":"Run time"},"end_time":{"label":"End time"},"parameters":{"label":"Parameters"}},
+		_appLabel: "",
+		_resultMetaTypes: {},
+		_autoLabels:{},
 		_setDataAttr: function(data){
 			this.data = data;	
 			console.log("job result viewer data: ", data);
@@ -24,51 +29,86 @@ define([
 			WorkspaceManager.getObjects(paths,true).then(lang.hitch(this, function(objs){
 				this._resultObjects = objs;
 				console.log("got objects: ", objs);
+				this.setupResultType();
 				this.refresh();
 			}));
 
 		},
+		setupResultType: function(){
+			if (this.data.autoMeta.app.id){
+				this._resultType=this.data.autoMeta.app.id;
+			}
+			if (this._resultType=="GenomeAnnotation"){
+				this._resultMetaTypes={"genome":{"label":"Genome"}};
+				this._appLabel="Genome Annotation";
+				this._autoLabels= {"scientific_name":{"label":"Organism"},"domain":{"label":"Domain"},"num_features":{"label":"Feature count"},"genome_id":{"label":"Annotation ID"}};
+			}
+		},
 		refresh: function(){
 			if (this.data) {
+				var jobHeader='<div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">';
 				if (this.data.autoMeta && this.data.autoMeta.app){
-					this.viewHeader.set('content', this.data.autoMeta.app.id + " Job Result");
+					jobHeader=jobHeader+this._appLabel+" ";
 				}
+				jobHeader=jobHeader+"Job Result"+'</span></h3></div>';
+				this.viewHeader.set('content',jobHeader);
+	
 				var output = ["<div>"];
-
-				if (this.data.userMeta) {
-					Object.keys(this.data.userMeta).forEach(function(prop){
-						output.push("<div>" + prop + ": " + this.data.userMeta[prop] + "</div>");
-					},this);
-				}
-
+				output.push('<div style="width:370px;" ><table class="basic stripe far2x" id="data-table"><tbody>');
+				
 				if (this.data.autoMeta) {
 					Object.keys(this.data.autoMeta).forEach(function(prop){
 						if (prop=="output_files") { return; }
 						if (prop=="app") { return; }
 						if (prop=="job_output") { return; }
 						if (prop=="hostname") { return; }
-
-						output.push("<div>" +prop + ": " + this.data.autoMeta[prop] + "</div>");
+						if (this._metaOut.hasOwnProperty(prop)){
+							//this._metaOut[prop]["value"]=this.data.autoMeta[prop];
+						        output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._metaOut[prop]["label"]+ '</b></th><td class="last">' + this.data.autoMeta[prop] + "</td></tr>");
+						}
 					},this);
 				}
+
+				var result_output=[];
 				if (this._resultObjects) {
-					output.push("<h2>Result Files</h2> ");
-					output.push('<table><tbody>');
+					result_output.push('<div style="display:inline-block;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">Result Files</span></h3>');
+					result_output.push('<table class="basic stripe far2x"><tbody>');
 					this._resultObjects.forEach(function(obj){
-						output.push("<tr>");
-						output.push('<td><i class="fa fa-download fa-2x" rel="' + obj.path + "/" + obj.name +  '" /></td>');
-						output.push("<td>" + obj.name + "</td>");
-						output.push("<td>" + obj.type+ "</td>");
-						output.push("<td>" + obj.size + "</td>");
-						Object.keys(obj.autoMeta).forEach(function(prop){
-							if (!obj.autoMeta[prop]) { return; }
-							output.push("<td>");
-							output.push(prop + ": " + obj.autoMeta[prop]);
-							output.push("</td>");
-						});
-						output.push("</tr>");
-					});
-					output.push("</tbody></table>");
+						if(!this._resultMetaTypes.hasOwnProperty(obj.type)){
+							result_output.push('<tr class="alt">');
+							result_output.push('<th scope="row"><i class="fa fa-download fa" rel="' + obj.path + "/" + obj.name +  '" /></th>');
+							result_output.push('<td class="last">' + obj.name + "</td>");
+							result_output.push('<td class="last">' + obj.type+ "</td>");
+							result_output.push('<td class="last">' + obj.size + "</td>");
+							Object.keys(obj.autoMeta).forEach(function(prop){
+								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
+								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
+								result_output.push("<td>");
+								result_output.push(label + ": " + obj.autoMeta[prop]);
+								result_output.push("</td>");
+							},this);
+							result_output.push("</tr>");
+						}
+						else{
+							var subRecord=[];
+							Object.keys(obj.autoMeta).forEach(function(prop){
+								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
+								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
+								subRecord.push(label+": "+obj.autoMeta[prop]);
+							},this);
+							output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._resultMetaTypes[obj.type]["label"]+ '</b></th><td class="last">' + subRecord.join(", ") + "</td></tr>");
+						}
+					},this);
+					result_output.push("</tbody></table></div>");
+				}
+
+				output.push("</tbody></table></div>");
+				output.push.apply(output,result_output);
+				
+				if (this.data.userMeta) {
+					Object.keys(this.data.userMeta).forEach(function(prop){
+						output.push("<div>" + prop + ": " + this.data.userMeta[prop] + "</div>");
+					},this);
 				}
 
 				output.push("</div>");	
