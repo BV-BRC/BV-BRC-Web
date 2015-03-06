@@ -24,6 +24,15 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		},
 		date: dateFormatter,
 		epochDate: dateFromEpoch,
+		runTime: function(obj){
+			var hours = Math.floor(obj / 3600);
+			var minutes=Math.floor((obj-hours*3600)/60);
+			var seconds=obj-minutes*60;
+			var run_time= hours ? hours.toString()+"h" : "";
+			run_time+= minutes ? minutes.toString()+"m" : "";
+			run_time+= seconds ? seconds.toFixed(0).toString()+"s" : "";
+			return run_time;
+		},
 
 		objectOrFileSize: function(obj){
 			if (obj.type=="folder") { return "" }
