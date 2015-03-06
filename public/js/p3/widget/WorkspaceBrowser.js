@@ -58,6 +58,7 @@ define([
 			}, true);
 
 
+/*
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
 				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
@@ -83,7 +84,7 @@ define([
 				WorkspaceManager.getObject([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
 
 			}, true);
-
+*/
 
 			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				console.log("Download Item Action", selection);
@@ -127,18 +128,19 @@ define([
 	
 			},true);
 
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
-				console.log("Remove Items from Group", selection);
+			var _self=this;
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection, containerWidget){
+				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
-				var stg = new SelectionToGroup();
+				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
 				domConstruct.place(stg.domNode, dlg.containerNode,"first");
 				stg.startup();
 				dlg.startup();
 				dlg.show();
 			},true);
-			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
-				console.log("Remove Items from Group", selection);
-			},true);
+//			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
+//				console.log("Remove Items from Group", selection);
+//			},true);
 
 
 			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
