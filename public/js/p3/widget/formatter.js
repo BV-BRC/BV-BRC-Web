@@ -9,14 +9,21 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		}
 		if (!obj || !obj.getMonth){ return " " }
 	
-		return locale.format(obj,format || {formatLenght: "short"});
+		return locale.format(obj,format || {formatLength: "short"});
 	} 
+
+	var dateFromEpoch = function(obj, format){
+		obj=new Date(new Date().setTime(obj*1000));
+		if (!obj || !obj.getMonth){ return " " }
+		return locale.format(obj,format || {formatLength: "short"});
+	}
 
 	var formatters = {
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
 		},
 		date: dateFormatter,
+		epochDate: dateFromEpoch,
 
 		objectOrFileSize: function(obj){
 			if (obj.type=="folder") { return "" }
