@@ -15,7 +15,7 @@ define("p3/widget/viewer/JobResult", [
 		"query": null,
 		data: null,
 		_resultType: null,
-		_jobOut: {"start_time":{"label":"Start time", "format":formatter.date},"elapsed_time":{"label":"Run time"},"end_time":{"label":"End time", "format":formatter.date},"parameters":{"label":"Parameters","format":JSON.stringify}},
+		_jobOut: {"start_time":{"label":"Start time", "format":formatter.epochDate},"elapsed_time":{"label":"Run time","format":formatter.runTime},"end_time":{"label":"End time", "format":formatter.epochDate},"parameters":{"label":"Parameters","format":JSON.stringify}},
 		_jobOrder: ["start_time","end_time","elapsed_time","parameters"],
 		_appLabel: "",
 		_resultMetaTypes: {},

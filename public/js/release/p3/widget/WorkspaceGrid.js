@@ -17,7 +17,7 @@ define("p3/widget/WorkspaceGrid", [
 					label: "",
 					get: function(item) { 
 						if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
-							return item.type +"_"+ item.autoMeta.app
+							return item.type +"_"+(item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
 						}
 						return item.type; 
 					},

@@ -47,6 +47,10 @@ define("p3/widget/ItemDetailPanel", [
 						domClass.add(_self.typeIcon,"fa icon-genome_group fa-3x")
 						currentIcon="fa icon-genome_group fa-3x";
 						break;
+					case "job_result":
+						domClass.add(_self.typeIcon, "fa fa-flag-checkered fa-3x")
+						currentIcon="fa icon-flag-checkered fa-3x";
+						break;
 					case "feature_group": 
 						domClass.add(_self.typeIcon,"fa icon-genome-features fa-3x")
 						currentIcon="fa icon-genome-features fa-3x";
