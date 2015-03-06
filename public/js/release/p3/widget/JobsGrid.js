@@ -73,7 +73,7 @@ define("p3/widget/JobsGrid", [
 
 			},
 			store: null,
-			selectionMode: "extended",
+			selectionMode: "single",
 			allowTextSelection: false,
 			deselectOnRefresh: false,
 			minRowsPerPage: 50,
@@ -126,24 +126,32 @@ define("p3/widget/JobsGrid", [
 				});
 
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
-				    var row = _self.row(evt);
-				    console.log("dblclick row:", row)
-				    //if (row.data.type == "folder"){
-						Topic.publish("/select", []);
+					var row = _self.row(evt);
+					console.log("dblclick row:", row)
+					if (row.data && row.data.status && row.data.status=="completed"){
+						console.log("row.data: ", row.data);
+						Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
+					}
+/*
+                                        on.emit(_self.domNode, "ItemDblClick", {
+                                                item_path: row.data.path,
+                                                item: row.data,
+                                                bubbles: true,
 
-						Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-						_selection={};
-					//}
+                                        });
+                                        console.log('after emit');
+*/
 				});
 				_selection={};
 				Topic.publish("/select", []);
 
+			/*
 				this.on("dgrid-select", function(evt) {
 					console.log("dgrid-select");
 					var rows = event.rows;
 					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					Topic.publish("/select", sel);
+					var sel = Object.keys(_selection).map(function(s) { _selection[s].type="job_status_reference"; return _selection[s]; });
+					console.log("sel: ", sel);
 				});
 				this.on("dgrid-deselect", function(evt) {
 					console.log("dgrid-select");
@@ -152,6 +160,7 @@ define("p3/widget/JobsGrid", [
 					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 					Topic.publish("/select", sel);
 				});
+			*/
 				var activeItem;
 				this.on(".dgrid-content:contextmenu", function(evt){
 					var row=_self.row(evt);

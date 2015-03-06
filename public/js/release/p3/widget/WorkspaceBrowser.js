@@ -58,6 +58,7 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 
+/*
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
 				multiple: false,
 				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
@@ -80,10 +81,10 @@ define("p3/widget/WorkspaceBrowser", [
 						console.log("Type isn't setup with a viewer");
 				}
 
-				WorkspaceManager.getObjects([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
+				WorkspaceManager.getObject([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
 
 			}, true);
-
+*/
 
 			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
 				console.log("Download Item Action", selection);
@@ -127,18 +128,19 @@ define("p3/widget/WorkspaceBrowser", [
 	
 			},true);
 
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
-				console.log("Remove Items from Group", selection);
+			var _self=this;
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection, containerWidget){
+				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
-				var stg = new SelectionToGroup();
+				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
 				domConstruct.place(stg.domNode, dlg.containerNode,"first");
 				stg.startup();
 				dlg.startup();
 				dlg.show();
 			},true);
-			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
-				console.log("Remove Items from Group", selection);
-			},true);
+//			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
+//				console.log("Remove Items from Group", selection);
+//			},true);
 
 
 			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
@@ -207,7 +209,7 @@ define("p3/widget/WorkspaceBrowser", [
 			if (!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
-				obj = WorkspaceManager.getObjects(val,true)
+				obj = WorkspaceManager.getObject(val,true)
 			}
 
 			Deferred.when(obj, lang.hitch(this,function(obj){
@@ -226,10 +228,18 @@ define("p3/widget/WorkspaceBrowser", [
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
-//					case "job_result":
-//						panelCtor = window.App.getConstructor("p3/widget/viewer/Experiment");
-//						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
-//						break;
+					case "job_result":
+						var d = "p3/widget/viewer/JobResult"
+						console.log("job_result object: ", obj);
+						if (obj && obj.app && obj.app.id){
+							if (id=="DifferentialExpression"){
+								d = "p3/widget/viewer/Experiment"
+							}	
+						}			
+						panelCtor = window.App.getConstructor(d);
+						params.data = obj;
+						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
 						params.group = obj.path;

@@ -1,15 +1,20 @@
 <div class="SelectionToGroup" style="width:400px;">
-	<div data-dojo-type="dijit/form/Select" style="width: 95%;margin:10px;">
+	<div data-dojo-type="dijit/form/Select" style="width: 95%;margin:10px;" data-dojo-attach-event="onChange:onChangeTarget">
 		<option value="create">New Group</option>
-		<option value="create">Existing Group</option>
+		<option value="create" selected="true">Existing Group</option>
 	</div>
 
-	<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;">
+	<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;" class='dijitHidden'>
 	</div>
+
+	<div data-dojo-attach-point="workspaceObjectSelector" data-dojo-type="p3/widget/WorkspaceObjectSelector" style="width:95%;margin:10px;" data-dojo-props="types:['genome_group']" class=''>
+	</div>
+
+
 
 	<div class="buttonContainer" style="text-align: right;">
 		<div data-dojo-type="dijit/form/Button" label="Cancel"></div>
-		<div data-dojo-type="dijit/form/Button" label="Split"></div>
-		<div data-dojo-type="dijit/form/Button" label="Copy"></div>
+		<div data-dojo-type="dijit/form/Button" label="Split" disabled='true'></div>
+		<div data-dojo-type="dijit/form/Button" disabled='true' label="Copy"></div>
 	</div>
 </div>

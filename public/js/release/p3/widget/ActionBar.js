@@ -88,7 +88,7 @@ define("p3/widget/ActionBar", [
 			on(this.domNode, "click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				if (_self._actions[rel]) {
-					_self._actions[rel].action.apply(_self,[_self.selection]);
+					_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
 				}
 			});	
 		},
