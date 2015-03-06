@@ -9,14 +9,30 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		}
 		if (!obj || !obj.getMonth){ return " " }
 	
-		return locale.format(obj,format || {formatLenght: "short"});
+		return locale.format(obj,format || {formatLength: "short"});
 	} 
+
+	var dateFromEpoch = function(obj, format){
+		obj=new Date(new Date().setTime(obj*1000));
+		if (!obj || !obj.getMonth){ return " " }
+		return locale.format(obj,format || {formatLength: "short"});
+	}
 
 	var formatters = {
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
 		},
 		date: dateFormatter,
+		epochDate: dateFromEpoch,
+		runTime: function(obj){
+			var hours = Math.floor(obj / 3600);
+			var minutes=Math.floor((obj-hours*3600)/60);
+			var seconds=obj-minutes*60;
+			var run_time= hours ? hours.toString()+"h" : "";
+			run_time+= minutes ? minutes.toString()+"m" : "";
+			run_time+= seconds ? seconds.toFixed(0).toString()+"s" : "";
+			return run_time;
+		},
 
 		objectOrFileSize: function(obj){
 			if (obj.type=="folder") { return "" }
