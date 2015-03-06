@@ -46,15 +46,15 @@ define([
 		},
 		refresh: function(){
 			if (this.data) {
-				var jobHeader='<div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">';
+				var jobHeader='<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">';
 				if (this.data.autoMeta && this.data.autoMeta.app){
 					jobHeader=jobHeader+this._appLabel+" ";
 				}
-				jobHeader=jobHeader+"Job Result"+'</span></h3></div>';
-				this.viewHeader.set('content',jobHeader);
+				jobHeader=jobHeader+"Job Result"+'</span></h3>';
+				//this.viewer.set('content',jobHeader);
 	
-				var output = ["<div>"];
-				output.push('<div style="width:370px;" ><table class="basic stripe far2x" id="data-table"><tbody>');
+				var output = [];
+				output.push(jobHeader+'<table class="basic stripe far2x" id="data-table"><tbody>');
 				
 				if (this.data.autoMeta) {
 					Object.keys(this.data.autoMeta).forEach(function(prop){
@@ -73,6 +73,9 @@ define([
 				if (this._resultObjects) {
 					result_output.push('<div style="display:inline-block;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">Result Files</span></h3>');
 					result_output.push('<table class="basic stripe far2x"><tbody>');
+					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>Size (MB)</th>')
+					var header_row=result_output.length-1;
+					result_output.push('</tr>');
 					this._resultObjects.forEach(function(obj){
 						if(!this._resultMetaTypes.hasOwnProperty(obj.type)){
 							result_output.push('<tr class="alt">');
@@ -80,13 +83,18 @@ define([
 							result_output.push('<td class="last">' + obj.name + "</td>");
 							result_output.push('<td class="last">' + obj.type+ "</td>");
 							result_output.push('<td class="last">' + obj.size + "</td>");
+							var subRecord=[];
 							Object.keys(obj.autoMeta).forEach(function(prop){
 								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
 								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
-								result_output.push("<td>");
+								subRecord.push(label+" ("+obj.autoMeta[prop]+")");
 								result_output.push(label + ": " + obj.autoMeta[prop]);
 								result_output.push("</td>");
 							},this);
+							if(subRecord.length){
+								result_output[header_row]=result_output[header_row]+'<th>Metadata</th>';
+								result_output.push('<td class="last">'+subRecord.join(", ")+'</td>');
+							}
 							result_output.push("</tr>");
 						}
 						else{
@@ -94,7 +102,7 @@ define([
 							Object.keys(obj.autoMeta).forEach(function(prop){
 								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
 								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
-								subRecord.push(label+": "+obj.autoMeta[prop]);
+								subRecord.push(label+" ("+obj.autoMeta[prop]+")");
 							},this);
 							output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+this._resultMetaTypes[obj.type]["label"]+ '</b></th><td class="last">' + subRecord.join(", ") + "</td></tr>");
 						}
@@ -118,9 +126,9 @@ define([
 		startup: function(){
 			if (this._started) {return;}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "Loading Job Results...", region: "top"});
-			this.viewer= new ContentPane({content: "", region: "center"});
-			this.addChild(this.viewHeader);
+			this.viewer = new ContentPane({content: "Loading Job Results...", region: "center"});
+			//this.viewer= new ContentPane({content: "", region: "center"});
+			//this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 
 			
