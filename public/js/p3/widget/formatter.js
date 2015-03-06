@@ -120,9 +120,11 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
 
 				case "job_result_DifferentialExpression":
-					return '<i class="fa icon-lab fa-1x" title="Contigs" />'
-				case "job_result":
-					return '<i class="fa icon-flag-checkered fa-1x" title="Job Result" />'
+					return '<i class="fa icon-lab fa-1x" title="DiffExp" />'
+				case "job_result_GenomeAnnotation":
+					return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />'
+				case "job_result_GenomeAssembly":
+					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
 			}
