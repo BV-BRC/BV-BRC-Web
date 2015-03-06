@@ -121,6 +121,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 				case "job_result_DifferentialExpression":
 					return '<i class="fa icon-lab fa-1x" title="Contigs" />'
+				case "job_result":
+					return '<i class="fa icon-flag-checkered fa-1x" title="Job Result" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
 			}
