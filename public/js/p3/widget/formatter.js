@@ -103,7 +103,21 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "queued":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
 			}
-		},	
+		},
+		status_indicator: function(val){
+			switch (val) {
+				case "in-progress":
+					return '<i class="fa icon-circle fa-1x" title="Running" />'
+				case "deleted":
+					return '<i class="fa icon-circle fa-1x" title="Deleted" />'
+				case "completed":
+					return '<i class="fa icon-circle fa-1x" title="Completed" />'
+				case "failed":
+					return '<i class="fa icon-circle fa-1x" title="Failed" />'
+				case "queued":
+					return '<i class=fa icon-circle fa-1x" title="Queued" />'
+			}
+		},
 		wsItemType: function(val){
 			switch (val) {
 				case "parentfolder":

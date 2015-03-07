@@ -13,6 +13,11 @@ define([
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
+				"status_indicator": {
+					label: "",
+					field: "status",
+					formatter: formatter.status_indicator
+				},
 				"status": {
 					label: "Status",
 					field: "status",
