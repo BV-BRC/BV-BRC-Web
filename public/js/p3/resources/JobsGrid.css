@@ -1,5 +1,18 @@
 .dgrid-column-status_indicator{
-    width: 25px;
-    border: none;
+    width: 40px;
 }
+
+.dgrid-column-status{
+    width: 100px;
+}
+.dgrid-column-status_indicator.dgrid-cell{
+    text-align: right;
+    padding-right: 5px;
+    border-right: 0px;
+}
+.dgrid-column-status.dgrid-cell{
+    border-left: 0px;
+}
+
+
 
