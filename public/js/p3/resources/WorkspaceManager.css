@@ -93,11 +93,15 @@
 	white-space: nowrap;
 }
 
-th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsCreationTime, th.dgrid-cell.wsItemOwnerId {
+th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreationTime, th.dgrid-cell.wsItemOwnerId {
 	border-right: 1px solid #C0C0C0;
 }
 th.dgrid-cell.wsItemType {
 	border-right: 0px;
+	padding-left:0px;
+}
+.dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
+	padding-left:10px;
 }
 
 .wsItemOwnerId {
@@ -118,18 +122,25 @@ th.dgrid-cell.wsItemType {
 	background: #333;
 	color:#333;
 	font-size: 1.1em;
-	cursor: pointer;
 }
 .JobStatusButton > A:first-child,
-.JobStatusButton > SPAN:first-child,
-.UploadStatusButton > SPAN:first-child {
+.JobStatusButton > SPAN:first-child {
 	color:#fff;margin:2px;padding:2px
 }
-
-
+.UploadStatusArea > SPAN {
+	color:#fff;margin:2px;padding:2px;margin-left:0px;padding-left:0px;
+}
+.UploadStatusArea{
+	cursor: pointer;
+	display:inline-block;
+}
+.UploadStatusUpload{
+	display:inline-block;
+	margin:2px;padding:2px;margin-right:0px;padding-right:0px;
+}
 
 .JobStatusButton > DIV,
-.UploadStatusButton > DIV {
+.UploadStatusCount {
 	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
 
 }

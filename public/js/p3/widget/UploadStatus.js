@@ -33,7 +33,7 @@ define([
 			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
-				connectId: [this.domNode],
+				connectId: [this.focusNode],
 				label: " Completed &middot; In progress &middot; % Complete"
 			});
 		},
