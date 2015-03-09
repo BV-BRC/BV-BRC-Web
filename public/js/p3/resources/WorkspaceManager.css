@@ -136,7 +136,10 @@ th.dgrid-cell.wsItemType {
 }
 .UploadStatusUpload{
 	display:inline-block;
-	margin:2px;padding:2px;margin-right:0px;padding-right:0px;
+	margin:2px;padding:2px;margin-right:0px;padding-right:0px;	
+}
+.UploadStatusUpload .fa {
+	color: #ddd;
 }
 
 .JobStatusButton > DIV,
