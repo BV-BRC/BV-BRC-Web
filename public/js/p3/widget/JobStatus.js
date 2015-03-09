@@ -33,7 +33,7 @@ define([
 			Topic.subscribe("/Jobs", lang.hitch(this,"onJobMessage"))
 			JobManager.getJobSummary().then(lang.hitch(this,"onJobMessage"));
 			this.tooltip = new Tooltip({
-				connectId: [this.domNode],
+				connectId: [this.focusNode],
 				label: " Completed &middot; In progress &middot; Queued &middot; Suspended"
 			});
 		},
