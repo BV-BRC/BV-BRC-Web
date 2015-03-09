@@ -22,7 +22,8 @@ define([
 						return item.type; 
 					},
 					className: "wsItemType",
-					formatter: formatter.wsItemType
+					formatter: formatter.wsItemType,
+					unhidable: true
 				},
 				"name": editor({
 					label: "Name",
@@ -50,7 +51,7 @@ define([
 					field: "owner_id",
 					className: "wsItemOwnerId",
 					formatter: formatter.baseUsername,
-					hidden: true
+					hidden: false
 				},
 				creation_time: {
 					label: "Created",

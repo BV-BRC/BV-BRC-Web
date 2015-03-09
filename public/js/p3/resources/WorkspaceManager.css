@@ -89,6 +89,15 @@
 	border: 0px;
 }
 .wsItemName {
+	width: 450px;
+	white-space: nowrap;
+}
+
+th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsCreationTime, th.dgrid-cell.wsItemOwnerId {
+	border-right: 1px solid #C0C0C0;
+}
+th.dgrid-cell.wsItemType {
+	border-right: 0px;
 }
 
 .wsItemOwnerId {
@@ -100,7 +109,6 @@
 }
 
 .wsItemCreationTime {
-	width: 150px;
 }
 .JobStatusButton,
 .UploadStatusButton {
