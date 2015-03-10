@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n"}});
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n"}});
 define("p3/widget/WorkspaceObjectSelector", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
@@ -132,6 +132,17 @@ define("p3/widget/WorkspaceObjectSelector", [
 			},wrap);
 			
 			return wrap;	
+		},
+		focus: function(){
+			// summary:
+			//		Put focus on this widget
+			if(!this.disabled && this.focusNode.focus){
+				try{
+					this.focusNode.focus();
+				}catch(e){
+				}
+				/*squelch errors from hidden nodes*/
+			}
 		},
 
 		openChooser: function(){
@@ -302,6 +313,16 @@ define("p3/widget/WorkspaceObjectSelector", [
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
+		},
+
+		validate: function(/*Boolean*/ isFocused){
+			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
+			var message = "";
+			var isValid = this.disabled || this.searchBox.isValid(isFocused);
+			this._set("state", isValid ? "" : this.searchBox.state);
+			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+
+			return isValid;
 		}
 	});
 });

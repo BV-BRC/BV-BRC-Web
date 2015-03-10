@@ -1,40 +1,82 @@
 define("p3/widget/viewer/ExperimentGroup", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"../PageGrid","../formatter"
+	"../Grid","../formatter","../../WorkspaceManager","dojo/_base/lang"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
-	Grid,formatter
+	Grid,formatter,WorkspaceManager,lang
 ){
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled":false,
 		"query": null,
-		_setQueryAttr: function(query){
-			this.query = query;
-			if (this.viewer){
-				this.viewer.set("query", query);
-			}
+		data: null,
+		_setDataAttr: function(data){
+			this.data=data;
+			console.log("Data: ", data);
+			WorkspaceManager.getObject(data.path + data.name).then(lang.hitch(this,function(obj){
+				console.log("WorkspaceGroup: ", obj);
+				if (obj && obj.data && typeof obj.data=='string'){
+
+					obj.data = JSON.parse(obj.data);
+				}
+
+				if (obj && obj.data && obj.data.id_list && obj.data.id_list.feature_id){
+					var featureIds= obj.data.id_list.fea
+
+				}
+				this.viewHeader.set("content", "<pre>"+JSON.stringify(obj.data,null,2)+"</pre>");		
+			}));
+/*
+			var paths = this.data.autoMeta.output_files.filter(function(f){
+				if (f instanceof Array){
+					var path=f[0];
+				}else{
+					path = f;
+				}
+				if (f.match("sample.json")){
+					return true
+				}
+				if (f.match("experiment.json")){
+					return true
+				}
+				return false;	
+			}).map(function(f){
+				if (f instanceof Array){
+					return f[0];
+				}
+			 	return f;
+			});
+*/
+/*
+			WorkspaceManager.getObjects(paths).then(lang.hitch(this,function(objs){
+				objs.forEach(function(obj){
+					if (typeof obj.data == 'string') {
+						obj.data = JSON.parse(obj.data);
+					}
+				});
+				this.viewHeader.set('content',);
+				//this.viewer.renderArray(this.samples);
+		
+			}));
+*/
 		},
 		startup: function(){
 			if (this._started) {return;}
-			this.viewHeader = new ContentPane({content: "Experiment Group Viewer", region: "top"});
+			this.viewHeader = new ContentPane({content: "Loading Experiments...<br><br>", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
-				query: (this.query||""),
-			//	apiToken: window.App.authorizationToken,
-			//	apiServer: window.App.dataAPI,
-			//	dataModel: "genome",
 				deselectOnRefresh: true,
 				columns: {
-					source: {label: "Source", field: "source"},
-					dataType: {label: "Data Type", field: "dataType"},
-					title: {label: "Title", field: "title"},
-					comparisons: {label: "Comparisons", field: "comparisons"},
+					title: {label: "Title", field: "expname"},
 					genes: {label: "Genes", field: "genes"},
-					pubmed: {label: "Gene Modification", field: "gene_modification"},
-					organism: {label: "Experiment Condition", field: "experiment_condition"},
+					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_z_score"},
+					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_log_ratio"},
+					strain: {label: "Strain", field: "organism"},
+					gene_modification: {label: "Gene Modification", field: "mutant"},
+					expCondition: {label: "Experiment Condition", field: "condition"},
+					timePoint: {label: "Time Point", field: "timepoint"}
 				}
 			});
 				var _self = this

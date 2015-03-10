@@ -103,7 +103,21 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				case "queued":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
 			}
-		},	
+		},
+		status_indicator: function(val){
+			switch (val) {
+				case "in-progress":
+					return '<div><i class="fa icon-circle fa-1x" style="color:green" title="Running" /></div>'
+				case "deleted":
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Deleted" />'
+				case "completed":
+					return '<i class="fa icon-circle fa-1x" style="color:blue" title="Completed" />'
+				case "failed":
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
+				case "queued":
+					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+			}
+		},
 		wsItemType: function(val){
 			switch (val) {
 				case "parentfolder":
