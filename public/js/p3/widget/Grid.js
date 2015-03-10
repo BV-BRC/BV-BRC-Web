@@ -68,9 +68,10 @@ function(
                         if (this._started) { return; }
 			var _self=this;
 			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
+				console.log('results: ', results);
+				Deferred.when(results.total || results.length, function(x){
 					_self.set("totalRows", x);
-	                        });
+				});
 			});
 
 			if (!this.store && this.dataModel) {
