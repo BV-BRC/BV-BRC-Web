@@ -52,6 +52,24 @@
 	padding:4px;
 }
 
+.ItemDetailAttribute{
+	display: inline-block;
+}
+.ItemDetailAttributeValue{
+	font-style: italic;
+	display: inline-block;
+	font-weight:500;
+}
+.ItemDetailHeaderTable{
+	width:100%;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+.ItemDetailHeader{
+	font-size:1.5em;font-weight:900;
+	margin-left:20px;
+}
 
 .ItemDetailPanel {
 	background:#edf2ff;;
