@@ -244,7 +244,7 @@ define([
 						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
-						params.group = obj.path;
+						params.data= obj;
 						break;
 	
 					default:
