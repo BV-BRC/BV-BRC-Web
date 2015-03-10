@@ -34,7 +34,7 @@ define([
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete",
+				label: " Completed &middot; In progress &middot; % Complete"
 			});
 		},
 		onUploadMessage: function(msg){

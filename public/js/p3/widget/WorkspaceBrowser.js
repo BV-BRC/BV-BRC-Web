@@ -231,7 +231,9 @@ define([
 					case "job_result":
 						var d = "p3/widget/viewer/JobResult"
 						console.log("job_result object: ", obj);
-						if (obj && obj.app && obj.app.id){
+						if (obj && obj.autoMeta && obj.autoMeta.app){
+							var id = obj.autoMeta.app.id || obj.autoMeta.app
+							console.log("Using Experiement Viewer");
 							if (id=="DifferentialExpression"){
 								d = "p3/widget/viewer/Experiment"
 							}	
@@ -242,7 +244,7 @@ define([
 						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
-						params.group = obj.path;
+						params.data= obj;
 						break;
 	
 					default:

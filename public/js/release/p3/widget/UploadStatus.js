@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n"}});
+'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n"}});
 define("p3/widget/UploadStatus", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dojo/topic","dojo/_base/lang",
@@ -35,7 +35,7 @@ define("p3/widget/UploadStatus", [
 			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
-				connectId: [this.domNode],
+				connectId: [this.uploadStatusCount],
 				label: " Completed &middot; In progress &middot; % Complete"
 			});
 		},

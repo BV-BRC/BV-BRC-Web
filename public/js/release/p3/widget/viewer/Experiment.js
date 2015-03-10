@@ -1,41 +1,72 @@
 define("p3/widget/viewer/Experiment", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"../PageGrid","../formatter"
+	"../Grid","../formatter","../../WorkspaceManager","dojo/_base/lang"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
-	Grid,formatter
+	Grid,formatter,WorkspaceManager,lang
 ){
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled":false,
 		"query": null,
-		_setQueryAttr: function(query){
-			this.query = query;
-			if (this.viewer){
-				this.viewer.set("query", query);
-			}
+		data: null,
+		_setDataAttr: function(data){
+			this.data=data;
+			var paths = this.data.autoMeta.output_files.filter(function(f){
+				if (f instanceof Array){
+					var path=f[0];
+				}else{
+					path = f;
+				}
+				if (f.match("sample.json")){
+					return true
+				}
+				if (f.match("experiment.json")){
+					return true
+				}
+				return false;	
+			}).map(function(f){
+				if (f instanceof Array){
+					return f[0];
+				}
+			 	return f;
+			});
+
+			WorkspaceManager.getObjects(paths).then(lang.hitch(this,function(objs){
+				objs.forEach(function(obj){
+					if (typeof obj.data == 'string') {
+						obj.data = JSON.parse(obj.data);
+					}
+				});
+				this.experiment = objs[0].data;
+				this.samples = objs[1].data.sample;
+				console.log("Got sample Data: ", objs[1]);
+				var content = ["Platform Organism: " + (this.experiment.organism || "Undefined") + " Pubmed ID: " + (this.experiment.pubmed||"Undefined") + " <br>"];
+				content.push("Genes Mapped/Genes Total: " + (this.experiment.geneTotal - this.experiment.genesMissed) + "/" + this.experiment.geneTotal + " Samples: " + this.experiment.samples + "<br>")
+				content.push(this.experiment.description);	
+				this.viewHeader.set('content', content.join(""));
+				this.viewer.renderArray(this.samples);
+		
+			}));
+
 		},
 		startup: function(){
 			if (this._started) {return;}
-			this.viewHeader = new ContentPane({content: "Experiment Viewer", region: "top"});
+			this.viewHeader = new ContentPane({content: "Loading Experiment...<br><br>", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
-				query: (this.query||""),
-				apiToken: window.App.authorizationToken,
-				apiServer: window.App.dataAPI,
-				dataModel: "genome",
 				deselectOnRefresh: true,
 				columns: {
-					title: {label: "Title", field: "title"},
+					title: {label: "Title", field: "expname"},
 					genes: {label: "Genes", field: "genes"},
-					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "signification_genes_log_ratio"},
-					sigGenesZS: {label: "Significant Genes (Z Score)", field: "signification_genes_z_score"},
-					strain: {label: "Strain", field: "strain"},
-					gene_modification: {label: "Gene Modification", field: "gene_modification"},
-					expCondition: {label: "Experiment Condition", field: "experiment_condition"},
-					timePoint: {label: "Time Point", field: "time_point"},
+					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_z_score"},
+					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_log_ratio"},
+					strain: {label: "Strain", field: "organism"},
+					gene_modification: {label: "Gene Modification", field: "mutant"},
+					expCondition: {label: "Experiment Condition", field: "condition"},
+					timePoint: {label: "Time Point", field: "timepoint"}
 				}
 			});
 				var _self = this

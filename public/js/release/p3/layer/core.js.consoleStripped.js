@@ -13685,7 +13685,7 @@ define([
 	
 					var res = {
 						metadata: meta,
-						data: obj[0][1]
+						data: obj[1]
 					}
 					 0 && console.log("getObjects() res", res);
 					return res;
@@ -26224,7 +26224,9 @@ define([
 					case "job_result":
 						var d = "p3/widget/viewer/JobResult"
 						 0 && console.log("job_result object: ", obj);
-						if (obj && obj.app && obj.app.id){
+						if (obj && obj.autoMeta && obj.autoMeta.app){
+							var id = obj.autoMeta.app.id || obj.autoMeta.app
+							 0 && console.log("Using Experiement Viewer");
 							if (id=="DifferentialExpression"){
 								d = "p3/widget/viewer/Experiment"
 							}	
@@ -26235,7 +26237,7 @@ define([
 						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
-						params.group = obj.path;
+						params.data= obj;
 						break;
 	
 					default:
@@ -26578,7 +26580,8 @@ define([
 						return item.type; 
 					},
 					className: "wsItemType",
-					formatter: formatter.wsItemType
+					formatter: formatter.wsItemType,
+					unhidable: true
 				},
 				"name": editor({
 					label: "Name",
@@ -26606,7 +26609,7 @@ define([
 					field: "owner_id",
 					className: "wsItemOwnerId",
 					formatter: formatter.baseUsername,
-					hidden: true
+					hidden: false
 				},
 				creation_time: {
 					label: "Created",
@@ -30216,7 +30219,21 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "queued":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
 			}
-		},	
+		},
+		status_indicator: function(val){
+			switch (val) {
+				case "in-progress":
+					return '<div><i class="fa icon-circle fa-1x" style="color:green" title="Running" /></div>'
+				case "deleted":
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Deleted" />'
+				case "completed":
+					return '<i class="fa icon-circle fa-1x" style="color:blue" title="Completed" />'
+				case "failed":
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
+				case "queued":
+					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+			}
+		},
 		wsItemType: function(val){
 			switch (val) {
 				case "parentfolder":
@@ -33835,7 +33852,7 @@ define([
 			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
-				connectId: [this.domNode],
+				connectId: [this.uploadStatusCount],
 				label: " Completed &middot; In progress &middot; % Complete"
 			});
 		},
@@ -36333,6 +36350,17 @@ define([
 			
 			return wrap;	
 		},
+		focus: function(){
+			// summary:
+			//		Put focus on this widget
+			if(!this.disabled && this.focusNode.focus){
+				try{
+					this.focusNode.focus();
+				}catch(e){
+				}
+				/*squelch errors from hidden nodes*/
+			}
+		},
 
 		openChooser: function(){
 			if (this.disabled) { return; }
@@ -36502,6 +36530,16 @@ define([
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
+		},
+
+		validate: function(/*Boolean*/ isFocused){
+			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
+			var message = "";
+			var isValid = this.disabled || this.searchBox.isValid(isFocused);
+			this._set("state", isValid ? "" : this.searchBox.state);
+			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+
+			return isValid;
 		}
 	});
 });
@@ -38015,13 +38053,13 @@ return number;
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\">\n\t\t<option value=\"create\">New Group</option>\n\t\t<option value=\"create\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden'>\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"types:['genome_group']\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\"></div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
-'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<span>Uploads</span>\n\t<div>\n\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
-'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<i class=\"DialogButton fa icon-upload fa-2x\" style=\"vertical-align:middle;\" rel=\"Upload:\" ></i>\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
+'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\n\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\t\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",

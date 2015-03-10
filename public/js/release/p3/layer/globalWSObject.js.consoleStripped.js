@@ -16752,7 +16752,7 @@ define([
 	
 					var res = {
 						metadata: meta,
-						data: obj[0][1]
+						data: obj[1]
 					}
 					 0 && console.log("getObjects() res", res);
 					return res;
