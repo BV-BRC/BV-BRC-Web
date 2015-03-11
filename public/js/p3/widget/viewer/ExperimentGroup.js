@@ -22,11 +22,31 @@ define([
 					obj.data = JSON.parse(obj.data);
 				}
 
-				if (obj && obj.data && obj.data.id_list && obj.data.id_list.feature_id){
-					var featureIds= obj.data.id_list.fea
+				if (obj && obj.data && obj.data.id_list && obj.data.id_list.ws_item_path){
+					var workspaceItems = obj.data.id_list.ws_item_path;
+					var expObjs=[]
+					WorkspaceManager.getObjects(workspaceItems).then(lang.hitch(this, function(objs){
+						console.log("Experiments from ws: ", objs);
+						objs.forEach(function(o){
+							if (o && o.metadata.autoMeta && o.metadata.autoMeta.output_files){
+								if (o.metadata.type=="folder") { return; }
+
+								o.metadata.autoMeta.output_files.some(function(output_file){
+									if (output_file.match(/experiment\.json$/)){
+										expObjs.push(output_file)
+									}
+								})
+							}
+						})
+						WorkspaceManager.getObjects(expObjs).then(lang.hitch(this, function(objs){
+							var data = objs.map(function(o) { var d = (typeof o.data=="string")?JSON.parse(o.data):o.data; d.source="me"; return d});
+							console.log("Experiment Data: ", data);
+							this.viewer.renderArray(data);
+						}));
+					}));
 
 				}
-				this.viewHeader.set("content", "<pre>"+JSON.stringify(obj.data,null,2)+"</pre>");		
+				this.viewHeader.set("content", obj.metadata.name);
 			}));
 /*
 			var paths = this.data.autoMeta.output_files.filter(function(f){
@@ -69,14 +89,13 @@ define([
 				region: "center",
 				deselectOnRefresh: true,
 				columns: {
+					source: {label: "Source", field: "source"},
+					dataType: {label: "Data Type", field: "title"},
 					title: {label: "Title", field: "expname"},
-					genes: {label: "Genes", field: "genes"},
-					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_z_score"},
-					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_log_ratio"},
-					strain: {label: "Strain", field: "organism"},
-					gene_modification: {label: "Gene Modification", field: "mutant"},
-					expCondition: {label: "Experiment Condition", field: "condition"},
-					timePoint: {label: "Time Point", field: "timepoint"}
+					comparisons: {label: "Comparisons", field: "samples"},
+					genes: {label: "Genes", field: "genesTotal"},
+					pubmed: {label: "PubMed", field: "pmid"},
+					organism: {label: "Organism", field: "organism"},
 				}
 			});
 				var _self = this
