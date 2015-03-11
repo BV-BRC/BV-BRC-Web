@@ -1,21 +1,22 @@
 <div class="ItemDetailPanel">
 	<div>
-		<table style="width:100%">
+		<table class="ItemDetailHeaderTable">
 			<tbody>
 				<tr>
 					<td style="width:1%"><i class="fa fa-1x" data-dojo-attach-point="typeIcon" ></i></td>
 					<td>
-						<div style="font-size:1em;font-weight:900;" data-dojo-type="dijit/InlineEditBox" data-dojo-attach-point="nameWidget" disabled="true"></div>
-						<span data-dojo-attach-point="typeNode"></span> &middot; <span data-dojo-attach-point="owner_idNode"></span>
+						<div class="ItemDetailHeader" data-dojo-type="dijit/InlineEditBox" data-dojo-attach-point="nameWidget" disabled="true"></div>
 					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
-	<div style="font-size:.85em">
-		<div data-dojo-attach-point="idNode"></div>
-		<div data-dojo-attach-point="pathNode"></div>
-		<div>Created <span data-dojo-attach-point="creation_timeNode"></span></div>
+	<div style="font-size:1em">
+		<div class="ItemDetailAttribute">Type: <span class="ItemDetailAttributeValue" data-dojo-attach-point="typeNode"></div></span></br>
+		<div class="ItemDetailAttribute">Owner: <span class="ItemDetailAttributeValue"  data-dojo-attach-point="owner_idNode"></span></div></br>
+		<div class="ItemDetailAttribute">Created: <span class="ItemDetailAttributeValue" data-dojo-attach-point="creation_timeNode"></span></div></br>
+		<div class="ItemDetailAttribute">Path: <span class="ItemDetailAttributeValue" data-dojo-attach-point="pathNode"></span></div>
+		<div style="display:none;" data-dojo-attach-point="idNode"></div>
 	</div> 
 	<div data-dojo-attach-point="autoMeta">
 
