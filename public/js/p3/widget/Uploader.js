@@ -25,9 +25,8 @@ define([
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
 			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"]},
 			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"]},
-			expression_gene_list: {label: "Expression Gene List", formats: [".csv",".txt",".xls",".xlsx"]},
-			expression_gene_matrix: {label: "Expression Gene Matrix", formats: [".csv",".txt",".xls",".xlsx"]},
-			expression_experiment_metadata:{label: "Expression Experiment Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
+			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
 		_setPathAttr: function(val){
 			this.path = val;

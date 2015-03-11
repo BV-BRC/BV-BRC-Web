@@ -24,7 +24,7 @@
 			<div class="approw">
 				<div style="text-align:left;">
 					<label>Experiment Data File</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="xfile" name="xfile" style="width:100%" required="true" data-dojo-props="type:['expression_gene_matrix', 'expression_gene_list', 'differential_expression_input'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
+					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" data-dojo-attach-point="xfile" name="xfile" style="width:100%" required="true" data-dojo-props="type:['expression_gene_matrix', 'expression_gene_list', 'diffexp_input_data'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'An comparison file must be provided.'"></div>
 				</div>
 			</div>
 			<div class="approw">
@@ -107,7 +107,7 @@
 			</div>
 			<div class="approw">
 				<label>Metadata File</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="mfile" style="width:100%" required="false" data-dojo-props="type:['expression_experiment_metadata'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="mfile" style="width:100%" required="false" data-dojo-props="type:['expression_experiment_metadata, diffexp_input_metadata'],multi:false,promptMessage:'Select or Upload an comparison data file to your workspace',missingMessage:'Comparison metadata is optional.'"></div>
 			</div>
 		</td>
 		</table>
