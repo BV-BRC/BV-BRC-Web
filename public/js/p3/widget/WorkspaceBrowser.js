@@ -143,7 +143,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata"]}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
