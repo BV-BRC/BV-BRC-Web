@@ -93,8 +93,7 @@ define([
 
 			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment"]}, function(selection){
 				console.log("View Gene List", selection);
-				var url = "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
-				Topic.publish("/navigate", {href: url});
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
 			}, true);
 
 
