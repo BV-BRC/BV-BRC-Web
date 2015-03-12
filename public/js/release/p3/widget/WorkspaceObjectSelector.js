@@ -294,6 +294,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 		onSearchChange: function(value){
 			this.set("value", value);	
 			this.onChange(value);
+			this.validate(true);
 		},
 		onChange: function(){},
 		startup: function(){

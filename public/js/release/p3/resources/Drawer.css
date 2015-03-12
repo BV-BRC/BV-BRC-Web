@@ -9,7 +9,7 @@
 .Drawer > .handle {
 	width: 16px;
 	height: 75px;
-	border 2px solid #333;
+	border: 2px solid #333;
 	background: #333;
 	z-index: 810;
 	cursor: pointer;

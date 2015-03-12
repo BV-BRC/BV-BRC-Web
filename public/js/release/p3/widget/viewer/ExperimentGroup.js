@@ -1,12 +1,15 @@
 define("p3/widget/viewer/ExperimentGroup", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"../Grid","../formatter","../../WorkspaceManager","dojo/_base/lang"
+	"../Grid","../formatter","../../WorkspaceManager","dojo/_base/lang",
+	"dojo/_base/Deferred","dojo/store/JsonRest","dojo/promise/all"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
-	Grid,formatter,WorkspaceManager,lang
+	Grid,formatter,WorkspaceManager,lang,
+	Deferred,Store,All
 ){
+
 	return declare([BorderContainer], {
 		"baseClass": "ExperimentViewer",
 		"disabled":false,
@@ -21,12 +24,50 @@ define("p3/widget/viewer/ExperimentGroup", [
 
 					obj.data = JSON.parse(obj.data);
 				}
+				var wsItemDef = new Deferred();
+				if (obj && obj.data && obj.data.id_list && obj.data.id_list.ws_item_path){
+					var workspaceItems = obj.data.id_list.ws_item_path;
+					var expObjs=[]
+					WorkspaceManager.getObjects(workspaceItems).then(lang.hitch(this, function(objs){
+						console.log("Experiments from ws: ", objs);
+						objs.forEach(function(o){
+							if (o && o.metadata.autoMeta && o.metadata.autoMeta.output_files){
+								if (o.metadata.type=="folder") { return; }
 
-				if (obj && obj.data && obj.data.id_list && obj.data.id_list.feature_id){
-					var featureIds= obj.data.id_list.fea
+								o.metadata.autoMeta.output_files.some(function(output_file){
+									if (output_file.match(/experiment\.json$/)){
+										expObjs.push({expFile: output_file, expPath: o.metadata.path + o.metadata.name})
+										return true;
+									}
+								})
+							}
+						})
+						WorkspaceManager.getObjects(expObjs.map(function(x){return x.expFile; })).then(lang.hitch(this, function(objs){
+							var data = objs.map(function(o,idx) { var d = (typeof o.data=="string")?JSON.parse(o.data):o.data; d.document_type="experiment"; d.source="me"; d.path= expObjs[idx].expPath;  return d});
+							console.log("Experiment Data: ", data);
+							wsItemDef.resolve(data);
+						}));
+					}));
 
+				}else{
+					wsItemDef.resolve([]);
 				}
-				this.viewHeader.set("content", "<pre>"+JSON.stringify(obj.data,null,2)+"</pre>");		
+
+				if (obj && obj.data && obj.data.id_list && obj.data.id_list.eid){
+					var query = "?in(eid,(" + obj.data.id_list.eid.join(",") + "))";
+					console.log("Query: ", query);
+					eidDefer = this.store.query(query)
+				}else{
+					eidDefer = [];
+				}
+
+				Deferred.when(All([wsItemDef, eidDefer]), lang.hitch(this,function(res){
+					console.log("all res: ", res);
+					var d = res[0].concat(res[1]);	
+					console.log("Combined Experiments: ", d);
+					this.viewer.renderArray(d);
+					this.viewHeader.set("content", obj.metadata.name);
+				}));
 			}));
 /*
 			var paths = this.data.autoMeta.output_files.filter(function(f){
@@ -64,19 +105,21 @@ define("p3/widget/viewer/ExperimentGroup", [
 		},
 		startup: function(){
 			if (this._started) {return;}
+			if (!this.store) {
+				this.store=new Store({target: window.App.dataAPI+ "/transcriptomics_experiment", header: {accept: "application/json"}});
+			}
 			this.viewHeader = new ContentPane({content: "Loading Experiments...<br><br>", region: "top"});
 			this.viewer = new Grid({
 				region: "center",
 				deselectOnRefresh: true,
 				columns: {
+					source: {label: "Source", field: "source"},
+					dataType: {label: "Data Type", field: "title"},
 					title: {label: "Title", field: "expname"},
-					genes: {label: "Genes", field: "genes"},
-					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_z_score"},
-					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_log_ratio"},
-					strain: {label: "Strain", field: "organism"},
-					gene_modification: {label: "Gene Modification", field: "mutant"},
-					expCondition: {label: "Experiment Condition", field: "condition"},
-					timePoint: {label: "Time Point", field: "timepoint"}
+					comparisons: {label: "Comparisons", field: "samples"},
+					genes: {label: "Genes", field: "genesTotal"},
+					pubmed: {label: "PubMed", field: "pmid"},
+					organism: {label: "Organism", field: "organism"},
 				}
 			});
 				var _self = this
