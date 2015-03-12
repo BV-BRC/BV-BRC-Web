@@ -44,7 +44,7 @@ define([
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
 
-			this.actionPanel.addAction("EditItem","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("EditItem","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"], tooltip: "Toggle Object Detail"}, function(selection){
 				console.log("Edit Item Action", selection);
 				self.itemDetailPanel.set("item",selection[0]);				
 				if (self.getChildren().some(function(child){
@@ -86,18 +86,43 @@ define([
 			}, true);
 */
 
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
+			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"], tooltip: "Download"}, function(selection){
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome","genome_feature","experiment","experiment_sample"]}, function(selection){
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome","genome_feature","experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
 				console.log("Download Table", selection);
+			}, true);
+
+			this.actionPanel.addAction("ViewFASTADNA","fa icon-fasta fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA DNA"}, function(selection){
+				console.log("View FASTA DNA", selection);
+			}, true);
+
+			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+				console.log("View FASTA Protein", selection);
+			}, true);
+
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "ID Mapping"}, function(selection){
+				console.log("View FASTA DNA", selection);
+			}, true);
+
+			this.actionPanel.addAction("ViewFASTAProtein","fa icon-fasta fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Proteins"}, function(selection){
+				console.log("View FASTA Protein", selection);
+			}, true);
+
+			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
+				console.log("View FASTA Protein", selection);
 			}, true);
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"]}, function(selection){
+
+
+
+
+
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
 			}, true);
@@ -111,7 +136,7 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Remove Selection from Group"}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
@@ -142,7 +167,7 @@ define([
 			},true);
 
 			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection, containerWidget){
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
@@ -158,7 +183,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata"]}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -177,7 +202,7 @@ define([
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"]}, function(selection){
+			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"],tooltip: "Delete Folder"}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
