@@ -75,8 +75,9 @@ define([
 			if ( this.required && this._isEmpty(val) ) { return false; }
 
 			if (!this.path) {
-				this.set('invalidMessage', "The output folder has not been selected");
-				return false;
+				return true;
+				//this.set('invalidMessage', "The output folder has not been selected");
+				//return false;
 			}
 
 			if (val.match(re)){

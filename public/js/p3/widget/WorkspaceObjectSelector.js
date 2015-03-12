@@ -5,7 +5,8 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic"
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic",
+	"dijit/registry"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -13,7 +14,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox,Topic
+	Button,Deferred,CheckBox,Topic,registry
 ){
 
 
@@ -320,6 +321,11 @@ define([
 			var isValid = this.disabled || this.searchBox.isValid(isFocused);
 			this._set("state", isValid ? "" : this.searchBox.state);
 			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+			if(isValid){
+				registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+					obj.validate();
+				});
+			}
 
 			return isValid;
 		}

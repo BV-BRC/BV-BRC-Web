@@ -29,9 +29,6 @@ define([
 			}));
 			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
 		},
-		onOutputPathChange: function(val){
-			this.output_nameWidget.set("path", val);
-		},
 	
 		onTaxIDChange: function(val){
 			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
