@@ -3,13 +3,15 @@ define([
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
-	"./Confirmation","./SelectionToGroup","dijit/Dialog"
+	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
+	"dijit/popup","dojo/text!./templates/IDMapping.html"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
-	Confirmation,SelectionToGroup,Dialog
+	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
+	popup,IDMappingTemplate
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -44,7 +46,7 @@ define([
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
 
-			this.actionPanel.addAction("EditItem","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"], tooltip: "Toggle Object Detail"}, function(selection){
+			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"], tooltip: "Toggle Detail"}, function(selection){
 				console.log("Edit Item Action", selection);
 				self.itemDetailPanel.set("item",selection[0]);				
 				if (self.getChildren().some(function(child){
@@ -103,8 +105,18 @@ define([
 				console.log("View FASTA Protein", selection);
 			}, true);
 
-			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "ID Mapping"}, function(selection){
-				console.log("View FASTA DNA", selection);
+			var idMappingTTDialog =  TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltipDialog:idMappingTTDialog },function(selection){
+
+				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
+				console.log("this: ", this);
+				popup.open({
+					popup: this._actions.idmapping.options.tooltipDialog,
+					around: this._actions.idmapping.button,
+					orient: ["before-centered"]
+				});
+				console.log("popup idmapping", selection);
 			}, true);
 
 			this.actionPanel.addAction("ViewFASTAProtein","fa icon-fasta fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Proteins"}, function(selection){
@@ -117,17 +129,10 @@ define([
 
 
 
-
-
-
-
-
 			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
 			}, true);
-
-
 
 			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
