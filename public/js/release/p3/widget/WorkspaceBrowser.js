@@ -16,7 +16,7 @@ define("p3/widget/WorkspaceBrowser", [
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","unspecified","contigs","reads"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
@@ -91,6 +91,14 @@ define("p3/widget/WorkspaceBrowser", [
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
+			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment"]}, function(selection){
+				console.log("View Gene List", selection);
+				var url = "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
+				Topic.publish("/navigate", {href: url});
+			}, true);
+
+
+
 			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
 				console.log("Replace Item Action", selection);
@@ -138,6 +146,8 @@ define("p3/widget/WorkspaceBrowser", [
 				dlg.startup();
 				dlg.show();
 			},true);
+
+
 //			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
 //				console.log("Remove Items from Group", selection);
 //			},true);

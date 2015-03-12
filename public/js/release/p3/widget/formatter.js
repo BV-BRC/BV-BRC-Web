@@ -10,7 +10,18 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 		if (!obj || !obj.getMonth){ return " " }
 	
 		return locale.format(obj,format || {formatLength: "short"});
-	} 
+	}
+
+      var findObjectByLabel = function(obj, label) {
+	if(obj.label === label) { return obj;}
+	for(var i in obj) {
+          if(obj.hasOwnProperty(i)){
+            var foundLabel = findObjectByLabel(obj[i], label);
+            if(foundLabel) { return foundLabel; }
+          }
+        }
+        return null;
+      } 
 
 	var dateFromEpoch = function(obj, format){
 		obj=new Date(new Date().setTime(obj*1000));
@@ -142,6 +153,29 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				default: 
 					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
 			}
+		},
+		autoLabel: function(ws_location,autoData){
+			_autoLabels={};
+                        if (ws_location=="itemDetail"){
+				_app_label=null;
+				if (autoData.hasOwnProperty("app") && autoData["app"].hasOwnProperty("id")){
+					_app_label=autoData["app"]["id"];
+				}
+				if ( _app_label=="GenomeAnnotation"){
+                                	_autoLabels= {"app_label":{"label":"Genome Annotation"},"scientific_name":{"label":"Organism"},"domain":{"label":"Domain"},"num_features":{"label":"Feature count"},"genome_id":{"label":"Annotation ID"}};
+				}
+				if (_app_label=="GenomeAssembly"){
+					_autoLabels= {"app_label":{"label":"Genome Assembly"}};
+				}
+			}
+			Object.keys(_autoLabels).forEach(function(key){
+				var curValue=null;//findObjectByLabel(autoData,key);
+				if (curValue){
+					_autoLabels[key]["value"]=curValue;
+				}
+			},this);
+		
+			return _autoLabels;
 		}
 
 	}
