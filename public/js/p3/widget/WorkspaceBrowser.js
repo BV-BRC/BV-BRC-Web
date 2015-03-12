@@ -91,7 +91,13 @@ define([
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment"]}, function(selection){
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome","genome_feature","experiment","experiment_sample"]}, function(selection){
+				console.log("Download Table", selection);
+			}, true);
+
+
+
+			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"]}, function(selection){
 				console.log("View Gene List", selection);
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
 			}, true);
