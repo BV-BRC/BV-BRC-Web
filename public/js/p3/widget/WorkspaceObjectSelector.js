@@ -292,6 +292,7 @@ define([
 		onSearchChange: function(value){
 			this.set("value", value);	
 			this.onChange(value);
+			this.validate(true);
 		},
 		onChange: function(){},
 		startup: function(){
