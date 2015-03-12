@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
-	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup"
+	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup","dijit/registry"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,WorkspaceObjectSelector,
-	Dialog,xhr,domConstruct,query,TooltipDialog,popup
+	Dialog,xhr,domConstruct,query,TooltipDialog,popup,registry
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -120,12 +120,15 @@ define([
 					dlg.show();
 					return;
 				}
-				this.submitButton.set("disabled", true)
+				this.submitButton.set("disabled", true);
 				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
 					console.log("Job Submission Results: ", results);
 					domClass.remove(_self.domNode,"Working")
 					domClass.add(_self.domNode, "Submitted");
 					_self.submitButton.set("disabled", false);
+					registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+						obj.reset();
+					});
 				}, function(err){
 					console.log("Error:", err)
 					domClass.remove(_self.domNode,"Working");

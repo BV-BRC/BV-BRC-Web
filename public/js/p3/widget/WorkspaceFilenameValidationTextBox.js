@@ -19,6 +19,7 @@ define([
 	return declare([ValidationTextBox], {
 /*		"baseClass": "WorkspaceObjectSelector",*/
 		"disabled":false,
+		declaredClass: "p3.widget.WorkspaceFilenameValidationTextBox",
 		workspace: "",
 		value: "",
 		path: "",
