@@ -13,6 +13,10 @@ text-align: right;
 background-color: #F0F1F3;
 }
 
+.appSubmissionArea{
+margin-bottom:20px;
+}
+
 .nonModal_underlay {
     display:none
 }
