@@ -78,6 +78,12 @@ define([
 			});
 		},
 
+                onOutputPathChange: function(val){
+			registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+				obj.set("path", val);
+			});
+                },
+
 		startup: function(){
 			if (this._started) { return; }
 			this.inherited(arguments);
