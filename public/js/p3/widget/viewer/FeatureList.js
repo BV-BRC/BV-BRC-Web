@@ -10,6 +10,7 @@ define([
 	return declare([BorderContainer], {
 		"baseClass": "FeatureList",
 		"disabled":false,
+		"containerType": "feature_list",
 		"query": null,
 		_setQueryAttr: function(query){
 			this.query = query;
