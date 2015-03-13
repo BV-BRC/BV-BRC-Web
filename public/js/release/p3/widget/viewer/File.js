@@ -14,7 +14,7 @@ define("p3/widget/viewer/File", [
 		"file": null,
 
 		_setFileAttr: function(val){
-			console.log("setting file: ", val.metadata);
+			console.log("setting file: ", val);
 			if (!val) { this.file = {}, this.filepath = ""; return; }
 			if (typeof val=="string"){
 				this.set("filepath", val);
@@ -30,7 +30,7 @@ define("p3/widget/viewer/File", [
 			this.filepath= val;
 			var _self=this;
 			console.log("set filepath: ", val);
-			return Deferred.when(WorkspaceManager.getObjects([val],true),function(meta){
+			return Deferred.when(WorkspaceManager.getObject(val,true),function(meta){
 				console.log("FileViewer Obj: ", obj);
 				_self.file = { metadata: meta}
 				_self.refresh();
@@ -63,7 +63,7 @@ define("p3/widget/viewer/File", [
 				return;
 			}else if (!this.file.data){
 				this.viewer.set("Content", "<div>Loading file content...</div>");
-				return Deferred.when(WorkspaceManager.getObjects([this.filepath],false), function(obj){	
+				return Deferred.when(WorkspaceManager.getObject(this.filepath,false), function(obj){	
 					console.log("set file to: ", obj);
 					_self.set("file", obj);	
 				});
@@ -77,6 +77,8 @@ define("p3/widget/viewer/File", [
 						console.log("Matched JSON to ", this.file.metadata.name);
 						if (typeof this.file.data != "string") {
 							this.file.data = JSON.stringify(this.file.data,null,4);
+						}else{
+							this.file.data = JSON.stringify(JSON.parse(this.file.data),null,4)
 						}
 						console.log("this.file.data: ",typeof this.file.data);
 						this.viewer.set('content',"<pre>" + this.file.data + "</pre>");

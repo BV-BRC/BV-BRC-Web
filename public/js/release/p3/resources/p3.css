@@ -5463,6 +5463,9 @@ padding:15px 50px 10px 10px;
 text-align: right;
 background-color: #F0F1F3;
 }
+.appSubmissionArea{
+margin-bottom:20px;
+}
 .nonModal_underlay {
     display:none
 }

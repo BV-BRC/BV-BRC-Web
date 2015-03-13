@@ -64,7 +64,7 @@
 			<div class="approw">
 				<div class="appField">
 				<label>Experiment Title</label><br>
-				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="dijit/form/ValidationTextBox" name="experiment_title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
+				<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="experiment_title" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Title of the experiment',missingMessage:'Experiment title must be provided',trim:true,placeHolder:'Title'"></div>
 				</div>
 			</div>
 			<div class="approw">
@@ -88,7 +88,7 @@
 			</div>
 			<div class="approw">
 				<label>Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"></div>
+				<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
 			</div>
 			
 		</div>
@@ -114,20 +114,23 @@
 	</div>
 	</div>
 
-	<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-            Converting Expression Data
-        </div>
+	<div class="appSubmissionArea">
 
-        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
-                Error Submitting Job
-        </div>
-        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
-                Conversion should be finished shortly. Check workspace for results.
-        </div>
-        <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
-                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-        </div>
+		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+		    Converting Expression Data
+		</div>
+
+		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+			Error Submitting Job
+		</div>
+		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage" style="margin-top:10px; text-align:center;">
+			Conversion should be finished shortly. Check workspace for results.
+		</div>
+		<div style="margin-top: 10px; text-align:center;">
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+		</div>
+	</div>
 </form>
 

@@ -25996,13 +25996,15 @@ define([
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
-	"./Confirmation","./SelectionToGroup","dijit/Dialog"
+	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
+	"dijit/popup","dojo/text!./templates/IDMapping.html"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
-	Confirmation,SelectionToGroup,Dialog
+	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
+	popup,IDMappingTemplate
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -26037,7 +26039,7 @@ define([
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
 
-			this.actionPanel.addAction("EditItem","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"], tooltip: "Toggle Detail"}, function(selection){
 				 0 && console.log("Edit Item Action", selection);
 				self.itemDetailPanel.set("item",selection[0]);				
 				if (self.getChildren().some(function(child){
@@ -26079,17 +26081,77 @@ define([
 			}, true);
 */
 
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"]}, function(selection){
+			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"], tooltip: "Download"}, function(selection){
 				 0 && console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList","fa fa-table fa-2x",{multiple: true, validTypes:["experiment"]}, function(selection){
-				 0 && console.log("View Gene List", selection);
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
+				 0 && console.log("Download Table", selection);
+			}, true);
+
+			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Table"}, function(selection){
+				 0 && console.log("Download Table", selection);
+			}, true);
+	
+			
+			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
+			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
+
+			on(viewFASTATT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				 0 && console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				 0 && console.log("selection: ", selection);
+				popup.close(viewFASTATT);
+			});
+
+			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
+				popup.open({
+					popup: this._actions.ViewFASTA.options.tooltipDialog,
+					around: this._actions.ViewFASTA.button,
+					orient: ["before-centered"]
+				});
+				 0 && console.log("popup viewFASTA", selection);
+	
+			}, true);
+
+			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+
+			}, true);
+
+			var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+
+			on(idMappingTTDialog.domNode, "TD:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				 0 && console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				 0 && console.log("selection: ", selection);
+				popup.close(idMappingTTDialog);
+			});
+
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
+
+				 0 && console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
+				 0 && console.log("this: ", this);
+				popup.open({
+					popup: this._actions.idmapping.options.tooltipDialog,
+					around: this._actions.idmapping.button,
+					orient: ["before-centered"]
+				});
+				 0 && console.log("popup idmapping", selection);
+			}, true);
+
+			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
+				 0 && console.log("View FASTA Protein", selection);
 			}, true);
 
 
+
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
+				 0 && console.log("View Gene List", selection);
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
+			}, true);
 
 			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
@@ -26098,7 +26160,7 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Remove Selection from Group"}, function(selection){
 				 0 && console.log("Remove Items from Group", selection);
 				 0 && console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
@@ -26129,7 +26191,7 @@ define([
 			},true);
 
 			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"]}, function(selection, containerWidget){
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
 				 0 && console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
@@ -26145,7 +26207,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads"]}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					 0 && console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -26164,7 +26226,7 @@ define([
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"]}, function(selection){
+			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{allowMultiTypes:false,multiple: true,validTypes:["folder"],tooltip: "Delete Folder"}, function(selection){
 				var objs = selection.map(function(s){
 					 0 && console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -26300,6 +26362,7 @@ define([
 						}));	
 
 						newPanel.on("deselect", lang.hitch(this,function(evt){
+
 							if (!evt.selected) { 
 								this.actionPanel.set("selection", []); 
 							}else{
@@ -33409,10 +33472,12 @@ define([
 'p3/widget/ActionBar':function(){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","./Button","dojo/dom-construct"
+	"dojo/dom-class","./Button","dojo/dom-construct",
+	"dijit/Tooltip"
 ], function(
 	declare, WidgetBase, on,
-	domClass,Button,domConstruct
+	domClass,Button,domConstruct,
+	Tooltip
 ){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
@@ -33500,6 +33565,28 @@ define([
 					_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
 				}
 			});	
+
+//			on(this.domNode, ".ActionButton:mouseover", function(evt){
+//				 0 && console.log("mouseover evt: ", evt.target);
+//			});	
+			new Tooltip({
+				connectId: this.domNode,
+				selector: ".ActionButton",
+				getContent: function(matched){
+					 0 && console.log("Matched: ", matched);
+					var rel = matched.attributes.rel.value;
+					 0 && console.log("REL: ", rel);
+					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
+						 0 && console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+						return _self._actions[rel].options.tooltip
+					}else if (matched.attributes.title && matched.attributes.title.value){
+						return  matched.attributes.title.value;
+					}
+					return false;
+				},
+				position: ["above"]
+			});
+	
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
@@ -33515,489 +33602,6 @@ define([
 				
 		}
 		
-	});
-});
-
-},
-'p3/widget/Confirmation':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/_base/lang",
-	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/Confirmation.html",
-	"dijit/form/Button","dijit/Dialog","dojo/dom-construct"
-], function(
-	declare,WidgetBase,lang,
-	Templated,WidgetsInTemplate,template,
-	Button,Dialog,domConstr
-){
-
-	
-	return declare([Dialog], {
-		title: "Confirm Action",
-		content: "Are you sure?",
-		okLabel: "OK",
-		cancelLabel: "Cancel",
-		postCreate: function(){
-			this.inherited(arguments);
-			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
-			domConstr.place(buttonContainer, this.containerNode, "last");
-
-			this.cancelButton = new Button({label: this.cancelLabel,onClick:lang.hitch(this,"_onCancel")});
-			domConstr.place(this.cancelButton.domNode,buttonContainer,"last");
-			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this,"_onSubmit")});
-			domConstr.place(this.okButton.domNode,buttonContainer,"last");
-		},
-
-		onCancel: function(){},
-		onConfirm: function(){},
-		_onCancel: function(){
-			this.onCancel();
-			this.hide();
-			var _self=this;
-			setTimeout(function(){
-				_self.destroy();
-			},2000);
-		},
-		_onSubmit: function(){
-			this.onConfirm();
-			this.hide();
-			var _self=this;
-			setTimeout(function(){
-				_self.destroy();
-			},2000);
-	
-		},
-		startup: function(){
-			this.inherited(arguments);
-//			this.set('content', content);	
-		}
-	});
-
-});
-
-},
-'p3/widget/SelectionToGroup':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/SelectionToGroup.html","dojo/_base/lang"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,lang
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
-		"baseClass": "Panel",
-		"disabled":false,
-		templateString: Template,
-		selection: null,
-		path:null,
-		type: "genome_group",
-		_setTypeAttr: function(t){
-			this.type=t;
-			if (this.workspaceObjectSelecto) {
-				this.workspaceObjectSelector.set("type", [t]);
-			}
-		},
-		onChangeTarget: function(target){
-			 0 && console.log("Target: ", target);
-		},
-		startup: function(){
-			var _self=this;
-			if (this._started) { return; }
-			var currentIcon;
-			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
-				 0 && console.log("set selection(): ", arguments);
-			}))
-			this.inherited(arguments);
-
-			this.workspaceObjectSelector.set('type', [this.type]);
-		}
-
-	});
-});
-
-},
-'p3/widget/WorkspaceGroups':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class"
-], function(
-	declare, WidgetBase, on,
-	domClass
-){
-	return declare([WidgetBase], {
-		"baseClass": "WorkspaceGroups",
-		"disabled":false,
-		postCreate: function(){
-			this.domNode.innerHTML = "WorkspaceGroups";
-		}
-	});
-});
-
-},
-'p3/widget/WorkspaceJobs':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class"
-], function(
-	declare, WidgetBase, on,
-	domClass
-){
-	return declare([WidgetBase], {
-		"baseClass": "WorkspaceJobs",
-		"disabled":false,
-		postCreate: function(){
-			this.domNode.innerHTML = "WorkspaceJobs";
-		}
-	});
-});
-
-},
-'p3/widget/WorkspaceGlobalController':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/WorkspaceGlobalController.html"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
-		"baseClass": "WorkspaceGlobalController",
-		"disabled":false,
-		templateString: Template,
-		path: "",
-		postCreate: function(){
-			this.inherited(arguments);
-			 0 && console.log("WGC PATH", this.path);
-
-			// this.domNode.innerHTML = this.path.split("/").filter(function(x){ return x!=""; }).slice(0,2).join(" / ")
-		},
-
-		setPathAttr: function(val){
-			this.path=val;
-			if (this._started){
-				 0 && console.log("Set Workspace Global Current Path")
-			}
-		}
-
-	});
-});
-
-},
-'p3/widget/WorkspaceController':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dojo/topic","dojo/_base/lang",
-	"dojo/dom-construct","../JobManager","../UploadManager",
-	"./UploadStatus","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-        "dojo/text!./templates/WorkspaceController.html"
-], function(
-	declare, WidgetBase, on,
-	domClass,Topic,lang,
-	domConstr,JobManager,UploadManager,
-	UploadStatus,TemplatedMixin,WidgetsInTemplate,
-	Template
-){
-	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
-		"baseClass": "WorkspaceController",
-		"disabled":false,
-		templateString: Template
-
-	});
-});
-
-},
-'p3/UploadManager':function(){
-define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
-
-	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
-	var UploadManager = (declare([], {
-		constructor: function(){
-			this.activeCount=0;
-			this.completeCount=0;
-			this.completedUploads=[]
-			this.errorCount=0;
-			this.inProgress={};
-
-			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
-				if (this.listenUnload){
-					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads ."; 
-					(event || window.event).returnValue = msg;
-					return msg;
-				}
-				return;		
-			}));
-			
-		},
-		token: null,
-		upload: function(files, token){
-			if (token) {
-				this.token=token;
-				this.headers = {
-					Authorization: "OAuth " + token
-				}
-			}
-			var _self=this;
-			if (files instanceof Array){
-				files.forEach(function(obj){
-					_self._uploadFile(obj.file, obj.url,obj.uploadDirectory);
-				});
-			}else if (files && files.file){
-				_self._uploadFile(files.file, files.url, files.uploadDirectory);
-			}
-
-			Topic.publish("/refreshWorkspace",{});
-		},
-		getUploadSummary: function(){
-			var def = new Deferred();
-			var _self=this;
-			var summary = {
-				inProgress: _self.activeCount,
-				complete: _self.completeCount,
-				errors: _self.errorCount,
-				completedFiles: _self.completedUploads,
-				activeFiles: this.inProgress,
-				progress: 0
-			}
-			var totalSize=0;
-			var loadedSize=0;
-
-			Object.keys(this.inProgress).forEach(function(fname){
-				totalSize+=this.inProgress[fname].total;
-				loadedSize+=this.inProgress[fname].loaded;
-			},this)
-
-			if (totalSize>0) {
-				summary.progress = parseInt((loadedSize/totalSize)*100);
-			}else{
-				summary.progress=0;
-			}
-			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
-
-			var msg ={
-				type: "UploadStatSummary", 
-				summary:summary
-			};
-
-			 0 && console.log("Summary message: ", msg)
-			def.resolve(msg);
-                        return def.promise;
-		},
-
-
-		listenUnload: false,
-		unloadPageListener: function(){
-			this.listenUnload=false;
-		},
-
-		loadPageListener: function(){
-			this.listenUnload=true;
-		},	
-
-		_uploadFile: function(file, url, workspacePath) {	
-			var def = new Deferred();
-			var fd = new FormData();
-			fd.append("upload", file);
-			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath:workspacePath}
-			var _self=this;	
-			req = new XMLHttpRequest();
-			req.upload.addEventListener("progress", function(evt){
-				 0 && console.log("evt: ", evt);
-				 0 && console.log("progress: ", (evt.loaded / evt.total)*100);
-				_self.inProgress[file.name].loaded = evt.loaded;
-				_self.inProgress[file.name].total = evt.total;
-				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url, workspacePath: workspacePath})
-			});
-
-			req.upload.addEventListener("load", lang.hitch(this,function(data){
-				_self.activeCount--;
-				_self.completeCount++
-				_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
-				Object.keys(_self.inProgress).some(function(key){
-					if (key == file.name){
-						delete _self.inProgress[key];
-					}
-				})
-
-				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
-
-				if (_self.activeCount < 1){
-					_self.unloadPageListener();
-				}
-				def.resolve(data);
-			}));
-	
-			req.upload.addEventListener("error", function(error){
-				 0 && console.log("Error Uploading File: ", error);
-				_self.activeCount--;
-				_self.errorCount++;
-				def.reject(error);
-			});
-
-			req.open("PUT", url, true);
-
-			for (var prop in this.headers){
-				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
-				req.setRequestHeader(prop, this.headers[prop]);
-			}
-
-			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url, workspacePath: workspacePath})
-			this.activeCount++;
-
-			this.loadPageListener();
-			req.send(fd);
-			return def.promise;
-
-			/*
-			this.headers['X-Requested-With']=null;
-			return xhr.put(url, {
-				headers: this.headers,
-				data:fd
-			}).then(function(data){
-				 0 && console.log("after put data : ", data);
-				return data;
-			}, function(err){
-				 0 && console.log("Error Uploading File: ", err);
-			}, function(evt){
-				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
-			});
-			*/
-		}
-
-	}))()
-
-	return UploadManager;
-});
-
-
-},
-'p3/widget/UploadStatus':function(){
-define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dojo/topic","dojo/_base/lang",
-	"dojo/dom-construct","../JobManager","../UploadManager",
-	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-        "dojo/text!./templates/UploadStatus.html",
-	"dijit/_HasDropDown","dijit/layout/ContentPane",
-	"dijit/Tooltip"
-], function(
-	declare, WidgetBase, on,
-	domClass,Topic,lang,
-	domConstr,JobManager,UploadManager,
-	TemplatedMixin,WidgetsInTemplate,template,
-	HasDropDown,ContentPane,Tooltip
-){
-
-	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
-	return declare([WidgetBase,TemplatedMixin,HasDropDown], {
-		"baseClass": "WorkspaceController",
-		"disabled":false,
-		templateString: template,
-		dropDown: UploadSummaryPanel,
-		constructor: function(){
-			this._uploads={
-				inProgress: 0,
-				complete: 0,
-				progress: 0,
-				files: {}
-			}
-		},
-		startup: function(){
-			this.inherited(arguments);
-			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
-			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
-			this.tooltip = new Tooltip({
-				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete"
-			});
-		},
-		onUploadMessage: function(msg){
-			 0 && console.log("UPLOADMMANAGER MESSAGE: ", msg);
-			if (msg && msg.type=="UploadStatSummary"){
-				 0 && console.log("UploadStatSummary: ", msg.summary);
-				this._uploads.inProgress=msg.summary.inProgress;
-				this._uploads.complete = msg.summary.complete;
-				this._uploads.progress = msg.summary.progress;
-				msg.summary.completedFiles.forEach(function(f){
-					this._uploads.files[f]={}
-				},this);
-				this.completedUploadCountNode.innerHTML = this._uploads.complete;
-				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
-				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
-
-				if (this._uploads.inProgress <1){
-					domClass.add(this.uploadingProgress,"dijitHidden");
-				}
-				return;
-
-			}
-
-			if (msg && msg.type == "UploadStart"){
-				this._uploads.inProgress++;
-				this._uploads.files[msg.filename] = {progress:0}
-				this.completedUploadCountNode.innerHTML = this._uploads.complete;
-				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
-				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
-				return;
-			}
-
-
-			if (msg && msg.type == "UploadProgress"){
-				 0 && console.log("UploadProgress msg: ", msg);
-				if (this._uploads.files[msg.filename]){
-					this._uploads.files[msg.filename] = msg;
-				}
-
-				var content=["<table><tbody>"];
-				Object.keys(this._uploads.files).forEach(function(key){
-					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
-				},this);
-				content.push("</tbody></table>");
-				 0 && console.log("Panel Content: ", content.join(""));
-				UploadSummaryPanel.set('content', content.join(""));
-
-				UploadManager.getUploadSummary().then(lang.hitch(this, function(res){
-					var stats = res.summary;
-					 0 && console.log("getUploadSummary cb stats: ", res);
-					 0 && console.log("Stats.progress: ", stats.progress);
-
-					this._uploads.progress = stats.progress;
-					 0 && console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
-					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
-					if (this._uploads.inProgress>0){
-						domClass.remove(this.uploadingProgress,"dijitHidden");
-					}
-					
-					
-				}));
-				return;
-			}
-
-			if (msg && msg.type == "UploadComplete"){
-				this._uploads.inProgress--;
-				this._uploads.complete++
-				this.completedUploadCountNode.innerHTML = this._uploads.complete;
-				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
-	
-				if (this._uploads.inProgress<1){
-					domClass.add(this.uploadingProgress, "dijitHidden");			
-				}
-
-
-//				if (this._uploadButtons[msg.filename]){
-//					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
-//					this._uploadButtons[msg.filename].innerHTML= msg.filename 
-//					setTimeout(function(){
-//						domConstr.destroy(this._uploadButtons[msg.filename]);
-//						delete this._uploadButtons[msg.filename];
-//					},30000);
-//				}
-				return;
-			}
-	
-		}
 	});
 });
 
@@ -34615,6 +34219,489 @@ define([
 });
 
 },
+'p3/widget/Confirmation':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/_base/lang",
+	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/Confirmation.html",
+	"dijit/form/Button","dijit/Dialog","dojo/dom-construct"
+], function(
+	declare,WidgetBase,lang,
+	Templated,WidgetsInTemplate,template,
+	Button,Dialog,domConstr
+){
+
+	
+	return declare([Dialog], {
+		title: "Confirm Action",
+		content: "Are you sure?",
+		okLabel: "OK",
+		cancelLabel: "Cancel",
+		postCreate: function(){
+			this.inherited(arguments);
+			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
+			domConstr.place(buttonContainer, this.containerNode, "last");
+
+			this.cancelButton = new Button({label: this.cancelLabel,onClick:lang.hitch(this,"_onCancel")});
+			domConstr.place(this.cancelButton.domNode,buttonContainer,"last");
+			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this,"_onSubmit")});
+			domConstr.place(this.okButton.domNode,buttonContainer,"last");
+		},
+
+		onCancel: function(){},
+		onConfirm: function(){},
+		_onCancel: function(){
+			this.onCancel();
+			this.hide();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
+		},
+		_onSubmit: function(){
+			this.onConfirm();
+			this.hide();
+			var _self=this;
+			setTimeout(function(){
+				_self.destroy();
+			},2000);
+	
+		},
+		startup: function(){
+			this.inherited(arguments);
+//			this.set('content', content);	
+		}
+	});
+
+});
+
+},
+'p3/widget/SelectionToGroup':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/SelectionToGroup.html","dojo/_base/lang"
+], function(
+	declare, WidgetBase, on,
+	domClass,Templated,WidgetsInTemplate,
+	Template,lang
+){
+	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+		"baseClass": "Panel",
+		"disabled":false,
+		templateString: Template,
+		selection: null,
+		path:null,
+		type: "genome_group",
+		_setTypeAttr: function(t){
+			this.type=t;
+			if (this.workspaceObjectSelecto) {
+				this.workspaceObjectSelector.set("type", [t]);
+			}
+		},
+		onChangeTarget: function(target){
+			 0 && console.log("Target: ", target);
+		},
+		startup: function(){
+			var _self=this;
+			if (this._started) { return; }
+			var currentIcon;
+			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
+				 0 && console.log("set selection(): ", arguments);
+			}))
+			this.inherited(arguments);
+
+			this.workspaceObjectSelector.set('type', [this.type]);
+		}
+
+	});
+});
+
+},
+'p3/widget/WorkspaceGroups':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class"
+], function(
+	declare, WidgetBase, on,
+	domClass
+){
+	return declare([WidgetBase], {
+		"baseClass": "WorkspaceGroups",
+		"disabled":false,
+		postCreate: function(){
+			this.domNode.innerHTML = "WorkspaceGroups";
+		}
+	});
+});
+
+},
+'p3/widget/WorkspaceJobs':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class"
+], function(
+	declare, WidgetBase, on,
+	domClass
+){
+	return declare([WidgetBase], {
+		"baseClass": "WorkspaceJobs",
+		"disabled":false,
+		postCreate: function(){
+			this.domNode.innerHTML = "WorkspaceJobs";
+		}
+	});
+});
+
+},
+'p3/widget/WorkspaceGlobalController':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/WorkspaceGlobalController.html"
+], function(
+	declare, WidgetBase, on,
+	domClass,Templated,WidgetsInTemplate,
+	Template
+){
+	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+		"baseClass": "WorkspaceGlobalController",
+		"disabled":false,
+		templateString: Template,
+		path: "",
+		postCreate: function(){
+			this.inherited(arguments);
+			 0 && console.log("WGC PATH", this.path);
+
+			// this.domNode.innerHTML = this.path.split("/").filter(function(x){ return x!=""; }).slice(0,2).join(" / ")
+		},
+
+		setPathAttr: function(val){
+			this.path=val;
+			if (this._started){
+				 0 && console.log("Set Workspace Global Current Path")
+			}
+		}
+
+	});
+});
+
+},
+'p3/widget/WorkspaceController':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class","dojo/topic","dojo/_base/lang",
+	"dojo/dom-construct","../JobManager","../UploadManager",
+	"./UploadStatus","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+        "dojo/text!./templates/WorkspaceController.html"
+], function(
+	declare, WidgetBase, on,
+	domClass,Topic,lang,
+	domConstr,JobManager,UploadManager,
+	UploadStatus,TemplatedMixin,WidgetsInTemplate,
+	Template
+){
+	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
+		"baseClass": "WorkspaceController",
+		"disabled":false,
+		templateString: Template
+
+	});
+});
+
+},
+'p3/UploadManager':function(){
+define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
+
+	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+	var UploadManager = (declare([], {
+		constructor: function(){
+			this.activeCount=0;
+			this.completeCount=0;
+			this.completedUploads=[]
+			this.errorCount=0;
+			this.inProgress={};
+
+			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
+				if (this.listenUnload){
+					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads ."; 
+					(event || window.event).returnValue = msg;
+					return msg;
+				}
+				return;		
+			}));
+			
+		},
+		token: null,
+		upload: function(files, token){
+			if (token) {
+				this.token=token;
+				this.headers = {
+					Authorization: "OAuth " + token
+				}
+			}
+			var _self=this;
+			if (files instanceof Array){
+				files.forEach(function(obj){
+					_self._uploadFile(obj.file, obj.url,obj.uploadDirectory);
+				});
+			}else if (files && files.file){
+				_self._uploadFile(files.file, files.url, files.uploadDirectory);
+			}
+
+			Topic.publish("/refreshWorkspace",{});
+		},
+		getUploadSummary: function(){
+			var def = new Deferred();
+			var _self=this;
+			var summary = {
+				inProgress: _self.activeCount,
+				complete: _self.completeCount,
+				errors: _self.errorCount,
+				completedFiles: _self.completedUploads,
+				activeFiles: this.inProgress,
+				progress: 0
+			}
+			var totalSize=0;
+			var loadedSize=0;
+
+			Object.keys(this.inProgress).forEach(function(fname){
+				totalSize+=this.inProgress[fname].total;
+				loadedSize+=this.inProgress[fname].loaded;
+			},this)
+
+			if (totalSize>0) {
+				summary.progress = parseInt((loadedSize/totalSize)*100);
+			}else{
+				summary.progress=0;
+			}
+			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+
+			var msg ={
+				type: "UploadStatSummary", 
+				summary:summary
+			};
+
+			 0 && console.log("Summary message: ", msg)
+			def.resolve(msg);
+                        return def.promise;
+		},
+
+
+		listenUnload: false,
+		unloadPageListener: function(){
+			this.listenUnload=false;
+		},
+
+		loadPageListener: function(){
+			this.listenUnload=true;
+		},	
+
+		_uploadFile: function(file, url, workspacePath) {	
+			var def = new Deferred();
+			var fd = new FormData();
+			fd.append("upload", file);
+			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath:workspacePath}
+			var _self=this;	
+			req = new XMLHttpRequest();
+			req.upload.addEventListener("progress", function(evt){
+				 0 && console.log("evt: ", evt);
+				 0 && console.log("progress: ", (evt.loaded / evt.total)*100);
+				_self.inProgress[file.name].loaded = evt.loaded;
+				_self.inProgress[file.name].total = evt.total;
+				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url, workspacePath: workspacePath})
+			});
+
+			req.upload.addEventListener("load", lang.hitch(this,function(data){
+				_self.activeCount--;
+				_self.completeCount++
+				_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
+				Object.keys(_self.inProgress).some(function(key){
+					if (key == file.name){
+						delete _self.inProgress[key];
+					}
+				})
+
+				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
+
+				if (_self.activeCount < 1){
+					_self.unloadPageListener();
+				}
+				def.resolve(data);
+			}));
+	
+			req.upload.addEventListener("error", function(error){
+				 0 && console.log("Error Uploading File: ", error);
+				_self.activeCount--;
+				_self.errorCount++;
+				def.reject(error);
+			});
+
+			req.open("PUT", url, true);
+
+			for (var prop in this.headers){
+				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
+				req.setRequestHeader(prop, this.headers[prop]);
+			}
+
+			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url, workspacePath: workspacePath})
+			this.activeCount++;
+
+			this.loadPageListener();
+			req.send(fd);
+			return def.promise;
+
+			/*
+			this.headers['X-Requested-With']=null;
+			return xhr.put(url, {
+				headers: this.headers,
+				data:fd
+			}).then(function(data){
+				 0 && console.log("after put data : ", data);
+				return data;
+			}, function(err){
+				 0 && console.log("Error Uploading File: ", err);
+			}, function(evt){
+				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
+			});
+			*/
+		}
+
+	}))()
+
+	return UploadManager;
+});
+
+
+},
+'p3/widget/UploadStatus':function(){
+define([
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class","dojo/topic","dojo/_base/lang",
+	"dojo/dom-construct","../JobManager","../UploadManager",
+	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+        "dojo/text!./templates/UploadStatus.html",
+	"dijit/_HasDropDown","dijit/layout/ContentPane",
+	"dijit/Tooltip"
+], function(
+	declare, WidgetBase, on,
+	domClass,Topic,lang,
+	domConstr,JobManager,UploadManager,
+	TemplatedMixin,WidgetsInTemplate,template,
+	HasDropDown,ContentPane,Tooltip
+){
+
+	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
+	return declare([WidgetBase,TemplatedMixin,HasDropDown], {
+		"baseClass": "WorkspaceController",
+		"disabled":false,
+		templateString: template,
+		dropDown: UploadSummaryPanel,
+		constructor: function(){
+			this._uploads={
+				inProgress: 0,
+				complete: 0,
+				progress: 0,
+				files: {}
+			}
+		},
+		startup: function(){
+			this.inherited(arguments);
+			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
+			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
+			this.tooltip = new Tooltip({
+				connectId: [this.uploadStatusCount],
+				label: " Completed &middot; In progress &middot; % Complete"
+			});
+		},
+		onUploadMessage: function(msg){
+			 0 && console.log("UPLOADMMANAGER MESSAGE: ", msg);
+			if (msg && msg.type=="UploadStatSummary"){
+				 0 && console.log("UploadStatSummary: ", msg.summary);
+				this._uploads.inProgress=msg.summary.inProgress;
+				this._uploads.complete = msg.summary.complete;
+				this._uploads.progress = msg.summary.progress;
+				msg.summary.completedFiles.forEach(function(f){
+					this._uploads.files[f]={}
+				},this);
+				this.completedUploadCountNode.innerHTML = this._uploads.complete;
+				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
+				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
+
+				if (this._uploads.inProgress <1){
+					domClass.add(this.uploadingProgress,"dijitHidden");
+				}
+				return;
+
+			}
+
+			if (msg && msg.type == "UploadStart"){
+				this._uploads.inProgress++;
+				this._uploads.files[msg.filename] = {progress:0}
+				this.completedUploadCountNode.innerHTML = this._uploads.complete;
+				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
+				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
+				return;
+			}
+
+
+			if (msg && msg.type == "UploadProgress"){
+				 0 && console.log("UploadProgress msg: ", msg);
+				if (this._uploads.files[msg.filename]){
+					this._uploads.files[msg.filename] = msg;
+				}
+
+				var content=["<table><tbody>"];
+				Object.keys(this._uploads.files).forEach(function(key){
+					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
+				},this);
+				content.push("</tbody></table>");
+				 0 && console.log("Panel Content: ", content.join(""));
+				UploadSummaryPanel.set('content', content.join(""));
+
+				UploadManager.getUploadSummary().then(lang.hitch(this, function(res){
+					var stats = res.summary;
+					 0 && console.log("getUploadSummary cb stats: ", res);
+					 0 && console.log("Stats.progress: ", stats.progress);
+
+					this._uploads.progress = stats.progress;
+					 0 && console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
+					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
+					if (this._uploads.inProgress>0){
+						domClass.remove(this.uploadingProgress,"dijitHidden");
+					}
+					
+					
+				}));
+				return;
+			}
+
+			if (msg && msg.type == "UploadComplete"){
+				this._uploads.inProgress--;
+				this._uploads.complete++
+				this.completedUploadCountNode.innerHTML = this._uploads.complete;
+				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
+	
+				if (this._uploads.inProgress<1){
+					domClass.add(this.uploadingProgress, "dijitHidden");			
+				}
+
+
+//				if (this._uploadButtons[msg.filename]){
+//					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
+//					this._uploadButtons[msg.filename].innerHTML= msg.filename 
+//					setTimeout(function(){
+//						domConstr.destroy(this._uploadButtons[msg.filename]);
+//						delete this._uploadButtons[msg.filename];
+//					},30000);
+//				}
+				return;
+			}
+	
+		}
+	});
+});
+
+},
 'p3/widget/WorkspaceItemDetail':function(){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
@@ -34735,6 +34822,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
 		dataModel: "genome",
+		primaryKey: "genome_id",
 		deselectOnRefresh: true,
 		columns: {
 			id: {label: "Genome ID", field: "genome_id", hidden:true},
@@ -34823,8 +34911,9 @@ function(
 	ColumnHider,DnD,DnDSource,
 	Deferred,aspect,lang
 ){
-	return declare([Grid,Pagination,ColumnHider,DnD,Keyboard,ColumnResizer,DijitRegistry],{
+	return declare([Grid,Pagination,ColumnHider,Keyboard,ColumnResizer,DijitRegistry,Selection],{
 		constructor: function(){
+		
 			this.dndParams.creator =lang.hitch(this,function(item, hint){
                                  0 && console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
                                 var avatar = dojo.create("div", {innerHTML: item.organism_name || item.ncbi_taxon_id || item.id});
@@ -34851,6 +34940,7 @@ function(
 		keepScrollPosition: true,
 		rowHeight: 24,
 		loadingMessage: "Loading...",
+		primaryKey: "id",
 		dndDataType: "genome",
 		dndParams: {
 			accept: "none",
@@ -34861,7 +34951,7 @@ function(
                          0 && console.log("_setapiServerAttr: ", server);
                         this.apiServer = server;
 			var t = token || this.apiToken || ""
-                        this.set('store', this.createStore(this.dataModel, t), this.buildQuery());
+                        this.set('store', this.createStore(this.dataModel, this.primaryKey, t), this.buildQuery());
                 },
 
 
@@ -34890,7 +34980,7 @@ function(
 			});
 
 			if (!this.store && this.dataModel){
-	                        this.store = this.createStore(this.dataModel);
+	                        this.store = this.createStore(this.dataModel,this.primaryKey);
 			}
                         this.inherited(arguments);
                         this._started=true;
@@ -34908,9 +34998,9 @@ function(
                          0 && console.log("Feature Grid Query:" , q);
                         return q;
                 },
-                createStore: function(dataModel, token){
+                createStore: function(dataModel, pk, token){
                          0 && console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
-                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"document_id", headers:{
+                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:pk, headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
                                 'X-Requested-With':null,
@@ -35895,9 +35985,6 @@ define([
 			}));
 			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
 		},
-		onOutputPathChange: function(val){
-			this.output_nameWidget.set("path", val);
-		},
 	
 		onTaxIDChange: function(val){
 			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
@@ -35958,12 +36045,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
-	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup"
+	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup","dijit/registry"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,WorkspaceObjectSelector,
-	Dialog,xhr,domConstruct,query,TooltipDialog,popup
+	Dialog,xhr,domConstruct,query,TooltipDialog,popup,registry
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -36034,6 +36121,12 @@ define([
 			});
 		},
 
+                onOutputPathChange: function(val){
+			registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+				obj.set("path", val);
+			});
+                },
+
 		startup: function(){
 			if (this._started) { return; }
 			this.inherited(arguments);
@@ -36076,12 +36169,15 @@ define([
 					dlg.show();
 					return;
 				}
-				this.submitButton.set("disabled", true)
+				this.submitButton.set("disabled", true);
 				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
 					 0 && console.log("Job Submission Results: ", results);
 					domClass.remove(_self.domNode,"Working")
 					domClass.add(_self.domNode, "Submitted");
 					_self.submitButton.set("disabled", false);
+					registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+						obj.reset();
+					});
 				}, function(err){
 					 0 && console.log("Error:", err)
 					domClass.remove(_self.domNode,"Working");
@@ -36281,7 +36377,8 @@ define([
 	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic"
+	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic",
+	"dijit/registry"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -36289,7 +36386,7 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox,Topic
+	Button,Deferred,CheckBox,Topic,registry
 ){
 
 
@@ -36596,6 +36693,11 @@ define([
 			var isValid = this.disabled || this.searchBox.isValid(isFocused);
 			this._set("state", isValid ? "" : this.searchBox.state);
 			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+			if(isValid){
+				registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+					obj.validate();
+				});
+			}
 
 			return isValid;
 		}
@@ -38107,14 +38209,15 @@ return number;
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
 'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"typeNode\"></div></span></br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\">\n\t\t<option value=\"create\">New Group</option>\n\t\t<option value=\"create\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden'>\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"types:['genome_group']\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" >PATRIC Identifiers</th><th style=\"color:#fff;font-weight:600;background:#34698e\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"patric_id\" >PATRIC ID</td><td rel=\"refseq\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"allergome\">Allergome</td><td rel=\"biocyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"dip\">DIP</td><td rel=\"disprot\">DisProt</td></tr>\n\t\t<tr><td rel=\"drugbank\">DrugBank</td><td rel=\"eco2dbase\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"embl\">EMBL</td><td rel=\"embl_cds\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"echobase\">EchoBASE</td><td rel='ecogene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"ensemble_genome>EnsembleGenome</td><td rel=\"ensemble_genome_pro\">EnsembleGenome PRO</td></tr>\n\t\t<tr><td rel=\"ensemble_genome_trs\">EnsembleGenome TRS</td><td rel=\"gene_tree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"genolist\">GenoList</td><td rel=\"genome_review\">Genome Review</td></tr>\n\t\t<tr><td rel=\"hogenom\">HOGENOM</td><td rel=\"hssp\">HSSP</td></tr>\n\t\t<tr><td rel=\"kegg\">KEGG</td><td rel=\"legio_list\">LegioList</td></tr>\n\t\t<tr><td rel=\"leproma\">Leproma</td><td rel=\"merops\">MEROPS</td></tr>\n\t\t<tr><td rel=\"mint\">MINT</td><td rel=\"nmpdr\">NMPDR</td></tr>\n\t\t<tr><td rel=\"oma\">OMA</td><td rel=\"orthodb\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"pdb\">PDB</td><td rel=\"peroxi_base\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"pptasedb\">PptaseDB</td><td rel=\"prot_clust_db\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"pseudo_cap\">PseudoCAP</td><td rel=\"rebase\">REBASE</td></tr>\n\t\t<tr><td rel=\"reactome\">Reactome</td><td rel=\"refseq_nt\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"tcdb\">TCDB</td><td rel=\"tigr\">TIGR</td></tr>\n\t\t<tr><td rel=\"tuberculist\">TubercuList</td><td rel=\"uniparc\">UniParc</td></tr>\n\t\t<tr><td rel=\"uniprot_kb-id\">UnitProtKB-ID</td><td rel=\"uniref100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"uniref50\">UniRef50</td><td rel=\"uniref90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"world-2dpage\">World-2DPAGE</td><td rel=\"eggnog\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
-'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\n\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n            Submitting Annotation Job\n        </div>\n\n        <div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n                Error Submitting Job\n        </div>\n        <div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n                Annotation Job has been queued.\n        </div>\n        <div style=\"margin-top: 10px; text-align:center;\">\n                <div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n                <div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n                <div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n        </div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",

@@ -13,6 +13,7 @@ define("p3/widget/GenomeGrid", [
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
 		dataModel: "genome",
+		primaryKey: "genome_id",
 		deselectOnRefresh: true,
 		columns: {
 			id: {label: "Genome ID", field: "genome_id", hidden:true},

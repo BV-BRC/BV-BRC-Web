@@ -10,8 +10,9 @@ function(
 	ColumnHider,DnD,DnDSource,
 	Deferred,aspect,lang
 ){
-	return declare([Grid,Pagination,ColumnHider,DnD,Keyboard,ColumnResizer,DijitRegistry],{
+	return declare([Grid,Pagination,ColumnHider,Keyboard,ColumnResizer,DijitRegistry,Selection],{
 		constructor: function(){
+		
 			this.dndParams.creator =lang.hitch(this,function(item, hint){
                                 console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
                                 var avatar = dojo.create("div", {innerHTML: item.organism_name || item.ncbi_taxon_id || item.id});
@@ -38,6 +39,7 @@ function(
 		keepScrollPosition: true,
 		rowHeight: 24,
 		loadingMessage: "Loading...",
+		primaryKey: "id",
 		dndDataType: "genome",
 		dndParams: {
 			accept: "none",
@@ -48,7 +50,7 @@ function(
                         console.log("_setapiServerAttr: ", server);
                         this.apiServer = server;
 			var t = token || this.apiToken || ""
-                        this.set('store', this.createStore(this.dataModel, t), this.buildQuery());
+                        this.set('store', this.createStore(this.dataModel, this.primaryKey, t), this.buildQuery());
                 },
 
 
@@ -77,7 +79,7 @@ function(
 			});
 
 			if (!this.store && this.dataModel){
-	                        this.store = this.createStore(this.dataModel);
+	                        this.store = this.createStore(this.dataModel,this.primaryKey);
 			}
                         this.inherited(arguments);
                         this._started=true;
@@ -95,9 +97,9 @@ function(
                         console.log("Feature Grid Query:" , q);
                         return q;
                 },
-                createStore: function(dataModel, token){
+                createStore: function(dataModel, pk, token){
                         console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
-                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"document_id", headers:{
+                        var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:pk, headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
                                 'X-Requested-With':null,

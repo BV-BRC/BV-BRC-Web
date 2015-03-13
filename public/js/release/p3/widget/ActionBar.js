@@ -1,9 +1,11 @@
 define("p3/widget/ActionBar", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","./Button","dojo/dom-construct"
+	"dojo/dom-class","./Button","dojo/dom-construct",
+	"dijit/Tooltip"
 ], function(
 	declare, WidgetBase, on,
-	domClass,Button,domConstruct
+	domClass,Button,domConstruct,
+	Tooltip
 ){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
@@ -91,6 +93,28 @@ define("p3/widget/ActionBar", [
 					_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
 				}
 			});	
+
+//			on(this.domNode, ".ActionButton:mouseover", function(evt){
+//				console.log("mouseover evt: ", evt.target);
+//			});	
+			new Tooltip({
+				connectId: this.domNode,
+				selector: ".ActionButton",
+				getContent: function(matched){
+					console.log("Matched: ", matched);
+					var rel = matched.attributes.rel.value;
+					console.log("REL: ", rel);
+					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
+						console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+						return _self._actions[rel].options.tooltip
+					}else if (matched.attributes.title && matched.attributes.title.value){
+						return  matched.attributes.title.value;
+					}
+					return false;
+				},
+				position: ["above"]
+			});
+	
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){

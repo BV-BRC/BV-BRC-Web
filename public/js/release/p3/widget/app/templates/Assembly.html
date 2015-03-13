@@ -92,7 +92,7 @@
 			</div>
 			<div class="approw">
 				<label for="output_path" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
 			</div>
 			<div class="approw">
 				<label class="paramlabel">Output Name</label><br>
@@ -126,7 +126,7 @@
 		
 		
 	</div>
-
+	<div class="appSubmissionArea">
 		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
 			Submitting Assembly Job
 		</div>
@@ -144,7 +144,8 @@
 			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
 			<div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
 			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Assemble</div>
-		</div>	
+		</div>
+	</div>
 	
 </form>
 
