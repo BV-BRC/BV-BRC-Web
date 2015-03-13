@@ -218,7 +218,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE",{
 					data: {
-						feature_ids: ids,
+						feature_id: ids,
 						callType: 'saveParams'	
 					}
 				}).then(function(results){
