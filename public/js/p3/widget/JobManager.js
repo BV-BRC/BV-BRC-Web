@@ -66,6 +66,11 @@ define([
 
 
 			Topic.subscribe("/Jobs", function(msg){
+				this.listJobs().then(function(jobs) {
+					_self.render(jobs);
+				})
+
+
 				// if (msg.type=="JobStatus") {
 				// 	console.log("JobStatus MSG: ", msg.job);
 				// }else if (msg.type=="JobStatusChanged") {

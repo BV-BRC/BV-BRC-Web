@@ -93,9 +93,14 @@ define([
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome","genome_feature","experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
 				console.log("Download Table", selection);
 			}, true);
+
+			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Table"}, function(selection){
+				console.log("Download Table", selection);
+			}, true);
+	
 			
 			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
@@ -118,7 +123,7 @@ define([
 	
 			}, true);
 
-			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
 
 			}, true);
 
@@ -132,7 +137,7 @@ define([
 				popup.close(idMappingTTDialog);
 			});
 
-			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
 
 				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
 				console.log("this: ", this);
@@ -144,7 +149,7 @@ define([
 				console.log("popup idmapping", selection);
 			}, true);
 
-			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
+			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
 				console.log("View FASTA Protein", selection);
 			}, true);
 
@@ -364,6 +369,7 @@ define([
 						}));	
 
 						newPanel.on("deselect", lang.hitch(this,function(evt){
+
 							if (!evt.selected) { 
 								this.actionPanel.set("selection", []); 
 							}else{
