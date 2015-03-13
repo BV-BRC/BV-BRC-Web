@@ -1,20 +1,20 @@
 <div class="SelectionToGroup" style="width:400px;">
-	<div data-dojo-type="dijit/form/Select" style="width: 95%;margin:10px;" data-dojo-attach-event="onChange:onChangeTarget">
-		<option value="create">New Group</option>
-		<option value="create" selected="true">Existing Group</option>
+	<div data-dojo-type="dijit/form/Select" style="width: 95%;margin:10px;" data-dojo-attach-event="onChange:onChangeTarget" data-dojo-attach-point="targetType">
+		<option value="new">New Group</option>
+		<option value="existing" selected="true">Existing Group</option>
 	</div>
 
-	<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;" class='dijitHidden'>
+	<div data-dojo-attach-point="groupNameBox" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;" class='dijitHidden', data-dojo-props="promptMessage:'Enter New Group Name'" data-dojo-attach-event="onChange:onChangeTarget" >
 	</div>
 
-	<div data-dojo-attach-point="workspaceObjectSelector" data-dojo-type="p3/widget/WorkspaceObjectSelector" style="width:95%;margin:10px;" data-dojo-props="types:['genome_group']" class=''>
+	<div data-dojo-attach-point="workspaceObjectSelector" data-dojo-type="p3/widget/WorkspaceObjectSelector" style="width:95%;margin:10px;" data-dojo-props="type:['genome_group']" data-dojo-attach-event="onChange:onChangeTarget" class=''>
 	</div>
 
 
 
 	<div class="buttonContainer" style="text-align: right;">
-		<div data-dojo-type="dijit/form/Button" label="Cancel"></div>
-		<div data-dojo-type="dijit/form/Button" label="Split" disabled='true'></div>
-		<div data-dojo-type="dijit/form/Button" disabled='true' label="Copy"></div>
+		<div data-dojo-type="dijit/form/Button" label="Cancel" data-dojo-attach-event="onClick:onCancel"></div>
+<!--		<div data-dojo-type="dijit/form/Button" label="Split" disabled='true'></div> -->
+		<div data-dojo-type="dijit/form/Button" disabled='true' label="Copy" data-dojo-attach-point="copyButton" data-dojo-attach-event="onClick:onCopy"></div>
 	</div>
 </div>

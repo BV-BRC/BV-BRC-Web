@@ -13,6 +13,14 @@ define([
 		token: "",
 		apiUrl: "",
 		userId: "",
+		getDefaultFolder: function(type){
+			switch(type) {
+				case "genome_group":	
+					return "/" + [this.userId,"home","Genome Groups"].join("/");
+				default:
+					return "/" + [this.userId,"home"].join("/");
+			}
+		},
 		_userWorkspacesGetter: function(){
 			if (this.userWorkspaces && this.userWorkspaces.length>0){
 				return this.userWorkspaces;
