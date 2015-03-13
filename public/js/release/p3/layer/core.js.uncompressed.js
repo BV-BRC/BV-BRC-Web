@@ -26146,6 +26146,17 @@ define([
 				var selection = self.actionPanel.get('selection')
 				console.log("selection: ", selection);
 				popup.close(viewFASTATT);
+
+				var ids = selection.map(function(d){ return d['feature_id']; });
+				var frm = domConstruct.create("form", {style: {display: "none"},action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta", target: "fastaDisplay"}, this.domNode);
+				domConstruct.create("input", {name: "fastaaction", value: "display"},frm);
+				domConstruct.create("input", {name: "fastascope", value: "Selected"},frm);
+				domConstruct.create("input", {name: "fastatype", value: rel},frm);
+				domConstruct.create("input", {name: "fids", value: ids},frm);
+
+				window.open("","fastaDisplay","width=920,height=400,scrollbars,resizable")
+				
+				frm.submit();
 			});
 
 			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
@@ -26159,6 +26170,18 @@ define([
 			}, true);
 
 			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+				var selection = self.actionPanel.get('selection')
+				var ids = selection.map(function(d){ return d['feature_id']; });
+
+
+				xhr.post("/portal/portal/patric/FIGfam/FIGfamWindow?action=b&cacheability=PAGE",{
+					data: {
+						feature_ids: ids,
+						callType: 'toAligner'	
+					}
+				}).then(function(results){
+					document.location = "/portal/portal/patric/MSA?cType=&cId=&pk=" + results;
+				});
 
 			}, true);
 
