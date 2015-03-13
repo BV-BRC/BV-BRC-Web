@@ -96,16 +96,41 @@ define([
 			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome","genome_feature","experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
 				console.log("Download Table", selection);
 			}, true);
+			
+			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
+			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
 
-			this.actionPanel.addAction("ViewFASTADNA","fa icon-fasta fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA DNA"}, function(selection){
-				console.log("View FASTA DNA", selection);
+			on(viewFASTATT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				console.log("selection: ", selection);
+				popup.close(viewFASTATT);
+			});
+
+			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
+				popup.open({
+					popup: this._actions.ViewFASTA.options.tooltipDialog,
+					around: this._actions.ViewFASTA.button,
+					orient: ["before-centered"]
+				});
+				console.log("popup viewFASTA", selection);
+	
 			}, true);
 
 			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
-				console.log("View FASTA Protein", selection);
+
 			}, true);
 
-			var idMappingTTDialog =  TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+			var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+
+			on(idMappingTTDialog.domNode, "TD:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				console.log("selection: ", selection);
+				popup.close(idMappingTTDialog);
+			});
 
 			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
 
@@ -117,10 +142,6 @@ define([
 					orient: ["before-centered"]
 				});
 				console.log("popup idmapping", selection);
-			}, true);
-
-			this.actionPanel.addAction("ViewFASTAProtein","fa icon-fasta fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Proteins"}, function(selection){
-				console.log("View FASTA Protein", selection);
 			}, true);
 
 			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: false,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
@@ -141,7 +162,7 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Remove Selection from Group"}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Remove Selection from Group"}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
@@ -172,7 +193,7 @@ define([
 			},true);
 
 			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
