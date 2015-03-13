@@ -137,7 +137,7 @@ define("p3/widget/WorkspaceBrowser", [
 				popup.close(viewFASTATT);
 
 				var ids = selection.map(function(d){ return d['feature_id']; });
-				var frm = domConstruct.create("form", {style: {display: "none"},action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta", target: "fastaDisplay"}, this.domNode);
+				var frm = domConstruct.create("form", {style: {display: "none"},method: "POST", action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta", target: "fastaDisplay"}, this.domNode);
 				domConstruct.create("input", {name: "fastaaction", value: "display"},frm);
 				domConstruct.create("input", {name: "fastascope", value: "Selected"},frm);
 				domConstruct.create("input", {name: "fastatype", value: rel},frm);
