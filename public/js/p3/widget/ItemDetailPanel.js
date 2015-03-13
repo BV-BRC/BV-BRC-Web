@@ -1,15 +1,16 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,lang,formatter
+	Template,lang,formatter,domStyle
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
 		"disabled":false,
+		"changeableTypes":{unspecified:{label:"unspecified",value:"unspecified"},contigs:{label:"contigs",value:"contigs"},reads:{label:"reads",value:"reads"},diffexp_input_data:{label:"diffexp_input_data",value:"diffexp_input_data"},diffexp_input_metadata:{label:"diffexp_input_metadata",value:"diffexp_input_metadata"}},
 		templateString: Template,
 		item: null,
 		property_aliases: {
@@ -63,9 +64,26 @@ define([
        	                		var val = item[key];
 					if(key == "creation_time"){
 						val=formatter.date(val);
-					} 
-					if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
-						_self[this.property_aliases[key] + "Node"].innerHTML=val;
+					}
+					if (key == "type"){
+						_self[key + "Node"].set('value',val);
+						_self[key + "Node"].set('displayedValue',val);
+						if (this.changeableTypes.hasOwnProperty(val)){
+							_self[key + "Node"].set('disabled',false);
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","underline");
+							var type_options=[];
+							Object.keys(this.changeableTypes).forEach(function(change_type){
+								type_options.push(this.changeableTypes[change_type]);
+							}, this);
+							_self[key + "Node"].editorParams.options=type_options;
+						}
+						else{
+							_self[key + "Node"].set('disabled',true);
+							domStyle.set(_self[key + "Node"],"text-decoration","none");
+						}
+					}	
+					else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						_self[this.property_aliases[key] + "Node"].innerHTML=val;	
 					}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 						_self[this.property_aliases[key] + "Widget"].set("value",val);
 					}else if (_self[key + "Node"]){
