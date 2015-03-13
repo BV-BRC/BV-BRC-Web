@@ -209,7 +209,20 @@ define([
 			}, true);
 
 			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
-				console.log("View FASTA Protein", selection);
+
+				var selection = self.actionPanel.get('selection')
+				var ids = selection.map(function(d){ return d['feature_id']; });
+
+
+				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE",{
+					data: {
+						feature_ids: ids,
+						callType: 'saveParams'	
+					}
+				}).then(function(results){
+					document.location = "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results;
+				});
+
 			}, true);
 
 
@@ -231,7 +244,7 @@ define([
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
 				var type = selection[0].document_type;
-				var idType = (type=="genome")?"genome_id":((type=="feature")?"feature_id":"document_id")
+				var idType = (this.currentContainerWidget.containerType=="genome_group")?"genome_id":"feature_id";
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s[idType];
