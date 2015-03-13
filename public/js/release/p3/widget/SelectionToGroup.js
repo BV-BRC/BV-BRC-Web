@@ -35,6 +35,7 @@ define("p3/widget/SelectionToGroup", [
 		},
 		onChangeTarget: function(target){
 			console.log("onChangeTarget ");
+			if (!this._started) { return; }
 			var targetType = this.targetType.get('value');
 			var val;
 			console.log("Target Type: ", targetType);	
@@ -79,6 +80,16 @@ define("p3/widget/SelectionToGroup", [
                 },
 		onCopy: function(evt){
 			console.log("Copy Selection: ", this.selection, " to ", this.value); 	
+			var idType = (this.type=="genome_group")?"genome_id":"feature_id"
+			var def;
+			if (this.targetType.get("value")=="existing"){
+				def = WorkspaceManager.addToGroup(this.value, idType,  this.selection.map(function(o){ return o[idType]; }));
+			}else{
+				def = WorkspaceManager.createGroup(this.value,this.type,this.path,idType, this.selection.map(function(o){ return o[idType]; }));
+			}
+			def.then(lang.hitch(this,function(){
+	                        on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+			}));
 		}
 
 
