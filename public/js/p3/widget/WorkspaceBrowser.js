@@ -4,14 +4,14 @@ define([
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
 	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
-	"dijit/popup","dojo/text!./templates/IDMapping.html"
+	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
 	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
-	popup,IDMappingTemplate
+	popup,IDMappingTemplate,xhr
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -156,6 +156,20 @@ define([
 				console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection')
 				console.log("selection: ", selection);
+				var ids = selection.map(function(d){ return d['feature_id']; });
+
+				xhr.post("/portal/portal/patric/IDMapping/IDMappingWindow?action=b&cacheability=PAGE", {
+					data: {
+						keyword: ids,
+						from: "feature_id",
+						fromGroup: "PATRIC",
+						to: rel,
+						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
+						sraction: 'save_params'	
+					}
+				}).then(function(results){
+					document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
+				});
 				popup.close(idMappingTTDialog);
 			});
 
