@@ -1,4 +1,4 @@
-define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
+define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic","./WorkspaceManager"],function(xhr,declare,lang,Deferred,Topic,WorkspaceManager){
 
 	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
 	var UploadManager = (declare([], {
@@ -100,21 +100,28 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lan
 			});
 
 			req.upload.addEventListener("load", lang.hitch(this,function(data){
-				_self.activeCount--;
-				_self.completeCount++
-				_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
-				Object.keys(_self.inProgress).some(function(key){
-					if (key == file.name){
-						delete _self.inProgress[key];
-					}
-				})
-
-				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
-
-				if (_self.activeCount < 1){
-					_self.unloadPageListener();
+				var p = workspacePath;
+				if (p.charAt(p.length-1)!="/") {
+					p = p + "/";
 				}
-				def.resolve(data);
+				p = p + file.name;
+				WorkspaceManager.updateMetadata([p]).then(lang.hitch(this, function(){
+					_self.activeCount--;
+					_self.completeCount++
+					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
+					Object.keys(_self.inProgress).some(function(key){
+						if (key == file.name){
+							delete _self.inProgress[key];
+						}
+					})
+	
+					Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
+	
+					if (_self.activeCount < 1){
+						_self.unloadPageListener();
+					}
+					def.resolve(data);
+				}));
 			}));
 	
 			req.upload.addEventListener("error", function(error){

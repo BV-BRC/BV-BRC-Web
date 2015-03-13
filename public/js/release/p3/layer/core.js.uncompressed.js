@@ -13328,6 +13328,14 @@ define([
 		token: "",
 		apiUrl: "",
 		userId: "",
+		getDefaultFolder: function(type){
+			switch(type) {
+				case "genome_group":	
+					return "/" + [this.userId,"home","Genome Groups"].join("/");
+				default:
+					return "/" + [this.userId,"home"].join("/");
+			}
+		},
 		_userWorkspacesGetter: function(){
 			if (this.userWorkspaces && this.userWorkspaces.length>0){
 				return this.userWorkspaces;
@@ -13384,7 +13392,11 @@ define([
 		create: function(obj, createUploadNode,overwrite){
 			var _self=this;
 			console.log("WorkspaceManager.create(): ", obj);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
+			if (obj.path.charAt(obj.path.length-1)!="/") {
+				obj.path = obj.path + "/";	
+			}
+			console.log("Workspace.create: ", obj.path, obj.path+obj.name);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
                                         var res;
 					console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {
@@ -13511,6 +13523,14 @@ define([
 			}));
 		},
 
+		updateMetadata: function(paths){
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects:[paths]}]), function(){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
 		deleteFolder: function(paths, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");
@@ -26085,13 +26105,35 @@ define([
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
+			var dfc = '<div>Download Table As...</div><div rel="txt">Text</div><div rel="CSV">CSV</div>'
+			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
+			on(downloadTT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				console.log("selection: ", selection);
+				popup.close(downloadTT);
+			});
+
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltipDialog:downloadTT, tooltip: "Download Selection as Table"}, function(selection){
+				popup.open({
+					popup: this._actions.DownloadTable.options.tooltipDialog,
+					around: this._actions.DownloadTable.button,
+					orient: ["below"]
+				});
+	
 				console.log("Download Table", selection);
 			}, true);
 
-			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Table"}, function(selection){
+			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
+				popup.open({
+					popup: this._actions.DownloadTable2.options.tooltipDialog,
+					around: this._actions.DownloadTable2.button,
+					orient: ["below"]
+				});
+	
 			}, true);
 	
 			
@@ -26110,7 +26152,7 @@ define([
 				popup.open({
 					popup: this._actions.ViewFASTA.options.tooltipDialog,
 					around: this._actions.ViewFASTA.button,
-					orient: ["before-centered"]
+					orient: ["below"]
 				});
 				console.log("popup viewFASTA", selection);
 	
@@ -26137,7 +26179,7 @@ define([
 				popup.open({
 					popup: this._actions.idmapping.options.tooltipDialog,
 					around: this._actions.idmapping.button,
-					orient: ["before-centered"]
+					orient: ["below"]
 				});
 				console.log("popup idmapping", selection);
 			}, true);
@@ -26195,6 +26237,12 @@ define([
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+				on(dlg.domNode, "dialogAction", function(evt){
+					dlg.hide();
+					setTimeout(function(){
+						dlg.destroy();
+					},2000);
+				});
 				domConstruct.place(stg.domNode, dlg.containerNode,"first");
 				stg.startup();
 				dlg.startup();
@@ -34279,11 +34327,11 @@ define([
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/SelectionToGroup.html","dojo/_base/lang"
+	"dojo/text!./templates/SelectionToGroup.html","dojo/_base/lang","../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,lang
+	Template,lang,WorkspaceManager
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "Panel",
@@ -34294,12 +34342,44 @@ define([
 		type: "genome_group",
 		_setTypeAttr: function(t){
 			this.type=t;
-			if (this.workspaceObjectSelecto) {
+			if (this.workspaceObjectSelector) {
 				this.workspaceObjectSelector.set("type", [t]);
 			}
 		},
+
+		_setPathAttr: function(path){
+			this.path = path;
+			if (this.groupNameBox) {
+				this.groupNameBox.set('path', this.path);
+			}
+
+			if (this.workspaceObjectSelector){
+				this.workspaceObjectSelector.set("path", this.path);
+			}
+		},
 		onChangeTarget: function(target){
-			console.log("Target: ", target);
+			console.log("onChangeTarget ");
+			var targetType = this.targetType.get('value');
+			var val;
+			console.log("Target Type: ", targetType);	
+			if (targetType=="existing"){
+				domClass.remove(this.workspaceObjectSelector.domNode, "dijitHidden");
+				domClass.add(this.groupNameBox.domNode, "dijitHidden");
+				val =this.workspaceObjectSelector.get('value');
+					
+			}else{
+				domClass.add(this.workspaceObjectSelector.domNode, "dijitHidden");
+				domClass.remove(this.groupNameBox.domNode, "dijitHidden");
+				
+				val = this.groupNameBox.isValid()?this.groupNameBox.get('value'):false;
+			}	
+			console.log("Target Val: ", val);
+			this.value = val;
+			if (val) {
+				this.copyButton.set('disabled', false);
+			}else{
+				this.copyButton.set('disabled', true);
+			}
 		},
 		startup: function(){
 			var _self=this;
@@ -34308,10 +34388,23 @@ define([
 			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
 				console.log("set selection(): ", arguments);
 			}))
+//			if (!this.path) {
+				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
+//			}
 			this.inherited(arguments);
-
+			this.groupNameBox.set('path', this.path);
+			this.workspaceObjectSelector.set('path', this.path);
 			this.workspaceObjectSelector.set('type', [this.type]);
+		},
+
+		onCancel: function(evt){
+                        console.log("Cancel/Close Dialog", evt)
+                        on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+                },
+		onCopy: function(evt){
+			console.log("Copy Selection: ", this.selection, " to ", this.value); 	
 		}
+
 
 	});
 });
@@ -34410,7 +34503,7 @@ define([
 
 },
 'p3/UploadManager':function(){
-define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic"],function(xhr,declare,lang,Deferred,Topic){
+define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic","./WorkspaceManager"],function(xhr,declare,lang,Deferred,Topic,WorkspaceManager){
 
 	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
 	var UploadManager = (declare([], {
@@ -34512,21 +34605,28 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			});
 
 			req.upload.addEventListener("load", lang.hitch(this,function(data){
-				_self.activeCount--;
-				_self.completeCount++
-				_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
-				Object.keys(_self.inProgress).some(function(key){
-					if (key == file.name){
-						delete _self.inProgress[key];
-					}
-				})
-
-				Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
-
-				if (_self.activeCount < 1){
-					_self.unloadPageListener();
+				var p = workspacePath;
+				if (p.charAt(p.length-1)!="/") {
+					p = p + "/";
 				}
-				def.resolve(data);
+				p = p + file.name;
+				WorkspaceManager.updateMetadata([p]).then(lang.hitch(this, function(){
+					_self.activeCount--;
+					_self.completeCount++
+					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
+					Object.keys(_self.inProgress).some(function(key){
+						if (key == file.name){
+							delete _self.inProgress[key];
+						}
+					})
+	
+					Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
+	
+					if (_self.activeCount < 1){
+						_self.unloadPageListener();
+					}
+					def.resolve(data);
+				}));
 			}));
 	
 			req.upload.addEventListener("error", function(error){
@@ -38211,7 +38311,7 @@ return number;
 'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"typeNode\"></div></span></br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\">\n\t\t<option value=\"create\">New Group</option>\n\t\t<option value=\"create\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden'>\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"types:['genome_group']\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\"></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div>\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" >PATRIC Identifiers</th><th style=\"color:#fff;font-weight:600;background:#34698e\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"patric_id\" >PATRIC ID</td><td rel=\"refseq\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"allergome\">Allergome</td><td rel=\"biocyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"dip\">DIP</td><td rel=\"disprot\">DisProt</td></tr>\n\t\t<tr><td rel=\"drugbank\">DrugBank</td><td rel=\"eco2dbase\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"embl\">EMBL</td><td rel=\"embl_cds\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"echobase\">EchoBASE</td><td rel='ecogene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"ensemble_genome>EnsembleGenome</td><td rel=\"ensemble_genome_pro\">EnsembleGenome PRO</td></tr>\n\t\t<tr><td rel=\"ensemble_genome_trs\">EnsembleGenome TRS</td><td rel=\"gene_tree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"genolist\">GenoList</td><td rel=\"genome_review\">Genome Review</td></tr>\n\t\t<tr><td rel=\"hogenom\">HOGENOM</td><td rel=\"hssp\">HSSP</td></tr>\n\t\t<tr><td rel=\"kegg\">KEGG</td><td rel=\"legio_list\">LegioList</td></tr>\n\t\t<tr><td rel=\"leproma\">Leproma</td><td rel=\"merops\">MEROPS</td></tr>\n\t\t<tr><td rel=\"mint\">MINT</td><td rel=\"nmpdr\">NMPDR</td></tr>\n\t\t<tr><td rel=\"oma\">OMA</td><td rel=\"orthodb\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"pdb\">PDB</td><td rel=\"peroxi_base\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"pptasedb\">PptaseDB</td><td rel=\"prot_clust_db\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"pseudo_cap\">PseudoCAP</td><td rel=\"rebase\">REBASE</td></tr>\n\t\t<tr><td rel=\"reactome\">Reactome</td><td rel=\"refseq_nt\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"tcdb\">TCDB</td><td rel=\"tigr\">TIGR</td></tr>\n\t\t<tr><td rel=\"tuberculist\">TubercuList</td><td rel=\"uniparc\">UniParc</td></tr>\n\t\t<tr><td rel=\"uniprot_kb-id\">UnitProtKB-ID</td><td rel=\"uniref100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"uniref50\">UniRef50</td><td rel=\"uniref90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"world-2dpage\">World-2DPAGE</td><td rel=\"eggnog\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",

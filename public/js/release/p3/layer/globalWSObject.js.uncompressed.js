@@ -16408,6 +16408,14 @@ define([
 		token: "",
 		apiUrl: "",
 		userId: "",
+		getDefaultFolder: function(type){
+			switch(type) {
+				case "genome_group":	
+					return "/" + [this.userId,"home","Genome Groups"].join("/");
+				default:
+					return "/" + [this.userId,"home"].join("/");
+			}
+		},
 		_userWorkspacesGetter: function(){
 			if (this.userWorkspaces && this.userWorkspaces.length>0){
 				return this.userWorkspaces;
@@ -16464,7 +16472,11 @@ define([
 		create: function(obj, createUploadNode,overwrite){
 			var _self=this;
 			console.log("WorkspaceManager.create(): ", obj);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+"/"+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
+			if (obj.path.charAt(obj.path.length-1)!="/") {
+				obj.path = obj.path + "/";	
+			}
+			console.log("Workspace.create: ", obj.path, obj.path+obj.name);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
                                         var res;
 					console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {
@@ -16591,6 +16603,14 @@ define([
 			}));
 		},
 
+		updateMetadata: function(paths){
+			if (!(paths instanceof Array)){
+				paths = [paths];
+			}
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects:[paths]}]), function(){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
 		deleteFolder: function(paths, force){
 			if (!paths){
 				throw new Error("Invalid Path(s) to delete");

@@ -94,13 +94,35 @@ define("p3/widget/WorkspaceBrowser", [
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
+			var dfc = '<div>Download Table As...</div><div rel="txt">Text</div><div rel="CSV">CSV</div>'
+			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltip: "Download Table"}, function(selection){
+			on(downloadTT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				console.log("selection: ", selection);
+				popup.close(downloadTT);
+			});
+
+			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltipDialog:downloadTT, tooltip: "Download Selection as Table"}, function(selection){
+				popup.open({
+					popup: this._actions.DownloadTable.options.tooltipDialog,
+					around: this._actions.DownloadTable.button,
+					orient: ["below"]
+				});
+	
 				console.log("Download Table", selection);
 			}, true);
 
-			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Table"}, function(selection){
+			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
+				popup.open({
+					popup: this._actions.DownloadTable2.options.tooltipDialog,
+					around: this._actions.DownloadTable2.button,
+					orient: ["below"]
+				});
+	
 			}, true);
 	
 			
@@ -119,7 +141,7 @@ define("p3/widget/WorkspaceBrowser", [
 				popup.open({
 					popup: this._actions.ViewFASTA.options.tooltipDialog,
 					around: this._actions.ViewFASTA.button,
-					orient: ["before-centered"]
+					orient: ["below"]
 				});
 				console.log("popup viewFASTA", selection);
 	
@@ -146,7 +168,7 @@ define("p3/widget/WorkspaceBrowser", [
 				popup.open({
 					popup: this._actions.idmapping.options.tooltipDialog,
 					around: this._actions.idmapping.button,
-					orient: ["before-centered"]
+					orient: ["below"]
 				});
 				console.log("popup idmapping", selection);
 			}, true);
@@ -204,6 +226,12 @@ define("p3/widget/WorkspaceBrowser", [
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+				on(dlg.domNode, "dialogAction", function(evt){
+					dlg.hide();
+					setTimeout(function(){
+						dlg.destroy();
+					},2000);
+				});
 				domConstruct.place(stg.domNode, dlg.containerNode,"first");
 				stg.startup();
 				dlg.startup();
