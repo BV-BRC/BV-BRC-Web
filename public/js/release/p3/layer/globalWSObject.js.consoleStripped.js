@@ -16594,7 +16594,7 @@ define([
 			if (!(paths instanceof Array)){
 				paths = [paths];
 			}
-			return Deferred.when(this.api("Workspace.update_metadata", [{objects:[paths]}]), function(){
+			return Deferred.when(this.api("Workspace.update_auto_meta", [{objects:paths}]), function(){
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
