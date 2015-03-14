@@ -19,6 +19,17 @@
 	padding:4px;
 	color: #134d75;
 }
+.wsActionTooltip:hover{
+background:#d2d2d2;
+cursor: pointer;
+}
+.idMappingTable td:hover{
+background:#d2d2d2;
+cursor: pointer;
+}
+.idMappingHeader{
+color:#fff;font-weight:600;background:#34698e;
+}
 .patric .BrowserHeader A,
 .patric .wsBreadCrumb A {
 	color: #123d75;
@@ -174,4 +185,11 @@ th.dgrid-cell.wsItemType {
 .JobsSuspended {
 	color: red;
 	margin:0px;
+}
+.ActionButtonContainer {
+	float: right;
+}
+.ActionButtonContainer .ActionButton {
+	margin: 5px;
+	color: #34698e;	
 }

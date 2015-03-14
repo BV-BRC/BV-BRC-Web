@@ -13332,6 +13332,9 @@ define([
 			switch(type) {
 				case "genome_group":	
 					return "/" + [this.userId,"home","Genome Groups"].join("/");
+				case "feature_group":	
+					return "/" + [this.userId,"home","Feature Groups"].join("/");
+	
 				default:
 					return "/" + [this.userId,"home"].join("/");
 			}
@@ -13522,8 +13525,14 @@ define([
 				Topic.publish("/refreshWorkspace",{});
 			}));
 		},
-
-		updateMetadata: function(paths){
+		updateMetadata: function(path, userMeta, type){
+			var data = [path, userMeta||{}, type||undefined];
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects:[data]}]), function(){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
+	
+		updateAutoMetadata: function(paths){
 			if (!(paths instanceof Array)){
 				paths = [paths];
 			}
@@ -26017,14 +26026,16 @@ define([
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
 	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
-	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request"
+	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request",
+	"./ContainerActionBar"
+
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
 	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
-	popup,IDMappingTemplate,xhr
+	popup,IDMappingTemplate,xhr,ContainerActionBar
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -26034,6 +26045,7 @@ define([
 		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
+			/*	
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
 			var out = ["<span class='wsBreadCrumb'>"];
 			var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
@@ -26054,7 +26066,9 @@ define([
 			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Upload to Folder'></a>");
 			out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
 			out.push("</span>");
-			this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
+			*/
+			//this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
+			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path});
 			//this.explorer = new WorkspaceExplorerView({path: decodeURIComponent(this.path), region: "center"});
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
@@ -26105,39 +26119,43 @@ define([
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
-			var dfc = '<div>Download Table As...</div><div rel="txt">Text</div><div rel="CSV">CSV</div>'
+
+			
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="txt">Text</div><div class="wsActionTooltip" rel="CSV">CSV</div>'
 			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
+				var selection = self.browserHeader.get('selection')
 				console.log("selection: ", selection);
 				popup.close(downloadTT);
 			});
 
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltipDialog:downloadTT, tooltip: "Download Selection as Table"}, function(selection){
+			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group"], tooltip: "Download Table", tooltipDialog:downloadTT}, function(selection){
+				console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
 					orient: ["below"]
 				});
 	
-				console.log("Download Table", selection);
 			}, true);
 
-			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
-				console.log("Download Table", selection);
-				popup.open({
-					popup: this._actions.DownloadTable2.options.tooltipDialog,
-					around: this._actions.DownloadTable2.button,
-					orient: ["below"]
-				});
-	
+			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
+				console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
+				Topic.publish("/openDialog",{type:"Upload",params:selection[0].path + selection[0].name });
 			}, true);
-	
+
+			this.browserHeader.addAction("Create Folder","fa icon-folder-plus fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Create Folder"}, function(selection){
+				console.log("CREATE FOLDER", selection[0].path);
+				Topic.publish("/openDialog",{type:"CreateFolder",params:selection[0].path + selection[0].name});
+			}, true);
+
+
+
 			
-			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
@@ -26159,7 +26177,7 @@ define([
 				frm.submit();
 			});
 
-			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
+			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
 				popup.open({
 					popup: this._actions.ViewFASTA.options.tooltipDialog,
 					around: this._actions.ViewFASTA.button,
@@ -26169,7 +26187,7 @@ define([
 	
 			}, true);
 
-			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Multiple Sequence Alignment"}, function(selection){
 				var selection = self.actionPanel.get('selection')
 				var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -26209,7 +26227,7 @@ define([
 				popup.close(idMappingTTDialog);
 			});
 
-			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
 
 				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
 				console.log("this: ", this);
@@ -26221,7 +26239,7 @@ define([
 				console.log("popup idmapping", selection);
 			}, true);
 
-			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
+			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Pathway Summary"}, function(selection){
 
 				var selection = self.actionPanel.get('selection')
 				var ids = selection.map(function(d){ return d['feature_id']; });
@@ -26242,7 +26260,7 @@ define([
 
 			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=experiment&experiments=" + selection.map(function(s){return s.path;})
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
 			/*
@@ -26252,12 +26270,13 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Remove Selection from Group"}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Remove Selection from Group"}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
 				var type = selection[0].document_type;
 				var idType = (this.currentContainerWidget.containerType=="genome_group")?"genome_id":"feature_id";
+				var type = (idType=="genome_id")?"genome":"genome feature";
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s[idType];
@@ -26272,9 +26291,12 @@ define([
 					onConfirm: function(evt){
 						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
 						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'),idType, objs), function(){
-							_self.currentContainerWidget.refresh();
+							if (_self.currentContainerWidget && _self.currentContainerWidget.refresh){
+								_self.currentContainerWidget.refresh();
+							}else{
+								console.log("No current container Widget or no refresh() on it");
+							}
 						});
-//						if (_self.currentContainerWidget.removeRows) { _self.currentContainerWidget.removeRows(objs) }
 					}
 				})
 				dlg.startup()
@@ -26283,7 +26305,7 @@ define([
 			},true);
 
 			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
@@ -26373,8 +26395,12 @@ define([
 			}else{
 				obj = WorkspaceManager.getObject(val,true)
 			}
-
 			Deferred.when(obj, lang.hitch(this,function(obj){
+
+				if (this.browserHeader) {
+					console.log("Set BrowserHeader selection: ", [obj]);
+					this.browserHeader.set("selection", [obj]);
+				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
 				console.log("Browse to Type: ", obj.type, obj);
@@ -26515,6 +26541,9 @@ define([
 					WorkspaceManager.set("currentPath",val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
+					console.log("Set Browser Header Path: ", this.path);
+					this.browserHeader.set("path", this.path)
+/*
 					if (this._started){
 						var len = parts.length;
 						var out = [];
@@ -26539,7 +26568,9 @@ define([
 
 						this.browserHeader.set("content", out.join(""));
 					}
+*/
 				}));
+
 			}));
 		},
 		refresh: function(){
@@ -33471,15 +33502,18 @@ function(Deferred,Topic){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
+	"../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,lang,formatter
+	Template,lang,formatter,domStyle,
+	WorkspaceManager
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
 		"disabled":false,
+		"changeableTypes":{unspecified:{label:"unspecified",value:"unspecified"},contigs:{label:"contigs",value:"contigs"},reads:{label:"reads",value:"reads"},diffexp_input_data:{label:"diffexp_input_data",value:"diffexp_input_data"},diffexp_input_metadata:{label:"diffexp_input_metadata",value:"diffexp_input_metadata"}},
 		templateString: Template,
 		item: null,
 		property_aliases: {
@@ -33533,9 +33567,27 @@ define([
        	                		var val = item[key];
 					if(key == "creation_time"){
 						val=formatter.date(val);
-					} 
-					if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
-						_self[this.property_aliases[key] + "Node"].innerHTML=val;
+					}
+					if (key == "type"){
+						_self[key + "Node"].set('value',val);
+						_self[key + "Node"].set('displayedValue',val);
+						_self[key + "Node"].cancel();
+						if (this.changeableTypes.hasOwnProperty(val)){
+							_self[key + "Node"].set('disabled',false);
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","underline");
+							var type_options=[];
+							Object.keys(this.changeableTypes).forEach(function(change_type){
+								type_options.push(this.changeableTypes[change_type]);
+							}, this);
+							_self[key + "Node"].editorParams.options=type_options;
+						}
+						else{
+							_self[key + "Node"].set('disabled',true);
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","none");
+						}
+					}	
+					else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						_self[this.property_aliases[key] + "Node"].innerHTML=val;	
 					}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 						_self[this.property_aliases[key] + "Widget"].set("value",val);
 					}else if (_self[key + "Node"]){
@@ -33561,8 +33613,12 @@ define([
 				},this);
 			}))
 			this.inherited(arguments);
-		}
+		},
 
+		saveType: function(val){
+			console.log("onSaveType: ", val, this.item);
+			WorkspaceManager.updateMetadata(this.item.path,false,val);		
+		}
 	});
 });
 
@@ -33657,10 +33713,13 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			var _self=this;
+			this.containerNode=this.domNode;
 			on(this.domNode, "click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				if (_self._actions[rel]) {
-					_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
+				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
+					var rel = evt.target.attributes.rel.value;
+					if (_self._actions[rel]) {
+						_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
+					}
 				}
 			});	
 
@@ -33690,7 +33749,7 @@ define([
 		addAction: function(name,classes,opts,fn,enabled){
 			var b = domConstruct.create("i",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes,rel:name});
 
-			domConstruct.place(b,this.domNode,"last");
+			domConstruct.place(b,this.containerNode,"last");
 
 			this._actions[name]={
 				options: opts,
@@ -34471,6 +34530,65 @@ define([
 });
 
 },
+'p3/widget/ContainerActionBar':function(){
+define([
+	"dojo/_base/declare","./ActionBar",
+	"dojo/dom-construct"
+], function(
+	declare,ActionBar,
+	domConstruct
+){
+	return declare([ActionBar], {	
+		path: null,
+		"class": "WSContainerActionBar",
+		_setPathAttr: function(p){
+			this.path=p;
+			if (this._started){
+				this.pathContainer.innerHTML=this.generatePathLinks(p);
+			}
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+			this.pathContainer = domConstruct.create("div", {style: {display: "inline-block"}},this.domNode);		
+			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);		
+		},
+
+		generatePathLinks: function(path) {
+			var parts = path.split("/");
+			if (parts[0]=="") { parts.shift(); }
+			var len = parts.length;
+			var out = [];
+
+			var out = ["<span class='wsBreadCrumb'>"];
+			var bp = ["workspace"];
+			console.log("parts: ", parts);
+			parts.forEach(function(p,idx){
+				if (idx == (parts.length-1)){
+					out.push(p + "&nbsp;");
+					return;
+				}
+				out.push("<a class='navigationLink' href='");
+				bp.push(p);
+				out.push("/"+ bp.join("/") );
+				out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
+			})
+			//out.push("<span>" + parts.join("/") + "</span>");
+			return out.join("");
+		},
+
+		startup: function(){
+			if (this.path){
+				this.pathContainer.innerHTML=this.generatePathLinks(this.path);
+			}
+
+			this.inherited(arguments);
+		}
+
+	});
+});
+
+},
 'p3/widget/WorkspaceGroups':function(){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
@@ -34671,7 +34789,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 					p = p + "/";
 				}
 				p = p + file.name;
-				WorkspaceManager.updateMetadata([p]).then(lang.hitch(this, function(){
+				WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function(){
 					_self.activeCount--;
 					_self.completeCount++
 					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
@@ -34866,10 +34984,10 @@ define([
 'p3/widget/WorkspaceItemDetail':function(){
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class"
+	"dojo/dom-class","dijit/form/Select"
 ], function(
 	declare, WidgetBase, on,
-	domClass
+	domClass,Select
 ){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceItemDetail",
@@ -34878,6 +34996,1324 @@ define([
 			this.domNode.innerHTML = "WorkspaceItemDetail";
 		}
 	});
+});
+
+},
+'dijit/form/Select':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/dom-class", // domClass.add domClass.remove domClass.toggle
+	"dojo/dom-geometry", // domGeometry.setMarginBox
+	"dojo/i18n", // i18n.getLocalization
+	"dojo/keys",
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"dojo/sniff", // has("ie")
+	"./_FormSelectWidget",
+	"../_HasDropDown",
+	"../DropDownMenu",
+	"../MenuItem",
+	"../MenuSeparator",
+	"../Tooltip",
+	"../_KeyNavMixin",
+	"../registry", // registry.byNode
+	"dojo/text!./templates/Select.html",
+	"dojo/i18n!./nls/validate"
+], function(array, declare, domAttr, domClass, domGeometry, i18n, keys, lang, on, has,
+			_FormSelectWidget, _HasDropDown, DropDownMenu, MenuItem, MenuSeparator, Tooltip, _KeyNavMixin, registry, template){
+
+	// module:
+	//		dijit/form/Select
+
+	var _SelectMenu = declare("dijit.form._SelectMenu", DropDownMenu, {
+		// summary:
+		//		An internally-used menu for dropdown that allows us a vertical scrollbar
+
+		// Override Menu.autoFocus setting so that opening a Select highlights the current value.
+		autoFocus: true,
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			this.domNode.setAttribute("role", "listbox");
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// stop mousemove from selecting text on IE to be consistent with other browsers
+			this.own(on(this.domNode, "selectstart", function(evt){
+				evt.preventDefault();
+				evt.stopPropagation();
+			}));
+		},
+
+		focus: function(){
+			// summary:
+			//		Overridden so that the previously selected value will be focused instead of only the first item
+			var found = false,
+				val = this.parentWidget.value;
+			if(lang.isArray(val)){
+				val = val[val.length - 1];
+			}
+			if(val){ // if focus selected
+				array.forEach(this.parentWidget._getChildren(), function(child){
+					if(child.option && (val === child.option.value)){ // find menu item widget with this value
+						found = true;
+						this.focusChild(child, false); // focus previous selection
+					}
+				}, this);
+			}
+			if(!found){
+				this.inherited(arguments); // focus first item by default
+			}
+		}
+	});
+
+	var Select = declare("dijit.form.Select" + (has("dojo-bidi") ? "_NoBidi" : ""), [_FormSelectWidget, _HasDropDown, _KeyNavMixin], {
+		// summary:
+		//		This is a "styleable" select box - it is basically a DropDownButton which
+		//		can take a `<select>` as its input.
+
+		baseClass: "dijitSelect dijitValidationTextBox",
+
+		templateString: template,
+
+		_buttonInputDisabled: has("ie") ? "disabled" : "", // allows IE to disallow focus, but Firefox cannot be disabled for mousedown events
+
+		// required: Boolean
+		//		Can be true or false, default is false.
+		required: false,
+
+		// state: [readonly] String
+		//		"Incomplete" if this select is required but unset (i.e. blank value), "" otherwise
+		state: "",
+
+		// message: String
+		//		Currently displayed error/prompt message
+		message: "",
+
+		// tooltipPosition: String[]
+		//		See description of `dijit/Tooltip.defaultPosition` for details on this parameter.
+		tooltipPosition: [],
+
+		// emptyLabel: string
+		//		What to display in an "empty" dropdown
+		emptyLabel: "&#160;", // &nbsp;
+
+		// _isLoaded: Boolean
+		//		Whether or not we have been loaded
+		_isLoaded: false,
+
+		// _childrenLoaded: Boolean
+		//		Whether or not our children have been loaded
+		_childrenLoaded: false,
+
+		// labelType: String
+		//		Specifies how to interpret the labelAttr in the data store items.
+		//		Can be "html" or "text".
+		labelType: "html",
+
+		_fillContent: function(){
+			// summary:
+			//		Set the value to be the first, or the selected index
+			this.inherited(arguments);
+			// set value from selected option
+			if(this.options.length && !this.value && this.srcNodeRef){
+				var si = this.srcNodeRef.selectedIndex || 0; // || 0 needed for when srcNodeRef is not a SELECT
+				this._set("value", this.options[si >= 0 ? si : 0].value);
+			}
+			// Create the dropDown widget
+			this.dropDown = new _SelectMenu({ id: this.id + "_menu", parentWidget: this });
+			domClass.add(this.dropDown.domNode, this.baseClass.replace(/\s+|$/g, "Menu "));
+		},
+
+		_getMenuItemForOption: function(/*_FormSelectWidget.__SelectOption*/ option){
+			// summary:
+			//		For the given option, return the menu item that should be
+			//		used to display it.  This can be overridden as needed
+			if(!option.value && !option.label){
+				// We are a separator (no label set for it)
+				return new MenuSeparator({ownerDocument: this.ownerDocument});
+			}else{
+				// Just a regular menu option
+				var click = lang.hitch(this, "_setValueAttr", option);
+				var item = new MenuItem({
+					option: option,
+					label: (this.labelType === 'text' ? (option.label || '').toString()
+						.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
+						option.label) || this.emptyLabel,
+					onClick: click,
+					ownerDocument: this.ownerDocument,
+					dir: this.dir,
+					textDir: this.textDir,
+					disabled: option.disabled || false
+				});
+				item.focusNode.setAttribute("role", "option");
+				return item;
+			}
+		},
+
+		_addOptionItem: function(/*_FormSelectWidget.__SelectOption*/ option){
+			// summary:
+			//		For the given option, add an option to our dropdown.
+			//		If the option doesn't have a value, then a separator is added
+			//		in that place.
+			if(this.dropDown){
+				this.dropDown.addChild(this._getMenuItemForOption(option));
+			}
+		},
+
+		_getChildren: function(){
+			if(!this.dropDown){
+				return [];
+			}
+			return this.dropDown.getChildren();
+		},
+
+		focus: function(){
+			// Override _KeyNavMixin::focus(), which calls focusFirstChild().
+			// We just want the standard form widget behavior.
+			if(!this.disabled && this.focusNode.focus){
+				try{
+					this.focusNode.focus();
+				}catch(e){
+					/*squelch errors from hidden nodes*/
+				}
+			}
+		},
+
+		focusChild: function(/*dijit/_WidgetBase*/ widget){
+			// summary:
+			//		Sets the value to the given option, used during search by letter.
+			// widget:
+			//		Reference to option's widget
+			// tags:
+			//		protected
+			if(widget){
+				this.set('value', widget.option);
+			}
+		},
+
+		_getFirst: function(){
+			// summary:
+			//		Returns the first child widget.
+			// tags:
+			//		abstract extension
+			var children = this._getChildren();
+			return children.length ? children[0] : null;
+		},
+
+		_getLast: function(){
+			// summary:
+			//		Returns the last child widget.
+			// tags:
+			//		abstract extension
+			var children = this._getChildren();
+			return children.length ? children[children.length-1] : null;
+		},
+
+		childSelector: function(/*DOMNode*/ node){
+			// Implement _KeyNavMixin.childSelector, to identify focusable child nodes.
+			// If we allowed a dojo/query dependency from this module this could more simply be a string "> *"
+			// instead of this function.
+
+			var node = registry.byNode(node);
+			return node && node.getParent() == this.dropDown;
+		},
+
+		onKeyboardSearch: function(/*dijit/_WidgetBase*/ item, /*Event*/ evt, /*String*/ searchString, /*Number*/ numMatches){
+			// summary:
+			//		When a key is pressed that matches a child item,
+			//		this method is called so that a widget can take appropriate action is necessary.
+			// tags:
+			//		protected
+			if(item){
+				this.focusChild(item);
+			}
+		},
+
+		_loadChildren: function(/*Boolean*/ loadMenuItems){
+			// summary:
+			//		Resets the menu and the length attribute of the button - and
+			//		ensures that the label is appropriately set.
+			// loadMenuItems: Boolean
+			//		actually loads the child menu items - we only do this when we are
+			//		populating for showing the dropdown.
+
+			if(loadMenuItems === true){
+				// this.inherited destroys this.dropDown's child widgets (MenuItems).
+				// Avoid this.dropDown (Menu widget) having a pointer to a destroyed widget (which will cause
+				// issues later in _setSelected). (see #10296)
+				if(this.dropDown){
+					delete this.dropDown.focusedChild;
+					this.focusedChild = null;
+				}
+				if(this.options.length){
+					this.inherited(arguments);
+				}else{
+					// Drop down menu is blank but add one blank entry just so something appears on the screen
+					// to let users know that they are no choices (mimicing native select behavior)
+					array.forEach(this._getChildren(), function(child){
+						child.destroyRecursive();
+					});
+					var item = new MenuItem({
+						ownerDocument: this.ownerDocument,
+						label: this.emptyLabel
+					});
+					this.dropDown.addChild(item);
+				}
+			}else{
+				this._updateSelection();
+			}
+
+			this._isLoaded = false;
+			this._childrenLoaded = true;
+
+			if(!this._loadingStore){
+				// Don't call this if we are loading - since we will handle it later
+				this._setValueAttr(this.value, false);
+			}
+		},
+
+		_refreshState: function(){
+			if(this._started){
+				this.validate(this.focused);
+			}
+		},
+
+		startup: function(){
+			this.inherited(arguments);
+			this._refreshState(); // after all _set* methods have run
+		},
+
+		_setValueAttr: function(value){
+			this.inherited(arguments);
+			domAttr.set(this.valueNode, "value", this.get("value"));
+			this._refreshState();	// to update this.state
+		},
+
+		_setNameAttr: "valueNode",
+
+		_setDisabledAttr: function(/*Boolean*/ value){
+			this.inherited(arguments);
+			this._refreshState();	// to update this.state
+		},
+
+		_setRequiredAttr: function(/*Boolean*/ value){
+			this._set("required", value);
+			this.focusNode.setAttribute("aria-required", value);
+			this._refreshState();	// to update this.state
+		},
+
+		_setOptionsAttr: function(/*Array*/ options){
+			this._isLoaded = false;
+			this._set('options', options);
+		},
+
+		_setDisplay: function(/*String*/ newDisplay){
+			// summary:
+			//		sets the display for the given value (or values)
+
+			var lbl = (this.labelType === 'text' ? (newDisplay || '')
+					.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
+					newDisplay) || this.emptyLabel;
+			this.containerNode.innerHTML = '<span role="option" class="dijitReset dijitInline ' + this.baseClass.replace(/\s+|$/g, "Label ") + '">' + lbl + '</span>';
+		},
+
+		validate: function(/*Boolean*/ isFocused){
+			// summary:
+			//		Called by oninit, onblur, and onkeypress, and whenever required/disabled state changes
+			// description:
+			//		Show missing or invalid messages if appropriate, and highlight textbox field.
+			//		Used when a select is initially set to no value and the user is required to
+			//		set the value.
+
+			var isValid = this.disabled || this.isValid(isFocused);
+			this._set("state", isValid ? "" : (this._hasBeenBlurred ? "Error" : "Incomplete"));
+			this.focusNode.setAttribute("aria-invalid", isValid ? "false" : "true");
+			var message = isValid ? "" : this._missingMsg;
+			if(message && this.focused && this._hasBeenBlurred){
+				Tooltip.show(message, this.domNode, this.tooltipPosition, !this.isLeftToRight());
+			}else{
+				Tooltip.hide(this.domNode);
+			}
+			this._set("message", message);
+			return isValid;
+		},
+
+		isValid: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Whether or not this is a valid value.  The only way a Select
+			//		can be invalid is when it's required but nothing is selected.
+			return (!this.required || this.value === 0 || !(/^\s*$/.test(this.value || ""))); // handle value is null or undefined
+		},
+
+		reset: function(){
+			// summary:
+			//		Overridden so that the state will be cleared.
+			this.inherited(arguments);
+			Tooltip.hide(this.domNode);
+			this._refreshState();	// to update this.state
+		},
+
+		postMixInProperties: function(){
+			// summary:
+			//		set the missing message
+			this.inherited(arguments);
+			this._missingMsg = i18n.getLocalization("dijit.form", "validate", this.lang).missingMessage;
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// stop mousemove from selecting text on IE to be consistent with other browsers
+			this.own(on(this.domNode, "selectstart", function(evt){
+				evt.preventDefault();
+				evt.stopPropagation();
+			}));
+
+			this.domNode.setAttribute("aria-expanded", "false");
+
+			// Prevent _KeyNavMixin from calling stopPropagation() on left and right arrow keys, thus breaking
+			// navigation when Select inside Toolbar.
+			var keyNavCodes = this._keyNavCodes;
+			delete keyNavCodes[keys.LEFT_ARROW];
+			delete keyNavCodes[keys.RIGHT_ARROW];
+		},
+
+		_setStyleAttr: function(/*String||Object*/ value){
+			this.inherited(arguments);
+			domClass.toggle(this.domNode, this.baseClass.replace(/\s+|$/g, "FixedWidth "), !!this.domNode.style.width);
+		},
+
+		isLoaded: function(){
+			return this._isLoaded;
+		},
+
+		loadDropDown: function(/*Function*/ loadCallback){
+			// summary:
+			//		populates the menu
+			this._loadChildren(true);
+			this._isLoaded = true;
+			loadCallback();
+		},
+
+		destroy: function(preserveDom){
+			if(this.dropDown && !this.dropDown._destroyed){
+				this.dropDown.destroyRecursive(preserveDom);
+				delete this.dropDown;
+			}
+			Tooltip.hide(this.domNode);	// in case Select (or enclosing Dialog) destroyed while tooltip shown
+			this.inherited(arguments);
+		},
+
+		_onFocus: function(){
+			this.validate(true);	// show tooltip if second focus of required tooltip, but no selection
+			// Note: not calling superclass _onFocus() to avoid _KeyNavMixin::_onFocus() setting tabIndex --> -1
+		},
+
+		_onBlur: function(){
+			Tooltip.hide(this.domNode);
+			this.inherited(arguments);
+			this.validate(false);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		Select = declare("dijit.form.Select", Select, {
+			_setDisplay: function(/*String*/ newDisplay){
+				this.inherited(arguments);
+				this.applyTextDir(this.containerNode);
+			}
+		});
+	}
+
+	Select._Menu = _SelectMenu;	// for monkey patching
+
+	// generic event helper to ensure the dropdown items are loaded before the real event handler is called
+	function _onEventAfterLoad(method){
+		return function(evt){
+			if(!this._isLoaded){
+				this.loadDropDown(lang.hitch(this, method, evt));
+			}else{
+				this.inherited(method, arguments);
+			}
+		};
+	}
+	Select.prototype._onContainerKeydown = _onEventAfterLoad("_onContainerKeydown");
+	Select.prototype._onContainerKeypress = _onEventAfterLoad("_onContainerKeypress");
+
+	return Select;
+});
+
+},
+'dijit/form/_FormSelectWidget':function(){
+define([
+	"dojo/_base/array", // array.filter array.forEach array.map array.some
+	"dojo/_base/Deferred",
+	"dojo/aspect", // aspect.after
+	"dojo/data/util/sorter", // util.sorter.createSortFunction
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.setSelectable
+	"dojo/dom-class", // domClass.toggle
+	"dojo/_base/kernel",	// _scopeName
+	"dojo/_base/lang", // lang.delegate lang.isArray lang.isObject lang.hitch
+	"dojo/query", // query
+	"dojo/when",
+	"dojo/store/util/QueryResults",
+	"./_FormValueWidget"
+], function(array, Deferred, aspect, sorter, declare, dom, domClass, kernel, lang, query, when,
+			QueryResults, _FormValueWidget){
+
+	// module:
+	//		dijit/form/_FormSelectWidget
+
+	/*=====
+	var __SelectOption = {
+		// value: String
+		//		The value of the option.  Setting to empty (or missing) will
+		//		place a separator at that location
+		// label: String
+		//		The label for our option.  It can contain html tags.
+		// selected: Boolean
+		//		Whether or not we are a selected option
+		// disabled: Boolean
+		//		Whether or not this specific option is disabled
+	};
+	=====*/
+
+	var _FormSelectWidget = declare("dijit.form._FormSelectWidget", _FormValueWidget, {
+		// summary:
+		//		Extends _FormValueWidget in order to provide "select-specific"
+		//		values - i.e., those values that are unique to `<select>` elements.
+		//		This also provides the mechanism for reading the elements from
+		//		a store, if desired.
+
+		// multiple: [const] Boolean
+		//		Whether or not we are multi-valued
+		multiple: false,
+
+		// options: __SelectOption[]
+		//		The set of options for our select item.  Roughly corresponds to
+		//		the html `<option>` tag.
+		options: null,
+
+		// store: dojo/store/api/Store
+		//		A store to use for getting our list of options - rather than reading them
+		//		from the `<option>` html tags.   Should support getIdentity().
+		//		For back-compat store can also be a dojo/data/api/Identity.
+		store: null,
+		_setStoreAttr: function(val){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(val);
+			}
+		},
+
+		// query: object
+		//		A query to use when fetching items from our store
+		query: null,
+		_setQueryAttr: function(query){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(this.store, this.selectedValue, {query: query});
+			}
+		},
+
+		// queryOptions: object
+		//		Query options to use when fetching from the store
+		queryOptions: null,
+		_setQueryOptionsAttr: function(queryOptions){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(this.store, this.selectedValue, {queryOptions: queryOptions});
+			}
+		},
+
+		// labelAttr: String?
+		//		The entries in the drop down list come from this attribute in the dojo.store items.
+		//		If ``store`` is set, labelAttr must be set too, unless store is an old-style
+		//		dojo.data store rather than a new dojo/store.
+		labelAttr: "",
+
+		// onFetch: Function
+		//		A callback to do with an onFetch - but before any items are actually
+		//		iterated over (i.e. to filter even further what you want to add)
+		onFetch: null,
+
+		// sortByLabel: Boolean
+		//		Flag to sort the options returned from a store by the label of
+		//		the store.
+		sortByLabel: true,
+
+
+		// loadChildrenOnOpen: Boolean
+		//		By default loadChildren is called when the items are fetched from the
+		//		store.  This property allows delaying loadChildren (and the creation
+		//		of the options/menuitems) until the user clicks the button to open the
+		//		dropdown.
+		loadChildrenOnOpen: false,
+
+		// onLoadDeferred: [readonly] dojo.Deferred
+		//		This is the `dojo.Deferred` returned by setStore().
+		//		Calling onLoadDeferred.then() registers your
+		//		callback to be called only once, when the prior setStore completes.
+		onLoadDeferred: null,
+
+		getOptions: function(/*anything*/ valueOrIdx){
+			// summary:
+			//		Returns a given option (or options).
+			// valueOrIdx:
+			//		If passed in as a string, that string is used to look up the option
+			//		in the array of options - based on the value property.
+			//		(See dijit/form/_FormSelectWidget.__SelectOption).
+			//
+			//		If passed in a number, then the option with the given index (0-based)
+			//		within this select will be returned.
+			//
+			//		If passed in a dijit/form/_FormSelectWidget.__SelectOption, the same option will be
+			//		returned if and only if it exists within this select.
+			//
+			//		If passed an array, then an array will be returned with each element
+			//		in the array being looked up.
+			//
+			//		If not passed a value, then all options will be returned
+			//
+			// returns:
+			//		The option corresponding with the given value or index.
+			//		null is returned if any of the following are true:
+			//
+			//		- A string value is passed in which doesn't exist
+			//		- An index is passed in which is outside the bounds of the array of options
+			//		- A dijit/form/_FormSelectWidget.__SelectOption is passed in which is not a part of the select
+
+			// NOTE: the compare for passing in a dijit/form/_FormSelectWidget.__SelectOption checks
+			//		if the value property matches - NOT if the exact option exists
+			// NOTE: if passing in an array, null elements will be placed in the returned
+			//		array when a value is not found.
+			var opts = this.options || [];
+
+			if(valueOrIdx == null){
+				return opts; // __SelectOption[]
+			}
+			if(lang.isArrayLike(valueOrIdx)){
+				return array.map(valueOrIdx, "return this.getOptions(item);", this); // __SelectOption[]
+			}
+			if(lang.isString(valueOrIdx)){
+				valueOrIdx = { value: valueOrIdx };
+			}
+			if(lang.isObject(valueOrIdx)){
+				// We were passed an option - so see if it's in our array (directly),
+				// and if it's not, try and find it by value.
+
+				if(!array.some(opts, function(option, idx){
+					for(var a in valueOrIdx){
+						if(!(a in option) || option[a] != valueOrIdx[a]){ // == and not === so that 100 matches '100'
+							return false;
+						}
+					}
+					valueOrIdx = idx;
+					return true; // stops iteration through opts
+				})){
+					valueOrIdx = -1;
+				}
+			}
+			if(valueOrIdx >= 0 && valueOrIdx < opts.length){
+				return opts[valueOrIdx]; // __SelectOption
+			}
+			return null; // null
+		},
+
+		addOption: function(/*__SelectOption|__SelectOption[]*/ option){
+			// summary:
+			//		Adds an option or options to the end of the select.  If value
+			//		of the option is empty or missing, a separator is created instead.
+			//		Passing in an array of options will yield slightly better performance
+			//		since the children are only loaded once.
+			array.forEach(lang.isArrayLike(option) ? option : [option], function(i){
+				if(i && lang.isObject(i)){
+					this.options.push(i);
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		removeOption: function(/*String|__SelectOption|Number|Array*/ valueOrIdx){
+			// summary:
+			//		Removes the given option or options.  You can remove by string
+			//		(in which case the value is removed), number (in which case the
+			//		index in the options array is removed), or select option (in
+			//		which case, the select option with a matching value is removed).
+			//		You can also pass in an array of those values for a slightly
+			//		better performance since the children are only loaded once.
+			//		For numeric option values, specify {value: number} as the argument.
+			var oldOpts = this.getOptions(lang.isArrayLike(valueOrIdx) ? valueOrIdx : [valueOrIdx]);
+			array.forEach(oldOpts, function(option){
+				// We can get null back in our array - if our option was not found.  In
+				// that case, we don't want to blow up...
+				if(option){
+					this.options = array.filter(this.options, function(node){
+						return (node.value !== option.value || node.label !== option.label);
+					});
+					this._removeOptionItem(option);
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		updateOption: function(/*__SelectOption|__SelectOption[]*/ newOption){
+			// summary:
+			//		Updates the values of the given option.  The option to update
+			//		is matched based on the value of the entered option.  Passing
+			//		in an array of new options will yield better performance since
+			//		the children will only be loaded once.
+			array.forEach(lang.isArrayLike(newOption) ? newOption : [newOption], function(i){
+				var oldOpt = this.getOptions({ value: i.value }), k;
+				if(oldOpt){
+					for(k in i){
+						oldOpt[k] = i[k];
+					}
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		setStore: function(store, selectedValue, fetchArgs){
+			kernel.deprecated(this.declaredClass+"::setStore(store, selectedValue, fetchArgs) is deprecated. Use set('query', fetchArgs.query), set('queryOptions', fetchArgs.queryOptions), set('store', store), or set('value', selectedValue) instead.", "", "2.0");
+			this._deprecatedSetStore(store, selectedValue, fetchArgs);
+		},
+
+		_deprecatedSetStore: function(store, selectedValue, fetchArgs){
+			// summary:
+			//		Sets the store you would like to use with this select widget.
+			//		The selected value is the value of the new store to set.  This
+			//		function returns the original store, in case you want to reuse
+			//		it or something.
+			// store: dojo/store/api/Store
+			//		The dojo.store you would like to use - it MUST implement getIdentity()
+			//		and MAY implement observe().
+			//		For backwards-compatibility this can also be a data.data store, in which case
+			//		it MUST implement dojo/data/api/Identity,
+			//		and MAY implement dojo/data/api/Notification.
+			// selectedValue: anything?
+			//		The value that this widget should set itself to *after* the store
+			//		has been loaded
+			// fetchArgs: Object?
+			//		Hash of parameters to set filter on store, etc.
+			//
+			//		- query: new value for Select.query,
+			//		- queryOptions: new value for Select.queryOptions,
+			//		- onFetch: callback function for each item in data (Deprecated)
+			var oStore = this.store;
+			fetchArgs = fetchArgs || {};
+
+			if(oStore !== store){
+				// Our store has changed, so cancel any listeners on old store (remove for 2.0)
+				var h;
+				while((h = this._notifyConnections.pop())){
+					h.remove();
+				}
+
+				// For backwards-compatibility, accept dojo.data store in addition to dojo.store.store.  Remove in 2.0.
+				if(!store.get){
+					lang.mixin(store, {
+						_oldAPI: true,
+						get: function(id){
+							// summary:
+							//		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity.
+							//		Like dojo.store.DataStore.get() except returns native item.
+							var deferred = new Deferred();
+							this.fetchItemByIdentity({
+								identity: id,
+								onItem: function(object){
+									deferred.resolve(object);
+								},
+								onError: function(error){
+									deferred.reject(error);
+								}
+							});
+							return deferred.promise;
+						},
+						query: function(query, options){
+							// summary:
+							//		Queries the store for objects.   Like dojo/store/DataStore.query()
+							//		except returned Deferred contains array of native items.
+							var deferred = new Deferred(function(){
+								if(fetchHandle.abort){
+									fetchHandle.abort();
+								}
+							});
+							deferred.total = new Deferred();
+							var fetchHandle = this.fetch(lang.mixin({
+								query: query,
+								onBegin: function(count){
+									deferred.total.resolve(count);
+								},
+								onComplete: function(results){
+									deferred.resolve(results);
+								},
+								onError: function(error){
+									deferred.reject(error);
+								}
+							}, options));
+							return new QueryResults(deferred);
+						}
+					});
+
+					if(store.getFeatures()["dojo.data.api.Notification"]){
+						this._notifyConnections = [
+							aspect.after(store, "onNew", lang.hitch(this, "_onNewItem"), true),
+							aspect.after(store, "onDelete", lang.hitch(this, "_onDeleteItem"), true),
+							aspect.after(store, "onSet", lang.hitch(this, "_onSetItem"), true)
+						];
+					}
+				}
+				this._set("store", store);			// Our store has changed, so update our notifications
+			}
+
+			// Remove existing options (if there are any)
+			if(this.options && this.options.length){
+				this.removeOption(this.options);
+			}
+
+			// Cancel listener for updates to old (dojo.data) store
+			if(this._queryRes && this._queryRes.close){
+				this._queryRes.close();
+			}
+
+			// Cancel listener for updates to new (dojo.store) store
+			if(this._observeHandle && this._observeHandle.remove){
+				this._observeHandle.remove();
+				this._observeHandle = null;
+			}
+
+			// If user has specified new query and query options along with this new store, then use them.
+			if(fetchArgs.query){
+				this._set("query", fetchArgs.query);
+			}
+			if(fetchArgs.queryOptions){
+				this._set("queryOptions", fetchArgs.queryOptions);
+			}
+
+			// Add our new options
+			if(store && store.query){
+				this._loadingStore = true;
+				this.onLoadDeferred = new Deferred();
+
+				// Run query
+				// Save result in this._queryRes so we can cancel the listeners we register below
+				this._queryRes = store.query(this.query, this.queryOptions);
+				when(this._queryRes, lang.hitch(this, function(items){
+
+					if(this.sortByLabel && !fetchArgs.sort && items.length){
+						if(store.getValue){
+							// Old dojo.data API to access items, remove for 2.0
+							items.sort(sorter.createSortFunction([
+								{
+									attribute: store.getLabelAttributes(items[0])[0]
+								}
+							], store));
+						}else{
+							// TODO: remove sortByLabel completely for 2.0?  It can be handled by queryOptions: {sort: ... }.
+							var labelAttr = this.labelAttr;
+							items.sort(function(a, b){
+								return a[labelAttr] > b[labelAttr] ? 1 : b[labelAttr] > a[labelAttr] ? -1 : 0;
+							});
+						}
+					}
+
+					if(fetchArgs.onFetch){
+						items = fetchArgs.onFetch.call(this, items, fetchArgs);
+					}
+
+					// TODO: Add these guys as a batch, instead of separately
+					array.forEach(items, function(i){
+						this._addOptionForItem(i);
+					}, this);
+
+					// Register listener for store updates
+					if(this._queryRes.observe){
+						// observe returns yet another handle that needs its own explicit gc
+						this._observeHandle = this._queryRes.observe(lang.hitch(this, function(object, deletedFrom, insertedInto){
+							if(deletedFrom == insertedInto){
+								this._onSetItem(object);
+							}else{
+								if(deletedFrom != -1){
+									this._onDeleteItem(object);
+								}
+								if(insertedInto != -1){
+									this._onNewItem(object);
+								}
+							}
+						}), true);
+					}
+
+					// Set our value (which might be undefined), and then tweak
+					// it to send a change event with the real value
+					this._loadingStore = false;
+					this.set("value", "_pendingValue" in this ? this._pendingValue : selectedValue);
+					delete this._pendingValue;
+
+					if(!this.loadChildrenOnOpen){
+						this._loadChildren();
+					}else{
+						this._pseudoLoadChildren(items);
+					}
+					this.onLoadDeferred.resolve(true);
+					this.onSetStore();
+				}), function(err){
+					console.error('dijit.form.Select: ' + err.toString());
+					this.onLoadDeferred.reject(err);
+				});
+			}
+			return oStore;	// dojo/data/api/Identity
+		},
+
+		_setValueAttr: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
+			// summary:
+			//		set the value of the widget.
+			//		If a string is passed, then we set our value from looking it up.
+			if(!this._onChangeActive){
+				priorityChange = null;
+			}
+			if(this._loadingStore){
+				// Our store is loading - so save our value, and we'll set it when
+				// we're done
+				this._pendingValue = newValue;
+				return;
+			}
+			if(newValue == null){
+				return;
+			}
+			if(lang.isArrayLike(newValue)){
+				newValue = array.map(newValue, function(value){
+					return lang.isObject(value) ? value : { value: value };
+				}); // __SelectOption[]
+			}else if(lang.isObject(newValue)){
+				newValue = [newValue];
+			}else{
+				newValue = [
+					{ value: newValue }
+				];
+			}
+			newValue = array.filter(this.getOptions(newValue), function(i){
+				return i && i.value;
+			});
+			var opts = this.getOptions() || [];
+			if(!this.multiple && (!newValue[0] || !newValue[0].value) && !!opts.length){
+				newValue[0] = opts[0];
+			}
+			array.forEach(opts, function(opt){
+				opt.selected = array.some(newValue, function(v){
+					return v.value === opt.value;
+				});
+			});
+			var val = array.map(newValue, function(opt){
+				return opt.value;
+			});
+
+			if(typeof val == "undefined" || typeof val[0] == "undefined"){
+				return;
+			} // not fully initialized yet or a failed value lookup
+			var disp = array.map(newValue, function(opt){
+				return opt.label;
+			});
+			this._setDisplay(this.multiple ? disp : disp[0]);
+			this.inherited(arguments, [ this.multiple ? val : val[0], priorityChange ]);
+			this._updateSelection();
+		},
+
+		_getDisplayedValueAttr: function(){
+			// summary:
+			//		returns the displayed value of the widget
+			var ret = array.map([].concat(this.get('selectedOptions')), function(v){
+				if(v && "label" in v){
+					return v.label;
+				}else if(v){
+					return v.value;
+				}
+				return null;
+			}, this);
+			return this.multiple ? ret : ret[0];
+		},
+
+		_setDisplayedValueAttr: function(label){
+			// summary:
+			//		Sets the displayed value of the widget
+			this.set('value', this.getOptions(typeof label == "string" ? { label: label } : label));
+		},
+
+		_loadChildren: function(){
+			// summary:
+			//		Loads the children represented by this widget's options.
+			//		reset the menu to make it populatable on the next click
+			if(this._loadingStore){
+				return;
+			}
+			array.forEach(this._getChildren(), function(child){
+				child.destroyRecursive();
+			});
+			// Add each menu item
+			array.forEach(this.options, this._addOptionItem, this);
+
+			// Update states
+			this._updateSelection();
+		},
+
+		_updateSelection: function(){
+			// summary:
+			//		Sets the "selected" class on the item for styling purposes
+			this.focusedChild = null;
+			this._set("value", this._getValueFromOpts());
+			var val = [].concat(this.value);
+			if(val && val[0]){
+				var self = this;
+				array.forEach(this._getChildren(), function(child){
+					var isSelected = array.some(val, function(v){
+						return child.option && (v === child.option.value);
+					});
+					if(isSelected && !self.multiple){
+						self.focusedChild = child;
+					}
+					domClass.toggle(child.domNode, this.baseClass.replace(/\s+|$/g, "SelectedOption "), isSelected);
+					child.domNode.setAttribute("aria-selected", isSelected ? "true" : "false");
+				}, this);
+			}
+		},
+
+		_getValueFromOpts: function(){
+			// summary:
+			//		Returns the value of the widget by reading the options for
+			//		the selected flag
+			var opts = this.getOptions() || [];
+			if(!this.multiple && opts.length){
+				// Mirror what a select does - choose the first one
+				var opt = array.filter(opts, function(i){
+					return i.selected;
+				})[0];
+				if(opt && opt.value){
+					return opt.value;
+				}else{
+					opts[0].selected = true;
+					return opts[0].value;
+				}
+			}else if(this.multiple){
+				// Set value to be the sum of all selected
+				return array.map(array.filter(opts, function(i){
+					return i.selected;
+				}), function(i){
+					return i.value;
+				}) || [];
+			}
+			return "";
+		},
+
+		// Internal functions to call when we have store notifications come in
+		_onNewItem: function(/*item*/ item, /*Object?*/ parentInfo){
+			if(!parentInfo || !parentInfo.parent){
+				// Only add it if we are top-level
+				this._addOptionForItem(item);
+			}
+		},
+		_onDeleteItem: function(/*item*/ item){
+			var store = this.store;
+			this.removeOption({value: store.getIdentity(item) });
+		},
+		_onSetItem: function(/*item*/ item){
+			this.updateOption(this._getOptionObjForItem(item));
+		},
+
+		_getOptionObjForItem: function(item){
+			// summary:
+			//		Returns an option object based off the given item.  The "value"
+			//		of the option item will be the identity of the item, the "label"
+			//		of the option will be the label of the item.
+
+			// remove getLabel() call for 2.0 (it's to support the old dojo.data API)
+			var store = this.store,
+				label = (this.labelAttr && this.labelAttr in item) ? item[this.labelAttr] : store.getLabel(item),
+				value = (label ? store.getIdentity(item) : null);
+			return {value: value, label: label, item: item}; // __SelectOption
+		},
+
+		_addOptionForItem: function(/*item*/ item){
+			// summary:
+			//		Creates (and adds) the option for the given item
+			var store = this.store;
+			if(store.isItemLoaded && !store.isItemLoaded(item)){
+				// We are not loaded - so let's load it and add later.
+				// Remove for 2.0 (it's the old dojo.data API)
+				store.loadItem({item: item, onItem: function(i){
+					this._addOptionForItem(i);
+				},
+					scope: this});
+				return;
+			}
+			var newOpt = this._getOptionObjForItem(item);
+			this.addOption(newOpt);
+		},
+
+		constructor: function(params /*===== , srcNodeRef =====*/){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String?
+			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
+
+			//		Saves off our value, if we have an initial one set so we
+			//		can use it if we have a store as well (see startup())
+			this._oValue = (params || {}).value || null;
+			this._notifyConnections = [];	// remove for 2.0
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			dom.setSelectable(this.focusNode, false);
+		},
+
+		_fillContent: function(){
+			// summary:
+			//		Loads our options and sets up our dropdown correctly.  We
+			//		don't want any content, so we don't call any inherit chain
+			//		function.
+			if(!this.options){
+				this.options =
+					this.srcNodeRef
+						? query("> *", this.srcNodeRef).map(
+						function(node){
+							if(node.getAttribute("type") === "separator"){
+								return { value: "", label: "", selected: false, disabled: false };
+							}
+							return {
+								value: (node.getAttribute("data-" + kernel._scopeName + "-value") || node.getAttribute("value")),
+								label: String(node.innerHTML),
+								// FIXME: disabled and selected are not valid on complex markup children (which is why we're
+								// looking for data-dojo-value above.  perhaps we should data-dojo-props="" this whole thing?)
+								// decide before 1.6
+								selected: node.getAttribute("selected") || false,
+								disabled: node.getAttribute("disabled") || false
+							};
+						},
+						this)
+						: [];
+			}
+			if(!this.value){
+				this._set("value", this._getValueFromOpts());
+			}else if(this.multiple && typeof this.value == "string"){
+				this._set("value", this.value.split(","));
+			}
+		},
+
+		postCreate: function(){
+			// summary:
+			//		sets up our event handling that we need for functioning
+			//		as a select
+			this.inherited(arguments);
+
+			// Make our event connections for updating state
+			aspect.after(this, "onChange", lang.hitch(this, "_updateSelection"));
+
+			//		Connects in our store, if we have one defined
+			var store = this.store;
+			if(store && (store.getIdentity || store.getFeatures()["dojo.data.api.Identity"])){
+				// Temporarily set our store to null so that it will get set
+				// and connected appropriately
+				this.store = null;
+				this._deprecatedSetStore(store, this._oValue, {query: this.query, queryOptions: this.queryOptions});
+			}
+
+			this._storeInitialized = true;
+		},
+
+		startup: function(){
+			// summary:
+			this._loadChildren();
+			this.inherited(arguments);
+		},
+
+		destroy: function(){
+			// summary:
+			//		Clean up our connections
+
+			var h;
+			while((h = this._notifyConnections.pop())){
+				h.remove();
+			}
+
+			// Cancel listener for store updates
+			if(this._queryRes && this._queryRes.close){
+				this._queryRes.close();
+			}
+
+			// Cancel listener for updates to new (dojo.store) store
+			if(this._observeHandle && this._observeHandle.remove){
+				this._observeHandle.remove();
+				this._observeHandle = null;
+			}
+
+			this.inherited(arguments);
+		},
+
+		_addOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
+			// summary:
+			//		User-overridable function which, for the given option, adds an
+			//		item to the select.  If the option doesn't have a value, then a
+			//		separator is added in that place.  Make sure to store the option
+			//		in the created option widget.
+		},
+
+		_removeOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
+			// summary:
+			//		User-overridable function which, for the given option, removes
+			//		its item from the select.
+		},
+
+		_setDisplay: function(/*String or String[]*/ /*===== newDisplay =====*/){
+			// summary:
+			//		Overridable function which will set the display for the
+			//		widget.  newDisplay is either a string (in the case of
+			//		single selects) or array of strings (in the case of multi-selects)
+		},
+
+		_getChildren: function(){
+			// summary:
+			//		Overridable function to return the children that this widget contains.
+			return [];
+		},
+
+		_getSelectedOptionsAttr: function(){
+			// summary:
+			//		hooks into this.attr to provide a mechanism for getting the
+			//		option items for the current value of the widget.
+			return this.getOptions({ selected: true });
+		},
+
+		_pseudoLoadChildren: function(/*item[]*/ /*===== items =====*/){
+			// summary:
+			//		a function that will "fake" loading children, if needed, and
+			//		if we have set to not load children until the widget opens.
+			// items:
+			//		An array of items that will be loaded, when needed
+		},
+
+		onSetStore: function(){
+			// summary:
+			//		a function that can be connected to in order to receive a
+			//		notification that the store has finished loading and all options
+			//		from that store are available
+		}
+	});
+
+	/*=====
+	_FormSelectWidget.__SelectOption = __SelectOption;
+	=====*/
+
+	return _FormSelectWidget;
+});
+
+},
+'dojo/data/util/sorter':function(){
+define(["../../_base/lang"], function(lang){
+	// module:
+	//		dojo/data/util/sorter
+	// summary:
+	//		TODOC
+
+var sorter = {};
+lang.setObject("dojo.data.util.sorter", sorter);
+
+sorter.basicComparator = function(	/*anything*/ a,
+													/*anything*/ b){
+	// summary:
+	//		Basic comparison function that compares if an item is greater or less than another item
+	// description:
+	//		returns 1 if a > b, -1 if a < b, 0 if equal.
+	//		'null' values (null, undefined) are treated as larger values so that they're pushed to the end of the list.
+	//		And compared to each other, null is equivalent to undefined.
+
+	//null is a problematic compare, so if null, we set to undefined.
+	//Makes the check logic simple, compact, and consistent
+	//And (null == undefined) === true, so the check later against null
+	//works for undefined and is less bytes.
+	var r = -1;
+	if(a === null){
+		a = undefined;
+	}
+	if(b === null){
+		b = undefined;
+	}
+	if(a == b){
+		r = 0;
+	}else if(a > b || a == null){
+		r = 1;
+	}
+	return r; //int {-1,0,1}
+};
+
+sorter.createSortFunction = function(	/* attributes[] */sortSpec, /*dojo/data/api/Read*/ store){
+	// summary:
+	//		Helper function to generate the sorting function based off the list of sort attributes.
+	// description:
+	//		The sort function creation will look for a property on the store called 'comparatorMap'.  If it exists
+	//		it will look in the mapping for comparisons function for the attributes.  If one is found, it will
+	//		use it instead of the basic comparator, which is typically used for strings, ints, booleans, and dates.
+	//		Returns the sorting function for this particular list of attributes and sorting directions.
+	// sortSpec:
+	//		A JS object that array that defines out what attribute names to sort on and whether it should be descenting or asending.
+	//		The objects should be formatted as follows:
+	// |	{
+	// |		attribute: "attributeName-string" || attribute,
+	// |		descending: true|false;   // Default is false.
+	// |	}
+	// store:
+	//		The datastore object to look up item values from.
+
+	var sortFunctions=[];
+
+	function createSortFunction(attr, dir, comp, s){
+		//Passing in comp and s (comparator and store), makes this
+		//function much faster.
+		return function(itemA, itemB){
+			var a = s.getValue(itemA, attr);
+			var b = s.getValue(itemB, attr);
+			return dir * comp(a,b); //int
+		};
+	}
+	var sortAttribute;
+	var map = store.comparatorMap;
+	var bc = sorter.basicComparator;
+	for(var i = 0; i < sortSpec.length; i++){
+		sortAttribute = sortSpec[i];
+		var attr = sortAttribute.attribute;
+		if(attr){
+			var dir = (sortAttribute.descending) ? -1 : 1;
+			var comp = bc;
+			if(map){
+				if(typeof attr !== "string" && ("toString" in attr)){
+					 attr = attr.toString();
+				}
+				comp = map[attr] || bc;
+			}
+			sortFunctions.push(createSortFunction(attr,
+				dir, comp, store));
+		}
+	}
+	return function(rowA, rowB){
+		var i=0;
+		while(i < sortFunctions.length){
+			var ret = sortFunctions[i++](rowA, rowB);
+			if(ret !== 0){
+				return ret;//int
+			}
+		}
+		return 0; //int
+	}; // Function
+};
+
+return sorter;
 });
 
 },
@@ -38369,14 +39805,15 @@ return number;
 'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"typeNode\"></div></span></br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" >PATRIC Identifiers</th><th style=\"color:#fff;font-weight:600;background:#34698e\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th style=\"color:#fff;font-weight:600;background:#34698e\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProt_KB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProt_KB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
+'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Calls and annotates genes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",

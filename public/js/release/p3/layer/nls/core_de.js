@@ -7,6 +7,8 @@ define('p3/layer/nls/core_de',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
+'dijit/form/nls/validate':{"invalidMessage":"Der eingegebene Wert ist ungültig. ","missingMessage":"Dieser Wert ist erforderlich.","rangeMessage":"Dieser Wert liegt außerhalb des gültigen Bereichs. ","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} von ${total} Ergebnissen","gotoFirst":"Gehe zu erster Seite","gotoNext":"Gehe zu nächster Seite","gotoPrev":"Gehe zu vorheriger Seite","gotoLast":"Gehe zu letzter Seite","gotoPage":"Gehe zu Seite","jumpPage":"Springe zu Seite","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"·","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 Bio","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":".","percentFormat":"#,##0 %","decimalFormat-long":"000 Billionen","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}

@@ -1,9 +1,9 @@
 define("p3/widget/WorkspaceItemDetail", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class"
+	"dojo/dom-class","dijit/form/Select"
 ], function(
 	declare, WidgetBase, on,
-	domClass
+	domClass,Select
 ){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceItemDetail",

@@ -1,17 +1,20 @@
 require({cache:{
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"typeNode\"></div></span></br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n"}});
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/ItemDetailPanel", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
+	"../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,lang,formatter
+	Template,lang,formatter,domStyle,
+	WorkspaceManager
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
 		"disabled":false,
+		"changeableTypes":{unspecified:{label:"unspecified",value:"unspecified"},contigs:{label:"contigs",value:"contigs"},reads:{label:"reads",value:"reads"},diffexp_input_data:{label:"diffexp_input_data",value:"diffexp_input_data"},diffexp_input_metadata:{label:"diffexp_input_metadata",value:"diffexp_input_metadata"}},
 		templateString: Template,
 		item: null,
 		property_aliases: {
@@ -65,9 +68,27 @@ define("p3/widget/ItemDetailPanel", [
        	                		var val = item[key];
 					if(key == "creation_time"){
 						val=formatter.date(val);
-					} 
-					if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
-						_self[this.property_aliases[key] + "Node"].innerHTML=val;
+					}
+					if (key == "type"){
+						_self[key + "Node"].set('value',val);
+						_self[key + "Node"].set('displayedValue',val);
+						_self[key + "Node"].cancel();
+						if (this.changeableTypes.hasOwnProperty(val)){
+							_self[key + "Node"].set('disabled',false);
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","underline");
+							var type_options=[];
+							Object.keys(this.changeableTypes).forEach(function(change_type){
+								type_options.push(this.changeableTypes[change_type]);
+							}, this);
+							_self[key + "Node"].editorParams.options=type_options;
+						}
+						else{
+							_self[key + "Node"].set('disabled',true);
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","none");
+						}
+					}	
+					else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+						_self[this.property_aliases[key] + "Node"].innerHTML=val;	
 					}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
 						_self[this.property_aliases[key] + "Widget"].set("value",val);
 					}else if (_self[key + "Node"]){
@@ -93,7 +114,11 @@ define("p3/widget/ItemDetailPanel", [
 				},this);
 			}))
 			this.inherited(arguments);
-		}
+		},
 
+		saveType: function(val){
+			console.log("onSaveType: ", val, this.item);
+			WorkspaceManager.updateMetadata(this.item.path,false,val);		
+		}
 	});
 });

@@ -105,7 +105,7 @@ define("p3/UploadManager", ["dojo/request", "dojo/_base/declare","dojo/_base/lan
 					p = p + "/";
 				}
 				p = p + file.name;
-				WorkspaceManager.updateMetadata([p]).then(lang.hitch(this, function(){
+				WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function(){
 					_self.activeCount--;
 					_self.completeCount++
 					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
