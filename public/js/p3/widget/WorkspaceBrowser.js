@@ -99,7 +99,7 @@ define([
 			}, true);
 
 			
-			var dfc = '<div>Download Table As...</div><div rel="txt">Text</div><div rel="CSV">CSV</div>'
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="txt">Text</div><div class="wsActionTooltip" rel="CSV">CSV</div>'
 			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
 			on(downloadTT.domNode, "div:click", function(evt){
@@ -133,7 +133,7 @@ define([
 
 
 			
-			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
 
 			on(viewFASTATT.domNode, "div:click", function(evt){

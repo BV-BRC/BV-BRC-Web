@@ -23,6 +23,11 @@
 	color: #134d75;
 }
 
+.wsActionTooltip:hover{
+background:#d2d2d2;
+cursor: pointer;
+}
+
 .idMappingTable td:hover{
 background:#d2d2d2;
 cursor: pointer;
