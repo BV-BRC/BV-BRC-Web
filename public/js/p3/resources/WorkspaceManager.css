@@ -23,6 +23,15 @@
 	color: #134d75;
 }
 
+.idMappingTable td:hover{
+background:#d2d2d2;
+cursor: pointer;
+}
+
+.idMappingHeader{
+color:#fff;font-weight:600;background:#34698e;
+}
+
 .patric .BrowserHeader A,
 .patric .wsBreadCrumb A {
 	color: #123d75;
