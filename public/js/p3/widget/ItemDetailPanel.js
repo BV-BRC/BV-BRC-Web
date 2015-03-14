@@ -80,7 +80,7 @@ define([
 						}
 						else{
 							_self[key + "Node"].set('disabled',true);
-							domStyle.set(_self[key + "Node"],"text-decoration","none");
+							domStyle.set(_self[key + "Node"].domNode,"text-decoration","none");
 						}
 					}	
 					else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
