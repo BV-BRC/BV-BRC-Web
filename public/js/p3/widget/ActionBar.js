@@ -87,10 +87,13 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			var _self=this;
+			this.containerNode=this.domNode;
 			on(this.domNode, "click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				if (_self._actions[rel]) {
-					_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
+				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
+					var rel = evt.target.attributes.rel.value;
+					if (_self._actions[rel]) {
+						_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
+					}
 				}
 			});	
 
@@ -120,7 +123,7 @@ define([
 		addAction: function(name,classes,opts,fn,enabled){
 			var b = domConstruct.create("i",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes,rel:name});
 
-			domConstruct.place(b,this.domNode,"last");
+			domConstruct.place(b,this.containerNode,"last");
 
 			this._actions[name]={
 				options: opts,

@@ -13,14 +13,13 @@ define([
 		templateString: Template,
 		path: "",
 		_setPathAttr: function(p){
-			if (p.charAt(-1)!="/") {
+			if (p && p.charAt(-1)!="/") {
 				this.path = p + "/";
 			}else{
 				this.path=p;
 			}
 		},
 		validate: function(){
-			console.log("this.validate()",this);
 			var valid = this.inherited(arguments);
 			if (valid){
 				this.saveButton.set("disabled", false)
@@ -38,7 +37,6 @@ define([
 
 			if (this.validate()){
 				var values = this.getValues();
-				console.log("Submission Values", values);
 				domClass.add(this.domNode,"Working");
 				console.log("CREATING FOLDER: ", this.path+values.name, this.path);
 				WorkspaceManager.createFolder(this.path + values.name).then(function(results){

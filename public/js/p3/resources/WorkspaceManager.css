@@ -218,4 +218,12 @@ th.dgrid-cell.wsItemType {
 	margin:0px;
 }
 
+.ActionButtonContainer {
+	float: right;
+}
+
+.ActionButtonContainer .ActionButton {
+	margin: 5px;
+	color: #34698e;	
+}
 
