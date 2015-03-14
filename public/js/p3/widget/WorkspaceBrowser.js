@@ -4,14 +4,16 @@ define([
 	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
 	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
-	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request"
+	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request",
+	"./ContainerActionBar"
+
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
 	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
-	popup,IDMappingTemplate,xhr
+	popup,IDMappingTemplate,xhr,ContainerActionBar
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -21,6 +23,7 @@ define([
 		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
 		startup: function(){
 			if (this._started) {return;}
+			/*	
 			//var parts = this.path.split("/").filter(function(x){ return x!=""; })
 			var out = ["<span class='wsBreadCrumb'>"];
 			var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
@@ -41,7 +44,9 @@ define([
 			out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Upload to Folder'></a>");
 			out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
 			out.push("</span>");
-			this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
+			*/
+			//this.browserHeader = new ContentPane({className:"BrowserHeader",content: out.join(""), region: "top"});
+			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path});
 			//this.explorer = new WorkspaceExplorerView({path: decodeURIComponent(this.path), region: "center"});
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
@@ -92,17 +97,19 @@ define([
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
+
+			
 			var dfc = '<div>Download Table As...</div><div rel="txt">Text</div><div rel="CSV">CSV</div>'
 			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
+				var selection = self.browserHeader.get('selection')
 				console.log("selection: ", selection);
 				popup.close(downloadTT);
 			});
-
+/*
 			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltipDialog:downloadTT, tooltip: "Download Selection as Table"}, function(selection){
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
@@ -112,17 +119,29 @@ define([
 	
 				console.log("Download Table", selection);
 			}, true);
-
-			this.actionPanel.addAction("DownloadTable2","fa fa-download fa-2x",{multiple: true,validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
+*/
+			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
 				popup.open({
-					popup: this._actions.DownloadTable2.options.tooltipDialog,
-					around: this._actions.DownloadTable2.button,
+					popup: this._actions.DownloadTable.options.tooltipDialog,
+					around: this._actions.DownloadTable.button,
 					orient: ["below"]
 				});
 	
 			}, true);
-	
+
+			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
+				console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
+				Topic.publish("/openDialog",{type:"Upload",params:selection[0].path + selection[0].name });
+			}, true);
+
+			this.browserHeader.addAction("Create Folder","fa icon-folder-plus fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Create Folder"}, function(selection){
+				console.log("CREATE FOLDER", selection[0].path);
+				Topic.publish("/openDialog",{type:"CreateFolder",params:selection[0].path + selection[0].name});
+			}, true);
+
+
+
 			
 			var vfc = '<div rel="dna">View FASTA DNA</div><div rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
@@ -360,8 +379,12 @@ define([
 			}else{
 				obj = WorkspaceManager.getObject(val,true)
 			}
-
 			Deferred.when(obj, lang.hitch(this,function(obj){
+
+				if (this.browserHeader) {
+					console.log("Set BrowserHeader selection: ", [obj]);
+					this.browserHeader.set("selection", [obj]);
+				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
 				console.log("Browse to Type: ", obj.type, obj);
@@ -502,6 +525,9 @@ define([
 					WorkspaceManager.set("currentPath",val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
+					console.log("Set Browser Header Path: ", this.path);
+					this.browserHeader.set("path", this.path)
+/*
 					if (this._started){
 						var len = parts.length;
 						var out = [];
@@ -526,7 +552,9 @@ define([
 
 						this.browserHeader.set("content", out.join(""));
 					}
+*/
 				}));
+
 			}));
 		},
 		refresh: function(){
