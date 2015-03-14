@@ -68,6 +68,7 @@ define([
 					if (key == "type"){
 						_self[key + "Node"].set('value',val);
 						_self[key + "Node"].set('displayedValue',val);
+						_self[key + "Node"].cancel();
 						if (this.changeableTypes.hasOwnProperty(val)){
 							_self[key + "Node"].set('disabled',false);
 							domStyle.set(_self[key + "Node"].domNode,"text-decoration","underline");
@@ -110,6 +111,5 @@ define([
 			}))
 			this.inherited(arguments);
 		}
-
 	});
 });
