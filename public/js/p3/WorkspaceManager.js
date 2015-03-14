@@ -17,6 +17,9 @@ define([
 			switch(type) {
 				case "genome_group":	
 					return "/" + [this.userId,"home","Genome Groups"].join("/");
+				case "feature_group":	
+					return "/" + [this.userId,"home","Feature Groups"].join("/");
+	
 				default:
 					return "/" + [this.userId,"home"].join("/");
 			}

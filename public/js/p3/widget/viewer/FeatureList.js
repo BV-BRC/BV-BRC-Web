@@ -10,7 +10,7 @@ define([
 	return declare([BorderContainer], {
 		"baseClass": "FeatureList",
 		"disabled":false,
-		"containerType": "feature_list",
+		"containerType": "feature_group",
 		"query": null,
 		_setQueryAttr: function(query){
 			this.query = query;
@@ -93,6 +93,10 @@ define([
 			//this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 			this.inherited(arguments);
+			this.viewer.refresh();
+		},
+
+		refresh: function(){
 			this.viewer.refresh();
 		}
 	});

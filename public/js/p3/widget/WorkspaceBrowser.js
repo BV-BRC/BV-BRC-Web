@@ -120,7 +120,7 @@ define([
 				console.log("Download Table", selection);
 			}, true);
 */
-			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group","feature_list"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
+			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
@@ -165,7 +165,7 @@ define([
 				frm.submit();
 			});
 
-			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
+			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
 				popup.open({
 					popup: this._actions.ViewFASTA.options.tooltipDialog,
 					around: this._actions.ViewFASTA.button,
@@ -175,7 +175,7 @@ define([
 	
 			}, true);
 
-			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Multiple Sequence Alignment"}, function(selection){
 				var selection = self.actionPanel.get('selection')
 				var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -215,7 +215,7 @@ define([
 				popup.close(idMappingTTDialog);
 			});
 
-			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
+			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
 
 				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
 				console.log("this: ", this);
@@ -227,7 +227,7 @@ define([
 				console.log("popup idmapping", selection);
 			}, true);
 
-			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_list"], tooltip: "Pathway Summary"}, function(selection){
+			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Pathway Summary"}, function(selection){
 
 				var selection = self.actionPanel.get('selection')
 				var ids = selection.map(function(d){ return d['feature_id']; });
@@ -258,12 +258,13 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Remove Selection from Group"}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Remove Selection from Group"}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
 					
 				var type = selection[0].document_type;
 				var idType = (this.currentContainerWidget.containerType=="genome_group")?"genome_id":"feature_id";
+				var type = (idType=="genome_id")?"genome":"genome feature";
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s[idType];
@@ -278,9 +279,12 @@ define([
 					onConfirm: function(evt){
 						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
 						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'),idType, objs), function(){
-							_self.currentContainerWidget.refresh();
+							if (_self.currentContainerWidget && _self.currentContainerWidget.refresh){
+								_self.currentContainerWidget.refresh();
+							}else{
+								console.log("No current container Widget or no refresh() on it");
+							}
 						});
-//						if (_self.currentContainerWidget.removeRows) { _self.currentContainerWidget.removeRows(objs) }
 					}
 				})
 				dlg.startup()
@@ -289,7 +293,7 @@ define([
 			},true);
 
 			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group","feature_list"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Split Selection to a new or existing group"}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
 				var dlg = new Dialog({title:"Copy Selection to Group"});
 				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
