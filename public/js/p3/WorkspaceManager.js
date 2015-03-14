@@ -210,8 +210,14 @@ define([
 				Topic.publish("/refreshWorkspace",{});
 			}));
 		},
-
-		updateMetadata: function(paths){
+		updateMetadata: function(path, userMeta, type){
+			var data = [path, userMeta||{}, type||undefined];
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects:[data]}]), function(){
+				Topic.publish("/refreshWorkspace",{});
+			});
+		},
+	
+		updateAutoMetadata: function(paths){
 			if (!(paths instanceof Array)){
 				paths = [paths];
 			}

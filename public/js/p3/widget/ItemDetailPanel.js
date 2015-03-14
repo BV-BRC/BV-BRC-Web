@@ -1,11 +1,13 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style"
+	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
+	"../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,lang,formatter,domStyle
+	Template,lang,formatter,domStyle,
+	WorkspaceManager
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
@@ -110,6 +112,11 @@ define([
 				},this);
 			}))
 			this.inherited(arguments);
+		},
+
+		saveType: function(val){
+			console.log("onSaveType: ", val, this.item);
+			WorkspaceManager.updateMetadata(this.item.path,false,val);		
 		}
 	});
 });
