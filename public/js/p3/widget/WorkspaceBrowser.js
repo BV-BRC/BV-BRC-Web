@@ -109,18 +109,8 @@ define([
 				console.log("selection: ", selection);
 				popup.close(downloadTT);
 			});
-/*
-			this.actionPanel.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["experiment","experiment_sample"], tooltipDialog:downloadTT, tooltip: "Download Selection as Table"}, function(selection){
-				popup.open({
-					popup: this._actions.DownloadTable.options.tooltipDialog,
-					around: this._actions.DownloadTable.button,
-					orient: ["below"]
-				});
-	
-				console.log("Download Table", selection);
-			}, true);
-*/
-			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group"], tooltip: "Download Selection as Table", tooltipDialog:downloadTT}, function(selection){
+
+			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group"], tooltip: "Download Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
