@@ -4,12 +4,12 @@ define("p3/widget/app/AppBase", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
-	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup","dijit/registry"
+	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup","dijit/registry","dojo/dom"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,FormMixin,WorkspaceObjectSelector,
-	Dialog,xhr,domConstruct,query,TooltipDialog,popup,registry
+	Dialog,xhr,domConstruct,query,TooltipDialog,popup,registry,dom
 ){
 	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
 		"baseClass": "App Sleep",
@@ -19,6 +19,7 @@ define("p3/widget/app/AppBase", [
 		showCancel: false,
 		activeWorkspace: "",
 		activeWorkspacePath: "",
+		help_doc:null,
 	
 		postMixInProperties: function(){
 			this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
@@ -36,10 +37,18 @@ define("p3/widget/app/AppBase", [
 			   handleAs: "text"
                         });		
 			helprequest.then(function(data){
-				var help_doc=domConstruct.toDom(data);
+				this.help_doc=domConstruct.toDom(data);
 			        var ibuttons=query(".infobutton");
 				ibuttons.forEach(function(item){
-					var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
+					//basic flat child workaround for getting help in safari. will break if nested.
+					var help_text = null;
+					for (i = 0; i < this.help_doc.childNodes.length; i++) {
+						if (this.help_doc.childNodes[i].id == item.attributes.name.value){
+ 							help_text = this.help_doc.childNodes[i];
+						} 
+					}
+					help_text= help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
 					help_text.style.overflowY='auto';
 					help_text.style.maxHeight='400px';
 					if (dojo.hasClass(item, "dialoginfo")){
