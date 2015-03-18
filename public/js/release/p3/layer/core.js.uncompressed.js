@@ -13253,10 +13253,8 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 
 				if (response.result) { def.resolve(response.result); return; }
 			}, function(err){
-				console.log("Handle Error", err)
 				var message = err.response.data.error.message;
 				var message = message.split("\n\n\n")[0]
-				console.log("   Error: ", message||err.message);
 				def.reject(message||err.message);
 			});
 
@@ -26121,18 +26119,22 @@ define([
 			}, true);
 
 			
-			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="txt">Text</div><div class="wsActionTooltip" rel="CSV">CSV</div>'
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>'
 			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
-				var selection = self.browserHeader.get('selection')
+				var selection = self.actionPanel.get('selection')
+				var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				console.log("selection: ", selection);
+				console.log("DownloadQuery: ", dataType, currentQuery );
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_accept=" + rel + "&http_download");		
 				popup.close(downloadTT);
 			});
 
-			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: true,validTypes:["genome_group","feature_group"], tooltip: "Download Table", tooltipDialog:downloadTT}, function(selection){
+			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Table", tooltipDialog:downloadTT}, function(selection){
 				console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
@@ -26400,6 +26402,7 @@ define([
 				if (this.browserHeader) {
 					console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
+
 				}
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
@@ -26452,6 +26455,7 @@ define([
 						var newPanel = new Panel(params);
 						var hideTimer;
 						this.actionPanel.set("currentContainerWidget", newPanel);
+//						this.browserHeader.set("currentContainerWidget", newPanel);
 
 						if (newPanel.on) {
 						newPanel.on("select", lang.hitch(this,function(evt){

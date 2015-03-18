@@ -17031,10 +17031,8 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 
 				if (response.result) { def.resolve(response.result); return; }
 			}, function(err){
-				 0 && console.log("Handle Error", err)
 				var message = err.response.data.error.message;
 				var message = message.split("\n\n\n")[0]
-				 0 && console.log("   Error: ", message||err.message);
 				def.reject(message||err.message);
 			});
 
