@@ -26130,7 +26130,7 @@ define([
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				 0 && console.log("selection: ", selection);
 				 0 && console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_accept=" + rel + "&http_download");		
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
 				popup.close(downloadTT);
 			});
 

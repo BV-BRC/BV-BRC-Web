@@ -110,7 +110,7 @@ define([
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				console.log("selection: ", selection);
 				console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_accept=" + rel + "&http_download");		
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
 				popup.close(downloadTT);
 			});
 
