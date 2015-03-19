@@ -17,9 +17,9 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			id: {label: "Genome ID", field: "genome_id", hidden:true},
-			commonName: {label: "Name", field: "common_name", hidden:true},
-			genomeName: {label: "Genome Name", field: "genome_name", hidden:true},
-			organismName: {label: "Organism Name", field: "organism_name"},
+			commonName: {label: "Organism Name", field: "common_name", hidden:false},
+			genomeName: {label: "Organism Name", field: "genome_name", hidden:true},
+			organismName: {label: "Organism Name", field: "organism_name",hidden:true},
 			genomeStatus: {label: "Genome Status", field: "genome_status"},
 			isolationCountry: {label: "Isolation Country", field: "isolation_country"},
 			host_name: {label: "Host Name", field: "host_name"},
