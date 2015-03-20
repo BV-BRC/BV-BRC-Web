@@ -176,7 +176,7 @@ define([
 						from: "feature_id",
 						fromGroup: "PATRIC",
 						to: rel,
-						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
+						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi","UniProtKB-Accession"].indexOf(rel) > -1)?"PATRIC":"Other",
 						sraction: 'save_params'	
 					}
 				}).then(function(results){
