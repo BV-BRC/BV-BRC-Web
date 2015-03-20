@@ -57,6 +57,7 @@ define([
 				newState.widgetClass="p3/widget/JobManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -72,6 +73,7 @@ define([
 				newState.widgetClass="p3/widget/UploadManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -93,6 +95,7 @@ define([
 				newState.widgetClass="p3/widget/WorkspaceManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -145,6 +148,7 @@ define([
 				newState.widgetClass="p3/widget/app/" + type;
 				newState.value=viewerParams;
 				newState.set= "params";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -1062,6 +1066,10 @@ define([
 			}
 
 			console.log("Ctor: ", ctor);
+
+			if (newNavState.requireAuth && !window.App.user){
+				Topic.publish("/login");
+			}
 
 			Deferred.when(ctor, function(ctor) {		
 				if (!ctor){
@@ -36427,9 +36435,9 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			id: {label: "Genome ID", field: "genome_id", hidden:true},
-			commonName: {label: "Name", field: "common_name", hidden:true},
+			commonName: {label: "Common Name", field: "common_name", hidden:false},
 			genomeName: {label: "Genome Name", field: "genome_name", hidden:true},
-			organismName: {label: "Organism Name", field: "organism_name"},
+			organismName: {label: "Organism Name", field: "organism_name",hidden:true},
 			genomeStatus: {label: "Genome Status", field: "genome_status"},
 			isolationCountry: {label: "Isolation Country", field: "isolation_country"},
 			host_name: {label: "Host Name", field: "host_name"},

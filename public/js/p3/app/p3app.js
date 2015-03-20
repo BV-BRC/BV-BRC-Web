@@ -55,6 +55,7 @@ define([
 				newState.widgetClass="p3/widget/JobManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -70,6 +71,7 @@ define([
 				newState.widgetClass="p3/widget/UploadManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -91,6 +93,7 @@ define([
 				newState.widgetClass="p3/widget/WorkspaceManager";
 				newState.value=path;
 				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -143,6 +146,7 @@ define([
 				newState.widgetClass="p3/widget/app/" + type;
 				newState.value=viewerParams;
 				newState.set= "params";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});

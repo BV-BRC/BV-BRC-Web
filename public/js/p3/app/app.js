@@ -263,6 +263,10 @@ define([
 
 			console.log("Ctor: ", ctor);
 
+			if (newNavState.requireAuth && !window.App.user){
+				Topic.publish("/login");
+			}
+
 			Deferred.when(ctor, function(ctor) {		
 				if (!ctor){
 					console.error("Unable to load CTOR");
