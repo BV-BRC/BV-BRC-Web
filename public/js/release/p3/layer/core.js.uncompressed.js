@@ -26248,7 +26248,7 @@ define([
 
 				xhr.post("/portal/portal/patric/IDMapping/IDMappingWindow?action=b&cacheability=PAGE", {
 					data: {
-						keyword: ids,
+						keyword: ids.join(","),
 						from: "feature_id",
 						fromGroup: "PATRIC",
 						to: rel,
@@ -26281,7 +26281,7 @@ define([
 
 				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE",{
 					data: {
-						feature_id: ids,
+						feature_id: ids.join(","),
 						callType: 'saveParams'	
 					}
 				}).then(function(results){
