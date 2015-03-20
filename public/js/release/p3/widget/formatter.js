@@ -64,7 +64,7 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				}
 				return out;
 			}else{
-				return formatters.humanFileSize(obj.size);
+				return formatters.humanFileSize(obj.size, true);
 			}
 		},
 
