@@ -952,7 +952,7 @@ define([
 					 0 && console.log("Target", evt.target.href);
 					 0 && console.log("Create Dialog()", evt.target.href);
 				}
-				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px" src="/login"></iframe>'});
+				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px;" src="/login"></iframe>'});
 				dlg.show();
 				 0 && console.log("end loginLink Lcik");
 			};
@@ -1071,7 +1071,7 @@ define([
 				var cur = _self.getCurrentContainer();	
 				if (cur) { appContainer.removeChild(cur,true); }
 
-				var lp = ContentPane({region: "center", content: '<iframe style="width:100%;height:100%" src="/login"></iframe>'});
+				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><iframe style="width:300px;height:400px;display:inline-block;" src="/login"></iframe></div>'});
 				appContainer.addChild(lp);
 				return;
 			}
