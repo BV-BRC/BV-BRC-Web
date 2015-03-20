@@ -26228,7 +26228,7 @@ define([
 
 				xhr.post("/portal/portal/patric/FIGfam/FIGfamWindow?action=b&cacheability=PAGE",{
 					data: {
-						feature_ids: ids,
+						feature_ids: ids.join(","),
 						callType: 'toAligner'	
 					}
 				}).then(function(results){

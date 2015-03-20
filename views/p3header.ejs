@@ -130,29 +130,29 @@
 						<li class="has-sub">
 							<a href="#">about</a>
 							<div class="submenu">
-								<header><p class="bold light">help</p></header>
+								<header><p class="bold light">Help</p></header>
 								<ul>
-									<li><a href="tutorials">videos and workflows</a></li>
-									<li><a href="//enews.patricbrc.org/faqs/">faqs</a></li>
-									<li><a href="//enews.patricbrc.org/contact-us/">contact us</a></li>
+									<li><a href="tutorials">Videos and Workflows</a></li>
+									<li><a href="//enews.patricbrc.org/faqs/">FAQs</a></li>
+									<li><a href="//enews.patricbrc.org/contact-us/">Contact Us</a></li>
 								</ul>
-								<header><p class="bold light">enews</p></header>
+								<header><p class="bold light">eNews</p></header>
 								<ul>
-									<li><a href="//enews.patricbrc.org/patric-publications/">publications</a></li>
-									<li><a href="//enews.patricbrc.org/category/patric-in-the-news/">news &amp; events</a></li>
-									<li><a href="//enews.patricbrc.org/category/data-release/">data releases &amp; updates</a></li>
-									<li><a href="//enews.patricbrc.org/category/webupdate/">website updates</a></li>
-									<li><a href="//enews.patricbrc.org/category/presentations/">presentations</a></li>
+									<li><a href="//enews.patricbrc.org/patric-publications/">Publications</a></li>
+									<li><a href="//enews.patricbrc.org/category/patric-in-the-news/">News &amp; Events</a></li>
+									<li><a href="//enews.patricbrc.org/category/data-release/">Data Releases &amp; Updates</a></li>
+									<li><a href="//enews.patricbrc.org/category/webupdate/">Website Updates</a></li>
+									<li><a href="//enews.patricbrc.org/category/presentations/">Presentations</a></li>
 								</ul>
-								<header><p class="bold light">about us</p></header>
+								<header><p class="bold light">About Us</p></header>
 								<ul>
-									<li><a href="//enews.patricbrc.org/what-is-patric/">what is patric?</a></li>
-									<li><a href="//enews.patricbrc.org/citing-patric/">citing patric</a></li>
-									<li><a href="//enews.patricbrc.org/scientific-working-group/">scientific working group</a></li>
-									<li><a href="//enews.patricbrc.org/personnel/">personnel</a></li>
-									<li><a href="//enews.patricbrc.org/collaborators/">collaborators</a></li>
-									<li><a href="//enews.patricbrc.org/related-sites/">related sites</a></li>
-									<li><a href="https://github.com/cidvbi/patric">system architecture</a></li>
+									<li><a href="//enews.patricbrc.org/what-is-patric/">What is PATRIC?</a></li>
+									<li><a href="//enews.patricbrc.org/citing-patric/">Citing PATRIC</a></li>
+									<li><a href="//enews.patricbrc.org/scientific-working-group/">Scientific Working Group</a></li>
+									<li><a href="//enews.patricbrc.org/personnel/">Personnel</a></li>
+									<li><a href="//enews.patricbrc.org/collaborators/">Collaborators</a></li>
+									<li><a href="//enews.patricbrc.org/related-sites/">Related Sites</a></li>
+									<li><a href="https://github.com/cidvbi/patric">System Architecture</a></li>
 								</ul>
 							</div>
 						</li>
@@ -209,7 +209,7 @@
 					<form class="search" action="post" onsubmit="return false;">
 						
 						<input placeholder="Search" title="Search" type="text" id="global_search_keyword" name="global_search_keyword"/>
-						<input type="submit" onclick="search_all_header()" />
+						<input type="submit" onclick="window.App.search_all_header()" />
 					</form>
 
 					<% if (request && request.session && request.session.userProfile && request.session.userProfile.id) { %>
