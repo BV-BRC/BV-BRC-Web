@@ -41,7 +41,7 @@ define([
 				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options && this._actions[an].options.multiple && (ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes))
+					return this._actions[an] && this._actions[an].options && this._actions[an].options.multiple && (this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes))
 				},this);	
 
 				console.log("multiselect valid: ", valid)
