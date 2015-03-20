@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\t\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n"}});
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: red; border: 1px solid red; border-radius: 4px;\" class=\"dijitHidden\">\n\n\t\t\t</div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n"}});
 define("p3/widget/Uploader", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
@@ -25,8 +25,8 @@ define("p3/widget/Uploader", [
 		typeLabel: "Upload type: ",
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
-			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"]},
-			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"]},
+			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"], description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."},
+			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"], description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."},
 			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
 			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
@@ -38,6 +38,9 @@ define("p3/widget/Uploader", [
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML=formats.join(", ");
+		
+			var description = this.knownTypes[val].description;
+
 			if (!this.showAllFormats.get('value')) {
 				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
@@ -50,7 +53,13 @@ define("p3/widget/Uploader", [
 				}
 				console.log("set formats to: ", formats.join(","));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
 
+			if (description) {
+				domClass.remove(this.typeDescriptionContainer, "dijitHidden"); 
+				this.typeDescriptionContainer.innerHTML = description; 
+			}else{
+				domClass.add(type.typeDescriptionContainer, "dijitHidden"); 
 			}
 		},
 		onChangeShowAllFormats: function(val){
