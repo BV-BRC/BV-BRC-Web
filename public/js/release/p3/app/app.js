@@ -263,8 +263,13 @@ define("p3/app/app", [
 
 			console.log("Ctor: ", ctor);
 
-			if (newNavState.requireAuth && !window.App.user){
-				Topic.publish("/login");
+			if (newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
+				var cur = _self.getCurrentContainer();	
+				if (cur) { appContainer.removeChild(cur,true); }
+
+				var lp = ContentPane({region: "center", content: '<iframe style="width:100%;height:100%" src="/login"></iframe>'});
+				appContainer.addChild(lp);
+				return;
 			}
 
 			Deferred.when(ctor, function(ctor) {		
