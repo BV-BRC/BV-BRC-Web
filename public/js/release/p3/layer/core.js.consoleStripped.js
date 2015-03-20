@@ -1071,7 +1071,7 @@ define([
 				var cur = _self.getCurrentContainer();	
 				if (cur) { appContainer.removeChild(cur,true); }
 
-				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><iframe style="width:300px;height:400px;display:inline-block;" src="/login"></iframe></div>'});
+				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><iframe style="width:400px;height:300px;display:inline-block;" src="/login"></iframe></div>'});
 				appContainer.addChild(lp);
 				return;
 			}
