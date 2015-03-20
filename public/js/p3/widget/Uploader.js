@@ -23,8 +23,8 @@ define([
 		typeLabel: "Upload type: ",
 		knownTypes: {
 			unspecified: {label: "Unspecified",formats: ["*.*"]},
-			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"]},
-			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"]},
+			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"], description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."},
+			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"], description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."},
 			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
 			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
 		},
@@ -36,6 +36,9 @@ define([
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML=formats.join(", ");
+		
+			var description = this.knownTypes[val].description;
+
 			if (!this.showAllFormats.get('value')) {
 				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
@@ -48,7 +51,13 @@ define([
 				}
 				console.log("set formats to: ", formats.join(","));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
 
+			if (description) {
+				domClass.remove(this.typeDescriptionContainer, "dijitHidden"); 
+				this.typeDescriptionContainer.innerHTML = description; 
+			}else{
+				domClass.add(type.typeDescriptionContainer, "dijitHidden"); 
 			}
 		},
 		onChangeShowAllFormats: function(val){
