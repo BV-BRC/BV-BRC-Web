@@ -193,6 +193,25 @@ define([
 
 
 			this.inherited(arguments);
+		},
+
+		search_all_header: function(){
+			var node = dom.byId("global_search_keyword");
+			var keywords = node.value;
+			if (!keywords || keywords=="*") {
+				console.log("No Search Keywords Provided");
+				return;
+			}
+			
+			console.log("Keywords: ", keywords);
+			xhr.post("/portal/portal/patric/GenomicFeature/GenomicFeatureWindow?action=b&cacheability=PAGE",{
+				data: {
+					sraction: "save_params",
+					keyword: encodeURIComponent(keywords)
+				}
+			}).then(function(results){
+				document.location = "/portal/portal/patric/GlobalSearch?cType=taxon&cId=131567&dm=&pk=" + results;
+			});		
 		}
 
 	});
