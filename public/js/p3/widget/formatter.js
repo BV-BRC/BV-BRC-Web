@@ -64,7 +64,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				}
 				return out;
 			}else{
-				return formatters.humanFileSize(obj.size);
+				return formatters.humanFileSize(obj.size, true);
 			}
 		},
 
