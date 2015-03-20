@@ -34,6 +34,7 @@ define([
 			sel.forEach(function(s){
 				selectionTypes[s.document_type || s.type]=true;
 			});
+			console.log("selectionTypes: ", selectionTypes);
 	
 			if (sel.length>1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
