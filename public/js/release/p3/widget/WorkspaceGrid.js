@@ -161,6 +161,21 @@ define("p3/widget/WorkspaceGrid", [
 		//				_selection={};
 					//}
 				});
+
+
+				this.on(".dgrid-content .dgrid-cell.wsItemType:click", function(evt){
+				    	var row = _self.row(evt);
+					evt.preventDefault();
+					evt.stopPropagation();
+					on.emit(_self.domNode, "ItemDblClick", {
+						item_path: row.data.path,
+						item: row.data,
+						bubbles: true,
+						cancelable: true
+					});	
+	
+
+				});
 				//_selection={};
 				//Topic.publish("/select", []);
 

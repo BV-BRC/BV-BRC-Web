@@ -1,4 +1,24 @@
-<div class="ItemDetailPanel">
+<div class="ItemDetailPanel noSelection">
+	<div class="noItemSelection">
+		Nothing selected.
+
+		<div class="folder containerContentSection">
+			<div class='tip'>
+				Select one or more items on the left to see their details and possible actions.
+			</div>
+
+			<div class="tip">
+				Click an item's "type" icon or double click on a row to drill down into that item.
+			</div>
+		</div>
+
+	</div>
+
+	<div class="multipleItemSelection">
+		<div data-dojo-attach-point="countDisplayNode">N items selected.</div>
+	</div>
+
+	<div class="singleItemSelection">
 	<div>
 		<table class="ItemDetailHeaderTable">
 			<tbody>
@@ -27,4 +47,5 @@
 		<tbody data-dojo-attach-point="userMetadataTable">
 		</tbody>
 	</table>
+	</div>
 </div>

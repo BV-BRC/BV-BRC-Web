@@ -41,14 +41,16 @@ define("p3/widget/ActionBar", [
 				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options && this._actions[an].options.multiple && (this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes))
+					return this._actions[an] && this._actions[an].options || ((this._actions[an].options.multiple && (this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
 
 				console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){
 				valid = Object.keys(this._actions)
 			}else{
-				valid=[];
+				valid=Object.keys(this._actions).filter(function(an){
+					return this._actions[an] && this._actions[an].options && this._actions[an].options.persistent;
+				},this);
 			}
 
 			var types = Object.keys(selectionTypes)
