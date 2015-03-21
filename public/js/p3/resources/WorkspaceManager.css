@@ -121,7 +121,7 @@ color:#fff;font-weight:600;background:#34698e;
 	border: 0px;
 }
 .wsItemName {
-	width: 450px;
+/*	width: 450px;*/
 	white-space: nowrap;
 }
 
@@ -145,6 +145,7 @@ th.dgrid-cell.wsItemType {
 }
 
 .wsItemCreationTime {
+	width: 150px;
 }
 .JobStatusButton,
 .UploadStatusButton {
@@ -239,5 +240,28 @@ th.dgrid-cell.wsItemType {
 .ActionButtonContainer .ActionButton {
 	margin: 5px;
 	color: #34698e;	
+}
+
+.multipleItemSelection,
+.singleItemSelection,
+.noItemSelection {
+	display: block;
+}
+
+.multipleSelection .noItemSelection,
+.multipleSelection .singleItemSelection,
+.singleSelection .noItemSelection,
+.singleSelection .multipleItemSelection,
+.noSelection .singleItemSelection,
+.noSelection .multipleItemSelection {
+	display: none;
+}
+
+.containerContentSection {
+	display: none;
+}
+
+.folder .containerContentSection.folder {
+	display: block;
 }
 

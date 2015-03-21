@@ -14,7 +14,10 @@ define([
 		"disabled":false,
 		"changeableTypes":{unspecified:{label:"unspecified",value:"unspecified"},contigs:{label:"contigs",value:"contigs"},reads:{label:"reads",value:"reads"},diffexp_input_data:{label:"diffexp_input_data",value:"diffexp_input_data"},diffexp_input_metadata:{label:"diffexp_input_metadata",value:"diffexp_input_metadata"}},
 		templateString: Template,
+		selection: null,
 		item: null,
+		containerWidget: null,
+
 		property_aliases: {
 			document_type: "type",
 			"organism_name": "name"
@@ -23,6 +26,44 @@ define([
 			var _self=this;
 			//if (this._started) { return; }
 			var currentIcon;
+
+			this.watch("containerWidget", lang.hitch(this, function(prop,oldVal,containerWidget){
+				console.log("set containerWidget", containerWidget);
+
+				if (oldVal && oldVal.containerType){
+					domClass.remove(this.domNode, oldVal.containerType);
+				}
+
+				this.containerWidget = containerWidget;
+				if (this.containerWidget && this.containerWidget.containerType){
+					domClass.add(this.domNode, this.containerWidget.containerType);
+				}
+
+			}));
+
+			this.watch("selection", lang.hitch(this,function(prop,oldVal,selection){
+				console.log("ItemDetailPanel set selection: ", selection);
+
+				if (!selection || selection.length<1){
+					console.log("no selection set");
+					domClass.add(this.domNode, "noSelection");
+					domClass.remove(this.domNode, "multipleSelection");
+					domClass.remove(this.domNode, "singleSelection");
+				}else if (selection && selection.length==1){
+					console.log("single selection set");
+					domClass.remove(this.domNode, "noSelection");
+					domClass.remove(this.domNode, "multipleSelection");
+					domClass.add(this.domNode, "singleSelection");
+					this.set("item", selection[0]);
+				}else if (selection && selection.length>1){
+					console.log("multiple Selection set");
+					domClass.remove(this.domNode, "noSelection");
+					domClass.add(this.domNode, "multipleSelection");
+					domClass.remove(this.domNode, "singleSelection");
+					this.countDisplayNode.innerHTML = selection.length + " items selected.";
+				}
+			}));
+
 			this.watch("item", lang.hitch(this,function(prop,oldVal,item){
 				console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon,currentIcon)

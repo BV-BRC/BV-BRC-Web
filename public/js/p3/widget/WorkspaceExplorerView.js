@@ -13,7 +13,7 @@ define([
 		"disabled": false,
 		path: "/",
 		types: null,
-
+		containerType: "folder",
 		_setTypes: function(val){
 			if (!(val instanceof Array)){
 				this.types=[val];

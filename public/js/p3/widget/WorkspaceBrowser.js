@@ -27,9 +27,11 @@ define([
 			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
 			var self=this;
 
-			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {multiple: false,validTypes:["*"], tooltip: "Toggle Detail"}, function(selection){
+			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {persistent:true,validTypes:["*"], tooltip: "Toggle Selection Detail"}, function(selection){
 				console.log("Edit Item Action", selection);
-				self.itemDetailPanel.set("item",selection[0]);				
+			//	this.itemDetailPanel.set("selection", selection);
+
+			//	self.itemDetailPanel.set("item",selection[0]);				
 				if (self.getChildren().some(function(child){
 					return child===self.itemDetailPanel
 				})){
@@ -331,7 +333,8 @@ define([
 			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.browserHeader);
-//			this.addChild(this.actionPanel);
+			this.addChild(this.actionPanel);
+			this.addChild(this.itemDetailPanel);
 
 			var self=this;
 			this.inherited(arguments);
@@ -411,7 +414,7 @@ define([
 						var newPanel = new Panel(params);
 						var hideTimer;
 						this.actionPanel.set("currentContainerWidget", newPanel);
-//						this.browserHeader.set("currentContainerWidget", newPanel);
+						this.itemDetailPanel.set("containerWidget", newPanel);
 
 						if (newPanel.on) {
 						newPanel.on("select", lang.hitch(this,function(evt){
@@ -430,25 +433,28 @@ define([
 								this.addChild(this.actionPanel);
 							}
 							this.actionPanel.set("selection", sel);
-
+							this.itemDetailPanel.set('selection', sel);
+							
+							/*
 							if (sel.length==1) {
 								if (this.getChildren().some(function(child){
 									return (child===this.actionPanel)
 								},this)) {
 									this.itemDetailPanel.set("item",sel[0]);	
 								}
-
 							}else if (sel.length>1) {
 
 							}else {
 								this.removeChild(this.actionPanel);
 							}
+							*/
 						}));	
 
 						newPanel.on("deselect", lang.hitch(this,function(evt){
 
 							if (!evt.selected) { 
 								this.actionPanel.set("selection", []); 
+								this.itemDetailPanel.set("selection", []);
 							}else{
 								var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
 									console.log("rownum: ", rownum);
@@ -458,12 +464,14 @@ define([
 							}
 							console.log("selection: ", sel);
 							this.actionPanel.set("selection", sel);
-							if (!sel || sel.length<1){
+							this.itemDetailPanel.set('selection', sel);
+						/*	if (!sel || sel.length<1){
 								hideTimer = setTimeout(lang.hitch(this,function(){
 									this.removeChild(this.actionPanel);
 									this.removeChild(this.itemDetailPanel);
 								}),500);	
 							}
+						*/
 						}));
 
 						newPanel.on("ItemDblClick", lang.hitch(this,function(evt){
@@ -471,12 +479,15 @@ define([
 							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
 								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
 								this.actionPanel.set("selection", []);
+								this.itemDetailPanel.set("selection", []);
 								console.log("SHOW LOADING STATUS SOMEHOW");	
 								newPanel.clearSelection();
+								/*
 								hideTimer = setTimeout(lang.hitch(this,function(){
 									this.removeChild(this.actionPanel);
 									this.removeChild(this.itemDetailPanel);
 								}),500);	
+								*/
 							}else{
 								console.log("non-navigable type, todo: show info panel when dblclick");
 							}
@@ -491,8 +502,8 @@ define([
 						if (this.activePanel.clearSelection){
 							this.activePanel.clearSelection();
 						}
-						this.removeChild(this.actionPanel);
-						this.removeChild(this.itemDetailPanel);
+					//	this.removeChild(this.actionPanel);
+					//	this.removeChild(this.itemDetailPanel);
 					}
 
 					var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
