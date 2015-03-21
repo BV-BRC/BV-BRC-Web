@@ -38255,9 +38255,11 @@ define([
 						_self.dialog.flip()		
 					}
 				});
+
+				uploader.startup();
+
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
-				uploader.startup();
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
 				var _self=this;
 
@@ -38771,7 +38773,9 @@ define([
 			this.path = val;
 			this.destinationPath.innerHTML=val;
 		},
+
 		onUploadTypeChanged: function(val){
+			 0 && console.log("UPLOAD TYPE CHANGED: ", val);
 			var formats = this.knownTypes[val].formats;
 			 0 && console.log("formats: ", val, formats);
 			this.formatListNode.innerHTML=formats.join(", ");
@@ -38796,7 +38800,7 @@ define([
 				domClass.remove(this.typeDescriptionContainer, "dijitHidden"); 
 				this.typeDescriptionContainer.innerHTML = description; 
 			}else{
-				domClass.add(type.typeDescriptionContainer, "dijitHidden"); 
+				domClass.add(this.typeDescriptionContainer, "dijitHidden"); 
 			}
 		},
 		onChangeShowAllFormats: function(val){
@@ -38844,7 +38848,8 @@ define([
 			}else{
 				domAttr.set(this.fileInput, "multiple", false);
 			}
-		
+
+	
 			var _self=this;
 			 0 && console.log("Add Dropdown Options");
 			Object.keys(this.knownTypes).filter(function(t){
@@ -38854,6 +38859,20 @@ define([
 				 0 && console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
 				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label, value: t});
 			});
+
+			var type = this.uploadType.get('value');
+			if (type && this.knownTypes[type]) {
+				var description = this.knownTypes[type].description;
+	                        if (description) {
+					domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+					this.typeDescriptionContainer.innerHTML = description;
+				}else{
+					domClass.add(this.typeDescriptionContainer, "dijitHidden");
+				}
+			}else{
+				domClass.add(this.typeDescriptionContainer, "dijitHidden");
+			}
+	
 
                         if (!this.path) {
                                 Deferred.when(WorkspaceManager.get("currentPath"), function(path){

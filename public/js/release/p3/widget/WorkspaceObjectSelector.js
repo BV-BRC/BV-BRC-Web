@@ -266,9 +266,11 @@ define("p3/widget/WorkspaceObjectSelector", [
 						_self.dialog.flip()		
 					}
 				});
+
+				uploader.startup();
+
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
-				uploader.startup();
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
 				var _self=this;
 
