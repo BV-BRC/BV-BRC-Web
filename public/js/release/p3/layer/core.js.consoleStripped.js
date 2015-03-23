@@ -30479,6 +30479,14 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
 			}
 		},
+		status_alias: function(val){
+			switch (val){
+				case "deleted":
+					return 'failed'
+				default:
+					return val
+			}
+		},
 		status_indicator: function(val){
 			switch (val) {
 				case "in-progress":
