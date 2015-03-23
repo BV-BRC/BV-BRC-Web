@@ -5316,6 +5316,7 @@ color:#fff;font-weight:600;background:#34698e;
 	border-left: 0px solid #888;
 	border-top: 1px solid #34698e;
 	
+	overflow: auto;
 }
 .ItemTypeIcon {
 	width:64px; 
@@ -5429,11 +5430,15 @@ th.dgrid-cell.wsItemType {
 	margin: 5px;
 	color: #34698e;	
 }
+.dataItemSelection,
+.workspaceItemSelection,
 .multipleItemSelection,
 .singleItemSelection,
 .noItemSelection {
 	display: block;
 }
+.dataItem .singleItemSelection .workspaceItemSelection,
+.workspaceItem .singleItemSelection .dataItemSelection,
 .multipleSelection .noItemSelection,
 .multipleSelection .singleItemSelection,
 .singleSelection .noItemSelection,
@@ -5447,6 +5452,10 @@ th.dgrid-cell.wsItemType {
 }
 .folder .containerContentSection.folder {
 	display: block;
+}
+.dataItemSelection {
+	font-size: .85em;
+	
 }
 .PanelForm {
 	overflow: auto;
