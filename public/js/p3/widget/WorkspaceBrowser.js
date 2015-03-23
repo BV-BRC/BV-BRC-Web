@@ -43,33 +43,42 @@ define([
 			}, true);
 
 
-/*
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
 				multiple: false,
-				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
+				tooltip: "View Genome"
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-
-				switch (sel.type) {
-					case "genome_group":
-						Topic.publish("/navigate",{href:"/view/GenomeGroup"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
-						break;
-					case "feature_group":
-						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
-						break;
-					case "job_results":
-						Topic.publish("/navigate",{href:"/view/Experiment"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
-						break;
-	
-					default:
-						console.log("Type isn't setup with a viewer");
-				}
-
-				WorkspaceManager.getObject([sel.path]).then(function(res){ console.log("View Data Object: ", res); })
-
+				window.location = "/portal/portal/patric/Genome?cType=genome&cId=" + sel.genome_id
 			}, true);
-*/
+
+			this.actionPanel.addAction("ViewCDSFeatures","MultiButton fa icon-genome-features-cds fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "View CDS Features"
+			},function(selection){
+				console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+sel.genome_id
+			}, true);
+
+			this.actionPanel.addAction("ViewGenomeBrowser","MultiButton fa icon-genome_browser fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "Open Genome Browser"
+			},function(selection){
+				console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+sel.genome_id
+			}, true);
+
+
+
+
 
 			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"], tooltip: "Download"}, function(selection){
 				console.log("Download Item Action", selection);
