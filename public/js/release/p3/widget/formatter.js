@@ -120,7 +120,7 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				case "in-progress":
 					return '<div><i class="fa icon-circle fa-1x" style="color:green" title="Running" /></div>'
 				case "deleted":
-					return '<i class="fa icon-circle fa-1x" style="color:red" title="Deleted" />'
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "completed":
 					return '<i class="fa icon-circle fa-1x" style="color:blue" title="Completed" />'
 				case "failed":

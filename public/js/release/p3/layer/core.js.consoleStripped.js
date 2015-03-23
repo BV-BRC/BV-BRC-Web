@@ -26095,33 +26095,42 @@ define([
 			}, true);
 
 
-/*
 			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
 				multiple: false,
-				validTypes: ["genome_group","feature_group","job_result","experiment_group"]
+				tooltip: "View Genome"
 			},function(selection){
 				 0 && console.log("selection: ", selection);
 				var sel = selection[0];
-
-				switch (sel.type) {
-					case "genome_group":
-						Topic.publish("/navigate",{href:"/view/GenomeGroup"}); //?in(genome_id,GenomeGroup(_uuid/" + sel.id + "))"});
-						break;
-					case "feature_group":
-						Topic.publish("/navigate",{href:"/view/FeatureList"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
-						break;
-					case "job_results":
-						Topic.publish("/navigate",{href:"/view/Experiment"}); //?in(feature_id,FeatureGroup(_uuid/" + sel.id + "))"});
-						break;
-	
-					default:
-						 0 && console.log("Type isn't setup with a viewer");
-				}
-
-				WorkspaceManager.getObject([sel.path]).then(function(res){  0 && console.log("View Data Object: ", res); })
-
+				window.location = "/portal/portal/patric/Genome?cType=genome&cId=" + sel.genome_id
 			}, true);
-*/
+
+			this.actionPanel.addAction("ViewCDSFeatures","MultiButton fa icon-genome-features-cds fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "View CDS Features"
+			},function(selection){
+				 0 && console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+sel.genome_id
+			}, true);
+
+			this.actionPanel.addAction("ViewGenomeBrowser","MultiButton fa icon-genome_browser fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "Open Genome Browser"
+			},function(selection){
+				 0 && console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+sel.genome_id
+			}, true);
+
+
+
+
 
 			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{multiple: false,validTypes:["contigs","reads","unspecified"], tooltip: "Download"}, function(selection){
 				 0 && console.log("Download Item Action", selection);
@@ -26230,7 +26239,7 @@ define([
 						from: "feature_id",
 						fromGroup: "PATRIC",
 						to: rel,
-						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi","UniProtKB-Accession"].indexOf(rel) > -1)?"PATRIC":"Other",
+						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
 						sraction: 'save_params'	
 					}
 				}).then(function(results){
@@ -30475,7 +30484,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "in-progress":
 					return '<div><i class="fa icon-circle fa-1x" style="color:green" title="Running" /></div>'
 				case "deleted":
-					return '<i class="fa icon-circle fa-1x" style="color:red" title="Deleted" />'
+					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "completed":
 					return '<i class="fa icon-circle fa-1x" style="color:blue" title="Completed" />'
 				case "failed":
@@ -33757,12 +33766,12 @@ define([
 			});
 			 0 && console.log("selectionTypes: ", selectionTypes);
 	
-			if (sel.length>1){
+			if (sel.length>1) {
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
 				 0 && console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					 0 && console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options || ((this._actions[an].options.multiple && (this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
+					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
 
 				 0 && console.log("multiselect valid: ", valid)
@@ -36521,8 +36530,8 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			id: {label: "Genome ID", field: "genome_id", hidden:true},
-			commonName: {label: "Common Name", field: "common_name", hidden:false},
-			genomeName: {label: "Genome Name", field: "genome_name", hidden:true},
+			commonName: {label: "Common Name", field: "common_name", hidden:true},
+			genomeName: {label: "Genome Name", field: "genome_name", hidden:false},
 			organismName: {label: "Organism Name", field: "organism_name",hidden:true},
 			genomeStatus: {label: "Genome Status", field: "genome_status"},
 			isolationCountry: {label: "Isolation Country", field: "isolation_country"},
