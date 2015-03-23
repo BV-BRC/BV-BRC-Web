@@ -75,7 +75,7 @@ define("p3/widget/WorkspaceBrowser", [
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenescId=" + sel.genome_id
+				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenes&cId=" + sel.genome_id
 			}, true);
 
 
