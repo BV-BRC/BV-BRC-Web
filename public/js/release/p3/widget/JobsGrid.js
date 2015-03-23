@@ -21,7 +21,7 @@ define("p3/widget/JobsGrid", [
 				"status": {
 					label: "Status",
 					field: "status",
-					formatter: formatter.status
+					formatter: formatter.status_alias
 				},
 
 				submit_time: {
