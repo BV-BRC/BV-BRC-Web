@@ -1,4 +1,4 @@
-<div class="ItemDetailPanel noSelection">
+<div class="ItemDetailPanel noSelection dataItem">
 	<div class="noItemSelection">
 		Nothing selected.
 
@@ -19,6 +19,7 @@
 	</div>
 
 	<div class="singleItemSelection">
+		<div class="workspaceItemSelection">
 	<div>
 		<table class="ItemDetailHeaderTable">
 			<tbody>
@@ -47,5 +48,12 @@
 		<tbody data-dojo-attach-point="userMetadataTable">
 		</tbody>
 	</table>
+	</div>
+	<div data-dojo-attach-point="dataItemSelection" class="dataItemSelection">
+		<table><tbody data-dojo-attach-point="itemTbody">
+
+		</tbody></table>
+	</div>
+
 	</div>
 </div>
