@@ -114,12 +114,12 @@ define("p3/widget/viewer/ExperimentGroup", [
 				deselectOnRefresh: true,
 				columns: {
 					source: {label: "Source", field: "source"},
-					dataType: {label: "Data Type", field: "title"},
-					title: {label: "Title", field: "expname"},
+					dataType: {label: "Data Type", field: "data_type"},
+					title: {label: "Title", field: "title"},
 					comparisons: {label: "Comparisons", field: "samples"},
 					genes: {label: "Genes", field: "genesTotal"},
 					pubmed: {label: "PubMed", field: "pmid"},
-					organism: {label: "Organism", field: "organism"},
+					organism: {label: "Organism", field: "organism"}
 				}
 			});
 				var _self = this
