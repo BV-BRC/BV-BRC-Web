@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'icomoon';
-	src:url('fonts/icomoon.eot?41j9qt');
-	src:url('fonts/icomoon.eot?#iefix41j9qt') format('embedded-opentype'),
-		url('fonts/icomoon.woff?41j9qt') format('woff'),
-		url('fonts/icomoon.ttf?41j9qt') format('truetype'),
-		url('fonts/icomoon.svg?41j9qt#icomoon') format('svg');
+	src:url('fonts/icomoon.eot?-si8gbf');
+	src:url('fonts/icomoon.eot?#iefix-si8gbf') format('embedded-opentype'),
+		url('fonts/icomoon.woff?-si8gbf') format('woff'),
+		url('fonts/icomoon.ttf?-si8gbf') format('truetype'),
+		url('fonts/icomoon.svg?-si8gbf#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -21,6 +21,376 @@
 	/* Better Font Rendering =========== */
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-genome_browser:before {
+	content: "\e665";
+}
+
+.icon-genome-features-cds:before {
+	content: "\e666";
+}
+
+.icon-genomegroup .path1:before {
+	content: "\e644";
+	color: rgb(1, 1, 1);
+}
+.icon-genomegroup .path2:before {
+	content: "\e645";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path3:before {
+	content: "\e646";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path4:before {
+	content: "\e647";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path5:before {
+	content: "\e648";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path6:before {
+	content: "\e649";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path7:before {
+	content: "\e64a";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path8:before {
+	content: "\e64b";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path9:before {
+	content: "\e64c";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path10:before {
+	content: "\e64d";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path11:before {
+	content: "\e64e";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path12:before {
+	content: "\e64f";
+	margin-left: -1em;
+	color: rgb(1, 1, 1);
+}
+.icon-genomegroup .path13:before {
+	content: "\e650";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path14:before {
+	content: "\e651";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path15:before {
+	content: "\e652";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path16:before {
+	content: "\e653";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path17:before {
+	content: "\e654";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path18:before {
+	content: "\e655";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path19:before {
+	content: "\e656";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path20:before {
+	content: "\e657";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path21:before {
+	content: "\e658";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path22:before {
+	content: "\e659";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path23:before {
+	content: "\e65a";
+	margin-left: -1em;
+	color: rgb(1, 1, 1);
+}
+.icon-genomegroup .path24:before {
+	content: "\e65b";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path25:before {
+	content: "\e65c";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path26:before {
+	content: "\e65d";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path27:before {
+	content: "\e65e";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path28:before {
+	content: "\e65f";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path29:before {
+	content: "\e660";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path30:before {
+	content: "\e661";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path31:before {
+	content: "\e662";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path32:before {
+	content: "\e663";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genomegroup .path33:before {
+	content: "\e664";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+
+.icon-genome-group .path1:before {
+	content: "\e623";
+	color: rgb(1, 1, 1);
+}
+.icon-genome-group .path2:before {
+	content: "\e624";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path3:before {
+	content: "\e625";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path4:before {
+	content: "\e626";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path5:before {
+	content: "\e627";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path6:before {
+	content: "\e628";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path7:before {
+	content: "\e629";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path8:before {
+	content: "\e62a";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path9:before {
+	content: "\e62b";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path10:before {
+	content: "\e62c";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path11:before {
+	content: "\e62d";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path12:before {
+	content: "\e62e";
+	margin-left: -1em;
+	color: rgb(1, 1, 1);
+}
+.icon-genome-group .path13:before {
+	content: "\e62f";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path14:before {
+	content: "\e630";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path15:before {
+	content: "\e631";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path16:before {
+	content: "\e632";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path17:before {
+	content: "\e633";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path18:before {
+	content: "\e634";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path19:before {
+	content: "\e635";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path20:before {
+	content: "\e636";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path21:before {
+	content: "\e637";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path22:before {
+	content: "\e638";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path23:before {
+	content: "\e639";
+	margin-left: -1em;
+	color: rgb(1, 1, 1);
+}
+.icon-genome-group .path24:before {
+	content: "\e63a";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path25:before {
+	content: "\e63b";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path26:before {
+	content: "\e63c";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path27:before {
+	content: "\e63d";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path28:before {
+	content: "\e63e";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path29:before {
+	content: "\e63f";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path30:before {
+	content: "\e640";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path31:before {
+	content: "\e641";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path32:before {
+	content: "\e642";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+.icon-genome-group .path33:before {
+	content: "\e643";
+	margin-left: -1em;
+	color: rgb(255, 255, 255);
+}
+
+.icon-experiments:before {
+	content: "\e600";
+}
+
+.icon-taxonomy:before {
+	content: "\e601";
+}
+
+.icon-genome-features:before {
+	content: "\e602";
+}
+
+.icon-genome:before {
+	content: "\e603";
+}
+
+.icon-bench:before {
+	content: "\e604";
+}
+
+.icon-contigs:before {
+	content: "\e605";
+}
+
+.icon-fasta:before {
+	content: "\e606";
+}
+
+.icon-alignment:before {
+	content: "\e607";
 }
 
 .icon-flag-checkered2:before {
@@ -1941,368 +2311,6 @@
 
 .icon-meanpath:before {
 	content: "\f28d";
-}
-
-.icon-genomegroup .path1:before {
-	content: "\e644";
-	color: rgb(1, 1, 1);
-}
-.icon-genomegroup .path2:before {
-	content: "\e645";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path3:before {
-	content: "\e646";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path4:before {
-	content: "\e647";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path5:before {
-	content: "\e648";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path6:before {
-	content: "\e649";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path7:before {
-	content: "\e64a";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path8:before {
-	content: "\e64b";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path9:before {
-	content: "\e64c";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path10:before {
-	content: "\e64d";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path11:before {
-	content: "\e64e";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path12:before {
-	content: "\e64f";
-	margin-left: -1em;
-	color: rgb(1, 1, 1);
-}
-.icon-genomegroup .path13:before {
-	content: "\e650";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path14:before {
-	content: "\e651";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path15:before {
-	content: "\e652";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path16:before {
-	content: "\e653";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path17:before {
-	content: "\e654";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path18:before {
-	content: "\e655";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path19:before {
-	content: "\e656";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path20:before {
-	content: "\e657";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path21:before {
-	content: "\e658";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path22:before {
-	content: "\e659";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path23:before {
-	content: "\e65a";
-	margin-left: -1em;
-	color: rgb(1, 1, 1);
-}
-.icon-genomegroup .path24:before {
-	content: "\e65b";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path25:before {
-	content: "\e65c";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path26:before {
-	content: "\e65d";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path27:before {
-	content: "\e65e";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path28:before {
-	content: "\e65f";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path29:before {
-	content: "\e660";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path30:before {
-	content: "\e661";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path31:before {
-	content: "\e662";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path32:before {
-	content: "\e663";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genomegroup .path33:before {
-	content: "\e664";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-
-.icon-genome-group .path1:before {
-	content: "\e623";
-	color: rgb(1, 1, 1);
-}
-.icon-genome-group .path2:before {
-	content: "\e624";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path3:before {
-	content: "\e625";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path4:before {
-	content: "\e626";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path5:before {
-	content: "\e627";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path6:before {
-	content: "\e628";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path7:before {
-	content: "\e629";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path8:before {
-	content: "\e62a";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path9:before {
-	content: "\e62b";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path10:before {
-	content: "\e62c";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path11:before {
-	content: "\e62d";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path12:before {
-	content: "\e62e";
-	margin-left: -1em;
-	color: rgb(1, 1, 1);
-}
-.icon-genome-group .path13:before {
-	content: "\e62f";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path14:before {
-	content: "\e630";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path15:before {
-	content: "\e631";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path16:before {
-	content: "\e632";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path17:before {
-	content: "\e633";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path18:before {
-	content: "\e634";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path19:before {
-	content: "\e635";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path20:before {
-	content: "\e636";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path21:before {
-	content: "\e637";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path22:before {
-	content: "\e638";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path23:before {
-	content: "\e639";
-	margin-left: -1em;
-	color: rgb(1, 1, 1);
-}
-.icon-genome-group .path24:before {
-	content: "\e63a";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path25:before {
-	content: "\e63b";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path26:before {
-	content: "\e63c";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path27:before {
-	content: "\e63d";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path28:before {
-	content: "\e63e";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path29:before {
-	content: "\e63f";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path30:before {
-	content: "\e640";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path31:before {
-	content: "\e641";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path32:before {
-	content: "\e642";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-.icon-genome-group .path33:before {
-	content: "\e643";
-	margin-left: -1em;
-	color: rgb(255, 255, 255);
-}
-
-.icon-experiments:before {
-	content: "\e600";
-}
-
-.icon-taxonomy:before {
-	content: "\e601";
-}
-
-.icon-genome-features:before {
-	content: "\e602";
-}
-
-.icon-genome:before {
-	content: "\e603";
-}
-
-.icon-bench:before {
-	content: "\e604";
-}
-
-.icon-contigs:before {
-	content: "\e605";
-}
-
-.icon-fasta:before {
-	content: "\e606";
-}
-
-.icon-alignment:before {
-	content: "\e607";
 }
 
 .icon-folder-open2:before {
