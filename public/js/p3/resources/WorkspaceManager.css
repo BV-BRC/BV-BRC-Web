@@ -251,6 +251,11 @@ th.dgrid-cell.wsItemType {
 	display: block;
 }
 
+.multipleItemSelection,
+.noItemSelection {
+	text-align: center;
+}
+
 
 .dataItem .singleItemSelection .workspaceItemSelection,
 .workspaceItem .singleItemSelection .dataItemSelection,
@@ -282,10 +287,11 @@ th.dgrid-cell.wsItemType {
 	vertical-align: top;
 	border-radius: 4px;
 	background: #fff;
+	text-align: left;
 }
 
-.tip > * {
-	vertical-align: top;
+.tip > p {
+	margin:4px;
 }
 
 .tipHeader > span {
@@ -299,4 +305,6 @@ th.dgrid-cell.wsItemType {
 	background: #efefef;
 	vertical-align: top;
 	color: #333;
+	margin: 0px;
+	padding: 4px;
 }
