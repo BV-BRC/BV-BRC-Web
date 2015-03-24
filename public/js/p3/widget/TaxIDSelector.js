@@ -17,20 +17,24 @@ define([
 		queryExpr: "${0}",
 		autoComplete: false,
 		store: null,
+		required: false,
 
 		constructor: function(){
 			if (!this.store){
 				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json"}});
 			}
-		}
-		/*validate: function (){
+		},
+		/*
+		validate: function (){
 			// Overrides `dijit/form/TextBox.validate`
 			this.valueNode.value = this.toString();
 			return this.inherited(arguments);
-		},
+		}*/
 		isValid: function (){
 			// Overrides ValidationTextBox.isValid()
-			return !!this.item || (!this.required && this.get('displayedValue') == ""); // #5974
-		}*/	
+			var error= !this.inherited(arguments);
+			return !(error && this.required);
+			//return !!this.item || (!this.required && this.get('displayedValue') == ""); // #5974
+		}
 	});
 });
