@@ -24,7 +24,7 @@ define([
 			isolationCountry: {label: "Isolation Country", field: "isolation_country"},
 			host_name: {label: "Host Name", field: "host_name"},
 			disease: {label: "Disease", field: "disease"},
-			collectionDate: {label: "Collection Date", field: "collection_date", formatter: formatter.dateOnly},
+			collectionDate: {label: "Collection Date", field: "collection_date", formatter: formatter.dateOnly,hidden:true},
 			completionDate: {label: "Completion Date", field: "completion_date", formatter: formatter.dateOnly},
 			patricCDS: {label: "PATRIC CDS", field: "patric_cds"},
 			plasmids: {label: "Plasmids", field: "plasmids",hidden:true},
