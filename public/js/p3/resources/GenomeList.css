@@ -3,13 +3,16 @@
 }
 
 .dgrid-cell.field-genome_name {
-	width: 275px;
+	width: 30%;
+	white-space: nowrap;
 }
 
 .dgrid-cell.field-host_name {
-	width: 150px;
+	width: 15%;
+	white-space: nowrap;
 }
 
 .dgrid-cell.field-disease {
-	width: 150px;
+	width: 15%;
+	white-space: nowrap;
 }
