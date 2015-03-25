@@ -30,26 +30,21 @@ define([
 				primaryKey: "feature_id",
 				columns: {
 					genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
-					seed_id: {label: "SEED ID", field: "seed_id", hidden: false},
-					alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
-					product: {label: "Product", field: "product", hidden: false},
-					location: {label: "Location", field: "location", hidden: true},
-					gene_id: {label: "Gene ID", field: "gene_id", hidden: true},
 					accession: {label: "Accession", field: "accession", hidden: true},
-					start: {label: "Start", field: "start", hidden: true},
+					seed_id: {label: "PATRIC ID", field: "seed_id", hidden: false},
+					refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
+					alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
 					feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
-					sequence_id: {label: "Sequence ID", field: "sequence_id", hidden: true},
 					annotation: {label: "Annotation", field: "annotation", hidden: true},
-					genome_id: {label: "Genome ID", field: "genome_id", hidden: true},
-					gi: {label: "GI", field: "gi", hidden: true},
-					p2_feature_id: {label: "P2 Feature ID", field: "p2_feature_id", hidden: true},
-					pos_group: {label: "POS Group", field: "pos_group", hidden: true},
+					feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
+					start: {label: "Start", field: "start", hidden: true},
+					end: {label: "END", field: "end", hidden: true},
 					na_length: {label: "NA Length", field: "na_length", hidden: true},
 					strand: {label: "Strand", field: "strand", hidden: true},
-					segments: {label: "Segments", field: "segments", hidden: true},
-					feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
-					taxon_id: {label: "Taxon ID", field: "taxon_id", hidden: true},
-					end: {label: "END", field: "end", hidden: true}
+					protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
+					aa_length: {label: "AA Length", field: "aa_length", hidden: true},
+					gene: {label: "Gene Symbol", field: "gene", hidden: false},
+					product: {label: "Product", field: "product", hidden: false}
 				}
 			});
                           var _self = this
