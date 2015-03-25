@@ -20,6 +20,7 @@ define("p3/widget/viewer/ExperimentGroup", [
 			console.log("Data: ", data);
 			WorkspaceManager.getObject(data.path + data.name).then(lang.hitch(this,function(obj){
 				console.log("WorkspaceGroup: ", obj);
+				var defs = []
 				if (obj && obj.data && typeof obj.data=='string'){
 
 					obj.data = JSON.parse(obj.data);
@@ -53,8 +54,8 @@ define("p3/widget/viewer/ExperimentGroup", [
 					wsItemDef.resolve([]);
 				}
 
-				if (obj && obj.data && obj.data.id_list && obj.data.id_list.eid){
-					var query = "?in(eid,(" + obj.data.id_list.eid.join(",") + "))";
+				if (obj && obj.data && obj.data.id_list && obj.data.id_list.expid){
+					var query = "?in(expid,(" + obj.data.id_list.expid.join(",") + "))";
 					console.log("Query: ", query);
 					eidDefer = this.store.query(query)
 				}else{
@@ -63,6 +64,14 @@ define("p3/widget/viewer/ExperimentGroup", [
 
 				Deferred.when(All([wsItemDef, eidDefer]), lang.hitch(this,function(res){
 					console.log("all res: ", res);
+					if (res[1]){
+						res[1] = res[1].map(function(item){
+							if (item) {
+								item.source = "PATRIC";
+							}
+							return item;
+						});
+					}
 					var d = res[0].concat(res[1]);	
 					console.log("Combined Experiments: ", d);
 					this.viewer.renderArray(d);

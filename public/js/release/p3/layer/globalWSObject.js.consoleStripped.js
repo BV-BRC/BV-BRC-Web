@@ -16465,8 +16465,8 @@ define([
 			if (obj.path.charAt(obj.path.length-1)!="/") {
 				obj.path = obj.path + "/";	
 			}
-			 0 && console.log("Workspace.create: ", obj.path, obj.path+obj.name);
-			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:true}]), function(results){
+			 0 && console.log("Workspace.create: ", obj.path, obj.path+obj.name, "Overwrite: ", overwrite);
+			return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:overwrite}]), function(results){
                                         var res;
 					 0 && console.log("Create Results: ", results);	
                                         if (!results[0][0] || !results[0][0]) {

@@ -5673,6 +5673,18 @@ font-weight: bold;
 .GenomeList {
 	font-size: 1.2em;
 }
+.dgrid-cell.field-genome_name {
+	width: 30%;
+	white-space: nowrap;
+}
+.dgrid-cell.field-host_name {
+	width: 15%;
+	white-space: nowrap;
+}
+.dgrid-cell.field-disease {
+	width: 15%;
+	white-space: nowrap;
+}
 .zero_result_mask {
   background-image: none;
   padding: 5px 10px 5px 5px;
