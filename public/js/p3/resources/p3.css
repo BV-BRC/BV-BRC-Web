@@ -176,10 +176,11 @@ body.patric *:focus {
 	color: #fff;
 	margin-right:4px;
 }
-
+/*
 .ActionBar .fa:hover {
 	color: #000;
 }
+*/
 
 .fa {
 	cursor: pointer;
