@@ -251,6 +251,11 @@ th.dgrid-cell.wsItemType {
 	display: block;
 }
 
+.multipleItemSelection,
+.noItemSelection {
+	text-align: center;
+}
+
 
 .dataItem .singleItemSelection .workspaceItemSelection,
 .workspaceItem .singleItemSelection .dataItemSelection,
@@ -276,3 +281,30 @@ th.dgrid-cell.wsItemType {
 	
 }
 
+.tip {
+	border: 2px dotted #aaa;
+	margin-top: 10px;	
+	vertical-align: top;
+	border-radius: 4px;
+	background: #fff;
+	text-align: left;
+}
+
+.tip > p {
+	margin:4px;
+}
+
+.tipHeader > span {
+	font-size: 1em;
+	font-weight: 600;
+	margin: 4px;
+}
+.tipHeader {
+	font-size: 1.5em;
+	font-weight: 600;
+	background: #efefef;
+	vertical-align: top;
+	color: #333;
+	margin: 0px;
+	padding: 4px;
+}

@@ -6,7 +6,7 @@ define([
 	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
 	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic",
-	"dijit/registry"
+	"dijit/registry","dgrid/editor","./formatter"
 
 ], function(
 	declare, WidgetBase, on,lang,
@@ -14,7 +14,8 @@ define([
 	Template,Dialog,HasDropDown,ContentPane,TextBox,
 	Grid,domConstr,WorkspaceManager,Memory,
 	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox,Topic,registry
+	Button,Deferred,CheckBox,Topic,
+	registry,editor,formatter
 ){
 
 
@@ -197,7 +198,45 @@ define([
 					}
 				});
 				var _self=this;
-				var grid = this.grid = new Grid({region: "center",path: this.path, selectionMode:"single",deselectOnRefresh:true, types: this.type?(["folder"].concat(this.type)):false});
+				var grid = this.grid = new Grid({
+					region: "center",
+					path: this.path, 
+					selectionMode:"single",
+					deselectOnRefresh:true, 
+					types: this.type?(["folder"].concat(this.type)):false,
+					columns: {
+		                                "type": {
+							label: "",
+							get: function(item) {
+		                                                if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
+									return item.type +"_"+(item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+		                                                }
+                		                                return item.type;
+                               			         },
+		                                        className: "wsItemType",
+							formatter: formatter.wsItemType,
+							unhidable: true
+		                                },
+						"name": ({
+		                                        label: "Name",
+               			                         field: "name",
+                               			         className: "wsItemName",
+		                                        canEdit: function(obj,val){
+		                                                return obj.id=='untitled';
+		                                        },
+		                                        autoSave: true,
+		                                        editOn: "click",
+		                                        editor: TextBox,
+		                                        editorArgs: {placeHolder: "Untitled Folder", trim: true}
+		                                }),
+			                        creation_time: {
+                        		                label: "Created",
+		                                        field: "creation_time",
+		                                        className: "wsItemCreationTime",
+		                                        formatter: formatter.date
+		                                }
+					}
+				});
 				_self.grid.on("dgrid-datachange", function(evt){
 					var name = evt.value;
 					if (!name) { return; }
