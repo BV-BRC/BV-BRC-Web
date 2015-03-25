@@ -14,6 +14,7 @@ define("p3/widget/viewer/ExperimentGroup", [
 		"baseClass": "ExperimentViewer",
 		"disabled":false,
 		"query": null,
+		containerType: "experiment_group",
 		data: null,
 		_setDataAttr: function(data){
 			this.data=data;
