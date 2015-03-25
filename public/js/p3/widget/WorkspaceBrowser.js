@@ -43,9 +43,31 @@ define([
 			}, true);
 
 
-			this.actionPanel.addAction("ViewItem","MultiButton fa fa-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeItem","MultiButton fa fa-eye fa-2x", {
 				validTypes:["*"],
 				validContainerTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "View Genome"
+			},function(selection){
+				console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/Genome?cType=genome&cId=" + sel.genome_id
+			}, true);
+
+			this.actionPanel.addAction("ViewFeatureGroupItem","MultiButton fa fa-eye fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["feature_group"],
+				multiple: false,
+				tooltip: "View Feature"
+			},function(selection){
+				console.log("selection: ", selection);
+				var sel = selection[0];
+				window.location = "/portal/portal/patric/Feature?cType=feature&cId=" + sel.feature_id
+			}, true);
+
+			this.actionPanel.addAction("ViewGenomeFromFeature","MultiButton fa icon-genome fa-2x", {
+				validTypes:["*"],
+				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Genome"
 			},function(selection){
@@ -227,10 +249,12 @@ define([
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment_group","experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
+
+	
 
 			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
