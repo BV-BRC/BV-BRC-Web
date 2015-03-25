@@ -107,7 +107,7 @@ define([
                                 this.on("dgrid-select", function(evt) {
                                         console.log('dgrid-select: ', evt);
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self,
                                                 bubbles: true,
@@ -115,7 +115,7 @@ define([
                                         }
                                         on.emit(_self.domNode, "select", newEvt);
                                         //console.log("dgrid-select");
-                                        //var rows = event.rows;
+                                        //var rows = evt.rows;
                                         //Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
                                         //var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
                                         //Topic.publish("/select", sel);
@@ -123,7 +123,7 @@ define([
                                 this.on("dgrid-deselect", function(evt) {
                                         console.log("dgrid-select");
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self,
                                                 bubbles: true,
