@@ -22,6 +22,9 @@ define([
 			}
 			this.refreshWorkspace();
 		},
+		queryOptions: {
+			sort: [{attribute: "name", descending: false}]
+		},
 		listWorkspaceContents: function(ws) {
 			var _self = this;
 			if (ws[ws.length - 1] == "/") {
@@ -33,8 +36,26 @@ define([
 				if (_self.types){
 					res = res.filter(function(r){
 						return (r && r.type && (_self.types.indexOf(r.type)>=0))
-					});
+					})
+						
 				}
+				console.log("self.sort: ", _self.sort, _self.queryOptions);
+				var sort = _self.get('sort');
+				if (!sort || sort.length==0) {
+					sort = _self.queryOptions.sort;
+				}
+
+				console.log('sort: ', sort);
+			
+				res.sort(function(a,b) { 
+					var s= sort[0];
+					if (s.descending) {
+						return (a[s.attribute] > b[s.attribute])?1:-1
+					}else {
+						return (a[s.attribute] > b[s.attribute])?1:-1
+					}
+				 });
+
 				return res;
 			}, function(err) {
 				console.log("Error Loading Workspace:", err);
