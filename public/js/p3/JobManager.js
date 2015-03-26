@@ -1,6 +1,6 @@
-define(["dojo/_base/Deferred","dojo/topic"], 
+define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all"], 
 
-function(Deferred,Topic){
+function(Deferred,Topic,xhr,All){
 	//console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
@@ -23,11 +23,12 @@ function(Deferred,Topic){
 							Jobs[task.id]=task;
 						}
 					}
-
-					Deferred.when(getJobSummary(), function(msg){
-						Topic.publish("/Jobs", msg);
-					});	
 				});
+
+				Deferred.when(getJobSummary(), function(msg){
+					Topic.publish("/Jobs", msg);
+				});	
+	
 				if (firstRun){
 					ready.resolve(true);	
 					firstRun=false;	
@@ -66,6 +67,49 @@ function(Deferred,Topic){
 		}
 
 	return {
+		queryTaskDetail: function(id,stdout,stderr){
+			return Deferred.when(window.App.api.service("AppService.query_task_details",[id]), function(detail){
+				detail = detail[0];
+				var defs = [];
+				if (detail.stderr_url && stderr){
+					defs.push(Deferred.when(xhr.get(detail.stderr_url, {
+						headers: {
+							"Authorization": "Oauth " + window.App.authorizationToken,
+                       			                "X-Requested-With": false
+						}
+					}), function(txt){
+						detail.stderr = txt;
+					
+					}));		
+				}
+				if (detail.stdout_url && stdout){
+					defs.push(Deferred.when(xhr.get(detail.stdout_url, {
+						headers: {
+							"Authorization": "Oauth " + window.App.authorizationToken,
+                       			                "X-Requested-With": false
+						}
+					}), function(txt){
+						detail.stdout = txt;
+					
+					}));		
+				}
+				if (defs.length<1) {
+					return detail;
+				}else{
+					return Deferred.when(All(defs), function(){
+						return detail;
+					});
+				}
+			});
+		},
+		getShockNode: function(url){
+			return xhr.get(url+"?download", {
+				headers: {
+					"Authorization": "Oauth " + window.App.authorizationToken,
+                                        "X-Requested-With": false
+				}
+			});
+		},
 		getJobSummary: getJobSummary,
 		getJobs: function(){
 			return Deferred.when(ready, function(){
