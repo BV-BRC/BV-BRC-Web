@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
-	"../WorkspaceManager","dojo/dom-construct"
+	"../WorkspaceManager","dojo/dom-construct","dojo/query"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,lang,formatter,domStyle,
-	WorkspaceManager,domConstruct
+	WorkspaceManager,domConstruct,query
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
@@ -108,11 +108,27 @@ define([
 							domClass.add(_self.typeIcon,"fa fa-file fa-2x")
 							currentIcon="fa fa-file fa-2x";
 							break;
-					}	
+					}
+					//silence all special help divs
+					var specialHelp=query(".specialHelp");
+					specialHelp.forEach(function(item){
+						dojo.style(item, 'display', 'none');
+					});	
 					Object.keys(item).forEach(function(key){
        		                		var val = item[key];
 						if(key == "creation_time"){
 							val=formatter.date(val);
+						}
+						if(key == "name"){
+							if(val == "Feature Groups"){
+								dojo.style(this.featureGroupHelp, 'display', 'inline-block');
+							}
+							else if(val == "Genome Groups"){
+								dojo.style(this.genomeGroupHelp, 'display', 'inline-block');
+							}
+							else if(val == "Experiments"){
+								dojo.style(this.experimentHelp, 'display', 'inline-block');
+							}
 						}
 						if (key == "type"){
 							_self[key + "Node"].set('value',val);
