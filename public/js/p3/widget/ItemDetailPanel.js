@@ -129,6 +129,9 @@ define([
 							else if(val == "Experiments"){
 								dojo.style(this.experimentHelp, 'display', 'inline-block');
 							}
+							else if(val == "Experiment Groups"){
+								dojo.style(this.experimentGroupHelp, 'display', 'inline-block');
+							}
 						}
 						if (key == "type"){
 							_self[key + "Node"].set('value',val);
