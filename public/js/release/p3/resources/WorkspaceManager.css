@@ -255,6 +255,7 @@ th.dgrid-cell.wsItemType {
 	float:left;
 	height:22px;
 	border-radius:5px;
+	border:#d3d3d3 1px solid;
 	display:inline-block;
 	margin-right:4px;
 }
