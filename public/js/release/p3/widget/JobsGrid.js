@@ -2,14 +2,16 @@ define("p3/widget/JobsGrid", [
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager"
+		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager","dijit/Dialog",
+		"../JobManager"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager
+		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,Dialog,
+		JobManager
 	) {
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
 			columns: {
@@ -119,6 +121,33 @@ define("p3/widget/JobsGrid", [
 				}
 			},
 
+			showErrorDialog: function(data){
+				console.log("Show Error Dialog: ", data);
+				if (!this.errorDialog){
+					this.errorDialog = new Dialog({title: "Task Output", content: "Loading Task Detail..."});
+				}else{
+					this.errorDialog.set("content","Loading Task Detail...");
+				}
+
+				var _self=this;
+				var timer = setTimeout(function(){
+					_self.errorDialog.set("content","Unable to retreive additional details about this task at this task. The operation timed out.");
+				},30000);
+				JobManager.queryTaskDetail(data.id,true,true).then(function(detail){
+					console.log("JOB DETAIL: ", detail);
+					clearTimeout(timer);
+					if (detail.stderr) {
+						_self.errorDialog.set("content","<div style='overflow:auto;'><div data-dojo-type='dijit/TitlePane' title='STDOUT' open='false'><pre>" + (detail.stdout || "None.") + "</pre></div><br><div data-dojo-type='dijit/TitlePane' title='STDERR'><pre>"+(detail.stderr || "None.")+"</pre></div>");
+					}else{
+						_self.errorDialog.set("content","Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail,null,4) + "</pre>");
+					}
+				}, function(err){
+					_self.errorDialog.set("content","Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+
+				this.errorDialog.show();
+			},
+
 			startup: function() {
 				if (this._started) {
 					return;
@@ -136,6 +165,8 @@ define("p3/widget/JobsGrid", [
 					if (row.data && row.data.status && row.data.status=="completed"){
 						console.log("row.data: ", row.data);
 						Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
+					}else{
+						_self.showErrorDialog(row.data);
 					}
 /*
                                         on.emit(_self.domNode, "ItemDblClick", {

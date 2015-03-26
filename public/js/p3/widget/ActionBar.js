@@ -32,7 +32,19 @@ define([
 			var valid;
 			var selectionTypes = {}
 			sel.forEach(function(s){
-				selectionTypes[s.document_type || s.type]=true;
+				var type = s.document_type || s.type;
+				console.log("Checking s: ", type, s);
+				if (type=="job_result") {
+					if (s.autoMeta && s.autoMeta.app) {
+						if (typeof s.autoMeta.app=="string") {
+							type = s.autoMeta.app
+						}else if (s.autoMeta.app.id){
+							type=s.autoMeta.app.id;
+						}
+					}
+				}
+				console.log("Type: ", type);
+				selectionTypes[type]=true;
 			});
 			console.log("selectionTypes: ", selectionTypes);
 	
@@ -43,6 +55,7 @@ define([
 					console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
+			
 
 				console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){

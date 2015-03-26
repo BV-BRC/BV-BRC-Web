@@ -251,11 +251,53 @@ define("p3/widget/WorkspaceBrowser", [
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment_group","experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["DifferentialExpression"], 
+				tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
+			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Gene List"}, function(selection){
+				console.log("this.currentContainerType: ", this.currentContainerType, this);
+				console.log("View Gene List", selection);
+				var expPath = this.currentContainerWidget.get('path');
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + expPath + "&wsSampleId=" + selection.map(function(s){return s.pid;})
+			}, true);
+
+
+
+			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Gene List"}, function(selection){
+				console.log("View Gene List2", selection);
+				var expids = []
+				var wsExps = []
+				selection.forEach(function(s){
+					if (s.expid){
+						expids.push(s.expid);
+					}else if (s.path) {
+						wsExps.push(s.wsExps);
+					}
+
+					
+				});
+				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
+				if (expids && expids.length>0){
+					url = url + "&expId=" + expids.join(",")+"&sampleId=";
+				}else{
+					url = url + "&expId=&sampleId=";
+				}
+				if (wsExps && wsExps.length>0){
+					url = url + "&wsExperimentId=" + wsExps.join(",") + "&wsSampleId=";
+				}else{
+					url = url + "&wsExperimentId=&wsSampleId=";
+				}
+
+
+
+				
+				window.location =  url;
+			}, true);
+
+	
 	
 
 			/*

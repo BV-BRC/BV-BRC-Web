@@ -82,6 +82,10 @@ define("p3/widget/WorkspaceObjectSelector", [
 			if (this.uploader){
 				this.uploader.set('path', val);
 			}
+
+			if (this.currentPathNode){
+				this.currentPathNode.innerHTML = "Folder: " + val;
+			}
 		},		
 		_setTypeAttr: function(type){
 			if (!(type instanceof Array)){
@@ -125,6 +129,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 
 		createSelectedPane: function(){
 			var wrap= domConstr.create("div",{});
+			this.currentPathNode = domConstr.create("div",{innerHTML: "Folder: "+this.path},wrap);
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
 //			domConstr.place(this.selValNode, sel, "last");

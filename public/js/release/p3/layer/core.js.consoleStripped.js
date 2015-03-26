@@ -26301,11 +26301,53 @@ define([
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["experiment_group","experiment","experiment_sample"],tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["DifferentialExpression"], 
+				tooltip: "View Gene List"}, function(selection){
 				 0 && console.log("View Gene List", selection);
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
+			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Gene List"}, function(selection){
+				 0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
+				 0 && console.log("View Gene List", selection);
+				var expPath = this.currentContainerWidget.get('path');
+				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + expPath + "&wsSampleId=" + selection.map(function(s){return s.pid;})
+			}, true);
+
+
+
+			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Gene List"}, function(selection){
+				 0 && console.log("View Gene List2", selection);
+				var expids = []
+				var wsExps = []
+				selection.forEach(function(s){
+					if (s.expid){
+						expids.push(s.expid);
+					}else if (s.path) {
+						wsExps.push(s.wsExps);
+					}
+
+					
+				});
+				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
+				if (expids && expids.length>0){
+					url = url + "&expId=" + expids.join(",")+"&sampleId=";
+				}else{
+					url = url + "&expId=&sampleId=";
+				}
+				if (wsExps && wsExps.length>0){
+					url = url + "&wsExperimentId=" + wsExps.join(",") + "&wsSampleId=";
+				}else{
+					url = url + "&wsExperimentId=&wsSampleId=";
+				}
+
+
+
+				
+				window.location =  url;
+			}, true);
+
+	
 	
 
 			/*
@@ -30566,7 +30608,6 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="icon-genome-features " title="Contigs" />'
 				case "genome_group":
 					return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
-
 				case "job_result_DifferentialExpression":
 					return '<i class="fa icon-lab fa-1x" title="DiffExp" />'
 				case "job_result_GenomeAnnotation":
@@ -30574,7 +30615,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "job_result_GenomeAssembly":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
 				default: 
-					return '<i class="fa fa-file fa-1x" title="Unspecified Document Type" />'
+					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		autoLabel: function(ws_location,autoData){
@@ -33522,9 +33563,9 @@ return function(column, editor, editOn){
 
 },
 'p3/JobManager':function(){
-define(["dojo/_base/Deferred","dojo/topic"], 
+define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all"], 
 
-function(Deferred,Topic){
+function(Deferred,Topic,xhr,All){
 	// 0 && console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
@@ -33547,11 +33588,12 @@ function(Deferred,Topic){
 							Jobs[task.id]=task;
 						}
 					}
-
-					Deferred.when(getJobSummary(), function(msg){
-						Topic.publish("/Jobs", msg);
-					});	
 				});
+
+				Deferred.when(getJobSummary(), function(msg){
+					Topic.publish("/Jobs", msg);
+				});	
+	
 				if (firstRun){
 					ready.resolve(true);	
 					firstRun=false;	
@@ -33590,6 +33632,49 @@ function(Deferred,Topic){
 		}
 
 	return {
+		queryTaskDetail: function(id,stdout,stderr){
+			return Deferred.when(window.App.api.service("AppService.query_task_details",[id]), function(detail){
+				detail = detail[0];
+				var defs = [];
+				if (detail.stderr_url && stderr){
+					defs.push(Deferred.when(xhr.get(detail.stderr_url, {
+						headers: {
+							"Authorization": "Oauth " + window.App.authorizationToken,
+                       			                "X-Requested-With": false
+						}
+					}), function(txt){
+						detail.stderr = txt;
+					
+					}));		
+				}
+				if (detail.stdout_url && stdout){
+					defs.push(Deferred.when(xhr.get(detail.stdout_url, {
+						headers: {
+							"Authorization": "Oauth " + window.App.authorizationToken,
+                       			                "X-Requested-With": false
+						}
+					}), function(txt){
+						detail.stdout = txt;
+					
+					}));		
+				}
+				if (defs.length<1) {
+					return detail;
+				}else{
+					return Deferred.when(All(defs), function(){
+						return detail;
+					});
+				}
+			});
+		},
+		getShockNode: function(url){
+			return xhr.get(url+"?download", {
+				headers: {
+					"Authorization": "Oauth " + window.App.authorizationToken,
+                                        "X-Requested-With": false
+				}
+			});
+		},
 		getJobSummary: getJobSummary,
 		getJobs: function(){
 			return Deferred.when(ready, function(){
@@ -33821,7 +33906,19 @@ define([
 			var valid;
 			var selectionTypes = {}
 			sel.forEach(function(s){
-				selectionTypes[s.document_type || s.type]=true;
+				var type = s.document_type || s.type;
+				 0 && console.log("Checking s: ", type, s);
+				if (type=="job_result") {
+					if (s.autoMeta && s.autoMeta.app) {
+						if (typeof s.autoMeta.app=="string") {
+							type = s.autoMeta.app
+						}else if (s.autoMeta.app.id){
+							type=s.autoMeta.app.id;
+						}
+					}
+				}
+				 0 && console.log("Type: ", type);
+				selectionTypes[type]=true;
 			});
 			 0 && console.log("selectionTypes: ", selectionTypes);
 	
@@ -33832,6 +33929,7 @@ define([
 					 0 && console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
+			
 
 				 0 && console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){
@@ -38274,6 +38372,10 @@ define([
 			if (this.uploader){
 				this.uploader.set('path', val);
 			}
+
+			if (this.currentPathNode){
+				this.currentPathNode.innerHTML = "Folder: " + val;
+			}
 		},		
 		_setTypeAttr: function(type){
 			if (!(type instanceof Array)){
@@ -38317,6 +38419,7 @@ define([
 
 		createSelectedPane: function(){
 			var wrap= domConstr.create("div",{});
+			this.currentPathNode = domConstr.create("div",{innerHTML: "Folder: "+this.path},wrap);
 			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
 			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
 //			domConstr.place(this.selValNode, sel, "last");

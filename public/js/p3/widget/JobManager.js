@@ -20,6 +20,10 @@ define([
 				_self.showError(err);
 			})
 		},
+		postCreate: function(){
+			this.inherited(arguments);
+			domClass.add(this.domNode, "JobManager");
+		},
 
 		showError: function(err) {
 			var n = domConstr.create("div", {
@@ -40,15 +44,16 @@ define([
 			}, this.domNode);
 	
 		},
-
-		postCreate: function() {
-			this.inherited(arguments);
-		},
+//		queryOptions: {
+//			sort: [{attribute: "submit_time", descending: false}]
+//		},
 
 		render: function(items) {
+			items.sort(function(a,b){
+				return (Date.parse(a.submit_time) < Date.parse(b.submit_time))?1:-1;
+			});
 			this.refresh();
 			this.renderArray(items);
-			// this.refresh();	
 		},
 
 		startup: function() {
@@ -56,7 +61,6 @@ define([
 				return;
 			}
 			this.inherited(arguments);
-			domClass.add(this.domNode, "JobManager");
 
 			var _self = this;
 
@@ -64,18 +68,11 @@ define([
 				_self.render(jobs);
 			})
 
-
 			Topic.subscribe("/Jobs", function(msg){
-				this.listJobs().then(function(jobs) {
+				console.log("REFRESH JOBS ARRAY");
+				_self.listJobs().then(function(jobs) {
 					_self.render(jobs);
 				})
-
-
-				// if (msg.type=="JobStatus") {
-				// 	console.log("JobStatus MSG: ", msg.job);
-				// }else if (msg.type=="JobStatusChanged") {
-				// 	console.log("Job Status Changed From ", msg.oldStatus, " to ", msg.status);
-				// }
 			});
 
 		}
