@@ -5,19 +5,20 @@ define("p3/widget/app/Assembly", [
 	"dojo/dom-class",
 	"dojo/text!./templates/Assembly.html","./AppBase","dojo/dom-construct",
         "dojo/_base/Deferred","dojo/aspect","dojo/_base/lang","dojo/domReady!","dijit/form/NumberTextBox",
-	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse"
+	"dojo/query", "dojo/dom", "dijit/popup", "dijit/Tooltip", "dijit/Dialog", "dijit/TooltipDialog","dojo/NodeList-traverse","../../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,
 	Template,AppBase,domConstruct,
         Deferred,aspect,lang,domReady,NumberTextBox,query,
-	dom, popup, Tooltip, Dialog, TooltipDialog, children
+	dom, popup, Tooltip, Dialog, TooltipDialog, children,WorkspaceManager
 ){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "GenomeAssembly",
 		libraryData: null,
+		defaultPath: "",
 		startingRows: 14,
 
 		constructor: function(){
@@ -36,6 +37,9 @@ define("p3/widget/app/Assembly", [
                 startup: function(){
                         if (this._started) { return; }
                         this.inherited(arguments);
+			var _self=this;
+			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+                        _self.output_path.set('value', _self.defaultPath);
 			for (i = 0; i < this.startingRows; i++) { 
 				var tr =  this.libsTable.insertRow(0);//domConstr.create("tr",{},this.libsTableBody);
 				var td = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},tr);

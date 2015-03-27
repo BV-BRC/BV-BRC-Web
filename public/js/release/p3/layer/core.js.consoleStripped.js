@@ -13364,6 +13364,8 @@ define([
 					return "/" + [this.userId,"home","Genome Groups"].join("/");
 				case "feature_group":	
 					return "/" + [this.userId,"home","Feature Groups"].join("/");
+				case "experiment_folder":	
+					return "/" + [this.userId,"home","Experiments"].join("/");
 	
 				default:
 					return "/" + [this.userId,"home"].join("/");
@@ -37908,11 +37910,11 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Annotation.html","./AppBase",
-	"dojo/_base/lang"
+	"dojo/_base/lang","../../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,lang
+	Template,AppBase,lang,WorkspaceManager
 ){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
@@ -37921,11 +37923,19 @@ define([
 		required: true,
 		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
 		code_four: false,
+		defaultPath: "",
 
 		constructor: function(){
 			this._autoTaxSet=false;
 			this._autoNameSet=false;
 		},
+		startup: function(){
+                        var _self=this;
+                        if (this._started) { return; }
+                        this.inherited(arguments);
+                        _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+                        _self.output_pathWidget.set('value', _self.defaultPath);
+                },
 		changeCode: function(item){	
 			this.code_four=false;
 			item.lineage_names.forEach(lang.hitch(this, function(lname){
