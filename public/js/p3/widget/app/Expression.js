@@ -1,20 +1,27 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Expression.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox"
+	"dojo/text!./templates/Expression.html","./AppBase","p3/widget/WorkspaceFilenameValidationTextBox", "../../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase
+	Template,AppBase,WorkspaceFilenameValidationTextBox,WorkspaceManager
 ){
 	return declare([AppBase], {
 		"baseClass": "Expression",
 		templateString: Template,
 		applicationName: "DifferentialExpression",
+		defaultPath: "",
 		constructor: function(){
 			this._selfSet=true;
 		},	
-	
+                startup: function(){
+                        var _self=this;
+                        if (this._started) { return; }
+			this.inherited(arguments);
+			_self.defaultPath = WorkspaceManager.getDefaultFolder("experiment_folder") || _self.activeWorkspacePath;
+			_self.output_pathWidget.set('value', _self.defaultPath);
+		},
 		getValues: function(){
 			var values = this.inherited(arguments);
 			var exp_values={};
