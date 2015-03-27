@@ -267,7 +267,7 @@ define("p3/app/app", [
 				var cur = _self.getCurrentContainer();	
 				if (cur) { appContainer.removeChild(cur,true); }
 
-				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><iframe style="width:400px;height:300px;display:inline-block;" src="/login"></iframe></div>'});
+				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><h3>PATRIC Login</h3><p>This service requires authentication.  Please login or <a href="https://user.patricbrc.org/register/" target="_top">register as a new user.</a></p> <iframe style="width:400px;height:300px;display:inline-block;" src="/login"></iframe></div>'});
 				appContainer.addChild(lp);
 				return;
 			}
