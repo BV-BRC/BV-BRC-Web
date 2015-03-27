@@ -224,7 +224,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 							formatter: formatter.wsItemType,
 							unhidable: true
 		                                },
-						"name": ({
+						"name": editor({
 		                                        label: "Name",
                			                         field: "name",
                                			         className: "wsItemName",

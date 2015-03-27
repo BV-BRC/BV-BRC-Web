@@ -13606,7 +13606,7 @@ define([
 			// 0 && console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
 			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
 				if (name=="home"){
-					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments"]),function(){
+					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments", workspace.path+"/Experiment Groups"]),function(){
 						return workspace	
 					})
 				}
@@ -26307,7 +26307,7 @@ define([
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Experiment Gene List"}, function(selection){
 				 0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
 				 0 && console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
@@ -26316,17 +26316,16 @@ define([
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Experiment Group Gene List"}, function(selection){
 				 0 && console.log("View Gene List2", selection);
 				var expids = []
 				var wsExps = []
 				selection.forEach(function(s){
-					if (s.expid){
+					if (s.path) {
+						wsExps.push(s.path);
+					}else if (s.expid){
 						expids.push(s.expid);
-					}else if (s.path) {
-						wsExps.push(s.wsExps);
 					}
-
 					
 				});
 				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
@@ -33358,7 +33357,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	 0 && console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -33374,7 +33374,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
@@ -38553,7 +38553,7 @@ define([
 							formatter: formatter.wsItemType,
 							unhidable: true
 		                                },
-						"name": ({
+						"name": editor({
 		                                        label: "Name",
                			                         field: "name",
                                			         className: "wsItemName",
