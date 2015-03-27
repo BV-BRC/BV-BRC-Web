@@ -255,7 +255,7 @@ define([
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Experiment Gene List"}, function(selection){
 				console.log("this.currentContainerType: ", this.currentContainerType, this);
 				console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
@@ -264,17 +264,16 @@ define([
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Experiment Group Gene List"}, function(selection){
 				console.log("View Gene List2", selection);
 				var expids = []
 				var wsExps = []
 				selection.forEach(function(s){
-					if (s.expid){
+					if (s.path) {
+						wsExps.push(s.path);
+					}else if (s.expid){
 						expids.push(s.expid);
-					}else if (s.path) {
-						wsExps.push(s.wsExps);
 					}
-
 					
 				});
 				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
