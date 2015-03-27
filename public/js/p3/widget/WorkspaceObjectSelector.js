@@ -222,7 +222,7 @@ define([
 							formatter: formatter.wsItemType,
 							unhidable: true
 		                                },
-						"name": ({
+						"name": editor({
 		                                        label: "Name",
                			                         field: "name",
                                			         className: "wsItemName",
