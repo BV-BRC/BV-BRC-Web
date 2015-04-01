@@ -27,8 +27,8 @@ define([
 		required: false,
 		showUnspecified: false,
 		promptMessage:"",
-		missingMessage: "A valid workspace item is required.",
-		promptMessage: "Please choose or upload a workspace item",
+		missingMessage: "A valid name is required.",
+		promptMessage: "Type an informative name",
 		nameIsValid: false,
 
 		_setPathAttr: function(val){
