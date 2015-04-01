@@ -30,6 +30,7 @@ define([
 		missingMessage: "A valid name is required.",
 		promptMessage: "Type an informative name",
 		nameIsValid: false,
+		placeHolder: "",
 
 		_setPathAttr: function(val){
 			console.log("_setPathAttr: ", val);
@@ -38,7 +39,8 @@ define([
 			if (this.value) {
 				this.checkForName(val);
 			}
-		},	
+		},
+
 	
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){
