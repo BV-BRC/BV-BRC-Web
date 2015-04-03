@@ -82,6 +82,9 @@ define([
 								around: item
 							});
 						});
+						on(item, 'mouseout', function(){
+							popup.close(item.info_dialog);
+						});
 					}	
 				});
 			});
