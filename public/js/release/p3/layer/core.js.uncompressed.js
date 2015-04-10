@@ -37947,7 +37947,7 @@ define([
 		},
 	
 		onTaxIDChange: function(val){
-			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
+			if (val && !this.scientific_nameWidget.get('displayedValue') && !this._autoTaxSet){
 				this._autoNameSet=true;
 				var tax_id=this.tax_idWidget.get("item").taxon_id;
 				//var sci_name=this.tax_idWidget.get("item").taxon_name;
@@ -37966,7 +37966,7 @@ define([
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			if (val && !this._autoNameSet){
+			if (val && !this.tax_idWidget.get("displayedValue") && !this._autoNameSet){
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
 				if(tax_id){
@@ -38084,6 +38084,9 @@ define([
 								popup: item.info_dialog,
 								around: item
 							});
+						});
+						on(item, 'mouseout', function(){
+							popup.close(item.info_dialog);
 						});
 					}	
 				});
@@ -38374,10 +38377,15 @@ define([
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
+		placeHolder: "",
 		reset: function(){
 			this.searchBox.set('value','');
 		},
-
+		_setPlaceHolderAttr: function(val){
+			if(this.searchBox){
+				this.searchBox.set('placeHolder', val);
+			}
+		},
 		_setShowUnspecifiedAttr: function(val){
 			this.showUnspecified = val;
 			if (val) {
@@ -38700,6 +38708,7 @@ define([
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
+			this.searchBox.set('placeHolder', this.placeHolder);
 		},
 
 		validate: function(/*Boolean*/ isFocused){

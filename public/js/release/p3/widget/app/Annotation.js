@@ -41,7 +41,7 @@ define("p3/widget/app/Annotation", [
 		},
 	
 		onTaxIDChange: function(val){
-			if ((val && !this.scientific_nameWidget.get('value') && !this._autoTaxSet) || this.scientific_nameWidget.get('displayedValue')==""){
+			if (val && !this.scientific_nameWidget.get('displayedValue') && !this._autoTaxSet){
 				this._autoNameSet=true;
 				var tax_id=this.tax_idWidget.get("item").taxon_id;
 				//var sci_name=this.tax_idWidget.get("item").taxon_name;
@@ -60,7 +60,7 @@ define("p3/widget/app/Annotation", [
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			if (val && !this._autoNameSet){
+			if (val && !this.tax_idWidget.get("displayedValue") && !this._autoNameSet){
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
 				if(tax_id){

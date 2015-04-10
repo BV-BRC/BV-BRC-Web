@@ -84,6 +84,9 @@ define("p3/widget/app/AppBase", [
 								around: item
 							});
 						});
+						on(item, 'mouseout', function(){
+							popup.close(item.info_dialog);
+						});
 					}	
 				});
 			});
