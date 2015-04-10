@@ -16,8 +16,8 @@ define([
 		currentContainerType: null,
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
-			console.log("_set Current Container Widget: ", widget);
-			console.log("Widget: ", widget.containerType, widget);
+			//console.log("_set Current Container Widget: ", widget);
+			//console.log("Widget: ", widget.containerType, widget);
 			
 			if (widget === this.currentContainerWidget) { return; }
 			this.currentContainerType=widget.containerType;
@@ -50,7 +50,7 @@ define([
 	
 			if (sel.length>1) {
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
-				console.log("isMultiTyped: ", multiTypedSelection);	
+//				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
@@ -67,10 +67,11 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes)
-
+			console.log("Filtering for Types: ", types);
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
+				console.log("validTypes for action : ",an, validTypes);
 				var validContainerTypes = act.options.validContainerTypes || null;
 
 				if (validContainerTypes){
@@ -89,6 +90,7 @@ define([
 				});		
 			},this);
 
+			console.log("ValidTypes: ", valid);
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){

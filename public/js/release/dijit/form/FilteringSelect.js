@@ -180,6 +180,8 @@ define("dijit/form/FilteringSelect", [
 				priorityChange = false;
 			}
 
+			text = text.replace(/\ /g,"%20");
+
 			// Do a reverse lookup to map the specified displayedValue to the hidden value.
 			// Note that if there's a custom labelFunc() this code
 			if(this.store){

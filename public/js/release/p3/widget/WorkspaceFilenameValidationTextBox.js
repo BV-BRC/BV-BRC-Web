@@ -27,9 +27,10 @@ define("p3/widget/WorkspaceFilenameValidationTextBox", [
 		required: false,
 		showUnspecified: false,
 		promptMessage:"",
-		missingMessage: "A valid workspace item is required.",
-		promptMessage: "Please choose or upload a workspace item",
+		missingMessage: "A valid name is required.",
+		promptMessage: "Type an informative name",
 		nameIsValid: false,
+		placeHolder: "",
 
 		_setPathAttr: function(val){
 			console.log("_setPathAttr: ", val);
@@ -38,7 +39,8 @@ define("p3/widget/WorkspaceFilenameValidationTextBox", [
 			if (this.value) {
 				this.checkForName(val);
 			}
-		},	
+		},
+
 	
 		postMixinProperties: function(){
 			if (!this.value && this.workspace){

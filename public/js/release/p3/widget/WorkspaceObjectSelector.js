@@ -35,10 +35,15 @@ define("p3/widget/WorkspaceObjectSelector", [
 		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
+		placeHolder: "",
 		reset: function(){
 			this.searchBox.set('value','');
 		},
-
+		_setPlaceHolderAttr: function(val){
+			if(this.searchBox){
+				this.searchBox.set('placeHolder', val);
+			}
+		},
 		_setShowUnspecifiedAttr: function(val){
 			this.showUnspecified = val;
 			if (val) {
@@ -361,6 +366,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
+			this.searchBox.set('placeHolder', this.placeHolder);
 		},
 
 		validate: function(/*Boolean*/ isFocused){
