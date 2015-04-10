@@ -13,6 +13,8 @@ define([
 		token: "",
 		apiUrl: "",
 		userId: "",
+		downloadTypes:["contigs","reads","unspecified","diffexp_experiment","diffexp_mapping","diffexp_sample","diffexp_expression","diffexp_input_data"], 
+
 		getDefaultFolder: function(type){
 			switch(type) {
 				case "genome_group":	

@@ -201,13 +201,27 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				if (_app_label=="GenomeAssembly"){
 					_autoLabels= {"app_label":{"label":"Genome Assembly"}};
 				}
+				Object.keys(_autoLabels).forEach(function(key){
+					var curValue=null;//findObjectByLabel(autoData,key);
+					if (curValue){
+						_autoLabels[key]["value"]=curValue;
+					}
+				},this);
 			}
-			Object.keys(_autoLabels).forEach(function(key){
-				var curValue=null;//findObjectByLabel(autoData,key);
-				if (curValue){
-					_autoLabels[key]["value"]=curValue;
-				}
-			},this);
+			if (ws_location == "fileView"){
+				_autoLabels={"name":{"label":"Filename"},"type":{"label":"Type"},"creation_time":{"label":"Created", "format":this.date},"owner_id":{"label":"Owner"},"path":{"label":"Path"},"size":{"label":"File Size","format":this.humanFileSize}};
+				Object.keys(autoData).forEach(function(key){
+					if (_autoLabels.hasOwnProperty(key)){
+						if (_autoLabels[key].hasOwnProperty("format")){
+							_autoLabels[key]["value"]=_autoLabels[key]["format"](autoData[key]);
+						}
+						else {
+							_autoLabels[key]["value"]=autoData[key];
+						}
+					}
+				});
+			}
+					
 		
 			return _autoLabels;
 		}
