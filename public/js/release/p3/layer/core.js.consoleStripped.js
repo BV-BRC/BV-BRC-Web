@@ -26415,7 +26415,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata"], tooltip: "Delete Selection"}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					 0 && console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -33931,8 +33931,8 @@ define([
 		currentContainerType: null,
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
-			 0 && console.log("_set Current Container Widget: ", widget);
-			 0 && console.log("Widget: ", widget.containerType, widget);
+			// 0 && console.log("_set Current Container Widget: ", widget);
+			// 0 && console.log("Widget: ", widget.containerType, widget);
 			
 			if (widget === this.currentContainerWidget) { return; }
 			this.currentContainerType=widget.containerType;
@@ -33965,7 +33965,7 @@ define([
 	
 			if (sel.length>1) {
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
-				 0 && console.log("isMultiTyped: ", multiTypedSelection);	
+//				 0 && console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					 0 && console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
@@ -33982,10 +33982,11 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes)
-
+			 0 && console.log("Filtering for Types: ", types);
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
+				 0 && console.log("validTypes for action : ",an, validTypes);
 				var validContainerTypes = act.options.validContainerTypes || null;
 
 				if (validContainerTypes){
@@ -34004,6 +34005,7 @@ define([
 				});		
 			},this);
 
+			 0 && console.log("ValidTypes: ", valid);
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
