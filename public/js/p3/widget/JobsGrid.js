@@ -197,6 +197,7 @@ define([
 					Topic.publish("/select", sel);
 				});
 			*/
+			/*
 				var activeItem;
 				this.on(".dgrid-content:contextmenu", function(evt){
 					var row=_self.row(evt);
@@ -227,7 +228,7 @@ define([
 
 				this.inherited(arguments);
 				this._started = true;
-
+			*/
 
 			},
 			_setActiveFilter: function(filter) {
