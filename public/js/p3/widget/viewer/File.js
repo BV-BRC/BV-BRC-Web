@@ -11,6 +11,7 @@ define([
 	return declare([BorderContainer], {
 		"baseClass": "FileViewer",
 		"disabled":false,
+		containerType: "file",
 		"filepath": null,
 		"file": null,
 
