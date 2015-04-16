@@ -5246,6 +5246,22 @@ div.dijitNumberTextBoxRtl {
 	padding:2px;
 	vertical-align:bottom;
 }
+a.HelpLink {
+  color: #09456f;
+}
+a.HelpLink:visited {
+  color: #09456f;
+}
+a.HelpLink:focus {
+  color: #09456f;
+}
+a.HelpLink:hover {
+  color: #34698e;
+  text-decoration: underline;
+}
+a.HelpLink:active {
+  color: #09456f;
+}
 .wsBreadCrumb {
 	font-size:1.1em;
 	margin:2px;
@@ -5455,6 +5471,15 @@ th.dgrid-cell.wsItemType {
 .noSelection .singleItemSelection,
 .noSelection .multipleItemSelection {
 	display: none;
+}
+.resultContentSection{
+	display:block;
+}
+.job_result .resultContentSection{
+	display:none;
+}
+.file .resultContentSection{
+	display:none;
 }
 .containerContentSection {
 	display: none;
