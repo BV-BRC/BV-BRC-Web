@@ -14,12 +14,12 @@
 }
 
 .wsBreadCrumb {
-	font-size:1.5em;
+	font-size:1.1em;
 	margin:2px;
 	margin-top: 4px;
-	margin-left: 4px;
-	font-weight: 900;
-	padding:4px;
+	margin-left: 2px;
+	font-weight: 600;
+	padding:2px;
 	color: #134d75;
 }
 
@@ -91,7 +91,7 @@ color:#fff;font-weight:600;background:#34698e;
 	padding:4px;
 	margin-left: -1px;
 	border-left: 0px solid #888;
-	border-top: 1px solid #34698e;
+	border-top: 2px solid #76a72d; /*#34698e;*/
 	/*box-shadow:0px 0px 1px;*/
 	overflow: auto;
 }
@@ -236,12 +236,18 @@ th.dgrid-cell.wsItemType {
 }
 
 .ActionButtonContainer {
-	float: right;
+	font-size:.85em;
 }
 
 .ActionButtonContainer .ActionButton {
 	margin: 5px;
-	color: #34698e;	
+	margin-top: 2px;
+	margin-bottom: 2px;
+	color: #34698E; /*#34698e;	*/
+}
+
+.ActionButtonContainer .ActionButton:hover {
+	color: #4184B2; 
 }
 
 .dataItemSelection,

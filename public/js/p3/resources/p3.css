@@ -162,25 +162,23 @@ body.patric *:focus {
 }
 
 .ActionBar {
-	/*background: #3a69b9;*/
-	background:#34698e; /*#333;*/
-	border-left: 1px solid #333;
-	box-shadow: 0px 0px 4px;
-	-webkit-box-shadow: 0px 0px 4px;
+	background:#76a72d; /*#34698e;#333;*/
+	border-left: 1px solid #777;
+/*	box-shadow: 0px 0px 2px;
+	-webkit-box-shadow: 0px 0px 2px;*/
 	overflow: hidden;
 }
 
 .ActionBar .fa {
 	margin-bottom:6px;
 	margin-top:4px;
-	color: #fff;
+	color: #eee;
 	margin-right:4px;
+	font-size:2em;
 }
-/*
 .ActionBar .fa:hover {
-	color: #000;
+	color: #fff;
 }
-*/
 
 .fa {
 	cursor: pointer;
