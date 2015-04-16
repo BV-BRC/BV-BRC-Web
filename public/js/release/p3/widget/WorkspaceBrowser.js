@@ -650,10 +650,10 @@ define("p3/widget/WorkspaceBrowser", [
 			var query ="";
 			switch(obj.type) {
 				case "genome_group":
-					query="?&in(genome_id,GenomeGroup("+encodeURIComponent(obj.path+obj.name).replace("(","%28").replace(")","%29")+"))";
+					query="?&in(genome_id,GenomeGroup("+encodeURIComponent(obj.path).replace("(","%28").replace(")","%29")+"))";
 					break;
 				case "feature_group":
-					query="?&in(feature_id,FeatureGroup("+encodeURIComponent(obj.path+obj.name)+"))";
+					query="?&in(feature_id,FeatureGroup("+encodeURIComponent(obj.path)+"))";
 					break;
 			}
 			return query;
