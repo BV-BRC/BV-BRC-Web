@@ -1,15 +1,17 @@
 define("p3/widget/viewer/File", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"../formatter","../../WorkspaceManager","dojo/_base/Deferred"
+	"../formatter","../../WorkspaceManager","dojo/_base/Deferred","dojo/dom-attr", "dojo/_base/array"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
-	formatter,WorkspaceManager,Deferred
+	formatter,WorkspaceManager,Deferred,
+	domAttr, array
 ){
 	return declare([BorderContainer], {
 		"baseClass": "FileViewer",
 		"disabled":false,
+		containerType: "file",
 		"filepath": null,
 		"file": null,
 
@@ -39,11 +41,40 @@ define("p3/widget/viewer/File", [
 		startup: function(){
 			if (this._started) {return;}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "File Viewer", region: "top"});
+			this.viewHeader = new ContentPane({content: "", region: "top"});
 			this.viewer = new ContentPane({region: "center"});
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 			this.refresh();
+
+                        this.on("i:click", function(evt){
+                                var rel = domAttr.get(evt.target,'rel');
+                                if (rel) {
+                                        WorkspaceManager.downloadFile(rel);
+                                }else{
+                                        console.warn("link not found: ", rel);
+                                }
+                        });
+		},
+
+                formatFileMetaData: function(){
+			var output=[];
+			var header='<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white;margin-right:10px;" class="wrap">';
+			if (this.file && this.file.metadata){
+				header=header+this.file.metadata.type+" file: "+this.file.metadata.name+'</span>'
+				if(array.indexOf(WorkspaceManager.downloadTypes,this.file.metadata.type) >= 0){
+					header=header+'<i class="fa fa-download fa" rel="' + this.filepath +  '" />';
+				}
+				header=header+'</h3>';
+				output.push(header);
+				var formatLabels=formatter.autoLabel("fileView", this.file.metadata);
+                                output.push('<table class="basic stripe far2x" id="data-table"><tbody>');
+				 Object.keys(formatLabels).forEach(function(key){
+					output.push('<tr class="alt"><th scope="row" style="width:20%"><b>'+formatLabels[key]["label"]+ '</b></th><td class="last">' + formatLabels[key]["value"]+ "</td></tr>");
+				},this);
+				output.push("</tbody></table></div>");
+			}
+			return output.join("");
 		},
 
 		refresh: function(){
@@ -55,9 +86,7 @@ define("p3/widget/viewer/File", [
 			}
 
 			if (!this.file.data && this.file.metadata.size && (this.file.metadata.size > 1000000)) {
-				var content="<div>File Metadata</div>" +
-					"<div>File to large to view directly in the application.</div>"+
- 	 				"<pre>"+JSON.stringify(this.file.metadata,null,4)+ "</pre>"
+				var content=this.formatFileMetaData();
 				this.file.data='Unloaded Content';	
 				this.viewer.set('content',content);
 				return;
@@ -81,19 +110,17 @@ define("p3/widget/viewer/File", [
 							this.file.data = JSON.stringify(JSON.parse(this.file.data),null,4)
 						}
 						console.log("this.file.data: ",typeof this.file.data);
-						this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
+						this.viewer.set('content',this.formatFileMetaData+"<pre>" + this.file.data + "</pre>");
 						return;
 					}
 					if (this.file.metadata.name.match(/\.txt/)){
 						console.log("Matched JSON to ", this.file.metadata.name);
-						this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
+						this.viewer.set('content',this.formatFileMetaData+"<pre>" + this.file.data + "</pre>");
 						return;
 					}
-
-					this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
-				}else{
-					this.viewer.set('content',"<pre>" + this.file.data + "</pre>");
 				}
+				this.viewer.set('content',this.formatFileMetaData+"<pre>" + this.file.data + "</pre>");
+				
 			}
 		}
 	});
