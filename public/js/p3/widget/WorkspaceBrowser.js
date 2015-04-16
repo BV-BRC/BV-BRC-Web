@@ -133,6 +133,31 @@ define([
 	
 			}, true);
 
+			var downloadTTSelect=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTTSelect); }})
+
+			on(downloadTTSelect.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection');
+				var dataType=(selection[0].type=="genome_group")?"genome":"genome_feature";
+				var currentQuery = self.getQuery(selection[0]);
+				console.log("selection: ", selection);
+				console.log("DownloadQuery: ", dataType, currentQuery );
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+				popup.close(downloadTT);
+			});
+			this.actionPanel.addAction("SelectDownloadTable","fa fa-download fa-2x",{multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Selection", tooltipDialog:downloadTTSelect}, function(selection){
+				console.log("Download Table", selection);
+				if(selection.length==1){
+					popup.open({
+						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
+						around: this._actions.SelectDownloadTable.button,
+						orient: ["below"]
+					});
+				}
+	
+			}, true);
+
 			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
 				console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
 				Topic.publish("/openDialog",{type:"Upload",params:selection[0].path + selection[0].name });
@@ -618,6 +643,20 @@ define([
 
 			}));
 		},
+
+		getQuery: function(obj){
+			var query ="";
+			switch(obj.type) {
+				case "genome_group":
+					query="?&in(genome_id,GenomeGroup("+encodeURIComponent(obj.path+obj.name).replace("(","%28").replace(")","%29")+"))";
+					break;
+				case "feature_group":
+					query="?&in(feature_id,FeatureGroup("+encodeURIComponent(obj.path+obj.name)+"))";
+					break;
+			}
+			return query;
+		},
+
 		refresh: function(){
 			if (this.activePanel instanceof WorkspaceExplorerView){
 				this.explorer.refreshWorkspace()
