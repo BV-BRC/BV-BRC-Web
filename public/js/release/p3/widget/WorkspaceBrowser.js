@@ -23,10 +23,11 @@ define("p3/widget/WorkspaceBrowser", [
 		"path": "/",
 		gutters: false,
 		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
+		design: "sidebar",
 		startup: function(){
 			if (this._started) {return;}
 			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path});
-			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
+			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;"});
 			var self=this;
 
 			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {persistent:true,validTypes:["*"], tooltip: "Toggle Selection Detail"}, function(selection){

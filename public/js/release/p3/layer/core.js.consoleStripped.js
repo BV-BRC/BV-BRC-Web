@@ -22500,6 +22500,7 @@ define([
 		"currentWorkspace": "",
 		gutters:false,
 		liveSplitters: true,
+		design: "headline",
 		style: "margin:-1px;padding:0px;",
 		path: "/",
 		startup: function(){
@@ -26075,10 +26076,11 @@ define([
 		"path": "/",
 		gutters: false,
 		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
+		design: "sidebar",
 		startup: function(){
 			if (this._started) {return;}
 			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path});
-			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;font-size:.75em;"});
+			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:32px;text-align:center;"});
 			var self=this;
 
 			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {persistent:true,validTypes:["*"], tooltip: "Toggle Selection Detail"}, function(selection){
@@ -34857,8 +34859,8 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {style: {display: "inline-block"}},this.domNode);		
-			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);		
+			this.pathContainer = domConstruct.create("div", {style: {display: "block"}},this.domNode);		
+			this.containerNode = domConstruct.create("div", {"class": "ActionButtonContainer"}, this.domNode);		
 		},
 
 		generatePathLinks: function(path) {

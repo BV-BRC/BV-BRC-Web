@@ -5247,12 +5247,12 @@ div.dijitNumberTextBoxRtl {
 	vertical-align:bottom;
 }
 .wsBreadCrumb {
-	font-size:1.5em;
+	font-size:1.1em;
 	margin:2px;
 	margin-top: 4px;
-	margin-left: 4px;
-	font-weight: 900;
-	padding:4px;
+	margin-left: 2px;
+	font-weight: 600;
+	padding:2px;
 	color: #134d75;
 }
 .wsActionTooltip:hover{
@@ -5314,7 +5314,7 @@ color:#fff;font-weight:600;background:#34698e;
 	padding:4px;
 	margin-left: -1px;
 	border-left: 0px solid #888;
-	border-top: 1px solid #34698e;
+	border-top: 2px solid #76a72d; 
 	
 	overflow: auto;
 }
@@ -5424,11 +5424,16 @@ th.dgrid-cell.wsItemType {
 	margin:0px;
 }
 .ActionButtonContainer {
-	float: right;
+	font-size:.85em;
 }
 .ActionButtonContainer .ActionButton {
 	margin: 5px;
-	color: #34698e;	
+	margin-top: 2px;
+	margin-bottom: 2px;
+	color: #34698E; 
+}
+.ActionButtonContainer .ActionButton:hover {
+	color: #4184B2; 
 }
 .dataItemSelection,
 .workspaceItemSelection,
@@ -8080,18 +8085,19 @@ body.patric *:focus {
 	backface-visibility: hidden;
 }
 .ActionBar {
-	
-	background:#34698e; 
-	border-left: 1px solid #333;
-	box-shadow: 0px 0px 4px;
-	-webkit-box-shadow: 0px 0px 4px;
+	background:#76a72d; 
+	border-left: 1px solid #777;
 	overflow: hidden;
 }
 .ActionBar .fa {
 	margin-bottom:6px;
 	margin-top:4px;
-	color: #fff;
+	color: #eee;
 	margin-right:4px;
+	font-size:2em;
+}
+.ActionBar .fa:hover {
+	color: #fff;
 }
 .fa {
 	cursor: pointer;
