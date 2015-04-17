@@ -13,15 +13,6 @@
 	vertical-align:bottom;
 }
 
-.BrowserHeader .ActionButtonText {
-	color: #34698e;
-}
-
-.BrowserHeader .ActionButtonWrapper:hover .ActionButton.fa, 
-.BrowserHeader .ActionButtonWrapper:hover .ActionButtonText {
-	color: #4184B2;
-}
-
 a.HelpLink {
   color: #09456f;
 }
@@ -260,12 +251,17 @@ th.dgrid-cell.wsItemType {
 	color: red;
 	margin:0px;
 }
+
 .ActionButtonWrapper {
 	font-size: 1.1em;
 	display: inline-block;
 	text-align: center;
-	margin:0px;
+	margin:1px;
 	cursor: pointer;
+	width: 44px;
+	border-radius: 4px;
+	border: 1px solid #76a72d;
+	margin:auto;
 }
 
 .ActionButtonContainer {
@@ -276,30 +272,48 @@ th.dgrid-cell.wsItemType {
 
 .ActionButtonWrapper .ActionButton.fa {
 	margin:0px;
+	color: #fff;
+	margin: 5px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+
+}
+
+.BrowserHeader .ActionButtonWrapper:hover,
+.BrowserHeader .ActionButtonWrapper .ActionButton {
+	color: #34698e;
 }
 
 .ActionButtonText {
-	font-size: .15em;
-	color: #eee;
+	font-size: .1em;
+	color: #fff;
 	margin: 0px;
 	text-align:center;
 }
 
-.ActionButtonContainer:hover  .ActionButton,
-.ActionButtonContainer:hover  .ActionButtonText {
+.BrowserHeader .ActionButtonText {
+	color: #34698e;
+}
+
+.ActionButtonWrapper:hover {
+	border: 1px solid #fff;
+	border-radius: 4px;
 	color: #fff;
 }
 
-.ActionButtonContainer .ActionButton {
-	margin: 5px;
-	margin-top: 2px;
-	margin-bottom: 2px;
-	color: #34698E; /*#34698e;	*/
+.BrowserHeader .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #345698e;	
 }
 
-.ActionButtonContainer .ActionButton:hover {
-	color: #4184B2; 
+.BrowserHeader .ActionButtonWrapper {
+        margin-top: 2px;
+        margin-left: 4px;
+	color: #345698e;
+	border: 1px solid #fff;
+	width: 54px;
 }
+
 
 .dataItemSelection,
 .workspaceItemSelection,

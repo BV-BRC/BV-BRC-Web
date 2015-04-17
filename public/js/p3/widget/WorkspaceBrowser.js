@@ -26,7 +26,7 @@ define([
 		startup: function(){
 			if (this._started) {return;}
 			console.log("this.design: ", this.design);
-			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:42px;text-align:center;"});
+			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:48px;text-align:center;"});
 			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path, layoutPriority:3});
 			var self=this;
 
@@ -163,12 +163,12 @@ define([
 	
 			}, true);
 
-			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
+			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{label:"UPLOAD", multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
 				console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
 				Topic.publish("/openDialog",{type:"Upload",params:selection[0].path + selection[0].name });
 			}, true);
 
-			this.browserHeader.addAction("Create Folder","fa icon-folder-plus fa-2x",{multiple: true,validTypes:["folder"], tooltip: "Create Folder"}, function(selection){
+			this.browserHeader.addAction("Create Folder","fa icon-folder-plus fa-2x",{label: "ADD FOLDER",multiple: true,validTypes:["folder"], tooltip: "Create Folder"}, function(selection){
 				console.log("CREATE FOLDER", selection[0].path);
 				Topic.publish("/openDialog",{type:"CreateFolder",params:selection[0].path + selection[0].name});
 			}, true);
@@ -279,13 +279,13 @@ define([
 
 
 
-			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{multiple: true, validTypes:["DifferentialExpression"], 
+			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{label: "GENES", multiple: true, validTypes:["DifferentialExpression"], 
 				tooltip: "View Gene List"}, function(selection){
 				console.log("View Gene List", selection);
 				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Experiment Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Experiment Gene List"}, function(selection){
 				console.log("this.currentContainerType: ", this.currentContainerType, this);
 				console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');

@@ -106,9 +106,17 @@ define("p3/widget/ActionBar", [
 			this.inherited(arguments);
 			var _self=this;
 			this.containerNode=this.domNode;
-			on(this.domNode, "click", function(evt){
+			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
+				console.log("evt.target: ", evt.target);
+				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
-					var rel = evt.target.attributes.rel.value;
+					target = evt.target;
+				}else{
+					target = evt.target.parentNode;
+				}
+				console.log("target: ", target);
+				if (target && target.attributes && target.attributes.rel) {	
+					var rel = target.attributes.rel.value;
 					if (_self._actions[rel]) {
 						_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
 					}
@@ -120,7 +128,7 @@ define("p3/widget/ActionBar", [
 //			});	
 			new Tooltip({
 				connectId: this.domNode,
-				selector: ".ActionButton",
+				selector: ".ActionButtonWrapper",
 				getContent: function(matched){
 					console.log("Matched: ", matched);
 					var rel = matched.attributes.rel.value;
@@ -139,14 +147,19 @@ define("p3/widget/ActionBar", [
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
-			var b = domConstruct.create("i",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes,rel:name});
+			var wrapper = domConstruct.create("div", {"class": "ActionButtonWrapper",rel:name});
+			var b = domConstruct.create("div",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes},wrapper);
 
-			domConstruct.place(b,this.containerNode,"last");
+			if (opts && opts.label) {
+				var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
+			}		
+
+			domConstruct.place(wrapper,this.containerNode,"last");
 
 			this._actions[name]={
 				options: opts,
 				action: fn,
-				button: b
+				button: wrapper 
 			};
 				
 		}
