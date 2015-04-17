@@ -13,6 +13,15 @@
 	vertical-align:bottom;
 }
 
+.BrowserHeader .ActionButtonText {
+	color: #34698e;
+}
+
+.BrowserHeader .ActionButtonWrapper:hover .ActionButton.fa, 
+.BrowserHeader .ActionButtonWrapper:hover .ActionButtonText {
+	color: #4184B2;
+}
+
 a.HelpLink {
   color: #09456f;
 }
@@ -251,9 +260,34 @@ th.dgrid-cell.wsItemType {
 	color: red;
 	margin:0px;
 }
+.ActionButtonWrapper {
+	font-size: 1.1em;
+	display: inline-block;
+	text-align: center;
+	margin:0px;
+	cursor: pointer;
+}
 
 .ActionButtonContainer {
+	float: right;
 	font-size:.85em;
+	padding-top:5px;
+}
+
+.ActionButtonWrapper .ActionButton.fa {
+	margin:0px;
+}
+
+.ActionButtonText {
+	font-size: .15em;
+	color: #eee;
+	margin: 0px;
+	text-align:center;
+}
+
+.ActionButtonContainer:hover  .ActionButton,
+.ActionButtonContainer:hover  .ActionButtonText {
+	color: #fff;
 }
 
 .ActionButtonContainer .ActionButton {

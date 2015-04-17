@@ -22,7 +22,6 @@ define([
 		"currentWorkspace": "",
 		gutters:false,
 		liveSplitters: true,
-		design: "headline",
 		style: "margin:-1px;padding:0px;",
 		path: "/",
 		startup: function(){
