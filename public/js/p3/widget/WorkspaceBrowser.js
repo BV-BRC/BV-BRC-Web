@@ -19,7 +19,7 @@ define([
 		"baseClass": "WorkspaceBrowser",
 		"disabled":false,
 		"path": "/",
-		gutters: true,
+		gutters: false,
 		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
 		design: "sidebar",
 		splitter: false,
