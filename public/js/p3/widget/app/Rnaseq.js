@@ -78,6 +78,8 @@ define([
                 this.exp_design.value= this.exp_design.checked ? "on" : "off";
                 this.onDesignToggle();
             }));
+            this.condition_single.labelFunc=this.showConditionLabels;
+            this.condition_paired.labelFunc=this.showConditionLabels;
             // this.block_condition.show();
 				
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
@@ -95,11 +97,12 @@ define([
             if(disable){
                 // this.block_condition.show();
                 this.numCondWidget.set('value',Number(1));
+                this.destroyLibRow(query_id=true, id_type="design");
             }
             else {
                 // this.block_condition.hide();
                 this.numCondWidget.set('value',Number(this.addedCond.counter));
-                
+                this.destroyLibRow(query_id=false, id_type="design");
             }
         },
 
@@ -135,16 +138,18 @@ define([
 			//	}
 			//}
             assembly_values["reference_genome_id"]=values["genome_name"];
-			condList.forEach(function(libRecord){
-				condLibs.push(libRecord.condition)});
+            if(this.exp_design.checked){
+			    condList.forEach(function(libRecord){
+				    condLibs.push(libRecord.condition)});
+            }
 			pairedList.forEach(function(libRecord){
                 var toAdd={};
-                if('condition' in libRecord){
+                if('condition' in libRecord && this.exp_design.checked){
                     toAdd['condition']=condLibs.indexOf(libRecord['condition'])+1;
                 }
                 pairedAttrs.forEach(function(attr){toAdd[attr]=libRecord[attr]});
 				pairedLibs.push(toAdd);
-            });
+            },this);
 			if(pairedLibs.length){
 				assembly_values["paired_end_libs"]=pairedLibs;
 			}
@@ -153,12 +158,12 @@ define([
 			}
 			singleList.forEach(function(libRecord){
                 var toAdd={};
-                if('condition' in item.libRecord){
+                if('condition' in libRecord && this.exp_design.checked){
                     toAdd['condition']=condLibs.indexOf(libRecord['condition'])+1;
                 }
                 singleAttrs.forEach(function(attr){toAdd[attr]=libRecord[attr]});
 				singleLibs.push(toAdd);
-            });
+            },this);
 			if(singleLibs.length){
 				assembly_values["single_end_libs"]=singleLibs;
 			}
@@ -225,6 +230,10 @@ define([
 			}, this);
 			return(success);
 		},
+        showConditionLabels: function(item, store){
+            var label=item.condition+" "+item.icon;
+            return label;
+        },
 		makePairName:function(libRecord){
 			var fn =this.read1.searchBox.get("displayedValue");
 			var fn2 =this.read2.searchBox.get("displayedValue");
@@ -357,6 +366,7 @@ define([
 				}
 				if(advPairInfo.length){
                     condition_icon=this.getConditionIcon(lrec["condition"]);
+                    lrec["design"]=true;
 					var tdinfo=domConstruct.create("td", {"class":"iconcol",innerHTML: condition_icon},tr);
 					var ihandle=new Tooltip({
 						connectId: [tdinfo],
@@ -364,6 +374,7 @@ define([
 					});
 				}
 				else{
+                    lrec["design"]=false;
 					var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
 				}
 				var td2 = domConstruct.create("td", {"class":"iconcol", innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
@@ -425,6 +436,7 @@ define([
 					advPairInfo.push("Condition:"+lrec["condition"]);
 				}
 				if(advPairInfo.length){
+                    lrec["design"]=true;
                     condition_icon=this.getConditionIcon(lrec["condition"]);
 					var tdinfo=domConstruct.create("td", {"class":"iconcol",innerHTML: condition_icon},tr);
 					var ihandle=new Tooltip({
@@ -433,6 +445,7 @@ define([
 					});
 				}
 				else{
+                    lrec["design"]=false;
 					var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
 				}
 				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
