@@ -30,7 +30,7 @@ define([
             var label=item.genome_name
             var strainAppended=false;
             if(item.strain){
-                strainApppended= (item.genome_name.indexOf(item.strain, item.genome_name.length - item.strain.length) !== -1);
+                strainAppended= (item.genome_name.indexOf(item.strain, item.genome_name.length - item.strain.length) !== -1);
                 if(!strainAppended){
                     label+=" "+item.strain;
                     strainAppended=true;

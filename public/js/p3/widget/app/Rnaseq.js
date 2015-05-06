@@ -98,11 +98,13 @@ define([
                 // this.block_condition.show();
                 this.numCondWidget.set('value',Number(1));
                 this.destroyLibRow(query_id=true, id_type="design");
+                dojo.addClass(this.condTable,"disabled");
             }
             else {
                 // this.block_condition.hide();
                 this.numCondWidget.set('value',Number(this.addedCond.counter));
                 this.destroyLibRow(query_id=false, id_type="design");
+                dojo.removeClass(this.condTable,"disabled");
             }
         },
 
@@ -175,10 +177,11 @@ define([
 		ingestAttachPoints: function(input_pts, target, req){
             req = typeof req !== 'undefined' ? req : true;
 			var success=1;
+            var prevalidate_ids=["read1","read2","single_end_libs","output_path","condition","condition_single","condition_paired"];
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
-				var browser_select=0;
+				var prevalidate=(prevalidate_ids.indexOf(attachname) > -1);//truth variable whether to do validation separate from form
                 var targetnames=[attachname];
                 if (input_pts[attachname]){
                     targetnames=input_pts[attachname];
@@ -187,13 +190,11 @@ define([
 					cur_value=this[attachname].searchBox.value;//? "/_uuid/"+this[attachname].searchBox.value : "";
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
-					browser_select=1;
 				}
 				else if(attachname == "condition"){
 					cur_value=this[attachname].displayedValue;//? "/_uuid/"+this[attachname].searchBox.value : "";
 					//cur_value="/_uuid/"+this[attachname].searchBox.value;
 					//cur_value=this[attachname].searchBox.get('value');
-					browser_select=1;
 				}
 				else{
 					cur_value=this[attachname].value;
@@ -204,9 +205,15 @@ define([
 				}
                 //set validation state for widgets since they are non-blocking presubmission fields
 				if(req && (!cur_value || incomplete)){
-					if(browser_select){
-						this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
-						this[attachname].searchBox._set("state","Error");
+					if(prevalidate){
+                        if(this[attachname].searchBox){
+						    this[attachname].searchBox.validate(); //this should be whats done but it doesn't actually call the new validator
+						    this[attachname].searchBox._set("state","Error");
+                        }
+                        else{
+                            this[attachname].validate();
+                            this[attachname]._set("state","Error");
+                        }
 						this[attachname].focus=true;
 					}
 					success=0;
@@ -297,6 +304,7 @@ define([
             var conditionSize = this.conditionStore.data.length;
             lrec["icon"]=this.getConditionIcon();
             this.updateConditionStore(record=lrec, remove=false);
+            //make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
 			if (chkPassed && ! disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length){
 				var tr = this.condTable.insertRow(0);
 				var td = domConstruct.create('td', {"class":"textcol conditiondata", innerHTML:""},tr);
@@ -318,7 +326,9 @@ define([
 						var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
 						var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
-					}	
+                    }
+                    this.condition_single.reset();
+                    this.condition_paired.reset();
 					handle.remove();
                     this.destroyLibRow(query_id=lrec["condition"],id_type="condition");
 				}));

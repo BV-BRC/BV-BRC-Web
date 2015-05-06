@@ -63,6 +63,13 @@ color: #004c99;
         font-size: 13px;
 }
 table.assemblyblocks td{vertical-align:top;}
+
+table.librarytable.disabled{
+    opacity: 0.4; /* Real browsers */
+    filter: alpha(opacity = 60);
+    font-color: #ccc;
+}
+
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
 .emptyrow {min-height:23px;
