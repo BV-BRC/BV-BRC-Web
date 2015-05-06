@@ -10,7 +10,7 @@
 			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
 		</div>
 		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numcond" data-dojo-props="constraints:{min:1,max:1000},"/>
+			<input data-dojo-type="dijit/form/NumberTextBox" value="1" required="true" data-dojo-attach-point="numCondWidget" data-dojo-props="constraints:{min:1,max:1000},"/>
 		</div>
 		<table class="assemblyblocks" style="width:100%">
 		<tr>
@@ -30,13 +30,9 @@
                 </div>
                 <div class="approw">
                     <div class="appField">
-                        <label>Genome Name</label><br>
+                        <label>Target Genome</label><br>
                         <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
                     </div> 
-                </div>
-                <div class="approw">
-                    <label class="paramlabel">Experimental design</label>
-                    <div class="mblSwRoundShape1" data-dojo-attach-point="exp_design" data-dojo-attach-event="stateChanged:onDesignToggle" data-dojo-props="value:'off'" style="font-size: 13px; width: 80px;" data-dojo-type="dojox/mobile/Switch"></div>
                 </div>
                 <div class="approw">
                     <label for="output_path" class="paramlabel">Output Folder</label><br>
@@ -50,17 +46,25 @@
             </div>
         </td>
         <td>
-            <div id="conditionbox" class="appbox appshadow" style="min-height: 120px; height:auto; width:330px">
+            <div id="conditionbox" class="appbox appshadow" style="min-height: 120px; height:216px; width:330px">
                 <div class="headerrow">
-                    <label class="appboxlabel">Conditions</label>
+                    <label class="appboxlabel">Groups/Conditions</label>
                     <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
                         <i class="fa fa-info-circle fa"></i>
                     </div><br>
-                    <div class="appsublabel">Add conditions using the configure arrow button.</div>
                 </div>
-                <div class="approw"  data-dojo-attach-point="advrow">
+                <div class="approw">
+                    <!--<div class="mblSwRoundShape1" style="margin-bottom:10px" data-dojo-attach-point="exp_design" data-dojo-attach-event="stateChanged:onDesignToggle" data-dojo-props="value:'off'" style="font-size: 13px; width: 80px;" data-dojo-type="dojox/mobile/Switch"></div>-->
+                    <div style="margin-left:10px" data-dojo-attach-point="group_switch" class="onoffswitch">
+                        <input type="checkbox" value="off" name="onoffswitch" class="onoffswitch-checkbox" data-dojo-attach-point="exp_design">
+                        <label class="onoffswitch-label" for="myonoffswitch">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="approw" style="width:270px; padding-left:10px; padding-right:40px; data-dojo-attach-point="advrow">
                     <div style="width:85%;display:inline-block;">
-                        <label class="paramlabel">Condition</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="condition" data-dojo-attach-point="condition" required="false" data-dojo-props="disabled: true, missingMessage:'Name of condition',trim:true,placeHolder:'Condition Name'"></div>
                     </div>
                     <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddCondition" class="fa icon-plus-circle fa-lg"></i></div>
@@ -73,7 +77,7 @@
                 </table>
                 </div>
             </div>
-            <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div>
+            <!-- <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div> -->
         <td>
         </tr>
         <tr>
@@ -100,7 +104,7 @@
                 </div>
                 <div class="approw">
                     <label class="paramlabel">Condition</label><br>
-                    <select data-dojo-type="dijit/form/FilteringSelect" name="condition_paired" data-dojo-attach-point="condition_paired" style="width:300px" required="true" data-dojo-props="disabled: true, searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
+                    <select data-dojo-type="dijit/form/FilteringSelect" name="condition_paired" data-dojo-attach-point="condition_paired" style="width:300px" required="false" data-dojo-props="disabled: true, searchAttr:'label',intermediateChanges:true,trim:true,placeHolder:'Condition Name'">
                     </select>
                 </div>
             </div>

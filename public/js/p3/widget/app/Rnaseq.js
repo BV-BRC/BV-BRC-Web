@@ -48,20 +48,22 @@ define([
             this.colors=["blue","green","red","purple","orange"];
             this.color_counter=0;
             this.shape_counter=0;
+            this.conditionStore=new Memory({data:[]});
+            this.libraryStore=new Memory({data:[]});
+            this.libraryID=0;
 		},
  
 
         startup: function(){
-                        if (this._started) { return; }
-                        this.inherited(arguments);
+            if (this._started) { return; }
+            this.inherited(arguments);
 			var _self=this;
 			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-                        _self.output_path.set('value', _self.defaultPath);
+            _self.output_path.set('value', _self.defaultPath);
             
             //create help dialog for infobutton's with infobuttoninfo div's
             this.emptyTable(this.libsTable, this.startingRows);
             this.emptyTable(this.condTable, this.maxConditions);
-            this.conditionStore=new Memory({data:[]});
 
             //adjust validation for each of the attach points associated with read files
 			Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function(attachname){
@@ -71,6 +73,11 @@ define([
 					(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
 				}
 			)}));
+			var handle = on(this.group_switch, "click", lang.hitch(this,function(evt){
+                this.exp_design.checked= !this.exp_design.checked ? true : false;
+                this.exp_design.value= this.exp_design.checked ? "on" : "off";
+                this.onDesignToggle();
+            }));
             // this.block_condition.show();
 				
 			//this.read1.set('value',"/" +  window.App.user.id +"/home/");
@@ -81,7 +88,7 @@ define([
 		},
 
         onDesignToggle:function(){
-            var disable = this.exp_design.get("value") == "off";
+            var disable = !this.exp_design.checked;
             this.condition.set("disabled",disable);
             this.condition_single.set("disabled",disable);
             this.condition_paired.set("disabled",disable);
@@ -113,9 +120,11 @@ define([
 			}
 			var assembly_values={};
 			var values = this.inherited(arguments);
-			var pairedList = query(".pairdata");	
-			var condList = query(".conditiondata");	
-			var singleList = query(".singledata");
+			var pairedList = this.libraryStore.query({"type":"paired"});
+            var pairedAttrs=["read1","read2"];
+            var singleAttrs=["read"];
+			var condList = this.conditionStore.data;	
+			var singleList = this.libraryStore.query({"type":"single"});
             var condLibs=[];
 			var pairedLibs =[];
 			var singleLibs=[];
@@ -126,26 +135,30 @@ define([
 			//	}
 			//}
             assembly_values["reference_genome_id"]=values["genome_name"];
-			condList.forEach(function(item){
-				condLibs.push(item.libRecord.condition)});
-			pairedList.forEach(function(item){
-                if('condition_paired' in item.libRecord){
-                    item.libRecord['condition']=condLibs.indexOf(item.libRecord['condition_paired'])+1;
-                    delete item.libRecord.condition_paried;
+			condList.forEach(function(libRecord){
+				condLibs.push(libRecord.condition)});
+			pairedList.forEach(function(libRecord){
+                var toAdd={};
+                if('condition' in libRecord){
+                    toAdd['condition']=condLibs.indexOf(libRecord['condition'])+1;
                 }
-				pairedLibs.push(item.libRecord)});
+                pairedAttrs.forEach(function(attr){toAdd[attr]=libRecord[attr]});
+				pairedLibs.push(toAdd);
+            });
 			if(pairedLibs.length){
 				assembly_values["paired_end_libs"]=pairedLibs;
 			}
 			if(condLibs.length){
 				assembly_values["experimental_conditions"]=condLibs;
 			}
-			singleList.forEach(function(item){
-                if('condition_single' in item.libRecord){
-                    item.libRecord['condition']=condLibs.indexOf(item.libRecord['condition_single'])+1;
-                    delete item.libRecord.condition_single;
+			singleList.forEach(function(libRecord){
+                var toAdd={};
+                if('condition' in item.libRecord){
+                    toAdd['condition']=condLibs.indexOf(libRecord['condition'])+1;
                 }
-				singleLibs.push(item.libRecord["single_end_libs"]) });
+                singleAttrs.forEach(function(attr){toAdd[attr]=libRecord[attr]});
+				singleLibs.push(toAdd);
+            });
 			if(singleLibs.length){
 				assembly_values["single_end_libs"]=singleLibs;
 			}
@@ -155,7 +168,7 @@ define([
         //gets values from dojo attach points listed in input_ptsi keys.
         //aliases them to input_pts values.  validates all values present if req
 		ingestAttachPoints: function(input_pts, target, req){
-                        req = typeof req !== 'undefined' ? req : true;
+            req = typeof req !== 'undefined' ? req : true;
 			var success=1;
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value=null;
@@ -215,7 +228,7 @@ define([
 		makePairName:function(libRecord){
 			var fn =this.read1.searchBox.get("displayedValue");
 			var fn2 =this.read2.searchBox.get("displayedValue");
-			var maxName=12; 
+			var maxName=14; 
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
 			}
@@ -270,7 +283,7 @@ define([
 			console.log("Create New Row", domConstruct);
 			var lrec={};
             var toIngest=this.conditionToAttachPt;
-            var disable = this.exp_design.get("value") == "off";
+            var disable = !this.exp_design.checked;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
             var conditionSize = this.conditionStore.data.length;
             lrec["icon"]=this.getConditionIcon();
@@ -289,7 +302,7 @@ define([
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
 					console.log("Delete Row");
 					domConstruct.destroy(tr);
-                    updateConditionStore(record=lrec,remove=true);
+                    this.updateConditionStore(record=lrec,remove=true);
 					this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
 					if (this.addedCond.counter < this.maxConditions){
 						var ntr = this.condTable.insertRow(-1);	
@@ -298,6 +311,7 @@ define([
 						var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
 					}	
 					handle.remove();
+                    this.destroyLibRow(query_id=lrec["condition"],id_type="condition");
 				}));
 				this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
 			}
@@ -325,13 +339,17 @@ define([
 
 		onAddSingle: function(){
 			console.log("Create New Row", domConstruct);
+            this.libraryID+=1;
 			var lrec={};
-			var toIngest= this.exp_design.value =="on" ? this.singleConditionToAttachPt : this.singleToAttachPt;
+			var toIngest= this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
+                lrec["id"]=this.libraryID;
+                lrec["row"]=tr;
+                lrec["type"]="single";
 				var td = domConstruct.create('td', {"class":"textcol singledata", innerHTML:""},tr);
-				td.libRecord=lrec;
+				//td.libRecord=lrec;
 				td.innerHTML="<div class='libraryrow'>"+this.makeSingleName()+"</div>";
 				var advPairInfo= [];
 				if(lrec["condition"]){
@@ -353,23 +371,31 @@ define([
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(row=tr, rm_handle=handle)
+                    this.destroyLibRow(query_id=lrec["id"], "id")
 				}));
+                lrec["handle"]=handle;
+                this.libraryStore.put(lrec);
 				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
 			}
 		},
 
-        destroyLibRow:function(row, rm_handle){
-            console.log("Delete Row");
-            domConstruct.destroy(row);
-            this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
-            if (this.row_counter < this.startingRows){
-                var ntr = this.libsTable.insertRow(-1);	
-                var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
-                var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
-                var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
-            }	
-            rm_handle.remove();
+        destroyLibRow:function(query_id, id_type){
+            console.log("Delete Rows");
+            var query_obj={};
+            query_obj[id_type]=query_id;
+            var toRemove=this.libraryStore.query(query_obj);
+            toRemove.forEach(function(obj){
+                domConstruct.destroy(obj.row);
+                this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
+                if (this.addedLibs.counter < this.startingRows){
+                    var ntr = this.libsTable.insertRow(-1);	
+                    var ntd = domConstruct.create('td', {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                    var ntd2 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                    var ntd3 = domConstruct.create("td", {innerHTML: "<div class='emptyrow'></div>"},ntr);
+                }	
+                obj.handle.remove();
+                this.libraryStore.remove(obj.id);
+            },this);
         },
 
         onSuggestNameChange: function(){
@@ -378,16 +404,19 @@ define([
 		
 		onAddPair: function(){
 			console.log("Create New Row", domConstruct);
-
+            this.libraryID+=1;
 			var lrec={};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
-			var pairToIngest= this.exp_design.value =="on" ? this.pairConditionToAttachPt : this.pairToAttachPt1;
+			var pairToIngest= this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
 			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
 			if (chkPassed){
 				var tr = this.libsTable.insertRow(0);
+                lrec["id"]=this.libraryID;
+                lrec["row"]=tr;
+                lrec["type"]="paired";
 				var td = domConstruct.create('td', {"class":"textcol pairdata", innerHTML:""},tr);
 				td.libRecord=lrec;
 				td.innerHTML="<div class='libraryrow'>"+this.makePairName()+"</div>";
@@ -397,7 +426,6 @@ define([
 				}
 				if(advPairInfo.length){
                     condition_icon=this.getConditionIcon(lrec["condition"]);
-                    this.storeConditionLib(lrec["condition"]);
 					var tdinfo=domConstruct.create("td", {"class":"iconcol",innerHTML: condition_icon},tr);
 					var ihandle=new Tooltip({
 						connectId: [tdinfo],
@@ -412,8 +440,10 @@ define([
 					this.libsTable.deleteRow(-1);
 				}
 				var handle = on(td2, "click", lang.hitch(this,function(evt){
-                    this.destroyLibRow(row=tr, rm_handle=handle)
+                    this.destroyLibRow(query_id=lrec["id"], id_type="id")
 				}));
+                lrec["handle"]=handle;
+                this.libraryStore.put(lrec);
 				this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
 			}
 		}
