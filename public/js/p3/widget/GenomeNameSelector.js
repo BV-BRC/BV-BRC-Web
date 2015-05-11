@@ -36,7 +36,7 @@ define([
                     strainAppended=true;
                 }
             }
-            label+= "["+item.genome_id+"]";
+            label+= " ["+item.genome_id+"]";
             /*else if(!strainAppended){
                 if(item.genbank_accessions){
                     label+=" "+item.genbank_accessions;
