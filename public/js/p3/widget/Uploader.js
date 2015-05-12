@@ -26,7 +26,8 @@ define([
 			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"], description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."},
 			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"], description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."},
 			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
-			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			feature_protein_fasta: {label: "feature_protein_fasta", formats: [".fa",".fasta",".faa"], description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."}
 		},
 		_setPathAttr: function(val){
 			this.path = val;
