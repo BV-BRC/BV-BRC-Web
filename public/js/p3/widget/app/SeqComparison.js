@@ -201,13 +201,19 @@ define([
 			compGenomeList.forEach(function(item){
 				genomeIds.push(item.genomeRecord.comp_genome_id)});
 				
-			userGenomes.push(values["user_genomes"]);
+			if (values["user_genomes"])
+			{
+				userGenomes.push(values["user_genomes"]);
+			}
 			
 			//console.log("compGenomeList = " + compGenomeList);
 			//console.log("ref genome = " + values["ref_genome_id"]);
 
 			seqcomp_values["genome_ids"]=genomeIds;
-			seqcomp_values["user_genomes"]=userGenomes;
+			if (userGenomes.length > 0)
+			{
+				seqcomp_values["user_genomes"]=userGenomes;
+			}
 			seqcomp_values["reference_genome_index"]=1;			
 			seqcomp_values["min_seq_cov"]=values["min_seq_cov"]/100;			
 			seqcomp_values["max_e_val"]=values["max_e_val"];			
