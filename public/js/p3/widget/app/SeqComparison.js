@@ -214,9 +214,16 @@ define([
 			{
 				seqcomp_values["user_genomes"]=userGenomes;
 			}
-			seqcomp_values["reference_genome_index"]=1;			
-			seqcomp_values["min_seq_cov"]=values["min_seq_cov"]/100;			
-			seqcomp_values["max_e_val"]=values["max_e_val"];			
+			seqcomp_values["reference_genome_index"]=1;	
+			
+			if (values["min_seq_cov"])
+			{
+				seqcomp_values["min_seq_cov"]=values["min_seq_cov"]/100;
+			}
+			if (values["max_e_val"])
+			{
+				seqcomp_values["max_e_val"]=values["max_e_val"];			
+			}
 			seqcomp_values["output_path"]=values["output_path"];
 			seqcomp_values["output_file"]=values["output_file"];
 				
