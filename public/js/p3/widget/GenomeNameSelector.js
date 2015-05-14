@@ -10,7 +10,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Genome name.',
 		missingMessage:'Specify genome name.',
-		placeHolder:'e.g. Bacillus Cereus',
+		placeHolder:'e.g. Mycobacterium tuberculosis H37Rv',
 		searchAttr: "genome_name",
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
