@@ -488,9 +488,12 @@ define("p3/widget/WorkspaceBrowser", [
 						console.log("job_result object: ", obj);
 						if (obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
-							console.log("Using Experiement Viewer");
 							if (id=="DifferentialExpression"){
+								console.log("Using Experiement Viewer");
 								d = "p3/widget/viewer/Experiment"
+							}else if (id=="GenomeComparison") {
+								console.log("SeqComparison Viewer");
+								d = "p3/widget/viewer/SeqComparison"
 							}	
 						}			
 						panelCtor = window.App.getConstructor(d);

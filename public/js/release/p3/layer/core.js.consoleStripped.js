@@ -26542,9 +26542,12 @@ define([
 						 0 && console.log("job_result object: ", obj);
 						if (obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
-							 0 && console.log("Using Experiement Viewer");
 							if (id=="DifferentialExpression"){
+								 0 && console.log("Using Experiement Viewer");
 								d = "p3/widget/viewer/Experiment"
+							}else if (id=="GenomeComparison") {
+								 0 && console.log("SeqComparison Viewer");
+								d = "p3/widget/viewer/SeqComparison"
 							}	
 						}			
 						panelCtor = window.App.getConstructor(d);
