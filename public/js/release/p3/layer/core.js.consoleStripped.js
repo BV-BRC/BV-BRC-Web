@@ -26542,9 +26542,12 @@ define([
 						 0 && console.log("job_result object: ", obj);
 						if (obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
-							 0 && console.log("Using Experiement Viewer");
 							if (id=="DifferentialExpression"){
+								 0 && console.log("Using Experiement Viewer");
 								d = "p3/widget/viewer/Experiment"
+							}else if (id=="GenomeComparison") {
+								 0 && console.log("SeqComparison Viewer");
+								d = "p3/widget/viewer/SeqComparison"
 							}	
 						}			
 						panelCtor = window.App.getConstructor(d);
@@ -33418,7 +33421,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	 0 && console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -33434,7 +33438,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
@@ -39243,7 +39247,8 @@ define([
 			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"], description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."},
 			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"], description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."},
 			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
-			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]}
+			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
+			feature_protein_fasta: {label: "feature_protein_fasta", formats: [".fa",".fasta",".faa"], description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."}
 		},
 		_setPathAttr: function(val){
 			this.path = val;

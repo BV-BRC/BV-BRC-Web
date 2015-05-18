@@ -10,7 +10,7 @@ define("p3/widget/GenomeNameSelector", [
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Genome name.',
 		missingMessage:'Specify genome name.',
-		placeHolder:'e.g. Bacillus Cereus',
+		placeHolder:'e.g. Mycobacterium tuberculosis H37Rv',
 		searchAttr: "genome_name",
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
@@ -36,7 +36,8 @@ define("p3/widget/GenomeNameSelector", [
                     strainAppended=true;
                 }
             }
-            else if(!strainAppended){
+            label+= " ["+item.genome_id+"]";
+            /*else if(!strainAppended){
                 if(item.genbank_accessions){
                     label+=" "+item.genbank_accessions;
                 }
@@ -52,7 +53,7 @@ define("p3/widget/GenomeNameSelector", [
                 else{
                     label+=" "+item.genome_id;
                 }
-            }
+            }*/
             return label;
         }
 
