@@ -26218,6 +26218,42 @@ define([
 				}
 	
 			}, true);
+			
+			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>'
+			var downloadTTSelectFile = new TooltipDialog({content: dtsfc, onMouseLeave: function(){ popup.close(downloadTTSelect); }})
+
+			this.browserHeader.addAction("SelectDownloadSeqComparison","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["GenomeComparison"], tooltip: "Download Results", tooltipDialog:downloadTTSelectFile}, lang.hitch(this.browserHeader,function(selection){
+				 0 && console.log("Download Table", selection);
+				 0 && console.log("this._actions: ", this._actions);
+				this._actions.SelectDownloadSeqComparison.selection=selection[0];
+				if(selection.length==1){
+					popup.open({
+						popup: this._actions.SelectDownloadSeqComparison.options.tooltipDialog,
+						around: this._actions.SelectDownloadSeqComparison.button,
+						orient: ["below"]
+					});
+				}
+	
+			}), true);
+
+			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader,function(evt){
+				var rel = evt.target.attributes.rel.value;
+//				 0 && console.log("REL: ", rel);
+//				 0 && console.log("SELECTION: ", this._actions.SelectDownloadSeqComparison.selection);
+				var outputFiles = this._actions.SelectDownloadSeqComparison.selection.autoMeta.output_files;
+				outputFiles.some(function(t){
+					var fname = t[0];
+					if (fname.indexOf(rel)>=0){
+						 0 && console.log("DOWNLOAD: ", fname);
+						WorkspaceManager.downloadFile(fname);
+						return true;
+					}
+					return false;
+				});
+				popup.close(downloadTTSelectFile);
+			}));
+	
+
 
 			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{label:"UPLOAD", multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
 				 0 && console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
