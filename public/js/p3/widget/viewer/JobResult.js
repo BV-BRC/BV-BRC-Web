@@ -86,13 +86,13 @@ define([
 					var header_row=result_output.length-1;
 					result_output.push('</tr>');
 					this._resultObjects.forEach(function(obj){
-						if(!this._resultMetaTypes.hasOwnProperty(obj.type)){
 							result_output.push('<tr class="alt">');
 							result_output.push('<th scope="row"><i class="fa fa-download fa" rel="' + obj.path + "/" + obj.name +  '" /></th>');
 							result_output.push('<td class="last">' + obj.name + "</td>");
 							result_output.push('<td class="last">' + obj.type+ "</td>");
 							result_output.push('<td class="last">' + formatter.humanFileSize(obj.size,1) + "</td>");
 							var subRecord=[];
+						if(!this._resultMetaTypes.hasOwnProperty(obj.type)){
 							Object.keys(obj.autoMeta).forEach(function(prop){
 								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
 								var label = this._autoLabels.hasOwnProperty(prop) ? this._autoLabels[prop]["label"] : prop;
@@ -100,13 +100,14 @@ define([
 								result_output.push(label + ": " + obj.autoMeta[prop]);
 								result_output.push("</td>");
 							},this);
+                            //_resultMetaTypes contain information for the Job Result table
 							if(subRecord.length){
 								result_output[header_row]=result_output[header_row]+'<th>Metadata</th>';
 								result_output.push('<td class="last">'+subRecord.join(", ")+'</td>');
 							}
 							result_output.push("</tr>");
 						}
-						else{
+                        else{
 							var subRecord=[];
 							Object.keys(obj.autoMeta).forEach(function(prop){
 								if (!obj.autoMeta[prop] || prop=="inspection_started") { return; }
