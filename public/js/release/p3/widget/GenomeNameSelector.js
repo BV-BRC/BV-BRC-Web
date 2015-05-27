@@ -18,6 +18,7 @@ define("p3/widget/GenomeNameSelector", [
 		highlightMatch: "all",
 		autoComplete: false,
 		store: null,
+        labelType:'html',
 		constructor: function(){
 			if (!this.store){
 				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", header: {accept: "application/json"}});
@@ -27,7 +28,15 @@ define("p3/widget/GenomeNameSelector", [
 			return (!this.required || this.get('displayedValue') != "");
 		},*/
         labelFunc: function(item, store){
-            var label=item.genome_name
+            var label="";
+            if (typeof item.public !== 'undefined' && !item.public){
+                label+="<i class='fa icon-lock3 fa-1x' />&nbsp;";
+            }
+            else {
+                label+="<i class='fa fa-1x'> &nbsp; </i>&nbsp;";
+            }
+
+            label+=item.genome_name;
             var strainAppended=false;
             if(item.strain){
                 strainAppended= (item.genome_name.indexOf(item.strain, item.genome_name.length - item.strain.length) !== -1);
