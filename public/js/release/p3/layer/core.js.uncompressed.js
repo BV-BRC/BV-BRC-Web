@@ -38103,7 +38103,7 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 			values["scientific_name"]=this.scientific_nameWidget.get('displayedValue');
-			values["tax_id"]=this.tax_idWidget.get('displayedValue');
+			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}
 
