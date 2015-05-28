@@ -250,6 +250,7 @@ define([
 					headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
+						"Authorization": (window.app.authorizationToken||""),
 						'X-Requested-With': null
 					}
 				});
