@@ -265,7 +265,8 @@ define([
 					headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
-						'X-Requested-With': null
+						'X-Requested-With': null,
+						"Authorization": (window.app.authorizationToken||""),
 					}
 				});
 				console.log("store: ", store);

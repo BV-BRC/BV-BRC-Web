@@ -21,7 +21,7 @@ define([
         labelType:'html',
 		constructor: function(){
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", header: {accept: "application/json"}});
+				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", header: {accept: "application/json","Authorization":(window.app.authorizationToken||"")}});
 			}
 		},
 		/*isValid: function(){
