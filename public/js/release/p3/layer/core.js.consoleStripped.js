@@ -27228,7 +27228,8 @@ define([
 					headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
-						'X-Requested-With': null
+						'X-Requested-With': null,
+						"Authorization": (window.app.authorizationToken||"")
 					}
 				});
 				 0 && console.log("store: ", store);
@@ -33457,7 +33458,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	 0 && console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -33473,7 +33475,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
