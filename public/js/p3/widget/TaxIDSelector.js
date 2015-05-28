@@ -21,7 +21,7 @@ define([
 
 		constructor: function(){
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json", "Authorization":(window.app.authorizationToken||"")}});
+				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json", "Authorization":(window.App.authorizationToken||"")}});
 			}
 		},
 		/*

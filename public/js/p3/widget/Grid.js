@@ -98,7 +98,7 @@ function(
                         var store = new Store({target: (this.apiServer?(this.apiServer):"") + "/" + dataModel + "/",idProperty:"rownum", headers:{
                                 "accept": "application/json",
                                 "content-type": "application/json",
-				"Authorization": (window.app.authorizationToken || ""),
+				"Authorization": (window.App.authorizationToken || ""),
                                 'X-Requested-With':null
                         }});
                         console.log("store: ", store);
