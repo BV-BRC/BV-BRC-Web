@@ -27229,7 +27229,7 @@ define([
 						"accept": "application/json",
 						"content-type": "application/json",
 						'X-Requested-With': null,
-						"Authorization": (window.app.authorizationToken||"")
+						"Authorization": (window.App.authorizationToken||"")
 					}
 				});
 				 0 && console.log("store: ", store);

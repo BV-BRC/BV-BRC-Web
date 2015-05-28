@@ -21,7 +21,7 @@ define("p3/widget/GenomeNameSelector", [
         labelType:'html',
 		constructor: function(){
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", header: {accept: "application/json","Authorization":(window.app.authorizationToken||"")}});
+				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", header: {accept: "application/json","Authorization":(window.App.authorizationToken||"")}});
 			}
 		},
 		/*isValid: function(){
