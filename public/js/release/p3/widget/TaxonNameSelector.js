@@ -20,7 +20,7 @@ define("p3/widget/TaxonNameSelector", [
 		store: null,
 		constructor: function(){
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", header: {accept: "application/json"}});
+				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", headers: {accept: "application/json"}});
 			}
 		},
 		isValid: function(){
