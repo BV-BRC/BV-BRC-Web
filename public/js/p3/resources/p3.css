@@ -6,6 +6,7 @@
 @import url("WorkspaceManager.css");
 @import url("AppBase.css");
 @import url("assembly.css");
+@import url("modeling.css");
 @import url("./GenomeList.css");
 @import url("./p2.css");
 @import url("./JobsGrid.css");
@@ -95,7 +96,7 @@ body.patric *:focus {
 
 .claro .flippableDialog.dijitDialog .flipper {
 	border: 1px solid #759dc0;
-	box-shadow: 0 1px 5px rgba(0,0,0,0.25); 
+	box-shadow: 0 1px 5px rgba(0,0,0,0.25);
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0.25);
 }
 
@@ -129,7 +130,7 @@ body.patric *:focus {
 	right: 0;
 	bottom: 0;
 	border:0px;
-	
+
 }
 
 .claro .dijitDialog .backpane {
@@ -192,17 +193,17 @@ body.patric *:focus {
 
 
 .fileUploadButton {
-	position: relative; 
-	overflow:hidden; 
-	margin: auto; 
+	position: relative;
+	overflow:hidden;
+	margin: auto;
 	margin-bottom: 8px;
 	width:90%;
-	border: 1px solid #333; 
+	border: 1px solid #333;
 	cursor: pointer;
 	text-align:center;
 	color: #333;
 	background: #bfdaf4;
-	
+
 }
 
 .fileUploadButton:hover {
@@ -216,7 +217,7 @@ body.patric *:focus {
 	font-size: 1.1em;
 }
 
-.fileUploadButton > input { 
+.fileUploadButton > input {
 	position:absolute;
 	top:0;
 	right:0;
@@ -242,10 +243,10 @@ body.patric *:focus {
 }
 
 .claro .dojoDndItemOver {
-	background: #ddd;	
+	background: #ddd;
 }
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
-	background: #bfd6eb;	
+	background: #bfd6eb;
 }
 
 .UserProfileForm {
@@ -256,7 +257,7 @@ body.patric *:focus {
 .UserProfileForm Table {
 	border: 0px;
 	width: 100%;
-} 
+}
 
 .RegistrationForm TD,
 .UserProfileForm  TD {
