@@ -90,10 +90,11 @@
 									<li><a class="navigationLink" href="/app/Expression">Differential Expression</a></li>
 									<li><a class="navigationLink" href="/app/Rnaseq">RNA-Seq</a></li>
 									<li><a class="navigationLink" href="/app/SeqComparison">Genome Comparison: Blastp</a></li>
+									<li><a class="navigationLink" disabled="true" href="/app/Reconstruct">Model Reconstruction</a></li>
 								</ul>
 							</div>
 						</li>
-	
+
 						<li class="has-sub">
 							<a href="#">Tools</a>
 							<div class="submenu">
@@ -104,10 +105,10 @@
 								<ul>
 									<li><a href="/portal/portal/patric/AntibioticResistanceGeneSearch?cType=taxon&amp;cId=131567&amp;dm=">Antibiotic Resistance Search</a></li>
 									<li><a href="/portal/portal/patric/Blast?dm=result&amp;pk=">BLAST</a></li>
-									
+
 									<li><a href="/portal/portal/patric/GenomicFeature?cType=taxon&amp;cId=131567&amp;dm=" title="Feature Finder allows you to locate specific features(s) based on taxonomy, feature type, keyword, sequence status, and/or annotation type.">Feature Finder</a></li>
 									<li><a href="/portal/portal/patric/GenomeFinder?cType=taxon&amp;cId=131567&amp;dm=" title="Genome Finder allows you to locate specific genome(s) based on taxonomy, keyword, replicon size, sequence status, and/or sequence type.">Genome Finder</a></li>
-									
+
 									<li><a href="/portal/portal/patric/IDMapping?cType=taxon&amp;cId=131567&amp;dm=" title="">ID Mapping</a></li>
 									<li><a href="/portal/portal/patric/SpecialtyGeneSearch?cType=taxon&amp;cId=131567&amp;dm=">Specialty Genes Search</a></li>
 								</ul>
@@ -159,7 +160,7 @@
 						</li>
 
 						<% if (request.applicationOptions && request.applicationOptions.enableDevTools){ %>
-	
+
 						<li class="has-sub">
 							<a href="#">Dev</a>
 							<div class="submenu">
@@ -169,6 +170,9 @@
 									<li><a class="navigationLink" href="/app/Annotation"">annotation</a></li>
 									<li><a class="navigationLink" href="/app/Sleep">sleep</a></li>
 									<li><a class="navigationLink" href="/app/Date">date</a></li>
+									<li><a class="navigationLink" href="/app/Reconstruct">Reconstruct Model</a></li>
+									<li><a class="navigationLink" href="/app/Gapfill">Gapfill Model</a></li>
+									<li><a class="navigationLink" href="/app/RunFBA">Run FBA</a></li>
 								</ul>
 								<header><p class="bold light">viewers</p></header>
 								<ul>
@@ -202,13 +206,13 @@
 						</div>
 					</div>
 					<% } %>
-	
+
 				</div>
 			</div>
 			<div class="toolbar ondark linkstyle-highlight-c">
 				<div class="container">
 					<form class="search" action="post" onsubmit="return false;">
-						
+
 						<input placeholder="Search" title="Search" type="text" id="global_search_keyword" name="global_search_keyword"/>
 						<input type="submit" onclick="window.App.search_all_header()" />
 					</form>
@@ -221,6 +225,6 @@
 					<% } %>
 				</div>
 			</div>
-			
+
 		</div>
 </div>
