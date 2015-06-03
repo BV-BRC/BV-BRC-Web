@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/p3-web",
+    "postinstall": "cd ./node_modules/msa; npm install"
   },
   "dependencies": {
     "biojs-io-newick": "^1.5.0",
@@ -17,7 +18,7 @@
     "express-session-unsigned": "^1.0.0",
     "jade": "~1.6.0",
     "morgan": "~1.3.0",
-    "msa": "^0.4.2",
+    "msa": "git://github.com/aswarren/msa.git",
     "msa-tnt": "^0.1.19",
     "nconf": "^0.7.1",
     "passport": "^0.2.1",
