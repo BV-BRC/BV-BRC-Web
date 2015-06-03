@@ -14,7 +14,7 @@ define([
 		searchAttr: "taxon_name",
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
-		query: {select: "taxon_name,taxon_id"},
+		pageSize: 25,
 		highlightMatch: "all",
 		autoComplete: false,
 		store: null,
