@@ -184,6 +184,8 @@ return declare("dojo.store.JsonRest", base, {
 			query = xhr.objectToQuery(query);
 			query = query ? (hasQuestionMark ? "&" : "?") + query: "";
 		}
+
+		console.log("Store Query: ", query);
 		if(options.start >= 0 || options.count >= 0){
 			headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 				(("count" in options && options.count != Infinity) ?
@@ -206,6 +208,7 @@ return declare("dojo.store.JsonRest", base, {
 				query += ")";
 			}
 		}
+		console.log("Query before GET: ", query);
 		var results = xhr("GET", {
 			url: this.target + (query || ""),
 			handleAs: "json",

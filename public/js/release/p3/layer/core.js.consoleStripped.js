@@ -705,6 +705,8 @@ return declare("dojo.store.JsonRest", base, {
 			query = xhr.objectToQuery(query);
 			query = query ? (hasQuestionMark ? "&" : "?") + query: "";
 		}
+
+		 0 && console.log("Store Query: ", query);
 		if(options.start >= 0 || options.count >= 0){
 			headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 				(("count" in options && options.count != Infinity) ?
@@ -727,6 +729,7 @@ return declare("dojo.store.JsonRest", base, {
 				query += ")";
 			}
 		}
+		 0 && console.log("Query before GET: ", query);
 		var results = xhr("GET", {
 			url: this.target + (query || ""),
 			handleAs: "json",
@@ -745,6 +748,7 @@ return declare("dojo.store.JsonRest", base, {
 });
 
 });
+
 },
 'dojo/store/util/QueryResults':function(){
 define(["../../_base/array", "../../_base/lang", "../../when"
