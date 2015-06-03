@@ -5808,6 +5808,9 @@ font-size: 12px;
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
     right: 0px; 
 }
+.Modeling .row {
+	margin-top: 5px;
+}
 .GenomeList {
 	font-size: 1.2em;
 }
@@ -8148,7 +8151,7 @@ body.patric *:focus {
 }
 .claro .flippableDialog.dijitDialog .flipper {
 	border: 1px solid #759dc0;
-	box-shadow: 0 1px 5px rgba(0,0,0,0.25); 
+	box-shadow: 0 1px 5px rgba(0,0,0,0.25);
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0.25);
 }
 .claro .flipped .flipper {
@@ -8177,7 +8180,6 @@ body.patric *:focus {
 	right: 0;
 	bottom: 0;
 	border:0px;
-	
 }
 .claro .dijitDialog .backpane {
 	background: #fff;
@@ -8228,17 +8230,16 @@ body.patric *:focus {
 	color: #e75200;
 }
 .fileUploadButton {
-	position: relative; 
-	overflow:hidden; 
-	margin: auto; 
+	position: relative;
+	overflow:hidden;
+	margin: auto;
 	margin-bottom: 8px;
 	width:90%;
-	border: 1px solid #333; 
+	border: 1px solid #333;
 	cursor: pointer;
 	text-align:center;
 	color: #333;
 	background: #bfdaf4;
-	
 }
 .fileUploadButton:hover {
 	border: 1px solid #333;
@@ -8249,7 +8250,7 @@ body.patric *:focus {
 	padding: 4px;
 	font-size: 1.1em;
 }
-.fileUploadButton > input { 
+.fileUploadButton > input {
 	position:absolute;
 	top:0;
 	right:0;
@@ -8271,10 +8272,10 @@ body.patric *:focus {
 	cursor: default ;
 }
 .claro .dojoDndItemOver {
-	background: #ddd;	
+	background: #ddd;
 }
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
-	background: #bfd6eb;	
+	background: #bfd6eb;
 }
 .UserProfileForm {
 	width: 700px;
@@ -8283,7 +8284,7 @@ body.patric *:focus {
 .UserProfileForm Table {
 	border: 0px;
 	width: 100%;
-} 
+}
 .RegistrationForm TD,
 .UserProfileForm  TD {
 	border: 0px;
