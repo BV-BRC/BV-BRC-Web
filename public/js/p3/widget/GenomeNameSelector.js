@@ -2,7 +2,7 @@ define([
 	"dijit/form/FilteringSelect","dojo/_base/declare",
 	"dojo/store/JsonRest","dojo/dom-construct","dijit/TooltipDialog",
 	"dojo/on","dijit/popup","dojo/_base/lang","dojo/dom-construct",
-	"dijit/form/Checkbox","dojo/string","dojo/when","dijit/form/_AutoCompleterMixin"
+	"dijit/form/CheckBox","dojo/string","dojo/when","dijit/form/_AutoCompleterMixin"
 ], function(
 	FilteringSelect, declare, 
 	Store,domConstr,TooltipDialog,
