@@ -18,7 +18,7 @@ define([
 		placeHolder:'',
 		searchAttr: "taxon_id",
 		queryExpr: "${0}",
-		resultFields: ["taxon_id","taxon_name"],
+		resultFields: ["taxon_id","taxon_name","lineage_names"],
 		sort: [{attribute: "taxon_id"}],
 		pageSize: 25,
 		autoComplete: true,
