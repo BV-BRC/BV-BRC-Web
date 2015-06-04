@@ -21,7 +21,7 @@ define("p3/widget/TaxIDSelector", [
 		resultFields: ["taxon_id","taxon_name"],
 		sort: [{attribute: "taxon_id"}],
 		pageSize: 25,
-		autoComplete: false,
+		autoComplete: true,
 		store: null,
 		required: false,
 
