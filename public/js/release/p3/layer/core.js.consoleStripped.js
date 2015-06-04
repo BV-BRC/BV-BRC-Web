@@ -13325,7 +13325,7 @@ define([],function(){
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
                 dataParam: "path",
-                params: {multiple:true}
+                params: {multiple:false}
             
             },
             UploadReplace: {
