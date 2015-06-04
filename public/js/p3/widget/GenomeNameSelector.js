@@ -18,6 +18,7 @@ define([
 		searchAttr: "genome_name",
 		queryExpr: "*${0}*",
 		queryFilter: "",
+		resultFields: ["genome_id","genome_name", "strain", "public", "owner"],
 		includePrivate: true,
 		includePublic: true,	
 		pageSize: 25,
@@ -40,6 +41,10 @@ define([
 				var q = "?eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
 				if (_self.queryFilter) {
 					q+=_self.queryFilter
+				}
+
+				if (_self.resultFields && _self.resultFields.length>0) {
+					q += "&select(" + _self.resultFields.join(",") + ")";
 				}
 				console.log("Q: ", q);
 				return orig.apply(_self.store,[q,options]);
