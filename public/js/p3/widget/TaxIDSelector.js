@@ -3,6 +3,7 @@ define([
 	"dojo/store/JsonRest","dojo/_base/lang","dojo/dom-construct",
 	"./TaxonNameSelector","dojo/on","dijit/TooltipDialog",
 	"dijit/popup"
+
 ], function(
 	FilteringSelect, declare, 
 	Store,lang,domConstr,
@@ -16,10 +17,9 @@ define([
 		missingMessage:'NCBI Tax ID is not specified.',
 		placeHolder:'',
 		searchAttr: "taxon_id",
-		//query: "?&select(taxon_id)",
+		queryExpr: "${0}",
 		resultFields: ["taxon_id","taxon_name"],
 		sort: [{attribute: "taxon_id"}],
-		queryExpr: "${0}",
 		pageSize: 25,
 		autoComplete: false,
 		store: null,
@@ -30,6 +30,7 @@ define([
 			if (!this.store){
 				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", headers: {accept: "application/json", "Authorization":(window.App.authorizationToken||"")}});
 			}
+
                         var orig = this.store.query;
                         this.store.query = lang.hitch(this.store, function(query,options){
                                 console.log("query: ", query);
@@ -48,25 +49,9 @@ define([
                         });
 		},
 
-		postCreate: function(){
-			var _self=this;
-			this.inherited(arguments);
-			this.filterButton = domConstr.create("i", {"class": "fa icon-search fa-1x", style: {"float":"right","font-size": "1.2em","margin": "2px"}});
-			domConstr.place(this.filterButton,this.domNode,"after");
-			var nameSearch = new TaxonNameSelector({});	
-			nameSearch.on("change", function(val){
-				_self.set('value', nameSearch.item[_self.searchAttr]);	
-			});
-			var searchTT=  new TooltipDialog({content: nameSearch.domNode, onMouseLeave: function(){ popup.close(searchTT); }})
-
-			on(this.filterButton, "click", lang.hitch(this,function() {
-	                     popup.open({
-                                        popup: searchTT,
-                                        around: this.domNode,
-                                        orient: ["below"]
-                                });
-			}));
-
+		labelFunc: function(item, store){
+			var label=item.taxon_id + " [" + item.taxon_name + "]";
+			return label;
 		},
 		/*
 		validate: function (){
@@ -74,11 +59,6 @@ define([
 			this.valueNode.value = this.toString();
 			return this.inherited(arguments);
 		}*/
-
-		labelFunc: function(item, store){
-			var label=item.taxon_id + " [" + item.taxon_name + "]";
-			return label;
-		},
 		isValid: function (){
 			// Overrides ValidationTextBox.isValid()
 			var error= !this.inherited(arguments);

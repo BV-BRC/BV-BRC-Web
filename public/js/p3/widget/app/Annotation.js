@@ -39,7 +39,6 @@ define([
 		},
 	
 		onTaxIDChange: function(val){
-			/*
 			if (val && !this.scientific_nameWidget.get('displayedValue') && !this._autoTaxSet){
 				this._autoNameSet=true;
 				var tax_id=this.tax_idWidget.get("item").taxon_id;
@@ -55,12 +54,10 @@ define([
 					//this.scientific_nameWidget.set('value',sci_name);
 				}
 			}
-			*/
 			this.changeCode(this.tax_idWidget.get("item"));
-			//this._autoTaxSet=false;
+			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			/*
 			if (val && !this.tax_idWidget.get("displayedValue") && !this._autoNameSet){
 				this._autoTaxSet=true;
 				var tax_id=this.scientific_nameWidget.get("value");
@@ -77,9 +74,7 @@ define([
 			}
 			this.changeCode(this.scientific_nameWidget.get("item"));
 			this._autoNameSet=false;
-			*/
-			/*
-			if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
+			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
 				this.output_nameWidget.set('value',abbrv);
@@ -87,9 +82,8 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"]=this.scientific_nameWidget.get('value')||this.tax_idWidget.item.taxon_name;
-//			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
-			values["taxonomy_id"]=this.tax_idWidget.get('value');
+			values["scientific_name"]=this.scientific_nameWidget.get('displayedValue');
+			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}
 
