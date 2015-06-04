@@ -1,4 +1,4 @@
-Build started: Thu Jun 04 2015 12:02:45 GMT-0400 (EDT)
+Build started: Thu Jun 04 2015 13:04:54 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,11 +126,11 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:7.351s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:7.451s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:0.988s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:6.23s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:9.854s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:6.861s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:6.811s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.095s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:6.303s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:9.917s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1868,7 +1868,7 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.351s)
+Done (compile time:6.861s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -1999,7 +1999,7 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.351s)
+Done (compile time:6.861s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2122,7 +2122,7 @@ dojo.js.uncompressed.js:15613: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.451s)
+Done (compile time:6.811s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2253,7 +2253,7 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.351s)
+Done (compile time:6.861s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2376,9 +2376,9 @@ dojo.js.uncompressed.js:15613: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.451s)
+Done (compile time:6.811s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.988s)
+Done (compile time:1.095s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2509,7 +2509,7 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.351s)
+Done (compile time:6.861s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2632,9 +2632,9 @@ dojo.js.uncompressed.js:15613: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.451s)
+Done (compile time:6.811s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.988s)
+Done (compile time:1.095s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2649,7 +2649,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.23s)
+Done (compile time:6.303s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2780,7 +2780,7 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:7.351s)
+Done (compile time:6.861s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2903,9 +2903,9 @@ dojo.js.uncompressed.js:15613: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:7.451s)
+Done (compile time:6.811s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.988s)
+Done (compile time:1.095s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2920,7 +2920,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:6.23s)
+Done (compile time:6.303s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:497: WARNING - unreachable code
 	}else if( 0 ){
@@ -2963,7 +2963,7 @@ core.js.uncompressed.js:36991: WARNING - Suspicious code. This code lacks side-e
                                 ^
 
 0 error(s), 10 warning(s)
-Done (compile time:9.854s)
+Done (compile time:9.917s)
 
 
 Has Features Detected
@@ -3415,4 +3415,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 82.226 seconds
+	build time: 82.17 seconds
