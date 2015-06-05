@@ -97,18 +97,31 @@ define([
 				}
 			}
 		},
+
+		createNewFileInput: function(){
+			if (this.fileInput){
+				if (!this._previousFileInputs){
+					this._previousFileInputs = [];
+				}
+				if (this.inputHandler) {
+					this.inputHandler.remove();
+				}
+				domStyle.set(this.fileInput, "display", "none");
+				this._previousFileInputs.push(this.fileInput);
+			}
+			
+			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
+			console.log("Created fileInput: ", this.fileInput);
+			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
+			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
+
+		},
 		startup: function(){
 			if (this._started){return;}
 
 			this.inherited(arguments);
 			var state = this.get("state")
-
-			if (this.multiple) {
-				domAttr.set(this.fileInput, "multiple", true);
-			}else{
-				domAttr.set(this.fileInput, "multiple", false);
-			}
-
+			this.createNewFileInput();
 	
 			var _self=this;
 			console.log("Add Dropdown Options");
@@ -211,22 +224,13 @@ define([
 			}
 
 			this.createUploadTable(false);
-	
-/*			if (!this.uploadTable){
-				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
-				this.uploadTable = domConstruct.create('tbody',{}, table)
-				var htr = domConstruct.create("tr", {}, this.uploadTable);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML: "File"}, htr);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Type"},htr);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Size"},htr);
-				domConstruct.create("th",{style: {"text-align": "right"}},htr);
-			}*/
 
 			var files = evt.target.files;
 			console.log("files: ", files);
 			var _self=this;
 			
 			Object.keys(files).forEach(function(idx) {
+				console.log("files key: ", idx);
 				var file = files[idx];
 				if (file && file.name && file.size) {
 					console.log("file: ", file);
@@ -245,6 +249,8 @@ define([
 					}));
 				}
 			},this);
+
+			this.createNewFileInput();
 		},
 
 		onSubmit: function(evt){
@@ -259,28 +265,44 @@ define([
 
 //			domClass.add(_self.domNode, "working");
 			var validFiles=[]
-			Query("TR.fileRow",this.uploadTable).map(function(tr){
-					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
-			})
-			console.log("Valid Files: ", validFiles, this.fileInput.files);
-			var files={};
-
-			Object.keys(_self.fileInput.files).forEach(function(key){
-				files[_self.fileInput.files[key].name] = _self.fileInput.files[key];
-			})
-
+			var inputFiles={};
 			var defs=[];
 			var wsFiles=[]
-			validFiles.forEach(function(valid){
-				var key = valid.filename;
-				var f = files[key];
-				if (f.name){
-					defs.push(Deferred.when(this.uploadFile(f,_self.path,valid.type), function(res){
-						wsFiles.push(res);
-						return true;
-					}));
+			
+			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
+				console.log("FI: ", FI);
+				Object.keys(FI.files).forEach(lang.hitch(this,function(key){
+					console.log(" FI FILE KEY: ", key);
+					var f = FI.files[key];
+					console.log(" f: ", f);
+					if (f.name){
+					console.log(" f.name: ", f.name);
+						inputFiles[f.name]=f;
+					}
+				}));
+			}));
+
+
+			console.log("InputFIles: ", inputFiles);
+			console.log("uploadTable: ", this.uploadTable);
+			Query("TR.fileRow",this.uploadTable).forEach(lang.hitch(this, function(tr){
+				console.log("File INPUT Row: ", tr, domAttr.get(tr,"data-filename"), domAttr.get(tr, "data-filetype") );
+//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
+//				console.log("V: ", v);
+//				validFiles.push(v);
+				if (tr && domAttr.get(tr,"data-filename")) {
+					console.log("Got Name: ", domAttr.get(tr, "data-filename"));
+					var f = inputFiles[domAttr.get(tr,"data-filename")];
+					console.log("Got File: ", f);
+					if (f.name) {
+						defs.push(Deferred.when(this.uploadFile(f,_self.path,domAttr.get(tr,"data-filetype")), function(res){
+							wsFiles.push(res);
+							return true;
+						}));
+					}
 				}
-			},this)
+			}));
+
 			All(defs).then(function(results){	
 				console.log("UPLOAD Create WS files results: ", wsFiles);	
 				on.emit(_self.domNode, "dialogAction", {action:"close",files: wsFiles, bubbles:true});
