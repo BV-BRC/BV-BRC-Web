@@ -13325,7 +13325,7 @@ define([],function(){
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
                 dataParam: "path",
-                params: {multiple:false}
+                params: {multiple:true}
             
             },
             UploadReplace: {
@@ -39359,18 +39359,31 @@ define([
 				}
 			}
 		},
+
+		createNewFileInput: function(){
+			if (this.fileInput){
+				if (!this._previousFileInputs){
+					this._previousFileInputs = [];
+				}
+				if (this.inputHandler) {
+					this.inputHandler.remove();
+				}
+				domStyle.set(this.fileInput, "display", "none");
+				this._previousFileInputs.push(this.fileInput);
+			}
+			
+			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
+			console.log("Created fileInput: ", this.fileInput);
+			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
+			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
+
+		},
 		startup: function(){
 			if (this._started){return;}
 
 			this.inherited(arguments);
 			var state = this.get("state")
-
-			if (this.multiple) {
-				domAttr.set(this.fileInput, "multiple", true);
-			}else{
-				domAttr.set(this.fileInput, "multiple", false);
-			}
-
+			this.createNewFileInput();
 	
 			var _self=this;
 			console.log("Add Dropdown Options");
@@ -39473,22 +39486,13 @@ define([
 			}
 
 			this.createUploadTable(false);
-	
-/*			if (!this.uploadTable){
-				var table = domConstruct.create("table",{style: {width: "100%"}}, this.fileTableContainer);
-				this.uploadTable = domConstruct.create('tbody',{}, table)
-				var htr = domConstruct.create("tr", {}, this.uploadTable);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML: "File"}, htr);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Type"},htr);
-				domConstruct.create("th",{style: {"text-align":"left"}, innerHTML:"Size"},htr);
-				domConstruct.create("th",{style: {"text-align": "right"}},htr);
-			}*/
 
 			var files = evt.target.files;
 			console.log("files: ", files);
 			var _self=this;
 			
 			Object.keys(files).forEach(function(idx) {
+				console.log("files key: ", idx);
 				var file = files[idx];
 				if (file && file.name && file.size) {
 					console.log("file: ", file);
@@ -39507,6 +39511,8 @@ define([
 					}));
 				}
 			},this);
+
+			this.createNewFileInput();
 		},
 
 		onSubmit: function(evt){
@@ -39521,28 +39527,44 @@ define([
 
 //			domClass.add(_self.domNode, "working");
 			var validFiles=[]
-			Query("TR.fileRow",this.uploadTable).map(function(tr){
-					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
-			})
-			console.log("Valid Files: ", validFiles, this.fileInput.files);
-			var files={};
-
-			Object.keys(_self.fileInput.files).forEach(function(key){
-				files[_self.fileInput.files[key].name] = _self.fileInput.files[key];
-			})
-
+			var inputFiles={};
 			var defs=[];
 			var wsFiles=[]
-			validFiles.forEach(function(valid){
-				var key = valid.filename;
-				var f = files[key];
-				if (f.name){
-					defs.push(Deferred.when(this.uploadFile(f,_self.path,valid.type), function(res){
-						wsFiles.push(res);
-						return true;
-					}));
+			
+			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
+				console.log("FI: ", FI);
+				Object.keys(FI.files).forEach(lang.hitch(this,function(key){
+					console.log(" FI FILE KEY: ", key);
+					var f = FI.files[key];
+					console.log(" f: ", f);
+					if (f.name){
+					console.log(" f.name: ", f.name);
+						inputFiles[f.name]=f;
+					}
+				}));
+			}));
+
+
+			console.log("InputFIles: ", inputFiles);
+			console.log("uploadTable: ", this.uploadTable);
+			Query("TR.fileRow",this.uploadTable).forEach(lang.hitch(this, function(tr){
+				console.log("File INPUT Row: ", tr, domAttr.get(tr,"data-filename"), domAttr.get(tr, "data-filetype") );
+//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
+//				console.log("V: ", v);
+//				validFiles.push(v);
+				if (tr && domAttr.get(tr,"data-filename")) {
+					console.log("Got Name: ", domAttr.get(tr, "data-filename"));
+					var f = inputFiles[domAttr.get(tr,"data-filename")];
+					console.log("Got File: ", f);
+					if (f.name) {
+						defs.push(Deferred.when(this.uploadFile(f,_self.path,domAttr.get(tr,"data-filetype")), function(res){
+							wsFiles.push(res);
+							return true;
+						}));
+					}
 				}
-			},this)
+			}));
+
 			All(defs).then(function(results){	
 				console.log("UPLOAD Create WS files results: ", wsFiles);	
 				on.emit(_self.domNode, "dialogAction", {action:"close",files: wsFiles, bubbles:true});
@@ -40391,7 +40413,7 @@ return number;
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" >\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" />\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

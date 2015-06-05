@@ -1,4 +1,4 @@
-Build started: Thu Jun 04 2015 17:03:46 GMT-0400 (EDT)
+Build started: Thu Jun 04 2015 21:56:17 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,11 +126,11 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.226s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:14.323s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:14.422s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:7.492s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.217s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.321s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:11.856s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:12.165s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:7.467s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.072s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -1739,257 +1739,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.226s)
+Done (compile time:1.321s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.226s)
-/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
-dojo.js.uncompressed.js:161: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:171: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:232: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:349: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:708: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:716: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:743: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:759: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:772: WARNING - unreachable code
-				if( 0  && comboPending && !comboPendingTimer){
-				                                             ^
-
-dojo.js.uncompressed.js:871: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:966: WARNING - unreachable code
-			}else{
-			     ^
-
-dojo.js.uncompressed.js:1250: WARNING - unreachable code
-				if( false ){
-				           ^
-
-dojo.js.uncompressed.js:1325: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1425: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:1566: WARNING - unreachable code
-				if( 0  && module.plugin && module.plugin.isCombo){
-				                                                 ^
-
-dojo.js.uncompressed.js:1747: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:1751: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:1818: WARNING - unreachable code
-		if( 0  && args[1]===defaultDeps){
-		                                ^
-
-dojo.js.uncompressed.js:1852: WARNING - unreachable code
-				if( 0  && !targetModule){
-				                        ^
-
-dojo.js.uncompressed.js:1862: WARNING - unreachable code
-			if( 0  && isArray(targetModule)){
-			                                ^
-
-dojo.js.uncompressed.js:1880: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1910: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1947: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:1952: WARNING - unreachable code
-	if( 0  && req.combo && req.combo.plugins){
-	                                         ^
-
-dojo.js.uncompressed.js:1966: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2218: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:2400: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2742: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:8019: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:15613: WARNING - unreachable code
-	if (! 1 ){
-	         ^
-
-0 error(s), 30 warning(s)
-Done (compile time:14.323s)
-/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.226s)
-/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
-dojo.js.uncompressed.js:161: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:171: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:232: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:349: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:708: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:716: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:743: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:759: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:772: WARNING - unreachable code
-				if( 0  && comboPending && !comboPendingTimer){
-				                                             ^
-
-dojo.js.uncompressed.js:871: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:966: WARNING - unreachable code
-			}else{
-			     ^
-
-dojo.js.uncompressed.js:1250: WARNING - unreachable code
-				if( false ){
-				           ^
-
-dojo.js.uncompressed.js:1325: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1425: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:1566: WARNING - unreachable code
-				if( 0  && module.plugin && module.plugin.isCombo){
-				                                                 ^
-
-dojo.js.uncompressed.js:1747: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:1751: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:1818: WARNING - unreachable code
-		if( 0  && args[1]===defaultDeps){
-		                                ^
-
-dojo.js.uncompressed.js:1852: WARNING - unreachable code
-				if( 0  && !targetModule){
-				                        ^
-
-dojo.js.uncompressed.js:1862: WARNING - unreachable code
-			if( 0  && isArray(targetModule)){
-			                                ^
-
-dojo.js.uncompressed.js:1880: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1910: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1947: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:1952: WARNING - unreachable code
-	if( 0  && req.combo && req.combo.plugins){
-	                                         ^
-
-dojo.js.uncompressed.js:1966: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2218: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:2400: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2742: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:8019: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:15613: WARNING - unreachable code
-	if (! 1 ){
-	         ^
-
-0 error(s), 30 warning(s)
-Done (compile time:14.323s)
+Done (compile time:1.321s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2120,132 +1872,9 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:14.422s)
+Done (compile time:11.856s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.226s)
-/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
-dojo.js.uncompressed.js:161: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:171: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:232: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:349: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:708: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:716: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:743: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:759: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:772: WARNING - unreachable code
-				if( 0  && comboPending && !comboPendingTimer){
-				                                             ^
-
-dojo.js.uncompressed.js:871: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:966: WARNING - unreachable code
-			}else{
-			     ^
-
-dojo.js.uncompressed.js:1250: WARNING - unreachable code
-				if( false ){
-				           ^
-
-dojo.js.uncompressed.js:1325: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1425: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:1566: WARNING - unreachable code
-				if( 0  && module.plugin && module.plugin.isCombo){
-				                                                 ^
-
-dojo.js.uncompressed.js:1747: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:1751: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:1818: WARNING - unreachable code
-		if( 0  && args[1]===defaultDeps){
-		                                ^
-
-dojo.js.uncompressed.js:1852: WARNING - unreachable code
-				if( 0  && !targetModule){
-				                        ^
-
-dojo.js.uncompressed.js:1862: WARNING - unreachable code
-			if( 0  && isArray(targetModule)){
-			                                ^
-
-dojo.js.uncompressed.js:1880: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1910: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1947: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:1952: WARNING - unreachable code
-	if( 0  && req.combo && req.combo.plugins){
-	                                         ^
-
-dojo.js.uncompressed.js:1966: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2218: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:2400: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2742: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:8019: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:15613: WARNING - unreachable code
-	if (! 1 ){
-	         ^
-
-0 error(s), 30 warning(s)
-Done (compile time:14.323s)
+Done (compile time:1.321s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2376,7 +2005,386 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:14.422s)
+Done (compile time:11.856s)
+/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
+dojo.js.uncompressed.js:161: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:171: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:232: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:349: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:708: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:716: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:743: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:759: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:772: WARNING - unreachable code
+				if( 0  && comboPending && !comboPendingTimer){
+				                                             ^
+
+dojo.js.uncompressed.js:871: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:966: WARNING - unreachable code
+			}else{
+			     ^
+
+dojo.js.uncompressed.js:1250: WARNING - unreachable code
+				if( false ){
+				           ^
+
+dojo.js.uncompressed.js:1325: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1425: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:1566: WARNING - unreachable code
+				if( 0  && module.plugin && module.plugin.isCombo){
+				                                                 ^
+
+dojo.js.uncompressed.js:1747: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:1751: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:1818: WARNING - unreachable code
+		if( 0  && args[1]===defaultDeps){
+		                                ^
+
+dojo.js.uncompressed.js:1852: WARNING - unreachable code
+				if( 0  && !targetModule){
+				                        ^
+
+dojo.js.uncompressed.js:1862: WARNING - unreachable code
+			if( 0  && isArray(targetModule)){
+			                                ^
+
+dojo.js.uncompressed.js:1880: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1910: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1947: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:1952: WARNING - unreachable code
+	if( 0  && req.combo && req.combo.plugins){
+	                                         ^
+
+dojo.js.uncompressed.js:1966: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2218: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:2400: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2742: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:8019: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:15613: WARNING - unreachable code
+	if (! 1 ){
+	         ^
+
+0 error(s), 30 warning(s)
+Done (compile time:12.165s)
+/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.321s)
+/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
+globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:171: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:232: WARNING - unreachable code
+	if( false ){
+	           ^
+
+globalWSObject.js.uncompressed.js:349: WARNING - unreachable code
+	}else{
+	     ^
+
+globalWSObject.js.uncompressed.js:708: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+globalWSObject.js.uncompressed.js:716: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+globalWSObject.js.uncompressed.js:743: WARNING - unreachable code
+	}else{
+	     ^
+
+globalWSObject.js.uncompressed.js:759: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:772: WARNING - unreachable code
+				if( 0  && comboPending && !comboPendingTimer){
+				                                             ^
+
+globalWSObject.js.uncompressed.js:871: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+globalWSObject.js.uncompressed.js:966: WARNING - unreachable code
+			}else{
+			     ^
+
+globalWSObject.js.uncompressed.js:1250: WARNING - unreachable code
+				if( false ){
+				           ^
+
+globalWSObject.js.uncompressed.js:1325: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:1425: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+globalWSObject.js.uncompressed.js:1566: WARNING - unreachable code
+				if( 0  && module.plugin && module.plugin.isCombo){
+				                                                 ^
+
+globalWSObject.js.uncompressed.js:1747: WARNING - unreachable code
+	}else{
+	     ^
+
+globalWSObject.js.uncompressed.js:1751: WARNING - unreachable code
+	if( false ){
+	           ^
+
+globalWSObject.js.uncompressed.js:1818: WARNING - unreachable code
+		if( 0  && args[1]===defaultDeps){
+		                                ^
+
+globalWSObject.js.uncompressed.js:1852: WARNING - unreachable code
+				if( 0  && !targetModule){
+				                        ^
+
+globalWSObject.js.uncompressed.js:1862: WARNING - unreachable code
+			if( 0  && isArray(targetModule)){
+			                                ^
+
+globalWSObject.js.uncompressed.js:1880: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:1910: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:1947: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+globalWSObject.js.uncompressed.js:1952: WARNING - unreachable code
+	if( 0  && req.combo && req.combo.plugins){
+	                                         ^
+
+globalWSObject.js.uncompressed.js:1966: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+globalWSObject.js.uncompressed.js:2218: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+globalWSObject.js.uncompressed.js:2400: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+globalWSObject.js.uncompressed.js:2742: WARNING - unreachable code
+	}else{
+	     ^
+
+globalWSObject.js.uncompressed.js:8019: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+globalWSObject.js.uncompressed.js:15613: WARNING - unreachable code
+	if (! 1 ){
+	         ^
+
+globalWSObject.js.uncompressed.js:16609: WARNING - unreachable code
+				Topic.publish("/refreshWorkspace",{});
+				^
+
+globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
+	}else if( 0 ){
+	      ^
+
+0 error(s), 32 warning(s)
+Done (compile time:11.856s)
+/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
+dojo.js.uncompressed.js:161: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:171: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:232: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:349: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:708: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:716: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:743: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:759: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:772: WARNING - unreachable code
+				if( 0  && comboPending && !comboPendingTimer){
+				                                             ^
+
+dojo.js.uncompressed.js:871: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:966: WARNING - unreachable code
+			}else{
+			     ^
+
+dojo.js.uncompressed.js:1250: WARNING - unreachable code
+				if( false ){
+				           ^
+
+dojo.js.uncompressed.js:1325: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1425: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:1566: WARNING - unreachable code
+				if( 0  && module.plugin && module.plugin.isCombo){
+				                                                 ^
+
+dojo.js.uncompressed.js:1747: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:1751: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:1818: WARNING - unreachable code
+		if( 0  && args[1]===defaultDeps){
+		                                ^
+
+dojo.js.uncompressed.js:1852: WARNING - unreachable code
+				if( 0  && !targetModule){
+				                        ^
+
+dojo.js.uncompressed.js:1862: WARNING - unreachable code
+			if( 0  && isArray(targetModule)){
+			                                ^
+
+dojo.js.uncompressed.js:1880: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1910: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1947: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:1952: WARNING - unreachable code
+	if( 0  && req.combo && req.combo.plugins){
+	                                         ^
+
+dojo.js.uncompressed.js:1966: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2218: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:2400: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2742: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:8019: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:15613: WARNING - unreachable code
+	if (! 1 ){
+	         ^
+
+0 error(s), 30 warning(s)
+Done (compile time:12.165s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2391,132 +2399,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:7.492s)
+Done (compile time:7.467s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.226s)
-/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
-dojo.js.uncompressed.js:161: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:171: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:232: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:349: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:708: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:716: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:743: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:759: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:772: WARNING - unreachable code
-				if( 0  && comboPending && !comboPendingTimer){
-				                                             ^
-
-dojo.js.uncompressed.js:871: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:966: WARNING - unreachable code
-			}else{
-			     ^
-
-dojo.js.uncompressed.js:1250: WARNING - unreachable code
-				if( false ){
-				           ^
-
-dojo.js.uncompressed.js:1325: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1425: WARNING - unreachable code
-				if( 0 ){
-				       ^
-
-dojo.js.uncompressed.js:1566: WARNING - unreachable code
-				if( 0  && module.plugin && module.plugin.isCombo){
-				                                                 ^
-
-dojo.js.uncompressed.js:1747: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:1751: WARNING - unreachable code
-	if( false ){
-	           ^
-
-dojo.js.uncompressed.js:1818: WARNING - unreachable code
-		if( 0  && args[1]===defaultDeps){
-		                                ^
-
-dojo.js.uncompressed.js:1852: WARNING - unreachable code
-				if( 0  && !targetModule){
-				                        ^
-
-dojo.js.uncompressed.js:1862: WARNING - unreachable code
-			if( 0  && isArray(targetModule)){
-			                                ^
-
-dojo.js.uncompressed.js:1880: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1910: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:1947: WARNING - unreachable code
-		if( 0 ){
-		       ^
-
-dojo.js.uncompressed.js:1952: WARNING - unreachable code
-	if( 0  && req.combo && req.combo.plugins){
-	                                         ^
-
-dojo.js.uncompressed.js:1966: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2218: WARNING - unreachable code
-	if( 0 ){
-	       ^
-
-dojo.js.uncompressed.js:2400: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:2742: WARNING - unreachable code
-	}else{
-	     ^
-
-dojo.js.uncompressed.js:8019: WARNING - unreachable code
-	if(! 1 ){
-	        ^
-
-dojo.js.uncompressed.js:15613: WARNING - unreachable code
-	if (! 1 ){
-	         ^
-
-0 error(s), 30 warning(s)
-Done (compile time:14.323s)
+Done (compile time:1.321s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:161: WARNING - unreachable code
 	if( 0 ){
@@ -2647,7 +2532,130 @@ globalWSObject.js.uncompressed.js:17004: WARNING - unreachable code
 	      ^
 
 0 error(s), 32 warning(s)
-Done (compile time:14.422s)
+Done (compile time:11.856s)
+/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
+dojo.js.uncompressed.js:161: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:171: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:232: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:349: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:708: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:716: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:743: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:759: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:772: WARNING - unreachable code
+				if( 0  && comboPending && !comboPendingTimer){
+				                                             ^
+
+dojo.js.uncompressed.js:871: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:966: WARNING - unreachable code
+			}else{
+			     ^
+
+dojo.js.uncompressed.js:1250: WARNING - unreachable code
+				if( false ){
+				           ^
+
+dojo.js.uncompressed.js:1325: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1425: WARNING - unreachable code
+				if( 0 ){
+				       ^
+
+dojo.js.uncompressed.js:1566: WARNING - unreachable code
+				if( 0  && module.plugin && module.plugin.isCombo){
+				                                                 ^
+
+dojo.js.uncompressed.js:1747: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:1751: WARNING - unreachable code
+	if( false ){
+	           ^
+
+dojo.js.uncompressed.js:1818: WARNING - unreachable code
+		if( 0  && args[1]===defaultDeps){
+		                                ^
+
+dojo.js.uncompressed.js:1852: WARNING - unreachable code
+				if( 0  && !targetModule){
+				                        ^
+
+dojo.js.uncompressed.js:1862: WARNING - unreachable code
+			if( 0  && isArray(targetModule)){
+			                                ^
+
+dojo.js.uncompressed.js:1880: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1910: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:1947: WARNING - unreachable code
+		if( 0 ){
+		       ^
+
+dojo.js.uncompressed.js:1952: WARNING - unreachable code
+	if( 0  && req.combo && req.combo.plugins){
+	                                         ^
+
+dojo.js.uncompressed.js:1966: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2218: WARNING - unreachable code
+	if( 0 ){
+	       ^
+
+dojo.js.uncompressed.js:2400: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:2742: WARNING - unreachable code
+	}else{
+	     ^
+
+dojo.js.uncompressed.js:8019: WARNING - unreachable code
+	if(! 1 ){
+	        ^
+
+dojo.js.uncompressed.js:15613: WARNING - unreachable code
+	if (! 1 ){
+	         ^
+
+0 error(s), 30 warning(s)
+Done (compile time:12.165s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2662,7 +2670,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:7.492s)
+Done (compile time:7.467s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:497: WARNING - unreachable code
 	}else if( 0 ){
@@ -2705,7 +2713,7 @@ core.js.uncompressed.js:36991: WARNING - Suspicious code. This code lacks side-e
                                 ^
 
 0 error(s), 10 warning(s)
-Done (compile time:11.217s)
+Done (compile time:11.072s)
 
 
 Has Features Detected
@@ -3157,4 +3165,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 88.806 seconds
+	build time: 89.906 seconds
