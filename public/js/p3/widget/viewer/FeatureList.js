@@ -31,7 +31,7 @@ define([
 				columns: {
 					genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 					accession: {label: "Accession", field: "accession", hidden: true},
-					seed_id: {label: "PATRIC ID", field: "seed_id", hidden: false},
+					patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 					refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
 					alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
 					feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
