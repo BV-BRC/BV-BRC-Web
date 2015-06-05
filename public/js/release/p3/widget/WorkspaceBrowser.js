@@ -22,7 +22,7 @@ define("p3/widget/WorkspaceBrowser", [
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads","model"],
 		design: "sidebar",
 		splitter: false,
 		startup: function(){
@@ -519,18 +519,30 @@ define("p3/widget/WorkspaceBrowser", [
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "model":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/Model");
+						params.data = obj;
+						break;
 					case "job_result":
 						var d = "p3/widget/viewer/JobResult"
 						console.log("job_result object: ", obj);
 						if (obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
-							if (id=="DifferentialExpression"){
-								console.log("Using Experiement Viewer");
-								d = "p3/widget/viewer/Experiment"
-							}else if (id=="GenomeComparison") {
-								console.log("SeqComparison Viewer");
-								d = "p3/widget/viewer/SeqComparison"
-							}	
+							switch(id){
+								case "DifferentialExpression":
+									console.log("Using Experiement Viewer");
+									d = "p3/widget/viewer/Experiment"
+									break;
+								case "GenomeComparison": 
+									console.log("SeqComparison Viewer");
+									d = "p3/widget/viewer/SeqComparison"
+									break;
+								case "GenomeAnnotation": 
+									console.log("GenomeAnnotation Viewer");
+									d = "p3/widget/viewer/GenomeAnnotation"
+									break;
+
+							}
 						}			
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
