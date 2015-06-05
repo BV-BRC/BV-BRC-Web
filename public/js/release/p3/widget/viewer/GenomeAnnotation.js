@@ -21,6 +21,20 @@ define("p3/widget/viewer/GenomeAnnotation", [
 		_appLabel: "",
 		_resultMetaTypes: {},
 		_autoLabels:{},
+		getGenomeId: function(){
+			var id;
+			this._resultObjects.some(function(o){
+				if (o.type=="genome"){
+					console.log("GENOME OBJECT: ", o);
+					id = o.autoMeta.genome_id;
+					console.log("Id: ", id);
+					return true;
+				}
+				return false;
+			});
+			if (id) { return id; }
+			throw Error("Missing ID");
+		},
 		_setDataAttr: function(data){
 			this.data = data;	
 			console.log("job result viewer data: ", data);

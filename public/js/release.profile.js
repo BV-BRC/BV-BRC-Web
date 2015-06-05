@@ -3,7 +3,7 @@ var profile = {
 	layerOptimize: "closure", 
 	cssOptimize:"comments.keepLines",
 	releaseDir: "./release",
-	stripConsole: "none",
+	stripConsole: "all",
 	mini: true,
 	hasReport: true,
 	selectorEngine: "lite",
