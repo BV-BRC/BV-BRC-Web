@@ -26265,6 +26265,21 @@ define([
 
 			}, true);
 
+			this.browserHeader.addAction("ViewAnnotatedGenomeCDS","fa icon-genome-features-cds fa-2x",{label:"CDS", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View CDS for Annotated Genome"}, function(selection){
+				console.log("View Genome Annotation: ", selection[0]);
+				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+gid;
+
+			}, true);
+
+			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser","fa icon-genome_browser fa-2x",{label:"BROWSER", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome in Genome Browser"}, function(selection){
+				console.log("View Genome Annotation: ", selection[0]);
+				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
+				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenes&cId=" + + gid;
+
+			}, true);
+
+
 
 
 			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{label:"UPLOAD", multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
