@@ -26257,7 +26257,7 @@ define([
 				popup.close(downloadTTSelectFile);
 			}));
 
-			this.browserHeader.addAction("ViewAnnotatedGenome","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "Upload to Folder"}, function(selection){
+			this.browserHeader.addAction("ViewAnnotatedGenome","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome"}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
 				var url= "/portal/portal/patric/Genome?cType=genome&cId=" + gid;
