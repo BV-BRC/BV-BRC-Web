@@ -33,8 +33,8 @@ define([
 	
 			console.log("Submit Vals: ", vals);
 
-			return;
-			var def = xhr.post("/user",{
+			var def = xhr.post("/user/",{
+				headers: { accept: "application/json" },
 				data: vals,
 				withCredentials: true
 			}); 
@@ -43,6 +43,7 @@ define([
 				//console.log("Login Results: ", results, arguments);
 				console.log("Login Window location: ", window.location, window.location.query);
 				domClass.remove(this.domNode, "Working");
+				this.submitButton.set('disabled', false);
 				console.log("this.callbackURL", this.callbackURL);
 				if (this.callbackURL){
 					window.location=this.callbackURL;
