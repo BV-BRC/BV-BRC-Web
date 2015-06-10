@@ -102,6 +102,25 @@
                                 <label class="paramlabel" for="reference_assembly">Benchmark Contigs</label><br>
                                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="reference_assembly" data-dojo-attach-point="reference_assembly" style="width:300px" required="false" data-dojo-props="type:['contigs'],multi:false,placeHolder:'Optional'"></div>
 			</div>
+			<div class="approw">
+				<div class="approwsegment" >
+                    <div data-dojo-attach-point="advanced2" style="display:inline-block">
+                        <label class="largelabel">Advanced</label>
+                        <div class="iconbox" style="margin-left:0px">
+                            <i data-dojo-attach-point="advicon2" class="fa fa-caret-down fa-1"></i>
+                        </div>
+                    </div>
+				</div>
+			</div>
+            <div class="approw"  data-dojo-attach-point="advrow2" style="display: none">
+                <div class="appField">
+                    <label class="paramlabel">Assembly pipeline arguments</label>
+                    <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa fa-info-circle fa"></i>
+                    </div>
+                    <div data-dojo-type="dijit/form/ValidationTextBox" name="pipeline" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,promptMessage:'Advanced assembly pipeline arguments that overrides recipe.',missingMessage:'',trim:true,placeHolder:'Arguments override recipe'"></div>
+                </div>
+            </div>
         	</div>
 		</td>
 		<td>
