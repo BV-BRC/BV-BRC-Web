@@ -5296,10 +5296,9 @@ a.HelpLink:active {
   color: #09456f;
 }
 .wsBreadCrumb {
-	font-size:1.1em;
+	font-size:1.2em;
 	margin:2px;
-	margin-top: 4px;
-	margin-left: 2px;
+	margin-left: 4px;
 	font-weight: 600;
 	padding:2px;
 	color: #134d75;
