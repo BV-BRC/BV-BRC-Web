@@ -274,6 +274,64 @@ define([
 
 		getObjectsByType: function(types, showHidden){
 			types= (types instanceof Array)?types:[types];
+			console.log("Get ObjectsByType: ", types);
+
+			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
+				//console.log("current: ", current, current.path);
+				var path = current.path;
+				return Deferred.when(this.api("Workspace.ls",[{
+					paths: [current.path],
+					excludeDirectories: false,
+					excludeObjects: false,
+					query: {type: types},
+					recursive: true
+				}]), function(results){
+					//console.log("getObjectsByType Results: ", results);
+					if (!results[0] || !results[0][path]) {
+						return [];
+					}
+					var res = results[0][path];
+		
+					//console.log("array res", res);
+	
+					res = res.map(function(r) {
+						//console.log("r: ", r);
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					}).filter(function(r){
+						/*	
+						if (r.path.split("/").some(function(p){
+							return p.charAt(0)==".";
+						})) { return false; }
+						*/
+
+						return (types.indexOf(r.type)>=0);
+					})/*.filter(function(r){
+						if (!showHidden && r.name.charAt(0)=="."){ return false };
+						return true;
+					})*/
+
+					//console.log("Final getObjectsByType()", res)
+					return res;
+				})
+			}));
+		},
+
+
+		getObjectsByTypeOrig: function(types, showHidden){
+			types= (types instanceof Array)?types:[types];
 			//console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){

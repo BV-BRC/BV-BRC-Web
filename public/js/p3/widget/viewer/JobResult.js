@@ -24,10 +24,12 @@ define([
 		_setDataAttr: function(data){
 			this.data = data;	
 			console.log("job result viewer data: ", data);
+			console.log("JOB Result Output Files: ", this.data.autoMeta.output_files);
 			var paths = this.data.autoMeta.output_files.map(function(o){
 				return o[0];
 			});
 
+			console.log("JobResult Viewer getObjects(): ", paths);
 			WorkspaceManager.getObjects(paths,true).then(lang.hitch(this, function(objs){
 				this._resultObjects = objs;
 				console.log("got objects: ", objs);
@@ -37,6 +39,7 @@ define([
 
 		},
 		setupResultType: function(){
+			console.log("JobResult setupResultType()");
 			if (this.data.autoMeta.app.id){
 				this._resultType=this.data.autoMeta.app.id;
 			}
@@ -50,6 +53,7 @@ define([
 			}
 		},
 		refresh: function(){
+			console.log("Refresh() JobResult Viewer");
 			if (this.data) {
 				var jobHeader='<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">';
 				if (this.data.autoMeta && this.data.autoMeta.app){
@@ -80,6 +84,7 @@ define([
 
 				var result_output=[];
 				if (this._resultObjects) {
+					console.log("JobResult refresh() ",this._resultObjects);
 					result_output.push('<div style="display:inline-block;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">Result Files</span></h3>');
 					result_output.push('<table class="basic stripe far2x"><tbody>');
 					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>File size</th>')

@@ -565,6 +565,7 @@ define([
 
 							}
 						}			
+						console.log("LOAD VIEWER: ", d, params);
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
 						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
@@ -573,7 +574,6 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
 						params.data= obj;
 						break;
-	
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
