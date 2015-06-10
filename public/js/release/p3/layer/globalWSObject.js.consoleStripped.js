@@ -16719,12 +16719,11 @@ define([
 							global_permission: r[10]
 						}
 					}).filter(function(r){
-						/*	
-						if (r.path.split("/").some(function(p){
-							return p.charAt(0)==".";
-						})) { return false; }
-						*/
-
+						if (r.type=="folder") {
+							if (r.path.split("/").some(function(p){
+								return p.charAt(0)==".";
+							})) { return false; }
+						}
 						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
