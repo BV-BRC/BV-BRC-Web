@@ -706,6 +706,8 @@ return declare("dojo.store.JsonRest", base, {
 			query = xhr.objectToQuery(query);
 			query = query ? (hasQuestionMark ? "&" : "?") + query: "";
 		}
+
+		console.log("Store Query: ", query);
 		if(options.start >= 0 || options.count >= 0){
 			headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 				(("count" in options && options.count != Infinity) ?
@@ -728,6 +730,7 @@ return declare("dojo.store.JsonRest", base, {
 				query += ")";
 			}
 		}
+		console.log("Query before GET: ", query);
 		var results = xhr("GET", {
 			url: this.target + (query || ""),
 			handleAs: "json",
@@ -746,6 +749,7 @@ return declare("dojo.store.JsonRest", base, {
 });
 
 });
+
 },
 'dojo/store/util/QueryResults':function(){
 define(["../../_base/array", "../../_base/lang", "../../when"
@@ -14422,12 +14426,11 @@ define([
 							global_permission: r[10]
 						}
 					}).filter(function(r){
-						/*	
-						if (r.path.split("/").some(function(p){
-							return p.charAt(0)==".";
-						})) { return false; }
-						*/
-
+						if (r.type=="folder") {
+							if (r.path.split("/").some(function(p){
+								return p.charAt(0)==".";
+							})) { return false; }
+						}
 						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){
 						if (!showHidden && r.name.charAt(0)=="."){ return false };
@@ -34262,7 +34265,8 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-	
+
+	console.log("EDIT: ", cell);	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -34278,7 +34282,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-	
+		
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
