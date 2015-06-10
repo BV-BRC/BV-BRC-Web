@@ -16515,12 +16515,25 @@ define([
 				}
 				if (res && res.data && res.data.id_list){
 					if (res.data.id_list[idType]){
+						var existing={}
+						res.data.id_list[idType].forEach(function(id){
+							existing[id]=true;
+						});
+
+						ids=ids.filter(function(id){
+							return !existing[id];
+						});
+
 						res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
 					}else{
 						res.data.id_list[idType] = ids;	
 					}
-					return _self.updateObject(res.metadata,res.data)
+					return Deferred.when(_self.updateObject(res.metadata,res.data),function(r){
+						Topic.publish("/Notification", {message: ids.length + " items added to group " + groupPath, type: "message"});
+						return r;	
+					});
 				}
+				Topic.publish("/Notification", {message: "Unable to add Items to group.  Invalid group structure",type: "error", duration:0});
 				return new Error("Unable to append to group.  Group structure incomplete");	
 			});
 		},
@@ -16538,8 +16551,15 @@ define([
 						return !(ids.indexOf(id)>=0);
 					});
 					 0 && console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
-					return _self.updateObject(res.metadata,res.data)
+					return Deferred.when(_self.updateObject(res.metadata,res.data), function(r){
+						 0 && console.log("Publish remove from group notification message");
+						Topic.publish("/Notification", {message: ids.length + " Item removed from group " + groupPath, type: "message", duration:0});
+						return r;
+					});
+
 				}
+				
+				Topic.publish("/Notification", {message: "Unable to remove items from group.  Invalid group structure",type: "error", duration:0});
 				return new Error("Unable to remove from group.  Group structure incomplete");	
 			});
 		},
@@ -16574,6 +16594,7 @@ define([
 					var res;
 
 					if (!results[0][0] || !results[0][0]) {
+						Topic.publish("/Notification", {message: "Error Creating Folder", type: "error", duration: 0});
 						throw new Error("Error Creating Folder");
 					}else{
 						var r = results[0][0];
@@ -16591,9 +16612,11 @@ define([
 							user_permission: r[9],
 							global_permission: r[10]
 						}
+
+						Topic.publish("/refreshWorkspace",{});
+						Topic.publish("/Notification", {message: "Folder Created", type: "message"});
 						return out;
 					}
-				Topic.publish("/refreshWorkspace",{});
 			}));
 		},
 		updateMetadata: function(path, userMeta, type){
@@ -16623,6 +16646,7 @@ define([
 			}
 			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true,force:force }]), function(results){
 				Topic.publish("/refreshWorkspace",{});
+				Topic.publish("/Notification", {message:"Folder Removed", type: "message"});
 			});
 		},
 
@@ -16638,6 +16662,7 @@ define([
 			}
 
 			return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,force:force, deleteDirectories: deleteFolders }]), function(results){
+				Topic.publish("/Notification", {message: paths.length + " objects removed", type: "message"});
 				Topic.publish("/refreshWorkspace",{});
 			});
 		},
@@ -16648,6 +16673,7 @@ define([
 			return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
 				if (name=="home"){
 					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments", workspace.path+"/Experiment Groups"]),function(){
+						Topic.publish("/Notification", {message: "New workspace '" + name + "' created", type: "message"});
 						return workspace	
 					})
 				}
@@ -16656,7 +16682,7 @@ define([
 
 		getObjectsByType: function(types, showHidden){
 			types= (types instanceof Array)?types:[types];
-			// 0 && console.log("Get ObjectsByType: ", types);
+			 0 && console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
 				// 0 && console.log("current: ", current, current.path);
@@ -16665,6 +16691,7 @@ define([
 					paths: [current.path],
 					excludeDirectories: false,
 					excludeObjects: false,
+					query: {type: types},
 					recursive: true
 				}]), function(results){
 					// 0 && console.log("getObjectsByType Results: ", results);
@@ -16692,9 +16719,11 @@ define([
 							global_permission: r[10]
 						}
 					}).filter(function(r){
+						/*	
 						if (r.path.split("/").some(function(p){
 							return p.charAt(0)==".";
 						})) { return false; }
+						*/
 
 						return (types.indexOf(r.type)>=0);
 					})/*.filter(function(r){

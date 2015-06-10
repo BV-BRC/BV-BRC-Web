@@ -4998,6 +4998,39 @@ div.dijitNumberTextBoxRtl {
   filter: FlipH;
   -ms-filter: "FlipH";
 }
+.dijitToasterContent {
+	padding:1em;
+	padding-top:0.25em;
+	background:#73c74a;
+}
+.dijitToasterMessage{ 
+	color:#fff;
+}
+.dijitToasterWarning,
+.dijitToasterError,
+.dijitToasterFatal{
+	font-weight:bold;
+	color:#fff;
+}
+.dijitToasterWarning .dijitToasterContent{
+	background:#d4d943;
+} 
+.dijitToasterError .dijitToasterContent{
+	background:#c46600;
+}
+ 
+.dijitToasterClip {
+	position: absolute;
+	z-index: 5000;
+	overflow: hidden;
+}
+.dijitToasterContainer {
+	display: block;
+	position: absolute;
+	width: 17.5em;
+	margin: 0px;
+	font:0.75em;
+}
 .patric .HeaderBar {
 	width: 100%;
 	border: 0px;
@@ -5664,6 +5697,10 @@ table.librarytable.disabled{
     opacity: 0.4; 
     filter: alpha(opacity = 60);
     font-color: #ccc;
+}
+.apphelp a{
+    text-decoration: underline;
+    color: #06C;
 }
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
@@ -8113,6 +8150,9 @@ body.patric *:focus {
 }
 .layer > H1 {
 	color: #333;
+}
+.dijitToasterContainer {
+	margin: 5px;
 }
 .ShowWithAuth {
 	display: none;
