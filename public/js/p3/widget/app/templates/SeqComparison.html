@@ -4,7 +4,7 @@
     <div style="width: 450px;margin:auto;">
 	<div class="apptitle" id="apptitle">
 	    <h3>Genome Comparison: blastp</h3>
-	    <p>Protein sequence-based genome comparison using bi-directional BLAST.</p>
+	    <p>Genome comparison using bi-directional BLASTP.</p>
 	</div>
   
 	<div style="width:450px; margin:auto" class="formFieldsContainer">
@@ -18,19 +18,19 @@
 		<div id="dataBox" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
-					<label class="appboxlabel">Genome Selection and Parameters</label>
+					<label class="appboxlabel">Parameters</label>
 					<div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
 						<i class="fa fa-info-circle fa"></i>
 					</div>
 				</div>
 			</div>
 			<div class="approw">
-					<label>Select A Reference Genome</label><br>
+					<label>Reference Genome</label><br>
                      <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="ref_genome_id" maxHeight=200 style="width:85%" required="true" data-dojo-attach-point="ref_genome_id"></div>
 			</div>
-			<div class="approw">
-					<label>Select Up To 8 Genomes to Compare (use plus button to add)</label>
-                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200 style="width:85%" required="true" data-dojo-attach-point="comp_genome_id"></div>
+			<div style="padding-left:10px" class="approw">
+					<label>Add Up To 8 Genomes to Compare</label>
+                    <div style="width:300px" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200 style="width:85%" required="true" data-dojo-attach-point="comp_genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
                     <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
 			</div>
 			<div class="approw" style="width:85%; margin-top:10px; text-align: center;">
@@ -47,7 +47,7 @@
 
 			<div class="approw">
 				<div class="approw" data-dojo-attach-point="advanced">
-					<label>Advanced parameters</label>
+					<label>Advanced</label>
 					<div class="iconbox" style="margin-left:0px">
 						<i data-dojo-attach-point="advicon" class="fa fa-caret-down fa-1"></i>
 					</div>
@@ -65,7 +65,7 @@
 			</div>
 			<div class="approw">
 				<label for="output_path" class="paramlabel">Output Folder</label><br>
-				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path" style="width:85%" required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+				<div data-dojo-type="p3/widget/WorkspaceObjectSelector"  name="output_path" data-dojo-attach-point="output_path"  required="true" data-dojo-props="type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
 			</div>
 			<div class="approw">
 				<label class="paramlabel">Output Name</label><br>
