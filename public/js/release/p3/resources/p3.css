@@ -5419,6 +5419,9 @@ th.dgrid-cell.wsItemType {
 	color:#333;
 	font-size: 1.1em;
 }
+.JobStatusButton {
+	cursor: pointer;
+}
 .JobStatusButton > A:first-child,
 .JobStatusButton > SPAN:first-child {
 	color:#fff;margin:2px;padding:2px

@@ -1,6 +1,6 @@
-<div class="JobStatusButton">
-	<a class="navigationLink" href="/job/">Jobs</a>
-	<div class="JobStatusCount" data-dojo-attach-point="focusNode">
+<div class="JobStatusButton" data-dojo-attach-event="onclick:openJobs">
+	<span>Jobs</span>
+	<span class="JobStatusCount">
 		<span class="JobsComplete" data-dojo-attach-point="jobsCompleteNode">0</span><span class="JobsRunning" data-dojo-attach-point="jobsRunningNode">0</span><span class="JobsQueued" data-dojo-attach-point="jobsQueuedNode">0</span><span class="JobsSuspended" data-dojo-attach-point="jobsSuspendedNode">0</span>
-	</div>	
+	</span>	
 </div>
