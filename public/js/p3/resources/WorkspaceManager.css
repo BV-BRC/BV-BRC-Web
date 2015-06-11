@@ -31,10 +31,9 @@ a.HelpLink:active {
 }
 
 .wsBreadCrumb {
-	font-size:1.1em;
+	font-size:1.2em;
 	margin:2px;
-	margin-top: 4px;
-	margin-left: 2px;
+	margin-left: 4px;
 	font-weight: 600;
 	padding:2px;
 	color: #134d75;
@@ -174,6 +173,10 @@ th.dgrid-cell.wsItemType {
 	background: #333;
 	color:#333;
 	font-size: 1.1em;
+}
+
+.JobStatusButton {
+	cursor: pointer;
 }
 /*div.JobStatusButton a {
         position: absolute;

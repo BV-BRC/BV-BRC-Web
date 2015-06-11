@@ -35776,7 +35776,7 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {style: {display: "inline-block"}},this.domNode);		
+			this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
 			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);		
 		},
 
@@ -36095,7 +36095,7 @@ define([
 	HasDropDown,ContentPane,Tooltip
 ){
 
-	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
+	var UploadSummaryPanel = new ContentPane({content: "<div style='border:2px solid #34698e;padding:2px;margin:0px;'>No Active Uploads</div>", style:"padding:0px;background:#fff;"});
 	return declare([WidgetBase,TemplatedMixin,HasDropDown], {
 		"baseClass": "WorkspaceController",
 		"disabled":false,
@@ -36115,7 +36115,8 @@ define([
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete"
+				label: " Completed &middot; In progress &middot; % Complete",
+				position: ["above"]
 			});
 		},
 		onUploadMessage: function(msg){
@@ -36155,11 +36156,11 @@ define([
 					this._uploads.files[msg.filename] = msg;
 				}
 
-				var content=["<table><tbody>"];
+				var content=["<div style='border:2px solid #34698e;padding:2px;margin:0px;'><table><tbody>"];
 				Object.keys(this._uploads.files).forEach(function(key){
 					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
 				},this);
-				content.push("</tbody></table>");
+				content.push("</tbody></table></div>");
 				 0 && console.log("Panel Content: ", content.join(""));
 				UploadSummaryPanel.set('content', content.join(""));
 
@@ -37663,7 +37664,7 @@ define([
 			refseq_cds: {label:'RefSeq CDS', field:'refseq_cds', hidden:true, formatter:formatter.linkGenomeRefSeqCDS},
 			isolation_country: {label:'Isolation Country', field:'isolation_country'},
 			host_name: {label:'Host Name', field:'host_name'},
-			disease: {label:'Disease', field:'disease'},
+			disease: {label:'Disease', field:'disease', sortable: false},
 			collection_date: {label:'Collection Date', field:'collection_date'},
 			completion_date: {label:'Completion Date', field:'completion_date', formatter: formatter.dateOnly},
 			mlst: {label:'MLST', field:'mlst', hidden:true},

@@ -16,16 +16,21 @@
 
             <div class="approw">
                 <div class="appField">
-                    <label>Genome from Workspaces</label>
-                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                         name="genome"
-                         style="width:100%"
-                         required="true"
-                         data-dojo-props="type:['job_result'],multi:false,promptMessage:'Select a genome in your workspace for Model Reconstruction',missingMessage:'Genome must be provided.'">
-                    </div>
+                    <label>Genome</label><br>
+                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
                 </div>
             </div>
             <!--
+
+            <div class="appField">
+                <label for="genome">Genome from Workspaces</label>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                     name="genome"
+                     style="width:100%"
+                     required="true"
+                     data-dojo-props="type:['job_result'],multi:false,promptMessage:'Select a genome job result in your workspace for Model Reconstruction',missingMessage:'Genome job result must be provided.'">
+                </div>
+            </div>
             <div class="approw" style="margin-left: 145px;">
                 OR
             </div>

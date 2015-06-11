@@ -14,7 +14,7 @@ define([
 	HasDropDown,ContentPane,Tooltip
 ){
 
-	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style:"background:#fff;"});
+	var UploadSummaryPanel = new ContentPane({content: "<div style='border:2px solid #34698e;padding:2px;margin:0px;'>No Active Uploads</div>", style:"padding:0px;background:#fff;"});
 	return declare([WidgetBase,TemplatedMixin,HasDropDown], {
 		"baseClass": "WorkspaceController",
 		"disabled":false,
@@ -34,7 +34,8 @@ define([
 			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
-				label: " Completed &middot; In progress &middot; % Complete"
+				label: " Completed &middot; In progress &middot; % Complete",
+				position: ["above"]
 			});
 		},
 		onUploadMessage: function(msg){
@@ -74,11 +75,11 @@ define([
 					this._uploads.files[msg.filename] = msg;
 				}
 
-				var content=["<table><tbody>"];
+				var content=["<div style='border:2px solid #34698e;padding:2px;margin:0px;'><table><tbody>"];
 				Object.keys(this._uploads.files).forEach(function(key){
 					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
 				},this);
-				content.push("</tbody></table>");
+				content.push("</tbody></table></div>");
 				console.log("Panel Content: ", content.join(""));
 				UploadSummaryPanel.set('content', content.join(""));
 
