@@ -37,7 +37,7 @@ define([
 			var values = this.inherited(arguments);
 
 			values.genome = 'PATRICSOLR:'+values.genome;
-			values.fulldb = values.fulldb.length ? 1 : 0;
+			values.fulldb = (values.fulldb && values.fulldb.length) ? 1 : 0;
 			values.output_path = WorkspaceManager.getDefaultFolder()+'/models/';
 
 			if (values.output_file === '') delete values['output_file'];
