@@ -2,11 +2,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Reconstruct.html","./AppBase",
-	"dojo/_base/lang","../../WorkspaceManager"
+	"dojo/_base/lang","../../WorkspaceManager",
+	"../GenomeNameSelector"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,lang,WorkspaceManager
+	Template,AppBase,lang,WorkspaceManager, genomeSelector
 ){
 	return declare([AppBase], {
 		baseClass: "Modeling",
@@ -18,11 +19,14 @@ define([
 
 		},
 
+        onSuggestNameChange: function(){
+        },
+
 		startup: function(){
-            /*
+
             var _self=this;
             if (this._started) { return; }
-			*/
+
             this.inherited(arguments);
             /*
             _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
@@ -32,13 +36,13 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 
+			values.genome = 'PATRICSOLR:'+values.genome;
 			values.fulldb = values.fulldb.length ? 1 : 0;
-			//values.template_model = values.template_model != '' ? values.template_model : null;
+			values.output_path = WorkspaceManager.getDefaultFolder()+'/models/';
 
-			if (values.output_path === '') delete values['output_path'];
 			if (values.output_file === '') delete values['output_file'];
 
-			console.log('running reconstruct with', values)
+			console.log('Running reconstruct with', values)
 			return values;
 		}
 
