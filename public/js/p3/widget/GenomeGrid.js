@@ -31,7 +31,7 @@ define([
 			refseq_cds: {label:'RefSeq CDS', field:'refseq_cds', hidden:true, formatter:formatter.linkGenomeRefSeqCDS},
 			isolation_country: {label:'Isolation Country', field:'isolation_country'},
 			host_name: {label:'Host Name', field:'host_name'},
-			disease: {label:'Disease', field:'disease'},
+			disease: {label:'Disease', field:'disease', sortable: false},
 			collection_date: {label:'Collection Date', field:'collection_date'},
 			completion_date: {label:'Completion Date', field:'completion_date', formatter: formatter.dateOnly},
 			mlst: {label:'MLST', field:'mlst', hidden:true},
