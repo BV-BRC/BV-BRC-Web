@@ -1,18 +1,18 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width: 700px;margin:auto;">
+    <div style="width: 670px;margin:auto;">
 	<div class="apptitle" id="apptitle">
 	    <h3>Expression Import</h3>
 	    <p>Transform differential expression data for viewing on PATRIC</p>
 	</div>
   
-	<div style="width:700px; margin:auto" class="formFieldsContainer">
-		<table class="assemblyblocks" style="width:100%">
+	<div style="width:670px; margin:auto" class="formFieldsContainer">
+		<table class="assemblyblocks">
 		<tr>
 		<td style="height:150px;">
 
-		<div id="dataBox" class="appbox appshadow">
+		<div id="dataBox" style="width:300px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Experiment Data</label>
@@ -41,7 +41,7 @@
 		</div>
 		</td>
 		<td rowspan="2">
-		<div id="experimentBox" class="appbox appshadow">
+		<div id="experimentBox" style="margin-left:0px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Experiment Information</label>
@@ -85,7 +85,7 @@
 		</tr>
 		<tr>
 		<td>
-		<div id="metaBox" class="appbox appshadow">
+		<div id="metaBox" style="width:300px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Optional Metadata</label>
