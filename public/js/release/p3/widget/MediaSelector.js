@@ -1,4 +1,4 @@
-define([
+define("p3/widget/MediaSelector", [
 	"dijit/form/Select","dojo/_base/declare",
 	"dojo/store/Memory","dojo/_base/lang","dojo/dom-construct",
 	"./TaxonNameSelector","dojo/on","dijit/TooltipDialog",
