@@ -46,6 +46,9 @@ define([
 			if (values.output_file === '')
 				values.output_file = gID+'_model';
 
+			var mediaItem = this.mediaSelector.store.get(this.mediaSelector.get('value'));
+			values.media = mediaItem.path;
+			console.log("mediaItem: ", mediaItem);
 
 			console.log('Running reconstruct with', values)
 			return values;
