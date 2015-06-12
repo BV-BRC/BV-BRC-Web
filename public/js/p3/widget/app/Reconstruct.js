@@ -3,11 +3,13 @@ define([
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Reconstruct.html","./AppBase",
 	"dojo/_base/lang","../../WorkspaceManager",
-	"../GenomeNameSelector"
+	"../GenomeNameSelector","../MediaSelector"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,lang,WorkspaceManager, genomeSelector
+	Template,AppBase,lang,WorkspaceManager, genomeSelector,
+	MediaSelector
+
 ){
 	return declare([AppBase], {
 		baseClass: "Modeling",
