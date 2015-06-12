@@ -209,7 +209,8 @@ define([
 				console.log("View Model: ", selection[0]);
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
 				var url= "http://modelseed.theseed.org/#/model" + path + "?login=patric";
-				window.location=url;
+				//window.location=url;
+				window.open(url,"_blank");
 			}, true);
 
 
