@@ -29,7 +29,7 @@ define([
 				var output=['<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">'];
 				output.push("Metabolic Model - " + this.data.name + '</span></h3>');
 				output.push('<div>'+
-								'<div>View in:</div> <a href="http://modelseed.theseed.org/#/model'+this.data.path+this.data.name+'" target="_blank">'+
+								'<div>View in:</div> <a href="http://modelseed.theseed.org/#/model'+this.data.path+this.data.name+'?login=patric" target="_blank">'+
 								'<img src="/js/p3/resources/images/modelseed-logo.png" height="25"></a>'+
      						'</div>')
 
