@@ -36,11 +36,14 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 
-			values.genome = 'PATRICSOLR:'+values.genome;
+			var gID = values.genome;
+			values.genome = 'PATRICSOLR:'+gID;
 			values.fulldb = (values.fulldb && values.fulldb.length) ? 1 : 0;
 			values.output_path = WorkspaceManager.getDefaultFolder()+'/models/';
 
-			if (values.output_file === '') delete values['output_file'];
+			if (values.output_file === '')
+				values.output_file = gID+'_model';
+
 
 			console.log('Running reconstruct with', values)
 			return values;
