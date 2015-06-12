@@ -30,6 +30,7 @@ define([
             if (this._started) { return; }
 
             this.inherited(arguments);
+           	this.mediaSelector.set("selected", "Complete");
             /*
             _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
             _self.WorkspaceObjectSelector.set('value', _self.defaultPath);

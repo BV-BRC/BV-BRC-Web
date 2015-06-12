@@ -14,7 +14,6 @@ define([
 	return declare([Select], {
 		apiServiceUrl: window.App.dataAPI,
 		promptMessage:'Choose Media Type.',
-		missingMessage:'NCBI Tax ID is not specified.',
 		placeHolder:'',
 		searchAttr: "name",
 		labelAttr: "name",
@@ -24,7 +23,7 @@ define([
 		store: null,
 		required: false,
 		mediaPath: "/chenry/public/modelsupport/patric-media",
-
+		defaultItem: null,
 		constructor: function(){
 			if (!this.store){
 				WorkspaceManager.getFolderContents(this.mediaPath).then(lang.hitch(this,function(data){
