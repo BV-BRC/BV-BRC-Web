@@ -3,11 +3,13 @@ define([
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/Reconstruct.html","./AppBase",
 	"dojo/_base/lang","../../WorkspaceManager",
-	"../GenomeNameSelector"
+	"../GenomeNameSelector","../MediaSelector"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,lang,WorkspaceManager, genomeSelector
+	Template,AppBase,lang,WorkspaceManager, genomeSelector,
+	MediaSelector
+
 ){
 	return declare([AppBase], {
 		baseClass: "Modeling",
@@ -36,11 +38,17 @@ define([
 		getValues: function(){
 			var values = this.inherited(arguments);
 
-			values.genome = 'PATRICSOLR:'+values.genome;
+			var gID = values.genome;
+			values.genome = 'PATRICSOLR:'+gID;
 			values.fulldb = (values.fulldb && values.fulldb.length) ? 1 : 0;
-			values.output_path = WorkspaceManager.getDefaultFolder()+'/models/';
+			values.output_path = WorkspaceManager.getDefaultFolder()+'/models';
 
-			if (values.output_file === '') delete values['output_file'];
+			if (values.output_file === '')
+				values.output_file = gID+'_model';
+
+			var mediaItem = this.mediaSelector.store.get(this.mediaSelector.get('value'));
+			values.media = mediaItem.path;
+			console.log("mediaItem: ", mediaItem);
 
 			console.log('Running reconstruct with', values)
 			return values;

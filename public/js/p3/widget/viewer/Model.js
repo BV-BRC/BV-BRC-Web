@@ -20,6 +20,9 @@ define([
 			console.log("Model Data: ", data);
 			this.refresh();
 		},
+		getModelPath: function(){
+			return this.data.path + this.data.name;
+		},
 		refresh: function(){
 			if (!this._started) { return; }
 			if (this.data) {
