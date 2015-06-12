@@ -205,6 +205,15 @@ define([
 
 			}, true);
 
+			this.browserHeader.addAction("ViewModel","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["model"], tooltip: "View Model @ Modelseed"}, function(selection){
+				console.log("View Model: ", selection[0]);
+				var path = self.actionPanel.currentContainerWidget.getModelPath();
+				var url= "http://modelseed.theseed.org/#/model" + path + "?login=patric";
+				window.location=url;
+			}, true);
+
+
+
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS","fa icon-genome-features-cds fa-2x",{label:"CDS", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View CDS for Annotated Genome"}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
