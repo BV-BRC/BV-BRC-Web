@@ -39,7 +39,7 @@ define([
 			var gID = values.genome;
 			values.genome = 'PATRICSOLR:'+gID;
 			values.fulldb = (values.fulldb && values.fulldb.length) ? 1 : 0;
-			values.output_path = WorkspaceManager.getDefaultFolder()+'/models/';
+			values.output_path = WorkspaceManager.getDefaultFolder()+'/models';
 
 			if (values.output_file === '')
 				values.output_file = gID+'_model';
