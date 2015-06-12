@@ -302,10 +302,12 @@ define([
             var disable = !this.exp_design.checked;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
             var conditionSize = this.conditionStore.data.length;
-            lrec["icon"]=this.getConditionIcon();
-            this.updateConditionStore(record=lrec, remove=false);
+            if (this.addedCond.counter < this.maxConditions){
+                this.updateConditionStore(record=lrec, remove=false);
+            }
             //make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
 			if (chkPassed && ! disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length){
+                lrec["icon"]=this.getConditionIcon();
 				var tr = this.condTable.insertRow(0);
 				var td = domConstruct.create('td', {"class":"textcol conditiondata", innerHTML:""},tr);
 				td.libRecord=lrec;
