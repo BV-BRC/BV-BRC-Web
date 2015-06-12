@@ -16,7 +16,7 @@ define([
 		data: null,
 		containerType: "model",
 		_setDataAttr: function(data){
-			this.data = data;	
+			this.data = data;
 			console.log("Model Data: ", data);
 			this.refresh();
 		},
@@ -28,16 +28,20 @@ define([
 			if (this.data) {
 				var output=['<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">'];
 				output.push("Metabolic Model - " + this.data.name + '</span></h3>');
+				output.push('<div>'+
+								'<div>View in:</div> <a href="http://modelseed.theseed.org/#/model'+this.data.path+this.data.name+'" target="_blank">'+
+								'<img src="/js/p3/resources/images/modelseed-logo.png" height="25"></a>'+
+     						'</div>')
 
 				output.push('<table class="basic stripe far2x" id="data-table"><tbody>');
 				if (this.data.autoMeta){
 					Object.keys(this.data.autoMeta).forEach(function(key){
 						output.push("<tr><td>" + key + "</td><td>" + JSON.stringify(this.data.autoMeta[key]) + "</td></tr>");
-					},this);			
+					},this);
 				}
 				output.push("</tbody></table>");
 
-				this.viewer.set("content", output.join("")); 
+				this.viewer.set("content", output.join(""));
 			}
 		},
 		startup: function(){
@@ -47,8 +51,8 @@ define([
 			this.viewer = new ContentPane({content: "Loading Metabolic Model...", region: "center"});
 			this.addChild(this.viewer);
 			this.refresh();
-		
-			/*	
+
+			/*
 			this.on("i:click", function(evt){
 				var rel = domAttr.get(evt.target,'rel');
 				if (rel) {
