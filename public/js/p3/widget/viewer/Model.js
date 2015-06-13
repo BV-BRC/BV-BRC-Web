@@ -71,7 +71,7 @@ define([
                                             return downloads;
                                         })
                     }).then(function(dls) {
-                        console.log(self.viewer)
+                        // add download table
                         output.push('<h3>Downloads</h3>')
                         var table = ['<table class="basic stripe far2x"><thead><tr><th>File</th><th>Size</th></thead>']
                         for (var i in dls) {
