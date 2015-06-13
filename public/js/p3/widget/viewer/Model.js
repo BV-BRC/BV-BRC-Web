@@ -64,7 +64,7 @@ define([
                         }
 
                         // fetch downloads urls, return objs containing them
-                        return WorkspaceManager.getDownloadLinks(paths)
+                        return WorkspaceManager.getDownloadUrls(paths)
                                         .then(function(urls) {
                                             for (var i=0; i<downloads.length; i++)
                                                 downloads[i].url = urls[i];

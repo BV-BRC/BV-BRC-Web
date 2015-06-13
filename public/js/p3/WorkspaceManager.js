@@ -353,7 +353,7 @@ define([
                 })
             }));
         },
-        getDownloadLinks: function(paths) {
+        getDownloadUrls: function(paths) {
             var paths = paths instanceof Array ? paths : [paths];
             return Deferred.when(this.api("Workspace.get_download_url", [{objects: paths}]), function(urls){
                        return urls[0];
