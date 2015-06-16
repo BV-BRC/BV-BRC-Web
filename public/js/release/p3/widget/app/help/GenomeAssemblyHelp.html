@@ -61,7 +61,7 @@ This refers to the standard deviation of the insert size between paired reads. I
         <li>Merges the two best assemblies with GAM-NGS</li>
         </ol>
     </div>
-    <div id="pipelineinfo">
+    <div class="apphelp" id="pipelineinfo">
       <h3>Assembly Pipeline</h3>
 
       The pipeline parameter is an advanced way to customize the
@@ -71,27 +71,31 @@ This refers to the standard deviation of the insert size between paired reads. I
       general, you can compose a pipeline by concating one or more
       preprocessing modules, one assembler, and optionally one
       postprocessor.
-
+      
+      </br>
       <h4>Example 1:</h4>
-      <pre>  tagdust velvet</pre>
+      <pre>   tagdust velvet</pre>
       This pipeline will simply run tagdust to remove adapter
       sequences in the reads and then assemble them with velvet.
       Note: quotes should not be used around the two modules as
       they have special meaning in pipeline syntax.
-
+      
+      </br>
       <h4>Example 2:</h4>
-      <pre> a6</pre>
+      <pre>   a6</pre>
       You can also invoke an assembler that we have not included in
       our curated strategies. In this case, A6 is an assembler with
       its built-in preprocessing and postprocessing steps.
 
+      </br>
       <h4>Example 3:</h4>
-      <pre> "tagdust none" "megahit velvet" sspace</pre>
+      <pre>   "tagdust none" "megahit velvet" sspace</pre>
       You can use quotes to specify alternative modules you would
       like to try at each step. This example will launch
       a cartesian combination of four parallel pipelines:
       tagdust+megahit+sspace, tagdust+velvet+sspace, megahit+sspace, velvet+sspace.
 
+      </br>
       <h4>Note:</h4>
       The pipeline parameter overrides the assembly strategy parameter.
       Not all modules combine well.

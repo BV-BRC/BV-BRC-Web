@@ -446,11 +446,11 @@ define("p3/WorkspaceManager", [
 
         },
 
-        getFolderContents: function(path,showHidden) {
+        getFolderContents: function(path,showHidden,recursive) {
             return Deferred.when(this.api("Workspace.ls", [{
                     paths: [path],
                     includeSubDirs: false,
-                    Recursive: false
+                    recursive: recursive ? true : false
                 }]), function(results) {
                     //console.log("path: ", path);
 

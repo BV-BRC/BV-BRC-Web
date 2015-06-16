@@ -42,12 +42,12 @@ define("p3/widget/viewer/Model", [
                 // get download links for related downloads
                 var downloads = [];
                 var path = this.data.path+'.'+this.data.name;
-                WorkspaceManager.getFolderContents(path, true)
+                WorkspaceManager.getFolderContents(path, true, true)
                     .then(function(objs) {
                         var paths = [];
                         for (var i=0; i<objs.length; i++) {
                             var obj = objs[i];
-                            if (obj.type === 'folder') continue;
+                            if (obj.type !== 'string') continue;
 
                             downloads.push({
                                             path: obj.path,

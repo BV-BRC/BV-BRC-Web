@@ -341,6 +341,10 @@ define("p3/widget/app/Rnaseq", [
 		},
 
         updateConditionStore: function(record,remove){
+            // if there is no real condition specified return
+            if (! record.condition.trim() || ! record.condition) {
+                return;
+            }
             if (remove){
                 var toRemove=this.conditionStore.query({id:record["id"]});
                 //remove condition from data store
@@ -353,7 +357,7 @@ define("p3/widget/app/Rnaseq", [
                     this.conditionStore.remove(obj.id);
                 },this);
             }
-            else{
+            else {
                 this.conditionStore.put(record);
             }
             this.condition_paired.set("store",this.conditionStore);
