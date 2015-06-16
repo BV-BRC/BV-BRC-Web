@@ -450,7 +450,7 @@ define([
             return Deferred.when(this.api("Workspace.ls", [{
                     paths: [path],
                     includeSubDirs: false,
-                    recursive: recursive ? true : false,
+                    recursive: recursive ? true : false
                 }]), function(results) {
                     //console.log("path: ", path);
 
