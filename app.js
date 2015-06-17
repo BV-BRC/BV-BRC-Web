@@ -97,7 +97,8 @@ passport.deserializeUser(function(id, done) {
 });
 
 app.use("/js/msa/", express.static(path.join(__dirname, 'node_modules/msa/build/')));
-app.use("/node_modules/msa-tnt/build/", express.static(path.join(__dirname, 'node_modules/msa-tnt/build/')));
+app.use("/js/msa/node_modules/", express.static(path.join(__dirname, 'node_modules/msa/node_modules/')));
+app.use("/node_modules/msa-tnt/", express.static(path.join(__dirname, 'node_modules/msa-tnt/')));
 app.use("/node_modules/biojs-io-newick/build/", express.static(path.join(__dirname, 'node_modules/biojs-io-newick/build/')));
 app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
 app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
