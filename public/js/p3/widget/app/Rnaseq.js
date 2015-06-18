@@ -40,8 +40,8 @@ define([
 			this.pairConditionToAttachPt={"read1":null,"read2":null,"condition_paired":["condition"]};
 			this.advPairToAttachPt={"interleaved":null, "insert_size_mean":null, "insert_size_stdev":null};
 			this.paramToAttachPt={"output_path":null,"output_file":null, "recipe":null};
-			this.singleToAttachPt={"single_end_libs":null};
-			this.singleConditionToAttachPt={"single_end_libs":null,"condition_single":["condition"]};
+			this.singleToAttachPt={"read":null};
+			this.singleConditionToAttachPt={"read":null,"condition_single":["condition"]};
             this.conditionToAttachPt={"condition":["condition","id","label"]};
             this.targetGenomeID="";
             this.shapes=["icon-square","icon-circle"];
@@ -177,7 +177,7 @@ define([
 		ingestAttachPoints: function(input_pts, target, req){
             req = typeof req !== 'undefined' ? req : true;
 			var success=1;
-            var prevalidate_ids=["read1","read2","single_end_libs","output_path","condition","condition_single","condition_paired"];
+            var prevalidate_ids=["read1","read2","read","output_path","condition","condition_single","condition_paired"];
 			Object.keys(input_pts).forEach(function(attachname){
 				var cur_value=null;
 				var incomplete =0;
@@ -186,7 +186,7 @@ define([
                 if (input_pts[attachname]){
                     targetnames=input_pts[attachname];
                 }
-				if(attachname == "read1" || attachname == "read2" || attachname == "single_end_libs" || attachname == "output_path"){
+				if(attachname == "read1" || attachname == "read2" || attachname == "read" || attachname == "output_path"){
 					cur_value=this[attachname].searchBox.value;//? "/_uuid/"+this[attachname].searchBox.value : "";
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
@@ -259,7 +259,7 @@ define([
             return this.condition.get("displayedValue");
         },
 		makeSingleName:function(libRecord){
-			var fn =this.single_end_libs.searchBox.get("displayedValue");
+			var fn =this.read.searchBox.get("displayedValue");
                         maxName=24
 			if(fn.length > maxName){
 				fn=fn.substr(0,(maxName/2)-2)+".."+fn.substr((fn.length-(maxName/2))+2);
@@ -302,10 +302,12 @@ define([
             var disable = !this.exp_design.checked;
 			var chkPassed=this.ingestAttachPoints(toIngest, lrec);
             var conditionSize = this.conditionStore.data.length;
-            lrec["icon"]=this.getConditionIcon();
-            this.updateConditionStore(record=lrec, remove=false);
+            if (this.addedCond.counter < this.maxConditions){
+                this.updateConditionStore(record=lrec, remove=false);
+            }
             //make sure all necessary fields, not disabled, available condition slots, and checking conditionSize checks dups
 			if (chkPassed && ! disable && this.addedCond.counter < this.maxConditions && conditionSize < this.conditionStore.data.length){
+                lrec["icon"]=this.getConditionIcon();
 				var tr = this.condTable.insertRow(0);
 				var td = domConstruct.create('td', {"class":"textcol conditiondata", innerHTML:""},tr);
 				td.libRecord=lrec;
@@ -337,6 +339,10 @@ define([
 		},
 
         updateConditionStore: function(record,remove){
+            // if there is no real condition specified return
+            if (! record.condition.trim() || ! record.condition) {
+                return;
+            }
             if (remove){
                 var toRemove=this.conditionStore.query({id:record["id"]});
                 //remove condition from data store
@@ -349,7 +355,7 @@ define([
                     this.conditionStore.remove(obj.id);
                 },this);
             }
-            else{
+            else {
                 this.conditionStore.put(record);
             }
             this.condition_paired.set("store",this.conditionStore);

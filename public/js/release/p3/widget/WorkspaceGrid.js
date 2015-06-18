@@ -265,7 +265,8 @@ define("p3/widget/WorkspaceGrid", [
 					headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
-						'X-Requested-With': null
+						'X-Requested-With': null,
+						"Authorization": (window.App.authorizationToken||"")
 					}
 				});
 				console.log("store: ", store);

@@ -1,18 +1,18 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
     dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-    <div style="width: 700px;margin:auto;">
+    <div style="width: 670px;margin:auto;">
 	<div class="apptitle" id="apptitle">
-	    <h3>Differential Expression</h3>
-	    <p>Transform expression data for viewing on PATRIC</p>
+	    <h3>Differential Expression Import</h3>
+	    <p>Transform differential expression data for viewing on PATRIC</p>
 	</div>
   
-	<div style="width:700px; margin:auto" class="formFieldsContainer">
-		<table class="assemblyblocks" style="width:100%">
+	<div style="width:670px; margin:auto" class="formFieldsContainer">
+		<table class="assemblyblocks">
 		<tr>
 		<td style="height:150px;">
 
-		<div id="dataBox" class="appbox appshadow">
+		<div id="dataBox" style="width:300px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Experiment Data</label>
@@ -36,23 +36,12 @@
 						<option value="phenomics">Phenomics</option>
 					</select>
 				</div>
-				<div class="half2AppRow">
-					<label>ID Type</label><br>
-					<select data-dojo-type="dijit/form/Select" name="source_id_type" style="width:100%" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="refseq_locus_tag">RefSeq Locus Tag</option>
-						<option value="feature_id">PATRIC Feature ID</option>
-						<option value="gi">NCBI GI Number</option>
-						<option value="protein_id">NCBI Protein ID</option>
-						<option value="seed_id">SEED ID</option>
-						<option value="alt_locus_tag">PATRIC Legacy ID</option>
-					</select>
-				</div>
 			</div>
 			
 		</div>
 		</td>
 		<td rowspan="2">
-		<div id="experimentBox" class="appbox appshadow">
+		<div id="experimentBox" style="margin-left:0px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Experiment Information</label>
@@ -70,7 +59,7 @@
 			<div class="approw">
 				<div class="appField">
 				<label>Experiment Description</label><br>
-				<div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment title must be provided.',trim:true,placeHolder:'Description'"></div>
+				<div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment description must be provided.',trim:true,placeHolder:'Description'"></div>
 				</div>
 			</div>
                        <div class="approw">
@@ -96,7 +85,7 @@
 		</tr>
 		<tr>
 		<td>
-		<div id="metaBox" class="appbox appshadow">
+		<div id="metaBox" style="width:300px" class="appbox appshadow">
 			<div class="headerrow">
 				<div style="width:85%;display:inline-block;">
 					<label class="appboxlabel">Optional Metadata</label>

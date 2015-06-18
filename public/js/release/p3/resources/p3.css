@@ -4998,6 +4998,39 @@ div.dijitNumberTextBoxRtl {
   filter: FlipH;
   -ms-filter: "FlipH";
 }
+.dijitToasterContent {
+	padding:1em;
+	padding-top:0.25em;
+	background:#73c74a;
+}
+.dijitToasterMessage{ 
+	color:#fff;
+}
+.dijitToasterWarning,
+.dijitToasterError,
+.dijitToasterFatal{
+	font-weight:bold;
+	color:#fff;
+}
+.dijitToasterWarning .dijitToasterContent{
+	background:#d4d943;
+} 
+.dijitToasterError .dijitToasterContent{
+	background:#c46600;
+}
+ 
+.dijitToasterClip {
+	position: absolute;
+	z-index: 5000;
+	overflow: hidden;
+}
+.dijitToasterContainer {
+	display: block;
+	position: absolute;
+	width: 17.5em;
+	margin: 0px;
+	font:0.75em;
+}
 .patric .HeaderBar {
 	width: 100%;
 	border: 0px;
@@ -5263,10 +5296,9 @@ a.HelpLink:active {
   color: #09456f;
 }
 .wsBreadCrumb {
-	font-size:1.1em;
+	font-size:1.2em;
 	margin:2px;
-	margin-top: 4px;
-	margin-left: 2px;
+	margin-left: 4px;
 	font-weight: 600;
 	padding:2px;
 	color: #134d75;
@@ -5386,6 +5418,9 @@ th.dgrid-cell.wsItemType {
 	background: #333;
 	color:#333;
 	font-size: 1.1em;
+}
+.JobStatusButton {
+	cursor: pointer;
 }
 .JobStatusButton > A:first-child,
 .JobStatusButton > SPAN:first-child {
@@ -5665,6 +5700,10 @@ table.librarytable.disabled{
     filter: alpha(opacity = 60);
     font-color: #ccc;
 }
+.apphelp a{
+    text-decoration: underline;
+    color: #06C;
+}
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
 .emptyrow {min-height:23px;
@@ -5807,6 +5846,9 @@ font-size: 12px;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
     right: 0px; 
+}
+.Modeling .row {
+	margin-top: 5px;
 }
 .GenomeList {
 	font-size: 1.2em;
@@ -8111,6 +8153,9 @@ body.patric *:focus {
 .layer > H1 {
 	color: #333;
 }
+.dijitToasterContainer {
+	margin: 5px;
+}
 .ShowWithAuth {
 	display: none;
 }
@@ -8148,7 +8193,7 @@ body.patric *:focus {
 }
 .claro .flippableDialog.dijitDialog .flipper {
 	border: 1px solid #759dc0;
-	box-shadow: 0 1px 5px rgba(0,0,0,0.25); 
+	box-shadow: 0 1px 5px rgba(0,0,0,0.25);
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0.25);
 }
 .claro .flipped .flipper {
@@ -8177,7 +8222,6 @@ body.patric *:focus {
 	right: 0;
 	bottom: 0;
 	border:0px;
-	
 }
 .claro .dijitDialog .backpane {
 	background: #fff;
@@ -8228,17 +8272,16 @@ body.patric *:focus {
 	color: #e75200;
 }
 .fileUploadButton {
-	position: relative; 
-	overflow:hidden; 
-	margin: auto; 
+	position: relative;
+	overflow:hidden;
+	margin: auto;
 	margin-bottom: 8px;
 	width:90%;
-	border: 1px solid #333; 
+	border: 1px solid #333;
 	cursor: pointer;
 	text-align:center;
 	color: #333;
 	background: #bfdaf4;
-	
 }
 .fileUploadButton:hover {
 	border: 1px solid #333;
@@ -8249,7 +8292,7 @@ body.patric *:focus {
 	padding: 4px;
 	font-size: 1.1em;
 }
-.fileUploadButton > input { 
+.fileUploadButton > input {
 	position:absolute;
 	top:0;
 	right:0;
@@ -8271,10 +8314,10 @@ body.patric *:focus {
 	cursor: default ;
 }
 .claro .dojoDndItemOver {
-	background: #ddd;	
+	background: #ddd;
 }
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
-	background: #bfd6eb;	
+	background: #bfd6eb;
 }
 .UserProfileForm {
 	width: 700px;
@@ -8283,7 +8326,7 @@ body.patric *:focus {
 .UserProfileForm Table {
 	border: 0px;
 	width: 100%;
-} 
+}
 .RegistrationForm TD,
 .UserProfileForm  TD {
 	border: 0px;

@@ -250,6 +250,7 @@ define("p3/widget/JobsGrid", [
 					headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
+						"Authorization": (window.App.authorizationToken||""),
 						'X-Requested-With': null
 					}
 				});

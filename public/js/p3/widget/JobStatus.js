@@ -33,9 +33,13 @@ define([
 			Topic.subscribe("/Jobs", lang.hitch(this,"onJobMessage"))
 			JobManager.getJobSummary().then(lang.hitch(this,"onJobMessage"));
 			this.tooltip = new Tooltip({
-				connectId: [this.focusNode],
-				label: " Completed &middot; In progress &middot; Queued &middot; Suspended"
+				connectId: [this.domNode],
+				label: " Completed &middot; In progress &middot; Queued &middot; Suspended",
+				position: ["above"]
 			});
+		},
+		openJobs: function(){
+			Topic.publish("/navigate", {href: "/job/"});
 		},
 		onJobMessage: function(msg){
 			//console.log("Job Message: ", msg);

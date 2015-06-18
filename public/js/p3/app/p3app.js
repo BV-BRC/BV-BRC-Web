@@ -3,7 +3,7 @@ define([
 	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr","dojo/dom-construct",
 	"dijit/registry","dojo/request",
 	"dojo/_base/Deferred",
-	"dojo/store/JsonRest",
+	"dojo/store/JsonRest","dojox/widget/Toaster",
 	"dojo/ready","./app","../router",
 	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
 	"../jsonrpc", "../panels","../WorkspaceManager","dojo/keys",
@@ -13,7 +13,7 @@ define([
 	Topic,on,dom,domClass,domAttr,domConstruct,
 	Registry,xhr,
 	Deferred,
-	JsonRest,
+	JsonRest,Toaster,
 	Ready,App,
 	Router,Window,
 	Drawer,ContentPane,
@@ -175,6 +175,7 @@ define([
 
 			// },2000);
 
+			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
 			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
 			//this.leftDrawer.startup();
 			//console.log("leftDrawer", this.leftDrawer)

@@ -20,7 +20,7 @@ define([
 		"disabled":false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads"],
+		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads","model"],
 		design: "sidebar",
 		splitter: false,
 		startup: function(){
@@ -196,7 +196,40 @@ define([
 				});
 				popup.close(downloadTTSelectFile);
 			}));
-	
+
+			this.browserHeader.addAction("ViewAnnotatedGenome","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome"}, function(selection){
+				console.log("View Genome Annotation: ", selection[0]);
+				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
+				var url= "/portal/portal/patric/Genome?cType=genome&cId=" + gid;
+				window.location=url;
+
+			}, true);
+
+			this.browserHeader.addAction("ViewModel","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["model"], tooltip: "View Model @ Modelseed"}, function(selection){
+				console.log("View Model: ", selection[0]);
+				var path = self.actionPanel.currentContainerWidget.getModelPath();
+				var url= "http://modelseed.theseed.org/#/model" + path + "?login=patric";
+				//window.location=url;
+				window.open(url,"_blank");
+			}, true);
+
+
+
+			this.browserHeader.addAction("ViewAnnotatedGenomeCDS","fa icon-genome-features-cds fa-2x",{label:"CDS", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View CDS for Annotated Genome"}, function(selection){
+				console.log("View Genome Annotation: ", selection[0]);
+				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
+				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+gid;
+
+			}, true);
+
+			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser","fa icon-genome_browser fa-2x",{label:"BROWSER", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome in Genome Browser"}, function(selection){
+				console.log("View Genome Annotation: ", selection[0]);
+				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
+				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenes&cId=" + + gid;
+
+			}, true);
+
+
 
 
 			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{label:"UPLOAD", multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
@@ -517,19 +550,32 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
+					case "model":
+						panelCtor = window.App.getConstructor("p3/widget/viewer/Model");
+						params.data = obj;
+						break;
 					case "job_result":
 						var d = "p3/widget/viewer/JobResult"
 						console.log("job_result object: ", obj);
 						if (obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
-							if (id=="DifferentialExpression"){
-								console.log("Using Experiement Viewer");
-								d = "p3/widget/viewer/Experiment"
-							}else if (id=="GenomeComparison") {
-								console.log("SeqComparison Viewer");
-								d = "p3/widget/viewer/SeqComparison"
-							}	
+							switch(id){
+								case "DifferentialExpression":
+									console.log("Using Experiement Viewer");
+									d = "p3/widget/viewer/Experiment"
+									break;
+								case "GenomeComparison": 
+									console.log("SeqComparison Viewer");
+									d = "p3/widget/viewer/SeqComparison"
+									break;
+								case "GenomeAnnotation": 
+									console.log("GenomeAnnotation Viewer");
+									d = "p3/widget/viewer/GenomeAnnotation"
+									break;
+
+							}
 						}			
+						console.log("LOAD VIEWER: ", d, params);
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
 						//params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
@@ -538,7 +584,6 @@ define([
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
 						params.data= obj;
 						break;
-	
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};

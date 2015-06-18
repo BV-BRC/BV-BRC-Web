@@ -61,6 +61,20 @@ define([
 				}
 			}));
 
+			this.advrow2.turnedOn=(this.advrow2.style.display!='none');
+			on(this.advanced2, 'click', lang.hitch(this, function(){
+				this.advrow2.turnedOn=(this.advrow2.style.display!='none');
+				if (! this.advrow2.turnedOn){
+					this.advrow2.turnedOn=true;
+					this.advrow2.style.display='block';
+					this.advicon2.className="fa fa-caret-left fa-1";
+				}
+				else{	
+					this.advrow2.turnedOn=false;
+					this.advrow2.style.display='none';
+					this.advicon2.className="fa fa-caret-down fa-1";
+				}
+			}));
 			this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function(attachname){
 				this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function(/*anything*/ value, /*__Constraints*/ constraints){
 					return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
@@ -100,6 +114,9 @@ define([
 			}
 			var assembly_values={};
 			var values = this.inherited(arguments);
+            if (values.hasOwnProperty("pipeline") && values["pipeline"]){
+                assembly_values["pipeline"]=values["pipeline"];
+            }
 			var pairedList = query(".pairdata");	
 			var singleList = query(".singledata");
 			var pairedLibs =[];

@@ -20,7 +20,7 @@ define("p3/panels", [],function(){
                 layer: "p3/layer/panels",
                 ctor: "p3/widget/Uploader",
                 dataParam: "path",
-                params: {}
+                params: {multiple:true}
             
             },
             UploadReplace: {
