@@ -85,6 +85,7 @@ define("dijit/form/ComboBoxMixin", [
 						// summary:
 						//		Queries the store for objects.   Like dojo/store/DataStore.query()
 						//		except returned Deferred contains array of native items.
+						console.log("OLD API QUERY");
 						var deferred = new Deferred(function(){ fetchHandle.abort && fetchHandle.abort(); });
 						deferred.total = new Deferred();
 						var fetchHandle = this.fetch(lang.mixin({
