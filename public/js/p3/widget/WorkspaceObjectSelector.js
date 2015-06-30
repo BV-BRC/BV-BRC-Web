@@ -350,7 +350,8 @@ define([
 		startup: function(){
 			if (this._started){return;}
 			console.log("call getObjectsByType(); ", this.type);
-			this.inherited(arguments);	
+			this.inherited(arguments);
+
 			var _self=this;
 			if (!this.path) {
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
@@ -365,7 +366,32 @@ define([
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
+            this.searchBox.labelFunc=this.labelFunc;
 		},
+
+        labelFunc: function(item, store){
+            var label="<div style='font-size:1em; border-bottom:1px solid grey;'>"+"/";
+            var pathParts=item.path.split('/');
+            var workspace=pathParts[2];
+            var labelParts=[workspace];
+            if(pathParts.length-2 > 3){
+                labelParts.push("...");
+            }
+            if(pathParts.length-2 > 2){
+                var parentFolder=pathParts[pathParts.length-2];
+                parentFolder=parentFolder.replace(/^\./,"");
+                labelParts.push(parentFolder);
+            }
+            if(pathParts.length-1 >2){
+                var objName=pathParts[pathParts.length-1];
+                labelParts.push(objName);
+            }
+            labelParts[labelParts.length-1]="</br>"+"<span style='font-size:1.05em; font-weight:bold;'>"+labelParts[labelParts.length-1]+"</span></div>";
+            label+=labelParts.join("/");
+            return label;
+        },
+
+        
 
 		validate: function(/*Boolean*/ isFocused){
 			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
