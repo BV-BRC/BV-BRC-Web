@@ -19,6 +19,7 @@ define([
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 11,
+        initConditions: 5,
         maxConditions: 10,
         conditionStore: null,
 
@@ -63,7 +64,7 @@ define([
             
             //create help dialog for infobutton's with infobuttoninfo div's
             this.emptyTable(this.libsTable, this.startingRows);
-            this.emptyTable(this.condTable, this.maxConditions);
+            this.emptyTable(this.condTable, this.initConditions);
 
             //adjust validation for each of the attach points associated with read files
 			Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function(attachname){
@@ -314,7 +315,7 @@ define([
 				td.innerHTML="<div class='libraryrow'>"+this.makeConditionName()+"</div>";
 				var tdinfo=domConstruct.create("td", {"class":"iconcol", innerHTML: lrec["icon"]},tr);
 				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.maxConditions){
+				if(this.addedCond.counter < this.initConditions){
 					this.condTable.deleteRow(-1);
 				}
                    
