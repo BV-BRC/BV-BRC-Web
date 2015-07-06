@@ -19,7 +19,7 @@ define([
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 11,
-        maxConditions: 5,
+        maxConditions: 10,
         conditionStore: null,
 
         listValues:function(obj){
