@@ -12,8 +12,9 @@ define([
 		missingMessage:'Scientific Name must be provided.',
 		placeHolder:'e.g. Bacillus Cereus',
 		searchAttr: "taxon_name",
-        resultFields: ["taxon_name","taxon_id"],
-        stringAttrs: [],
+        resultFields: ["taxon_name","taxon_id","taxon_rank"],
+        exactStringAttrs: ["taxon_rank"],
+        subStringAttrs: ["taxon_name"],
         intAttrs:["taxon_id"],
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
@@ -33,21 +34,31 @@ define([
 				console.log("Store Headers: ", _self.store.headers);
 				var q = "?";
                 var extraSearch=[];
-                var qString=query[_self.searchAttr].toString();
-                _self.intAttrs.forEach(function(item){
-                    if(!isNaN(qString.slice(1,qString.length-1))){ //only if its a number
-                        extraSearch.push("eq("+item + "," + qString.slice(1,qString.length-1) + ")");
-                    }
+                var qString=query[_self.searchAttr].toString().replace(/\*|\[|\]/g,'');
+                var queryParts=qString.split(/[ ,]+/);
+                queryParts.forEach(function(qPart){
+                    _self.intAttrs.forEach(function(item){
+                        if(!isNaN(qPart)){ //only if its a number
+                            extraSearch.push("eq("+item + "," + qPart + ")");
+                        }
+                    });
+                    _self.subStringAttrs.forEach(function(item){
+                        extraSearch.push("eq("+item + ",*" + qPart + "*)");
+                        extraSearch.push("eq("+item + "," + qPart + ")"); //for this attribute value an exact match valued more
+                    });
+                    _self.exactStringAttrs.forEach(function(item){
+                        extraSearch.push("eq("+item + "," + qPart + ")");
+                    });
                 });
-                _self.stringAttrs.forEach(function(item){
-                    extraSearch.push("eq("+item + "," + query[_self.searchAttr] + ")");
+                _self.subStringAttrs.forEach(function(item){
+                    extraSearch.push("eq("+item + ",*" + queryParts.join('*') + "*)");
                 });
-                if(extraSearch.length){
-                    q+="or("+"eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")" + extraSearch.join()+")";
-                }
-                else{
-                    q+="eq(" + _self.searchAttr + "," + query[_self.searchAttr] + ")";
-                }
+                _self.exactStringAttrs.forEach(function(item){
+                    extraSearch.push("eq("+item + "," + qString + ")");
+                });
+
+                q+="or("+extraSearch.join(',')+")";
+
 				if (_self.queryFilter) {
 					q+=_self.queryFilter
 				}
@@ -63,7 +74,7 @@ define([
 			return (!this.required || this.get('displayedValue') != "");
 		},
 		labelFunc: function(item, store){
-			var label="[" + item.taxon_id + "] " + item.taxon_name;
+			var label="[" + item.taxon_id + "] ["+item.taxon_rank+"] "  + item.taxon_name;
 			return label;
 		},
 
