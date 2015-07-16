@@ -11,11 +11,12 @@ define([
 		promptMessage:'Scientific name of the organism being annotated.',
 		missingMessage:'Scientific Name must be provided.',
 		placeHolder:'e.g. Bacillus Cereus',
-		searchAttr: "taxon_name",
-        resultFields: ["taxon_name","taxon_id","taxon_rank"],
-        exactStringAttrs: ["taxon_rank"],
+		searchAttr: "taxon_id",
+        resultFields: ["taxon_name","taxon_id","taxon_rank", "lineage_names"],
+        rankAttrs: ["taxon_rank"],
         subStringAttrs: ["taxon_name"],
         intAttrs:["taxon_id"],
+        rankList:["species","no rank","genus","subspecies","family","order","class","phylum","species group","suborder","varietas","species subgroup","subclass","subgenus","forma","superphylum","superkingdom","tribe","subfamily","subphylum"],
 		//query: "?&select(taxon_name)",
 		queryExpr: "*${0}*",
 		pageSize: 25,
@@ -35,27 +36,41 @@ define([
 				var q = "?";
                 var extraSearch=[];
                 var qString=query[_self.searchAttr].toString().replace(/\*|\[|\]/g,'');
-                var queryParts=qString.split(/[ ,]+/);
+
+                var rankParts=[];
+                _self.rankList.forEach(function(rank){
+                    var re = new RegExp("(\\b)"+rank+"(\\b)","gi");
+                    var newQString = qString.replace(re, "");
+                    if (newQString != qString){
+                        rankParts.push(rank);
+                        qString= newQString.trim();
+                    }
+                });
+                
+                var queryParts= qString ? qString.split(/[ ,]+/) : [];
+
+                rankParts.forEach(function(qPart){
+                    _self.rankAttrs.forEach(function(item){
+                        extraSearch.push('eq('+item + ',"' + qPart + '")');
+                    });
+                });
+
                 queryParts.forEach(function(qPart){
                     _self.intAttrs.forEach(function(item){
-                        if(!isNaN(qPart)){ //only if its a number
+                        if(!isNaN(qPart) && qPart){ //only if its a number
                             extraSearch.push("eq("+item + "," + qPart + ")");
                         }
                     });
                     _self.subStringAttrs.forEach(function(item){
-                        extraSearch.push("eq("+item + ",*" + qPart + "*)");
                         extraSearch.push("eq("+item + "," + qPart + ")"); //for this attribute value an exact match valued more
-                    });
-                    _self.exactStringAttrs.forEach(function(item){
-                        extraSearch.push("eq("+item + "," + qPart + ")");
+                        extraSearch.push("eq("+item + ",*" + qPart + "*)");
                     });
                 });
-                _self.subStringAttrs.forEach(function(item){
-                    extraSearch.push("eq("+item + ",*" + queryParts.join('*') + "*)");
-                });
-                _self.exactStringAttrs.forEach(function(item){
-                    extraSearch.push("eq("+item + "," + qString + ")");
-                });
+                if(queryParts.lenth){
+                    _self.subStringAttrs.forEach(function(item){
+                        extraSearch.push("eq("+item + ",*" + queryParts.join('*') + "*)");
+                    });
+                }
 
                 q+="or("+extraSearch.join(',')+")";
 
@@ -66,10 +81,17 @@ define([
 				if (_self.resultFields && _self.resultFields.length>0) {
 					q += "&select(" + _self.resultFields.join(",") + ")";
 				}
+                //var re = new RegExp("\\s+","gi");
+                //q=q.replace(re,"+"); //hack appropriate web api handling spaces
 				console.log("Q: ", q);
 				return orig.apply(_self.store,[q,options]);
 			});	
 		},
+        onChange: function(){
+			var _self=this;
+            var taxObj=_self.get("item");
+            _self.set("displayedValue", _self.labelFunc(taxObj,null));
+        },
 		isValid: function(){
 			return (!this.required || this.get('displayedValue') != "");
 		},
