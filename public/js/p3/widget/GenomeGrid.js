@@ -17,7 +17,7 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			genome_id: {label:'Genome ID', field:'genome_id', hidden:true},
-			genome_name: {label:'Genome Name', field:'genome_name', formatter: formatter.linkGenome},
+			genome_name: {label:'Genome Name', field:'genome_name'},
 			taxon_id: {label:'NCBI Taxon ID', field:'taxon_id', hidden:true},
 			genome_status: {label:'Genome Status', field:'genome_status'},
 			/* genome_browser: {label:'Genome Browser', field:'genome_id', formatter:renderGenomeBrowserByGenome}, */

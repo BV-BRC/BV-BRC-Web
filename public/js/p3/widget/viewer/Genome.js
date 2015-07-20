@@ -5,7 +5,7 @@ define([
 	"dojo/request","dojo/_base/lang","../FeatureGridContainer","../SpecialtyGeneGridContainer",
 	"../ActionBar","../ContainerActionBar","../PathwaysContainer","../ProteinFamiliesContainer",
 	"../DiseaseContainer","../PublicationGridContainer","../CircularViewerContainer",
-	"../TranscriptomicsContainer","JBrowse/Browser","../InteractionsContainer","../GenomeGridContainer"
+	"../TranscriptomicsContainer","JBrowse/Browser","../InteractionsContainer"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
@@ -13,7 +13,7 @@ define([
 	xhr,lang,FeatureGridContainer,SpecialtyGeneGridContainer,
 	ActionBar,ContainerActionBar,PathwaysContainer,ProteinFamiliesContainer,
 	DiseaseContainer,PublicationGridContainer,CircularViewerContainer,
-	TranscriptomicsContainer, JBrowser,InteractionsContainer,GenomeGridContainer
+	TranscriptomicsContainer, JBrowser,InteractionsContainer
 ){
 	return declare([BorderContainer], {
 		"baseClass": "GenomeGroup",
@@ -21,51 +21,51 @@ define([
 		"query": null,
 		containerType: "genome_group",
 		params: null,
+		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		_setParamsAttr: function(params){
-			console.log("Genome List Query: ", params);
-			this.set("query", params);	
+			this.set("genome_id", params);	
 		},
-
+		_setGenome_idAttr: function(id){
+			this.genome_id = id;
+			xhr.get(this.apiServiceUrl + "/genome/" + id,{
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"	
+			}).then(lang.hitch(this,function(genome) {
+				this.genome=genome;
+				console.log("Genome: ", genome);
+				if (this._started){
+					this.refresh();
+				}
+			}));
+		},
 		_setQueryAttr: function(query){
 			this.query = query;
 			if (this.viewer){
 				this.viewer.set("query", query);
 			}
-			xhr.get(this.apiServiceUrl + "/genome/" + query + "&select(genome_id)",{
-				headers: {
-					accept: "application/json"
-				},
-				handleAs: "json"	
-			}).then(lang.hitch(this,function(genomes) {
-				console.log("Genomes: ", genomes);
-				this.genome_ids = genomes.map(function(o) { return o.genome_id; }); 
-				console.log("Genomes Count: ", genomes.length);
-				this.refresh();
-			}));
-
 		},
 		removeRows: function(ids){
 			ids.forEach(function(id){
 				var row = this.viewer.row(id);
+				this.viewer.removeRow(row.element);
 			},this);
 		},
 		refresh: function(){
-//			this.viewHeader.set("content", this.taxonomy.lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-			this.genomes.set('query', this.query);
-			
-			this.features.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))");
-			this.specialtyGenes.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))");
+			this.viewHeader.set("content", this.genome.taxon_lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
+			this.genomeOverview.set('genome', this.genome);
+			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
+			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
 		},
 		postCreate: function(){
 			//if (this._started) {return;}
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({content: "Taxonomy", region: "top"});
+			this.viewHeader = new ContentPane({content: "Genome", region: "top"});
 			this.viewer= new TabContainer({region: "center"});
-			this.taxonTree= new ContentPane({content: "Taxonomy", title: "Taxonomy"});
-			this.taxonOverview= new ContentPane({content: "Taxon Overview", title: "Overview",style: "overflow:auto;"});
+			this.genomeOverview= new GenomeOverview({title: "Overview",style: "overflow:auto;"});
 			this.phylogeny= new ContentPane({content: "Phylogeny", title: "Phylogeny"});
-			this.genomes= new GenomeGridContainer({title: "Genomes"});
 			var gbContentPane = new ContentPane({title: "Genome Browser", content: '<div id="' + this.id + "_jbrowse" + '"></div>'});
 			this.circularViewer= new CircularViewerContainer({title: "Circular Viewer"});
 
@@ -77,10 +77,8 @@ define([
 			this.interactions= new InteractionsContainer({title: "Interactions"});
 			this.diseases= new DiseaseContainer({title: "Diseases"});
 			this.literature= new PublicationGridContainer({content: "Literature", title: "Literature"});
-			this.viewer.addChild(this.taxonOverview);
-			this.viewer.addChild(this.taxonTree);
+			this.viewer.addChild(this.genomeOverview);
 			this.viewer.addChild(this.phylogeny);
-			this.viewer.addChild(this.genomes);
 			this.viewer.addChild(gbContentPane);
 			this.viewer.addChild(this.circularViewer);
 			this.viewer.addChild(this.features);

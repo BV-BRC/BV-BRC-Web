@@ -1,0 +1,46 @@
+<div style="overflow: auto;">
+	<table><tbody>
+	<tr>
+		<td style="width:600px;vertical-align:top;">		
+	<div class="section">
+		<div style="background: #efefef;">Genome Summary</div> 
+		<table><tbody>
+			<tr><td span="2">Summary</td><td data-dojo-attach-point="genomeSummary"></td></tr>
+			<tr><td>Organism Info</td><td>Genome ID</td><td data-dojo-attach-point="genome_idNode"></td></tr>
+			<tr><td></td><td>Genome Status</td><td data-dojo-attach-point="genome_statusNode"></td></tr>
+			<tr><td></td><td>Antimicrobial Reistance</td><td data-dojo-attach-point="amrNode"></td></tr>
+			<tr><td>Isolate Info</td><td>Collection Date</td><td data-dojo-attach-point="collection_dateNode"></td></tr>
+			<tr><td></td><td>Isolation Country</td><td data-dojo-attach-point="isolation_countryNode"></td></tr>
+
+			<tr><td>Host Info</td><td>Host Name</td><td data-dojo-attach-point="host_nameNode"></td></tr>
+			<tr><td>Sequence Info</td><td>Sequencing Status</td><td data-dojo-attach-point="sequencing_statusNode"></td></tr>
+			<tr><td>Project Info</td><td>Completion Date</td><td data-dojo-attach-point="completion_dateNode"></td></tr>
+		</tbody></table>
+	</div>
+		</td>
+		<td>&nbsp;</td>
+		<td style="vertical-align: top">
+	<div class="section" style="">
+		<div style="background: #efefef;">Genomic Feature Summary</div>
+		<div data-dojo-attach-point="gfDataNode">
+		Loading Genomic Feature Summary....	
+		</div>
+	</div>	
+
+	<div class="section" style="">
+		<div style="background: #efefef;">Protein Feature Summary</div>
+		<div data-dojo-attach-point="pfDataNode">
+		Loading Protein Feature Summary...	
+		</div>
+	</div>	
+
+	<div class="section" style="">
+		<div style="background: #efefef;">Specialty Gene Summary</div>
+		<div data-dojo-attach-point="sgDataNode">
+		Loading Specialty Gene Summary...
+		</div>
+	</div>	
+		</td>
+	</tr>
+	</tbody></table>
+</div>

@@ -1,7 +1,14 @@
 
                 <script>
-                        var dojoConfig = {
-                                parseOnLoad: false
+                        dojoConfig = {
+                                parseOnLoad: false,
+				packages: [
+					{ name: 'lazyload', location: "../lazyload",main: 'lazyload' },
+					{ name: 'jDataView', location: '../jDataView/src', main: 'jdataview' },
+					{ name: "JBrowse", location: "../jbrowse.repo/src/JBrowse" },
+					//{ name: "plugins", location: "/js/jbrowse.repo/plugins" }
+					{ name: "RegexSequenceSearch", location: "/js/jbrowse.repo/plugins/RegexSequenceSearch/js" }
+				]	
                         }
                 </script>
                 <% if (request&&request.production){ %>
@@ -12,7 +19,7 @@
                         <script src="/js/dojo/dojo.js"></script>
                         <script>
                 <% } %>
-
+			console.log("DOJO CONFIG: ", dojo.config);
                         require(["<%= request.applicationModule %>"],function(App){
                                 appOpts=<%- JSON.stringify(request.applicationOptions || {}) %>
                                 appOpts.workspaceAPI = "<%- request.applicationOptions.workspaceServiceURL %>";

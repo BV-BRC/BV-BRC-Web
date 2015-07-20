@@ -32,3 +32,21 @@
 [submodule "node_modules/msa-tnt"]
 	path = node_modules/msa-tnt
 	url = https://github.com/aswarren/msa-tree.git
+[submodule "public/js/jbrowse"]
+	path = public/js/jbrowse.repo
+	url = https://github.com/GMOD/jbrowse.git
+[submodule "public/js/FileSaver"]
+	path = public/js/FileSaver
+	url = https://github.com/dkasenberg/FileSaver.js.git
+[submodule "public/js/jDataView"]
+	path = public/js/jDataView
+	url = https://github.com/rbuels/jDataView.git
+[submodule "public/js/json-schema"]
+	path = public/js/json-schema
+	url = https://github.com/kriszyp/json-schema.git
+[submodule "public/js/jszlib"]
+	path = public/js/jszlib
+	url = https://github.com/rbuels/jszlib.git
+[submodule "public/js/lazyload"]
+	path = public/js/lazyload
+	url = https://github.com/rbuels/lazyload.git

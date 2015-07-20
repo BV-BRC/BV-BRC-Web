@@ -98,7 +98,7 @@ define([
 				_self.navigate(newState);
 			});
 			Router.register("\/view(\/.*)", function(params, path){
-				console.log("view URL Callback", arguments);
+				console.log("view URL Callback", arguments,location);
 				
 				var parts = path.split("/")
 				parts.shift();
