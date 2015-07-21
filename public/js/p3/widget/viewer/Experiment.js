@@ -35,6 +35,7 @@ define([
 				}
 			 	return f;
 			});
+            paths.sort();
 
 			console.log("Experiment Sub Paths: ", paths);
 
