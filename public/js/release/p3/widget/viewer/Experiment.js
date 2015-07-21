@@ -35,6 +35,7 @@ define("p3/widget/viewer/Experiment", [
 				}
 			 	return f;
 			});
+            paths.sort();
 
 			console.log("Experiment Sub Paths: ", paths);
 
