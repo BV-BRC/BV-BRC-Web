@@ -140,11 +140,19 @@ define([
 			//		assembly_values[k]=values[k];
 			//	}
 			//}
+            var combinedList = pairedList.concat(singleList);
             assembly_values["reference_genome_id"]=values["genome_name"];
             if(this.exp_design.checked){
-			    condList.forEach(function(libRecord){
-				    condLibs.push(libRecord.condition)});
+			    condList.forEach(function(condRecord){
+                    for(var i =0; i < combinedList.length; i++){
+                        if(combinedList[i].condition == condRecord.condition){
+				            condLibs.push(condRecord.condition);
+                            break;
+                        }
+                    }
+                });
             }
+
 			pairedList.forEach(function(libRecord){
                 var toAdd={};
                 if('condition' in libRecord && this.exp_design.checked){
