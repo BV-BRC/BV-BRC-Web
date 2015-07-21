@@ -31517,7 +31517,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "failed":
 					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "queued":
-					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+					return '<i class="fa icon-circle fa-1x" style="color:orange" title="Queued" />'
 			}
 		},
 		wsItemType: function(val){

@@ -161,7 +161,7 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 				case "failed":
 					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "queued":
-					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+					return '<i class="fa icon-circle fa-1x" style="color:orange" title="Queued" />'
 			}
 		},
 		wsItemType: function(val){
