@@ -188,6 +188,12 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
+		appLabel: function(appName){
+			if (appName == "GenomeComparison") {
+				return "Proteome Comparison"	
+			}
+			return appName;
+		},
 		autoLabel: function(ws_location,autoData){
 			_autoLabels={};
                         if (ws_location=="itemDetail"){
