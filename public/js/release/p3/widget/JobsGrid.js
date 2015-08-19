@@ -39,7 +39,8 @@ define("p3/widget/JobsGrid", [
 				},
 				"app": {
 					label: "App",
-					field: "app"
+					field: "app",
+					formatter: formatter.appLabel
 				},
 				parameters: {
 					label: "Output Name",

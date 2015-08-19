@@ -27290,7 +27290,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation"], tooltip: "Delete Selection"}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation","RNASeq"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -27928,7 +27928,7 @@ define([
 
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
-				    console.log("dblclick row:", row)
+					console.log("ItemDblClick (row): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
@@ -27949,13 +27949,13 @@ define([
 				    	var row = _self.row(evt);
 					evt.preventDefault();
 					evt.stopPropagation();
+					console.log("ItemDblClick (icon): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
 						bubbles: true,
 						cancelable: true
 					});	
-	
 
 				});
 				//_selection={};
@@ -27963,14 +27963,16 @@ define([
 
 				this.on("dgrid-select", function(evt) {
 					console.log('dgrid-select: ', evt);
-					var newEvt = {
-						rows: evt.rows,
-						selected: evt.grid.selection,
-						grid: _self,
-						bubbles: true,
-						cancelable: true
-					}	
-					on.emit(_self.domNode, "select", newEvt);
+					setTimeout(function(){
+						var newEvt = {
+							rows: evt.rows,
+							selected: evt.grid.selection,
+							grid: _self,
+							bubbles: true,
+							cancelable: true
+						}	
+						on.emit(_self.domNode, "select", newEvt);
+					},250);
 					//console.log("dgrid-select");
 					//var rows = event.rows;
 					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
@@ -31544,6 +31546,12 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
+		appLabel: function(appName){
+			if (appName == "GenomeComparison") {
+				return "Proteome Comparison"	
+			}
+			return appName;
+		},
 		autoLabel: function(ws_location,autoData){
 			_autoLabels={};
                         if (ws_location=="itemDetail"){
@@ -34857,7 +34865,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			console.log("setSelection", sel);
+			//console.log("setSelection", sel);
 			this.selection = sel;
 
 //			return;
@@ -34865,7 +34873,7 @@ define([
 			var selectionTypes = {}
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
-				console.log("Checking s: ", type, s);
+				//console.log("Checking s: ", type, s);
 				if (type=="job_result") {
 					if (s.autoMeta && s.autoMeta.app) {
 						if (typeof s.autoMeta.app=="string") {
@@ -34875,21 +34883,21 @@ define([
 						}
 					}
 				}
-				console.log("Type: ", type);
+				//console.log("Type: ", type);
 				selectionTypes[type]=true;
 			});
-			console.log("selectionTypes: ", selectionTypes);
+			//console.log("selectionTypes: ", selectionTypes);
 	
 			if (sel.length>1) {
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
 //				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
-					console.log("Check action: ", an, this._actions[an].options);
+					//console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
 			
 
-				console.log("multiselect valid: ", valid)
+				//console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){
 				valid = Object.keys(this._actions)
 			}else{
@@ -34899,17 +34907,17 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes)
-			console.log("Filtering for Types: ", types);
+			//console.log("Filtering for Types: ", types);
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
-				console.log("validTypes for action : ",an, validTypes);
+				//console.log("validTypes for action : ",an, validTypes);
 				var validContainerTypes = act.options.validContainerTypes || null;
 
 				if (validContainerTypes){
-					console.log("checkValidContainerTypes", validContainerTypes);
-					console.log("Current ContainerType: ", this.currentContainerType);
-					console.log("Current Container Widget: ", this.currentContainerWidget);
+					//console.log("checkValidContainerTypes", validContainerTypes);
+					//console.log("Current ContainerType: ", this.currentContainerType);
+					//console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
@@ -34922,7 +34930,7 @@ define([
 				});		
 			},this);
 
-			console.log("ValidTypes: ", valid);
+			//console.log("ValidTypes: ", valid);
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
@@ -34939,14 +34947,14 @@ define([
 			var _self=this;
 			this.containerNode=this.domNode;
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				console.log("evt.target: ", evt.target);
+				//console.log("evt.target: ", evt.target);
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
 					target = evt.target;
 				}else{
 					target = evt.target.parentNode;
 				}
-				console.log("target: ", target);
+				//console.log("target: ", target);
 				if (target && target.attributes && target.attributes.rel) {	
 					var rel = target.attributes.rel.value;
 					if (_self._actions[rel]) {
@@ -34956,17 +34964,17 @@ define([
 			});	
 
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
-//				console.log("mouseover evt: ", evt.target);
+//				//console.log("mouseover evt: ", evt.target);
 //			});	
 			new Tooltip({
 				connectId: this.domNode,
 				selector: ".ActionButtonWrapper",
 				getContent: function(matched){
-					console.log("Matched: ", matched);
+					//console.log("Matched: ", matched);
 					var rel = matched.attributes.rel.value;
-					console.log("REL: ", rel);
+					//console.log("REL: ", rel);
 					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-						console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+						//console.log("_self._actions[rel]:", rel, _self._actions[rel]);
 						return _self._actions[rel].options.tooltip
 					}else if (matched.attributes.title && matched.attributes.title.value){
 						return  matched.attributes.title.value;
