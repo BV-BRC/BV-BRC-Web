@@ -197,6 +197,9 @@ define([
                 }
 				if(attachname == "read1" || attachname == "read2" || attachname == "read" || attachname == "output_path"){
 					cur_value=this[attachname].searchBox.value;//? "/_uuid/"+this[attachname].searchBox.value : "";
+                    if(attachname == "read2" && this["read2"].searchBox.value == this["read1"].searchBox.value){
+                        this["read2"].searchBox.value="";
+                    }
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 				}
@@ -448,7 +451,7 @@ define([
 			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
-			if (chkPassed){
+			if (chkPassed && lrec.read1 != lrec.read2){
 				var tr = this.libsTable.insertRow(0);
                 lrec["id"]=this.libraryID;
                 lrec["row"]=tr;
