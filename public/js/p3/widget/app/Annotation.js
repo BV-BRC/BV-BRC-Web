@@ -42,17 +42,22 @@ define([
             this._autoNameSet=true;
             var tax_id=this.tax_idWidget.get("item").taxon_id;
             var sci_name=this.tax_idWidget.get("item").taxon_name;
+            //var tax_obj=this.tax_idWidget.get("item");
             if(tax_id){
-                //var name_promise=this.scientific_nameWidget.store.get("?taxon_id="+tax_id);
-                //name_promise.then(lang.hitch(this, function(tax_obj) {
-                //    if(tax_obj && tax_obj.length){
-                //        this.scientific_nameWidget.set('item',tax_obj[0]);
-                //    }
-                //}));
-                this.scientific_nameWidget.set('displayedValue',sci_name);
-                this.scientific_nameWidget.set('value',sci_name);
-            }
-			this.changeCode(this.tax_idWidget.get("item"));
+                var name_promise=this.scientific_nameWidget.store.get(tax_id);
+                name_promise.then(lang.hitch(this, function(tax_obj) {
+                    if(tax_obj){
+                        this.scientific_nameWidget.set('item',tax_obj);
+                        this.scientific_nameWidget.validate();
+			            this.changeCode(this.tax_idWidget.get("item"));
+                    }
+                }));
+                //this.scientific_nameWidget.set('value',sci_name);
+                //this.scientific_nameWidget.set('displayedValue',sci_name);
+                //this.scientific_nameWidget.set("item",tax_obj);
+                //this.scientific_nameWidget.validate();
+
+            } 
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
@@ -67,8 +72,8 @@ define([
                 //}));
                 this.tax_idWidget.set('displayedValue',tax_id);
                 this.tax_idWidget.set('value',tax_id);
+			    this.changeCode(this.scientific_nameWidget.get("item"));
             }
-			this.changeCode(this.scientific_nameWidget.get("item"));
 			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
