@@ -156,7 +156,7 @@ define([
                                 this.viewer.on("dgrid-select", function(evt) {
                                         console.log('dgrid-select: ', evt);
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self.viewer,
                                                 bubbles: true,
@@ -172,7 +172,7 @@ define([
                                 this.viewer.on("dgrid-deselect", function(evt) {
                                         console.log("dgrid-select");
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self.viewer,
                                                 bubbles: true,

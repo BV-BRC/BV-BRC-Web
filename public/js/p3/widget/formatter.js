@@ -161,7 +161,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "failed":
 					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "queued":
-					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+					return '<i class="fa icon-circle fa-1x" style="color:orange" title="Queued" />'
 			}
 		},
 		wsItemType: function(val){
@@ -184,9 +184,17 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />'
 				case "job_result_GenomeAssembly":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
+				case "job_result_RNASeq":
+					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
+		},
+		appLabel: function(appName){
+			if (appName == "GenomeComparison") {
+				return "Proteome Comparison"	
+			}
+			return appName;
 		},
 		autoLabel: function(ws_location,autoData){
 			_autoLabels={};

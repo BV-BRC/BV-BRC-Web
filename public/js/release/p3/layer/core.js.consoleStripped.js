@@ -706,8 +706,6 @@ return declare("dojo.store.JsonRest", base, {
 			query = xhr.objectToQuery(query);
 			query = query ? (hasQuestionMark ? "&" : "?") + query: "";
 		}
-
-		 0 && console.log("Store Query: ", query);
 		if(options.start >= 0 || options.count >= 0){
 			headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 				(("count" in options && options.count != Infinity) ?
@@ -730,7 +728,6 @@ return declare("dojo.store.JsonRest", base, {
 				query += ")";
 			}
 		}
-		 0 && console.log("Query before GET: ", query);
 		var results = xhr("GET", {
 			url: this.target + (query || ""),
 			handleAs: "json",
@@ -749,7 +746,6 @@ return declare("dojo.store.JsonRest", base, {
 });
 
 });
-
 },
 'dojo/store/util/QueryResults':function(){
 define(["../../_base/array", "../../_base/lang", "../../when"
@@ -26958,7 +26954,8 @@ define([
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				 0 && console.log("selection: ", selection);
 				 0 && console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+				 0 && console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
 				popup.close(downloadTT);
 			});
 
@@ -26982,7 +26979,7 @@ define([
 				var currentQuery = self.getQuery(selection[0]);
 				 0 && console.log("selection: ", selection);
 				 0 && console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
 				popup.close(downloadTT);
 			});
 			this.actionPanel.addAction("SelectDownloadTable","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Selection", tooltipDialog:downloadTTSelect}, function(selection){
@@ -27294,7 +27291,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation"], tooltip: "Delete Selection"}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation","RNASeq"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					 0 && console.log('s: ', s, s.data);
 					return s.path||s.data.path;
@@ -27932,7 +27929,7 @@ define([
 
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
-				     0 && console.log("dblclick row:", row)
+					 0 && console.log("ItemDblClick (row): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
@@ -27953,13 +27950,13 @@ define([
 				    	var row = _self.row(evt);
 					evt.preventDefault();
 					evt.stopPropagation();
+					 0 && console.log("ItemDblClick (icon): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
 						bubbles: true,
 						cancelable: true
 					});	
-	
 
 				});
 				//_selection={};
@@ -27967,14 +27964,16 @@ define([
 
 				this.on("dgrid-select", function(evt) {
 					 0 && console.log('dgrid-select: ', evt);
-					var newEvt = {
-						rows: evt.rows,
-						selected: evt.grid.selection,
-						grid: _self,
-						bubbles: true,
-						cancelable: true
-					}	
-					on.emit(_self.domNode, "select", newEvt);
+					setTimeout(function(){
+						var newEvt = {
+							rows: evt.rows,
+							selected: evt.grid.selection,
+							grid: _self,
+							bubbles: true,
+							cancelable: true
+						}	
+						on.emit(_self.domNode, "select", newEvt);
+					},250);
 					// 0 && console.log("dgrid-select");
 					//var rows = event.rows;
 					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
@@ -31521,7 +31520,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				case "failed":
 					return '<i class="fa icon-circle fa-1x" style="color:red" title="Failed" />'
 				case "queued":
-					return '<i class=fa icon-circle fa-1x" style="color:orange" title="Queued" />'
+					return '<i class="fa icon-circle fa-1x" style="color:orange" title="Queued" />'
 			}
 		},
 		wsItemType: function(val){
@@ -31544,9 +31543,17 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />'
 				case "job_result_GenomeAssembly":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
+				case "job_result_RNASeq":
+					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
 				default: 
 					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
+		},
+		appLabel: function(appName){
+			if (appName == "GenomeComparison") {
+				return "Proteome Comparison"	
+			}
+			return appName;
 		},
 		autoLabel: function(ws_location,autoData){
 			_autoLabels={};
@@ -34281,8 +34288,7 @@ function edit(cell) {
 	
 	var row, column, cellElement, dirty, field, value, cmp, dfd, node,
 		self = this;
-
-	 0 && console.log("EDIT: ", cell);	
+	
 	function show(dfd){
 		column.grid._activeCell = cellElement;
 		showEditor(column.editorInstance, column, cellElement, value);
@@ -34298,7 +34304,7 @@ function edit(cell) {
 			dfd.resolve(cmp);
 		}, 0);
 	}
-		
+	
 	if(!cell.column){ cell = this.cell(cell); }
 	if(!cell || !cell.element){ return null; }
 	
@@ -34862,7 +34868,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			 0 && console.log("setSelection", sel);
+			// 0 && console.log("setSelection", sel);
 			this.selection = sel;
 
 //			return;
@@ -34870,7 +34876,7 @@ define([
 			var selectionTypes = {}
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
-				 0 && console.log("Checking s: ", type, s);
+				// 0 && console.log("Checking s: ", type, s);
 				if (type=="job_result") {
 					if (s.autoMeta && s.autoMeta.app) {
 						if (typeof s.autoMeta.app=="string") {
@@ -34880,21 +34886,21 @@ define([
 						}
 					}
 				}
-				 0 && console.log("Type: ", type);
+				// 0 && console.log("Type: ", type);
 				selectionTypes[type]=true;
 			});
-			 0 && console.log("selectionTypes: ", selectionTypes);
+			// 0 && console.log("selectionTypes: ", selectionTypes);
 	
 			if (sel.length>1) {
 				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
 //				 0 && console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
-					 0 && console.log("Check action: ", an, this._actions[an].options);
+					// 0 && console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
 			
 
-				 0 && console.log("multiselect valid: ", valid)
+				// 0 && console.log("multiselect valid: ", valid)
 			}else if (sel.length==1){
 				valid = Object.keys(this._actions)
 			}else{
@@ -34904,17 +34910,17 @@ define([
 			}
 
 			var types = Object.keys(selectionTypes)
-			 0 && console.log("Filtering for Types: ", types);
+			// 0 && console.log("Filtering for Types: ", types);
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
-				 0 && console.log("validTypes for action : ",an, validTypes);
+				// 0 && console.log("validTypes for action : ",an, validTypes);
 				var validContainerTypes = act.options.validContainerTypes || null;
 
 				if (validContainerTypes){
-					 0 && console.log("checkValidContainerTypes", validContainerTypes);
-					 0 && console.log("Current ContainerType: ", this.currentContainerType);
-					 0 && console.log("Current Container Widget: ", this.currentContainerWidget);
+					// 0 && console.log("checkValidContainerTypes", validContainerTypes);
+					// 0 && console.log("Current ContainerType: ", this.currentContainerType);
+					// 0 && console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
@@ -34927,7 +34933,7 @@ define([
 				});		
 			},this);
 
-			 0 && console.log("ValidTypes: ", valid);
+			// 0 && console.log("ValidTypes: ", valid);
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
 				if (valid.indexOf(an)>=0){
@@ -34944,14 +34950,14 @@ define([
 			var _self=this;
 			this.containerNode=this.domNode;
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				 0 && console.log("evt.target: ", evt.target);
+				// 0 && console.log("evt.target: ", evt.target);
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
 					target = evt.target;
 				}else{
 					target = evt.target.parentNode;
 				}
-				 0 && console.log("target: ", target);
+				// 0 && console.log("target: ", target);
 				if (target && target.attributes && target.attributes.rel) {	
 					var rel = target.attributes.rel.value;
 					if (_self._actions[rel]) {
@@ -34961,17 +34967,17 @@ define([
 			});	
 
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
-//				 0 && console.log("mouseover evt: ", evt.target);
+//				// 0 && console.log("mouseover evt: ", evt.target);
 //			});	
 			new Tooltip({
 				connectId: this.domNode,
 				selector: ".ActionButtonWrapper",
 				getContent: function(matched){
-					 0 && console.log("Matched: ", matched);
+					// 0 && console.log("Matched: ", matched);
 					var rel = matched.attributes.rel.value;
-					 0 && console.log("REL: ", rel);
+					// 0 && console.log("REL: ", rel);
 					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-						 0 && console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+						// 0 && console.log("_self._actions[rel]:", rel, _self._actions[rel]);
 						return _self._actions[rel].options.tooltip
 					}else if (matched.attributes.title && matched.attributes.title.value){
 						return  matched.attributes.title.value;
@@ -38885,40 +38891,41 @@ define([
 		},
 	
 		onTaxIDChange: function(val){
-			if (val && !this.scientific_nameWidget.get('displayedValue') && !this._autoTaxSet){
-				this._autoNameSet=true;
-				var tax_id=this.tax_idWidget.get("item").taxon_id;
-				//var sci_name=this.tax_idWidget.get("item").taxon_name;
-				if(tax_id){
-					var name_promise=this.scientific_nameWidget.store.get("?taxon_id="+tax_id);
-					name_promise.then(lang.hitch(this, function(tax_obj) {
-						if(tax_obj && tax_obj.length){
-							this.scientific_nameWidget.set('item',tax_obj[0]);
-						}
-					}));
-					//this.scientific_nameWidget.set('displayedValue',sci_name);
-					//this.scientific_nameWidget.set('value',sci_name);
-				}
-			}
-			this.changeCode(this.tax_idWidget.get("item"));
+            this._autoNameSet=true;
+            var tax_id=this.tax_idWidget.get("item").taxon_id;
+            var sci_name=this.tax_idWidget.get("item").taxon_name;
+            //var tax_obj=this.tax_idWidget.get("item");
+            if(tax_id){
+                var name_promise=this.scientific_nameWidget.store.get(tax_id);
+                name_promise.then(lang.hitch(this, function(tax_obj) {
+                    if(tax_obj){
+                        this.scientific_nameWidget.set('item',tax_obj);
+                        this.scientific_nameWidget.validate();
+			            this.changeCode(this.tax_idWidget.get("item"));
+                    }
+                }));
+                //this.scientific_nameWidget.set('value',sci_name);
+                //this.scientific_nameWidget.set('displayedValue',sci_name);
+                //this.scientific_nameWidget.set("item",tax_obj);
+                //this.scientific_nameWidget.validate();
+
+            } 
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-			if (val && !this.tax_idWidget.get("displayedValue") && !this._autoNameSet){
-				this._autoTaxSet=true;
-				var tax_id=this.scientific_nameWidget.get("value");
-				if(tax_id){
-					var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-					tax_promise.then(lang.hitch(this, function(tax_obj) {
-						if(tax_obj && tax_obj.length){
-							this.tax_idWidget.set('item',tax_obj[0]);
-						}
-					}));
-					//this.tax_idWidget.set('displayedValue',tax_id);
-					//this.tax_idWidget.set('value',tax_id);
-				}
-			}
-			this.changeCode(this.scientific_nameWidget.get("item"));
+            this._autoTaxSet=true;
+            var tax_id=this.scientific_nameWidget.get("value");
+            if(tax_id){
+                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+                //tax_promise.then(lang.hitch(this, function(tax_obj) {
+                //    if(tax_obj && tax_obj.length){
+                //        this.tax_idWidget.set('item',tax_obj[0]);
+                //    }
+                //}));
+                this.tax_idWidget.set('displayedValue',tax_id);
+                this.tax_idWidget.set('value',tax_id);
+			    this.changeCode(this.scientific_nameWidget.get("item"));
+            }
 			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
@@ -38928,7 +38935,7 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"]=this.scientific_nameWidget.get('displayedValue');
+			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
 			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}
@@ -39632,7 +39639,8 @@ define([
 		startup: function(){
 			if (this._started){return;}
 			 0 && console.log("call getObjectsByType(); ", this.type);
-			this.inherited(arguments);	
+			this.inherited(arguments);
+
 			var _self=this;
 			if (!this.path) {
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
@@ -39647,7 +39655,32 @@ define([
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
+            this.searchBox.labelFunc=this.labelFunc;
 		},
+
+        labelFunc: function(item, store){
+            var label="<div style='font-size:1em; border-bottom:1px solid grey;'>"+"/";
+            var pathParts=item.path.split('/');
+            var workspace=pathParts[2];
+            var labelParts=[workspace];
+            if(pathParts.length-2 > 3){
+                labelParts.push("...");
+            }
+            if(pathParts.length-2 > 2){
+                var parentFolder=pathParts[pathParts.length-2];
+                parentFolder=parentFolder.replace(/^\./,"");
+                labelParts.push(parentFolder);
+            }
+            if(pathParts.length-1 >2){
+                var objName=pathParts[pathParts.length-1];
+                labelParts.push(objName);
+            }
+            labelParts[labelParts.length-1]="</br>"+"<span style='font-size:1.05em; font-weight:bold;'>"+labelParts[labelParts.length-1]+"</span></div>";
+            label+=labelParts.join("/");
+            return label;
+        },
+
+        
 
 		validate: function(/*Boolean*/ isFocused){
 			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
@@ -41229,9 +41262,9 @@ return number;
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Organism Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genome Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'My bacillus cereus'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy Rank/Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
 'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",

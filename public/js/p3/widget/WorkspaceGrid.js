@@ -146,7 +146,7 @@ define([
 
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				    var row = _self.row(evt);
-				    console.log("dblclick row:", row)
+					console.log("ItemDblClick (row): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
@@ -167,13 +167,13 @@ define([
 				    	var row = _self.row(evt);
 					evt.preventDefault();
 					evt.stopPropagation();
+					console.log("ItemDblClick (icon): ", row.data.path);
 					on.emit(_self.domNode, "ItemDblClick", {
 						item_path: row.data.path,
 						item: row.data,
 						bubbles: true,
 						cancelable: true
 					});	
-	
 
 				});
 				//_selection={};
@@ -181,14 +181,16 @@ define([
 
 				this.on("dgrid-select", function(evt) {
 					console.log('dgrid-select: ', evt);
-					var newEvt = {
-						rows: evt.rows,
-						selected: evt.grid.selection,
-						grid: _self,
-						bubbles: true,
-						cancelable: true
-					}	
-					on.emit(_self.domNode, "select", newEvt);
+					setTimeout(function(){
+						var newEvt = {
+							rows: evt.rows,
+							selected: evt.grid.selection,
+							grid: _self,
+							bubbles: true,
+							cancelable: true
+						}	
+						on.emit(_self.domNode, "select", newEvt);
+					},250);
 					//console.log("dgrid-select");
 					//var rows = event.rows;
 					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });

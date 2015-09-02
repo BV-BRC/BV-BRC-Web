@@ -1,4 +1,4 @@
-Build started: Mon Jun 22 2015 11:53:53 GMT-0400 (EDT)
+Build started: Thu Aug 27 2015 16:33:49 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -126,11 +126,11 @@ info(100) Assumed module uses legacy loader API.
 	module: dojox/xmpp/xmppSession
 	module: dojox/xmpp/widget/ChatSession
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.742s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:9.426s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:9.89s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:9.976s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:11.966s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:4.014s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:10.149s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:10.669s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:10.875s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:12.713s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/p3-web/public/js/dojo/resources/dnd.css
@@ -296,6 +296,47 @@ info(106) Optimizing CSS.
 	file: /Users/dmachi/work/p3-web/public/js/dojox/calc/resources/Common.css
 	file: /Users/dmachi/work/p3-web/public/js/dojox/calc/resources/GraphPro.css
 	file: /Users/dmachi/work/p3-web/public/js/dojox/calc/resources/Standard.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/Calendar.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/Calendar_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/ColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/ColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/MatrixView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/MatrixView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/MonthColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/claro/MonthColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/Calendar.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/Calendar_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/ColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/ColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/Common.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/MatrixView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/MatrixView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/MonthColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/iphone/MonthColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/Calendar.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/Calendar_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/ColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/ColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/MatrixView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/MatrixView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/MonthColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/nihilo/MonthColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/Calendar.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/Calendar_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/ColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/ColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/MatrixView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/MatrixView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/MonthColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/soria/MonthColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/Calendar.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/Calendar_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/ColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/ColumnView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/MatrixView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/MatrixView_rtl.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/MonthColumnView.css
+	file: /Users/dmachi/work/p3-web/public/js/dojox/calendar/themes/tundra/MonthColumnView_rtl.css
 	file: /Users/dmachi/work/p3-web/public/js/dojox/charting/resources/Legend.css
 	file: /Users/dmachi/work/p3-web/public/js/dojox/drawing/resources/GreekPalette.css
 	file: /Users/dmachi/work/p3-web/public/js/dojox/drawing/resources/drawing.css
@@ -1741,9 +1782,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.742s)
+Done (compile time:4.014s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.742s)
+Done (compile time:4.014s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1758,9 +1799,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:9.426s)
+Done (compile time:10.149s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.742s)
+Done (compile time:4.014s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1775,7 +1816,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:9.426s)
+Done (compile time:10.149s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1898,9 +1939,9 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:9.89s)
+Done (compile time:10.669s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.742s)
+Done (compile time:4.014s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1915,7 +1956,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:9.426s)
+Done (compile time:10.149s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2038,7 +2079,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:9.89s)
+Done (compile time:10.669s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2165,9 +2206,9 @@ globalWSObject.js.uncompressed.js:17025: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:9.976s)
+Done (compile time:10.875s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.742s)
+Done (compile time:4.014s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2182,7 +2223,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:9.426s)
+Done (compile time:10.149s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2305,7 +2346,7 @@ dojo.js.uncompressed.js:15600: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:9.89s)
+Done (compile time:10.669s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2432,46 +2473,46 @@ globalWSObject.js.uncompressed.js:17025: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:9.976s)
+Done (compile time:10.875s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:498: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
-core.js.uncompressed.js:2865: WARNING - unreachable code
+core.js.uncompressed.js:2861: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:5128: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:5124: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
 
-core.js.uncompressed.js:27867: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:27864: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:29547: WARNING - unreachable code
+core.js.uncompressed.js:29546: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:29586: WARNING - unreachable code
+core.js.uncompressed.js:29585: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:29934: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:29933: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:31498: WARNING - unreachable code
+core.js.uncompressed.js:31497: WARNING - unreachable code
 			switch (val) {
 			^
 
-core.js.uncompressed.js:37811: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:37817: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
                                 if (hint == 'avatar') {
                                 ^
 
 0 error(s), 9 warning(s)
-Done (compile time:11.966s)
+Done (compile time:12.713s)
 
 
 Has Features Detected
@@ -2484,8 +2525,11 @@ Has Features Detected
 	// dojo/_base/sniff, dojo/_firebug/firebug, dojo/keys
 	 'air':1,
 
-	// dijit/form/MultiSelect, dojo/_base/sniff, dojo/on, dojo/uacss, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/Overlay, dojox/mobile/_EditableIconMixin, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/uacss
+	// dijit/form/MultiSelect, dojo/_base/sniff, dojo/on, dojo/uacss, dojox/calendar/ViewBase, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/Overlay, dojox/mobile/_EditableIconMixin, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/uacss
 	 'android':1,
+
+	// dojox/app/main
+	 'app-log-api':1,
 
 	// dojo/query
 	 'array-extensible':1,
@@ -2562,7 +2606,7 @@ Has Features Detected
 	// dojo/dojo
 	 'dojo-amd-factory-scan':1,
 
-	// dijit/Dialog, dijit/InlineEditBox, dijit/MenuItem, dijit/TitlePane, dijit/Tooltip, dijit/TooltipDialog, dijit/Tree, dijit/_BidiMixin, dijit/_BidiSupport, dijit/_WidgetBase, dijit/_editor/RichText, dijit/form/Button, dijit/form/HorizontalRuleLabels, dijit/form/MultiSelect, dijit/form/Select, dijit/form/TextBox, dijit/form/_AutoCompleterMixin, dijit/form/_ButtonMixin, dijit/form/_ComboBoxMenuMixin, dijit/form/_TextBoxMixin, dijit/layout/AccordionContainer, dijit/layout/TabController, dojox/charting/Chart, dojox/charting/Chart3D, dojox/charting/action2d/MouseZoomAndPan, dojox/charting/action2d/Tooltip, dojox/charting/action2d/TouchZoomAndPan, dojox/charting/action2d/_IndicatorElement, dojox/charting/axis2d/Default, dojox/charting/axis2d/common, dojox/charting/plot2d/Bars, dojox/charting/plot2d/Base, dojox/charting/plot2d/Bubble, dojox/charting/plot2d/Candlesticks, dojox/charting/plot2d/Columns, dojox/charting/plot2d/Default, dojox/charting/plot2d/Indicator, dojox/charting/plot2d/OHLC, dojox/charting/plot2d/Pie, dojox/charting/plot2d/Scatter, dojox/charting/plot2d/Spider, dojox/charting/plot3d/Bars, dojox/charting/plot3d/Base, dojox/charting/plot3d/Cylinders, dojox/charting/widget/Chart, dojox/charting/widget/Legend, dojox/mobile/Accordion, dojox/mobile/Badge, dojox/mobile/Button, dojox/mobile/Carousel, dojox/mobile/CarouselItem, dojox/mobile/FixedSplitter, dojox/mobile/FormLayout, dojox/mobile/Heading, dojox/mobile/Icon, dojox/mobile/IconItem, dojox/mobile/IconMenu, dojox/mobile/ListItem, dojox/mobile/ProgressIndicator, dojox/mobile/Rating, dojox/mobile/RoundRectCategory, dojox/mobile/SimpleDialog, dojox/mobile/SpinWheelSlot, dojox/mobile/SwapView, dojox/mobile/Switch, dojox/mobile/TabBar, dojox/mobile/TabBarButton, dojox/mobile/TextBox, dojox/mobile/ToolBarButton, dojox/mobile/Tooltip, dojox/mobile/TreeView, dojox/mobile/ValuePickerSlot, dojox/mobile/_ComboBoxMenu, dojox/mobile/_DataListMixin, dojox/mobile/_ItemBase, dojox/mobile/_PickerBase, dojox/mobile/_StoreListMixin, dojox/mobile/_compat, dojox/mobile/scrollable
+	// dijit/Dialog, dijit/InlineEditBox, dijit/MenuItem, dijit/TitlePane, dijit/Tooltip, dijit/TooltipDialog, dijit/Tree, dijit/_BidiMixin, dijit/_BidiSupport, dijit/_WidgetBase, dijit/_editor/RichText, dijit/form/Button, dijit/form/HorizontalRuleLabels, dijit/form/MultiSelect, dijit/form/Select, dijit/form/TextBox, dijit/form/_AutoCompleterMixin, dijit/form/_ButtonMixin, dijit/form/_ComboBoxMenuMixin, dijit/form/_TextBoxMixin, dijit/layout/AccordionContainer, dijit/layout/TabController, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/Chart3D, dojox/charting/action2d/MouseZoomAndPan, dojox/charting/action2d/Tooltip, dojox/charting/action2d/TouchZoomAndPan, dojox/charting/action2d/_IndicatorElement, dojox/charting/axis2d/Default, dojox/charting/axis2d/common, dojox/charting/plot2d/Bars, dojox/charting/plot2d/Base, dojox/charting/plot2d/Bubble, dojox/charting/plot2d/Candlesticks, dojox/charting/plot2d/Columns, dojox/charting/plot2d/Default, dojox/charting/plot2d/Indicator, dojox/charting/plot2d/OHLC, dojox/charting/plot2d/Pie, dojox/charting/plot2d/Scatter, dojox/charting/plot2d/Spider, dojox/charting/plot3d/Bars, dojox/charting/plot3d/Base, dojox/charting/plot3d/Cylinders, dojox/charting/widget/Chart, dojox/charting/widget/Legend, dojox/mobile/Accordion, dojox/mobile/Badge, dojox/mobile/Button, dojox/mobile/Carousel, dojox/mobile/CarouselItem, dojox/mobile/FixedSplitter, dojox/mobile/FormLayout, dojox/mobile/Heading, dojox/mobile/Icon, dojox/mobile/IconItem, dojox/mobile/IconMenu, dojox/mobile/ListItem, dojox/mobile/ProgressIndicator, dojox/mobile/Rating, dojox/mobile/RoundRectCategory, dojox/mobile/SimpleDialog, dojox/mobile/SpinWheelSlot, dojox/mobile/SwapView, dojox/mobile/Switch, dojox/mobile/TabBar, dojox/mobile/TabBarButton, dojox/mobile/TextBox, dojox/mobile/ToolBarButton, dojox/mobile/Tooltip, dojox/mobile/TreeView, dojox/mobile/ValuePickerSlot, dojox/mobile/_ComboBoxMenu, dojox/mobile/_DataListMixin, dojox/mobile/_ItemBase, dojox/mobile/_PickerBase, dojox/mobile/_StoreListMixin, dojox/mobile/_compat, dojox/mobile/scrollable
 	 'dojo-bidi':1,
 
 	// dgrid/List, dojo/dojo
@@ -2778,17 +2822,20 @@ Has Features Detected
 	// dojo/dojo, dojo/request/default
 	 'host-webworker':1,
 
-	// dgrid/ColumnSet, dgrid/Grid, dgrid/Keyboard, dgrid/List, dgrid/editor, dgrid/extensions/ColumnHider, dgrid/extensions/Pagination, dijit/BackgroundIframe, dijit/Calendar, dijit/CalendarLite, dijit/Dialog, dijit/Editor, dijit/InlineEditBox, dijit/Menu, dijit/MenuItem, dijit/Tooltip, dijit/Viewport, dijit/_TemplatedMixin, dijit/_editor/RichText, dijit/_editor/html, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/EnterKeyHandling, dijit/_editor/plugins/FullScreen, dijit/_editor/plugins/LinkDialog, dijit/_editor/plugins/ViewSource, dijit/_editor/selection, dijit/a11y, dijit/focus, dijit/form/Form, dijit/form/HorizontalSlider, dijit/form/Select, dijit/form/SimpleTextarea, dijit/form/TextBox, dijit/form/_AutoCompleterMixin, dijit/form/_FormValueWidget, dijit/layout/AccordionContainer, dijit/layout/ScrollingTabController, dijit/selection, dijit/typematic, dojo/_base/connect, dojo/_base/fx, dojo/_base/lang, dojo/_base/sniff, dojo/_base/window, dojo/_base/xhr, dojo/_firebug/firebug, dojo/back, dojo/dom, dojo/dom-attr, dojo/dom-construct, dojo/dom-geometry, dojo/dom-prop, dojo/dom-style, dojo/gears, dojo/hash, dojo/hccss, dojo/mouse, dojo/selector/acme, dojo/selector/lite, dojo/uacss, dojo/window, dojox/analytics/_base, dojox/atom/widget/FeedEntryEditor, dojox/calc/Standard, dojox/charting/Chart, dojox/charting/action2d/MouseIndicator, dojox/charting/action2d/MouseZoomAndPan, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/charting/plot2d/Spider, dojox/css3/transit, dojox/data/CssRuleStore, dojox/dtl/contrib/dijit, dojox/dtl/dom, dojox/editor/plugins/BidiSupport, dojox/editor/plugins/LocalImage, dojox/embed/Flash, dojox/embed/Quicktime, dojox/form/FileInputAuto, dojox/form/FileUploader, dojox/form/_RangeSliderMixin, dojox/fx/Shadow, dojox/fx/flip, dojox/fx/scroll, dojox/geo/charting/MouseInteractionSupport, dojox/gfx/_base, dojox/gfx/fx, dojox/gfx/renderer, dojox/gfx/shape, dojox/gfx/utils, dojox/gfx/vml, dojox/grid/DataGrid, dojox/grid/_Builder, dojox/grid/_EditManager, dojox/grid/_Events, dojox/grid/_FocusManager, dojox/grid/_Grid, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/cells/_base, dojox/grid/cells/dijit, dojox/grid/enhanced/_FocusManager, dojox/grid/enhanced/plugins/Cookie, dojox/grid/enhanced/plugins/IndirectSelection, dojox/grid/enhanced/plugins/Printer, dojox/grid/enhanced/plugins/filter/FilterDefDialog, dojox/html/_base, dojox/html/ext-dojo/style, dojox/html/format, dojox/html/metrics, dojox/html/styles, dojox/layout/Dock, dojox/layout/FloatingPane, dojox/layout/GridContainer, dojox/layout/GridContainerLite, dojox/mobile/Audio, dojox/mobile/Carousel, dojox/mobile/IconItem, dojox/mobile/IconMenu, dojox/mobile/Slider, dojox/mobile/ToolBarButton, dojox/mobile/Video, dojox/mobile/_ListTouchMixin, dojox/mobile/_compat, dojox/mobile/common, dojox/mobile/compat, dojox/mobile/scrollable, dojox/mobile/uacss, dojox/mvc/Repeat, dojox/string/BidiComplex, dojox/treemap/TreeMap, dojox/widget/ColorPicker, dojox/widget/FisheyeListItem, dojox/widget/Standby, dojox/widget/Toaster, dojox/widget/UpgradeBar, dojox/xml/widgetParser
+	// dgrid/ColumnSet, dgrid/Grid, dgrid/Keyboard, dgrid/List, dgrid/editor, dgrid/extensions/ColumnHider, dgrid/extensions/Pagination, dijit/BackgroundIframe, dijit/Calendar, dijit/CalendarLite, dijit/Dialog, dijit/Editor, dijit/InlineEditBox, dijit/Menu, dijit/MenuItem, dijit/Tooltip, dijit/Viewport, dijit/_TemplatedMixin, dijit/_editor/RichText, dijit/_editor/html, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/EnterKeyHandling, dijit/_editor/plugins/FullScreen, dijit/_editor/plugins/LinkDialog, dijit/_editor/plugins/ViewSource, dijit/_editor/selection, dijit/a11y, dijit/focus, dijit/form/Form, dijit/form/HorizontalSlider, dijit/form/Select, dijit/form/SimpleTextarea, dijit/form/TextBox, dijit/form/_AutoCompleterMixin, dijit/form/_FormValueWidget, dijit/layout/AccordionContainer, dijit/layout/ScrollingTabController, dijit/selection, dijit/typematic, dojo/_base/connect, dojo/_base/fx, dojo/_base/lang, dojo/_base/sniff, dojo/_base/window, dojo/_base/xhr, dojo/_firebug/firebug, dojo/back, dojo/dom, dojo/dom-attr, dojo/dom-construct, dojo/dom-geometry, dojo/dom-prop, dojo/dom-style, dojo/gears, dojo/hash, dojo/hccss, dojo/mouse, dojo/selector/acme, dojo/selector/lite, dojo/uacss, dojo/window, dojox/analytics/_base, dojox/app/controllers/Layout, dojox/atom/widget/FeedEntryEditor, dojox/calc/Standard, dojox/calendar/CalendarBase, dojox/calendar/MatrixView, dojox/calendar/MonthColumnView, dojox/calendar/SimpleColumnView, dojox/calendar/ViewBase, dojox/calendar/_ScrollBarBase, dojox/charting/Chart, dojox/charting/action2d/MouseIndicator, dojox/charting/action2d/MouseZoomAndPan, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/charting/plot2d/Spider, dojox/css3/transit, dojox/data/CssRuleStore, dojox/dgauges/ScaleBase, dojox/dtl/contrib/dijit, dojox/dtl/dom, dojox/editor/plugins/BidiSupport, dojox/editor/plugins/LocalImage, dojox/embed/Flash, dojox/embed/Quicktime, dojox/form/FileInputAuto, dojox/form/FileUploader, dojox/form/_RangeSliderMixin, dojox/fx/Shadow, dojox/fx/flip, dojox/fx/scroll, dojox/geo/charting/MouseInteractionSupport, dojox/gfx/_base, dojox/gfx/fx, dojox/gfx/renderer, dojox/gfx/shape, dojox/gfx/utils, dojox/gfx/vml, dojox/grid/DataGrid, dojox/grid/_Builder, dojox/grid/_EditManager, dojox/grid/_Events, dojox/grid/_FocusManager, dojox/grid/_Grid, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/cells/_base, dojox/grid/cells/dijit, dojox/grid/enhanced/_FocusManager, dojox/grid/enhanced/plugins/Cookie, dojox/grid/enhanced/plugins/IndirectSelection, dojox/grid/enhanced/plugins/Printer, dojox/grid/enhanced/plugins/filter/FilterDefDialog, dojox/html/_base, dojox/html/ext-dojo/style, dojox/html/format, dojox/html/metrics, dojox/html/styles, dojox/layout/Dock, dojox/layout/FloatingPane, dojox/layout/GridContainer, dojox/layout/GridContainerLite, dojox/mobile/Audio, dojox/mobile/Carousel, dojox/mobile/IconItem, dojox/mobile/IconMenu, dojox/mobile/Slider, dojox/mobile/ToolBarButton, dojox/mobile/Video, dojox/mobile/_ListTouchMixin, dojox/mobile/_compat, dojox/mobile/common, dojox/mobile/compat, dojox/mobile/scrollable, dojox/mobile/uacss, dojox/mvc/Repeat, dojox/string/BidiComplex, dojox/treemap/TreeMap, dojox/widget/ColorPicker, dojox/widget/FisheyeListItem, dojox/widget/Standby, dojox/widget/Toaster, dojox/widget/UpgradeBar, dojox/xml/widgetParser
 	 'ie':1,
 
 	// dojo/dojo
 	 'ie-event-behavior':1,
 
-	// dijit/Viewport, dojo/_base/sniff, dojo/touch, dojo/uacss, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/ComboBox, dojox/mobile/SearchBox, dojox/mobile/View, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/sniff, dojox/mobile/uacss
+	// dijit/Viewport, dojo/_base/sniff, dojo/touch, dojo/uacss, dojox/app/controllers/LayoutBase, dojox/calendar/ViewBase, dojox/charting/plot2d/Grid, dojox/gfx/svg, dojox/mobile/ComboBox, dojox/mobile/SearchBox, dojox/mobile/View, dojox/mobile/common, dojox/mobile/scrollable, dojox/mobile/sniff, dojox/mobile/uacss
 	 'ios':1,
 
 	// dojox/mobile/View, dojox/mobile/uacss
 	 'ipad':1,
+
+	// dojox/dgauges/TextIndicator
+	 'iphone':1,
 
 	// dojox/mobile/uacss
 	 'ipod':1,
@@ -2823,7 +2870,7 @@ Has Features Detected
 	// dojox/mobile/Audio
 	 'mobile-embed-audio-video-support':1,
 
-	// dijit/_editor/RichText, dijit/_editor/plugins/EnterKeyHandling, dijit/form/HorizontalSlider, dijit/form/TextBox, dijit/form/_Spinner, dijit/layout/SplitContainer, dojo/_base/sniff, dojo/back, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/charting/action2d/MouseZoomAndPan, dojox/css3/transition, dojox/editor/plugins/BidiSupport, dojox/geo/charting/MouseInteractionSupport, dojox/grid/EnhancedGrid, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/cells/dijit, dojox/grid/enhanced/plugins/filter/FilterDefDialog, dojox/html/format, dojox/layout/GridContainerLite
+	// dijit/_editor/RichText, dijit/_editor/plugins/EnterKeyHandling, dijit/form/HorizontalSlider, dijit/form/TextBox, dijit/form/_Spinner, dijit/layout/SplitContainer, dojo/_base/sniff, dojo/back, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calendar/ViewBase, dojox/calendar/_ScrollBarBase, dojox/charting/action2d/MouseZoomAndPan, dojox/css3/transition, dojox/editor/plugins/BidiSupport, dojox/geo/charting/MouseInteractionSupport, dojox/grid/EnhancedGrid, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/cells/dijit, dojox/grid/enhanced/plugins/filter/FilterDefDialog, dojox/html/format, dojox/layout/GridContainerLite
 	 'mozilla':1,
 
 	// dijit/form/MappedTextBox, dijit/form/_FormWidget
@@ -2853,7 +2900,7 @@ Has Features Detected
 	// xstyle/core/observe
 	 'observe':1,
 
-	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby
+	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby
 	 'opera':1,
 
 	// dgrid/Selection
@@ -2886,13 +2933,13 @@ Has Features Detected
 	// dijit/form/_ExpandingTextAreaMixin
 	 'textarea-needs-help-shrinking':1,
 
-	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog
+	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/calendar/MatrixView, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog
 	 'touch':1,
 
 	// dojo/on
 	 'touch-can-modify-event-delegate':1,
 
-	// dijit/focus, dijit/form/_FormWidgetMixin, dojo/touch, dojox/charting/action2d/TouchIndicator, dojox/gfx/canvasWithEvents
+	// dijit/focus, dijit/form/_FormWidgetMixin, dojo/touch, dojox/calendar/MonthColumnView, dojox/calendar/SimpleColumnView, dojox/charting/action2d/TouchIndicator, dojox/gfx/canvasWithEvents
 	 'touch-events':1,
 
 	// dgrid/TouchScroll, dgrid/tree
@@ -2907,7 +2954,7 @@ Has Features Detected
 	// dojox/gfx/renderer
 	 'vml':1,
 
-	// dijit/CalendarLite, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/EnterKeyHandling, dijit/_editor/plugins/ViewSource, dijit/form/_FormWidgetMixin, dijit/layout/ScrollingTabController, dojo/_base/sniff, dojo/back, dojo/dnd/Mover, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/dom-style, dojo/keys, dojo/sniff, dojo/uacss, dojo/window, dojox/css3/transition, dojox/dtl/dom, dojox/editor/plugins/BidiSupport, dojox/grid/_Builder, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/enhanced/plugins/Cookie, dojox/layout/GridContainerLite, dojox/mobile/_compat, dojox/mobile/compat, dojox/mobile/iconUtils, dojox/mobile/scrollable, dojox/widget/Standby
+	// dijit/CalendarLite, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/EnterKeyHandling, dijit/_editor/plugins/ViewSource, dijit/form/_FormWidgetMixin, dijit/layout/ScrollingTabController, dojo/_base/sniff, dojo/back, dojo/dnd/Mover, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/dom-style, dojo/keys, dojo/sniff, dojo/uacss, dojo/window, dojox/calendar/ViewBase, dojox/calendar/_ScrollBarBase, dojox/css3/transition, dojox/dtl/dom, dojox/editor/plugins/BidiSupport, dojox/grid/_Builder, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/_ViewManager, dojox/grid/enhanced/plugins/Cookie, dojox/layout/GridContainerLite, dojox/mobile/_compat, dojox/mobile/compat, dojox/mobile/iconUtils, dojox/mobile/scrollable, dojox/widget/Standby
 	 'webkit':1,
 
 	// dojo/_base/sniff
@@ -2923,4 +2970,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 65
-	build time: 94.717 seconds
+	build time: 89.127 seconds

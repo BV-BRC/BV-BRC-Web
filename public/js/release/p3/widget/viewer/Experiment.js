@@ -35,6 +35,7 @@ define("p3/widget/viewer/Experiment", [
 				}
 			 	return f;
 			});
+            paths.sort();
 
 			console.log("Experiment Sub Paths: ", paths);
 
@@ -98,7 +99,7 @@ define("p3/widget/viewer/Experiment", [
                                 this.viewer.on("dgrid-select", function(evt) {
                                         console.log('dgrid-select: ', evt);
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self.viewer,
                                                 bubbles: true,
@@ -114,7 +115,7 @@ define("p3/widget/viewer/Experiment", [
                                 this.viewer.on("dgrid-deselect", function(evt) {
                                         console.log("dgrid-select");
                                         var newEvt = {
-                                                rows: event.rows,
+                                                rows: evt.rows,
                                                 selected: evt.grid.selection,
                                                 grid: _self.viewer,
                                                 bubbles: true,

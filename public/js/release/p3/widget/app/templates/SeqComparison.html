@@ -9,8 +9,9 @@
   
 	<div style="width:450px; margin:auto" class="formFieldsContainer">
 		<div style="display: none;">
-			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:10},"/>
+			<input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:0,max:10},"/>
 		</div>
+
 		<table class="assemblyblocks" style="width:100%">
 		<tr>
 		<td>
@@ -30,7 +31,7 @@
 			</div>
 			<div class="approw">
 					<label>Add Up To 8 Genomes to Compare (use plus button to add)</label>
-                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200 style="width:85%" required="true" data-dojo-attach-point="comp_genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
+                    <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200 style="width:85%" required="false" data-dojo-attach-point="comp_genome_id" data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"></div>
                     <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
 			</div>
 			<div class="approw" style="width:85%; margin-top:10px; text-align: center;">
@@ -84,7 +85,6 @@
 		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
 		    Comparing Genomes
 		</div>
-
 		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
 			Error Submitting Job
 		</div>

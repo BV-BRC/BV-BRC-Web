@@ -25,6 +25,12 @@
 
 			<div class="approw">
 				<div class="appField">
+					<label>Genome Name</label><br>
+					<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'My bacillus cereus'"></div>
+				</div>
+			</div>
+			<div class="approw">
+				<div class="appField">
 					<label>Domain</label><br>
 					<select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
 						<option value="Bacteria">Bacteria</option>
@@ -34,11 +40,10 @@
 			</div>
 			<div class="approw">
 				<div class="appField">
-					<label>Organism Name</label><br>
+					<label>Taxonomy Rank/Name</label><br>
 					<div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" name="scientific_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
 				</div> 
 			</div>
-
 			<div class="approw">
 				<div class="appField">
 					<label>Taxonomy ID</label><br>
@@ -60,13 +65,6 @@
 				<div class="appField">
 					<label>Output Folder</label><br>
 					<div data-dojo-attach-point="output_pathWidget" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true" data-dojo-props="type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-				</div>
-			</div>
-			
-			<div class="approw">
-				<div class="appField">
-					<label>Output Name</label><br>
-					<div data-dojo-attach-point="output_nameWidget" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
 				</div>
 			</div>
 			

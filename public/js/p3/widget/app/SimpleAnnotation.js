@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase",
+	"dojo/text!./templates/SimpleAnnotation.html","./AppBase",
 	"dojo/_base/lang","../../WorkspaceManager"
 ], function(
 	declare, WidgetBase, on,
@@ -39,41 +39,40 @@ define([
 		},
 	
 		onTaxIDChange: function(val){
-            this._autoNameSet=true;
-            var tax_id=this.tax_idWidget.get("item").taxon_id;
-            var sci_name=this.tax_idWidget.get("item").taxon_name;
-            //var tax_obj=this.tax_idWidget.get("item");
-            if(tax_id){
-                var name_promise=this.scientific_nameWidget.store.get(tax_id);
-                name_promise.then(lang.hitch(this, function(tax_obj) {
-                    if(tax_obj){
-                        this.scientific_nameWidget.set('item',tax_obj);
-                        this.scientific_nameWidget.validate();
-			            this.changeCode(this.tax_idWidget.get("item"));
-                    }
-                }));
-                //this.scientific_nameWidget.set('value',sci_name);
-                //this.scientific_nameWidget.set('displayedValue',sci_name);
-                //this.scientific_nameWidget.set("item",tax_obj);
-                //this.scientific_nameWidget.validate();
-
-            } 
+			if (val && !this.scientific_nameWidget.get('displayedValue') && !this._autoTaxSet){
+				this._autoNameSet=true;
+				var tax_id=this.tax_idWidget.get("item").taxon_id;
+				//var sci_name=this.tax_idWidget.get("item").taxon_name;
+				if(tax_id){
+					var name_promise=this.scientific_nameWidget.store.get("?taxon_id="+tax_id);
+					name_promise.then(lang.hitch(this, function(tax_obj) {
+						if(tax_obj && tax_obj.length){
+							this.scientific_nameWidget.set('item',tax_obj[0]);
+						}
+					}));
+					//this.scientific_nameWidget.set('displayedValue',sci_name);
+					//this.scientific_nameWidget.set('value',sci_name);
+				}
+			}
+			this.changeCode(this.tax_idWidget.get("item"));
 			this._autoTaxSet=false;
 		},
 		onSuggestNameChange: function(val){
-            this._autoTaxSet=true;
-            var tax_id=this.scientific_nameWidget.get("value");
-            if(tax_id){
-                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-                //tax_promise.then(lang.hitch(this, function(tax_obj) {
-                //    if(tax_obj && tax_obj.length){
-                //        this.tax_idWidget.set('item',tax_obj[0]);
-                //    }
-                //}));
-                this.tax_idWidget.set('displayedValue',tax_id);
-                this.tax_idWidget.set('value',tax_id);
-			    this.changeCode(this.scientific_nameWidget.get("item"));
-            }
+			if (val && !this.tax_idWidget.get("displayedValue") && !this._autoNameSet){
+				this._autoTaxSet=true;
+				var tax_id=this.scientific_nameWidget.get("value");
+				if(tax_id){
+					var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+					tax_promise.then(lang.hitch(this, function(tax_obj) {
+						if(tax_obj && tax_obj.length){
+							this.tax_idWidget.set('item',tax_obj[0]);
+						}
+					}));
+					//this.tax_idWidget.set('displayedValue',tax_id);
+					//this.tax_idWidget.set('value',tax_id);
+				}
+			}
+			this.changeCode(this.scientific_nameWidget.get("item"));
 			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
@@ -83,7 +82,7 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
+			values["scientific_name"]=this.scientific_nameWidget.get('displayedValue');
 			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}

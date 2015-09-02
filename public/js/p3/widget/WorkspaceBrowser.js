@@ -124,7 +124,8 @@ define([
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				console.log("selection: ", selection);
 				console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+				console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
 				popup.close(downloadTT);
 			});
 
@@ -148,7 +149,7 @@ define([
 				var currentQuery = self.getQuery(selection[0]);
 				console.log("selection: ", selection);
 				console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
 				popup.close(downloadTT);
 			});
 			this.actionPanel.addAction("SelectDownloadTable","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Selection", tooltipDialog:downloadTTSelect}, function(selection){
@@ -460,7 +461,7 @@ define([
 //			},true);
 
 
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation"], tooltip: "Delete Selection"}, function(selection){
+			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation","RNASeq"], tooltip: "Delete Selection"}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s.path||s.data.path;

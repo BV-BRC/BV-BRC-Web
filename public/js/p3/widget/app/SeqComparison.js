@@ -190,6 +190,51 @@ define([
 			console.log(lrec);
 		},
 
+		onSubmit: function(evt){
+			var _self = this;
+
+			evt.preventDefault();
+			evt.stopPropagation();
+			if (this.validate()){
+				var values = this.getValues();
+				//console.log(values["user_genomes"]);
+				//console.log(values["genome_ids"]);				
+				if (values["user_genomes"] || values["genome_ids"].length > 1){
+					domClass.add(this.domNode,"Working");
+					domClass.remove(this.domNode,"Error");
+					domClass.remove(this.domNode,"Submitted");
+
+					if (window.App.noJobSubmission) {
+						var dlg = new Dialog({title: "Job Submission Params: ", content: "<pre>"+JSON.stringify(values,null,4) + "</pre>"});
+						dlg.startup();
+						dlg.show();
+						return;
+					}
+					this.submitButton.set("disabled", true);
+					window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
+						console.log("Job Submission Results: ", results);
+						domClass.remove(_self.domNode,"Working")
+						domClass.add(_self.domNode, "Submitted");
+						_self.submitButton.set("disabled", false);
+						registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+							obj.reset();
+						});
+					}, function(err){
+						console.log("Error:", err)
+						domClass.remove(_self.domNode,"Working");
+						domClass.add(_self.domNode, "Error");
+						_self.errorMessage.innerHTML = err;
+					})
+				}else{
+					domClass.add(this.domNode,"Error");
+					console.log("Form is incomplete");
+				}
+				
+			}else{
+				console.log("Form is incomplete");
+			}
+		},
+
 		getValues: function(){
 			var seqcomp_values={};
 			var values = this.inherited(arguments);

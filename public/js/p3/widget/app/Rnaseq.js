@@ -19,7 +19,8 @@ define([
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 11,
-        maxConditions: 5,
+        initConditions: 5,
+        maxConditions: 10,
         conditionStore: null,
 
         listValues:function(obj){
@@ -63,7 +64,7 @@ define([
             
             //create help dialog for infobutton's with infobuttoninfo div's
             this.emptyTable(this.libsTable, this.startingRows);
-            this.emptyTable(this.condTable, this.maxConditions);
+            this.emptyTable(this.condTable, this.initConditions);
 
             //adjust validation for each of the attach points associated with read files
 			Object.keys(this.pairToAttachPt1).concat(Object.keys(this.singleToAttachPt)).forEach(lang.hitch(this, function(attachname){
@@ -139,11 +140,19 @@ define([
 			//		assembly_values[k]=values[k];
 			//	}
 			//}
+            var combinedList = pairedList.concat(singleList);
             assembly_values["reference_genome_id"]=values["genome_name"];
             if(this.exp_design.checked){
-			    condList.forEach(function(libRecord){
-				    condLibs.push(libRecord.condition)});
+			    condList.forEach(function(condRecord){
+                    for(var i =0; i < combinedList.length; i++){
+                        if(combinedList[i].condition == condRecord.condition){
+				            condLibs.push(condRecord.condition);
+                            break;
+                        }
+                    }
+                });
             }
+
 			pairedList.forEach(function(libRecord){
                 var toAdd={};
                 if('condition' in libRecord && this.exp_design.checked){
@@ -188,6 +197,9 @@ define([
                 }
 				if(attachname == "read1" || attachname == "read2" || attachname == "read" || attachname == "output_path"){
 					cur_value=this[attachname].searchBox.value;//? "/_uuid/"+this[attachname].searchBox.value : "";
+                    if(attachname == "read2" && this["read2"].searchBox.value == this["read1"].searchBox.value){
+                        this["read2"].searchBox.value="";
+                    }
 					//cur_value=this[attachname].searchBox.get('value');
 					//incomplete=((cur_value.replace(/^.*[\\\/]/, '')).length==0);
 				}
@@ -314,7 +326,7 @@ define([
 				td.innerHTML="<div class='libraryrow'>"+this.makeConditionName()+"</div>";
 				var tdinfo=domConstruct.create("td", {"class":"iconcol", innerHTML: lrec["icon"]},tr);
 				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
-				if(this.addedLibs.counter < this.maxConditions){
+				if(this.addedCond.counter < this.initConditions){
 					this.condTable.deleteRow(-1);
 				}
                    
@@ -439,7 +451,7 @@ define([
 			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
-			if (chkPassed){
+			if (chkPassed && lrec.read1 != lrec.read2){
 				var tr = this.libsTable.insertRow(0);
                 lrec["id"]=this.libraryID;
                 lrec["row"]=tr;
