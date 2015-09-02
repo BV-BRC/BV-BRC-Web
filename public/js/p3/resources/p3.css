@@ -284,3 +284,24 @@ body.patric *:focus {
 	border: 0px;
 	pading:4px;
 }
+
+.GlobalSearch .dijitSelect,
+.GlobalSearch .dijitTextBox {
+	margin:0px;
+	border: 0px;
+	border-radius: 4px;
+}
+
+.GlobalSearch > table {
+	padding: 0px;
+	margin: 0px;
+	border-collapse:collapse;
+	border-spacing: 0px;
+	width: 100%;
+	border-radius: 4px;
+}
+.GlobalSearch {
+	border-radius: 4px;
+	background: #fff;
+	padding: 0px;
+}
