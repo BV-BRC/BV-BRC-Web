@@ -180,7 +180,7 @@ define([
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
 					domConstruct.empty(this.itemTbody);
-					Object.keys(item).forEach(function(key){
+					Object.keys(item).sort().forEach(function(key){
 						var tr = domConstruct.create("tr",{},this.itemTbody)
 						var tda = domConstruct.create("td",{innerHTML: key}, tr);
 						var tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
