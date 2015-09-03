@@ -67,8 +67,8 @@ define([
 				columns: {
 					title: {label: "Title", field: "expname"},
 					genes: {label: "Genes", field: "genes"},
-					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_z_score"},
-					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_log_ratio"},
+					sigGenesLR: {label: "Significant Genes (Log Ratio)", field: "sig_log_ratio"},
+					sigGenesZS: {label: "Significant Genes (Z Score)", field: "sig_z_score"},
 					strain: {label: "Strain", field: "organism"},
 					gene_modification: {label: "Gene Modification", field: "mutant"},
 					expCondition: {label: "Experiment Condition", field: "condition"},
