@@ -17,7 +17,7 @@ define([
 		applicationName: "GenomeAssembly",
 		libraryData: null,
 		defaultPath: "",
-		startingRows: 14,
+		startingRows: 8,
 
 		constructor: function(){
 
@@ -25,7 +25,7 @@ define([
 			this.addedPairs=0;
 			this.pairToAttachPt1=["read1", "read2"];
 			this.pairToAttachPt2=["read1"];
-			this.advPairToAttachPt=["interleaved", "insert_size_mean", "insert_size_stdev"];
+			this.advPairToAttachPt=["interleaved", "insert_size_mean", "insert_size_stdev", "read_orientation_outward"];
 			this.paramToAttachPt=["recipe","output_path","output_file","reference_assembly"];
 			this.singleToAttachPt=["single_end_libs"];
 		},
@@ -279,6 +279,9 @@ define([
 				}
 				if(lrec["insert_size_stdev"]){
 					advPairInfo.push("Std. Insert Size:"+lrec["insert_size_stdev"]);
+				}
+				if(lrec["read_orientation_outward"]){
+					advPairInfo.push("Mate Paired");
 				}
 				if(advPairInfo.length){
 					var tdinfo=domConstruct.create("td", {innerHTML: "<i class='fa fa-info fa-1' />"},tr);

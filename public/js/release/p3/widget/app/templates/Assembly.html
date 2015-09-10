@@ -56,6 +56,15 @@
 					<label class="paramlabel" for="libdat_stdinsert">Std. Insert Size</label><br>		
 					<div class="insertspinner" name="libdat_stdinsert" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="insert_size_stdev" data-dojo-props="smallDelta:10, constraints:{min:10,max:2000,places:0}" ></div>		
 				</div>
+			    <div class="approw"  data-dojo-attach-point="advrow2">
+				    <div class="approwsegment" style="margin:0 0 0 0">
+                        <label class="paramlabel">Mate paired</label><br>
+                        <select data-dojo-type="dijit/form/Select" name="read_orientation_outward" data-dojo-attach-point="read_orientation_outward" required="false" data-dojo-props="intermediateChanges:true,missingMessage:'',trim:true,placeHolder:''">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                        </select>
+                    </div>
+                </div>
 			</div>
                 </div>
 
@@ -124,7 +133,7 @@
         	</div>
 		</td>
 		<td>
-		<div class="appbox appshadow" style="min-height: 380px; height:auto; width:330px">
+		<div class="appbox appshadow" style="height:251px; width:330px">
 			<div class="headerrow">
 				<label class="appboxlabel">Selected libraries</label>
 				<div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
