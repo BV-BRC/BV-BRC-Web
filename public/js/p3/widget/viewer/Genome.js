@@ -5,7 +5,7 @@ define([
 	"dojo/request","dojo/_base/lang","../FeatureGridContainer","../SpecialtyGeneGridContainer",
 	"../ActionBar","../ContainerActionBar","../PathwaysContainer","../ProteinFamiliesContainer",
 	"../DiseaseContainer","../PublicationGridContainer","../CircularViewerContainer",
-	"../TranscriptomicsContainer","JBrowse/Browser","../InteractionsContainer"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
@@ -13,7 +13,7 @@ define([
 	xhr,lang,FeatureGridContainer,SpecialtyGeneGridContainer,
 	ActionBar,ContainerActionBar,PathwaysContainer,ProteinFamiliesContainer,
 	DiseaseContainer,PublicationGridContainer,CircularViewerContainer,
-	TranscriptomicsContainer, JBrowser,InteractionsContainer
+	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer
 ){
 	return declare([BorderContainer], {
 		"baseClass": "GenomeGroup",
@@ -66,7 +66,7 @@ define([
 			this.viewer= new TabContainer({region: "center"});
 			this.genomeOverview= new GenomeOverview({title: "Overview",style: "overflow:auto;"});
 			this.phylogeny= new ContentPane({content: "Phylogeny", title: "Phylogeny"});
-			var gbContentPane = new ContentPane({title: "Genome Browser", content: '<div id="' + this.id + "_jbrowse" + '"></div>'});
+			//var gbContentPane = new ContentPane({title: "Genome Browser", content: '<div id="' + this.id + "_jbrowse" + '"></div>'});
 			this.circularViewer= new CircularViewerContainer({title: "Circular Viewer"});
 
 			this.features = new FeatureGridContainer({title: "Features"});
@@ -74,33 +74,33 @@ define([
 			this.pathways= new PathwaysContainer({title: "Pathways"});
 			this.proteinFamilies= new ProteinFamiliesContainer({title: "Protein Families"});
 			this.transcriptomics= new TranscriptomicsContainer({title: "Transcriptomics"});
-			this.interactions= new InteractionsContainer({title: "Interactions"});
-			this.diseases= new DiseaseContainer({title: "Diseases"});
-			this.literature= new PublicationGridContainer({content: "Literature", title: "Literature"});
+			//this.interactions= new InteractionsContainer({title: "Interactions"});
+			//this.diseases= new DiseaseContainer({title: "Diseases"});
+			//this.literature= new PublicationGridContainer({content: "Literature", title: "Literature"});
 			this.viewer.addChild(this.genomeOverview);
 			this.viewer.addChild(this.phylogeny);
-			this.viewer.addChild(gbContentPane);
+			//this.viewer.addChild(gbContentPane);
 			this.viewer.addChild(this.circularViewer);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.transcriptomics);
-			this.viewer.addChild(this.interactions);
-			this.viewer.addChild(this.diseases);
-			this.viewer.addChild(this.literature);
+			//this.viewer.addChild(this.interactions);
+			//this.viewer.addChild(this.diseases);
+			//this.viewer.addChild(this.literature);
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
-			this.genomeBrowser= new JBrowser({
-				title: "Genome Browser",
-//				include: [],
-//				css: [],
-				dataRoot: "/public/js/jbrowse.repo/sample_data/json/volvox",
-				nameUrl: "{dataRoot}/names/meta.json",
-				containerID: this.id + "_jbrowse",
-				updateBrowserURL:false,
-				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
-			});
+//			this.genomeBrowser= new JBrowser({
+//				title: "Genome Browser",
+////				include: [],
+////				css: [],
+//				dataRoot: "/public/js/jbrowse.repo/sample_data/json/volvox",
+//				nameUrl: "{dataRoot}/names/meta.json",
+//				containerID: this.id + "_jbrowse",
+//				updateBrowserURL:false,
+//				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
+//			});
 	
 		},
 		startup: function(){

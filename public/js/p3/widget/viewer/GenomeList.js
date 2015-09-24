@@ -5,7 +5,7 @@ define([
 	"dojo/request","dojo/_base/lang","../FeatureGridContainer","../SpecialtyGeneGridContainer",
 	"../ActionBar","../ContainerActionBar","../PathwaysContainer","../ProteinFamiliesContainer",
 	"../DiseaseContainer","../PublicationGridContainer","../CircularViewerContainer",
-	"../TranscriptomicsContainer","JBrowse/Browser","../InteractionsContainer","../GenomeGridContainer"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer","../GenomeGridContainer"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
@@ -13,7 +13,7 @@ define([
 	xhr,lang,FeatureGridContainer,SpecialtyGeneGridContainer,
 	ActionBar,ContainerActionBar,PathwaysContainer,ProteinFamiliesContainer,
 	DiseaseContainer,PublicationGridContainer,CircularViewerContainer,
-	TranscriptomicsContainer, JBrowser,InteractionsContainer,GenomeGridContainer
+	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer,GenomeGridContainer
 ){
 	return declare([BorderContainer], {
 		"baseClass": "GenomeGroup",
@@ -93,16 +93,16 @@ define([
 			this.viewer.addChild(this.literature);
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
-			this.genomeBrowser= new JBrowser({
-				title: "Genome Browser",
-//				include: [],
-//				css: [],
-				dataRoot: "/public/js/jbrowse.repo/sample_data/json/volvox",
-				nameUrl: "{dataRoot}/names/meta.json",
-				containerID: this.id + "_jbrowse",
-				updateBrowserURL:false,
-				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
-			});
+//			this.genomeBrowser= new JBrowser({
+//				title: "Genome Browser",
+////				include: [],
+////				css: [],
+//				dataRoot: "/public/js/jbrowse.repo/sample_data/json/volvox",
+//				nameUrl: "{dataRoot}/names/meta.json",
+//				containerID: this.id + "_jbrowse",
+//				updateBrowserURL:false,
+//				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
+//			});
 	
 		},
 		startup: function(){
