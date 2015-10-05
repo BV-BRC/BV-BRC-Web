@@ -187,10 +187,10 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 
 			if (!this._currentPath){
 				console.log("No Current Path",location)
-				this.go(location.pathname + location.search)
+				this.go(location.pathname + location.search + location.hash)
 			}else{
 				console.log("Call handlePathChange", location.pathname)
-				this._handlePathChange(location.pathname,this.currentState||{})
+				this._handlePathChange(location.pathname + location.search + location.hash,this.currentState||{})
 			}
 		}
 	})();

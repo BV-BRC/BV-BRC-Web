@@ -50,9 +50,14 @@ define([
 		},
 
 		setupPanel: function(Panel){
-			console.log("Setup Drawer Panel: ", Panel);
-			this.currentPanel = new Panel({"class": "PanelContent", content: "Loading Panel Content"}).placeAt(this.panelContainer);
+			console.log("Setup Drawer Panel: ", Panel, typeof Panel);
 
+			if (typeof Panel=="function"){
+			this.currentPanel = new Panel({"class": "PanelContent", content: "Loading Panel Content"}).placeAt(this.panelContainer);
+			}else{
+				this.currentPanel = Panel;
+				domClass.place(Panel.domNode,this.panelContainer)
+			}
 			if (!domClass.contains(this.domNode,"Closed")) {
 				console.log("Startup on Startup CurrentPanel");
 				this.currentPanel.startup();

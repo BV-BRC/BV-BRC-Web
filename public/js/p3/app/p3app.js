@@ -97,6 +97,7 @@ define([
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
+
 			Router.register("\/view(\/.*)", function(params, path){
 				console.log("view URL Callback", arguments,location);
 				
@@ -115,14 +116,22 @@ define([
 					newState[prop]=params.state[prop]
 				}
 		
-			
+				var hashParams={}
+
+				var hps = location.hash.substr(1).split("&")
+				hps.forEach(function(t){
+					var tup = t.split("=")
+					hashParams[tup[0]]=tup[1];
+				})
+				newState.hashParams = hashParams;
 				console.log("Parts:", parts, type, path)
 				newState.widgetClass="p3/widget/viewer/" + type;
-				newState.value=viewerParams;
+				newState.value=viewerParams.replace(location.hash,"");
 				newState.set= "params";
-				console.log("Navigate to ", newState);
+				console.log("Navigate to viewer ", newState);
 				_self.navigate(newState);
 			});
+
 			Router.register("\/app(\/.*)", function(params, path){
 				console.log("view URL Callback", arguments);
 				
@@ -176,12 +185,8 @@ define([
 			// },2000);
 
 			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
-			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
-			//this.leftDrawer.startup();
-			//console.log("leftDrawer", this.leftDrawer)
-			// setTimeout(function(){
-			// 	Topic.publish("/overlay/left", {action: "set", panel: ContentPane});
-			// }, 1000);
+			this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
+			this.leftDrawer.startup();
 
 			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
 			//this.rightDrawer.startup();

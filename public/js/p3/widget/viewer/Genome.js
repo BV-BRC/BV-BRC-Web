@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
+	"../formatter", "../TabContainer", "../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
@@ -21,10 +21,22 @@ define([
 		params: null,
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		_setParamsAttr: function(params) {
+		hashParams: null,
+		_setHashParamsAttr: function(params){
+			this.hashParams = params;
+			console.log(this.id + " set child hash view: ", this.hashParams);
+			if (this.hashParams.view_tab && this[this.hashParams.view_tab]) {
+				this.viewer.selectChild(this[this.hashParams.view_tab])
+			}
+		},
+		_setParamsAttr: function(params) {			
 			this.set("genome_id", params);
 		},
 		_setGenome_idAttr: function(id) {
+			if (id == this.genome_id){
+				console.log("Same ID, skip set");
+				return;
+			}
 			this.genome_id = id;
 			xhr.get(this.apiServiceUrl + "/genome/" + id, {
 				headers: {
@@ -56,7 +68,7 @@ define([
 			this.genomeOverview.set('genome', this.genome);
 			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
 			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
-			//this.pathways.set("query", "?eq(genome_id," + this.genome.genome_id + ")&eq(annotation,PATRIC)");
+			this.pathways.set("query", "?eq(genome_id," + this.genome.genome_id + ")&eq(annotation,PATRIC)");
 			this.pathways.set("params", {genome_id: this.genome.genome_id, annotation:'PATRIC'});
 		},
 		postCreate: function() {
@@ -64,16 +76,16 @@ define([
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({content: "Genome", region: "top"});
 			this.viewer = new TabContainer({region: "center"});
-			this.genomeOverview = new GenomeOverview({title: "Overview", style: "overflow:auto;"});
-			this.phylogeny = new ContentPane({content: "Phylogeny", title: "Phylogeny"});
-			//var gbContentPane = new ContentPane({title: "Genome Browser", content: '<div id="' + this.id + "_jbrowse" + '"></div>'});
+			this.genomeOverview = new GenomeOverview({title: "Overview", style: "overflow:auto;",id: this.viewer.id + "_" + "genomeOverview"});
+			this.phylogeny = new ContentPane({content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny"});
+			//var gbContentPane = new ContentPane({title: "Genome Browser", content: '<div id="' + this.viewer.id + "_jbrowse" + '"></div>'});
 			//this.circularViewer = new CircularViewerContainer({title: "Circular Viewer"});
 
-			this.features = new FeatureGridContainer({title: "Features"});
-			this.specialtyGenes = new SpecialtyGeneGridContainer({title: "Specialty Genes"});
-			this.pathways = new PathwaysContainer({title: "Pathways"});
-			this.proteinFamilies = new ProteinFamiliesContainer({title: "Protein Families"});
-			this.transcriptomics = new TranscriptomicsContainer({title: "Transcriptomics"});
+			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features"});
+			this.specialtyGenes = new SpecialtyGeneGridContainer({title: "Specialty Genes", id: this.viewer.id + "_" + "specialtyGenes"});
+			this.pathways = new PathwaysContainer({title: "Pathways", id: this.viewer.id + "_" + "pathways"});
+			this.proteinFamilies = new ProteinFamiliesContainer({title: "Protein Families", id: this.viewer.id + "_" + "proteinFamilies"});
+			this.transcriptomics = new TranscriptomicsContainer({title: "Transcriptomics", id: this.viewer.id + "_" + "transcriptomics"});
 			//this.interactions= new InteractionsContainer({title: "Interactions"});
 			//this.diseases= new DiseaseContainer({title: "Diseases"});
 			//this.literature= new PublicationGridContainer({content: "Literature", title: "Literature"});
@@ -91,6 +103,9 @@ define([
 			//this.viewer.addChild(this.literature);
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
+
+			this.set("hashParams", this.hashParams||{});
+
 //			this.genomeBrowser= new JBrowser({
 //				title: "Genome Browser",
 ////				include: [],

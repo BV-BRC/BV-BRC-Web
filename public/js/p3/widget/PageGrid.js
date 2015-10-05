@@ -49,15 +49,18 @@ define([
 
 			apiToken: "",
 			_setTotalRows: function(rows) {
-				this.totalRows = rows;
-				console.log("Total Rows: ", rows);
-				if(this.controlButton){
-					//console.log("this.controlButton: ", this.controlButton);
-					if(!this._originalTitle){
-						this._originalTitle = this.controlButton.get('label');
+				console.log("this.id:", this.id, "_setTotalRows()");
+				if (rows){
+					this.totalRows = rows;
+					console.log("Total Rows: ", rows);
+					if(this.controlButton){
+						//console.log("this.controlButton: ", this.controlButton);
+						if(!this._originalTitle){
+							this._originalTitle = this.controlButton.get('label');
+						}
+						this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
+						//console.log(this.controlButton);
 					}
-					this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-					//console.log(this.controlButton);
 				}
 			},
 
@@ -80,7 +83,7 @@ define([
 
 			},
 			_setActiveFilter: function(filter) {
-				console.log("Set Active Filter: ", filter, "started:", this._started);
+		//		console.log("Set Active Filter: ", filter, "started:", this._started);
 				this.activeFilter = filter;
 				this.set("query", this.buildQuery());
 			},

@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "./GridContainer","dojo/on",
-	"./FeatureGrid","dijit/popup",
-	"dijit/TooltipDialog"
+	"./FeatureGrid","dijit/popup","dojo/topic",
+	"dijit/TooltipDialog","dijit/layout/ContentPane"
 
 ], function(
 	declare, GridContainer,on,
-	FeatureGrid,popup,
-	TooltipDialog
+	FeatureGrid,popup,Topic,
+	TooltipDialog,ContentPane
 ){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
@@ -29,6 +29,7 @@ define([
 
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
+		style: "margin-left:15px;",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -63,7 +64,8 @@ define([
 
 		startup: function(){
 			if (this._started) { return; }
-
+			var p = new ContentPane({content: "Filter/Facets Go Here"});
+			//Topic.publish("/overlay/left", {action: "set", panel: p});
 			this.inherited(arguments);
 		}
 	});

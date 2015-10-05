@@ -284,6 +284,12 @@ define([
 				if (cur instanceof ctor) {
 					console.log("cur is isntance of ctor");
 					instance = cur; 
+
+					if (newNavState.hashParams){
+						console.log("Set Instance Hash Params:", newNavState.hashParams);
+						instance.set("hashParams",newNavState.hashParams)
+					}
+
 					
 					if ((instance instanceof ContentPane) && !newNavState.content) {
 						var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
@@ -302,6 +308,10 @@ define([
 				if (newNavState.filter){
 					opts.activeFilter = newNavState.filter;
 				}
+				if (newNavState.hashParams){
+					opts["hashParams"]=newNavState.hashParams;
+				}
+
 				if (newNavState.set){
 					opts[newNavState.set]=newNavState.value;
 				}
