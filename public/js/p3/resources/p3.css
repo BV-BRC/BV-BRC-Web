@@ -314,6 +314,7 @@ body.patric *:focus {
 
 .TextTabButtons .dijitTab {
 	display: inline-block;
+	transition-duration: 0s;
 }
 
 .TextTabButtons .dijitTab,
@@ -327,6 +328,10 @@ body.patric *:focus {
 	margin-right: 15px;
 	margin-top: 3px;
 	margin-bottom: 3px;
+}
+
+.claro .dijitTab:first-child {
+	margin-left: 10px;
 }
 
 .TextTabButtons .dijitTab.dijitChecked .tabLabel{
