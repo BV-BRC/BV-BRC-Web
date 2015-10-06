@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on","dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysGrid", "dijit/layout/ContentPane","./GridContainer","dijit/TooltipDialog",
-	"./ItemDetailPanel","dojo/topic"
+	"./ItemDetailPanel","dojo/topic","dijit/form/ToggleButton"
 ], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer,
+			ActionBar, ContainerActionBar, TabContainer,StackController,
 			PathwaysGrid, ContentPane, GridContainer,TooltipDialog,
-			ItemDetailPanel,Topic
+			ItemDetailPanel,Topic,TabButton
 ) {
 
 
@@ -150,19 +150,24 @@ define([
 			if(this._started){
 				return;
 			}
+
 			this.containerActionBar = new ContainerActionBar({
 				region: "top",
 				splitter: false,
+				layoutPriority: 2,
 				"className": "BrowserHeader"
 			});
+
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 2,
 				style: "width:48px;text-align:center;",
 				splitter: false
 			});
+
 			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1});
-			this.tabContainer = new TabContainer({region: "center"});
+			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
+			var tabController = new StackController({containerId: this.id + "_TabContainer", region: "top", "class": "TextTabButtons"})
 
 			this.pathwaysGrid = new PathwaysGrid({title: "Pathways", content: "Pathways Grid",params:this.params,query:{}});
 			if (this.params){
@@ -171,14 +176,13 @@ define([
 			this.ecNumbersGrid = new ContentPane({title: "EC Numbers", content: "EC Numbers Grid"});
 			this.genesGrid = new ContentPane({title: "Genes", content: "Genes Grid"});
 
-
+			this.addChild(this.containerActionBar);
+			this.addChild(tabController);
+			this.addChild(this.tabContainer);
+			this.addChild(this.selectionActionBar);
 			this.tabContainer.addChild(this.pathwaysGrid);
 			this.tabContainer.addChild(this.ecNumbersGrid);
 			this.tabContainer.addChild(this.genesGrid);
-
-			this.addChild(this.containerActionBar);
-			this.addChild(this.tabContainer);
-			this.addChild(this.selectionActionBar);
 
 			this.listen();
 			this.setupActions();

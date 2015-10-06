@@ -304,3 +304,34 @@ body.patric *:focus {
 	background: #fff;
 	padding: 0px;
 }
+
+.TextTabButtons {}
+
+.TextTabButtons .dijitTab {
+	display: inline-block;
+}
+
+.TextTabButtons .dijitTab,
+.TextTabButtons .dijitToggleButton .dijitButtonNode {
+	border: 0px;
+	background: transparent;
+	background-color: inherit;
+	box-shadow: none;
+	border-radius: 0px;
+	margin-left: 15px;
+	margin-right: 15px;
+	margin-top: 5px;
+}
+
+.TextTabButtons .dijitTab.dijitChecked .tabLabel{
+	color: #333;
+	font-weight: 900;
+}
+
+.TextTabButtons .dijitTab.dijitChecked {
+	border-bottom: 4px solid orange;
+}
+
+.TextTabButtons .dijitTab .tabLabel:hover {
+	color: black; 
+}
