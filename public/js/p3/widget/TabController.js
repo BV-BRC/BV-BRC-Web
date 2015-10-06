@@ -2,14 +2,17 @@ define([
         "dojo/_base/declare","dijit/_WidgetBase","dijit/layout/TabController",
         "dijit/focus",
         "dijit/registry",
-	"dojo/topic"
+	"dojo/topic",
+	"dojo/on"
 ], function(
         declare, WidgetBase, TabController,
 	focus,
 	registry,
-	Topic
+	Topic,
+	on
 ){
         return declare([TabController], {
+		hashProperty: "view_tab",
                 onSelectChild: function(/*dijit/_WidgetBase*/ page){
                         // summary:
                         //              Called when a page has been selected in the StackContainer, either by me or by another StackController
@@ -20,8 +23,8 @@ define([
                                 return;
                         }
 
-                        console.log("Select Page ID: ", page.id, page)
-                        
+                       // console.log("Select Page ID: ", page.id, page)
+
                         if(this._currentChild){
                                 var oldButton = this.pane2button(this._currentChild.id);
                                 oldButton.set('checked', false);
@@ -29,14 +32,13 @@ define([
                         }
 
                         var newButton = this.pane2button(page.id);
-                        console.log("Button: ", newButton);
+                     //   console.log("Button: ", newButton);
                         if (newButton){
                                 newButton.set('checked', true);
                                 newButton.focusNode.setAttribute("tabIndex", "0");
                         }
                         this._currentChild = page;
                     
-                        var container = registry.byId(this.containerId);
                 },
 
                 onButtonClick: function(/*dijit/_WidgetBase*/ page){
@@ -58,8 +60,13 @@ define([
 
 			console.log("Select Child: ", page.id,  " ContainerId: ", this.containerId);
 			console.log("Nav to: ", window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_",""));
-			var location = window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_","");
-			Topic.publish("/navigate", {href: location});	
+			var evt = {bubbles: true, cancelable: true}
+			evt.hashProperty = this.hashProperty;
+			evt.value = page.id.replace(this.containerId + "_","");
+
+			on.emit(this.domNode, "UpdateHash",evt);	
+//			var location = window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_","");
+//			Topic.publish("/navigate", {href: location});	
 
 //                        container.selectChild(page);
                 }

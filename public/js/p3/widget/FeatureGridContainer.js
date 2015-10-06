@@ -1,12 +1,14 @@
 define([
 	"dojo/_base/declare", "./GridContainer","dojo/on",
 	"./FeatureGrid","dijit/popup","dojo/topic",
-	"dijit/TooltipDialog","dijit/layout/ContentPane"
+	"dijit/TooltipDialog","./FacetFilterPanel",
+	"dojo/_base/lang"
 
 ], function(
 	declare, GridContainer,on,
 	FeatureGrid,popup,Topic,
-	TooltipDialog,ContentPane
+	TooltipDialog,FacetFilterPanel,
+	lang
 ){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
@@ -30,6 +32,7 @@ define([
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
 		style: "margin-left:15px;",
+		facetFields: ["annotation","feature_type"],
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -61,12 +64,53 @@ define([
 			]
 
 		]),
+		getFilterPanel: function(){
+			if (!this.filterPanel) { 
+				this.filterPanel = new FacetFilterPanel({style: "color:#fff;",facets: {} });
+
+				this.filterPanel.watch("filter", lang.hitch(this,function(attr,oldValue,newValue){
+					on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newValue, oldValue: oldValue} )
+				}))
+			}
+			this.filterPanel.clearFilters();
+			return this.filterPanel 
+		},
+
+		filter: null,
+
+		_setFilterAttr: function(filter){
+			console.log("FeatureGridContainer Filter: ", filter);
+			this.inherited(arguments);
+
+			if (filter){
+				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
+				var re = /(eq\(\w+\,\w+\))+/gi;
+				var innerRE = /eq\(\w+\,\w+\)/
+				var matches = filter.match(re);
+				console.log("Matches: ", matches);
+				var selected = matches.map(function(match){
+					var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
+					return parts[0] +":"+ parts[1];
+				})
+
+				console.log("Selected: ", selected);
+				if (this.filterPanel){
+						this.filterPanel.set('selected', selected);
+				}
+			}
+		},
 
 		startup: function(){
 			if (this._started) { return; }
-			var p = new ContentPane({content: "Filter/Facets Go Here"});
-			//Topic.publish("/overlay/left", {action: "set", panel: p});
 			this.inherited(arguments);
+			var _self=this;
+			console.log("FeatureGridContainer startup() Grid: ", this.grid);	
+			this.grid.store.on("facet_counts", function(evt){
+				if (_self.filterPanel){
+					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
+					console.log("FeatureGridContainer Facets: ", evt.facet_counts);
+				}
+			})	
 		}
 	});
 });

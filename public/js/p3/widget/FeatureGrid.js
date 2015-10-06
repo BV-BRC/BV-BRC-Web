@@ -1,10 +1,14 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter) {
+			Grid, formatter, Store) {
+
+
+	var store = new Store({});
+
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -13,6 +17,7 @@ define([
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
+		store: store,
 		columns: {
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
@@ -68,6 +73,7 @@ define([
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
+
 			this.inherited(arguments);
 			this.refresh();
 		}

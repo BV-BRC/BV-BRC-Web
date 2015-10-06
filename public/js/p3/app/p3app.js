@@ -185,7 +185,7 @@ define([
 			// },2000);
 
 			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
-			this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
+			this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
 			this.leftDrawer.startup();
 
 			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);

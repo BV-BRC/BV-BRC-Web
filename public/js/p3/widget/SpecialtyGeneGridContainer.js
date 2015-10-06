@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
-	"dijit/TooltipDialog"
+	"dijit/TooltipDialog","dijit/layout/ContentPane"
 ], function(declare, GridContainer,
 			Grid, popup,
-			TooltipDialog) {
+			TooltipDialog,ContentPane) {
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -36,6 +36,12 @@ define([
 				false
 			]
 		]),
-		gridCtor: Grid
+		gridCtor: Grid,
+		getFilterPanel: function(){
+			if (!this.filterPanel) { 
+				this.filterPanel = new ContentPane({style: "color:#fff;", content: "Specialty Gene Filter/Facets Go Here"});
+			}
+			return this.filterPanel 
+		},
 	});
 });

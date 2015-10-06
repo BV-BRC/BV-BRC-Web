@@ -1,12 +1,12 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on","dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer"
-], function(declare, BorderContainer, on,
+], function(declare, BorderContainer, on,Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
@@ -22,11 +22,35 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		hashParams: null,
+
 		_setHashParamsAttr: function(params){
 			this.hashParams = params;
-			console.log(this.id + " set child hash view: ", this.hashParams);
-			if (this.hashParams.view_tab && this[this.hashParams.view_tab]) {
-				this.viewer.selectChild(this[this.hashParams.view_tab])
+			console.log("SET HASH PARAMS: ", this.hashParams, "started: ", this._started);
+			if (!this._started){ return; }
+
+			if (this.hashParams.view_tab) {
+				console.log("HASH PARAMS contain view_tab")
+				if (this[this.hashParams.view_tab]) {
+					console.log(this.id + " set child hash view: ", this.hashParams.view_tab);
+
+//					console.log("Select Child: ", this.hashParams.view_tab, this[this.hashParams.view_tab].id)
+					console.log("Attempt to Select Child: ", this[this.hashParams.view_tab]);
+					this.viewer.selectChild(this[this.hashParams.view_tab])
+				}else{
+					console.log("No Local view_tab widget yet: ", this.hashParams.view_tab);
+					setTimeout(lang.hitch(this, function(){
+						if (this[this.hashParams.view_tab]){
+							this.viewer.selectChild(this[this.hashParams.view_tab]);
+						}
+					}),1000)
+				}
+			}else{
+				console.log("No view_tab in hashParams", this.hashParams);
+			}
+
+			if (this.viewer.selectedChildWidget){
+				console.log("Set Children Hash Params", this.hashParams)
+				this.viewer.selectedChildWidget.set("hashParams", this.hashParams);
 			}
 		},
 		_setParamsAttr: function(params) {			
@@ -34,7 +58,7 @@ define([
 		},
 		_setGenome_idAttr: function(id) {
 			if (id == this.genome_id){
-				console.log("Same ID, skip set");
+				// console.log("Same ID, skip set");
 				return;
 			}
 			this.genome_id = id;
@@ -45,7 +69,6 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(genome) {
 				this.genome = genome;
-				console.log("Genome: ", genome);
 				if(this._started){
 					this.refresh();
 				}
@@ -65,7 +88,7 @@ define([
 		},
 		refresh: function() {
 			this.viewHeader.set("content", this.genome.taxon_lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-			this.genomeOverview.set('genome', this.genome);
+			//this.genomeOverview.set('genome', this.genome);
 			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
 			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
 			this.pathways.set("query", "?eq(genome_id," + this.genome.genome_id + ")&eq(annotation,PATRIC)");
@@ -104,8 +127,22 @@ define([
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
 
-			this.set("hashParams", this.hashParams||{});
+			on(this.domNode, "UpdateHash", lang.hitch(this, function(evt){
+				console.log("UpdateHash Event: ", evt, this.hashParams);
+				console.log("Current Location: ", window.location);
+			
+				if (evt.clearHash || (evt.hashProperty == "view_tab")){
+					this.hashParams={}
+				}
+				this.hashParams[evt.hashProperty]=evt.value;
+				location = window.location.pathname + window.location.search + "#" + Object.keys(this.hashParams).map(function(key){
+					return key + "=" + this.hashParams[key]
+				},this).join("&");
 
+                Topic.publish("/navigate", {href: location});
+			}))
+
+		
 //			this.genomeBrowser= new JBrowser({
 //				title: "Genome Browser",
 ////				include: [],
@@ -122,6 +159,9 @@ define([
 				return;
 			}
 			this.inherited(arguments);
+
+			this.set("hashParams", this.hashParams||{});
+
 			if(this.genome){
 				this.refresh();
 			}

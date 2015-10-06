@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on","dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./PathwaysGrid", "dijit/layout/ContentPane","./GridContainer","dijit/TooltipDialog",
-	"./ItemDetailPanel"
+	"./ItemDetailPanel","dojo/topic"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer,
 			PathwaysGrid, ContentPane, GridContainer,TooltipDialog,
-			ItemDetailPanel
+			ItemDetailPanel,Topic
 ) {
 
 
@@ -128,6 +128,21 @@ define([
 			this.selectionActions.forEach(function(a){
 				this.selectionActionBar.addAction(a[0],a[1],a[2],lang.hitch(this,a[3]),a[4]);
 			}, this);
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+			if (this.visible && this.getFilterPanel){
+				var fp = this.getFilterPanel();
+				if (fp){
+					Topic.publish("/overlay/left", {action: "set", panel: fp});
+					return;
+				}
+			}
+			
+			Topic.publish("/overlay/left", {action: "hide"});
+			
 		},
 
 		startup: function() {

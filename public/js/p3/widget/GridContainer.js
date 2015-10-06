@@ -1,9 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dojo/_base/lang","./ItemDetailPanel"
+	"./ActionBar","./ContainerActionBar","dojo/_base/lang","./ItemDetailPanel",
+	"dojo/topic","dojo/query"
 ], function(
 	declare,BorderContainer,on,
-	ActionBar, ContainerActionBar,lang,ItemDetailPanel
+	ActionBar, ContainerActionBar,lang,ItemDetailPanel,
+	Topic,query
 
 ){
 
@@ -11,11 +13,63 @@ define([
 		gutters: false,
 		gridCtor: null,
 		query: null,
+		filter: null,
+		hashParams: null,
+		style: "margin-left:15px;",
+		facetFields: [],
+		_setHashParamsAttr: function(params){
+			this.hashParams = params;
+			console.log("GridContainer " + this.id + " set child hash view: ", this.hashParams);
+			console.log("  params:", params);
+			this.set("filter", params?params.filter:"");
+		},
+
 		_setQueryAttr: function(query){
 			this.query = query;
+
 			if (this.grid) {
-				this.grid.set("query", query);
+				if (this.filter){
+					query = (query||"") + "&fq(" + this.filter + ")";
+				}
+
+				if (this.facetFields && !this.filter){
+					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + f + ")"; }) + ",(mincount,1))"; 
+				}
+				this.grid.set("query", query,this.filter?{showFacets:true}:{});
 			}
+		},
+
+		_setFilterAttr: function(filter){
+			console.log("SET FILTER:" , filter)
+			this.filter = filter;
+			var query = this.query;
+
+			if (this.grid) {
+				if (this.filter){
+					query = query + this.filter;
+				}
+
+				if (this.facetFields && !this.filter){
+					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + f + ")"; }) + ",(mincount,1))"; 
+				}
+				console.log("PerformQuery: ", query);
+				this.grid.set("query", query,this.filter?{showFacets:false}:{});
+			}
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+			if (this.visible && this.getFilterPanel){
+				var fp = this.getFilterPanel();
+				if (fp){
+					Topic.publish("/overlay/left", {action: "set", panel: fp});
+					return;
+				}
+			}
+			
+			Topic.publish("/overlay/left", {action: "hide"});
+			
 		},
 		containerActions: [],
 		selectionActions: [

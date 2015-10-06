@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
-	"dijit/layout/ContentPane"
+	"dijit/layout/ContentPane","dojo/topic"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	ContentPane
+	ContentPane,Topic
 ){
 
 	return declare([BorderContainer], {
@@ -16,6 +16,20 @@ define([
 			if (this.grid) {
 				this.grid.set("query", query);
 			}
+		},
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+			if (this.visible && this.getFilterPanel){
+				var fp = this.getFilterPanel();
+				if (fp){
+					Topic.publish("/overlay/left", {action: "set", panel: fp});
+					return;
+				}
+			}
+			
+			Topic.publish("/overlay/left", {action: "hide"});
+			
 		},
 		startup: function(){
 			if (this._started) { return; }
