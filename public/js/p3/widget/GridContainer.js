@@ -15,7 +15,6 @@ define([
 		query: null,
 		filter: null,
 		hashParams: null,
-		style: "margin-left:15px;",
 		facetFields: [],
 		_setHashParamsAttr: function(params){
 			this.hashParams = params;

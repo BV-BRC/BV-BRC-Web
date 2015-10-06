@@ -31,7 +31,6 @@ define([
 
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
-		style: "margin-left:15px;",
 		facetFields: ["annotation","feature_type"],
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -103,7 +102,7 @@ define([
 			if (this._started) { return; }			
 			var _self=this;
 			this.inherited(arguments);
-			
+
 			this.grid.store.on("facet_counts", function(evt){
 				if (_self.filterPanel){
 					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);

@@ -22,7 +22,7 @@ define([
             autoFacet: false,
             dataModel: "",
         	target: "",
-            idProperty: "feature_id",
+            idProperty: "id",
 			headers: {
 				"accept": "application/solr+json",
 				"content-type": "application/json",
