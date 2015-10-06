@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
+	"./ActionBar","./ContainerActionBar","dijit/layout/StackContainer", "dijit/layout/TabController",
 	"dijit/layout/ContentPane","dojo/topic"
 ], function(
 	declare,BorderContainer,on,
-	ActionBar, ContainerActionBar,TabContainer,
+	ActionBar, ContainerActionBar,TabContainer,StackController,
 	ContentPane,Topic
 ){
 
@@ -33,18 +33,18 @@ define([
 		},
 		startup: function(){
 			if (this._started) { return; }
-			this.containerActionBar = new ContainerActionBar({region: "top",splitter:false, "className": "BrowserHeader"});
-			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:2, style:"width:48px;text-align:center;",splitter:false});
-			this.tabContainer = new TabContainer({region:"center"});
+		
+			this.tabContainer = new TabContainer({region:"center",id: this.id + "_TabContainer"});
+			var tabController = new StackController({containerId: this.id + "_TabContainer", region: "top", "class": "TextTabButtons"})
+
 			this.experimentsGrid = new ContentPane({title: "Experiments", content: "Experiments Tab"});
 			this.comparisonsGrid= new ContentPane({title: "Comparisions", content: "Comparison Grid"});
 			this.tabContainer.addChild(this.experimentsGrid);
 			this.tabContainer.addChild(this.comparisonsGrid);
 
-			this.addChild(this.containerActionBar);
+			this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			this.addChild(this.selectionActionBar);
-
+		
 			this.inherited(arguments);
 		}
 	});

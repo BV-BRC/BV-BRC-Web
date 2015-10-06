@@ -176,10 +176,10 @@ define([
 			this.ecNumbersGrid = new ContentPane({title: "EC Numbers", content: "EC Numbers Grid"});
 			this.genesGrid = new ContentPane({title: "Genes", content: "Genes Grid"});
 
-			this.addChild(this.containerActionBar);
+			// this.addChild(this.containerActionBar);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			this.addChild(this.selectionActionBar);
+			// this.addChild(this.selectionActionBar);
 			this.tabContainer.addChild(this.pathwaysGrid);
 			this.tabContainer.addChild(this.ecNumbersGrid);
 			this.tabContainer.addChild(this.genesGrid);
