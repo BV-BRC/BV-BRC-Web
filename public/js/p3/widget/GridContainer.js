@@ -29,11 +29,11 @@ define([
 
 			if (this.grid) {
 				if (this.filter){
-					query = (query||"") + "&fq(" + this.filter + ")";
+					query = (query||"") + "&" + this.filter;
 				}
 
 				if (this.facetFields && !this.filter){
-					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + f + ")"; }) + ",(mincount,1))"; 
+					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
 				}
 				this.grid.set("query", query,this.filter?{showFacets:true}:{});
 			}
@@ -46,11 +46,11 @@ define([
 
 			if (this.grid) {
 				if (this.filter){
-					query = query + this.filter;
+					query = query + "&" + this.filter;
 				}
 
 				if (this.facetFields && !this.filter){
-					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + f + ")"; }) + ",(mincount,1))"; 
+					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
 				}
 				console.log("PerformQuery: ", query);
 				this.grid.set("query", query,this.filter?{showFacets:false}:{});
@@ -104,6 +104,7 @@ define([
 				return;
 			}
 			this.grid = new this.gridCtor({region: "center"});
+	
 			this.containerActionBar = new ContainerActionBar({region: "top",splitter:false, "className": "BrowserHeader"});
 			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:2, style:"width:48px;text-align:center;",splitter:false});
 			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1});

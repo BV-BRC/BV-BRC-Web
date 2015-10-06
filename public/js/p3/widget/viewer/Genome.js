@@ -88,7 +88,7 @@ define([
 		},
 		refresh: function() {
 			this.viewHeader.set("content", this.genome.taxon_lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-			//this.genomeOverview.set('genome', this.genome);
+			this.genomeOverview.set('genome', this.genome);
 			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
 			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");
 			this.pathways.set("query", "?eq(genome_id," + this.genome.genome_id + ")&eq(annotation,PATRIC)");

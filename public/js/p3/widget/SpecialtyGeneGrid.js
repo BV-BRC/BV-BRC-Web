@@ -1,15 +1,19 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter"
+	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter) {
+			Grid, formatter, Store) {
+
+		var store = new Store({});
+
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
+		store: store,
 		dataModel: "sp_gene",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,

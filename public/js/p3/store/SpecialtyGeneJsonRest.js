@@ -6,9 +6,8 @@ define([
     Store
 ){
         return declare([Store], {
-        	autoFacet: false,
-        	facetFields: ["feature_type", "annotation"],
-        	dataModel: "genome_feature"
+        	dataModel: "sp_gene",
+   	     	facetFields: []
         });
 });
 

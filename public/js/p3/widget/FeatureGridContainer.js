@@ -99,12 +99,11 @@ define([
 				}
 			}
 		},
-
 		startup: function(){
-			if (this._started) { return; }
-			this.inherited(arguments);
+			if (this._started) { return; }			
 			var _self=this;
-			console.log("FeatureGridContainer startup() Grid: ", this.grid);	
+			this.inherited(arguments);
+			
 			this.grid.store.on("facet_counts", function(evt){
 				if (_self.filterPanel){
 					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);

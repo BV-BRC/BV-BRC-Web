@@ -80,17 +80,24 @@ define([
 			},
 			selected: null,
 			_setSelectedAttr: function(selected){
-				console.log("set selected: ", selected);
-				this.selected = selected;
-				if (!this._started){ return; }
-				query("TD").forEach(function(node){
-					var rel = domAttr.get(node, "rel");
-					if (rel && this.selected && this.selected.indexOf(rel)>=0){
-						domClass.add(node, "FacetSelection");
-					}else{
-						domClass.remove(node, "FacetSelection")
-					}
-				},this)
+				if (selected){
+					
+					console.log("set selected: ", selected);
+					this.selected = selected;
+					if (!this._started){ return; }
+					query("TD").forEach(function(node){
+						var rel = domAttr.get(node, "rel");
+						if (rel && this.selected && this.selected.indexOf(rel)>=0){
+							domClass.add(node, "FacetSelection");
+						}else{
+							domClass.remove(node, "FacetSelection")
+						}
+					},this)
+				}else{
+					query("TD").forEach(function(node){
+						domClass.remove(node,"FacetSelection");
+					},this)
+				}
 			},
 
 			clearFilters: function(){
@@ -167,7 +174,7 @@ define([
 								label = label + " (" + facet.count + ")";
 							}
 
-							domConstruct.create("td",{style: {"padding-left": "10px"}, rel: category + ":" + (facet.value||facet.label), innerHTML: label},tr)
+							domConstruct.create("td",{style: {"padding-left": "10px"}, rel: encodeURIComponent(category) + ":" + encodeURIComponent(facet.value||facet.label), innerHTML: label},tr)
 					},this)
 
 				},this)

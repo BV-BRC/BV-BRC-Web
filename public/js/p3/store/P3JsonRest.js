@@ -83,8 +83,10 @@ define([
             var facets = results.ioArgs.xhr.getResponseHeader("facet_counts");
             console.log("facet_counts", facets)
             facets = JSON.parse(facets)
+            if (!facets) { return true};
             var finalFacets = {}
             
+
             Object.keys(facets).forEach(function(facetType){
                 console.log("facetType: ". facetType)
                 finalFacets[facetType]={}
