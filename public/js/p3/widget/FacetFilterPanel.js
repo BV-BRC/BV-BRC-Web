@@ -1,38 +1,121 @@
 define([
 	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
-	"dojo/_base/xhr", "dojo/_base/lang", "dojo/dom-attr","dojo/query"
+	"dojo/request", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
+	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter"
 ], function(declare, on, Deferred,
 			domClass, domConstruct,WidgetBase,
-			xhr, lang, domAttr,query) {
+			xhr, lang, domAttr,Query,
+			domGeometry,domStyle,FacetFilter) {
+
+
+    function parseFacetCounts(facets){
+    	var out = {};
+
+    	Object.keys(facets).forEach(function(cat){
+    		var data = facets[cat];
+    		if (!out[cat]) { out[cat]=[] }
+    		var i = 0;
+    		while(i<data.length-1) {
+    			out[cat].push({label: data[i],value: data[i], count: data[i+1]})
+    			i=i+2;
+    		}
+    	});
+    	return out;
+    }
 
 	return declare([WidgetBase], {
-			facets: null,
+			baseClass: "FacetFilterPanel",
 			filter: "",
+			query:"",
+			facetFields:null,
+			dataModel: "",
+			apiServer: window.App.dataAPI,
+			authorizationToken: window.App.authorizationToken,
+			constructor: function(){
+				this._ffWidgets={};
+			},
+			getFacets: function(query){
+				var f = "&facet(" + this.facetFields.map(function(field){
+					return "(field," + field + ")"
+				}).join(",") + ",(mincount,1))";
+				var url = this.apiServer + "/" + this.dataModel + "/" + query + "&limit(1)" + f;
+				console.log("URL", url)
+
+				return xhr.get(url, {
+					handleAs: "json",
+					"headers": {accept: "application/solr+json"}
+				}).then(function(response){
+					return parseFacetCounts(response.facet_counts.facet_fields)
+				})
+			},
+
+			_setQueryAttr: function(query){
+				console.log("Set FilterPanel Query", query)
+				this.query = query;
+				this.getFacets(query).then(lang.hitch(this, function(facets){
+					Object.keys(facets).forEach(function(cat){
+						if (this._ffWidgets[cat]){
+							this._ffWidgets[cat].set('data', facets[cat]);
+						}else{
+							console.log("Missing ffWidget for : ", cat);
+						}
+					},this);
+				}));
+			},
+
+			// _setFilterAttr: function(filter){
+			// 	console.log("Set FilterPanel Filter", filter);
+			// 	this.filter=filter;
+			// },
+
+			_setFacetFieldsAttr: function(fields){
+				this.facetFields = fields;
+				if (!this._started){return;}
+
+				fields.forEach(lang.hitch(this,function(f){
+					console.log("Field: ",f)
+					this.addCategory(f,[]);
+				}))
+			},
 
 			postCreate: function(){
 				this._filter={};
 
 				this.inherited(arguments);
-				this._table = domConstruct.create('table',{},this.domNode)
+				this._table = domConstruct.create('table',{style:{width:"100%"}},this.domNode)
 				this.table = domConstruct.create('tbody',{},this._table)
-				on(this.domNode, "TD:click", lang.hitch(this,function(evt){
-					var rel = domAttr.get(evt.target, "rel");
-					var parts = rel.split(":");
-					var selected = [];
-					//selected.push(rel);
-					//var foundExisting=false;
-					domClass.toggle(evt.target, "FacetSelection");
+				this.leftColumn = domConstruct.create("td", {innerHTML: "", style: {"background": "#fff", "width":"20px"}},this.table);
+				this.centerColumn = domConstruct.create("td", {innerHTML: "",style: {"word-wrap":"nowrap","overflow-x":"auto",color: "#fff"}},this.table);
+				this.right = domConstruct.create("td", {innerHTML: "", style: {"background": "#fff","width":"20px"}},this.table);
 
-					query("TD.FacetSelection", this.table).forEach(function(node){
-						var selRel = domAttr.get(node,"rel");
-						selected.push(selRel)
-					})
-					console.log("selected: ", selected)
-					var f = this.selectedToFilter(selected);
-					this.set("filter", f);
+				on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
+						console.log("EVT: ", evt);
+						this._filter[evt.category] = evt.filter;
+						var cats = Object.keys(this._filter);
+						console.log("Categories: ", cats);
+
+						if (cats.length < 1){
+							console.log("UpdateFilterCategory Set Filter to empty")
+							this._set('filter', "");
+						}else if (cats.length==1){
+							console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]])
+							this._set("filter", this._filter[cats[0]]);
+						}else{
+							console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+							this._set("filter", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")"  )
+						}
+
 				}));
+
 			},
+
+			addCategory: function(name, values){
+				console.log("Add Category: ", name, values)
+				var f = this._ffWidgets[name] = new FacetFilter({category: name, data: values, selected: []});
+				domConstruct.place(f.domNode, this.centerColumn,"last")
+			},
+
 			selectedToFilter: function(selected){
 				var f={}
 				selected.forEach(function(sel){
@@ -101,9 +184,7 @@ define([
 			},
 
 			clearFilters: function(){
-					query("TD.FacetSelection").forEach(function(node){
-						domClass.toggle(node, "FacetSelection");
-					})
+
 			},
 
 			toggleInFilter: function(field, value){
@@ -184,10 +265,87 @@ define([
 				if (this._started) { return; }
 				this.inherited(arguments);
 				this._started=true;
-				this.set("facets", this.facets);
-				this.set("selected", this.selected);
+				this.set("facetFields",this.facetFields);
+				//this.set("facets", this.facets);
+				//this.set("selected", this.selected);
 			},
+			resize: function(changeSize, resultSize){
 
-			resize: function(){}
+			        // summary:
+			        //              Call this to resize a widget, or after its size has changed.
+			        // description:
+			        //              ####Change size mode:
+			        //
+			        //              When changeSize is specified, changes the marginBox of this widget
+			        //              and forces it to re-layout its contents accordingly.
+			        //              changeSize may specify height, width, or both.
+			        //
+			        //              If resultSize is specified it indicates the size the widget will
+			        //              become after changeSize has been applied.
+			        //
+			        //              ####Notification mode:
+			        //
+			        //              When changeSize is null, indicates that the caller has already changed
+			        //              the size of the widget, or perhaps it changed because the browser
+			        //              window was resized.  Tells widget to re-layout its contents accordingly.
+			        //
+			        //              If resultSize is also specified it indicates the size the widget has
+			        //              become.
+			        //
+			        //              In either mode, this method also:
+			        //
+			        //              1. Sets this._borderBox and this._contentBox to the new size of
+			        //                      the widget.  Queries the current domNode size if necessary.
+			        //              2. Calls layout() to resize contents (and maybe adjust child widgets).
+			        // changeSize: Object?
+			        //              Sets the widget to this margin-box size and position.
+			        //              May include any/all of the following properties:
+			        //      |       {w: int, h: int, l: int, t: int}
+			        // resultSize: Object?
+			        //              The margin-box size of this widget after applying changeSize (if
+			        //              changeSize is specified).  If caller knows this size and
+			        //              passes it in, we don't need to query the browser to get the size.
+			        //      |       {w: int, h: int}
+
+			        var node = this.domNode;
+
+			        // set margin box size, unless it wasn't specified, in which case use current size
+			        if(changeSize){
+			                domGeometry.setMarginBox(node, changeSize);
+			        }
+
+			        // If either height or width wasn't specified by the user, then query node for it.
+			        // But note that setting the margin box and then immediately querying dimensions may return
+			        // inaccurate results, so try not to depend on it.
+			        var mb = resultSize || {};
+			        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			        if( !("h" in mb) || !("w" in mb) ){
+			                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			        }
+
+
+			        // Compute and save the size of my border box and content box
+			        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			        var cs = domStyle.getComputedStyle(node);
+			        var me = domGeometry.getMarginExtents(node, cs);
+			        var be = domGeometry.getBorderExtents(node, cs);
+			        var bb = (this._borderBox = {
+			                w: mb.w - (me.w + be.w),
+			                h: mb.h - (me.h + be.h)
+			        });
+			        var pe = domGeometry.getPadExtents(node, cs);
+			        this._contentBox = {
+			                l: domStyle.toPixelValue(node, cs.paddingLeft),
+			                t: domStyle.toPixelValue(node, cs.paddingTop),
+			                w: bb.w - pe.w,
+			                h: bb.h - pe.h
+			        };
+
+			        Query(".FacetFilter",this.containerNode).forEach(function(n){
+			        	domGeometry.setMarginBox(n, {h: this._contentBox.h-4})
+			        },this)
+
+
+			}
 	})
 });

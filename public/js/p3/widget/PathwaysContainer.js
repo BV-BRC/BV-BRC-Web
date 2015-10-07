@@ -42,12 +42,21 @@ define([
 			this.params = params;
 			if(this._started && this.pathwaysGrid){
 				var q = [];
-				if(params.genome_id != null) q.push('genome_id:' + params.genome_id);
-				if(params.annotation != null) q.push('annotation:' + params.annotation);
-				if(params.pathway_id != null) q.push('pathway_id:' + prarms.pathway_id);
+				var changed=false;
+				var checkParams = ["genome_id", "annotation", "pathway_id"];
 
+				checkParams.forEach(function(cp){
+					if (params[cp] != this.params[cp]){
+						changed = true;
+						this.params[cp]=params[cp];
+					}
+				},this)
 
-				this.pathwaysGrid.set("params", params);
+				if (changed){
+					this.pathwaysGrid.set("params", params);
+				}
+
+				// this.pathwaysGrid.set("params", params);
 
 				/*
 				//console.log(params, q);
@@ -64,16 +73,14 @@ define([
 		visible: false,
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
-			if (this.visible && this.getFilterPanel){
-				var fp = this.getFilterPanel();
-				if (fp){
-					Topic.publish("/overlay/left", {action: "set", panel: fp});
-					return;
+			console.log("PathwaysContainer Visible");
+			if (this.pathwaysGrid){
+				this.pathwaysGrid.set('visible', true);
+				if (!this.pathwaysGrid._hasBeenViewed){
+					this.pathwaysGrid.set("params", this.params);
+					this.pathwaysGrid._hasBeenViewed=true;
 				}
-			}
-			
-			Topic.publish("/overlay/left", {action: "hide"});
-			
+			}		
 		},
 
 		startup: function() {

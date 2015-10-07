@@ -49,10 +49,10 @@ define([
 
 			apiToken: "",
 			_setTotalRows: function(rows) {
-				console.log("this.id:", this.id, "_setTotalRows()");
+				// console.log("this.id:", this.id, "_setTotalRows()");
 				if (rows){
 					this.totalRows = rows;
-					console.log("Total Rows: ", rows);
+					// console.log("Total Rows: ", rows);
 					if(this.controlButton){
 						//console.log("this.controlButton: ", this.controlButton);
 						if(!this._originalTitle){
@@ -90,11 +90,11 @@ define([
 
 			buildQuery: function(table, extra) {
 				var q = "?" + (this.activeFilter ? ( "in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))" ) : "") + (this.extra || "");
-				console.log("Feature Grid Query:", q);
+				// console.log("Feature Grid Query:", q);
 				return q;
 			},
 			createStore: function(dataModel, pk, token) {
-				console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
+				// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
 				var store = new Store({
 					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/", idProperty: pk, headers: {
 						"accept": "application/json",
@@ -108,7 +108,7 @@ define([
 			},
 
 			getFilterPanel: function() {
-				console.log("getFilterPanel()");
+				// console.log("getFilterPanel()");
 				return FilterPanel;
 			}
 		});

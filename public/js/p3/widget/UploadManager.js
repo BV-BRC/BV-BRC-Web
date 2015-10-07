@@ -14,7 +14,7 @@ define([
 				UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
 		},
 		onUploadMessage: function(msg){
-			console.log("WorkspaceController onUploadMsg", msg);
+			// console.log("WorkspaceController onUploadMsg", msg);
 			if (msg && msg.type=="UploadStatSummary"){
 				var data = msg.summary;
 				var keys = Object.keys(data.activeFiles);

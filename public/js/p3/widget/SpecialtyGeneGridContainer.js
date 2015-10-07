@@ -32,8 +32,25 @@ define([
 
 	return declare([GridContainer], {
 		facetFields: ["property","source","evidence"],
+		getFilterPanel: function(opts){
 
+			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
+			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
+				console.log("setFilter Watch() callback", newVal);
+				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
+			}));
+			return fp;	
+		},
 		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				function(selection){	
+					on.emit(this.domNode,"ToggleFilters",{});
+				},
+				true
+			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -71,18 +88,7 @@ define([
 			]
 		]),
 		gridCtor: Grid,
-		getFilterPanel: function(){
-			if (!this.filterPanel) { 
-				this.filterPanel = new FacetFilterPanel({style: "color:#fff;",facets: {} });
-
-				this.filterPanel.watch("filter", lang.hitch(this,function(attr,oldValue,newValue){
-					on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newValue, oldValue: oldValue} )
-				}))
-			}
-			this.filterPanel.clearFilters();
-			return this.filterPanel 
-		},
-
+	
 		filter: null,
 
 		_setFilterAttr: function(filter){
@@ -109,11 +115,11 @@ define([
 				}
 			}
 		},
-		startup: function(){
-			if (this._started) { return; }			
+		onFirstView: function(){
+			if (this._firstView) { return; }			
 			var _self=this;
 			this.inherited(arguments);
-			
+
 			this.grid.store.on("facet_counts", function(evt){
 				if (_self.filterPanel){
 					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
