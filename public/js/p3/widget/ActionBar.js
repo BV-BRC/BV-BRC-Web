@@ -147,7 +147,7 @@ define([
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
-			console.log("Add Action: ", name, classes, opts,enabled);
+			// console.log("Add Action: ", name, classes, opts,enabled);
 			var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
 			var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
 

@@ -8,9 +8,9 @@
 @import url("AppBase.css");
 @import url("assembly.css");
 @import url("modeling.css");
+@import url("facetfilter.css");
 @import url("./GenomeList.css");
 @import url("./GenomeViewer.css");
-@import url("../../jbrowse.repo/genome.css");
 @import url("./p2.css");
 @import url("./JobsGrid.css");
 /*@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");*/
@@ -305,4 +305,46 @@ body.patric *:focus {
 	border-radius: 4px;
 	background: #fff;
 	padding: 0px;
+}
+
+.TextTabButtons {
+	margin: 0px;
+	padding: 4px;
+	background: #eee;
+	border-bottom: 1px solid #bbb;	
+}
+
+.TextTabButtons .dijitTab {
+	display: inline-block;
+	transition-duration: 0s;
+}
+
+.TextTabButtons .dijitTab,
+.TextTabButtons .dijitToggleButton .dijitButtonNode {
+	border: 0px;
+	background: transparent;
+	background-color: inherit;
+	box-shadow: none;
+	border-radius: 0px;
+	margin-left: 15px;
+	margin-right: 15px;
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+.claro .dijitTab:first-child {
+	margin-left: 10px;
+}
+
+.TextTabButtons .dijitTab.dijitChecked .tabLabel{
+	color: #333;
+	font-weight: 900;
+}
+
+.TextTabButtons .dijitTab.dijitChecked {
+	border-bottom: 4px solid #34698e;
+}
+
+.TextTabButtons .dijitTab .tabLabel:hover {
+	color: black; 
 }

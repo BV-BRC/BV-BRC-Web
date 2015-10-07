@@ -1,12 +1,14 @@
 define([
 	"dojo/_base/declare", "./GridContainer","dojo/on",
-	"./FeatureGrid","dijit/popup",
-	"dijit/TooltipDialog"
+	"./FeatureGrid","dijit/popup","dojo/topic",
+	"dijit/TooltipDialog","./FacetFilterPanel",
+	"dojo/_base/lang"
 
 ], function(
 	declare, GridContainer,on,
-	FeatureGrid,popup,
-	TooltipDialog
+	FeatureGrid,popup,Topic,
+	TooltipDialog,FacetFilterPanel,
+	lang
 ){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
@@ -29,7 +31,27 @@ define([
 
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
+		facetFields: ["annotation","feature_type"],
+		filter: "",
+		getFilterPanel: function(opts){
+
+			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
+			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
+				console.log("setFilter Watch() callback", newVal);
+				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
+			}));
+			return fp;	
+		},
 		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				function(selection){	
+					on.emit(this.domNode,"ToggleFilters",{});
+				},
+				true
+			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -61,10 +83,38 @@ define([
 
 		]),
 
-		startup: function(){
-			if (this._started) { return; }
-
+		_setFilterAttr: function(filter){
+			console.log("FeatureGridContainer Filter: ", filter);
 			this.inherited(arguments);
+
+			if (filter){
+				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
+				var re = /(eq\(\w+\,\w+\))+/gi;
+				var innerRE = /eq\(\w+\,\w+\)/
+				var matches = filter.match(re);
+				console.log("Matches: ", matches);
+				var selected = matches.map(function(match){
+					var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
+					return parts[0] +":"+ parts[1];
+				})
+
+				console.log("Selected: ", selected);
+				if (this.filterPanel){
+						this.filterPanel.set('selected', selected);
+				}
+			}
+		},
+		onFirstView: function(){
+			if (this._firstView) { return; }			
+			var _self=this;
+			this.inherited(arguments);
+
+			this.grid.store.on("facet_counts", function(evt){
+				if (_self.filterPanel){
+					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
+					console.log("FeatureGridContainer Facets: ", evt.facet_counts);
+				}
+			})	
 		}
 	});
 });

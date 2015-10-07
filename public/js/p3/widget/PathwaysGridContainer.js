@@ -1,19 +1,18 @@
 define([
-	"dojo/_base/declare", "./GridContainer",
-	"./SpecialtyGeneGrid", "dijit/popup",
+	"dojo/_base/declare", "./GridContainer","dojo/on",
+	"./PathwaysGrid","dijit/popup","dojo/topic",
 	"dijit/TooltipDialog","./FacetFilterPanel",
 	"dojo/_base/lang","dojo/on"
-], function(declare, GridContainer,
-			Grid, popup,
-			TooltipDialog,FacetFilterPanel,
-			lang,on) {
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
-			popup.close(viewFASTATT);
-		}
-	});
+], function(
+	declare, GridContainer,on,
+	PathwaysGrid,popup,Topic,
+	TooltipDialog,FacetFilterPanel,
+	lang,on
+){
+
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
+	var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
 	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
@@ -30,27 +29,23 @@ define([
 		popup.close(downloadTT);
 	});
 
-	return declare([GridContainer], {
-		facetFields: ["property","source","evidence"],
-		getFilterPanel: function(opts){
+	return declare([GridContainer],{
+		gridCtor: PathwaysGrid,
+		facetFields: ["annotation","feature_type"],
 
-			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
-			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
-				console.log("setFilter Watch() callback", newVal);
-				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
-			}));
-			return fp;	
+		_setParamsAttr: function(params) {
+			this.params = params;
+			if(this._started && this.grid){
+				var q = [];
+				if(params.genome_id != null) q.push('genome_id:' + params.genome_id);
+				if(params.annotation != null) q.push('annotation:' + params.annotation);
+				if(params.pathway_id != null) q.push('pathway_id:' + prarms.pathway_id);
+
+				this.grid.set("params", params);
+			}
 		},
+
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -69,15 +64,8 @@ define([
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection) {
+				{label: "FASTA",ignoreDataType:true, multiple: true,validTypes:["*"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT},
+				function(selection){
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -86,47 +74,55 @@ define([
 				},
 				false
 			]
+
 		]),
-		gridCtor: Grid,
-	
+		getFilterPanel: function(){
+			return false;
+			if (!this.filterPanel) { 
+				this.filterPanel = new FacetFilterPanel({style: "color:#fff;",facets: {} });
+
+				this.filterPanel.watch("filter", lang.hitch(this,function(attr,oldValue,newValue){
+					on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newValue, oldValue: oldValue} )
+				}))
+			}
+			this.filterPanel.clearFilters();
+			return this.filterPanel 
+		},
+
 		filter: null,
 
 		_setFilterAttr: function(filter){
-			console.log("FeatureGridContainer Filter: ", filter);
 			this.inherited(arguments);
 
 			if (filter){
-				//filter = filter.replace(/\%22/g,"").replace(/\%20/," ");
-				console.log("Parsing hashParams Filter: ", filter);
+				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
 				var re = /(eq\(\w+\,\w+\))+/gi;
 				var innerRE = /eq\(\w+\,\w+\)/
 				var matches = filter.match(re);
-				var selected;
 				console.log("Matches: ", matches);
-				if (matches){
-					var selected = matches.map(function(match){
-						var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
-						return parts[0] +":"+ parts[1];
-					})
-				}
+				var selected = matches.map(function(match){
+					var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
+					return parts[0] +":"+ parts[1];
+				})
+
 				console.log("Selected: ", selected);
 				if (this.filterPanel){
 						this.filterPanel.set('selected', selected);
 				}
 			}
 		},
-		onFirstView: function(){
-			if (this._firstView) { return; }			
+		startup: function(){
+			if (this._started) { return; }			
 			var _self=this;
 			this.inherited(arguments);
 
+			/*
 			this.grid.store.on("facet_counts", function(evt){
 				if (_self.filterPanel){
 					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
-					console.log("FeatureGridContainer Facets: ", evt.facet_counts);
 				}
 			})	
+			*/
 		}
-
 	});
 });

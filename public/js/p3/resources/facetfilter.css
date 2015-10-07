@@ -1,0 +1,53 @@
+.FacetFilterPanel {
+	background: #333;
+	padding:4px;
+	cursor: default;
+}
+
+.FacetFilter {
+/*	border: 1px solid #aaa;*/
+	border-radius: 4px;
+	color: #aaa;
+	margin-top: 4px;
+	margin-left: 4px;
+/*	float: left;*/
+	display: inline-block;
+	overflow: hidden;
+	padding: 0px;
+	white-space: nowrap;
+}
+
+
+.FacetFilter .dataList {
+	min-height: 32px;
+	padding: 4px;
+}
+
+.dataList .FacetValue {
+	white-space: nowrap;
+	text-align: left;
+	margin-right: 8px;
+}
+
+.FacetFilter .facetCategory {
+	color: #fff;;
+	font-weight: 600;
+	text-align: left;
+	background: #34698e;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	padding: 4px;
+}
+
+.FacetValue.selected {
+	color: orange;
+}
+.FacetValue.selected:hover{
+	cursor: pointer;
+	color: orange;
+}
+
+.FacetValue:hover {
+	cursor: pointer;
+	color: #fff;
+}

@@ -29,13 +29,13 @@ define([
 
 			on(document.body,"keypress", function(evt){
 				var charOrCode = evt.charCode || evt.keyCode;
-				console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+				// console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
 			
 				if ((charOrCode==4) && evt.ctrlKey && evt.shiftKey){
 					if (!this._devDlg) {
 						this._devDlg = new Dialog({title: "Debugging Panel", content:'<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'});
 					}
-					console.log("Dialog: ", this._devDlg);
+					// console.log("Dialog: ", this._devDlg);
 					if (this._devDlg.open){
 						this._devDlg.hide();
 					}else{
@@ -60,7 +60,7 @@ define([
 			*/
 	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Workspace URL Callback", params.newPath);
+				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -71,7 +71,7 @@ define([
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
@@ -93,7 +93,7 @@ define([
 
 
 			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Upload URL Callback", params.newPath);
+				// console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -104,14 +104,14 @@ define([
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
 
 
 			Router.register("\/workspace(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Workspace URL Callback", params.newPath);
+				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -126,11 +126,12 @@ define([
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
+
 			Router.register("\/view(\/.*)", function(params, path){
-				console.log("view URL Callback", arguments,location);
+				// console.log("view URL Callback", arguments,location);
 				
 				var parts = path.split("/")
 				parts.shift();
@@ -140,23 +141,31 @@ define([
 				}else{
 					viewerParams="";
 				}
-				console.log("Parts:", parts, type, viewerParams)
+				// console.log("Parts:", parts, type, viewerParams)
 
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
 				}
 		
-			
-				console.log("Parts:", parts, type, path)
+				var hashParams={}
+
+				var hps = location.hash.substr(1).split("&")
+				hps.forEach(function(t){
+					var tup = t.split("=")
+					hashParams[tup[0]]=tup[1];
+				})
+				newState.hashParams = hashParams;
+				// console.log("Parts:", parts, type, path)
 				newState.widgetClass="p3/widget/viewer/" + type;
-				newState.value=viewerParams;
+				newState.value=viewerParams.replace(location.hash,"");
 				newState.set= "params";
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to viewer ", newState);
 				_self.navigate(newState);
 			});
+
 			Router.register("\/app(\/.*)", function(params, path){
-				console.log("view URL Callback", arguments);
+				// console.log("view URL Callback", arguments);
 				
 				var parts = path.split("/")
 				parts.shift();
@@ -166,7 +175,7 @@ define([
 				}else{
 					viewerParams="";
 				}
-				console.log("Parts:", parts, type, viewerParams)
+				// console.log("Parts:", parts, type, viewerParams)
 
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
@@ -174,12 +183,12 @@ define([
 				}
 		
 			
-				console.log("Parts:", parts, type, path)
+				// console.log("Parts:", parts, type, path)
 				newState.widgetClass="p3/widget/app/" + type;
 				newState.value=viewerParams;
 				newState.set= "params";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
@@ -191,7 +200,7 @@ define([
 			}
 
 			if (this.serviceAPI && this.user){
-				console.log("Setup API Service @ ", this.serviceAPI);
+				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
 /*
@@ -208,12 +217,8 @@ define([
 			// },2000);
 
 			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
-			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
-			//this.leftDrawer.startup();
-			//console.log("leftDrawer", this.leftDrawer)
-			// setTimeout(function(){
-			// 	Topic.publish("/overlay/left", {action: "set", panel: ContentPane});
-			// }, 1000);
+			this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
+			this.leftDrawer.startup();
 
 			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
 			//this.rightDrawer.startup();
