@@ -16,7 +16,7 @@ define([
 ){
         return declare([Store,Evented], {
             constructor: function(options){
-                console.log("P3JsonRest Options", options);
+                // console.log("P3JsonRest Options", options);
                 this.target = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") + "/" + this.dataModel + "/";
             },
             autoFacet: false,
@@ -30,7 +30,7 @@ define([
 				'Authorization': (window.App.authorizationToken || "")
 			},
             query: function(query, options){
-                console.log("p3JsonRest Query: ",typeof query, options);
+                // console.log("p3JsonRest Query: ",typeof query, options);
         // summary:
         //      Queries the store for objects. This will trigger a GET request to the server, with the
         //      query added as a query string.
@@ -81,23 +81,23 @@ define([
             //console.log("Facet Results: ", results.body.facet_counts);
             
             var facets = results.ioArgs.xhr.getResponseHeader("facet_counts");
-            console.log("facet_counts", facets)
+            // console.log("facet_counts", facets)
             facets = JSON.parse(facets)
             if (!facets) { return true};
             var finalFacets = {}
             
 
             Object.keys(facets).forEach(function(facetType){
-                console.log("facetType: ". facetType)
+                // console.log("facetType: ". facetType)
                 finalFacets[facetType]={}
                 Object.keys(facets[facetType]).forEach(function(category){
-                    console.log("\tCategory", category)
+                    // console.log("\tCategory", category)
                     var data = facets[facetType][category];
-                    console.log("\t\tdata",category, data)
+                    // console.log("\t\tdata",category, data)
                     var i=0;
                     finalFacets[facetType][category]=[];
                     while(i<data.length-1){
-                        console.log("\t\t\tFacet Data ",i,data[i], data[i+1])
+                        // console.log("\t\t\tFacet Data ",i,data[i], data[i+1])
                         var cobj = {label: data[i], value: data[i], count: data[i+1]}
                         finalFacets[facetType][category].push(cobj);
                         i=i+2;

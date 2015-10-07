@@ -24,11 +24,11 @@ define([
 
 			var _self=this;
 			this._containers={};
-			console.log("Launching Application...");
+			// console.log("Launching Application...");
 
                         /* these two on()s enable the p2 header mouse overs */
                         on(document.body, ".has-sub:mouseover", function(evt){
-				console.log("has sub");
+				// console.log("has sub");
                                 var target = evt.target;
                                 while(!domClass.contains(target,"has-sub") && target.parentNode){
                                         target = target.parentNode
@@ -45,7 +45,7 @@ define([
 
 			on(window,"message", function(evt){
 				var msg = evt.data;
-				console.log("window.message: ", msg);
+				// console.log("window.message: ", msg);
 				if (!msg || !msg.type) { return; }
 
 				switch(msg.type){
@@ -65,9 +65,9 @@ define([
 			});
 
 			Ready(this,function(){
-				console.log("Instantiate App Widgets");
+				// console.log("Instantiate App Widgets");
 				Parser.parse().then(function() {
-					console.log("ApplicationContainer: ", _self.getApplicationContainer());
+					// console.log("ApplicationContainer: ", _self.getApplicationContainer());
 					_self.startup();
 				});
 			});	
@@ -82,7 +82,7 @@ define([
 			var _self = this;
 
 			on(document, ".DialogButton:click", function(evt){
-				console.log("DialogButton Click", evt);
+				// console.log("DialogButton Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
 				var params={};
@@ -104,11 +104,11 @@ define([
                			     w.startup();
 		                });
 
-				console.log("Open Dialog", type);
+				// console.log("Open Dialog", type);
 			})
 
 			on(document, "dialogAction", function(evt){
-				console.log("dialogAction", evt)
+				// console.log("dialogAction", evt)
 				 if (_self.dialog && evt.action=="close"){
 					 _self.dialog.hide();
 				 }
@@ -117,7 +117,7 @@ define([
 
 
 			Topic.subscribe("/openDialog", function(msg){
-				console.log("OpenDialog: ", msg);
+				// console.log("OpenDialog: ", msg);
 				var type = msg.type
 				var params=msg.params||{};
 				var w = _self.loadPanel(type,params);
@@ -133,7 +133,7 @@ define([
                			     w.startup();
 		                });
 
-				console.log("Open Dialog", type);
+				// console.log("Open Dialog", type);
 			});
 
 			Topic.subscribe("/navigate",function(msg){
@@ -141,16 +141,16 @@ define([
 			})
 
 			var showAuthDlg = function(evt){
-				console.log("Login Link Click", evt);
+				// console.log("Login Link Click", evt);
 				if (evt) {
 					evt.preventDefault();
 					evt.stopPropagation();
-					console.log("Target", evt.target.href);
-					console.log("Create Dialog()", evt.target.href);
+					// console.log("Target", evt.target.href);
+					// console.log("Create Dialog()", evt.target.href);
 				}
 				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px;" src="/login"></iframe>'});
 				dlg.show();
-				console.log("end loginLink Lcik");
+				// console.log("end loginLink Lcik");
 			};
 
 
@@ -159,16 +159,16 @@ define([
 
 
 			on(document, ".navigationLink:click", function(evt){
-				console.log("NavigationLink Click", evt);
+				// console.log("NavigationLink Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				console.log("Target", evt.target, evt);
+				// console.log("Target", evt.target, evt);
 				Router.go(evt.target.pathname || evt.target.href);
 			})
 		},
         loadPanel: function(id,params,callback){
                 var def = new Deferred();
-                console.log("Load Panel", id, params);
+                // console.log("Load Panel", id, params);
                 var p = this.panels[id];
                 if (!p.params){
                         p.params={};
@@ -213,18 +213,18 @@ define([
 
 		getApplicationContainer: function(){
 			if (this.applicationContainer){
-				console.log("Already existing AppContainer");
+				// console.log("Already existing AppContainer");
 				return this.applicationContainer;
 			}
 			this.applicationContainer = Registry.byId("ApplicationContainer");
-			console.log("Application Container from registry: ", this.applicationContainer);
+			// console.log("Application Container from registry: ", this.applicationContainer);
 			return this.applicationContainer;
 		},
 		getCurrentContainer: function(){
 			var ac = this.getApplicationContainer();
-			console.log("AppContainer: ", ac);
+			// console.log("AppContainer: ", ac);
 			var ch = ac.getChildren().filter(function(child){
-				console.log("Child Region: ", child.region, child);
+				// console.log("Child Region: ", child.region, child);
 				return child.region=="center";
 			});
 			if (!ch || ch.length<1){ console.warn("Unable to find current container"); return false; }
@@ -246,7 +246,7 @@ define([
 				return;
 			}
 
-			console.log("Do Navigation to href: ", newNavState);
+			// console.log("Do Navigation to href: ", newNavState);
 
 			var appContainer = this.getApplicationContainer();
 
@@ -261,7 +261,7 @@ define([
 				ctor=ContentPane;
 			}
 
-			console.log("Ctor: ", ctor);
+			// console.log("Ctor: ", ctor);
 
 			if (newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
 				var cur = _self.getCurrentContainer();	
@@ -278,11 +278,11 @@ define([
 					return;
 				}
 				var acceptType = newNavState.widgetClass?"application/json":"text/html";
-				console.log("got CTOR for ", newNavState.widgetClass);
+				// console.log("got CTOR for ", newNavState.widgetClass);
 				var instance;
 				var cur = _self.getCurrentContainer();	
 				if (cur instanceof ctor) {
-					console.log("cur is isntance of ctor");
+					// console.log("cur is isntance of ctor");
 					instance = cur; 
 
 					if (newNavState.hashParams){
@@ -293,17 +293,17 @@ define([
 					
 					if ((instance instanceof ContentPane) && !newNavState.content) {
 						var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
-						console.log("set href to: ", dest);
+						// console.log("set href to: ", dest);
 						instance.set('href', dest);
 					}else if (newNavState.set){
-						console.log("Set ", newNavState.set, " to ", newNavState.value);
+						// console.log("Set ", newNavState.set, " to ", newNavState.value);
 						instance.set(newNavState.set,newNavState.value);
 					}else if (instance.resize){
 						 instance.resize(); 
 					}
 					return;
 				}
-				console.log("set apiServer: ", _self.apiServer);
+				// console.log("set apiServer: ", _self.apiServer);
 				var opts = {region: "center", apiServer: _self.apiServer} 
 				if (newNavState.filter){
 					opts.activeFilter = newNavState.filter;
@@ -315,12 +315,12 @@ define([
 				if (newNavState.set){
 					opts[newNavState.set]=newNavState.value;
 				}
-				console.log("New Instance Opts: ", opts);
+				// console.log("New Instance Opts: ", opts);
 				instance = new ctor(opts);
 				if (cur){ 
 					appContainer.removeChild(cur,true);
 				}
-				console.log("Add Instance: ", instance);
+				// console.log("Add Instance: ", instance);
 				appContainer.addChild(instance);	
 			});
 		},
@@ -332,7 +332,7 @@ define([
 				'X-Requested-With':null
 			}
 
-			console.log("getNavigationContent: ", href, acceptType);
+			// console.log("getNavigationContent: ", href, acceptType);
 			return xhr.get(href, {
 				headers: headers,
 				handleAs:  (acceptType=="application/json")?"json":"",
@@ -353,7 +353,7 @@ define([
 			});*/
 		},
 		navigate: function(msg){
-			console.log("Navigate to ", msg);
+			// console.log("Navigate to ", msg);
 			if (!msg.href) {
 				if (msg.id) {
 					msg.href = msg.id;

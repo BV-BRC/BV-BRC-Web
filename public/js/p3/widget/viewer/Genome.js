@@ -33,6 +33,7 @@ define([
 				if (this[this.hashParams.view_tab]) {
 					console.log(this.id + " set child hash view: ", this.hashParams.view_tab);
 
+					this[this.hashParams.view_tab].set("visible",true);
 //					console.log("Select Child: ", this.hashParams.view_tab, this[this.hashParams.view_tab].id)
 					console.log("Attempt to Select Child: ", this[this.hashParams.view_tab]);
 					this.viewer.selectChild(this[this.hashParams.view_tab])
@@ -40,6 +41,7 @@ define([
 					console.log("No Local view_tab widget yet: ", this.hashParams.view_tab);
 					setTimeout(lang.hitch(this, function(){
 						if (this[this.hashParams.view_tab]){
+							this[this.hashParams.view_tab].set("visible",true);
 							this.viewer.selectChild(this[this.hashParams.view_tab]);
 						}
 					}),1000)
