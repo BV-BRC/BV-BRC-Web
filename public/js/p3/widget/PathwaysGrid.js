@@ -1,11 +1,12 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on","dojo/_base/Deferred",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
 	"dojo/aspect"
-], function(declare, BorderContainer, on,Deferred,
+], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,aspect) {
+			xhr, lang, Grid, formatter, Store, request,
+			aspect){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -27,10 +28,10 @@ define([
 			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
 			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -42,7 +43,7 @@ define([
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				//console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -54,7 +55,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				//console.log("dgrid-deselect");
 				var newEvt = {
 					rows: evt.rows,
@@ -66,45 +67,48 @@ define([
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
 			var _self = this;
-			
-			aspect.before(_self, 'renderArray', function(results) {
-				Deferred.when(results.total, function(x) {
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
 				});
 			});
 
 			this.inherited(arguments);
-			
 			this._started = true;
-
-//			this.refresh();
 		},
 
 		query: "",
 		params: null,
 		apiServer: window.App.dataServiceURL,
 		_setParams: function(params){
-			console.log("SET PARAMS for PathwaysGrid: ", params, window)
+			console.log("SET PARAMS for PathwaysGrid: ", params, window);
 			this.params = params;
-			this.set('store', this.createStore(this.apiServer || window.App.dataServiceURL,this.apiToken||window.App.authorizationToken,params));				
+			this.set('store', this.createStore(this.apiServer || window.App.dataServiceURL, this.apiToken || window.App.authorizationToken, params));
 			this.refresh();
 		},
-		_setApiServer: function(server, token) {
+		_setApiServer: function(server, token){
 			console.log("_setapiServerAttr: ", server);
 			this.apiServer = server;
 			var t = token || this.apiToken || "";
 
-			this.set('store', this.createStore(server,token||window.App.authorizationToken,this.params));
+			this.set('store', this.createStore(server, token || window.App.authorizationToken, this.params));
 			this.refresh();
 		},
 
-		createStore: function(server,token,params) {
+		createStore: function(server, token, params){
 			var self = this;
-			if (!server) { console.log ("No API Server yet"); return;}
-			if (!params || (params && !params.genome_id) ) { console.log ("No genome_id yet"); return;}
+			if(!server){
+				console.log("No API Server yet");
+				return;
+			}
+			if(!params || (params && !params.genome_id)){
+				console.log("No genome_id yet");
+				return;
+			}
 			console.log("Create Store for Pathways at ", server, " TOKEN: ", token, " PathwaysGrid for genome_id: ", params.genome_id);
 
-			var store = new Store({token: token,  apiServer: server, genome_id: params.genome_id});
+			var store = new Store({token: token, apiServer: server, genome_id: params.genome_id});
 			return store;
 		}
 	});
