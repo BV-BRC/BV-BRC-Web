@@ -107,11 +107,11 @@ define([
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.transcriptomics);
 
-			on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){
-					evt.stopPropagation();
-					console.log(this.id, " Call onSetAnchor " , this);
-					this.onSetAnchor(evt);
-			}));
+			// on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){
+			// 		evt.stopPropagation();
+			// 		console.log(this.id, " Call onSetAnchor " , this);
+			// 		this.onSetAnchor(evt);
+			// }));
 
 //			this.genomeBrowser= new JBrowser({
 //				title: "Genome Browser",
@@ -127,6 +127,8 @@ define([
 		},
 		onSetAnchor: function(evt){
 			console.log("onSetAnchor: ", evt, evt.filter);
+			evt.stopPropagation();
+			evt.preventDefault();
 			var f = evt.filter;
 			var parts = []
 			if (this.query) { 
