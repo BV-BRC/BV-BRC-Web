@@ -179,7 +179,8 @@ body.patric *:focus {
 /*	box-shadow: 0px 0px 2px;
 	-webkit-box-shadow: 0px 0px 2px;*/
 	overflow: hidden;
-	padding-top:5px;
+	padding-top:20px;
+	margin-right: -4px;
 }
 
 .ActionBar .fa {

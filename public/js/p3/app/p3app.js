@@ -141,7 +141,7 @@ define([
 				}else{
 					viewerParams="";
 				}
-				// console.log("Parts:", parts, type, viewerParams)
+				console.log("aParts:", parts, type, viewerParams)
 
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
@@ -153,14 +153,17 @@ define([
 				var hps = location.hash.substr(1).split("&")
 				hps.forEach(function(t){
 					var tup = t.split("=")
-					hashParams[tup[0]]=tup[1];
+					if (tup[0] && tup[1]){
+						hashParams[tup[0]]=tup[1];
+					}
 				})
 				newState.hashParams = hashParams;
-				// console.log("Parts:", parts, type, path)
+				console.log("newState hashParams: ", hashParams)
+				console.log("bParts:", parts, type, path)
 				newState.widgetClass="p3/widget/viewer/" + type;
 				newState.value=viewerParams.replace(location.hash,"");
 				newState.set= "params";
-				// console.log("Navigate to viewer ", newState);
+				console.log("Navigate to viewer ", newState);
 				_self.navigate(newState);
 			});
 
@@ -217,8 +220,8 @@ define([
 			// },2000);
 
 			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
-			this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
-			this.leftDrawer.startup();
+			// this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
+			// this.leftDrawer.startup();
 
 			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
 			//this.rightDrawer.startup();

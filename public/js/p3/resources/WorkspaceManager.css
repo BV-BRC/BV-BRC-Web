@@ -102,7 +102,7 @@ color:#fff;font-weight:600;background:#34698e;
 }
 
 .claro .ItemDetailPanel {
-	background:#edf2ff;
+	background:#eee;
 	color:#333;
 	padding:4px;
 	margin-left: -1px;
@@ -267,7 +267,7 @@ th.dgrid-cell.wsItemType {
 }
 
 .ActionButtonContainer {
-	float: right;
+	float: left;
 	font-size:.85em;
 	padding-top:5px;
 }
