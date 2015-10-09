@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dojo/_base/lang","./ItemDetailPanel",
+	"./ActionBar","./FilterContainerActionBar","dojo/_base/lang","./ItemDetailPanel",
 	"dojo/topic","dojo/query", "dijit/layout/ContentPane"
 ], function(
 	declare,BorderContainer,on,
@@ -28,58 +28,69 @@ define([
 		},
 
 		_setQueryAttr: function(query){
-			console.log("GridContainer setQuery: ", query)
-			if(this.query==query) { return; }
-
+			// console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			if (query == this.query) { console.log("   Skipping Query Update (unchanged)"); }
 			this.query = query;
-			console.log("Query Set: ", query);
+			// this.query = query || "?keyword(*)"
+			// console.log("Query Set: ", query);
+			if (this.filterPanel){
+				// console.log('   Set FilterPanel Query', this.query)
+				this.filterPanel.set("query", this.query);
+			}
+
 			if (this.grid) {
-				console.log("Found Grid")
-				if (this.query && this.filterPanel){
-					this.filterPanel.set("query");
-				}
+				// console.log("    " + this.id + " Found Grid")
+				var q = this.query;
 
 				if (this.filter){
-					console.log("Found Filter: ", this.filter);
-					query = (query||"") + "&" + this.filter;
+					// console.log("    Found Filter: ", this.filter);
+					q = (q||"?") + "&" + this.filter;
 				}
 
-				if (this.facetFields && (this.facetFields.length > 0) && !this.filter){
-					console.log("Found Facet Fields: ", this.facetFields)
-					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
-				}
+				// if (this.facetFields && (this.facetFields.length > 0) && !this.filter){
+				//  	console.log("     Found Facet Fields: ", this.facetFields)
+				//  	query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
+				// }
 
-				console.log("Set Grid Query: ", query);
-				this.grid.set("query", query,this.filter?{showFacets:true}:{});
+				// console.log("Set Grid Query: ", q);
+				this.grid.set("query", q);
+			}else{
+				console.log("No Grid Yet.")
 			}
 		},
 
 		_setFilterAttr: function(filter){
-			if (filter==this.filter){return;}
+			// console.log(this.id, " GridContainer setFilter: ", filter)
+			if (filter==this.filter){console.log("   Skipping Filter update (unchanged)"); return;}
+			// console.log("  Updating Filter: ", filter)
 
 			this.filter = filter;
+
 			var query = this.query;
 
+			if (this.filter && this.filterPanel){
+				// console.log("Set Filter Panel 'filter': ", this.filter);
+				this.filterPanel.set("filter", this.filter)
+			}
+
 			if (this.grid) {
-				if (this.filter && this.filterPanel){
-					this.set("filter", this.filterPanel)
-				}
-
+					// console.log("    " + this.id + " Found Grid (in setFilter)")
 				if (this.filter){
-					query = query + "&" + this.filter;
+					query = (query||"?") + "&" + this.filter;
 				}
 
-				if (this.facetFields && (this.facetFields.length > 0)&& !this.filter){
-					query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
-				}
-				console.log(this.id, " PerformQuery: ", query);
-				this.grid.set("query", query,this.filter?{showFacets:false}:{});
+				// if (this.facetFields && (this.facetFields.length > 0)&& !this.filter){
+				// 	query = query +  "&facet(" + this.facetFields.map(function(f) { return "(field," + encodeURIComponent(f) + ")"; }) + ",(mincount,1))"; 
+				// }
+				// console.log(this.id, " set grid query: ", query);
+				this.grid.set("query", query);
+			}else{
+				console.log("No Grid Yet for setFilter()");
 			}
 		},
 
 		visible: false,
 		_setVisibleAttr: function(visible){
-			console.log("SET VISIBLE: ", visible);
 			this.visible = visible;
 			if (this.visible && !this._firstView){
 					console.log("Trigger First View: ", this.id)
@@ -128,11 +139,13 @@ define([
 				console.error("Missing this.gridCtor in GridContainer");
 				return;
 			}
+			console.log("This.query firstView: ", this.query);
+			console.log("this.filter: firstView: ", this.filter);
 			this.grid = new this.gridCtor({region: "center",query: this.query});
 	
-			this.containerActionBar = new ContainerActionBar({region: "top",layoutPriority: 7, splitter:false, "className": "BrowserHeader"});
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({region: "top",layoutPriority: 7, splitter:true, "className": "BrowserHeader",dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter});
 			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:4, style:"width:48px;text-align:center;",splitter:false});
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:3});
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:250px", minSize:150, splitter: true, layoutPriority:3});
 
 			this.addChild(this.containerActionBar);
 			this.addChild(this.grid);
@@ -175,6 +188,11 @@ define([
 				this.itemDetailPanel.set('selection', sel);
 			}));
 
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
+				console.log("setFilter Watch() callback", newVal);
+				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
+			}));
+
 			on(this.domNode, "ToggleFilters",lang.hitch(this,function(evt){
 				console.log("toggleFilters");
 				if (!this.filterPanel && this.getFilterPanel){
@@ -183,15 +201,16 @@ define([
 					this.filterPanel.splitter=true;
 					this.layoutPriority = 2;
 					this.addChild(this.filterPanel);
-				}else if (this.filterPanel){
-					var children = this.getChildren();
-					if (children.some(function(child){
-						return this.filterPanel && (child.id==this.filterPanel.id);
-					},this)){
-							this.removeChild(this.filterPanel)
+				} else if (this.filterPanel){
+					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					if (this.filterPanel.minimized) {
+						this.filterPanel.minimized=false;
+						this.filterPanel.resize({h:240});
 					}else{
-						this.addChild(this.filterPanel);						
+						this.filterPanel.minimized=false;
+						this.filterPanel.resize({h:55});
 					}
+					this.resize();
 				}
 			}));
 		/*

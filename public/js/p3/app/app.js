@@ -26,22 +26,22 @@ define([
 			this._containers={};
 			// console.log("Launching Application...");
 
-                        /* these two on()s enable the p2 header mouse overs */
-                        on(document.body, ".has-sub:mouseover", function(evt){
-				// console.log("has sub");
-                                var target = evt.target;
-                                while(!domClass.contains(target,"has-sub") && target.parentNode){
-                                        target = target.parentNode
-                                }
-                                domClass.add(target, "hover");
-                        });
-                        on(document.body, ".has-sub:mouseout", function(evt){
-                                var target = evt.target;
-                                while(!domClass.contains(target,"has-sub") && target.parentNode){
-                                        target = target.parentNode
-                                }
-                                domClass.remove(target, "hover");
-                        });
+			/* these two on()s enable the p2 header mouse overs */
+			on(document.body, ".has-sub:mouseover", function(evt){
+			// console.log("has sub");
+			        var target = evt.target;
+			        while(!domClass.contains(target,"has-sub") && target.parentNode){
+			                target = target.parentNode
+			        }
+			        domClass.add(target, "hover");
+			});
+			on(document.body, ".has-sub:mouseout", function(evt){
+			        var target = evt.target;
+			        while(!domClass.contains(target,"has-sub") && target.parentNode){
+			                target = target.parentNode
+			        }
+			        domClass.remove(target, "hover");
+			});
 
 			on(window,"message", function(evt){
 				var msg = evt.data;
@@ -246,7 +246,7 @@ define([
 				return;
 			}
 
-			// console.log("Do Navigation to href: ", newNavState);
+			console.log("Do Navigation to href: ", newNavState);
 
 			var appContainer = this.getApplicationContainer();
 
@@ -278,49 +278,54 @@ define([
 					return;
 				}
 				var acceptType = newNavState.widgetClass?"application/json":"text/html";
-				// console.log("got CTOR for ", newNavState.widgetClass);
+				 console.log("got CTOR for ", newNavState.widgetClass);
 				var instance;
 				var cur = _self.getCurrentContainer();	
 				if (cur instanceof ctor) {
-					// console.log("cur is isntance of ctor");
+					 console.log("cur is isntance of ctor");
 					instance = cur; 
-
-					if (newNavState.hashParams){
-						console.log("Set Instance Hash Params:", newNavState.hashParams);
-						instance.set("hashParams",newNavState.hashParams)
-					}
-
+					console.log("Set Instance Hash Params:", newNavState.hashParams);
+					console.log("instance: ", instance)
+					instance.set("hashParams",newNavState.hashParams || {})
 					
 					if ((instance instanceof ContentPane) && !newNavState.content) {
 						var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
-						// console.log("set href to: ", dest);
+						 console.log("set href to: ", dest);
 						instance.set('href', dest);
 					}else if (newNavState.set){
-						// console.log("Set ", newNavState.set, " to ", newNavState.value);
+						console.log("Set ", newNavState.set, " to ", newNavState.value);
 						instance.set(newNavState.set,newNavState.value);
 					}else if (instance.resize){
 						 instance.resize(); 
 					}
+
+					// // if (newNavState.hashParams){
+					// 	console.log("Set Instance Hash Params:", newNavState.hashParams);
+					// 	console.log("instance: ", instance)
+					// 	instance.set("hashParams",newNavState.hashParams || {})
+					// // }
+
 					return;
 				}
 				// console.log("set apiServer: ", _self.apiServer);
 				var opts = {region: "center", apiServer: _self.apiServer} 
-				if (newNavState.filter){
-					opts.activeFilter = newNavState.filter;
-				}
-				if (newNavState.hashParams){
-					opts["hashParams"]=newNavState.hashParams;
-				}
 
 				if (newNavState.set){
 					opts[newNavState.set]=newNavState.value;
 				}
-				// console.log("New Instance Opts: ", opts);
+
+				if (newNavState.hashParams){
+					opts["hashParams"]=newNavState.hashParams;
+				}
+
+				console.log("New Instance Opts: ", opts);
 				instance = new ctor(opts);
+				console.log("new instance: ", instance);
 				if (cur){ 
 					appContainer.removeChild(cur,true);
 				}
-				// console.log("Add Instance: ", instance);
+
+				console.log("Add Instance: ", instance);
 				appContainer.addChild(instance);	
 			});
 		},
