@@ -43,6 +43,21 @@ define([
 					}
 				}	
 			});
+
+			/*
+			Router.register("\/$", function(params, oldPath, newPath, state){
+				console.log("HOME route", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				newState.widgetClass="dijit/layout/ContentPane";
+				newState.requireAuth=false;
+				console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+			*/
 	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Workspace URL Callback", params.newPath);
@@ -59,6 +74,23 @@ define([
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
+
+			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="p3/widget/AdvancedSearch";
+				newState.value=path;
+				newState.set= "path";
+				newState.requireAuth=true;
+				console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+
 
 			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Upload URL Callback", params.newPath);

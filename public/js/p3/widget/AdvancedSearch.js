@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/dom-construct",
 	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/GlobalSearch.html","./Button","dijit/registry","dojo/_base/lang",
+	"dojo/text!./templates/AdvancedSearch.html","./Button","dijit/registry","dojo/_base/lang",
 	"dojo/dom","dojo/topic","dijit/form/TextBox","dojo/keys","dijit/_FocusMixin","dijit/focus"
 ], function(
 	declare, WidgetBase, on,domConstruct,
@@ -13,7 +13,7 @@ define([
 		templateString: template,
 		constructor: function(){
 		},
-		"baseClass": "GlobalSearch",
+		"baseClass": "AdvancedSearch",
 		"disabled":false,
 		"value": "",
 		_setValueAttr: function(q){
