@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
-	"../WorkspaceManager","dojo/dom-construct","dojo/query"
+	"../WorkspaceManager","dojo/dom-construct","dojo/query","./DataItemFormatter"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Templated,WidgetsInTemplate,
 	Template,lang,formatter,domStyle,
-	WorkspaceManager,domConstruct,query
+	WorkspaceManager,domConstruct,query,DataItemFormatter
 ){
 	return declare([WidgetBase,Templated,WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
@@ -177,14 +177,13 @@ define([
 						}
 					},this);
 				} else{
+
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
-					domConstruct.empty(this.itemTbody);
-					Object.keys(item).sort().forEach(function(key){
-						var tr = domConstruct.create("tr",{},this.itemTbody)
-						var tda = domConstruct.create("td",{innerHTML: key}, tr);
-						var tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-					},this);	
+
+					var node = DataItemFormatter(item,"default")
+					domConstruct.empty(this.itemBody);
+					domConstruct.place(node, this.itemBody, "first");
 				}
 			}))
 			this.inherited(arguments);

@@ -50,17 +50,18 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 
 		go: function(href, state){
 			console.log("go(" + href + ")", state)
+			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 			if (href!=this._currentPath){
 				window.history.pushState(state || {},"route", href);
 				this.currentPath = href;
 				this._handlePathChange(href, state||{})
-			}else{
-				window.history.replaceState(state);
+			}else if (state){
+				window.history.replaceState(state || {});
 			}
 		},
 
 		replaceState: function(state){
-			//console.log("Router.replaceState()",state)
+			console.log("Router.replaceState()",state)
 			window.history.replaceState(state);
 		},
 

@@ -1,12 +1,14 @@
 define([
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"./PageGrid","./formatter"
+	"./PageGrid","./formatter","../store/GenomeJsonRest"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
-	Grid,formatter
+	Grid,formatter,Store
 ){
+
+        var store = new Store({});
 	return declare([Grid], {
 		region: "center",
 		query: (this.query||""),
@@ -14,6 +16,7 @@ define([
 		apiServer: window.App.dataAPI,
 		dataModel: "genome",
 		primaryKey: "genome_id",
+		store: store,
 		deselectOnRefresh: true,
 		columns: {
 			genome_id: {label:'Genome ID', field:'genome_id', hidden:true},

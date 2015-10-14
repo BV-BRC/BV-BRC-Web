@@ -18,14 +18,17 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		hashParams: null,
+		constructor: function(){
+			console.log(this.id, "TabViewerBase ctor() this: ", JSON.stringify(this));
+		},
 
 		_setHashParamsAttr: function(params){
 			this.hashParams = params;
-			console.log("SET HASH PARAMS: ", this.hashParams, "started: ", this._started);
-			if (!this._started){ return; }
+			console.log("SET HASH PARAMS: ", this.hashParams, "started: ", this._started, "obj: ", this);
+			if (!this._started){ console.log("   Skip hash parameters, not started: ", this.id); return; }
 
 			if (this.hashParams.view_tab) {
-				console.log("HASH PARAMS contain view_tab")
+				console.log("HASH PARAMS contain view_tab. this: ", this)
 				if (this[this.hashParams.view_tab]) {
 					console.log(this.id + " set child hash view: ", this.hashParams.view_tab);
 					this[this.hashParams.view_tab].set("visible",true);
@@ -37,12 +40,10 @@ define([
 					this.viewer.selectChild(this[this.hashParams.view_tab])
 				}else{
 					console.log("No Local view_tab widget yet: ", this.hashParams.view_tab);
-					setTimeout(lang.hitch(this, function(){
-						if (this[this.hashParams.view_tab]){
-							this[this.hashParams.view_tab].set("visible",true);
-							this.viewer.selectChild(this[this.hashParams.view_tab]);
-						}
-					}),1000)
+					if (this[this.hashParams.view_tab]){
+						this[this.hashParams.view_tab].set("visible",true);
+						this.viewer.selectChild(this[this.hashParams.view_tab]);
+					}
 				}
 			}else{
 				console.log("No view_tab in hashParams", this.hashParams);

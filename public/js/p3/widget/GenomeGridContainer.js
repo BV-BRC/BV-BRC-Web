@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "./GridContainer","dojo/on",
 	"./GenomeGrid","dijit/popup","dojo/_base/lang",
-	"dijit/TooltipDialog","./FacetFilterPanel"
+	"dijit/TooltipDialog","./FacetFilterPanel","dojo/topic"
 
 ], function(
 	declare, GridContainer,on,
 	GenomeGrid,popup,lang,
-	TooltipDialog,FacetFilterPanel
+	TooltipDialog,FacetFilterPanel,Topic
 ){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
@@ -31,24 +31,15 @@ define([
 		gridCtor: GenomeGrid,
 		facetFields: ["public","genome_status","reference_genome","antimicrobial_resistance","antimicrobial_resistance_evidence","isolation_country","host_name","disease","collection_date"],
 		getFilterPanel: function(opts){
-
+			return;
 			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
 			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
-				console.log("setFilter Watch() callback", newVal);
+				console.log("setFilter Watch() callback. Old Value: ", oldVal, " newValue: ", newVal);
 				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
 			}));
 			return fp;	
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -61,9 +52,47 @@ define([
 					});
 				},
 				true
+			],
+			[
+				"AnchorCurrentFilters",
+				"fa icon-anchor fa-2x",
+				{label:"ANCHOR",multiple: false,validTypes:["*"],tooltip: "Anchor the active filter set to the current context.", tooltipDialog:downloadTT}, 
+				function(selection){	
+					var q = this.query;
+					if (this.filter){
+
+						// q = "and(" + q + "," + this.filter + ")";
+						// console.log("New Anchor Query:",q)
+						on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: this.filter})
+					}else{
+						console.log("No Filters to set new anchor");
+					}
+
+				},
+				true
+			],
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				function(selection){	
+					console.log("Toggle Filters");
+					on.emit(this.domNode,"ToggleFilters",{});
+				},
+				true
 			]
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewGenome",
+				"fa icon-eye fa-2x",
+				{label: "OPEN",ignoreDataType:true, multiple: false,validTypes:["*"], tooltip: "Open Genome View"},
+				function(selection){
+					console.log("Selected Genome: ", selection);
+					Topic.publish("/navigate", {"href": "/view/Genome/" + selection[0].genome_id});
+				},
+				false
+			],
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -77,7 +106,6 @@ define([
 				},
 				false
 			]
-
 		])
 	});
 });
