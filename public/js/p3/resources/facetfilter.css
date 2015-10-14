@@ -58,7 +58,7 @@
 }
 
 .FilteredValueButton {
-	border: 1px solid #333;
+	border: 0px solid #333;
 	border-radius: 2px;
 	display: inline-block;
 	padding: 4px;

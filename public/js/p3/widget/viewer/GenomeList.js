@@ -17,7 +17,7 @@ define([
 ){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
-		maxGenomesPerList: 2500,
+		maxGenomesPerList: 1000,
 		constructor: function(){
 			console.log(this.id, "GenomeList ctor() this: ", this);
 		},
@@ -36,9 +36,11 @@ define([
 			if (!this._started) { return; }
 
 			var _self=this;
+			console.log('genomeList setQuery - this.query: ', this.query)
 
 			var url = this.apiServiceUrl + "/genome/" + (this.query||"?") + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")"
 
+			console.log("url: ",  url)
 			xhr.get(url,{
 				headers: {
 					accept: "application/solr+json"
@@ -54,7 +56,7 @@ define([
 						_self.refresh();
 					}
 				}else{
-					console.log("Invalid Response for: ", url.substr(0,35)+ "...");
+					console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
 				console.log("Error Retreiving Genomes: ", err)

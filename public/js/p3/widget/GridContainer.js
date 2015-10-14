@@ -22,8 +22,8 @@ define([
 		},
 		_setHashParamsAttr: function(params){
 			this.hashParams = params;
-			console.log("GridContainer " + this.id + " set child hash view: ", this.hashParams);
-			console.log("  params:", params);
+			// console.log("GridContainer " + this.id + " set child hash view: ", this.hashParams);
+			// console.log("  params:", params);
 			this.set("filter", params?params.filter:"");
 		},
 
@@ -85,7 +85,7 @@ define([
 				// console.log(this.id, " set grid query: ", query);
 				this.grid.set("query", query);
 			}else{
-				console.log("No Grid Yet for setFilter()");
+				// console.log("No Grid Yet for setFilter()");
 			}
 		},
 
@@ -93,7 +93,7 @@ define([
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
 			if (this.visible && !this._firstView){
-					console.log("Trigger First View: ", this.id)
+					// console.log("Trigger First View: ", this.id)
 					this.onFirstView();
 			}
 
@@ -115,17 +115,17 @@ define([
                                 "fa fa-info-circle fa-2x",
                                 {label: "DETAIL", persistent: true, validTypes: ["*"],tooltip: "Toggle Selection Detail"},
                                 function(selection){
-                                        console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+                                        // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
          
                                         var children = this.getChildren();
-                                        console.log("Children: ", children);
+                                        // console.log("Children: ", children);
                                         if (children.some(function(child){
                                                 return this.itemDetailPanel && (child.id==this.itemDetailPanel.id);
                                         }, this)){
-                                                console.log("Remove Item Detail Panel");
+                                                // console.log("Remove Item Detail Panel");
                                                 this.removeChild(this.itemDetailPanel);
                                         }else{
-                                                console.log("Re-add child: ", this.itemDetailPanel);
+                                                // console.log("Re-add child: ", this.itemDetailPanel);
                                                 this.addChild(this.itemDetailPanel);
                                         }
                                 },
@@ -139,8 +139,8 @@ define([
 				console.error("Missing this.gridCtor in GridContainer");
 				return;
 			}
-			console.log("This.query firstView: ", this.query);
-			console.log("this.filter: firstView: ", this.filter);
+			// console.log("This.query firstView: ", this.query);
+			// console.log("this.filter: firstView: ", this.filter);
 			this.grid = new this.gridCtor({region: "center",query: this.query});
 	
 			this.containerActionBar = this.filterPanel = new ContainerActionBar({region: "top",layoutPriority: 7, splitter:true, "className": "BrowserHeader",dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter});
@@ -160,13 +160,13 @@ define([
 
 		listen: function(){
 			this.grid.on("select", lang.hitch(this,function(evt){
-				console.log("Selected: ", evt);
+				// console.log("Selected: ", evt);
 				var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
-					console.log("rownum: ", rownum);
-					console.log("Row: ", evt.grid.row(rownum).data);
+					// console.log("rownum: ", rownum);
+					// console.log("Row: ", evt.grid.row(rownum).data);
 					return evt.grid.row(rownum).data;
 				}));
-				console.log("selection: ", sel);
+				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
 			}));	
@@ -178,23 +178,23 @@ define([
 					this.itemDetailPanel.set("selection", []);
 				}else{
 					var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
-						console.log("rownum: ", rownum);
-						console.log("Row: ", evt.grid.row(rownum).data);
+						// console.log("rownum: ", rownum);
+						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
 					}));
 				}
-				console.log("selection: ", sel);
+				// console.log("selection: ", sel);
 				this.selectionActionBar.set("selection", sel);
 				this.itemDetailPanel.set('selection', sel);
 			}));
 
 			this.filterPanel.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
-				console.log("setFilter Watch() callback", newVal);
+				// console.log("setFilter Watch() callback", newVal);
 				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
 			}));
 
 			on(this.domNode, "ToggleFilters",lang.hitch(this,function(evt){
-				console.log("toggleFilters");
+				// console.log("toggleFilters");
 				if (!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel()
 					this.filterPanel.region="top"
@@ -202,7 +202,7 @@ define([
 					this.layoutPriority = 2;
 					this.addChild(this.filterPanel);
 				} else if (this.filterPanel){
-					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if (this.filterPanel.minimized) {
 						this.filterPanel.minimized=false;
 						this.filterPanel.resize({h:240});
