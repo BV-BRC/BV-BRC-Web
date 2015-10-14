@@ -17,7 +17,7 @@ define([
 ){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
-		maxGenomesPerList: 1000,
+		maxGenomesPerList: 5000,
 		constructor: function(){
 			console.log(this.id, "GenomeList ctor() this: ", this);
 		},

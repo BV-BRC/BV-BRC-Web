@@ -32,23 +32,24 @@ define([
 			}).then(lang.hitch(this,function(taxonomy) {
 				this.taxonomy=taxonomy;
 				console.log("Taxonomy: ", taxonomy);
+				console.log("Set query for taxonomy genome list");
 				this.set("query","?eq(taxon_lineage_ids," + id + ")"); 
 			}));
 		},
-		_setQueryAttr: function(query){
-			this.query = query;
-			if (this.viewer){
-				this.viewer.set("query", query);
-			}
+
+		createOverviewPanel: function(){
+			return new ContentPane({content: "Taxonomy Overview", title: "Overview",id: this.viewer.id + "_" + "overview"});
 		},
 		refresh: function(){
+			var _self=this;
 			this.viewHeader.set("content", this.taxonomy.lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-//			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
-//			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
-		},
-		postCreate: function(){
-			//if (this._started) {return;}
-			this.inherited(arguments);
+			if (_self.viewHeader){
+				this.viewHeader.set("content", this.taxonomy.lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
+			}
+			if (_self.genomes){ _self.genomes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))") }
+
+			if (_self.features){ _self.features.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
+			if (_self.specialtyGenes){ _self.specialtyGenes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
 		},
 
 		startup: function(){
