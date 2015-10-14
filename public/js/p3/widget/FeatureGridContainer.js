@@ -44,15 +44,6 @@ define([
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
-			],
-			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
 				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
@@ -62,6 +53,15 @@ define([
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
+				},
+				true
+			],
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				function(selection){	
+					on.emit(this.domNode,"ToggleFilters",{});
 				},
 				true
 			]
@@ -93,6 +93,7 @@ define([
 				var innerRE = /eq\(\w+\,\w+\)/
 				var matches = filter.match(re);
 				console.log("Matches: ", matches);
+				matches = matches || []
 				var selected = matches.map(function(match){
 					var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
 					return parts[0] +":"+ parts[1];

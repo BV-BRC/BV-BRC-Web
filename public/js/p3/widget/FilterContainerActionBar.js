@@ -316,8 +316,9 @@ define([
 		},
 		_setQueryAttr: function(query){
 			// query = (query && (query.charAt(0)=="?"))?query.substr(1):query;
-			this.query = query;
-			var parsed = RQLParser.parse((query && (query.charAt(0)=="?"))?query.substr(1):query)
+			console.log("FilterContainerActionBar _setQueryAttr: ", query)
+			this.query = query||"";
+			var parsed = RQLParser.parse((query && query.charAt && (query.charAt(0)=="?"))?query.substr(1):query)
 			// console.log("PARSED RQL:", parsed);
 			var _self=this;
 
@@ -370,7 +371,7 @@ define([
 		getFacets: function(query, facetFields){
 			// var d; d=new Deferred(); d.resolve({}); return d.promise;
 			
-			// console.log("getFacets: ", query, facetFields);
+			console.log("getFacets: ", query, facetFields);
 			if (!this._facetReqIndex){
 				this._facetReqIndex=0;
 			}
@@ -386,10 +387,10 @@ define([
 			// console.log(idx, " Facets: ", f);
 
 			var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
-			var q = ((q && (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
+			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-		 	// console.log("Facet Query: ", q)
+		 	console.log("Facet Query: ", q)
 			var fr =  xhr(this.apiServer + "/" + this.dataModel + "/", {
 				method: "POST",
 				handleAs: "json",
