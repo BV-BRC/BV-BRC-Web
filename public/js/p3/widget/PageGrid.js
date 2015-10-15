@@ -82,17 +82,7 @@ define([
 				this._started = true;
 
 			},
-			_setActiveFilter: function(filter) {
-		//		console.log("Set Active Filter: ", filter, "started:", this._started);
-				this.activeFilter = filter;
-				this.set("query", this.buildQuery());
-			},
-
-			buildQuery: function(table, extra) {
-				var q = "?" + (this.activeFilter ? ( "in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))" ) : "") + (this.extra || "");
-				// console.log("Feature Grid Query:", q);
-				return q;
-			},
+	
 			createStore: function(dataModel, pk, token) {
 				// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
 				var store = new Store({
@@ -105,11 +95,6 @@ define([
 				});
 				//console.log("store: ", store);
 				return store;
-			},
-
-			getFilterPanel: function() {
-				// console.log("getFilterPanel()");
-				return FilterPanel;
 			}
 		});
 	});

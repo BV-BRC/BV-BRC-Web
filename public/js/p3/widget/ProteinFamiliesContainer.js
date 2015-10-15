@@ -9,6 +9,7 @@ define([
 ){
 
 	return declare([BorderContainer], {
+		maxGenomeCount: 5000,
 		gutters: false,
 		query: null,
 		_setQueryAttr: function(query){

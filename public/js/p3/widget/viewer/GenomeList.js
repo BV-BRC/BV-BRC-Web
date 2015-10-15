@@ -31,9 +31,7 @@ define([
 				console.log("GenomeList: Skip Unchanged query", query);
 				return;
 			}
-
-			this.query = query; // || "?keyword(*)";
-
+			this._set("query", query);
 			if (!this._started) { return; }
 
 			var _self=this;
@@ -44,7 +42,9 @@ define([
 			console.log("url: ",  url)
 			xhr.get(url,{
 				headers: {
-					accept: "application/solr+json"
+					accept: "application/solr+json",
+	                'X-Requested-With': null,
+	                'Authorization': (window.App.authorizationToken || "")
 				},
 				handleAs: "json"	
 			}).then(function(res) {
@@ -54,8 +54,8 @@ define([
 					var genomes = res.response.docs;
 					if (genomes){
 						_self._set("total_genomes", res.response.numFound);
-						_self.genome_ids = genomes.map(function(o) { return o.genome_id; });
-						_self.refresh();
+						var genome_ids = genomes.map(function(o) { return o.genome_id; });
+						_self._set("genome_ids", genome_ids)
 					}
 				}else{
 					console.log("Invalid Response for: ", url);
@@ -66,18 +66,13 @@ define([
 
 		},
 
-		refresh: function(){
-			var _self=this;
+		onSetQuery: function(attr,oldVal,newVal){
+			this.genomes.set('query', newVal);
+		},		
 
-			// if (_self.viewHeader){
-			// 	var l=this.total_genomes + " Genomes";
-			// 	this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + this.query + " (" + l +" )</div>")
-			// }
-			//if (_self.genomes){ _self.genomes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))") }
-			if (_self.genomes) { _self.genomes.set("query", this.query); }
-			if (_self.features){ _self.features.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
-			if (_self.specialtyGenes){ _self.specialtyGenes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
-
+		onSetGenomeIds: function(attr,oldVal,newVal){
+			if (this.features){ this.features.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))"); }
+			if (this.specialtyGenes){ this.specialtyGenes.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))"); }
 		},
 
 		createOverviewPanel: function(){
@@ -90,7 +85,7 @@ define([
 			this.viewHeader.set("content", '<div style="margin:4px;">Genome List</div>')
 			this.overview = this.createOverviewPanel();
 
-			this.phylogeny= new ContentPane({content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny", disabled: true});
+			this.phylogeny= new ContentPane({maxGenomeCount: 5000,content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny", disabled: true});
 			this.genomes= new GenomeGridContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes"});
 
 			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features", disabled: true});
@@ -108,6 +103,8 @@ define([
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.transcriptomics);
 
+			this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("genome_ids", lang.hitch(this,"onSetGenomeIds"))
 			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
 			// on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){
@@ -130,13 +127,31 @@ define([
 		},
 		onSetTotalGenomes: function(attr,oldVal,newVal){
 				this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + this.query + " ( " + newVal +" Genomes )</div>")
+				var hasDisabled=false;
+
 				this.viewer.getChildren().forEach(function(child){
 					if (child && child.maxGenomeCount && (newVal>child.maxGenomeCount)){
+						hasDisabled=true;
 						child.set("disabled", true);
 					}else{
 						child.set("disabled", false);
 					}
 				})
+
+				if (hasDisabled){
+					this.showWarning();
+				}else{
+					this.hideWarning();
+				}
+		},
+		hideWarning: function(){
+			this.removeChild(this.warningPanel);
+		},
+		showWarning: function(msg){
+			if (!this.warningPanel){
+				this.warningPanel = new ContentPane({content: '<div class="WarningBanner" style="background: #fffb65;text-align:center;margin:2px;padding:2px;border:1px solid orange;border-radius:4px;">Your genome list is too large to view all of the supplemental data.  Filter the genomes and then press the Anchor button to enable the disabled tabs.</div>', region: "top", layoutPriority: 3});
+			}
+			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
 			console.log("onSetAnchor: ", evt, evt.filter);
