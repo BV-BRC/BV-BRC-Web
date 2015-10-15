@@ -162,8 +162,8 @@ define([
 				// console.log("NavigationLink Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				// console.log("Target", evt.target, evt);
-				Router.go(evt.target.pathname || evt.target.href);
+				console.log("Target: ", evt.target.pathname, evt.target.href, evt.target);
+				Router.go(evt.target.href || evt.target.pathname );
 			})
 		},
         loadPanel: function(id,params,callback){
@@ -287,7 +287,7 @@ define([
 					console.log("Set Instance Hash Params:", newNavState.hashParams);
 					console.log("instance: ", instance)
 					instance.set("hashParams",newNavState.hashParams || {})
-					
+
 					if ((instance instanceof ContentPane) && !newNavState.content) {
 						var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
 						 console.log("set href to: ", dest);

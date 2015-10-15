@@ -11,6 +11,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		query: null,
+		maxGenomeCount: 5000,
 		_setQueryAttr: function(query){
 			this.query = query;
 			if (this.grid) {

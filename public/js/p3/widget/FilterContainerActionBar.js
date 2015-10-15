@@ -65,7 +65,7 @@ define([
 					event.preventDefault();
 					// manually take care of the scroll
 					this.scrollLeft = Math.max(0, Math.min(maxX, this.scrollLeft + event.deltaX));
-					if (domClass.contains(evt.target, "FacetValue")) { 
+					if (domClass.contains(event.target, "FacetValue")) { 
 						this.scrollTop = 0; //Math.max(0, Math.min(maxY, this.scrollTop + event.deltaY));
 					}	   				
   				}

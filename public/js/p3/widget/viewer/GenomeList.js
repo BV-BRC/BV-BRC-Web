@@ -18,6 +18,7 @@ define([
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 5000,
+		totalGenomes: 0,
 		constructor: function(){
 			console.log(this.id, "GenomeList ctor() this: ", this);
 		},
@@ -38,7 +39,7 @@ define([
 			var _self=this;
 			console.log('genomeList setQuery - this.query: ', this.query)
 
-			var url = this.apiServiceUrl + "/genome/" + (this.query||"?") + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")"
+			var url = this.apiServiceUrl + "/genome/" + (this.query||"?") + "&select(genome_id)&limit(5000)";
 
 			console.log("url: ",  url)
 			xhr.get(url,{
@@ -52,6 +53,7 @@ define([
 				if (res && res.response && res.response.docs){
 					var genomes = res.response.docs;
 					if (genomes){
+						_self._set("total_genomes", res.response.numFound);
 						_self.genome_ids = genomes.map(function(o) { return o.genome_id; });
 						_self.refresh();
 					}
@@ -67,15 +69,12 @@ define([
 		refresh: function(){
 			var _self=this;
 
-			if (_self.viewHeader){
-				var l=this.genome_ids.length + " Genomes";
-				if (l >= this.maxGenomesPerList-1){
-						l = "First " + this.maxGenomesPerList + " matching Genomes"
-				}
-				this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + this.query + " (" + l +" )</div>")
-			}
-			if (_self.genomes){ _self.genomes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))") }
-			//if (_self.genomes) { _self.genomes.set("query", this.query); }
+			// if (_self.viewHeader){
+			// 	var l=this.total_genomes + " Genomes";
+			// 	this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + this.query + " (" + l +" )</div>")
+			// }
+			//if (_self.genomes){ _self.genomes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))") }
+			if (_self.genomes) { _self.genomes.set("query", this.query); }
 			if (_self.features){ _self.features.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
 			if (_self.specialtyGenes){ _self.specialtyGenes.set("query", "?in(genome_id,(" + _self.genome_ids.join(",") + "))"); }
 
@@ -91,23 +90,25 @@ define([
 			this.viewHeader.set("content", '<div style="margin:4px;">Genome List</div>')
 			this.overview = this.createOverviewPanel();
 
-			this.phylogeny= new ContentPane({content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny"});
+			this.phylogeny= new ContentPane({content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny", disabled: true});
 			this.genomes= new GenomeGridContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes"});
 
-			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features"});
-			this.specialtyGenes= new SpecialtyGeneGridContainer({title: "Specialty Genes",id: this.viewer.id + "_" + "specialtyGenes"});
-			this.pathways= new PathwaysContainer({title: "Pathways",id: this.viewer.id + "_" + "pathways"});
-			this.proteinFamilies= new ProteinFamiliesContainer({title: "Protein Families",id: this.viewer.id + "_" + "proteinFamilies"});
-			this.transcriptomics= new TranscriptomicsContainer({title: "Transcriptomics",id: this.viewer.id + "_" + "transcriptomics"});
+			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features", disabled: true});
+			this.specialtyGenes= new SpecialtyGeneGridContainer({title: "Specialty Genes",id: this.viewer.id + "_" + "specialtyGenes", disabled: true});
+			this.pathways= new PathwaysContainer({title: "Pathways",id: this.viewer.id + "_" + "pathways", disabled: true});
+			this.proteinFamilies= new ProteinFamiliesContainer({title: "Protein Families",id: this.viewer.id + "_" + "proteinFamilies", disabled: true});
+			this.transcriptomics= new TranscriptomicsContainer({title: "Transcriptomics",id: this.viewer.id + "_" + "transcriptomics", disabled: true});
 
 			this.viewer.addChild(this.overview);
-			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.genomes);
+			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.proteinFamilies);
 			this.viewer.addChild(this.transcriptomics);
+
+			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
 			// on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){
 			// 		evt.stopPropagation();
@@ -126,6 +127,16 @@ define([
 //				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
 //			});
 	
+		},
+		onSetTotalGenomes: function(attr,oldVal,newVal){
+				this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + this.query + " ( " + newVal +" Genomes )</div>")
+				this.viewer.getChildren().forEach(function(child){
+					if (child && child.maxGenomeCount && (newVal>child.maxGenomeCount)){
+						child.set("disabled", true);
+					}else{
+						child.set("disabled", false);
+					}
+				})
 		},
 		onSetAnchor: function(evt){
 			console.log("onSetAnchor: ", evt, evt.filter);

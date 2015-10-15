@@ -32,6 +32,7 @@ define([
 
 	return declare([GridContainer], {
 		facetFields: ["property","source","evidence"],
+		maxGenomeCount: 5000,
 		getFilterPanel: function(opts){
 
 			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
