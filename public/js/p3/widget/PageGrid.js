@@ -22,6 +22,7 @@ define([
 			store: null,
 			selectionMode: "extended",
 			allowTextSelection: false,
+			allowSelectAll: true,
 			deselectOnRefresh: false,
 			rowsPerPage: 200,
 			minRowsPerPage: 50,

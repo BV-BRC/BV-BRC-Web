@@ -18,7 +18,9 @@ define([
 		constructor: function(){
 			this._selected = {};
 		},
-		_setDataAttr: function(data){
+		_setDataAttr: function(data, selected){
+
+			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected);			
 			if (!data){return}
 			if (this.data && this.data instanceof Deferred){
 				var promise = this.data;
@@ -31,13 +33,27 @@ define([
 			}else{
 				domClass.remove(this.domNode, "dijitHidden");
 			}
+
+
+
 			data.forEach(function(obj){
 				var l = (obj.label || obj.value) + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
-				var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
-				var n= this["_value_" + (obj.label || obj.value)] = domConstruct.create("div", {"class": sel, rel:(obj.label || obj.value), "class":"FacetValue", innerHTML: l});
+				var sel;
+				if (
+						this._selected[obj.label||obj.value] ||
+						(this.selected.indexOf(obj.label || obj.value) >= 0)
+					){
+					sel = "selected"
+				}else{
+					sel="";
+				}
+				// console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
+				//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
+				var n= this["_value_" + (obj.label || obj.value)] = domConstruct.create("div", {rel:(obj.label || obj.value), "class":"FacetValue "+sel, innerHTML: l});
 				// console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
 				domConstruct.place(n,this.containerNode,"last")
 			},this);
+
 			if (promise){
 				promise.resolve(true);
 			}
@@ -47,28 +63,38 @@ define([
 			// console.log("Toggle: ", name, value, " Data:", this.data);
 			when(this.data, lang.hitch(this,function(){
 				var node = this["_value_" + name];
-				console.log("Toggle Node: ", node, " Set to: ", value?"TRUE":"Opposite");
+				// console.log("Toggle Node: ", node, " Set to: ", value?"TRUE":"Opposite", domClass.contains(node, "Selected"));
 				if (node){
-					console.log("    Found Node")
+					// console.log("    Found Node")
 					if (value==true){
-						this._selected[value] = true;
 						domClass.add(node, "selected")
+						if (this.selected.indexOf(name)<0){
+							this.selected.push(name);
+							this._set("selected", this.selected);
+						}
 					}else if (typeof value == "undefined"){
-						this._selected[value] == !this._selected[value];
-						domClass.toggle("selected");
+						// console.log("toggle selection: ", name, this.selected[name]);
+						domClass.toggle(node, "selected");
+						this._set("selected", this.selected.filter(function(i){ return i!=name; }));
+
+						// console.log("After: ", domClass.contains(node, "selected"), this.selected[name]);
 					}else{
+						// console.log("Remove Selection: ", name, this.selected[name]);
 						domClass.remove(node, "selected");
-						delete this._selected[value];
 					}
 				}
+				// console.log(name, " this.selected: ", this.selected)
 			}))
 			// this._refreshFilter();
 		},
 
 		_refreshFilter: function(){
-			var selected = Query(".selected", this.containerNode).map(function(node){
-				return domAttr.get(node,"rel");
+			var selected = [];
+
+			Query(".selected", this.containerNode).forEach(function(node){
+				selected.push(domAttr.get(node,"rel"));
 			})
+			// console.log("_refreshFilter selected() : ", selected);
 			var curFilter = this.filter;
 			// this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
 			if (selected.length<1){
@@ -79,12 +105,15 @@ define([
 				this.filter = "or(" + selected.map(function(s){ return "eq(" + this.category + "," + encodeURIComponent(s) + ")"},this).join(",") + ")";
 			}
 
-			this.selected = selected;
 			if (selected.length > 0){
 				domClass.add(this.categoryNode, "selected");
 			}else{
 				domClass.remove(this.categoryNode, "selected")
 			}
+
+			this._set("selected", selected);
+
+			// console.log("selected: ", selected)
 
 			if (this.filter != curFilter){
 				on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, filter: this.filter, selected: selected, bubbles: true, cancelable: true})
@@ -93,7 +122,7 @@ define([
 
 		toggleItem: function(evt){
 			var rel = domAttr.get(evt.target, "rel")
-			console.log("onToggle: ", rel)
+			// console.log("onToggle: ", rel)
 			domClass.toggle(evt.target, "selected");
 			this._refreshFilter();
 		},

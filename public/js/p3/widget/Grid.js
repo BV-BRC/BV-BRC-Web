@@ -33,6 +33,7 @@ define([
 			store: null,
 			selectionMode: "extended",
 			allowTextSelection: false,
+			allowSelectAll: true,
 			deselectOnRefresh: false,
 			minRowsPerPage: 50,
 			bufferRows: 100,

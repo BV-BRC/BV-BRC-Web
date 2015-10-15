@@ -207,7 +207,7 @@ define([
 						ffilter.push("eq("+encodeURIComponent(cat) + "," + encodeURIComponent(selectionMap[cat][0]) + ")");
 					}else if (selectionMap[cat].length>1){
 						ffilter.push("or(" + selectionMap[cat].map(function(c){
-							return "eq("+encodeURIComponent(category) + "," + encodeURIComponent(c) + ")"
+							return "eq("+encodeURIComponent(cat) + "," + encodeURIComponent(c) + ")"
 						}).join(",") + ")")
 					}
 				}
@@ -355,10 +355,11 @@ define([
 				if (!facets) { console.log("No Facets Returned"); return; }
 
 				Object.keys(facets).forEach(function(cat){
-					// console.log("Facet Category: ", cat);
+					console.log("Facet Category: ", cat);
 					if (this._ffWidgets[cat]){
-						// console.log(" Set Facet Widget Data")
-						this._ffWidgets[cat].set('data', facets[cat]);
+						var selected = this.selected;
+						console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+						this._ffWidgets[cat].set('data', facets[cat], selected);
 					}else{
 						// console.log("Missing ffWidget for : ", cat);
 					}

@@ -145,11 +145,13 @@ define([
 				}
 		},
 		hideWarning: function(){
-			this.removeChild(this.warningPanel);
+			if (this.warningPanel){
+				this.removeChild(this.warningPanel);
+			}
 		},
 		showWarning: function(msg){
 			if (!this.warningPanel){
-				this.warningPanel = new ContentPane({content: '<div class="WarningBanner" style="background: #fffb65;text-align:center;margin:2px;padding:2px;border:1px solid orange;border-radius:4px;">Your genome list is too large to view all of the supplemental data.  Filter the genomes and then press the Anchor button to enable the disabled tabs.</div>', region: "top", layoutPriority: 3});
+				this.warningPanel = new ContentPane({style: "margin:0px; padding: 0px;margin-top: -10px;", content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">Your genome list is too large to view all of the supplemental data.  Filter the genomes and then press the Anchor button to enable the disabled tabs.</div>', region: "top", layoutPriority: 3});
 			}
 			this.addChild(this.warningPanel);
 		},
