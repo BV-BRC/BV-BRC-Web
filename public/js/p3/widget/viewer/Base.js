@@ -37,8 +37,11 @@ define([
 			console.log("OnUpdateHash: ", evt);
 			this.hashParams[evt.hashProperty]=evt.value;
 			l= window.location.pathname + window.location.search + "#" + Object.keys(this.hashParams).map(function(key){
-				return key + "=" + this.hashParams[key]
-			},this).join("&");
+				if (key && this.hashParams[key]){
+					return key + "=" + this.hashParams[key]
+				}
+				return "";
+			},this).filter(function(x){ return !!x; }).join("&");
 			console.log("onUpdateHash. nav to: ", l);
             Topic.publish("/navigate", {href: l});
 		},

@@ -205,10 +205,10 @@ define([
 					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if (this.filterPanel.minimized) {
 						this.filterPanel.minimized=false;
-						this.filterPanel.resize({h:240});
+						this.filterPanel.resize({h:this.filterPanel.minSize + 150});
 					}else{
 						this.filterPanel.minimized=false;
-						this.filterPanel.resize({h:55});
+						this.filterPanel.resize({h:this.filterPanel.minSize});
 					}
 					this.resize();
 				}
