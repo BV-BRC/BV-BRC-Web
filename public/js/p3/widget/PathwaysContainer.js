@@ -40,17 +40,17 @@ define([
 		_setParamsAttr: function(params){
 			this.params = params;
 			if(this._started && this.pathwaysGrid){
-				var changed=false;
+				var changed = false;
 				var checkParams = ["genome_id", "annotation", "pathway_id"];
 
 				checkParams.forEach(function(cp){
-					if (params[cp] != this.params[cp]){
+					if(params[cp] != this.params[cp]){
 						changed = true;
-						this.params[cp]=params[cp];
+						this.params[cp] = params[cp];
 					}
-				},this);
+				}, this);
 
-				if (changed){
+				if(changed){
 					this.pathwaysGrid.set("params", params);
 				}
 			}
@@ -60,11 +60,11 @@ define([
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
 			console.log("PathwaysContainer Visible");
-			if (this.pathwaysGrid){
+			if(this.pathwaysGrid){
 				this.pathwaysGrid.set('visible', true);
-				if (!this.pathwaysGrid._hasBeenViewed){
+				if(!this.pathwaysGrid._hasBeenViewed){
 					this.pathwaysGrid.set("params", this.params);
-					this.pathwaysGrid._hasBeenViewed=true;
+					this.pathwaysGrid._hasBeenViewed = true;
 				}
 			}
 		},
