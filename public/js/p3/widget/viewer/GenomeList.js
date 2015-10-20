@@ -68,6 +68,13 @@ define([
 			this.inherited(arguments);
 			this.set("query", state.search);
 			console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var activeTab = this[active];
+			switch(active){
+				case "genomes":
+					activeTab.set("state", state);
+					break;
+			}
 			// this.viewer.selectedChildWidget.set("state", state);
 		},
 
@@ -87,9 +94,17 @@ define([
 			console.log("Active: ", active);
 
 			var activeTab = this[active];
-			if (activeTab){
-				activeTab.set("state", activeQueryState);
+			switch(active){
+				case "genomes":
+						break;
+				case "pathways":
+						activeTab.set("state",lang.mixin({},this.state, {genome_ids: genome_ids, search: ""}));
+					break;
+				default: 
+					activeTab.set("state", activeQueryState);
+					break;
 			}
+
 		},
 
 		createOverviewPanel: function(state){

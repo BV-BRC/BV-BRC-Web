@@ -37,7 +37,11 @@ define([
 
 		_setQueryAttr: function(query){
 			console.log("Pathways Grid Container Query Override: ", query)
-			this.inherited(arguments);
+			//this.inherited(arguments);
+		},
+
+		buildQuery: function(){
+			return "";
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
