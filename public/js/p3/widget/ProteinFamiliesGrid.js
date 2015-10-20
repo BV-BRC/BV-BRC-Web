@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
+	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
 	"dojo/aspect"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
@@ -13,23 +13,22 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
-		dataModel: "pathway",
-		primaryKey: "pathway_id",
+		dataModel: "genome_feature",
+		primaryKey: "feature_id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-			annotation: {label: 'Annotation', field: 'annotation'},
-			genome_count: {label: 'Unique Genome Count', field: 'genome_count'},
-			gene_count: {label: 'Unique Gene Count', field: 'gene_count'},
-			ec_count: {label: 'Unique EC Count', field: 'ec_count'},
-			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
-			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+			family_id: {label: 'ID', field: 'family_id'},
+			feature_count: {label: 'Proteins', field: 'feature_count'},
+			genome_count: {label: 'Genomes', field: 'genome_count'},
+			description: {label: 'Description', field: 'description'},
+			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
+			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
+			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
+			aa_length_std: {label: 'Std', field: 'aa_length_std'}
 		},
 		constructor: function(options){
-			console.log("PathwaysGrid Ctor: ", options);
+			//console.log("ProteinFamiliesGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
@@ -82,6 +81,7 @@ define([
 			this.inherited(arguments);
 			this._started = true;
 		},
+
 		state: null,
 		postCreate: function(){
 			this.inherited(arguments);
@@ -89,21 +89,14 @@ define([
 		_setApiServer: function(server){
 			this.apiServer = server;
 		},
-
 		_setState: function(state){
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				this.store.set("state", state);
+				this.store.set('state', state);
 			}
 		},
-
 		createStore: function(server, token, state){
-
-			//console.log("CreateStore() server: ", server);
-			//console.log("CreateStore() token: ", token);
-			//console.log("CreateStore() state: ", state);
-			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
 
 			return new Store({
 				token: token,
