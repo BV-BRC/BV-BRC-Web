@@ -2,3 +2,6 @@ p3-web.conf
 node_modules/
 *.swp
 .DS_Store
+dump.rdb
+npm-debug.log
+.idea/
