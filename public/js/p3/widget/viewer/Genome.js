@@ -26,7 +26,7 @@ define([
 			if(!id){
 				return;
 			}
-			this.state = this.state || {};
+			var state = this.state = this.state || {};
 			this.genome_id = id;
 			this.state.genome_ids = [id];
 
@@ -40,23 +40,35 @@ define([
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
 			}));
+			var activeQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"});
+			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var activeTab = this[active];
 
-			var gidQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"});
-			if (this.features){
-				this.features.set("state", gidQueryState);
+
+			switch(active){
+				case "pathways":
+					break;
+				default: 
+					activeTab.set("state",activeQueryState)
 			}
 
-			if(this.specialtyGenes){
-				this.specialtyGenes.set("state", gidQueryState);
-			}
 
-			if(this.pathways){
-				this.pathways.set("state", this.state);
-			}
+			// var gidQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"});
+			// if (this.features){
+			// 	this.features.set("state", gidQueryState);
+			// }
 
-			if(this.proteinFamilies){
-				this.proteinFamilies.set("state", this.state);
-			}
+			// if(this.specialtyGenes){
+			// 	this.specialtyGenes.set("state", gidQueryState);
+			// }
+
+			// if(this.pathways){
+			// 	this.pathways.set("state", this.state);
+			// }
+
+			// if(this.proteinFamilies){
+			// 	this.proteinFamilies.set("state", this.state);
+			// }
 		},
 
 		_setGenomeAttr: function(genome){
