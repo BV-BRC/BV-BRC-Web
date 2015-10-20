@@ -54,7 +54,7 @@ define([
 			}
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
-			if (this.filterPanel) {
+			if (this.enableFilterPanel && this.filterPanel) {
 				// console.log("    FilterPanel found");
 				this.filterPanel.set("state", state);
 			}
@@ -132,6 +132,32 @@ define([
 			]
 
 		],
+
+		buildQuery: function(){
+			var q = []
+			if (this.state) {
+				if (this.state.search) {
+					q.push(this.state.search);
+				}
+				if (this.state.hashParams && this.state.hashParams.filter) {
+					q.push(this.state.hashParams.filter);
+				}
+				if (q.length < 1) {
+					q = "";
+				}
+				else if (q.length == 1) {
+					q = q[0];
+				}
+				else {
+					q = "and(" + q.join(",") + ")";
+				}
+			}else {
+				q = ""
+			}
+			
+			return q;
+		},
+		
 		onFirstView: function() {
 			if (this._firstView) {
 				return;
@@ -176,33 +202,13 @@ define([
 			// console.log("Create Grid firstView   Query:  ", this.query, " State: ",this.state)
 
 			// To Avoid creating an initial grid with a query of "" (which sends an unneeded request), create a starting query if we can to pass to the new grid
-			var q = []
-			if (this.state) {
-				if (this.state.search) {
-					q.push(this.state.search);
-				}
-				if (this.state.hashParams && this.state.hashParams.filter) {
-					q.push(this.state.hashParams.filter);
-				}
-				if (q.length < 1) {
-					q = "";
-				}
-				else if (q.length == 1) {
-					q = q[0];
-				}
-				else {
-					q = "and(" + q.join(",") + ")";
-				}
-			}
-			else {
-				q = ""
-			}
+
 
 			// console.log("GridContainer create grid", this.state, q)
 			// console.log("GridContainer API Server: ", this.apiServer)
 			this.grid = new this.gridCtor({
 				region: "center",
-				query: q,
+				query: this.buildQuery(),
 				state: this.state,
 				apiServer: this.apiServer
 			});

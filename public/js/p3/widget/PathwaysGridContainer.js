@@ -42,8 +42,12 @@ define([
 		apiServer: window.App.dataServiceURL,
 
 		_setQueryAttr: function(query){
-			console.log("Pathways Grid Container Query Override: ", query);
-			this.inherited(arguments);
+			//console.log("Pathways Grid Container Query Override: ", query);
+			//this.inherited(arguments);
+		},
+
+		buildQuery: function(){
+			return "";
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

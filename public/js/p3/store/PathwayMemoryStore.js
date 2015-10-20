@@ -96,7 +96,7 @@ define([
 			}).join("&");
 
 			var _self = this;
-
+			console.log("Load Data: ", q)
 			this._loadingDeferred = when(request.get(this.apiServer + '/pathway/?' + q, {
 				handleAs: 'json',
 				headers: {
