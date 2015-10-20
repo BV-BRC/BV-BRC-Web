@@ -219,7 +219,7 @@ define([
 
 	        var hmb = domGeometry.getMarginBox(this.categoryNode);
 	     
-	     	domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h-60})
+	     	domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h-50})
 
 		}
 	})

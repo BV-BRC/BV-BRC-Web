@@ -85,27 +85,11 @@ define([
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab)?this.state.hashParams.view_tab:"overview";
 			console.log("Active Query State: ", activeQueryState);
 			console.log("Active: ", active);
-			var tabs = ["features", "specialtyGenes"];
 
-			tabs.forEach(function(t){
-				if (t==active){
-					var tab = this[t];
-					if (tab){
-						console.log("Set Active Query State: ", activeQueryState, " for ", active);
-						tab.set("state", activeQueryState)
-					}
-				}else{
-					// console.log("Set Inactive Query State: ", gidQueryState, " for ", t);
-					// var tab = this[t];
-					// tab.set("state", gidQueryState);
-				}
-			},this);
-			// if (activeTab){
-
-			// }
-
-			// if (this.features){ this.features.set("state", (active=="features")?activeQueryState:gidQueryState); }
-			// if (this.specialtyGenes){ this.specialtyGenes.set("state",  (active=="specialtyGenes")?activeQueryState:gidQueryState); }
+			var activeTab = this[active];
+			if (activeTab){
+				activeTab.set("state", activeQueryState);
+			}
 		},
 
 		createOverviewPanel: function(state){

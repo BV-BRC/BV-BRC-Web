@@ -36,7 +36,7 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state) {
-			// console.log("GridContainer onSetState: ", state)
+			console.log("GridContainer onSetState: ", state)
 			if (!state) {
 				// console.log("!state in grid container; return;")
 				return;
@@ -63,12 +63,14 @@ define([
 
 		},
 		_setQueryAttr: function(query) {
-			// console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
-			// console.log("    Query: ", query, "this.query: ", this.query)
+			console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			console.log("    Query: ", query, "this.query: ", this.query)
 			if (query == this.query) {
-				console.log("   Skipping Query Update (unchanged)");
-				return;
+				console.log("  Not Skipping Query Update (unchanged)");
+				// return;
 			}
+
+
 			this.query = query;
 			// this.query = query || "?keyword(*)"
 			// console.log("Query Set: ", query);
