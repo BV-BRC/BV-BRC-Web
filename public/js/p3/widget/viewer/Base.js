@@ -56,7 +56,10 @@ define([
 				this.state.hashParams={};
 			}
 
-			if (evt.hashProperty == "view_tab"){
+			if (evt.hashParams){
+				console.log("EVT.hashParams: ", evt.hashParams)
+				this.state.hashParams = evt.hashParams;
+			}else if (evt.hashProperty == "view_tab"){
 				this.state.hashParams = {
 					view_tab: evt.value
 				}
@@ -71,6 +74,8 @@ define([
 				return "";
 			},this).filter(function(x){ return !!x; }).join("&");
 			console.log("onUpdateHash. nav to: ", l);
+
+
             Topic.publish("/navigate", {href: l});
 		},
 

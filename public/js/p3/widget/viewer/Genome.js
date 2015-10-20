@@ -44,7 +44,7 @@ define([
 				this.set("genome", genome)
 			}));
 
-			var gidQueryState = lang.mixin({},this.state, {search: "?eq(genome_id," + id + ")"})
+			var gidQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"})
 			if (this.features){
 				this.features.set("state", gidQueryState);
 			}
