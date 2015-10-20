@@ -1,9 +1,9 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
+	"./ActionBar", "./ContainerActionBar",  "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "dijit/layout/ContentPane", "dojo/topic"
 ], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer,
+			ActionBar, ContainerActionBar, TabContainer,StackController,
 			ProteinFamiliesGridContainer, ContentPane, Topic){
 
 	return declare([BorderContainer], {
@@ -46,6 +46,13 @@ define([
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
+			var tabController = new StackController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+
 			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
 				title: "Table",
 				content: "Protein Families Table",
@@ -59,7 +66,7 @@ define([
 
 			this.tabContainer.addChild(this.proteinFamiliesGrid);
 			this.tabContainer.addChild(this.heatmap);
-
+			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 
 			this.inherited(arguments);
