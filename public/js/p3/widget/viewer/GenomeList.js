@@ -23,7 +23,7 @@ define([
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-			// console.log("GenomeList SetQuery: ", query, this);		
+			console.log("GenomeList SetQuery: ", query, this);		
 			// if (query == this.query){
 			// 	console.log("GenomeList: Skip Unchanged query", query);
 			// 	return;
@@ -64,10 +64,11 @@ define([
 		},
 
 		onSetState: function(attr,oldVal,state){
+			console.log("GenomeList onSetState()");
 			this.inherited(arguments);
 			this.set("query", state.search);
-			console.log("this.viewer: ", this.viewer.selectedChildWidget);
-			this.viewer.selectedChildWidget.set("state", state);
+			console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			// this.viewer.selectedChildWidget.set("state", state);
 		},
 
 		onSetQuery: function(attr,oldVal,newVal){
@@ -76,9 +77,35 @@ define([
 			this.queryNode.innerHTML = "Genome List Query: " + decodeURIComponent(newVal);
 		},		
 
-		onSetGenomeIds: function(attr,oldVal,newVal){
-			if (this.features){ this.features.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))"); }
-			if (this.specialtyGenes){ this.specialtyGenes.set("query", "?in(genome_id,(" + this.genome_ids.join(",") + "))"); }
+		onSetGenomeIds: function(attr,oldVal,genome_ids){
+			console.log("onSetGenomeIds: ", genome_ids);
+			var gidQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))",hashParams: {}})
+			var activeQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))"});
+			console.log("gidQueryState: ", gidQueryState);
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab)?this.state.hashParams.view_tab:"overview";
+			console.log("Active Query State: ", activeQueryState);
+			console.log("Active: ", active);
+			var tabs = ["features", "specialtyGenes"];
+
+			tabs.forEach(function(t){
+				if (t==active){
+					var tab = this[t];
+					if (tab){
+						console.log("Set Active Query State: ", activeQueryState, " for ", active);
+						tab.set("state", activeQueryState)
+					}
+				}else{
+					// console.log("Set Inactive Query State: ", gidQueryState, " for ", t);
+					// var tab = this[t];
+					// tab.set("state", gidQueryState);
+				}
+			},this);
+			// if (activeTab){
+
+			// }
+
+			// if (this.features){ this.features.set("state", (active=="features")?activeQueryState:gidQueryState); }
+			// if (this.specialtyGenes){ this.specialtyGenes.set("state",  (active=="specialtyGenes")?activeQueryState:gidQueryState); }
 		},
 
 		createOverviewPanel: function(state){

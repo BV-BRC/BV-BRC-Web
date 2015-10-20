@@ -46,7 +46,8 @@ define([
 		},
 
 		onUpdateHash: function(evt){
-			// console.log("OnUpdateHash: ", evt);
+			console.log("OnUpdateHash: ", evt);
+			console.log("Current State: ", this.state, " hash params: ", this.state.hashParams)
 			if (!this.state){
 				this.state = {}
 			}
@@ -55,14 +56,21 @@ define([
 				this.state.hashParams={};
 			}
 
-			this.state.hashParams[evt.hashProperty]=evt.value;
+			if (evt.hashProperty == "view_tab"){
+				this.state.hashParams = {
+					view_tab: evt.value
+				}
+			}else{
+					this.state.hashParams[evt.hashProperty]=evt.value;
+			}
+
 			l= window.location.pathname + window.location.search + "#" + Object.keys(this.state.hashParams).map(function(key){
 				if (key && this.state.hashParams[key]){
 					return key + "=" + this.state.hashParams[key]
 				}
 				return "";
 			},this).filter(function(x){ return !!x; }).join("&");
-			// console.log("onUpdateHash. nav to: ", l);
+			console.log("onUpdateHash. nav to: ", l);
             Topic.publish("/navigate", {href: l});
 		},
 

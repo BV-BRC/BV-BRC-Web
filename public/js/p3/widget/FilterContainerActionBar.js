@@ -148,7 +148,8 @@ define([
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value,true);	
 					}else{
-						this._ffWidget[sel.field].toggle(sel.value,false);
+						console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
+						// this._ffWidgets[sel.field].toggle(sel.value,false);
 					}
 				},this)
 			}
