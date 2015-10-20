@@ -8,7 +8,7 @@ define([
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
-		idProperty: "feature_id",
+		idProperty: "family_id",
 		state: null,
 
 		onSetState: function(attr, oldVal, state){
