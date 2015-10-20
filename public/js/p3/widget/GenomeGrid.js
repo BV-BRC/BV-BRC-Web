@@ -342,19 +342,19 @@ define([
 		},
 		startup: function() {
 			var _self = this
-			if (this.defaultSortProperty) {
-				this.set("sort", this.defaultSortProperty);
-			}
+			// if (this.defaultSortProperty) {
+			// 	this.set("sort", this.defaultSortProperty);
+			// }
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 				//if (row.data.type == "folder"){
 				//                              Topic.publish("/select", []);
 
@@ -366,7 +366,7 @@ define([
 			//Topic.publish("/select", []);
 
 			this.on("dgrid-select", function(evt) {
-				console.log('dgrid-select: ', evt);
+				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -382,7 +382,7 @@ define([
 				//Topic.publish("/select", sel);
 			});
 			this.on("dgrid-deselect", function(evt) {
-				console.log("dgrid-select");
+				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -394,7 +394,6 @@ define([
 				return;
 			});
 			this.inherited(arguments);
-			this.refresh();
 		}
 	});
 });

@@ -32,7 +32,7 @@ define([
 		idProperty: "id",
 
 		query: function(query, options) {
-			 console.log("p3JsonRest Query: ",typeof query, options);
+			 // console.log("p3JsonRest Query: ",typeof query, options);
 			// summary:
 			//      Queries the store for objects. This will trigger a GET request to the server, with the
 			//      query added as a query string.
@@ -86,7 +86,7 @@ define([
 					query += ")";
 				}
 			}
-			console.log("P3JsonRest Query: ", query)
+			// console.log("P3JsonRest Query: ", query)
             // this is the GET version
 			// var results = xhr("GET", {
 			//     url: this.target + (query || ""),
@@ -96,6 +96,7 @@ define([
 
             // this is the POST version
 			query = (query && (typeof query == 'string') && (query.charAt(0) == "?")) ? query.substr(1) : query;
+			// console.log("DO POST: ", query)
 			var results = dojo.rawXhrPost({
                 url: this.target,
 				postData: query || "",

@@ -10,7 +10,7 @@ define([
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
-		apiServer: window.App.dataAPI,
+		apiServer:  window.App.dataServiceURL,
 		store: null,
 		dataModel: "pathway",
 		primaryKey: "pathway_id",
@@ -26,6 +26,12 @@ define([
 			ec_count: {label: 'Unique EC Count', field: 'ec_count'},
 			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
 			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+		},
+		constructor: function(options){
+			console.log("PathwaysGrid Ctor: ", options)
+			if (options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
 		},
 		startup: function() {
 			var _self = this;
@@ -81,30 +87,37 @@ define([
 		},
 
 		query: "",
-		params: null,
+		state: null,
 		apiServer: window.App.dataServiceURL,
-		_setParams: function(params){
-			console.log("SET PARAMS for PathwaysGrid: ", params, window)
-			this.params = params;
-			this.set('store', this.createStore(this.apiServer || window.App.dataServiceURL,this.apiToken||window.App.authorizationToken,params));				
-			this.refresh();
+		postCreate: function(){
+			this.inherited(arguments);
 		},
-		_setApiServer: function(server, token) {
-			console.log("_setapiServerAttr: ", server);
+		_setApiServer: function(server) {
 			this.apiServer = server;
-			var t = token || this.apiToken || "";
-
-			this.set('store', this.createStore(server,token||window.App.authorizationToken,this.params));
-			this.refresh();
+		},
+		
+		_setState: function(state){
+			if (!this.store){
+				this.set('store', this.createStore(this.apiServer,this.apiToken||window.App.authorizationToken,this.state));				
+			}else if (this.store){
+				this.store.set("state", state);
+			}
+			// this._set('state',state);
+			//this.refresh();
 		},
 
-		createStore: function(server,token,params) {
-			var self = this;
-			if (!server) { console.log ("No API Server yet"); return;}
-			if (!params || (params && !params.genome_id) ) { console.log ("No genome_id yet"); return;}
-			console.log("Create Store for Pathways at ", server, " TOKEN: ", token, " PathwaysGrid for genome_id: ", params.genome_id);
 
-			var store = new Store({token: token,  apiServer: server, genome_id: params.genome_id});
+		createStore: function(server,token,state) {
+			var self = this;
+			console.log("CreateStore() server: ", server);
+			console.log("CreateStore() token: ", token);
+			console.log("CreateStore() state: ", state);
+			// if (!server) { console.log ("No API Server yet"); return;}
+			// if (!params || (params && !params.genome_id) ) { console.log ("No genome_id yet"); return;}
+			console.log("Create Store for Pathways at server: ", server , " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state||this.state);
+
+			var store = new Store({token: token,  apiServer: this.apiServer || window.App.dataServiceURL, state: state||this.state});
+			// console.log("STORE: ", store);
 			return store;
 		}
 	});

@@ -19,7 +19,7 @@ define([
 			this._selected = {};
 		},
 		_setDataAttr: function(data, selected){
-			console.log("_setDataAttr", data, selected);
+			// console.log("_setDataAttr", data, selected);
 			if  (selected){ this.selected = selected }
 			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected);			
 			if (!data){return}
@@ -30,7 +30,7 @@ define([
 			this.data = data;
 			domConstruct.empty(this.containerNode);
 
-			console.log("_setDataAttr data.length: ", this.data.length)
+			// console.log("_setDataAttr data.length: ", this.data.length)
 			if (data.length<1){
 				domClass.add(this.domNode, "dijitHidden");
 			}else{
@@ -41,7 +41,7 @@ define([
 
 			data.forEach(function(obj){
 				var name = decodeURIComponent(obj.label || obj.val);
-				console.log("data obj: ", name, obj);
+				// console.log("data obj: ", name, obj);
 				var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
 				var sel;
 
@@ -53,14 +53,14 @@ define([
 				}else{
 					sel="";
 				}
-				console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
+				// console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
 				//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
 				var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
 				// console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
 				domConstruct.place(n,this.containerNode,sel?"first":"last")
 				this.containerNode.scrollTop=0;
 			},this);
-			this._refreshFilter();
+			// this._refreshFilter();
 
 			if (promise){
 				promise.resolve(true);
@@ -77,7 +77,7 @@ define([
 					// console.log("    Found Node")
 					if (typeof value == "undefined"){
 						var isSelected = domClass.contains(node, "selected");
-						console.log("isSelected: ", isSelected);
+						// console.log("isSelected: ", isSelected);
 						domClass.toggle(node, "selected");
 						this._set("selected", this.selected.filter(function(i){ 
 							return (i!=name) || ((i==name) && !isSelected);
@@ -117,14 +117,22 @@ define([
 			// this._refreshFilter();
 		},
 
-		_refreshFilter: function(){
-			var selected = [];
+		startup: function(){
+			if (this._started) { return; }
+			this._started=true;
+			this.inherited(arguments);
 
+			this._refreshFilter();
+		},
+		_refreshFilter: function(){
+			console.log("FacetFilter _refreshFilter()  started: ", this._started);
+			var selected = [];
+	
 			Query(".selected", this.containerNode).forEach(function(node){
-				console.log(".selected Node: ", node)
+				// console.log(".selected Node: ", node)
 				selected.push(domAttr.get(node,"rel"));
 			})
-			// console.log("_refreshFilter selected() : ", selected);
+			console.log("_refreshFilter selected() : ", selected);
 			var curFilter = this.filter;
 			// this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
 			if (selected.length<1){
@@ -145,11 +153,13 @@ define([
 
 			this._set("selected", selected);
 
-			// console.log("selected: ", selected)
+			console.log("selected: ", selected)
 			console.log("new filter: ", this.filter, " curFilter: ", curFilter);
-			if (this.filter != curFilter){
+	
+			// if (this.filter != curFilter){
+				console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
 				on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, filter: this.filter, selected: selected, bubbles: true, cancelable: true})
-			}
+			// }
 		},
 
 		toggleItem: function(evt){

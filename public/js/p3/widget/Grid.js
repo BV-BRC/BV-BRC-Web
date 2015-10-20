@@ -50,8 +50,10 @@ define([
 				selfAccept: false,
 				copyOnly: true
 			},
+			apiServer: window.App.dataServiceURL,
 
 			_setApiServer: function(server) {
+				console.log("_setApiServer ", server)
 				this.apiServer = server;
 				this.set('store', this.createStore(this.dataModel), this.buildQuery());
 			},

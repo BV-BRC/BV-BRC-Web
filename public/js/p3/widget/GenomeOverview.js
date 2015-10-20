@@ -15,17 +15,25 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		genome: null,
 		genomeFeatureSummary: null,
-		"_setGenomeAttr": function(genome) {
-			this.genome = genome;
-			console.log("Set Genome", genome);
+		state: null,
 
-			this.getSummaryData();
+		_setStateAttr: function(state){
+			this._set("state", state);
+			if (state.genome){
+				this.set("genome", state.genome);
+			}else{
+				// console.log("Attempted to set genome without genome object in state");
 
-			if(this._started){
-				this.refresh();
 			}
 		},
-		"_setGenomeSummaryAttr": function(genome) {
+
+		"_setGenomeAttr": function(genome) {
+			this.genome = genome;
+			// console.log("Set Genome", genome);
+			this.createSummary(genome);
+			this.getSummaryData();
+		},
+		"createSummary": function(genome) {
 
 			domConstruct.empty(this.genomeSummaryNode);
 			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.genomeSummaryNode);
@@ -138,19 +146,12 @@ define([
 			}));
 
 		},
-		refresh: function() {
-			if(this.genome && this.genome.genome_id){
-				this.set("genomeSummary", this.genome);
-			}else{
-				console.log("Invalid Genome: ", this.genome);
-			}
-		},
+
 		startup: function() {
 			if(this._started){
 				return;
 			}
 			this.inherited(arguments);
-			this.refresh();
 		}
 	});
 });

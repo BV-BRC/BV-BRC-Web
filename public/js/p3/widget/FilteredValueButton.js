@@ -15,6 +15,8 @@ define([
 		selected: null,
 
 		_setSelectedAttr: function(selected){
+			console.log("FFV _setSelected: ", selected);
+			
 			var content = [];
 			selected = selected.map(function(s,idx){ 
 					var s = s.replace(/\"/g,"") 
@@ -41,12 +43,14 @@ define([
 			this.innerHTML="";
 			console.log("clear Category: ", this.category);
 			on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, selected: [], bubbles: true, cancelable: true})
-
-			this._set("selected",[])
+			// this._set("selected",[])
+		},
+		startup: function(){
+			this.inherited(arguments);
+			console.log("FilteredValueButton Startup()", this.selected);
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			
 		}
 	})
 });

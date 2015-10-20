@@ -20,12 +20,12 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
+		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection')
 		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery );
+		// console.log("selection: ", selection);
+		// console.log("DownloadQuery: ", dataType, currentQuery );
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
 		popup.close(downloadTT);
 	});
@@ -33,14 +33,8 @@ define([
 	return declare([GridContainer], {
 		facetFields: ["property","source","evidence"],
 		maxGenomeCount: 5000,
+		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
-
-			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
-			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
-				console.log("setFilter Watch() callback", newVal);
-				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
-			}));
-			return fp;	
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -89,45 +83,6 @@ define([
 			]
 		]),
 		gridCtor: Grid,
-	
-		filter: null,
-
-		_setFilterAttr: function(filter){
-			console.log("FeatureGridContainer Filter: ", filter);
-			this.inherited(arguments);
-
-			if (filter){
-				//filter = filter.replace(/\%22/g,"").replace(/\%20/," ");
-				console.log("Parsing hashParams Filter: ", filter);
-				var re = /(eq\(\w+\,\w+\))+/gi;
-				var innerRE = /eq\(\w+\,\w+\)/
-				var matches = filter.match(re);
-				var selected;
-				console.log("Matches: ", matches);
-				if (matches){
-					var selected = matches.map(function(match){
-						var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
-						return parts[0] +":"+ parts[1];
-					})
-				}
-				console.log("Selected: ", selected);
-				if (this.filterPanel){
-						this.filterPanel.set('selected', selected);
-				}
-			}
-		},
-		onFirstView: function(){
-			if (this._firstView) { return; }			
-			var _self=this;
-			this.inherited(arguments);
-
-			this.grid.store.on("facet_counts", function(evt){
-				if (_self.filterPanel){
-					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
-					console.log("FeatureGridContainer Facets: ", evt.facet_counts);
-				}
-			})	
-		}
 
 	});
 });
