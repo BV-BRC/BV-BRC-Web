@@ -349,3 +349,23 @@ body.patric *:focus {
 .TextTabButtons .dijitTab .tabLabel:hover {
 	color: black; 
 }
+
+.dgrid .dgrid-selector {
+	width: 20px;
+	padding: 0px;
+	margin: 0px;
+	text-align: center;
+}
+.dgrid .dgrid-selector > * {
+	margin: 0px;
+	padding: 0px;
+	vertical-align: middle;
+}
+.dgrid-selector INPUT {
+	margin-top: 2px;
+	margin-bottom: 2px;
+	margin: 1px;
+	vertical-align: middle;	
+	width: 16px;
+	height: 16px;
+}

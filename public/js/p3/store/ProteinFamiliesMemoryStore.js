@@ -1,21 +1,37 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang){
-	return declare([Memory], {
+			when, lang, Stateful){
+	return declare([Memory, Stateful], {
 		baseQuery: {},
-		apiServer: "",
-		idProperty: "figfam_id",
+		apiServer: window.App.dataServiceURL,
+		idProperty: "feature_id",
+		state: null,
+
+		onSetState: function(attr, oldVal, state){
+			//console.log("ProteinFamiliesMemoryStore setState: ", state);
+			if(state && state.genome_ids && state.genome_ids.length > 0){
+				this.genome_ids = state.genome_ids || [];
+			}
+		},
 		constructor: function(options){
 			this._loaded = false;
+			this.genome_ids = [];
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+			this.watch('state', lang.hitch(this, 'onSetState'));
 		},
+
 		query: function(query, opts){
+			query = query || {};
 			if(this._loaded){
 				return this.inherited(arguments);
-			}else{
+			}
+			else{
 				var _self = this;
 				var results;
 				var qr = QueryResults(when(this.loadData(), function(){
@@ -51,7 +67,7 @@ define([
 			var familyId = familyType + '_id';
 
 			var query = {
-				q: "genome_id:" + this.genome_id,
+				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
 				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
 				rows: 0,
 				facet: true,
@@ -80,12 +96,10 @@ define([
 					familyIdList.push(element.val);
 				});
 
-				var data = {};
-
 				// sub query - genome distribution
 				query['json.facet'] = '{stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
 
-				return when(request.post(_self.apiServer + '/genome_feature', {
+				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
 						'Accept': "application/solr+json",
@@ -96,54 +110,6 @@ define([
 					data: query
 				}), function(response){
 
-					var genomeFamilyDist = response.facets.stat.buckets;
-					var familyGenomeIdStr = {};
-					var familyGenomeCount = {};
-					var familyGenomeIdCountMap = {};
-					var familyGenomeIdSet = {};
-					var genomePosMap = {};
-					genomePosMap['83332.12'] = 0; // TODO: build based upon query
-
-					genomeFamilyDist.forEach(function(genome){
-						var genomeId = genome.val;
-						var genomePos = genomePosMap[genomeId];
-						var familyBuckets = genome.families.buckets;
-
-						familyBuckets.forEach(function(bucket){
-							var familyId = bucket.val;
-							var genomeCount = bucket.count.toString(16);
-							if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
-
-							if(familyId in familyGenomeIdCountMap){
-								familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
-							}
-							else{
-								var genomeIdCount = [];
-								genomeIdCount[genomePos] = genomeCount;
-								familyGenomeIdCountMap[familyId] = genomeIdCount;
-							}
-
-							if(familyId in familyGenomeIdSet){
-								familyGenomeIdSet[familyId].push(genomeId);
-							}
-							else{
-								var genomeIds = [];
-								genomeIds.push(genomeId);
-								familyGenomeIdSet[familyId] = genomeIds;
-							}
-						});
-					});
-
-					Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-						var genomeIdStr = familyGenomeIdCountMap[familyId];
-						familyGenomeIdStr[familyId] = genomeIdStr.join("");
-						familyGenomeCount[familyId] = familyGenomeIdSet[familyId].filter(function(value, index, self){
-							return self.indexOf(value) === index;
-						}).length;
-					});
-
-					// sub query - protein_family_ref
-					var familyRefHash = {};
 					return when(request.post(_self.apiServer + '/protein_family_ref/', {
 						handleAs: 'json',
 						headers: {
@@ -157,6 +123,57 @@ define([
 							rows: 1000000
 						}
 					}), function(res){
+
+						var genomeFamilyDist = response.facets.stat.buckets;
+						var familyGenomeIdStr = {};
+						var familyGenomeCount = {};
+						var familyGenomeIdCountMap = {};
+						var familyGenomeIdSet = {};
+						var genomePosMap = {};
+						_self.genome_ids.forEach(function(genomeId){
+							genomePosMap[genomeId] = _self.genome_ids.indexOf(genomeId);
+						});
+
+						genomeFamilyDist.forEach(function(genome){
+							var genomeId = genome.val;
+							var genomePos = genomePosMap[genomeId];
+							var familyBuckets = genome.families.buckets;
+
+							familyBuckets.forEach(function(bucket){
+								var familyId = bucket.val;
+								var genomeCount = bucket.count.toString(16);
+								if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
+
+								if(familyId in familyGenomeIdCountMap){
+									familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
+								}
+								else{
+									var genomeIdCount = [];
+									genomeIdCount[genomePos] = genomeCount;
+									familyGenomeIdCountMap[familyId] = genomeIdCount;
+								}
+
+								if(familyId in familyGenomeIdSet){
+									familyGenomeIdSet[familyId].push(genomeId);
+								}
+								else{
+									var genomeIds = [];
+									genomeIds.push(genomeId);
+									familyGenomeIdSet[familyId] = genomeIds;
+								}
+							});
+						});
+
+						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
+							var genomeIdStr = familyGenomeIdCountMap[familyId];
+							familyGenomeIdStr[familyId] = genomeIdStr.join("");
+							familyGenomeCount[familyId] = familyGenomeIdSet[familyId].filter(function(value, index, self){
+								return self.indexOf(value) === index;
+							}).length;
+						});
+
+						var data = {};
+						var familyRefHash = {};
 						res.response.docs.forEach(function(el){
 							if(familyRefHash[el.family_id] == null){
 								familyRefHash[el.family_id] = el.family_product;
@@ -186,20 +203,23 @@ define([
 							data[familyId] = element;
 						});
 						console.log(data);
-						//_self.setData(data);
 
 						var gridData = [];
 						Object.keys(data).forEach(function(key){
 							gridData.push(data[key]);
 						});
-						gridData.sort(function(a, b) {
-							return (a.family_id).localeCompare(b.family_id);
-						});
+						//gridData.sort(function(a, b){
+						//	return (a.family_id).localeCompare(b.family_id);
+						//});
 						_self.setData(gridData);
 						//console.log(gridData);
 
 						_self._loaded = true;
 						return true;
+					}, function(err) {
+
+					}, function(update) {
+						// console.log(update);
 					});
 				});
 			});

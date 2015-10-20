@@ -161,9 +161,11 @@ define([
 			on(document, ".navigationLink:click", function(evt){
 				// console.log("NavigationLink Click", evt);
 				evt.preventDefault();
-				evt.stopPropagation();
-				// console.log("Target", evt.target, evt);
-				Router.go(evt.target.pathname || evt.target.href);
+				// evt.stopPropagation();
+				// console.log("APP Link Target: ", evt.target.pathname, evt.target.href, evt.target);
+				var parts = evt.target.href.split(evt.target.pathname);
+				// console.log("navigationLink:click - " + evt.target.pathname + (parts[1]||"") )
+				Router.go(evt.target.pathname + (parts[1]||""));
 			})
 		},
         loadPanel: function(id,params,callback){
@@ -246,7 +248,7 @@ define([
 				return;
 			}
 
-			console.log("Do Navigation to href: ", newNavState);
+			// console.log("Do Navigation to href: ", newNavState);
 
 			var appContainer = this.getApplicationContainer();
 
@@ -278,54 +280,38 @@ define([
 					return;
 				}
 				var acceptType = newNavState.widgetClass?"application/json":"text/html";
-				 console.log("got CTOR for ", newNavState.widgetClass);
 				var instance;
 				var cur = _self.getCurrentContainer();	
 				if (cur instanceof ctor) {
-					 console.log("cur is isntance of ctor");
 					instance = cur; 
-					console.log("Set Instance Hash Params:", newNavState.hashParams);
-					console.log("instance: ", instance)
-					instance.set("hashParams",newNavState.hashParams || {})
-					
-					if ((instance instanceof ContentPane) && !newNavState.content) {
-						var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
-						 console.log("set href to: ", dest);
-						instance.set('href', dest);
-					}else if (newNavState.set){
-						console.log("Set ", newNavState.set, " to ", newNavState.value);
-						instance.set(newNavState.set,newNavState.value);
-					}else if (instance.resize){
-						 instance.resize(); 
+					instance.set('state', newNavState);
+					if (instance.resize){
+						instance.resize();
 					}
-
-					// // if (newNavState.hashParams){
-					// 	console.log("Set Instance Hash Params:", newNavState.hashParams);
-					// 	console.log("instance: ", instance)
-					// 	instance.set("hashParams",newNavState.hashParams || {})
-					// // }
-
+					// if ((instance instanceof ContentPane) && !newNavState.content) {
+					
+					// 	var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
+					// 	instance.set('href', dest);
+					// }else if (newNavState){
+					// 	instance.set("state", newNavState);
+					// }
+				
+					// if (instance.resize){
+					// 	 instance.resize(); 
+					// }
 					return;
 				}
-				// console.log("set apiServer: ", _self.apiServer);
-				var opts = {region: "center", apiServer: _self.apiServer} 
 
-				if (newNavState.set){
-					opts[newNavState.set]=newNavState.value;
-				}
+				var opts = {region: "center", apiServer: _self.apiServer, state: newNavState} 
 
-				if (newNavState.hashParams){
-					opts["hashParams"]=newNavState.hashParams;
-				}
-
-				console.log("New Instance Opts: ", opts);
+				// console.log("New Instance Opts: ", opts);
 				instance = new ctor(opts);
-				console.log("new instance: ", instance);
+				// console.log("new instance: ", instance);
 				if (cur){ 
 					appContainer.removeChild(cur,true);
 				}
 
-				console.log("Add Instance: ", instance);
+				// console.log("Add Instance: ", instance);
 				appContainer.addChild(instance);	
 			});
 		},

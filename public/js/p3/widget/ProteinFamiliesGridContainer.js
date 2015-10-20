@@ -38,15 +38,19 @@ define([
 	return declare([GridContainer], {
 		gridCtor: ProteinFamiliesGrid,
 		facetFields: [],
+		enableFilterPanel: false,
+		_setQueryAttr: function(query){
+			this.inherited(arguments);
+		},
+		_setStateAttr: function(state){
+			this.inherited(arguments);
 
-		_setParamsAttr: function(params){
-			this.params = params;
-			if(this._started && this.grid){
-				//var q = [];
-				//if(params.genome_id != null) q.push('genome_id:' + params.genome_id);
-				params.genome_id = '83332.12'; // TODO: need to fix
-				this.grid.set("params", params);
+			//console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
+			if(this.grid){
+				this.grid.set('state', state);
 			}
+
+			this._set('state', state);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
@@ -92,54 +96,6 @@ define([
 				false
 			]
 
-		]),
-		getFilterPanel: function(){
-			return false;
-			if(!this.filterPanel){
-				this.filterPanel = new FacetFilterPanel({style: "color:#fff;", facets: {}});
-
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldValue, newValue){
-					on.emit(this.domNode, "UpdateHash", {
-						bubbles: true,
-						cancelable: true,
-						hashProperty: "filter",
-						value: newValue,
-						oldValue: oldValue
-					})
-				}))
-			}
-			this.filterPanel.clearFilters();
-			return this.filterPanel
-		},
-
-		filter: null,
-
-		_setFilterAttr: function(filter){
-			this.inherited(arguments);
-
-			if(filter){
-				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
-				var re = /(eq\(\w+\,\w+\))+/gi;
-				var innerRE = /eq\(\w+\,\w+\)/;
-				var matches = filter.match(re);
-				console.log("Matches: ", matches);
-				var selected = matches.map(function(match){
-					var parts = match.replace("eq(", "").replace(/\)$/, "").split(",");
-					return parts[0] + ":" + parts[1];
-				});
-
-				console.log("Selected: ", selected);
-				if(this.filterPanel){
-					this.filterPanel.set('selected', selected);
-				}
-			}
-		},
-		startup: function(){
-			if(this._started){
-				return;
-			}
-			var _self = this;
-			this.inherited(arguments);
-		}
+		])
 	});
 });

@@ -26,21 +26,153 @@ define([
     	return out;
     }
 
+    function parseQuery(filter){
+    	var _parsed = RQLParser.parse(filter)
+			// console.log("PARSED RQL:", parsed);
+		var _self=this;
+
+		var parsed = {
+			parsed: _parsed,
+			selected: [],
+			byCategory: {},
+			keywords: [],
+		}
+
+		function walk(term){
+			// console.log("Walk: ", term.name, " Args: ", term.args);
+			switch(term.name){
+				case "and":
+				case "or":
+					term.args.forEach(function(t){
+						walk(t);
+					})
+					break;
+				case "eq":
+					var f = decodeURIComponent(term.args[0]);
+					var v = decodeURIComponent(term.args[1]);
+					parsed.selected.push({field:f, value: v});
+					if (!parsed.byCategory[f]){
+						parsed.byCategory[f]=[v];
+					}else{
+						parsed.byCategory[f].push(v);
+					}
+					break;
+				case "keyword":
+					parsed.keywords.push(term.args[0]);
+					break;
+				default:
+					// console.log("Skipping Unused term: ", term.name, term.args);
+			}
+		}
+
+		walk(_parsed);
+
+		return parsed;
+
+    }
+
 
 	return declare([ContainerActionBar], {
-		style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;",
-		minSize: 55,
+		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
+		style: "height: 48px; margin:0px;padding:0px; overflow: hidden;",
+		minimized: true,
+		minSize: 48,
+		absoluteMinSize: 48,
 		query: "",
+		state: null,
 		filter:"",
 		facetFields:null,
 		dataModel: "",
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
+		state: null,
 		constructor: function(){
 			this._ffWidgets={};
 			this._ffValueButtons={};
 			this._filter={};
 			this.minimized=true;
+		},
+		_setStateAttr: function(state){
+			// console.log("FilterContainerActionBar setStateAttr: ",state);
+			state = state || {};
+			this._set("state", state)
+			// console.log("_setStateAttr query: ", state.search, this.query);
+			// console.log("_after _setStateAttr: ", state);
+		},
+		onSetState: function(attr,oldVal, state){
+				state.search = (state.search && (state.search.charAt(0)=="?"))?state.search.substr(1):(state.search||"");
+				// console.log("FilterContainerActionBar onSetState() ", state);
+				this._refresh();
+		},
+
+		_refresh: function(){
+			var parsedQuery={};
+			var parsedFilter={};
+			var state = this.get('state') || {};
+
+			// console.log("Refresh State: ", state);
+
+			if (state.search){
+				// console.log("state.search: ", state.search)
+				parsedQuery = parseQuery(state.search);
+
+			}
+
+			if (state && state.hashParams && state.hashParams.filter){
+				// console.log("state.hashParams.filter: ", state.hashParams.filter);
+				parsedFilter = parseQuery(state.hashParams.filter)
+				this._set("filter", state.hashParams.filter);
+			}
+			// console.log("Parsed Query: ", parsedQuery);
+			// console.log("Parsed Filter: ", parsedFilter);
+
+		
+			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length>0)?parsedFilter.keywords.join(" "):"");
+
+			this.set("query", state.search);
+
+			// console.log("parsedFilter.selected: ", parsedFilter.selected);
+
+
+			// for each of the facet widgets, get updated facet counts and update the content.
+			Object.keys(this._ffWidgets).forEach(function(category){
+				// console.log("Category: ", category)
+				this._updateFilteredCounts(category, parsedFilter.byCategory,parsedFilter.keywords||[])
+			},this)
+
+			// for each of the selected items in the filter, toggle the item on in  ffWidgets
+			if (parsedFilter && parsedFilter.selected){
+				parsedFilter.selected.forEach(function(sel){
+					// console.log("_setSelected FilterContaienrActionBar: ", selected)
+					if (this._ffWidgets[sel.field]){
+						// console.log("toggle field: ", sel.value, " on ", sel.field);
+						this._ffWidgets[sel.field].toggle(sel.value,true);	
+					}else{
+						console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
+						// this._ffWidgets[sel.field].toggle(sel.value,false);
+					}
+				},this)
+			}
+
+			// build/toggle the top level selected filter buttons
+			if (parsedFilter && parsedFilter.byCategory){
+				Object.keys(parsedFilter.byCategory).forEach(function(cat){
+					// console.log("Looking for ffValueButton[" + cat + "]");
+					if (!this._ffValueButtons[cat]){
+						// console.log("Create ffValueButton: ", cat, parsedFilter.byCategory[cat]);
+						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: parsedFilter.byCategory[cat]});
+						// console.log("ffv: ", ffv, " smallContentNode: ", this.smallContentNode);
+						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+						ffv.startup();
+					}else{
+						// console.log("Found ffValueButton. Set Selected");
+						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
+					}
+				},this)
+			}
+
+
+
 		},
 		postCreate: function(){
 			// this.inherited(arguments);
@@ -49,7 +181,7 @@ define([
 			this.inherited(arguments);
 			domConstruct.destroy(this.pathContainer);
 
-			this.smallContentNode = domConstruct.create("div", {"class": "smallContentNode", style: {height: "55px"}}, this.domNode);	
+			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView"}, this.domNode);	
 			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);		
 			domConstruct.place(this.containerNode, this.smallContentNode, "first");
 
@@ -65,34 +197,60 @@ define([
 					event.preventDefault();
 					// manually take care of the scroll
 					this.scrollLeft = Math.max(0, Math.min(maxX, this.scrollLeft + event.deltaX));
-					if (domClass.contains(evt.target, "FacetValue")) { 
+					if (domClass.contains(event.target, "FacetValue")) { 
 						this.scrollTop = 0; //Math.max(0, Math.min(maxY, this.scrollTop + event.deltaY));
 					}	   				
   				}
 			})
 
-			var keywordSearchBox = domConstruct.create("div", {style: { "float": "left", "margin-left":"5px","padding-top": "10px"}}, this.smallContentNode)
+			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
-			var kbot = domConstruct.create("div", {style: {"margin-top": "4px", "font-size": ".75em", "color":"#34698e"},innerHTML: "KEYWORD FILTER"}, keywordSearchBox)
+			var kbot = domConstruct.create("div", {style: {"margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "right"}}, keywordSearchBox)
+			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {"float": "left"}}, kbot);
+			var clear = domConstruct.create("span", {style: {"float": "right"},innerHTML: "CLEAR"}, kbot)
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){
 				// console.log("Keyword Search Change", arguments)
 				// console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
-				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: encodeURIComponent(val)});
+				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
+				// console.log("WOULD EMIT: keywords : ", val);
+				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: val});
 			}));
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
+			this.watch("state", lang.hitch(this, "onSetState"));
 
-
+			// this.watch("filter", lang.hitch(this,function(attr,oldVal,filter){
+			// 	console.log("Filter Updated: ", filter);
+			// }))
 			// this.keywordSearch.startup();
 
-			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
-					// console.log("UpdateFilterCategory EVT: ", evt);
+
+		 on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
+
+			// console.log("UpdateFilterCategory EVT: ", evt);
 
 					if (evt.category == "keywords"){
-						this._filterKeywords = evt.value;
+							if (evt.value && (evt.value.charAt(0)=='"')){
+								this._filterKeywords = [evt.value]
+							}else{
+								var val = evt.value.split(" ").map(function(x){ return x; })
+								this._filterKeywords = val;
+							}
 					}else{
-						this._filter[evt.category] = evt.filter;
+						if (evt.filter){
+							this._filter[evt.category] = evt.filter;
+						}else{
+							delete this._filter[evt.category];
+							if (this._ffWidgets[evt.category]){
+								// console.log("toggle field: ", sel.value, " on ", sel.field);
+								this._ffWidgets[evt.category].clearSelection();
+								if (this._ffValueButtons[evt.category])	{
+									this._ffValueButtons[evt.category].destroy();
+									delete this._ffValueButtons[evt.category];
+								}
+							}
+						}
 					}
 
 					var cats = Object.keys(this._filter).filter(function(cat){
@@ -106,89 +264,66 @@ define([
 					// 			delete this._filter[key];
 					// 		}
 					// },this)
+					// console.log("this._filterKeywords: ", this._filterKeywords, typeof this._filterKeywords);
+					var fkws = []
+					if (this._filterKeywords){
+						this._filterKeywords.forEach(function(fk){
+							if (fk){
+								fkws.push('keyword(' + encodeURIComponent(fk) + ")")
+							}
+						},this);
+					}
+
+					if (fkws.length<1){
+						fkws=false;
+					}else if (fkws.length==1){
+						fkws = fkws[0];
+					}else{
+						fkws = "and(" + fkws.join(",") + ")"
+					}
+
+					var filter = "";
 
 					if (cats.length < 1){
-						console.log("UpdateFilterCategory Set Filter to empty")
-						if (this._filterKeywords){
-							this.set('filter','keyword(' + encodeURIComponent(this._filterKeywords) + ')')
-						}else{
-							this.set('filter', "");
+						// console.log("UpdateFilterCategory Se+t Filter to empty. fkws: ", fkws)
+						if (fkws){
+							filter=fkws
 						}
 					}else if (cats.length==1){
-						console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]], this._filterKeywords)
-						if (this._filterKeywords){
-							console.log("Build Filter with Keywords")
-							console.log("Filter: ","and("+ this._filter[cats[0]] + ",keyword(" + this._filterKeywords + "))")
-							this.set("filter", "and("+ this._filter[cats[0]] + ",keyword(" + this._filterKeywords + "))" )
+						// console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]], fkws)
+						if (fkws){
+							// console.log("Build Filter with Keywords")
+							// console.log("Filter: ","and("+ this._filter[cats[0]] + "," + fkws + ")")
+							filter="and("+ this._filter[cats[0]] + "," + fkws + ")"
+						}else{
+							filter=this._filter[cats[0]];
 						}
-						this.set("filter", this._filter[cats[0]]);
 					}else{
 						// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 						var inner = cats.map(function(c){ return this._filter[c] },this).join(",") 
 						if (this._filterKeywords){
-							this.set("filter", "and(" + inner + "," + this._filterKeywords + ")")
+							filter="and(" + inner + "," + fkws + ")"
 						}else{
-							this.set("filter", "and(" + inner +")"  )
+							filter="and(" + inner +")"  
 						}
 					}
 
+					// console.log("Set Filter: ", filter)
+					this.set("filter", filter);
+
 			}));
 
-
 		},
+
 		_setFilterAttr: function(filter){
-			// console.log(this.id, " FilterContainerActionBar setFilter.  Current: '" + this.filter + "'  New: '" + filter + "'");
-
-			if (filter==this.filter){ return; }
-			this._set("filter",filter);
-			// console.log("POST _set filter trigger");
-			var parsed = RQLParser.parse(filter)
-			// console.log("PARSED RQL:", parsed);
-			var _self=this;
-
-			var selected = [];
-			var byCategory = {};
-
-
-			function walk(term){
-				switch(term.name){
-					case "and":
-					case "or":
-						term.args.forEach(function(t){
-							walk(t);
-						})
-						break;
-					case "eq":
-						var f = decodeURIComponent(term.args[0]);
-						var v = decodeURIComponent(term.args[1]);
-						selected.push({field:f, value: v});
-						if (!byCategory[f]){
-							byCategory[f]=[v];
-						}else{
-							byCategory[f].push(v);
-						}
-						break;
-					default:
-						// console.log("Skipping Unused term: ", term.name, term.args);
-				}
-			}
-
-			walk(parsed);
-
-			// console.log("filter parsing completed, call setSelected from setFilter", filter, parsed, selected)
-
-			//this.updateFacets(selected);
-
-			Object.keys(this._ffWidgets).forEach(function(category){
-				this._updateFilteredCounts(category, byCategory)
-			},this);
-
-			this.set("selected", selected);
+			// console.log("FilterContainerActionBar setFilterAttr: ", filter, " Cur: ", this.filter);
+			this._set("filter",filter)
 		},
-
-		_updateFilteredCounts: function(category, selectionMap){
-			// console.log("_updateFilteredCounts for: ", this.filter, "query: ", this.query);
+		
+		_updateFilteredCounts: function(category, selectionMap, keywords){
+			// console.log("_updateFilteredCounts for: ", category,selectionMap,"keywords: ", keywords, " Filter: ", (this.state && this.state.hashParams)?this.state.hashParams.filter:"None.", "query: ", this.query);
 			// console.log("\tcategory: ", category);
+			selectionMap=selectionMap||{};
 			var cats = Object.keys(selectionMap);
 			// console.log("Selection Map Cats: ", cats);
 			var w = this._ffWidgets[category];
@@ -201,13 +336,17 @@ define([
 			// console.log("scats: ", scats)
 			var ffilter = [];
 
+			if (keywords){
+				keywords.forEach(function(k){ ffilter.push("keyword(" + encodeURIComponent(k) + ")") });
+			}
+
 			scats.forEach(function(cat){
 				if (selectionMap[cat]){
 					if (selectionMap[cat].length==1){
 						ffilter.push("eq("+encodeURIComponent(cat) + "," + encodeURIComponent(selectionMap[cat][0]) + ")");
 					}else if (selectionMap[cat].length>1){
 						ffilter.push("or(" + selectionMap[cat].map(function(c){
-							return "eq("+encodeURIComponent(category) + "," + encodeURIComponent(c) + ")"
+							return "eq("+encodeURIComponent(cat) + "," + encodeURIComponent(c) + ")"
 						}).join(",") + ")")
 					}
 				}
@@ -220,7 +359,7 @@ define([
 			}else{
 				ffilter = "and(" + ffilter.join(",") + ")";
 			}
-	
+			// console.log("ffilter final: ", ffilter)
 			var q = []
 			// console.log("this.query: ", this.query);
 
@@ -233,9 +372,9 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-
+			// console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
-				// console.log("Facet Results: ",r);
+				 // console.log("Facet Results: ",r);
 				w.set("data", r[category]);
 			}))
 			// console.log(" Facet Query: ", ffilter)
@@ -257,6 +396,7 @@ define([
 				},this);
 				//clear selected facets;
 			}else{
+				var byCat = {};
 
 				selected.forEach(function(sel){
 					// console.log("_setSelected FilterContaienrActionBar: ", selected)
@@ -264,28 +404,41 @@ define([
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value,true);	
 					}
-
+					if (!byCat[sel.field]){
+						byCat[sel.field]=[sel.value]
+					}else{
+						byCat[sel.field].push(sel.value);
+					}
 					// console.log("Check for ValueButton: ", this._ffValueButtons[sel.field + ":" + sel.value])
-					if (!this._ffValueButtons[sel.field + ":" + sel.value]){
-						// console.log("Did Not Find Widget: " + sel.field + ":" + sel.value)
-						var ffv = this._ffValueButtons[sel.field + ":" + sel.value] = new FilteredValueButton({category: sel.field, value: sel.value});
+					// if (!this._ffValueButtons[sel.field + ":" + sel.value]){
+					// 	// console.log("Did Not Find Widget: " + sel.field + ":" + sel.value)
+					// 	var ffv = this._ffValueButtons[sel.field + ":" + sel.value] = new FilteredValueButton({category: sel.field, value: sel.value});
+					// 	domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+					// }
+				},this)
+
+				Object.keys(byCat).forEach(function(cat){
+					if (!this._ffValueButtons[cat]){
+						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: byCat[cat]});
 						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+					}else{
+						this._ffValueButtons[cat].set('selected', byCat[cat])
 					}
 				},this)
 
-				var msel = selected.map(function(sel){
-					return sel.field + ":" + sel.value;
-				},this)
+				// var msel = selected.map(function(sel){
+				// 	return sel.field + ":" + sel.value;
+				// },this)
 
-				Object.keys(this._ffValueButtons).filter(function(b){
-					if (msel.indexOf(b)>=0){
-						return false;
-					}
-					return true;
-				}).forEach(function(b){
-					this._ffValueButtons[b].destroy();
-					delete this._ffValueButtons[b];
-				},this);
+				// Object.keys(this._ffValueButtons).filter(function(b){
+				// 	if (msel.indexOf(b)>=0){
+				// 		return false;
+				// 	}
+				// 	return true;
+				// }).forEach(function(b){
+				// 	this._ffValueButtons[b].destroy();
+				// 	delete this._ffValueButtons[b];
+				// },this);
 			}
 		},
 		_setFacetFieldsAttr: function(fields){
@@ -311,63 +464,27 @@ define([
 			domConstruct.place(f.domNode, this.fullViewContentNode,"last")
 		},
 
-		_setBaseSelectionAttr: function(sel){
-			// console.log("set base selection: ", sel);
-			this._set("baseSelection", sel);
-
-		},
 		_setQueryAttr: function(query){
-			// query = (query && (query.charAt(0)=="?"))?query.substr(1):query;
-			// console.log("FilterContainerActionBar _setQueryAttr: ", query)
-			this.query = query||"";
-			var parsed = RQLParser.parse((query && query.charAt && (query.charAt(0)=="?"))?query.substr(1):query)
-			// console.log("PARSED RQL:", parsed);
-			var _self=this;
-
-			var selected = [];
-
-			function walk(term){
-				switch(term.name){
-					case "and":
-					case "or":
-						term.args.forEach(function(t){
-							walk(t);
-						})
-						break;
-					case "eq":
-						selected.push({field: term.args[0], value: term.args[1]});
-						break;
-					default:
-						// console.log("Skipping Unused term: ", term.name, term.args);
-				}
-			}
-
-			walk(parsed);
-			// console.log("selected: ", selected);
-
-			// console.log("filter parsing completed, call setSelected from setFilter", filter, parsed, selected)
-
-			//this.updateFacets(selected);
-
-		
-			this.getFacets(this.query).then(lang.hitch(this, function(facets){
+			// console.log("_setQueryAttr: ", query)
+			this._set("query", query)
+			this.getFacets(query).then(lang.hitch(this, function(facets){
 				// console.log("_setQuery got facets: ", facets)
 				if (!facets) { console.log("No Facets Returned"); return; }
 
 				Object.keys(facets).forEach(function(cat){
 					// console.log("Facet Category: ", cat);
 					if (this._ffWidgets[cat]){
-						// console.log(" Set Facet Widget Data")
-						this._ffWidgets[cat].set('data', facets[cat]);
+						// console.log("this.state: ", this.state);
+						var selected = this.state.selected;
+						 // console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+						this._ffWidgets[cat].set('data', facets[cat], selected);
 					}else{
-						// console.log("Missing ffWidget for : ", cat);
+						 // console.log("Missing ffWidget for : ", cat);
 					}
 				},this);
 
 			}));
 
-			this.set("baseSelection", selected);
-		
 		},
 
 		getFacets: function(query, facetFields){
@@ -428,6 +545,7 @@ define([
 			this.set("facetFields",this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
+			this.onSetState('state', "", this.state);
 		},
 		resize: function(changeSize, resultSize){
 			        var node = this.domNode;
@@ -449,11 +567,21 @@ define([
 			                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
 			        }
 
+			        if (this.smallContentNode){
+				        var headerMB = domGeometry.getMarginBox(this.smallContentNode);
+				        // console.log("Header MB: ", headerMB);
+				        this.minSize = Math.max(headerMB.h, this.absoluteMinSize);
+				     }else{
+				     	this.minSize = this.absoluteMinSize;
+				     }
+
+				     // console.log("THIS RESIZE: ", this);
+	     	        // console.log("mb.h: ", mb.h, " MinSize: ", this.minSize);
 			        if (mb.h && mb.h>this.minSize){
 			        	domGeometry.setMarginBox(this.fullViewNode, {w: mb.w, h: mb.h-this.minSize})
 			        }
 
-			        if (mb.h<=62){
+			        if (mb.h<=Math.max(this.minSize, this.absoluteMinSize)){
 			        	this.minimized=true;
 			        }else{
 			        	this.minimized=false;

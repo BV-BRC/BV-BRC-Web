@@ -38,17 +38,12 @@ define([
 	return declare([GridContainer], {
 		gridCtor: PathwaysGrid,
 		facetFields: ["annotation", "feature_type"],
+		enableFilterPanel: false,
+		apiServer: window.App.dataServiceURL,
 
-		_setParamsAttr: function(params){
-			this.params = params;
-			if(this._started && this.grid){
-				var q = [];
-				if(params.genome_id != null) q.push('genome_id:' + params.genome_id);
-				if(params.annotation != null) q.push('annotation:' + params.annotation);
-				if(params.pathway_id != null) q.push('pathway_id:' + prarms.pathway_id);
-
-				this.grid.set("params", params);
-			}
+		_setQueryAttr: function(query){
+			console.log("Pathways Grid Container Query Override: ", query);
+			this.inherited(arguments);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
@@ -95,61 +90,18 @@ define([
 			]
 
 		]),
-		getFilterPanel: function(){
-			return false;
-			if(!this.filterPanel){
-				this.filterPanel = new FacetFilterPanel({style: "color:#fff;", facets: {}});
 
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldValue, newValue){
-					on.emit(this.domNode, "UpdateHash", {
-						bubbles: true,
-						cancelable: true,
-						hashProperty: "filter",
-						value: newValue,
-						oldValue: oldValue
-					})
-				}))
-			}
-			this.filterPanel.clearFilters();
-			return this.filterPanel
-		},
-
-		filter: null,
-
-		_setFilterAttr: function(filter){
+		_setStateAttr: function(state){
 			this.inherited(arguments);
-
-			if(filter){
-				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
-				var re = /(eq\(\w+\,\w+\))+/gi;
-				var innerRE = /eq\(\w+\,\w+\)/;
-				var matches = filter.match(re);
-				console.log("Matches: ", matches);
-				var selected = matches.map(function(match){
-					var parts = match.replace("eq(", "").replace(/\)$/, "").split(",");
-					return parts[0] + ":" + parts[1];
-				});
-
-				console.log("Selected: ", selected);
-				if(this.filterPanel){
-					this.filterPanel.set('selected', selected);
-				}
+			console.log("PathwaysGridContainer _setStateAttr: ", state);
+			if(this.grid){
+				console.log("   call set state on this.grid: ", this.grid);
+				this.grid.set('state', state);
+			}else{
+				console.log("No Grid Yet (PathwaysGridContainer)");
 			}
-		},
-		startup: function(){
-			if(this._started){
-				return;
-			}
-			var _self = this;
-			this.inherited(arguments);
 
-			/*
-			this.grid.store.on("facet_counts", function(evt){
-				if (_self.filterPanel){
-					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
-				}
-			})
-			*/
+			this._set("state", state);
 		}
 	});
 });

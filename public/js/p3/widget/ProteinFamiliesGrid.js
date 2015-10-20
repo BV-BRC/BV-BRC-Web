@@ -11,10 +11,10 @@ define([
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
-		apiServer: window.App.dataAPI,
+		apiServer: window.App.dataServiceURL,
 		store: null,
 		dataModel: "genome_feature",
-		primaryKey: "id",
+		primaryKey: "feature_id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
@@ -26,6 +26,12 @@ define([
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
 			aa_length_std: {label: 'Std', field: 'aa_length_std'}
+		},
+		constructor: function(options){
+			//console.log("ProteinFamiliesGrid Ctor: ", options);
+			if(options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
 		},
 		startup: function(){
 			var _self = this;
@@ -65,7 +71,6 @@ define([
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
-			var _self = this;
 
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
@@ -77,38 +82,27 @@ define([
 			this._started = true;
 		},
 
-		query: "",
-		params: null,
-		apiServer: window.App.dataServiceURL,
-		_setParams: function(params){
-			console.log("SET PARAMS for ProteinFamiliesGrid: ", params, window);
-			this.params = params;
-			this.set('store', this.createStore(this.apiServer || window.App.dataServiceURL, this.apiToken || window.App.authorizationToken, params));
-			this.refresh();
+		state: null,
+		postCreate: function(){
+			this.inherited(arguments);
 		},
-		_setApiServer: function(server, token){
-			console.log("_setapiServerAttr: ", server);
+		_setApiServer: function(server){
 			this.apiServer = server;
-			var t = token || this.apiToken || "";
-
-			this.set('store', this.createStore(server, token || window.App.authorizationToken, this.params));
-			this.refresh();
 		},
-
-		createStore: function(server, token, params){
-			var self = this;
-			if(!server){
-				console.log("No API Server yet");
-				return;
+		_setState: function(state){
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set('state', state);
 			}
-			if(!params || (params && !params.genome_id)){
-				console.log("No genome_id yet");
-				return;
-			}
-			console.log("Create Store for ProteinFamilies at ", server, " TOKEN: ", token, " ProteinFamiliesGrid for genome_id: ", params.genome_id);
+		},
+		createStore: function(server, token, state){
 
-			var store = new Store({token: token, apiServer: server, genome_id: params.genome_id});
-			return store;
+			return new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: state || this.state
+			});
 		}
 	});
 });

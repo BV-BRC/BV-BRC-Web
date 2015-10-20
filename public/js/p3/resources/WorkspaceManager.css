@@ -9,7 +9,7 @@
 }
 
 .BrowserHeader {
-	padding:2px;
+	padding:0px;
 	vertical-align:bottom;
 }
 
@@ -263,13 +263,15 @@ th.dgrid-cell.wsItemType {
 	width: 44px;
 	border-radius: 4px;
 	border: 1px solid #76a72d;
-	margin:auto;
 }
 
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;
-	padding-top:5px;
+	padding-top:0px;
+	margin-top: 4px;
+	vertical-align: bottom;
+	bottom: 2px;
 }
 
 .ActionButtonWrapper .ActionButton.fa {
@@ -309,11 +311,12 @@ th.dgrid-cell.wsItemType {
 }
 
 .BrowserHeader .ActionButtonWrapper {
-        margin-top: 2px;
-        margin-left: 4px;
+        margin-top: -3px;
+        margin-left: 2px;
 	color: #345698e;
 	border: 1px solid #fff;
 	width: 58px;
+	vertical-align: bottom;
 }
 
 

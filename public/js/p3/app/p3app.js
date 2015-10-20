@@ -130,42 +130,53 @@ define([
 				_self.navigate(newState);
 			});
 
+			function getState(params,path){
+				var parser = document.createElement("a");
+				parser.href = path;
+				var newState = {}
+
+
+				newState.href=path;
+				newState.prev = params.oldPath;
+
+				if (parser.search){
+					newState.search = (parser.search.charAt(0)=="?")?parser.search.substr(1):parser.search
+				}else{
+					newState.search="";
+				}
+				newState.hash = parser.hash;
+				newState.pathname = parser.pathname
+
+				if (newState.hash){
+					newState.hash = (newState.hash.charAt(0)=="#")?newState.hash.substr(1):newState.hash;
+					// console.log("PARSE HASH: ", newState.hash)
+					newState.hashParams=newState.hashParams||{};
+
+					var hps = newState.hash.split("&")
+					hps.forEach(function(t){
+						var tup = t.split("=")
+						if (tup[0] && tup[1]){
+							newState.hashParams[tup[0]]=tup[1];
+						}
+					})
+					// console.log("newState.hashParams: ", newState.hashParams)
+				}
+				return newState;
+			}
+
 			Router.register("\/view(\/.*)", function(params, path){
-				// console.log("view URL Callback", arguments,location);
-				
-				var parts = path.split("/")
+				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
+				var newState = getState(params,path);
+
+				var parts = newState.pathname.split("/")
 				parts.shift();
 				var type = parts.shift();
-				if (parts.length>0){
-					viewerParams = parts.join("/");
-				}else{
-					viewerParams="";
-				}
-				console.log("aParts:", parts, type, viewerParams)
-
-				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
-				}
-		
-				var hashParams={}
-
-				var hps = location.hash.substr(1).split("&")
-				hps.forEach(function(t){
-					var tup = t.split("=")
-					if (tup[0] && tup[1]){
-						hashParams[tup[0]]=tup[1];
-					}
-				})
-				newState.hashParams = hashParams;
-				console.log("newState hashParams: ", hashParams)
-				console.log("bParts:", parts, type, path)
+	
 				newState.widgetClass="p3/widget/viewer/" + type;
-				newState.value=viewerParams.replace(location.hash,"");
-				newState.set= "params";
-				console.log("Navigate to viewer ", newState);
+				console.log("'/view/' New Navigation State: ", newState);
 				_self.navigate(newState);
 			});
+
 
 			Router.register("\/app(\/.*)", function(params, path){
 				// console.log("view URL Callback", arguments);

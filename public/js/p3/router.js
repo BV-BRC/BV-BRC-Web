@@ -52,8 +52,8 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 			console.log("go(" + href + ")", state)
 			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 			if (href!=this._currentPath){
+				// console.log("pushState")
 				window.history.pushState(state || {},"route", href);
-				this.currentPath = href;
 				this._handlePathChange(href, state||{})
 			}else if (state){
 				window.history.replaceState(state || {});
@@ -61,7 +61,7 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 		},
 
 		replaceState: function(state){
-			console.log("Router.replaceState()",state)
+			// console.log("Router.replaceState()",state)
 			window.history.replaceState(state);
 		},
 
@@ -148,10 +148,10 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 
 			for(i=0, li=routes.length; i<li; ++i){
 				routeObj = routes[i];
-				// console.log("Route Obj route:", routeObj.route);
+				// console.log("Checking Route: ", routeObj.route);
 				result = routeObj.route.exec(newPath);
-				// console.log("Result from route: ", result)
 				if(result){
+					// console.log( "   Found Route: ", routeObj.parameterNames);
 					if(routeObj.parameterNames){
 						parameterNames = routeObj.parameterNames;
 						params = {};
