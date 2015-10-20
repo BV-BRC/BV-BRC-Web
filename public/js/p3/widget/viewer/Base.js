@@ -63,10 +63,11 @@ define([
 				this.state.hashParams = {
 					view_tab: evt.value
 				}
-			}else{
-					this.state.hashParams[evt.hashProperty]=evt.value;
+			}	
+			if (evt.hashProperty){
+				this.state.hashParams[evt.hashProperty]=evt.value;
 			}
-
+			
 			l= window.location.pathname + window.location.search + "#" + Object.keys(this.state.hashParams).map(function(key){
 				if (key && this.state.hashParams[key]){
 					return key + "=" + this.state.hashParams[key]

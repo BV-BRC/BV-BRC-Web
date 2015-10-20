@@ -61,7 +61,7 @@ define([
 				button.set('checked', true);
 			}else if (this._currentChild){
                 console.log("_setPrevState[" + this._currentChild.id + "] ", this._currentChild.state);
-                this._prevState[this._currentChild.id] = {};
+                this._prevState[this._currentChild.id] = {view_tab: this._currentChild.id.replace(this.containerId + "_","")};
                 if (this._currentChild.state && this._currentChild.state.hashParams){
                     Object.keys(this._currentChild.state.hashParams).filter(function(x){
                         console.log(" Filter Key: ", x);
