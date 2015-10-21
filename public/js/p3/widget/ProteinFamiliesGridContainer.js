@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./PathwaysGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
+	"dijit/TooltipDialog",
 	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
-			PathwaysGrid, popup, Topic,
-			TooltipDialog, FacetFilterPanel,
+			ProteinFamiliesGrid, popup, Topic,
+			TooltipDialog,
 			lang){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
@@ -36,18 +36,21 @@ define([
 	});
 
 	return declare([GridContainer], {
-		gridCtor: PathwaysGrid,
-		facetFields: ["annotation", "feature_type"],
+		gridCtor: ProteinFamiliesGrid,
+		facetFields: [],
 		enableFilterPanel: false,
-		apiServer: window.App.dataServiceURL,
-
 		_setQueryAttr: function(query){
-			//console.log("Pathways Grid Container Query Override: ", query);
-			//this.inherited(arguments);
+			//block default query handler for now.
 		},
+		_setStateAttr: function(state){
+			this.inherited(arguments);
 
-		buildQuery: function(){
-			return "";
+			//console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
+			if(this.grid){
+				this.grid.set('state', state);
+			}
+
+			this._set('state', state);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
@@ -93,19 +96,6 @@ define([
 				false
 			]
 
-		]),
-
-		_setStateAttr: function(state){
-			this.inherited(arguments);
-			console.log("PathwaysGridContainer _setStateAttr: ", state);
-			if(this.grid){
-				console.log("   call set state on this.grid: ", this.grid);
-				this.grid.set('state', state);
-			}else{
-				console.log("No Grid Yet (PathwaysGridContainer)");
-			}
-
-			this._set("state", state);
-		}
+		])
 	});
 });

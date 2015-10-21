@@ -19,44 +19,79 @@ define([
 		params: null,
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		_setParamsAttr: function(params){
-			this.set("taxon_id", params);	
+		taxonomy: null,
+
+		postCreate: function(){
+			this.inherited(arguments);
+			domConstruct.empty(this.queryNode);
+
+			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
 		},
 		_setTaxon_idAttr: function(id){
 			this.taxon_id = id;
+
+			var state = this.state || {};
+
+			state.taxon_id = id;
+
 			xhr.get(this.apiServiceUrl + "/taxonomy/" + id,{
 				headers: {
 					accept: "application/json"
 				},
 				handleAs: "json"	
 			}).then(lang.hitch(this,function(taxonomy) {
-				this.taxonomy=taxonomy;
+				this.set("taxonomy", taxonomy)
 				console.log("Taxonomy: ", taxonomy);
-				this.set("query","?eq(taxon_lineage_ids," + id + ")"); 
+				console.log("Set query for taxonomy genome list");
+				// this.set("query","?eq(taxon_lineage_ids," + id + ")"); 
 			}));
-		},
-		_setQueryAttr: function(query){
-			this.query = query;
-			if (this.viewer){
-				this.viewer.set("query", query);
-			}
-		},
-		refresh: function(){
-			this.viewHeader.set("content", this.taxonomy.lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-//			this.features.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
-//			this.specialtyGenes.set("query", "?eq(genome_id," + this.genome.genome_id + ")");	
-		},
-		postCreate: function(){
-			//if (this._started) {return;}
-			this.inherited(arguments);
+
 		},
 
-		startup: function(){
-			if (this._started) { return; }
-			this.inherited(arguments);
-			if (this.genome) {
-				this.refresh();
+		onSetTaxonomy: function(attr,oldVal, taxonomy){
+			console.log("onSetTaxonomy: ", taxonomy);
+			this.queryNode.innerHTML=this.buildHeaderContent(taxonomy);
+		},
+		onSetQuery: function(attr,oldVal,newVal){
+			//prevent default action
+		},		
+		onSetState: function(attr, oldVal, state){
+
+			if (!state){
+				throw Error("No State Set");
+				return;
 			}
+
+			var parts = state.pathname.split("/");
+
+			this.set("taxon_id", parts[parts.length - 1]);
+
+			console.log("GenomeList onSetState()");
+			this.inherited(arguments);
+			this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")" );
+			console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var activeTab = this[active];
+			switch(active){
+				case "genomes":
+					activeTab.set("state", lang.mixin({},this.state,{search:"eq(taxon_lineage_ids," + this.taxon_id + ")"  }));
+					break;
+			}
+		},
+
+		buildHeaderContent: function(taxon){
+			var taxon_lineage_names = taxon.lineage_names.slice(1);
+			var taxon_lineage_ids = taxon.lineage_ids.slice(1)
+			var out = taxon_lineage_names.map(function(id,idx){
+				console.log("Lineage Name: ", id, " id: ", taxon_lineage_ids[idx]);
+
+				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+			})
+			return out.join("&nbsp;&raquo;&nbsp;");
+		},
+
+		createOverviewPanel: function(){
+			return new ContentPane({content: "Taxonomy Overview", title: "Overview",id: this.viewer.id + "_" + "overview"});
 		}
 	});
 });

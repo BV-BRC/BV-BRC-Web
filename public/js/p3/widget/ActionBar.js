@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","./Button","dojo/dom-construct",
-	"dijit/Tooltip"
+	"dijit/Tooltip","dojo/dom"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Button,domConstruct,
-	Tooltip
+	Tooltip,dom
 ){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
@@ -106,6 +106,7 @@ define([
 			this.inherited(arguments);
 			var _self=this;
 			this.containerNode=this.domNode;
+			dom.setSelectable(this.domNode, false)
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
 				//console.log("evt.target: ", evt.target);
 				var target;

@@ -50,3 +50,6 @@
 [submodule "public/js/lazyload"]
 	path = public/js/lazyload
 	url = https://github.com/rbuels/lazyload.git
+[submodule "public/js/raphael"]
+	path = public/js/raphael
+	url = https://github.com/DmitryBaranovskiy/raphael.git

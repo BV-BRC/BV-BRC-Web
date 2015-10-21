@@ -19,12 +19,12 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
+		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection')
 		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery );
+		// console.log("selection: ", selection);
+		// console.log("DownloadQuery: ", dataType, currentQuery );
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
 		popup.close(downloadTT);
 	});
@@ -33,25 +33,12 @@ define([
 		gridCtor: FeatureGrid,
 		facetFields: ["annotation","feature_type"],
 		filter: "",
+		maxGenomeCount: 5000,
+		dataModel: "genome_feature",
 		getFilterPanel: function(opts){
 
-			var fp = new FacetFilterPanel({dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter, style: "width: 100%;height: 100px;margin:0px;margin-top:1px;margin-bottom:-5px;padding:4px;",splitter:true, region: "top", layoutPriority: 2})
-			fp.watch("filter", lang.hitch(this, function(attr,oldVal,newVal){
-				console.log("setFilter Watch() callback", newVal);
-				on.emit(this.domNode, "UpdateHash", {bubbles: true, cancelable: true, hashProperty: "filter", value: newVal, oldValue: oldVal} )
-			}));
-			return fp;	
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -64,57 +51,28 @@ define([
 					});
 				},
 				true
+			],
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				function(selection){	
+					on.emit(this.domNode,"ToggleFilters",{});
+				},
+				true
 			]
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{label: "FASTA",ignoreDataType:true, multiple: true,validTypes:["*"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT},
+				"ViewFeature",
+				"fa icon-eye fa-2x",
+				{label: "OPEN",ignoreDataType:true, multiple: false,validTypes:["*"], tooltip: "Open Genome View"},
 				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
+					console.log("Selected Genome: ", selection);
+					Topic.publish("/navigate", {"href": "/view/Feature/" + selection[0].feature_id});
 				},
 				false
 			]
-
-		]),
-
-		_setFilterAttr: function(filter){
-			console.log("FeatureGridContainer Filter: ", filter);
-			this.inherited(arguments);
-
-			if (filter){
-				console.log("Parsing hashParams Filter: ", this.hashParams.filter);
-				var re = /(eq\(\w+\,\w+\))+/gi;
-				var innerRE = /eq\(\w+\,\w+\)/
-				var matches = filter.match(re);
-				console.log("Matches: ", matches);
-				var selected = matches.map(function(match){
-					var parts = match.replace("eq(","").replace(/\)$/,"").split(",");
-					return parts[0] +":"+ parts[1];
-				})
-
-				console.log("Selected: ", selected);
-				if (this.filterPanel){
-						this.filterPanel.set('selected', selected);
-				}
-			}
-		},
-		onFirstView: function(){
-			if (this._firstView) { return; }			
-			var _self=this;
-			this.inherited(arguments);
-
-			this.grid.store.on("facet_counts", function(evt){
-				if (_self.filterPanel){
-					_self.filterPanel.set("facets", evt.facet_counts.facet_fields);
-					console.log("FeatureGridContainer Facets: ", evt.facet_counts);
-				}
-			})	
-		}
+		])
 	});
 });
