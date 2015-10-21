@@ -22,12 +22,17 @@ define([
 			document_type: "type",
 			"organism_name": "name"
 		},
+		_setContainerWidgetAttr: function(val){
+			console.log("Set Container Widget: ", val);
+			this._set("containerWidget", val);
+		},
 		startup: function(){
 			var _self=this;
 			//if (this._started) { return; }
 			var currentIcon;
 
 			this.watch("containerWidget", lang.hitch(this, function(prop,oldVal,containerWidget){
+			
 				console.log("set containerWidget", containerWidget);
 
 				if (oldVal && oldVal.containerType){
@@ -67,7 +72,7 @@ define([
 			this.watch("item", lang.hitch(this,function(prop,oldVal,item){
 				console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon,currentIcon)
-
+				console.log("Container Widget: ", this.containerWidget);
 				if (item.type) {
 					domClass.add(this.domNode, "workspaceItem");
 					domClass.remove(this.domNode, "dataItem");
@@ -108,7 +113,8 @@ define([
 							domClass.add(_self.typeIcon,"fa fa-file fa-2x")
 							currentIcon="fa fa-file fa-2x";
 							break;
-					}
+					} 
+					
 					//silence all special help divs
 					var specialHelp=query(".specialHelp");
 					specialHelp.forEach(function(item){
@@ -176,6 +182,13 @@ define([
 						//	},this);
 						}
 					},this);
+				} else if (this.containerWidget && this.containerWidget.containerType){
+					domClass.remove(this.domNode, "workspaceItem");
+					domClass.add(this.domNode, "dataItem");
+
+					var node = DataItemFormatter(item,this.containerWidget.containerType)
+					domConstruct.empty(this.itemBody);
+					domConstruct.place(node, this.itemBody, "first");
 				} else{
 
 					domClass.remove(this.domNode, "workspaceItem");
