@@ -14,7 +14,11 @@ define([
 		startup: function(){
 			var _self=this;
 			request.get(this.newickURL).then(function(newick){
-				_self.canvas = new Smits.PhyloCanvas({newick:newick}, _self.canvasNode,800,2000);
+				Smits.PhyloCanvas.Render.Parameters.Rectangular.alignRight = true;
+				Smits.PhyloCanvas.Render.Parameters.Rectangular.bufferX = 400;
+				Smits.PhyloCanvas.Render.Parameters.Circular.bufferRadius = .75;
+				Smits.PhyloCanvas.Render.Parameters.Circular.bufferAngle = 0;
+				_self.canvas = new Smits.PhyloCanvas({newick:newick}, _self.canvasNode,1500,2500);
 			})
 
 		}
