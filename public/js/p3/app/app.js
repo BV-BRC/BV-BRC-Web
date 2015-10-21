@@ -284,7 +284,13 @@ define([
 				var cur = _self.getCurrentContainer();	
 				if (cur instanceof ctor) {
 					instance = cur; 
+					console.log("newNavState: ", newNavState);
+
 					instance.set('state', newNavState);
+
+					if (newNavState.set){
+						instance.set(newNavState.set, newNavState.value);
+					}
 					if (instance.resize){
 						instance.resize();
 					}
@@ -303,7 +309,9 @@ define([
 				}
 
 				var opts = {region: "center", apiServer: _self.apiServer, state: newNavState} 
-
+				if (newNavState.set){
+					opts[newNavState.set]=newNavState.value;
+				}
 				// console.log("New Instance Opts: ", opts);
 				instance = new ctor(opts);
 				// console.log("new instance: ", instance);
