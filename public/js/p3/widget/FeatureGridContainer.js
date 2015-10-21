@@ -64,15 +64,12 @@ define([
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{label: "FASTA",ignoreDataType:true, multiple: true,validTypes:["*"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT},
+				"ViewFeature",
+				"fa icon-eye fa-2x",
+				{label: "OPEN",ignoreDataType:true, multiple: false,validTypes:["*"], tooltip: "Open Genome View"},
 				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
+					console.log("Selected Genome: ", selection);
+					Topic.publish("/navigate", {"href": "/view/Feature/" + selection[0].feature_id});
 				},
 				false
 			]
