@@ -5,7 +5,7 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer","../Phylogeny"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer", "../Phylogeny"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -40,8 +40,8 @@ define([
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
 			}));
-			var activeQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"});
-			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + id + ")"});
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
 			switch(active){
@@ -49,22 +49,22 @@ define([
 					break;
 				case "proteinFamilies":
 				case "pathways":
-					activeTab.set("state",this.state)
+					activeTab.set("state", this.state)
 					break;
-				default: 
-					activeTab.set("state",activeQueryState)
+				default:
+					activeTab.set("state", activeQueryState)
 					break;
 			}
 		},
 
 		buildHeaderContent: function(genome){
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
-			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1)
-			var out = taxon_lineage_names.map(function(id,idx){
-				console.log("Lineage Name: ", id, " id: ", taxon_lineage_ids[idx]);
+			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
+			var out = taxon_lineage_names.map(function(id, idx){
+				//console.log("Lineage Name: ", id, " id: ", taxon_lineage_ids[idx]);
 
 				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
-			})
+			});
 			return out.join("&nbsp;&raquo;&nbsp;");
 		},
 
@@ -76,7 +76,7 @@ define([
 
 			this.viewHeader.set("content", this.buildHeaderContent(genome));
 
-			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
 			switch(active){
