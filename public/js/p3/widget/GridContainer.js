@@ -145,7 +145,7 @@ define([
 	
 			this.containerActionBar = this.filterPanel = new ContainerActionBar({region: "top",layoutPriority: 7, splitter:true, "className": "BrowserHeader",dataModel: this.grid.dataModel,facetFields: this.facetFields, query: this.query, filter: this.filter});
 			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:4, style:"width:48px;text-align:center;",splitter:false});
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:250px", minSize:150, splitter: true, layoutPriority:3});
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:250px", minSize:150, splitter: true, layoutPriority:3, containerWidget: this});
 
 			this.addChild(this.containerActionBar);
 			this.addChild(this.grid);
