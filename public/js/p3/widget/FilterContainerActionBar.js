@@ -2,12 +2,14 @@ define([
 	"dojo/_base/declare", "./ContainerActionBar", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
 	"dijit/form/Textbox","./FacetFilter","dojo/request","dojo/on",
-	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred"
+	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
+	"dijit/focus"
 ], function(
 	declare, ContainerActionBar,lang,
 	domConstruct,domGeometry, domStyle,domClass,
 	Textbox, FacetFilter,xhr,on,
-	RQLParser,FilteredValueButton,Query,Deferred
+	RQLParser,FilteredValueButton,Query,Deferred,
+	focusUtil
 ){
 
 
@@ -128,6 +130,13 @@ define([
 
 		
 			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length>0)?parsedFilter.keywords.join(" "):"");
+			on(this.keywordSearch.domNode, "keypress", lang.hitch(this,function(evt){
+				var code = evt.charCode || evt.keyCode;
+				console.log("Keypress: ", code);
+				if (code == 13){
+					focusUtil.curNode && focusUtil.curNode.blur();
+				}
+			}));
 
 			this.set("query", state.search);
 
