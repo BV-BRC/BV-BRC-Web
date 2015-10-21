@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer","../Phylogeny"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer){
+			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer, Phylogeny){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
@@ -135,8 +135,7 @@ define([
 			this.inherited(arguments);
 
 			this.overview = this.createOverviewPanel();
-			this.phylogeny = new ContentPane({
-				content: "Phylogeny",
+			this.phylogeny = new Phylogeny({
 				title: "Phylogeny",
 				id: this.viewer.id + "_" + "phylogeny"
 			});
