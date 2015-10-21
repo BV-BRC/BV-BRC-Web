@@ -1057,7 +1057,7 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 		paddingY		: 20,
 		bufferInnerLabels : 20, 		// Pixels
 		bufferOuterLabels : 10, 			// Pixels
-		minHeightBetweenLeaves : 15,// Should probably set pretty low, as clipping may occur if it needs to be implemented		
+		minHeightBetweenLeaves : 10,// Should probably set pretty low, as clipping may occur if it needs to be implemented		
 		
 		alignPadding	: 0,			// Pixels to push the labels out by - this extension should be 
 										// compensated by an increase in bufferX too
