@@ -13,13 +13,6 @@ define([
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
 			console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			if(state.genome_id){
-				state.genome_ids = [state.genome_id];
-			}
-			else{
-				state.genome_ids = state.genome_ids || [];
-			}
-
 			if(this.proteinFamiliesGrid){
 				console.log("Set ProteinFamiliesGrid State: ", state);
 				this.proteinFamiliesGrid.set('state', state);

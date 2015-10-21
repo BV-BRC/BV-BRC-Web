@@ -39,25 +39,6 @@ define([
 		onSetState: function(attr, oldVal, state){
 			console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
-			//if(!state.genome_ids || (state.genome_ids.length < 1)){
-			//
-			//	console.log("  No genome_ids. Genome_id: ", state.genome_id);
-			//	if(state.genome_id){
-			//		console.log("    Found genome_id");
-			//		state.genome_ids = [state.genome_id];
-			//	}else{
-			//		console.log("no Genome_id. set to empty array");
-			//		state.genome_ids = state.genome_ids || []
-			//	}
-			//}
-			//
-			//console.log("Filter empty genome_ids");
-			//state.genome_ids = (state && state.genome_ids) ? state.genome_ids.filter(function(r){
-			//	return !!r
-			//}) : [];
-			//
-			//console.log("genome_ids: ", state.genome_ids);
-
 			if(this.pathwaysGrid){
 				//console.log("Set PathwaysGrid State: ", state);
 				this.pathwaysGrid.set('state', state);

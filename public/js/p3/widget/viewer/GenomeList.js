@@ -86,6 +86,7 @@ define([
 
 		onSetGenomeIds: function(attr,oldVal,genome_ids){
 			console.log("onSetGenomeIds: ", genome_ids);
+			this.state.genome_ids = genome_ids;
 			var gidQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))",hashParams: {}})
 			var activeQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))"});
 			console.log("gidQueryState: ", gidQueryState);

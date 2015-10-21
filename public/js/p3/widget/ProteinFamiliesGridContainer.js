@@ -40,7 +40,7 @@ define([
 		facetFields: [],
 		enableFilterPanel: false,
 		_setQueryAttr: function(query){
-			this.inherited(arguments);
+			//block default query handler for now.
 		},
 		_setStateAttr: function(state){
 			this.inherited(arguments);

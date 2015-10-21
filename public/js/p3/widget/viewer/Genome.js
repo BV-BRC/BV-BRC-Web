@@ -44,31 +44,28 @@ define([
 			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
 			var activeTab = this[active];
 
-
 			switch(active){
+				case "overview":
+					break;
+				case "proteinFamilies":
 				case "pathways":
+					activeTab.set("state",this.state)
 					break;
 				default: 
 					activeTab.set("state",activeQueryState)
+					break;
 			}
+		},
 
+		buildHeaderContent: function(genome){
+			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
+			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1)
+			var out = taxon_lineage_names.map(function(id,idx){
+				console.log("Lineage Name: ", id, " id: ", taxon_lineage_ids[idx]);
 
-			// var gidQueryState = lang.mixin({},this.state, {search: "eq(genome_id," + id + ")"});
-			// if (this.features){
-			// 	this.features.set("state", gidQueryState);
-			// }
-
-			// if(this.specialtyGenes){
-			// 	this.specialtyGenes.set("state", gidQueryState);
-			// }
-
-			// if(this.pathways){
-			// 	this.pathways.set("state", this.state);
-			// }
-
-			// if(this.proteinFamilies){
-			// 	this.proteinFamilies.set("state", this.state);
-			// }
+				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+			})
+			return out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		_setGenomeAttr: function(genome){
@@ -77,8 +74,18 @@ define([
 
 			state.genome = genome;
 
-			this.viewHeader.set("content", genome.taxon_lineage_names.slice(1).join("&nbsp;&raquo;&nbsp;"));
-			this.overview.set("state", state);
+			this.viewHeader.set("content", this.buildHeaderContent(genome));
+
+			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+					activeTab.set("state", state)
+					break;
+				default:
+					break;
+			}
 
 			this._set("genome", genome);
 
