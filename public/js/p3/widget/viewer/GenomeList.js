@@ -5,7 +5,8 @@ define([
 	"dojo/request","dojo/_base/lang","../FeatureGridContainer","../SpecialtyGeneGridContainer",
 	"../ActionBar","../ContainerActionBar","../PathwaysContainer","../ProteinFamiliesContainer",
 	"../DiseaseContainer","../PublicationGridContainer","../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer","../GenomeContainer"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer","../GenomeGridContainer",
+	"../SequenceGridContainer"
 ], function(
 	declare, TabViewerBase, on, lang,
 	domClass,ContentPane,domConstruct,Topic,
@@ -13,7 +14,8 @@ define([
 	xhr,lang,FeatureGridContainer,SpecialtyGeneGridContainer,
 	ActionBar,ContainerActionBar,PathwaysContainer,ProteinFamiliesContainer,
 	DiseaseContainer,PublicationGridContainer,CircularViewerContainer,
-	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer,GenomeContainer
+	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer,GenomeGridContainer,
+	SequenceGridContainer
 ){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
@@ -130,8 +132,8 @@ define([
 			domConstruct.place(this.totalCountNode,this.viewHeader.containerNode, "last")
 
 			this.phylogeny= new ContentPane({maxGenomeCount: 5000,content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny", disabled: true, state: this.state});
-			this.genomes= new GenomeContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes", state: this.state, disable: false});
-
+			this.genomes= new GenomeGridContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes", state: this.state, disable: false});
+			this.sequences= new SequenceGridContainer({title: "Sequences",id: this.viewer.id + "_" + "sequences", state: this.state, disable: false});
 			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features", disabled: true});
 			this.specialtyGenes= new SpecialtyGeneGridContainer({title: "Specialty Genes",id: this.viewer.id + "_" + "specialtyGenes", disabled: true, state: this.state});
 			this.pathways= new PathwaysContainer({title: "Pathways",id: this.viewer.id + "_" + "pathways", disabled: true, state: this.state});
@@ -140,6 +142,7 @@ define([
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
+			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);

@@ -24,7 +24,7 @@ define([
 			length: {label: "Length (bp)", field: "length", hidden: false},
 			gc_content: {label: "GC Content %", field: "gc_content", hidden: false},
 			sequence_type: {label: "Sequence Type", field: "sequence_type", hidden: false},
-			topology: {label: "Description", field: "description", hidden: false},
+			topology: {label: "Topology", field: "topology", hidden: false},
 			description: {label: "Description", field: "description", hidden: false}
 		},
 		startup: function() {

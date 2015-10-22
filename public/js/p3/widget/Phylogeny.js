@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "raphael/raphael", "jsphylosvg/jsphylosvg",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
 	"dojo/dom-geometry", "dojo/dom-style"
-], function(declare, raphael, jsphylosvg, WidgetBase, request,domConstruct,lang,domGeometry,domStyle){
+], function(declare, Raphael, jsphylosvg, WidgetBase, request,domConstruct,lang,domGeometry,domStyle){
 	console.log("Raphael: ", Raphael);
 	console.log("jsphylosvg: ", Smits);
 
