@@ -23,7 +23,7 @@ define([
 			allowTextSelection: false,
 			allowSelectAll: true,
 			deselectOnRefresh: false,
-			rowsPerPage: 25,
+			rowsPerPage: 200,
 			minRowsPerPage: 25,
 			bufferRows: 100,
 			maxRowsPerPage: 200,
