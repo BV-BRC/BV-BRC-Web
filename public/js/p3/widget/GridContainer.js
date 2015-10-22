@@ -226,7 +226,9 @@ define([
 				style: "width:250px",
 				minSize: 150,
 				splitter: true,
-				layoutPriority: 3
+				layoutPriority: 3,
+                containerWidget: this
+
 			});
 
 			if (this.containerActionBar) {

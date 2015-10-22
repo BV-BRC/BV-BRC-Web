@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar",  "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./ProteinFamiliesGridContainer", "dijit/layout/ContentPane", "dojo/topic"
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "dijit/layout/ContentPane", "dojo/topic"
 ], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer,StackController,
-			ProteinFamiliesGridContainer, ContentPane, Topic){
+			ActionBar, ContainerActionBar, TabContainer, StackController,
+			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ContentPane, Topic){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -37,6 +37,20 @@ define([
 				return;
 			}
 
+			this.filterPanel = new ContentPane({
+				region: "left",
+				title: "filter",
+				content: "Filter By",
+				style: "width:400px; overflow:auto;",
+				splitter: true
+			});
+
+			var filterPanelGrid = new ProteinFamiliesFilterGrid({
+				state: this.state,
+				query: "?eq(genome_id," + this.state.genome_ids + ")"
+			});
+			this.filterPanel.addChild(filterPanelGrid);
+
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
 			var tabController = new StackController({
@@ -44,7 +58,6 @@ define([
 				region: "top",
 				"class": "TextTabButtons"
 			});
-
 
 			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
 				title: "Table",
@@ -61,6 +74,7 @@ define([
 			this.tabContainer.addChild(this.heatmap);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
+			this.addChild(this.filterPanel);
 
 			this.inherited(arguments);
 			this._firstView = true;

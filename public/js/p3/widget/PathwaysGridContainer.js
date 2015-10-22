@@ -42,8 +42,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 
 		_setQueryAttr: function(query){
-			//console.log("Pathways Grid Container Query Override: ", query);
-			//this.inherited(arguments);
+			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
 		},
 
 		buildQuery: function(){
