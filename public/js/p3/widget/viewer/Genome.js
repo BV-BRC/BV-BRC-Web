@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer", "../Phylogeny"
+	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer, Phylogeny){
+			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer, Phylogeny, GenomeBrowser){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
@@ -144,6 +144,13 @@ define([
 				id: this.viewer.id + "_" + "features",
 				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
 			});
+
+			this.browser = new GenomeBrowser({
+				title: "Browser",
+				id: this.viewer.id + "_" + "browser",
+				state: lang.mixin({}, this.state)
+			})
+
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
 				id: this.viewer.id + "_" + "specialtyGenes",
@@ -167,6 +174,7 @@ define([
 			});
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.phylogeny);
+			this.viewer.addChild(this.browser);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);
