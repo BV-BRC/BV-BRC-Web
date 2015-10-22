@@ -5,7 +5,7 @@ define([
 	"dojo/request","dojo/_base/lang","../FeatureGridContainer","../SpecialtyGeneGridContainer",
 	"../ActionBar","../ContainerActionBar","../PathwaysContainer","../ProteinFamiliesContainer",
 	"../DiseaseContainer","../PublicationGridContainer","../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer","../GenomeGridContainer"
+	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/,"../InteractionsContainer","../GenomeContainer"
 ], function(
 	declare, TabViewerBase, on, lang,
 	domClass,ContentPane,domConstruct,Topic,
@@ -13,7 +13,7 @@ define([
 	xhr,lang,FeatureGridContainer,SpecialtyGeneGridContainer,
 	ActionBar,ContainerActionBar,PathwaysContainer,ProteinFamiliesContainer,
 	DiseaseContainer,PublicationGridContainer,CircularViewerContainer,
-	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer,GenomeGridContainer
+	TranscriptomicsContainer/*, JBrowser*/,InteractionsContainer,GenomeContainer
 ){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
@@ -70,12 +70,14 @@ define([
 			console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab)?state.hashParams.view_tab:"overview";
 			var activeTab = this[active];
+			console.log("onSetState Active Tab: ", active)
 			switch(active){
 				case "genomes":
+					console.log("Set Genomes activeTab state: ", state, " tab: ", activeTab)
 					activeTab.set("state", state);
+					console.log(" after activeTab set()");
 					break;
 			}
-			// this.viewer.selectedChildWidget.set("state", state);
 		},
 
 		onSetQuery: function(attr,oldVal,newVal){
@@ -87,9 +89,9 @@ define([
 		onSetGenomeIds: function(attr,oldVal,genome_ids){
 			console.log("onSetGenomeIds: ", genome_ids);
 			this.state.genome_ids = genome_ids;
-			var gidQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))",hashParams: {}})
+			// var gidQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))",hashParams: {}})
 			var activeQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))"});
-			console.log("gidQueryState: ", gidQueryState);
+			// console.log("gidQueryState: ", gidQueryState);
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab)?this.state.hashParams.view_tab:"overview";
 			console.log("Active Query State: ", activeQueryState);
 			console.log("Active: ", active);
@@ -97,9 +99,10 @@ define([
 			var activeTab = this[active];
 			switch(active){
 				case "genomes":
-						break;
+					activeTab.set("state",this.state);
+					break;
 				case "pathways":
-						activeTab.set("state",lang.mixin({},this.state, {genome_ids: genome_ids, search: ""}));
+					activeTab.set("state",lang.mixin({},this.state, {genome_ids: genome_ids, search: ""}));
 					break;
 				default: 
 					activeTab.set("state", activeQueryState);
@@ -127,7 +130,7 @@ define([
 			domConstruct.place(this.totalCountNode,this.viewHeader.containerNode, "last")
 
 			this.phylogeny= new ContentPane({maxGenomeCount: 5000,content: "Phylogeny", title: "Phylogeny",id: this.viewer.id + "_" + "phylogeny", disabled: true, state: this.state});
-			this.genomes= new GenomeGridContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes", state: this.state});
+			this.genomes= new GenomeContainer({title: "Genomes",id: this.viewer.id + "_" + "genomes", state: this.state, disable: false});
 
 			this.features = new FeatureGridContainer({title: "Features", id: this.viewer.id + "_" + "features", disabled: true});
 			this.specialtyGenes= new SpecialtyGeneGridContainer({title: "Specialty Genes",id: this.viewer.id + "_" + "specialtyGenes", disabled: true, state: this.state});

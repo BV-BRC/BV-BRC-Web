@@ -95,19 +95,21 @@ define([
 			this.minimized=true;
 		},
 		_setStateAttr: function(state){
-			// console.log("FilterContainerActionBar setStateAttr: ",state);
+			console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state)
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr,oldVal, state){
+				console.log("FilterContainerActionBar onSetState: ", state)
 				state.search = (state.search && (state.search.charAt(0)=="?"))?state.search.substr(1):(state.search||"");
 				// console.log("FilterContainerActionBar onSetState() ", state);
 				this._refresh();
 		},
 
 		_refresh: function(){
+			console.log("Refresh FilterContainerActionBar");
 			var parsedQuery={};
 			var parsedFilter={};
 			var state = this.get('state') || {};
@@ -452,6 +454,7 @@ define([
 		},
 		_setFacetFieldsAttr: function(fields){
 			this.facetFields = fields;
+			console.log("Set Facet Fields: ", fields);
 			if (!this._started){return;}
 
 			fields.sort().forEach(lang.hitch(this,function(f){

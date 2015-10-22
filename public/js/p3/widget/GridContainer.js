@@ -157,6 +157,8 @@ define([
 			
 			return q;
 		},
+
+		
 		
 		onFirstView: function() {
 			if (this._firstView) {

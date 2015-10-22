@@ -57,8 +57,10 @@ define([
                     w: bb.w - pe.w,
                     h: bb.h - pe.h
             };
-
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.paddingX = 5;
 			Smits.PhyloCanvas.Render.Parameters.Rectangular.alignRight = true;
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.minHeightBetweenLines = 5;
+			// Smits.PhyloCanvas.Render.Parameters.Rectangular.
 			Smits.PhyloCanvas.Render.Parameters.Rectangular.bufferX = 400;
 			Smits.PhyloCanvas.Render.Parameters.Circular.bufferRadius = .75;
 			Smits.PhyloCanvas.Render.Parameters.Circular.bufferAngle = 0;
@@ -68,7 +70,7 @@ define([
 				}
 				this.debounceTimer = setTimeout(lang.hitch(this, function(){
 					domConstruct.empty(this.canvasNode);
-					this.canvas = new Smits.PhyloCanvas({newick:this.newick}, this.canvasNode,this._contentBox.w,this._contentBox.h*4, this.type);
+					this.canvas = new Smits.PhyloCanvas({newick:this.newick}, this.canvasNode,this._contentBox.w,(this._contentBox.h*5), this.type);
 					delete this.debounceTimer;
 				}),250);
 			}
