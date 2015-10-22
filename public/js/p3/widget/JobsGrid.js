@@ -63,7 +63,7 @@ define([
 			},
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
-					console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
+					//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
 					var avatar = dojo.create("div", {
 						innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
 					});
@@ -102,7 +102,7 @@ define([
 
 			/*
                 _setApiServer: function(server){
-                        console.log("_setapiServerAttr: ", server);
+                        //console.log("_setapiServerAttr: ", server);
                         this.apiServer = server;
                         this.set('store', this.createStore(this.dataModel), this.buildQuery());
                 },
@@ -110,20 +110,20 @@ define([
 
 			_setTotalRows: function(rows) {
 				this.totalRows = rows;
-				console.log("Total Rows: ", rows);
+				//console.log("Total Rows: ", rows);
 				if (this.controlButton) {
-					console.log("this.controlButton: ", this.controlButton);
+					//console.log("this.controlButton: ", this.controlButton);
 					if (!this._originalTitle) {
 						this._originalTitle = this.controlButton.get('label');
 					}
 					this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
 
-					console.log(this.controlButton);
+					//console.log(this.controlButton);
 				}
 			},
 
 			showErrorDialog: function(data){
-				console.log("Show Error Dialog: ", data);
+				//console.log("Show Error Dialog: ", data);
 				if (!this.errorDialog){
 					this.errorDialog = new Dialog({title: "Task Output", content: "Loading Task Detail..."});
 				}else{
@@ -135,7 +135,7 @@ define([
 					_self.errorDialog.set("content","Unable to retreive additional details about this task at this task. The operation timed out.");
 				},30000);
 				JobManager.queryTaskDetail(data.id,true,true).then(function(detail){
-					console.log("JOB DETAIL: ", detail);
+					//console.log("JOB DETAIL: ", detail);
 					clearTimeout(timer);
 					if (detail.stderr) {
 						_self.errorDialog.set("content","<div style='overflow:auto;'><div data-dojo-type='dijit/TitlePane' title='STDOUT' open='false'><pre>" + (detail.stdout || "None.") + "</pre></div><br><div data-dojo-type='dijit/TitlePane' title='STDERR'><pre>"+(detail.stderr || "None.")+"</pre></div>");
@@ -162,9 +162,9 @@ define([
 
 				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 					var row = _self.row(evt);
-					console.log("dblclick row:", row)
+					//console.log("dblclick row:", row)
 					if (row.data && row.data.status && row.data.status=="completed"){
-						console.log("row.data: ", row.data);
+						//console.log("row.data: ", row.data);
 						Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
 					}else{
 						_self.showErrorDialog(row.data);
@@ -176,7 +176,7 @@ define([
                                                 bubbles: true,
 
                                         });
-                                        console.log('after emit');
+                                        //console.log('after emit');
 */
 				});
 				_selection={};
@@ -184,14 +184,14 @@ define([
 
 			/*
 				this.on("dgrid-select", function(evt) {
-					console.log("dgrid-select");
+					//console.log("dgrid-select");
 					var rows = event.rows;
 					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
 					var sel = Object.keys(_selection).map(function(s) { _selection[s].type="job_status_reference"; return _selection[s]; });
-					console.log("sel: ", sel);
+					//console.log("sel: ", sel);
 				});
 				this.on("dgrid-deselect", function(evt) {
-					console.log("dgrid-select");
+					//console.log("dgrid-select");
 					var rows = event.rows;
 					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
 					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
@@ -203,7 +203,7 @@ define([
 				this.on(".dgrid-content:contextmenu", function(evt){
 					var row=_self.row(evt);
 					activeItem = row;
-					console.log("activeItem: ", row.data);
+					//console.log("activeItem: ", row.data);
 				});
 
 				var menu = new Menu({
@@ -216,7 +216,7 @@ define([
 					label: "Delete Object",
 					onClick: function() {
 						if (activeItem) {
-							console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
+							//console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
 							if (activeItem.data.type=="folder"){
 								WorkspaceManager.deleteFolder([activeItem.data.path]);
 							}else{
@@ -233,18 +233,18 @@ define([
 
 			},
 			_setActiveFilter: function(filter) {
-				console.log("Set Active Filter: ", filter, "started:", this._started);
+				//console.log("Set Active Filter: ", filter, "started:", this._started);
 				this.activeFilter = filter;
 				this.set("query", this.buildQuery());
 			},
 
 			buildQuery: function(table, extra) {
 				var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
-				console.log("Feature Grid Query:", q);
+				//console.log("Feature Grid Query:", q);
 				return q;
 			},
 			createStore: function(dataModel) {
-				console.log("Create Store for ", dataModel, " at ", this.apiServer);
+				//console.log("Create Store for ", dataModel, " at ", this.apiServer);
 				var store = new Store({
 					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
 					idProperty: "rownum",
@@ -255,12 +255,12 @@ define([
 						'X-Requested-With': null
 					}
 				});
-				console.log("store: ", store);
+				//console.log("store: ", store);
 				return store;
 			},
 
 			getFilterPanel: function() {
-				console.log("getFilterPanel()");
+				//console.log("getFilterPanel()");
 				return FilterPanel;
 			}
 
