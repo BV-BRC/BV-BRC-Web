@@ -183,7 +183,7 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 
 			window.onpopstate = function(evt){
 				// console.log("onpopstate(): ", evt)
-				_self._handlePathChange(location.pathname, evt.state)
+				_self._handlePathChange(location.pathname + location.search + location.hash, evt.state)
 			}
 
 			if (!this._currentPath){
