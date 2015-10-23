@@ -1,19 +1,6 @@
 @import url("../../dijit/themes/claro/claro.css");
-@import url("src/dojo/resources/dojo.css");
+@import url("../../dojo/resources/dojo.css");
 @import url("../../dojox/widget/Toaster/Toaster.css");
-@import url("Footer.css");
-@import url("Header.css");
-@import url("Carousel.css");
-@import url("Drawer.css");
-@import url("WorkspaceManager.css");
-@import url("AppBase.css");
-@import url("assembly.css");
-@import url("modeling.css");
-@import url("facetfilter.css");
-@import url("./GenomeList.css");
-@import url("./GenomeViewer.css");
-@import url("./p2.css");
-@import url("./JobsGrid.css");
 
 /* CSS for JBrowse */
 @import url("../../jbrowse.repo/main.css");
@@ -32,6 +19,21 @@
 
 /* CSS styles specifically for MAKER output */
 @import url("../../jbrowse.repo/maker.css");
+
+@import url("Footer.css");
+@import url("Header.css");
+@import url("Carousel.css");
+@import url("Drawer.css");
+@import url("WorkspaceManager.css");
+@import url("AppBase.css");
+@import url("assembly.css");
+@import url("modeling.css");
+@import url("facetfilter.css");
+@import url("./GenomeList.css");
+@import url("./GenomeViewer.css");
+@import url("./p2.css");
+@import url("./JobsGrid.css");
+
 
 /*@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");*/
 
@@ -388,4 +390,38 @@ body.patric *:focus {
 	vertical-align: middle;	
 	width: 16px;
 	height: 16px;
+}
+
+
+div.overview {
+    position: relative;
+    width: 100%;
+    padding: 0;
+    z-index: -5;
+    display: block;
+    height: 23px;
+    overflow: hidden;
+    background: #eee;
+
+    border-style: solid;
+    border-width: 1px 0px 1px 0px;
+    border-color: #555;
+
+    text-align: center;
+    cursor: crosshair;
+}
+
+
+.jbrowse > .dijitContentPane {
+	padding: 0px;
+}
+
+.navbox {
+	font-size: .85em;
+}
+.navbox .fa {
+	margin: 4px;
+	vertical-align: middle;
+	margin-left: 10px;
+	color: #444;
 }

@@ -3,13 +3,31 @@ define([
 	"dojo/dom-construct", "dojo/_base/lang","dojo/dom-geometry",
 	"dojo/dom-style","dojo/dom-construct",'dojo/_base/array',
 	"dojo/_base/Deferred","dojo/DeferredList","lazyload",
-	"dojo/request"
+	"dojo/request",
+    'dijit/form/ComboBox',
+	'dijit/form/Button',
+	'dijit/form/Select',
+	'dijit/form/ToggleButton',
+	'dijit/form/DropDownButton',
+	'dijit/DropDownMenu',
+	'dijit/MenuItem',
+	'dojox/form/TriStateCheckBox',
+	"JBrowse/Util"
 ], function(
 	declare, WidgetBase, JBrowser,
 	domConstruct, lang, domGeometry, 
 	domStyle, domConstruct,array,
 	Deferred,DeferredList,lazyLoad,
-	request
+	request,
+	dijitComboBox,
+    dijitButton,
+    dijitSelectBox,
+    dijitToggleButton,
+    dijitDropDownButton,
+    dijitDropDownMenu,
+    dijitMenuItem,
+    dojoxTriStateCheckBox,
+    Util
 ){
 
 
@@ -17,6 +35,249 @@ define([
 		makeFullViewLink: function(){
 				return domConstruct.create("span",{});
 		},
+
+		createNavBox: function( parent ) {
+    var thisB = this;
+    var navbox = dojo.create( 'div', {"class": "navbox" , style: { 'text-align': 'center', "position": "relative" } }, parent );
+
+    // container adds a white backdrop to the locationTrap.
+    var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox );
+
+    this.locationTrap = dojo.create('div', {className: 'locationTrap'}, locationTrapContainer );
+
+    var four_nbsp = String.fromCharCode(160); four_nbsp = four_nbsp + four_nbsp + four_nbsp + four_nbsp;
+    navbox.appendChild(document.createTextNode( four_nbsp ));
+
+    // var moveLeft = document.createElement("i");
+    //moveLeft.type = "image";
+    // moveLeft.src = this.resolveUrl( "img/Empty.png" );
+    // moveLeft.id = "moveLeft";
+    // moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
+    // navbox.appendChild(moveLeft);
+    var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left2 fa-2x"}, navbox);
+    dojo.connect( moveLeft, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.slide(0.9);
+                  });
+
+    var moveRight = document.createElement("i");
+    //moveRight.type = "image";
+    // moveRight.src = this.resolveUrl( "img/Empty.png" );
+    // moveRight.id="moveRight";
+    moveRight.className = "fa icon-arrow-right2 fa-2x"; //"icon nav";
+    navbox.appendChild(moveRight);
+    dojo.connect( moveRight, "click", this,
+                 function(event) {
+                      dojo.stopEvent(event);
+                      this.view.slide(-0.9);
+                  });
+
+    
+
+    var bigZoomOut = domConstruct.create("I", {"class": "fa icon-search-minus",style: {"font-size":"2.5em"}}, navbox);
+    dojo.connect( bigZoomOut, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomOut(undefined, undefined, 2);
+                  });
+
+
+    var zoomOut = domConstruct.create("I", {"class": "fa icon-search-minus fa-2x"}, navbox);
+    dojo.connect( zoomOut, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomOut();
+                  });
+
+    var zoomIn = domConstruct.create("I", {"class": "fa icon-search-plus fa-2x"}, navbox);
+    dojo.connect( zoomIn, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomIn();
+                  });
+  
+    var bigZoomIn = domConstruct.create("I", {"class": "fa icon-search-plus", style: {"font-size":"2.5em"}}, navbox);
+    dojo.connect( bigZoomIn, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomIn(undefined, undefined, 2);
+                  });
+
+
+    // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
+    // set in the config, then put in a dropdown box for selecting
+    // reference sequences
+    var refSeqSelectBoxPlaceHolder = dojo.create('div', {style: "display:inline-block;"}, navbox );
+
+    // make the location box
+    this.locationBox = new dijitComboBox(
+        {
+            id: "location",
+            name: "location",
+            style: { width: '75px' },
+            maxLength: 400,
+            searchAttr: "name"
+        },
+        dojo.create('input', {}, navbox) );
+    this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
+        if( this.nameStore )
+            this.locationBox.set( 'store', this.nameStore );
+    }));
+
+    this.locationBox.focusNode.spellcheck = false;
+    dojo.query('div.dijitArrowButton', this.locationBox.domNode ).orphan();
+    dojo.connect( this.locationBox.focusNode, "keydown", this, function(event) {
+                      if( event.keyCode == keys.ESCAPE ) {
+                          this.locationBox.set('value','');
+                      }
+                      else if (event.keyCode == keys.ENTER) {
+                          this.locationBox.closeDropDown(false);
+                          this.navigateTo( this.locationBox.get('value') );
+                          this.goButton.set('disabled',true);
+                          dojo.stopEvent(event);
+                      } else {
+                          this.goButton.set('disabled', false);
+                      }
+                  });
+    dojo.connect( navbox, 'onselectstart', function(evt) { evt.stopPropagation(); return true; });
+    // monkey-patch the combobox code to make a few modifications
+    (function(){
+
+         // add a moreMatches class to our hacked-in "more options" option
+         var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+         var oldCreateOption = dropDownProto._createOption;
+         dropDownProto._createOption = function( item ) {
+             var option = oldCreateOption.apply( this, arguments );
+             if( item.hitLimit )
+                 dojo.addClass( option, 'moreMatches');
+             return option;
+         };
+
+         // prevent the "more matches" option from being clicked
+         var oldOnClick = dropDownProto.onClick;
+         dropDownProto.onClick = function( node ) {
+             if( dojo.hasClass(node, 'moreMatches' ) )
+                 return null;
+             return oldOnClick.apply( this, arguments );
+         };
+    }).call(this);
+
+    // make the 'Go' button'
+    this.goButton = new dijitButton(
+        {
+            label: 'Go',
+            onClick: dojo.hitch( this, function(event) {
+                this.navigateTo(this.locationBox.get('value'));
+                this.goButton.set('disabled',true);
+                dojo.stopEvent(event);
+            })
+        }, dojo.create('button',{},navbox));
+    this.highlightButtonPreviousState = false;
+    this.highlightButton = new dojoxTriStateCheckBox({
+        //label: 'Highlight',
+        title: 'highlight a region',
+        states:[false, true, "mixed"],
+        onChange: function() {
+            if( this.get('checked')==true ) {
+                thisB.view._rubberStop();
+                thisB.view.behaviorManager.swapBehaviors('normalMouse','highlightingMouse');
+            } else if( this.get('checked')==false) {
+                var h = thisB.getHighlight();
+                if( h ) {
+                    thisB.clearHighlight();
+                    thisB.view.redrawRegion( h ); 
+                }
+            }
+            else { // mixed
+                // Uncheck since user is cycling three-state instead
+                // of programmatically landing in mixed state
+                if( thisB.highlightButtonPreviousState != true ) {
+                    thisB.highlightButton.set('checked', false);
+                }
+                else {
+                    thisB.highlightButtonPreviousState = false;
+                }
+                thisB.view._rubberStop();
+                thisB.view.behaviorManager.swapBehaviors('highlightingMouse','normalMouse');
+            }
+        }
+    }, dojo.create('button',{},navbox));
+
+    this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
+                   function() { thisB.highlightButton.set('checked',false); });
+
+
+    this.afterMilestone('loadRefSeqs', dojo.hitch( this, function() {
+
+        // make the refseq selection dropdown
+        if( this.refSeqOrder && this.refSeqOrder.length ) {
+            var max = this.config.refSeqSelectorMaxSize || 30;
+            var numrefs = Math.min( max, this.refSeqOrder.length);
+            var options = [];
+            for ( var i = 0; i < numrefs; i++ ) {
+                options.push( { label: this.refSeqOrder[i], value: this.refSeqOrder[i] } );
+            }
+            var tooManyMessage = '(first '+numrefs+' ref seqs)';
+            if( this.refSeqOrder.length > max ) {
+                options.push( { label: tooManyMessage , value: tooManyMessage, disabled: true } );
+            }
+            this.refSeqSelectBox = new dijitSelectBox({
+                name: 'refseq',
+                value: this.refSeq ? this.refSeq.name : null,
+                options: options,
+                onChange: dojo.hitch(this, function( newRefName ) {
+                    // don't trigger nav if it's the too-many message
+                    if( newRefName == tooManyMessage ) {
+                        this.refSeqSelectBox.set('value', this.refSeq.name );
+                        return;
+                    }
+
+                    // only trigger navigation if actually switching sequences
+                    if( newRefName != this.refSeq.name ) {
+                        this.navigateToLocation({ ref: newRefName });
+                    }
+                })
+            }).placeAt( refSeqSelectBoxPlaceHolder );
+        }
+
+        // calculate how big to make the location box:  make it big enough to hold the
+        var locLength = this.config.locationBoxLength || function() {
+
+            // if we have no refseqs, just use 20 chars
+            if( ! this.refSeqOrder.length )
+                return 20;
+
+            // if there are not tons of refseqs, pick the longest-named
+            // one.  otherwise just pick the last one
+            var ref = this.refSeqOrder.length < 1000
+                && function() {
+                       var longestNamedRef;
+                       array.forEach( this.refSeqOrder, function(name) {
+                                          var ref = this.allRefs[name];
+                                          if( ! ref.length )
+                                              ref.length = ref.end - ref.start + 1;
+                                          if( ! longestNamedRef || longestNamedRef.length < ref.length )
+                                              longestNamedRef = ref;
+                                      }, this );
+                       return longestNamedRef;
+                   }.call(this)
+                || this.refSeqOrder.length && this.allRefs[ this.refSeqOrder[ this.refSeqOrder.length - 1 ] ]
+                || 20;
+
+            var locstring = Util.assembleLocStringWithLength({ ref: ref.name, start: ref.end-1, end: ref.end, length: ref.length });
+            //console.log( locstring, locstring.length );
+            return locstring.length;
+        }.call(this) || 20;
+
+
+        this.locationBox.domNode.style.width = locLength+'ex';
+    }));
+
+    return navbox;
+},
+
+
 		loadRefSeqs: function() {
 		    return this._milestoneFunction( 'loadRefSeqs', function( deferred ) {
 		        // load our ref seqs
@@ -26,8 +287,9 @@ define([
 		        console.log("refSeqs url: ", this.config.refSeqs.url)
 		        request(this.config.refSeqs.url, { handleAs: 'text' } )
 		            .then( function(o) {
-					console.log(" call addREfseqs fromJson: ", o);
+								console.log(" call addREfseqs fromJson: ", o);
 		                       thisB.addRefseqs( dojo.fromJson(o) );
+		                       console.log("After Add RefSeqs fromJson")
 		                       deferred.resolve({success:true});
 		                   },
 		                   function( e ) {
@@ -42,6 +304,7 @@ define([
 		        // if it has '{' in it, it probably is not a URL, but is a string of CSS statements
 		        if( css.indexOf('{') > -1 ) {
 		            dojo.create('style', { "data-from": 'JBrowse Config', type: 'text/css', innerHTML: css }, document.head );
+		            console.log("Resolve CSS");
 		            deferred.resolve(true);
 		        }
 		        // otherwise, it must be a URL
@@ -50,7 +313,7 @@ define([
 		        }
 		    }
 		    if( typeof css == 'object' ) {
-		        LazyLoad.css( css.url, function() { deferred.resolve(true); } );
+		        LazyLoad.css( css.url, function() { console.log("LazyLoad.css callback"); deferred.resolve(true); } );
 		    }
 		    return deferred;
 		},
@@ -117,6 +380,7 @@ define([
 		        (new DeferredList( pluginDeferreds ))
 		            .then( function() { deferred.resolve({success: true}); });
 
+		        console.log("Call Require: ", plugins)
 		        require( {
 		                     packages: array.map( plugins, function(p) {
 		                                              return {
@@ -127,9 +391,12 @@ define([
 		                 },
 		                 array.map( plugins, function(p) { return p.name; } ),
 		                 dojo.hitch( this, function() {
+		                 	console.log("callback forEach: ", this, arguments)
 		                     array.forEach( arguments, function( pluginClass, i ) {
+		                     		console.log("pluginClass: ", pluginClass, " i: ", i);
 		                             var plugin = plugins[i];
 		                             var thisPluginDone = pluginDeferreds[i];
+
 		                             if( typeof pluginClass == 'string' ) {
 		                                 console.error("could not load plugin "+plugin.name+": "+pluginClass);
 		                             } else {
@@ -171,24 +438,26 @@ define([
 		jbrowseConfig: null,
 
 		onSetState: function(attr,oldVal,state){
+			console.log("GenomeBrowser onSetState: ", state)
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
-				dataRoot: "sample_data/json/volvox",
+				dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
+				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
+				baseUrl: "/public/js/jbrowse.repo/",
 				queryParams: (state && state.hashParams)?state.hashParams:{},
 				location: (state && state.hashParams)?state.hashParams.loc:undefined,
 				forceTracks: (state && state.hashParams)?state.hashParams.tracks:undefined,
-                initialHighlight: (state && state.hashParams)?state.hashParams.highlight:undefined,
-				show_nav: (state && state.hashParams)?state.hashParams.nav:undefined,
-				show_tracklist: (state && state.hashParams)?state.hashParams.tracklist:undefined,
-				show_overview: (state && state.hashParams)?state.hashParams.overview:undefined,
-				show_menu: (state && state.hashParams)?state.hashParams.menu:undefined,
+				initialHighlight: (state && state.hashParams)?state.hashParams.highlight:undefined,
+				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined'))?state.hashParams.show_nav:true,
+				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined'))?state.hashParams.show_tracklist:false,
+				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined'))?state.hashParams.show_overview:true,
+				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined'))?state.hashParams.show_menu:false,
 				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
-				style: "border: 2px solid green;",
-				show_nav: true,
-				show_tracklist: true
+				updateBrowserURL: false
 			}
 
+			console.log("JBrowse CONFIG: ",jbrowseConfig);
 			if (state && state.hashParams && state.hashParams.addFeatures){
 				jbrowseConfig.stores.url.features = JSON.parse(state.hashParams.addFeatures)
 			}
@@ -203,11 +472,14 @@ define([
 			   jbrowseConfig.stores = JSON.parse( state.hashParams.addStores );
 			}
 
+			console.log("jbrowseConfig", jbrowseConfig);
+
 			this.set("jbrowseConfig", jbrowseConfig)
 
 		},
 
 		onSetJBrowseConfig: function(attr,oldVal,config){
+			if (!config){ return; }
 			if (!this.visible){ return; }
 
 			if (!this._browser){
@@ -220,7 +492,7 @@ define([
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			this.containerNode = domConstruct.create("div",{id: this.id + "_browserContainer",style: {padding: "0px", margin: "4px", border: "1px solid #333"}},this.domNode);
+			this.containerNode = domConstruct.create("div",{id: this.id + "_browserContainer",style: {padding: "0px", margin: "0px", border: "0px"}},this.domNode);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("jbrowseConfig", lang.hitch(this, "onSetJBrowseConfig"));
 		},
