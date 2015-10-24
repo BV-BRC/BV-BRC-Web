@@ -54,7 +54,11 @@ var profile = {
 		{ 
 			name: "rql", 
 			location: "./rql"
-		}
+		},
+		{ name: 'jDataView', location: '../jDataView/src', main: 'jdataview' },
+		{ name: "JBrowse", location: "../jbrowse.repo/src/JBrowse" },
+		{ name: "Raphael", location: "../raphael", main: "raphael"},
+		{ name: "jsphylosvg", location: "../jsphylosvg-1.55", main: "jsphylosvg"}
 	
 	], 
 
