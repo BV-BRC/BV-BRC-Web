@@ -17,6 +17,9 @@ define([
 				console.log("Set ProteinFamiliesGrid State: ", state);
 				this.proteinFamiliesGrid.set('state', state);
 			}
+			if(this.filterPanelGrid){
+				this.filterPanelGrid.set('query', 'in(genome_id,(' + state.genome_ids + '))');
+			}
 			this._set('state', state);
 		},
 
@@ -37,7 +40,7 @@ define([
 				return;
 			}
 
-			this.filterPanel = new ContentPane({
+			var filterPanel = new ContentPane({
 				region: "left",
 				title: "filter",
 				content: "Filter By",
@@ -45,11 +48,10 @@ define([
 				splitter: true
 			});
 
-			var filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state,
-				query: "?eq(genome_id," + this.state.genome_ids + ")"
+			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
+				state: this.state
 			});
-			this.filterPanel.addChild(filterPanelGrid);
+			filterPanel.addChild(this.filterPanelGrid);
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
@@ -74,7 +76,7 @@ define([
 			this.tabContainer.addChild(this.heatmap);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			this.addChild(this.filterPanel);
+			this.addChild(filterPanel);
 
 			this.inherited(arguments);
 			this._firstView = true;
