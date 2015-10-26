@@ -95,7 +95,7 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(id, done) {
   done(null, {id: id});
 });
-app.use("*jbrowse_conf.json$", express.static(path.join(__dirname, "public/js/jbrowse.repo/jbrowse_conf.json")));
+app.use("*jbrowse.conf", express.static(path.join(__dirname, "public/js/jbrowse.conf")));
 app.use("/js/msa/", express.static(path.join(__dirname, 'node_modules/msa/build/')));
 app.use("/js/msa/node_modules/", express.static(path.join(__dirname, 'node_modules/msa/node_modules/')));
 app.use("/node_modules/msa-tnt/", express.static(path.join(__dirname, 'node_modules/msa-tnt/')));
