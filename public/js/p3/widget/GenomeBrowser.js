@@ -438,19 +438,21 @@ define([
 		jbrowseConfig: null,
 
 		onSetState: function(attr,oldVal,state){
-			console.log("GenomeBrowser onSetState: ", state)
+			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
-				dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
+	//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
+				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (state.genome_id||state.genome_ids[0]),
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
+				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams)?state.hashParams:{},
 				location: (state && state.hashParams)?state.hashParams.loc:undefined,
-				forceTracks: (state && state.hashParams)?state.hashParams.tracks:undefined,
+				forceTracks: "Sequence",
 				initialHighlight: (state && state.hashParams)?state.hashParams.highlight:undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined'))?state.hashParams.show_nav:true,
-				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined'))?state.hashParams.show_tracklist:false,
+				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined'))?state.hashParams.show_tracklist:true,
 				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined'))?state.hashParams.show_overview:true,
 				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined'))?state.hashParams.show_menu:false,
 				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
@@ -506,7 +508,6 @@ define([
 				this.onFirstView();
 			}
 		},
-
 
 		onFirstView: function(){
 			if (this._firstView) {
