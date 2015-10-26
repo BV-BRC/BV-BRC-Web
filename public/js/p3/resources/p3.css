@@ -425,3 +425,8 @@ div.overview {
 	margin-left: 10px;
 	color: #444;
 }
+
+#faceted_tracksel .faceted_tracksel_on_off.tab {
+	top: 170px;
+	font-size: .6em;
+}
