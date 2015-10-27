@@ -20,9 +20,9 @@ define([
 		deselectOnRefresh: true,
 		selectionMode: 'none',
 		columns: {
-			present_radio: selector({label:'', field:'present', sortable: false}, "radio"),
-			absent_radio: selector({label:'', field:'absent', sortable: false}, "radio"),
-			mixed_radio: selector({label:'', field:'mixed', sortable: false}, "radio"),
+			present: selector({label:'', field:'present'}, "radio"),
+			absent: selector({label:'', field:'absent'}, "radio"),
+			mixed: selector({label:'', field:'mixed'}, "radio"),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
 			genome_status: {label: 'Genome Status', field: 'genome_status'},
 			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
@@ -39,11 +39,21 @@ define([
 		},
 		startup: function(){
 			var _self = this;
+			var options = ['present', 'absent', 'mixed'];
 
 			this.on(".dgrid-cell:click", function(evt){
 				var cell = _self.cell(evt);
+				var colId = cell.column.id;
+				var rowId = cell.row.id;
 
-				console.log(cell);
+				// deselect other radio in the same row
+				options.forEach(function(el){
+					if (el != colId && _self.cell(rowId, el).element.input.checked) {
+						var deselect = _self.cell(rowId, el).element.input;
+						deselect.checked = false;
+						deselect.setAttribute("aria-checked", false);
+					}
+				});
 			});
 
 			aspect.before(_self, 'renderArray', function(results){
