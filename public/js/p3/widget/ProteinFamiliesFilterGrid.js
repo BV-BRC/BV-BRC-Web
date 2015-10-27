@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/GenomeJsonRest", "dojo/request",
-	"dojo/aspect"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect){
+			aspect, selector){
 	var store = new Store({});
 	return declare([Grid], {
 		region: "center",
@@ -18,7 +18,11 @@ define([
 		primaryKey: "genome_id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
+		selectionMode: 'none',
 		columns: {
+			present_radio: selector({label:'', field:'present', sortable: false}, "radio"),
+			absent_radio: selector({label:'', field:'absent', sortable: false}, "radio"),
+			mixed_radio: selector({label:'', field:'mixed', sortable: false}, "radio"),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
 			genome_status: {label: 'Genome Status', field: 'genome_status'},
 			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
@@ -36,17 +40,6 @@ define([
 		startup: function(){
 			var _self = this;
 
-			//this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
-			//	var row = _self.row(evt);
-			//	//console.log("dblclick row:", row);
-			//	on.emit(_self.domNode, "ItemDblClick", {
-			//		item_path: row.data.path,
-			//		item: row.data,
-			//		bubbles: true,
-			//		cancelable: true
-			//	});
-			//	console.log('after emit');
-			//});
 			this.on(".dgrid-cell:click", function(evt){
 				var cell = _self.cell(evt);
 
