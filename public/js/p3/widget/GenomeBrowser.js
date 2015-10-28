@@ -3,7 +3,7 @@ define([
 	"dojo/dom-construct", "dojo/_base/lang","dojo/dom-geometry",
 	"dojo/dom-style","dojo/dom-construct",'dojo/_base/array',
 	"dojo/_base/Deferred","dojo/DeferredList","lazyload",
-	"dojo/request",
+	"dojo/request","dojo/on",
     'dijit/form/ComboBox',
 	'dijit/form/Button',
 	'dijit/form/Select',
@@ -12,13 +12,18 @@ define([
 	'dijit/DropDownMenu',
 	'dijit/MenuItem',
 	'dojox/form/TriStateCheckBox',
-	"JBrowse/Util"
+	'dijit/layout/ContentPane',
+	'dijit/layout/BorderContainer',
+	"JBrowse/Util",
+    'JBrowse/View/InfoDialog',
+    'JBrowse/View/FileDialog',
+    'JBrowse/GenomeView'
 ], function(
 	declare, WidgetBase, JBrowser,
 	domConstruct, lang, domGeometry, 
 	domStyle, domConstruct,array,
 	Deferred,DeferredList,lazyLoad,
-	request,
+	request,on,
 	dijitComboBox,
     dijitButton,
     dijitSelectBox,
@@ -27,7 +32,12 @@ define([
     dijitDropDownMenu,
     dijitMenuItem,
     dojoxTriStateCheckBox,
-    Util
+    dijitContentPane,
+    dijitBorderContainer,
+    Util,
+    InfoDialog,
+    FileDialog,
+    GenomeView
 ){
 
 
@@ -37,245 +47,539 @@ define([
 		},
 
 		createNavBox: function( parent ) {
-    var thisB = this;
-    var navbox = dojo.create( 'div', {"class": "navbox" , style: { 'text-align': 'center', "position": "relative" } }, parent );
+		    var thisB = this;
+		    var navbox = dojo.create( 'div', {"class": "navbox" , style: { 'text-align': 'center', "position": "relative" } }, parent );
 
-    // container adds a white backdrop to the locationTrap.
-    var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox );
+		    // container adds a white backdrop to the locationTrap.
+		    var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox );
 
-    this.locationTrap = dojo.create('div', {className: 'locationTrap'}, locationTrapContainer );
+		    this.locationTrap = dojo.create('div', {className: 'locationTrap'}, locationTrapContainer );
 
-    var four_nbsp = String.fromCharCode(160); four_nbsp = four_nbsp + four_nbsp + four_nbsp + four_nbsp;
-    navbox.appendChild(document.createTextNode( four_nbsp ));
+		    var four_nbsp = String.fromCharCode(160); four_nbsp = four_nbsp + four_nbsp + four_nbsp + four_nbsp;
+		    navbox.appendChild(document.createTextNode( four_nbsp ));
 
-    // var moveLeft = document.createElement("i");
-    //moveLeft.type = "image";
-    // moveLeft.src = this.resolveUrl( "img/Empty.png" );
-    // moveLeft.id = "moveLeft";
-    // moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
-    // navbox.appendChild(moveLeft);
-    var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left2 fa-2x"}, navbox);
-    dojo.connect( moveLeft, "click", this,
-                  function(event) {
-                      dojo.stopEvent(event);
-                      this.view.slide(0.9);
-                  });
+		    // var moveLeft = document.createElement("i");
+		    //moveLeft.type = "image";
+		    // moveLeft.src = this.resolveUrl( "img/Empty.png" );
+		    // moveLeft.id = "moveLeft";
+		    // moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
+		    // navbox.appendChild(moveLeft);
+		    var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left2 fa-2x"}, navbox);
+		    dojo.connect( moveLeft, "click", this,
+		                  function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.slide(0.9);
+		                  });
 
-    var moveRight = document.createElement("i");
-    //moveRight.type = "image";
-    // moveRight.src = this.resolveUrl( "img/Empty.png" );
-    // moveRight.id="moveRight";
-    moveRight.className = "fa icon-arrow-right2 fa-2x"; //"icon nav";
-    navbox.appendChild(moveRight);
-    dojo.connect( moveRight, "click", this,
-                 function(event) {
-                      dojo.stopEvent(event);
-                      this.view.slide(-0.9);
-                  });
+		    var moveRight = document.createElement("i");
+		    //moveRight.type = "image";
+		    // moveRight.src = this.resolveUrl( "img/Empty.png" );
+		    // moveRight.id="moveRight";
+		    moveRight.className = "fa icon-arrow-right2 fa-2x"; //"icon nav";
+		    navbox.appendChild(moveRight);
+		    dojo.connect( moveRight, "click", this,
+		                 function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.slide(-0.9);
+		                  });
 
-    
+		    
 
-    var bigZoomOut = domConstruct.create("I", {"class": "fa icon-search-minus",style: {"font-size":"2.5em"}}, navbox);
-    dojo.connect( bigZoomOut, "click", this,
-                  function(event) {
-                      dojo.stopEvent(event);
-                      this.view.zoomOut(undefined, undefined, 2);
-                  });
-
-
-    var zoomOut = domConstruct.create("I", {"class": "fa icon-search-minus fa-2x"}, navbox);
-    dojo.connect( zoomOut, "click", this,
-                  function(event) {
-                      dojo.stopEvent(event);
-                      this.view.zoomOut();
-                  });
-
-    var zoomIn = domConstruct.create("I", {"class": "fa icon-search-plus fa-2x"}, navbox);
-    dojo.connect( zoomIn, "click", this,
-                  function(event) {
-                      dojo.stopEvent(event);
-                      this.view.zoomIn();
-                  });
-  
-    var bigZoomIn = domConstruct.create("I", {"class": "fa icon-search-plus", style: {"font-size":"2.5em"}}, navbox);
-    dojo.connect( bigZoomIn, "click", this,
-                  function(event) {
-                      dojo.stopEvent(event);
-                      this.view.zoomIn(undefined, undefined, 2);
-                  });
+		    var bigZoomOut = domConstruct.create("I", {"class": "fa icon-search-minus",style: {"font-size":"2.5em"}}, navbox);
+		    dojo.connect( bigZoomOut, "click", this,
+		                  function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.zoomOut(undefined, undefined, 2);
+		                  });
 
 
-    // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
-    // set in the config, then put in a dropdown box for selecting
-    // reference sequences
-    var refSeqSelectBoxPlaceHolder = dojo.create('div', {style: "display:inline-block;"}, navbox );
+		    var zoomOut = domConstruct.create("I", {"class": "fa icon-search-minus fa-2x"}, navbox);
+		    dojo.connect( zoomOut, "click", this,
+		                  function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.zoomOut();
+		                  });
 
-    // make the location box
-    this.locationBox = new dijitComboBox(
-        {
-            id: "location",
-            name: "location",
-            style: { width: '75px' },
-            maxLength: 400,
-            searchAttr: "name"
-        },
-        dojo.create('input', {}, navbox) );
-    this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
-        if( this.nameStore )
-            this.locationBox.set( 'store', this.nameStore );
-    }));
-
-    this.locationBox.focusNode.spellcheck = false;
-    dojo.query('div.dijitArrowButton', this.locationBox.domNode ).orphan();
-    dojo.connect( this.locationBox.focusNode, "keydown", this, function(event) {
-                      if( event.keyCode == keys.ESCAPE ) {
-                          this.locationBox.set('value','');
-                      }
-                      else if (event.keyCode == keys.ENTER) {
-                          this.locationBox.closeDropDown(false);
-                          this.navigateTo( this.locationBox.get('value') );
-                          this.goButton.set('disabled',true);
-                          dojo.stopEvent(event);
-                      } else {
-                          this.goButton.set('disabled', false);
-                      }
-                  });
-    dojo.connect( navbox, 'onselectstart', function(evt) { evt.stopPropagation(); return true; });
-    // monkey-patch the combobox code to make a few modifications
-    (function(){
-
-         // add a moreMatches class to our hacked-in "more options" option
-         var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
-         var oldCreateOption = dropDownProto._createOption;
-         dropDownProto._createOption = function( item ) {
-             var option = oldCreateOption.apply( this, arguments );
-             if( item.hitLimit )
-                 dojo.addClass( option, 'moreMatches');
-             return option;
-         };
-
-         // prevent the "more matches" option from being clicked
-         var oldOnClick = dropDownProto.onClick;
-         dropDownProto.onClick = function( node ) {
-             if( dojo.hasClass(node, 'moreMatches' ) )
-                 return null;
-             return oldOnClick.apply( this, arguments );
-         };
-    }).call(this);
-
-    // make the 'Go' button'
-    this.goButton = new dijitButton(
-        {
-            label: 'Go',
-            onClick: dojo.hitch( this, function(event) {
-                this.navigateTo(this.locationBox.get('value'));
-                this.goButton.set('disabled',true);
-                dojo.stopEvent(event);
-            })
-        }, dojo.create('button',{},navbox));
-    this.highlightButtonPreviousState = false;
-    this.highlightButton = new dojoxTriStateCheckBox({
-        //label: 'Highlight',
-        title: 'highlight a region',
-        states:[false, true, "mixed"],
-        onChange: function() {
-            if( this.get('checked')==true ) {
-                thisB.view._rubberStop();
-                thisB.view.behaviorManager.swapBehaviors('normalMouse','highlightingMouse');
-            } else if( this.get('checked')==false) {
-                var h = thisB.getHighlight();
-                if( h ) {
-                    thisB.clearHighlight();
-                    thisB.view.redrawRegion( h ); 
-                }
-            }
-            else { // mixed
-                // Uncheck since user is cycling three-state instead
-                // of programmatically landing in mixed state
-                if( thisB.highlightButtonPreviousState != true ) {
-                    thisB.highlightButton.set('checked', false);
-                }
-                else {
-                    thisB.highlightButtonPreviousState = false;
-                }
-                thisB.view._rubberStop();
-                thisB.view.behaviorManager.swapBehaviors('highlightingMouse','normalMouse');
-            }
-        }
-    }, dojo.create('button',{},navbox));
-
-    this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
-                   function() { thisB.highlightButton.set('checked',false); });
+		    var zoomIn = domConstruct.create("I", {"class": "fa icon-search-plus fa-2x"}, navbox);
+		    dojo.connect( zoomIn, "click", this,
+		                  function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.zoomIn();
+		                  });
+		  
+		    var bigZoomIn = domConstruct.create("I", {"class": "fa icon-search-plus", style: {"font-size":"2.5em"}}, navbox);
+		    dojo.connect( bigZoomIn, "click", this,
+		                  function(event) {
+		                      dojo.stopEvent(event);
+		                      this.view.zoomIn(undefined, undefined, 2);
+		                  });
 
 
-    this.afterMilestone('loadRefSeqs', dojo.hitch( this, function() {
+		    // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
+		    // set in the config, then put in a dropdown box for selecting
+		    // reference sequences
+		    var refSeqSelectBoxPlaceHolder = dojo.create('div', {style: "display:inline-block;"}, navbox );
 
-        // make the refseq selection dropdown
-        if( this.refSeqOrder && this.refSeqOrder.length ) {
-            var max = this.config.refSeqSelectorMaxSize || 30;
-            var numrefs = Math.min( max, this.refSeqOrder.length);
-            var options = [];
-            for ( var i = 0; i < numrefs; i++ ) {
-                options.push( { label: this.refSeqOrder[i], value: this.refSeqOrder[i] } );
-            }
-            var tooManyMessage = '(first '+numrefs+' ref seqs)';
-            if( this.refSeqOrder.length > max ) {
-                options.push( { label: tooManyMessage , value: tooManyMessage, disabled: true } );
-            }
-            this.refSeqSelectBox = new dijitSelectBox({
-                name: 'refseq',
-                value: this.refSeq ? this.refSeq.name : null,
-                options: options,
-                onChange: dojo.hitch(this, function( newRefName ) {
-                    // don't trigger nav if it's the too-many message
-                    if( newRefName == tooManyMessage ) {
-                        this.refSeqSelectBox.set('value', this.refSeq.name );
-                        return;
-                    }
+		    // make the location box
+		    this.locationBox = new dijitComboBox(
+		        {
+		            name: "location",
+		            style: { width: '75px' },
+		            maxLength: 400,
+		            searchAttr: "name"
+		        },
+		        dojo.create('input', {}, navbox) );
+		    this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
+		        if( this.nameStore )
+		            this.locationBox.set( 'store', this.nameStore );
+		    }));
 
-                    // only trigger navigation if actually switching sequences
-                    if( newRefName != this.refSeq.name ) {
-                        this.navigateToLocation({ ref: newRefName });
-                    }
-                })
-            }).placeAt( refSeqSelectBoxPlaceHolder );
-        }
+		    this.locationBox.focusNode.spellcheck = false;
+		    dojo.query('div.dijitArrowButton', this.locationBox.domNode ).orphan();
+		    dojo.connect( this.locationBox.focusNode, "keydown", this, function(event) {
+		                      if( event.keyCode == keys.ESCAPE ) {
+		                          this.locationBox.set('value','');
+		                      }
+		                      else if (event.keyCode == keys.ENTER) {
+		                          this.locationBox.closeDropDown(false);
+		                          this.navigateTo( this.locationBox.get('value') );
+		                          this.goButton.set('disabled',true);
+		                          dojo.stopEvent(event);
+		                      } else {
+		                          this.goButton.set('disabled', false);
+		                      }
+		                  });
+		    dojo.connect( navbox, 'onselectstart', function(evt) { evt.stopPropagation(); return true; });
+		    // monkey-patch the combobox code to make a few modifications
+		    (function(){
 
-        // calculate how big to make the location box:  make it big enough to hold the
-        var locLength = this.config.locationBoxLength || function() {
+		         // add a moreMatches class to our hacked-in "more options" option
+		         var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+		         var oldCreateOption = dropDownProto._createOption;
+		         dropDownProto._createOption = function( item ) {
+		             var option = oldCreateOption.apply( this, arguments );
+		             if( item.hitLimit )
+		                 dojo.addClass( option, 'moreMatches');
+		             return option;
+		         };
 
-            // if we have no refseqs, just use 20 chars
-            if( ! this.refSeqOrder.length )
-                return 20;
+		         // prevent the "more matches" option from being clicked
+		         var oldOnClick = dropDownProto.onClick;
+		         dropDownProto.onClick = function( node ) {
+		             if( dojo.hasClass(node, 'moreMatches' ) )
+		                 return null;
+		             return oldOnClick.apply( this, arguments );
+		         };
+		    }).call(this);
 
-            // if there are not tons of refseqs, pick the longest-named
-            // one.  otherwise just pick the last one
-            var ref = this.refSeqOrder.length < 1000
-                && function() {
-                       var longestNamedRef;
-                       array.forEach( this.refSeqOrder, function(name) {
-                                          var ref = this.allRefs[name];
-                                          if( ! ref.length )
-                                              ref.length = ref.end - ref.start + 1;
-                                          if( ! longestNamedRef || longestNamedRef.length < ref.length )
-                                              longestNamedRef = ref;
-                                      }, this );
-                       return longestNamedRef;
-                   }.call(this)
-                || this.refSeqOrder.length && this.allRefs[ this.refSeqOrder[ this.refSeqOrder.length - 1 ] ]
-                || 20;
+		    // make the 'Go' button'
+		    this.goButton = new dijitButton(
+		        {
+		            label: 'Go',
+		            onClick: dojo.hitch( this, function(event) {
+		                this.navigateTo(this.locationBox.get('value'));
+		                this.goButton.set('disabled',true);
+		                dojo.stopEvent(event);
+		            })
+		        }, dojo.create('button',{},navbox));
+		    this.highlightButtonPreviousState = false;
+		    this.highlightButton = new dojoxTriStateCheckBox({
+		        //label: 'Highlight',
+		        title: 'highlight a region',
+		        states:[false, true, "mixed"],
+		        onChange: function() {
+		            if( this.get('checked')==true ) {
+		                thisB.view._rubberStop();
+		                thisB.view.behaviorManager.swapBehaviors('normalMouse','highlightingMouse');
+		            } else if( this.get('checked')==false) {
+		                var h = thisB.getHighlight();
+		                if( h ) {
+		                    thisB.clearHighlight();
+		                    thisB.view.redrawRegion( h ); 
+		                }
+		            }
+		            else { // mixed
+		                // Uncheck since user is cycling three-state instead
+		                // of programmatically landing in mixed state
+		                if( thisB.highlightButtonPreviousState != true ) {
+		                    thisB.highlightButton.set('checked', false);
+		                }
+		                else {
+		                    thisB.highlightButtonPreviousState = false;
+		                }
+		                thisB.view._rubberStop();
+		                thisB.view.behaviorManager.swapBehaviors('highlightingMouse','normalMouse');
+		            }
+		        }
+		    }, dojo.create('button',{},navbox));
 
-            var locstring = Util.assembleLocStringWithLength({ ref: ref.name, start: ref.end-1, end: ref.end, length: ref.length });
-            //console.log( locstring, locstring.length );
-            return locstring.length;
-        }.call(this) || 20;
+		    this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
+		                   function() { thisB.highlightButton.set('checked',false); });
 
 
-        this.locationBox.domNode.style.width = locLength+'ex';
-    }));
+		    this.afterMilestone('loadRefSeqs', dojo.hitch( this, function() {
 
-    return navbox;
-},
+		        // make the refseq selection dropdown
+		        if( this.refSeqOrder && this.refSeqOrder.length ) {
+		            var max = this.config.refSeqSelectorMaxSize || 30;
+		            var numrefs = Math.min( max, this.refSeqOrder.length);
+		            var options = [];
+		            for ( var i = 0; i < numrefs; i++ ) {
+		                options.push( { label: this.refSeqOrder[i], value: this.refSeqOrder[i] } );
+		            }
+		            var tooManyMessage = '(first '+numrefs+' ref seqs)';
+		            if( this.refSeqOrder.length > max ) {
+		                options.push( { label: tooManyMessage , value: tooManyMessage, disabled: true } );
+		            }
+		            this.refSeqSelectBox = new dijitSelectBox({
+		                name: 'refseq',
+		                value: this.refSeq ? this.refSeq.name : null,
+		                options: options,
+		                onChange: dojo.hitch(this, function( newRefName ) {
+		                    // don't trigger nav if it's the too-many message
+		                    if( newRefName == tooManyMessage ) {
+		                        this.refSeqSelectBox.set('value', this.refSeq.name );
+		                        return;
+		                    }
+
+		                    // only trigger navigation if actually switching sequences
+		                    if( newRefName != this.refSeq.name ) {
+		                        this.navigateToLocation({ ref: newRefName });
+		                    }
+		                })
+		            }).placeAt( refSeqSelectBoxPlaceHolder );
+		        }
+
+		        // calculate how big to make the location box:  make it big enough to hold the
+		        var locLength = this.config.locationBoxLength || function() {
+
+		            // if we have no refseqs, just use 20 chars
+		            if( ! this.refSeqOrder.length )
+		                return 20;
+
+		            // if there are not tons of refseqs, pick the longest-named
+		            // one.  otherwise just pick the last one
+		            var ref = this.refSeqOrder.length < 1000
+		                && function() {
+		                       var longestNamedRef;
+		                       array.forEach( this.refSeqOrder, function(name) {
+		                                          var ref = this.allRefs[name];
+		                                          if( ! ref.length )
+		                                              ref.length = ref.end - ref.start + 1;
+		                                          if( ! longestNamedRef || longestNamedRef.length < ref.length )
+		                                              longestNamedRef = ref;
+		                                      }, this );
+		                       return longestNamedRef;
+		                   }.call(this)
+		                || this.refSeqOrder.length && this.allRefs[ this.refSeqOrder[ this.refSeqOrder.length - 1 ] ]
+		                || 20;
+
+		            var locstring = Util.assembleLocStringWithLength({ ref: ref.name, start: ref.end-1, end: ref.end, length: ref.length });
+		            //console.log( locstring, locstring.length );
+		            return locstring.length;
+		        }.call(this) || 20;
+
+
+		        this.locationBox.domNode.style.width = locLength+'ex';
+		    }));
+
+		    return navbox;
+		},
+		initView: function() {
+		    var thisObj = this;
+		    return this._milestoneFunction('initView', function( deferred ) {
+
+		        //set up top nav/overview pane and main GenomeView pane
+		        dojo.addClass( this.container, "jbrowse"); // browser container has an overall .jbrowse class
+		        dojo.addClass( document.body, this.config.theme || "tundra"); //< tundra dijit theme
+
+		        var topPane = dojo.create( 'div',{ style: {overflow: 'hidden'}}, this.container );
+
+		        var about = this.browserMeta();
+		        var aboutDialog = new InfoDialog(
+		            {
+		                title: 'About '+about.title,
+		                content: about.description,
+		                className: 'about-dialog'
+		            });
+
+
+		        // make our top menu bar
+		        var menuBar = dojo.create(
+		            'div',
+		            {
+		                className: this.config.show_nav ? 'menuBar' : 'topLink'
+		            }
+		            );
+		        thisObj.menuBar = menuBar;
+		        if( this.config.show_menu ) {
+		            ( this.config.show_nav ? topPane : this.container ).appendChild( menuBar );
+		        }
+
+		        var overview = dojo.create( 'div', { className: 'overview', id: 'overview' }, topPane );
+		        this.overviewDiv = overview;
+		        // overview=0 hides the overview, but we still need it to exist
+		        if( ! this.config.show_overview )
+		            overview.style.cssText = "display: none";
+
+		        if( this.config.show_nav ) {
+		            this.navbox = this.createNavBox( topPane );
+
+		            if( this.config.datasets && ! this.config.dataset_id ) {
+		                console.warn("In JBrowse configuration, datasets specified, but dataset_id not set.  Dataset selector will not be shown.");
+		            }
+		            if( this.config.datasets && this.config.dataset_id ) {
+		                this.renderDatasetSelect( menuBar );
+		            } else {
+
+		                this.poweredByLink = dojo.create('a', {
+		                                className: 'powered_by',
+		                                innerHTML: this.browserMeta().title,
+		                                title: 'powered by JBrowse'
+		                            }, menuBar );
+		                thisObj.poweredBy_clickHandle = dojo.connect(this.poweredByLink, "onclick", dojo.hitch( aboutDialog, 'show') );
+		            }
+
+		            // make the file menu
+		            this.addGlobalMenuItem( 'file',
+		                                    new dijitMenuItem(
+		                                        {
+		                                            // id: 'menubar_fileopen', 
+		                                            label: 'Open',
+		                                            iconClass: 'dijitIconFolderOpen',
+		                                            onClick: dojo.hitch( this, 'openFileDialog' )
+		                                        })
+		                                  );
+
+		            this.fileDialog = new FileDialog({ browser: this });
+
+		            this.addGlobalMenuItem( 'file', new dijitMenuItem(
+		                {
+		                    // id: 'menubar_combotrack', 
+		                    label: 'Add combination track',
+		                    iconClass: 'dijitIconSample',
+		                    onClick: dojo.hitch(this, 'createCombinationTrack')
+		                }));
+
+		            this.renderGlobalMenu( 'file', {text: 'File'}, menuBar );
+
+		            // make the view menu
+		            this.addGlobalMenuItem( 'view', new dijitMenuItem({
+		                // id: 'menubar_sethighlight', 
+		                label: 'Set highlight',
+		                iconClass: 'dijitIconFilter',
+		                onClick: function() {
+		                    new SetHighlightDialog({
+		                            browser: thisObj,
+		                            setCallback: dojo.hitch( thisObj, 'setHighlightAndRedraw' )
+		                        }).show();
+		                }
+		            }));
+		            // make the menu item for clearing the current highlight
+		            this._highlightClearButton = new dijitMenuItem(
+		                {
+		                    // id: 'menubar_clearhighlight',
+		                    label: 'Clear highlight',
+		                    iconClass: 'dijitIconFilter',
+		                    onClick: dojo.hitch( this, function() {
+		                                             var h = this.getHighlight();
+		                                             if( h ) {
+		                                                 this.clearHighlight();
+		                                                 this.view.redrawRegion( h );
+		                                             }
+		                                         })
+		                });
+		            this._updateHighlightClearButton();  //< sets the label and disabled status
+		            // update it every time the highlight changes
+		            this.subscribe( '/jbrowse/v1/n/globalHighlightChanged',
+		                            dojo.hitch( this, '_updateHighlightClearButton' ) );
+
+		            this.addGlobalMenuItem( 'view', this._highlightClearButton );
+
+		            // add a global menu item for resizing all visible quantitative tracks
+		            this.addGlobalMenuItem( 'view', new dijitMenuItem({
+		                label: 'Resize quant. tracks',
+		                // id: 'menubar_settrackheight',
+		                title: 'Set all visible quantitative tracks to a new height',
+		                iconClass: 'jbrowseIconVerticalResize',
+		                onClick: function() {
+		                    new SetTrackHeightDialog({
+		                        setCallback: function( height ) {
+		                            var tracks = thisObj.view.visibleTracks();
+		                            array.forEach( tracks, function( track ) {
+		                                // operate only on XYPlot or Density tracks
+		                                if( ! /\b(XYPlot|Density)/.test( track.config.type ) )
+		                                    return;
+
+		                                track.trackHeightChanged=true;
+		                                track.updateUserStyles({ height: height });
+		                            });
+		                        }
+		                    }).show();
+		                }
+		            }));
+
+		            this.renderGlobalMenu( 'view', {text: 'View'}, menuBar );
+
+		            // make the options menu
+		            this.renderGlobalMenu( 'options', { text: 'Options', title: 'configure JBrowse' }, menuBar );
+		        }
+
+		        if( this.config.show_nav ) {
+		            // make the help menu
+		            this.addGlobalMenuItem( 'help',
+		                                    new dijitMenuItem(
+		                                        {
+		                                            // id: 'menubar_about', 
+		                                            label: 'About',
+		                                            //iconClass: 'dijitIconFolderOpen',
+		                                            onClick: dojo.hitch( aboutDialog, 'show' )
+		                                        })
+		                                  );
+
+		            function showHelp() {
+		                new HelpDialog( lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj } )).show();
+		            }
+		            this.setGlobalKeyboardShortcut( '?', showHelp );
+		            this.addGlobalMenuItem( 'help',
+		                                    new dijitMenuItem(
+		                                        {
+		                                            // id: 'menubar_generalhelp', 
+		                                            label: 'General',
+		                                            iconClass: 'jbrowseIconHelp',
+		                                            onClick: showHelp
+		                                        })
+		                                  );
+
+		            this.renderGlobalMenu( 'help', {}, menuBar );
+		        }
+
+		        if( this.config.show_nav && this.config.show_tracklist && this.config.show_overview ) {
+		            var shareLink = this.makeShareLink();
+		            if (shareLink) { menuBar.appendChild( shareLink ); }
+		        }
+		        else
+		            menuBar.appendChild( this.makeFullViewLink() );
+
+
+		        this.viewElem = document.createElement("div");
+		        this.viewElem.className = "dragWindow";
+		        this.container.appendChild( this.viewElem);
+
+		        this.containerWidget = new dijitBorderContainer({
+		            liveSplitters: false,
+		            design: "sidebar",
+		            gutters: false
+		        }, this.container);
+		        var contentWidget =
+		            new dijitContentPane({region: "top"}, topPane);
+
+		        // hook up GenomeView
+		        this.view = this.viewElem.view =
+		            new GenomeView(
+		                { browser: this,
+		                  elem: this.viewElem,
+		                  config: this.config.view,
+		                  stripeWidth: 250,
+		                  refSeq: this.refSeq,
+		                  zoomLevel: 1/200
+		                });
+
+		        dojo.connect( this.view, "onFineMove",   this, "onFineMove"   );
+		        dojo.connect( this.view, "onCoarseMove", this, "onCoarseMove" );
+
+		        this.browserWidget =
+		            new dijitContentPane({region: "center"}, this.viewElem);
+		        dojo.connect( this.browserWidget, "resize", this,      'onResize' );
+		        dojo.connect( this.browserWidget, "resize", this.view, 'onResize' );
+
+		        //connect events to update the URL in the location bar
+		        function updateLocationBar() {
+		            var shareURL = thisObj.makeCurrentViewURL();
+		            if( thisObj.config.updateBrowserURL && window.history && window.history.replaceState )
+		                window.history.replaceState( {},"", shareURL );
+		            document.title = thisObj.browserMeta().title + ' ' + thisObj.view.visibleRegionLocString();
+		        };
+		        dojo.connect( this, "onCoarseMove",                     updateLocationBar );
+		        this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged',  updateLocationBar );
+		        this.subscribe( '/jbrowse/v1/n/globalHighlightChanged', updateLocationBar );
+
+		        //set initial location
+		        this.afterMilestone( 'loadRefSeqs', dojo.hitch( this, function() {
+		            this.afterMilestone( 'initTrackMetadata', dojo.hitch( this, function() {
+		                this.createTrackList().then( dojo.hitch( this, function() {
+
+		                    this.containerWidget.startup();
+		                    this.onResize();
+
+		                    // make our global keyboard shortcut handler
+		                    on( document.body, 'keypress', dojo.hitch( this, 'globalKeyHandler' ));
+
+		                    // configure our event routing
+		                    this._initEventRouting();
+
+		                    // done with initView
+		                    deferred.resolve({ success: true });
+		               }));
+		            }));
+		        }));
+		    });
+		},
+
+		makeGlobalMenu: function( menuName ) {
+		    var items = ( this._globalMenuItems || {} )[menuName] || [];
+		    if( ! items.length )
+		        return null;
+
+		    var menu = new dijitDropDownMenu({leftClickToOpen: true });
+		    dojo.forEach( items, function( item ) {
+		        menu.addChild( item );
+		    });
+		    dojo.addClass( menu.domNode, 'globalMenu' );
+		    dojo.addClass( menu.domNode, menuName );
+		    menu.startup();
+		    return menu;
+		},
+		createTrackList: function() {
+		    return this._milestoneFunction('createTrack', function( deferred ) {
+		        // find the tracklist class to use
+		        var tl_class = !this.config.show_tracklist           ? 'Null'                         :
+		                       (this.config.trackSelector||{}).type  ? this.config.trackSelector.type :
+		                                                               'Hierarchical';
+		        // if( ! /\//.test( tl_class ) )
+		        //     tl_class = 'JBrowse/View/TrackList/'+tl_class;
+		        var tl_class = "p3/widget/HierarchicalTrackList";
+
+		        // load all the classes we need
+		        require( [ tl_class ],
+		                 dojo.hitch( this, function( trackListClass ) {
+		                     // instantiate the tracklist and the track metadata object
+		                     this.trackListView = new trackListClass(
+		                         dojo.mixin(
+		                             dojo.clone( this.config.trackSelector ) || {},
+		                             {
+		                                 trackConfigs: this.config.tracks,
+		                                 browser: this,
+		                                 trackMetaData: this.trackMetaDataStore
+		                             }
+		                         )
+		                     );
+
+		                     // bind the 't' key as a global keyboard shortcut
+		                     this.setGlobalKeyboardShortcut( 't', this.trackListView, 'toggle' );
+
+		                     // listen for track-visibility-changing messages from
+		                     // views and update our tracks cookie
+		                     this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged', dojo.hitch( this, function() {
+		                         this.cookie( "tracks",
+		                                      this.view.visibleTrackNames().join(','),
+		                                      {expires: 60});
+		                     }));
+
+		                     deferred.resolve({ success: true });
+		        }));
+		    });
+		},
 
 
 		loadRefSeqs: function() {
@@ -449,7 +753,7 @@ define([
 				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams)?state.hashParams:{},
 				location: (state && state.hashParams)?state.hashParams.loc:undefined,
-				forceTracks: ["DNA", "PATRICGenes", "RefSeqGenes"].join(","),
+				forceTracks: ["PATRICGenes", "RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams)?state.hashParams.highlight:undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined'))?state.hashParams.show_nav:true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined'))?state.hashParams.show_tracklist:true,
@@ -457,12 +761,13 @@ define([
 				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined'))?state.hashParams.show_menu:false,
 				stores: { url: { type: "JBrowse/Store/SeqFeature/FromConfig", features: [] } },
 				updateBrowserURL: false,
-				  "trackSelector": {
-      "type": "Faceted",
-      "displayColumns": [
-          "key"
-      ],
-	  }
+				trackSelector: {type: "p3/widget/HierarchicalTrackList"}
+				// "trackSelector": {
+				// 	"type": "Faceted",
+				// 	"displayColumns": [
+				// 	  "key"
+				// 	]
+				// }
 			}
 
 			console.log("JBrowse CONFIG: ",jbrowseConfig);

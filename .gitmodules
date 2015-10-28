@@ -53,3 +53,6 @@
 [submodule "public/js/raphael"]
 	path = public/js/raphael
 	url = https://github.com/DmitryBaranovskiy/raphael.git
+[submodule "public/js/circulus"]
+	path = public/js/circulus
+	url = git@github.com:dmachi/circulus

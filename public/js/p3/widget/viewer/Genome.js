@@ -139,6 +139,7 @@ define([
 				title: "Phylogeny",
 				id: this.viewer.id + "_" + "phylogeny"
 			});
+
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
@@ -148,6 +149,12 @@ define([
 			this.browser = new GenomeBrowser({
 				title: "Browser",
 				id: this.viewer.id + "_" + "browser",
+				state: lang.mixin({}, this.state)
+			})
+
+			this.circular = new CircularViewerContainer({
+				title: "Circular Viewer",
+				id: this.viewer.id + "_" + "circular",
 				state: lang.mixin({}, this.state)
 			})
 
@@ -175,6 +182,7 @@ define([
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.browser);
+			this.viewer.addChild(this.circular);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);
