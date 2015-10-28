@@ -106,8 +106,8 @@ define([
 			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, [105, 243, 101], null)
 			// this.addFeatureTrack(this.state.genome_ids[0], "ne(feature_type,CDS)", false, [105, 243, 101], null)
 			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
-			// this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
-			// this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
+			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
+			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
 
 
 			var gcContentTrack = this.viewer.addTrack({
