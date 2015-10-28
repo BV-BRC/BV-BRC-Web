@@ -37,6 +37,7 @@ define([
 
 	return declare([GridContainer], {
 		gridCtor: PathwaysGrid,
+		containerType: "pathway_data",
 		facetFields: ["annotation", "feature_type"],
 		enableFilterPanel: false,
 		apiServer: window.App.dataServiceURL,

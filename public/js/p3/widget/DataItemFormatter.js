@@ -38,7 +38,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'patric_id'
 			}, {
 				name : 'Refseq Locus Tag',
-				text : 'refseq_locus_tag'
+				text : 'refseq_locus_tag',
+				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
 				name : 'Alt Locus Tag',
 				text : 'alt_locus_tag'
@@ -92,13 +93,16 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'feature_id'
 			}, {
 				name : 'Protein ID',
-				text : 'protein_id'
+				text : 'protein_id',
+				link : 'http://www.ncbi.nlm.nih.gov/protein/'
 			}, {
 				name : 'Gene ID',
-				text : 'gene_id'
+				text : 'gene_id',
+				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
 				name : 'gi',
-				text : 'gi'
+				text : 'gi',
+				link : 'http://www.ncbi.nlm.nih.gov/protein/'
 			}, {
 				name : 'Pos Group',
 				text : 'pos_group',
@@ -132,7 +136,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {			
 				name : 'Taxon ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name : 'Sequence ID',
 				text : 'sequence_id',
@@ -212,7 +217,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'patric_id'
 			}, {
 				name : 'Refseq Locus Tag',
-				text : 'refseq_locus_tag'
+				text : 'refseq_locus_tag',
+				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
 				name : 'Alt Locus Tag',
 				text : 'alt_locus_tag'
@@ -252,7 +258,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'evidence'
 			}, {
 				name : 'PMID',
-				text : 'pmid'
+				text : 'pmid',
+				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
 			}, {
 				name : 'BLASP Query Coverage',
 				text : 'query_coverage'
@@ -284,7 +291,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {			
 				name : 'Taxon ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name : 'text',
 				text : 'text',
@@ -333,6 +341,105 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return div;
 		},
 
+		"pathway_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running pathway_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Pathway ID',
+				text : 'pathway_id'
+			}, {
+				name : 'Pathway Name',
+				text : 'pathway_name'
+			}, {
+				name : 'Pathway Class',
+				text : 'pathway_class'
+			}, {
+				name : 'Annotation',
+				text : 'annotation'
+			}, {
+				name : 'Unique Genome Count',
+				text : 'genome_count'
+			}, {
+				name : 'Unique Gene Count',
+				text : 'gene_count'
+			}, {
+				name : 'Unique EC Count',
+				text : 'ec_count'
+			}, {
+				name : 'EC Conservation',
+				text : 'ec_cons'
+			}, {
+				name : 'Gene Conservation',
+				text : 'gene_cons'
+			}, {
+				name : 'Count',
+				text : 'count',
+				data_hide: true
+			}, {
+				name : 'Genome EC',
+				text : 'genome_ec',
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.pathway_name, "fa icon-genome-features fa-2x");
+			displayDetail(item, featureColumns, tbody);
+
+			return div;
+		},
+
+		"proteinfamily_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running pathway_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'ID',
+				text : 'family_id'
+			}, {
+				name : 'Proteins',
+				text : 'feature_count'
+			}, {
+				name : 'Genomes',
+				text : 'genome_count'
+			}, {
+				name : 'Description',
+				text : 'description'
+			}, {
+				name : 'Min AA Length',
+				text : 'aa_length_min'
+			}, {
+				name : 'Max AA Length',
+				text : 'aa_length_max'
+			}, {
+				name : 'Mean',
+				text : 'aa_length_mean'
+			}, {
+				name : 'Std',
+				text : 'aa_length_std'
+			}, {
+				name : 'Count',
+				text : 'count',
+				data_hide: true
+			}, {
+				name : 'Genomes',
+				text : 'genomes',
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.family_id, "fa icon-genome-features fa-2x");
+			displayDetail(item, featureColumns, tbody);
+
+			return div;
+		},
+
 		"genome_data": function(item, options){
 			// do some other type formatting here and return it
 			//console.log("Running genome_data formatter");
@@ -349,7 +456,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'genome_name'
 			}, {
 				name : 'NCBI Taxon ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='								
 			}, {
 				name : 'Genome Status',
 				text : 'genome_status'
