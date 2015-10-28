@@ -140,14 +140,25 @@ define([
 				var gc=[];
 				var current=0;
 				for(current=0;current<seq.length;current+=ws){
-					var win = seq.substr(current,ws);
+					var win = seq.substr(current,ws).toUpperCase();
 					var wl = win.length;
-					var gcs = win.replace(/A/g,"").replace(/T/g,"");
-					var gs = gcs.replace(/C/g,"");
-					var G = gs.length;
-					var C = gcs.length-G;
+					var G=0;
+					var C=0;
+					var gs = win.match(/G/g ||[]);
+					if (gs) {
+						G = gs.length;
+					}
+					
+					var cs = win.match(/C/g ||[]);
+					if (cs) {
+						C = cs.length;
+					}
 
-					gcData.push({accession: accession, score: gcs.length/wl, skew: (G-C)/(G+C), start: current,end: current+wl});
+					var GC = G+C; // for skew, (G-C)/(G+C), G+C can't be 0
+					if (GC == 0){
+						GC = 1;
+					}
+					gcData.push({accession: accession, score: (G+C)/wl, skew: (G-C)/GC, start: current,end: current+wl});
 				}
 				return gc;
 			}
