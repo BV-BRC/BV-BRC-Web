@@ -130,7 +130,7 @@ define([
 		},
 
 		getGCContent: function(data,windowSize){
-			windowSize = windowSize||200;
+			windowSize = windowSize||400;
 
 			var gcData=[]
 
@@ -139,52 +139,33 @@ define([
 				var slen = seq.length;
 				var gc=[];
 				var current=0;
-				var idx=0;
 				for(current=0;current<seq.length;current+=ws){
-					var win = seq.substr(current,ws);
-					// console.log("Window: ", win);
+					var win = seq.substr(current,ws).toUpperCase();
 					var wl = win.length;
-					// console.log("Window Len: ", wl)
-					var gcs = win.replace(/A/g,"").replace(/T/g,"");
-					// console.log("gcs: ", gcs, gcs.length);
-					// var out = {accession:accession,score: gcs.length/wl }
-					// console.log(" gc out: ", out);
+					var G=0;
+					var C=0;
+					var gs = win.match(/G/g ||[]);
+					if (gs) {
+						G = gs.length;
+					}
+					
+					var cs = win.match(/C/g ||[]);
+					if (cs) {
+						C = cs.length;
+					}
 
-					var gs = gcs.replace(/C/g,"");
-					var G = gs.length;
-					var C = gcs.length-G;
-
-					// var m = idx % 5;
-					// var m = 5;
-					// switch(m){
-					// 	case 1:
-					// 		gcData.push({accession: accession, score: 0, skew: 1, start: current,end: current+wl});
-					// 		break;
-					// 	case 2:
-					// 		gcData.push({accession: accession, score: .25, skew: .5, start: current,end: current+wl});
-					// 		break;
-					// 	case 3:
-					// 		gcData.push({accession: accession, score: .5, skew: 0, start: current,end: current+wl});
-					// 		break;
-					// 	case 4:
-					// 		gcData.push({accession: accession, score: .75, skew: -.5, start: current,end: current+wl});
-					// 		break;
-					// 	default: 
-					// 		gcData.push({accession: accession, score: 1, skew: -1, start: current,end: current+wl});
-					// 		break;
-					// }
-
-					gcData.push({accession: accession, score: gcs.length/wl, skew: (G-C)/(G+C), start: current,end: current+wl});
-					idx++;
+					var GC = G+C; // for skew, (G-C)/(G+C), G+C can't be 0
+					if (GC == 0){
+						GC = 1;
+					}
+					gcData.push({accession: accession, score: (G+C)/wl, skew: (G-C)/GC, start: current,end: current+wl});
 				}
 				return gc;
-
 			}
 
 			data.forEach(function(contig){
 					calculateGC(contig.accession, contig.sequence,windowSize);
 			})
-			// console.log("gcData: ", gcData);
 			return gcData
 		},
 

@@ -31,6 +31,7 @@ define([
 
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
+		containerType: "feature_data",
 		facetFields: ["annotation","feature_type"],
 		filter: "",
 		maxGenomeCount: 5000,

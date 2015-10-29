@@ -37,6 +37,7 @@ define([
 
 	return declare([GridContainer], {
 		gridCtor: ProteinFamiliesGrid,
+		containerType: "proteinfamily_data",
 		facetFields: [],
 		enableFilterPanel: false,
 		_setQueryAttr: function(query){
