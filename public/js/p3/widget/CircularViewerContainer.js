@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
-	"dijit/layout/ContentPane","circulus/Viewer","circulus/LineTrack",
+	"./TrackController","circulus/Viewer","circulus/LineTrack",
 	"circulus/SectionTrack","dojo/_base/lang","dojo/request"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	ContentPane,CirculusViewer,LineTrack,SectionTrack,lang,xhr
+	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr
 ){
 
 	return declare([BorderContainer], {
@@ -48,16 +48,15 @@ define([
 			}));
 		},
 
-		addFeatureTrack: function(gid, filter, strand,fill,stroke,background){
+		addFeatureTrack: function(title, gid, filter, strand,fill,stroke,background){
 			var fields=["feature_id","feature_type","sequence_id","segments","gi","na_length","pos_group","strand","public","aa_length","patric_id","owner",
 						"location","protein_id","refseq_locus_tag","taxon_id","accession","end", "genome_name", "product","genome_id","annotation","start"]
 
 			var query =  "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
 		
-
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
-				options: {loading: true, trackWidth: 32,fill: fill, stroke: stroke, gap: 0, background: background},
+				options: {title: title, loading: true, trackWidth: 32,fill: fill, stroke: stroke, gap: 0, background: background},
 			})
 
 
@@ -96,29 +95,44 @@ define([
 		onSetReferenceSequences: function(attr,oldVal, refseqs){
 			console.log("RefSeqs: ", refseqs);
 
+
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {trackWidth: 10,fill: [2, 0, 123], stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 10,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
 				data: refseqs
-			},"perimeter", true)
+			},"perimeter",true);
 
-			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, [50, 137, 34], null)
-			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, [105, 243, 101], null)
-			// this.addFeatureTrack(this.state.genome_ids[0], "ne(feature_type,CDS)", false, [105, 243, 101], null)
-			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
-			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
-			this.addFeatureTrack(this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
+			this.addFeatureTrack("CDS - FWD",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, "#307D32", null)
+			this.addFeatureTrack("CDS - REV",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
+
+			var fillFn = function(item){
+				switch(item.feature_type){
+					case "pseudogene":
+						return "#75DF6F"
+					case "tRNA":
+						return "#3F76DF"
+					case "rRNA":
+						return "#DFC63A"
+					default:
+						return "#21DFD7"
+				}
+			}
+			this.addFeatureTrack("Non-CDS Features",this.state.genome_ids[0], "ne(feature_type,CDS)", false, fillFn,null, {fill: "#dedede",stroke: null})
+			// this.addFeatureTrack("Pseudogenes",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
+			// this.addFeatureTrack("tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
+			// this.addFeatureTrack("rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
+
 
 
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {max: 1, min: 0,trackWidth: 75,fill: [2, 0, 123], stroke: {width: .5,color: "black"}, gap: .35, background: {fill: [235, 213, 243], stroke: null}},
+				options: {title: "GC Content",visible: true, max: .6, min: 0,trackWidth: 64,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {max: 1, min: -1, scoreProperty: "skew", trackWidth: 32,fill: [2, 0, 123], stroke: {width: .5,color: "black"}, gap: .35, background: {fill: [243, 206, 160], stroke: null}},
+				options: {title: "GC Skew",visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 32,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
 			},"outer")
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
@@ -205,7 +219,7 @@ define([
 				return;
 			}
 			if (!this.controlPanel){
-				this.controlPanel = new ContentPane({content: "Controller", region: "left",splitter:true, style:"width:175px;"});
+				this.controlPanel = new TrackController({region: "left",splitter:true, style:"width:250px;"});
 			}
 
 			if (!this.viewer){
