@@ -48,13 +48,14 @@ define([
 			var target = document.getElementById("flashTarget");
 			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', 747, 10, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
 		},
-		onFirstView: function() {
+		onFirstView: function(){
 			if(this._firstView){
 				return;
 			}
 
 			//this.addChild(new ContentPane({region:"top", title:"actionbar", content:"placeholder for action bars"}));
-			this.addChild(new ContentPane({region:"center", content:"", id:"flashTarget"}));
+			//TODO: add legend
+			this.addChild(new ContentPane({region: "center", content: "", id: "flashTarget"}));
 
 			this.inherited(arguments);
 			this._firstView = true;
