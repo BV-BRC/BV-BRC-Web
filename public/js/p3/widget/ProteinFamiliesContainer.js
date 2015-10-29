@@ -1,10 +1,12 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "dijit/layout/ContentPane", "dojo/topic"
+	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
+	"dijit/layout/ContentPane", "dojo/topic"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
-			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ContentPane, Topic){
+			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
+			ContentPane, Topic){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -32,6 +34,9 @@ define([
 			}
 			if(this.proteinFamiliesGrid){
 				this.proteinFamiliesGrid.set('visible', true);
+			}
+			if(this.heatmap) {
+				this.heatmap.set('visible', true);
 			}
 		},
 
@@ -68,7 +73,7 @@ define([
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new ContentPane({title: "Heatmap", content: "Heatmap"});
+			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content:"heatmap"});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
