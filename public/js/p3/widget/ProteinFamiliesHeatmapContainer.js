@@ -46,7 +46,7 @@ define([
 				name: 'ProteinFamilySorter'
 			};
 			var target = document.getElementById("flashTarget");
-			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', 747, 10, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
+			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
 		},
 		onFirstView: function(){
 			if(this._firstView){

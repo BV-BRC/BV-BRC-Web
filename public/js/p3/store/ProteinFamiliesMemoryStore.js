@@ -12,7 +12,7 @@ define([
 		state: null,
 
 		onSetState: function(attr, oldVal, state){
-			//console.log("ProteinFamiliesMemoryStore setState: ", state);
+			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
 			if(state && state.genome_ids && state.genome_ids.length > 0){
 				this.genome_ids = state.genome_ids || [];
 			}
@@ -216,9 +216,9 @@ define([
 
 						_self._loaded = true;
 						return true;
-					}, function(err) {
+					}, function(err){
 
-					}, function(update) {
+					}, function(update){
 						// console.log(update);
 					});
 				});

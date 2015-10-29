@@ -46,9 +46,16 @@ define([
 			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
 		},
 		constructor: function(options){
-			console.log("ProteinFamiliesFilterGrid Ctor: ", options);
+			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
+			}
+			if(options && options.state){
+				var state = options.state;
+				if(state.genome_ids){
+					console.log("initializing filter grid with ", state.genome_ids);
+					this.query = 'in(genome_id,(' + state.genome_ids + '))';
+				}
 			}
 		},
 		startup: function(){
@@ -79,7 +86,7 @@ define([
 					options.forEach(function(el){
 						var allSelected = true;
 						_self.params.state.genome_ids.forEach(function(genomeId){
-							if (_self.cell(genomeId, el).element.input.checked == false){
+							if(_self.cell(genomeId, el).element.input.checked == false){
 								allSelected = false;
 							}
 						});
@@ -100,7 +107,7 @@ define([
 
 					// deselect other radio in the header
 					options.forEach(function(el){
-						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked) {
+						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked){
 							toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
 						}
 					});

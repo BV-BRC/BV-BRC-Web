@@ -14,9 +14,8 @@ define([
 		maxGenomeCount: 5000,
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
-			console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 			if(this.proteinFamiliesGrid){
-				console.log("Set ProteinFamiliesGrid State: ", state);
 				this.proteinFamiliesGrid.set('state', state);
 			}
 			if(this.filterPanelGrid){
@@ -35,7 +34,7 @@ define([
 			if(this.proteinFamiliesGrid){
 				this.proteinFamiliesGrid.set('visible', true);
 			}
-			if(this.heatmap) {
+			if(this.heatmap){
 				this.heatmap.set('visible', true);
 			}
 		},
@@ -73,7 +72,7 @@ define([
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content:"heatmap"});
+			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content: "heatmap"});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
