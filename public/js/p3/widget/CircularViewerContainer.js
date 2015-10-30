@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
 	"./TrackController","circulus/Viewer","circulus/LineTrack",
-	"circulus/SectionTrack","dojo/_base/lang","dojo/request"
+	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr
+	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter
 ){
 
 	return declare([BorderContainer], {
@@ -56,7 +56,15 @@ define([
 		
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: title, loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background},
+				options: {
+					title: title, loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
+					formatPopupContent: function(item){
+						return item.patric_id + "<br>Type: " + item.feature_type + "<br>Location: " + item.location;
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item,"feature_data")
+					}
+				}
 			})
 
 
