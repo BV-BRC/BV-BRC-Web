@@ -59,7 +59,7 @@ define([
 				options: {
 					title: title, loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
-						return item.patric_id + "<br>Type: " + item.feature_type + "<br>Location: " + item.location;
+						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
 					},
 					formatDialogContent: function(item){
 						return DataItemFormatter(item,"feature_data")
@@ -125,7 +125,7 @@ define([
 						return "#21DFD7"
 				}
 			}
-			this.addFeatureTrack("Non-CDS Features",this.state.genome_ids[0], "ne(feature_type,CDS)", false, fillFn,null, {fill: "#dedede",stroke: null})
+			this.addFeatureTrack("Non-CDS Features",this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", false, fillFn,null, {fill: null,stroke: null})
 			// this.addFeatureTrack("Pseudogenes",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
 			// this.addFeatureTrack("tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
 			// this.addFeatureTrack("rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
@@ -135,7 +135,7 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",visible: true, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",visible: false, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
