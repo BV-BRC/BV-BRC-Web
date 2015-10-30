@@ -1,10 +1,12 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "dijit/layout/ContentPane", "dojo/topic"
+	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
+	"dijit/layout/ContentPane", "dojo/topic"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
-			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ContentPane, Topic){
+			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
+			ContentPane, Topic){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -12,10 +14,12 @@ define([
 		maxGenomeCount: 5000,
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
-			console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 			if(this.proteinFamiliesGrid){
-				console.log("Set ProteinFamiliesGrid State: ", state);
 				this.proteinFamiliesGrid.set('state', state);
+			}
+			if(this.filterPanelGrid){
+				this.filterPanelGrid.set('query', 'in(genome_id,(' + state.genome_ids + '))');
 			}
 			this._set('state', state);
 		},
@@ -30,6 +34,9 @@ define([
 			if(this.proteinFamiliesGrid){
 				this.proteinFamiliesGrid.set('visible', true);
 			}
+			if(this.heatmap){
+				this.heatmap.set('visible', true);
+			}
 		},
 
 		onFirstView: function(){
@@ -37,7 +44,7 @@ define([
 				return;
 			}
 
-			this.filterPanel = new ContentPane({
+			var filterPanel = new ContentPane({
 				region: "left",
 				title: "filter",
 				content: "Filter By",
@@ -45,11 +52,10 @@ define([
 				splitter: true
 			});
 
-			var filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state,
-				query: "?eq(genome_id," + this.state.genome_ids + ")"
+			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
+				state: this.state
 			});
-			this.filterPanel.addChild(filterPanelGrid);
+			filterPanel.addChild(this.filterPanelGrid);
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
@@ -66,7 +72,7 @@ define([
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new ContentPane({title: "Heatmap", content: "Heatmap"});
+			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content: "heatmap"});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
@@ -74,7 +80,7 @@ define([
 			this.tabContainer.addChild(this.heatmap);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			this.addChild(this.filterPanel);
+			this.addChild(filterPanel);
 
 			this.inherited(arguments);
 			this._firstView = true;

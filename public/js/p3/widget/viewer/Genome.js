@@ -12,7 +12,7 @@ define([
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer, Phylogeny, GenomeBrowser){
+			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
@@ -22,7 +22,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			console.log("_setGenome_IDAttr: ", id, this.genome_id, this.state);
+			//console.log("_setGenome_IDAttr: ", id, this.genome_id, this.state);
 			if(!id){
 				return;
 			}
@@ -49,10 +49,10 @@ define([
 					break;
 				case "proteinFamilies":
 				case "pathways":
-					activeTab.set("state", this.state)
+					activeTab.set("state", this.state);
 					break;
 				default:
-					activeTab.set("state", activeQueryState)
+					activeTab.set("state", activeQueryState);
 					break;
 			}
 		},
@@ -61,15 +61,12 @@ define([
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
 			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
 			var out = taxon_lineage_names.map(function(id, idx){
-				//console.log("Lineage Name: ", id, " id: ", taxon_lineage_ids[idx]);
-
 				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
 			return out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		_setGenomeAttr: function(genome){
-			// console.log("Set Genome Attr: ", genome)
 			var state = this.state || {};
 
 			state.genome = genome;
@@ -81,7 +78,7 @@ define([
 
 			switch(active){
 				case "overview":
-					activeTab.set("state", state)
+					activeTab.set("state", state);
 					break;
 				default:
 					break;
@@ -90,7 +87,6 @@ define([
 			this._set("genome", genome);
 
 			this.resize();
-
 		},
 
 		createOverviewPanel: function(){
@@ -112,12 +108,9 @@ define([
 			}
 
 			if(state.hashParams && state.hashParams.view_tab){
-				// console.log("    Look for Tab (this." + state.hashParams.view_tab + "): ", state.hashParams.view_tab);
 
 				if(this[state.hashParams.view_tab]){
-
 					var vt = this[state.hashParams.view_tab];
-					// console.log("     View Tab: ", vt);
 					vt.set("visible", true);
 					this.viewer.selectChild(vt);
 				}else{
@@ -150,13 +143,13 @@ define([
 				title: "Browser",
 				id: this.viewer.id + "_" + "browser",
 				state: lang.mixin({}, this.state)
-			})
+			});
 
 			this.circular = new CircularViewerContainer({
 				title: "Circular Viewer",
 				id: this.viewer.id + "_" + "circular",
 				state: lang.mixin({}, this.state)
-			})
+			});
 
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
