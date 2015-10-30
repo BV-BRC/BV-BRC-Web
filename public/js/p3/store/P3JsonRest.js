@@ -54,7 +54,7 @@ define([
 			}
             query = query || "";
 
-            console.log("p3JsonRest Query: ", query)
+//            console.log("p3JsonRest Query: ", query)
 			if (options.start >= 0 || options.count >= 0) {
 				headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 					(("count" in options && options.count != Infinity) ?
@@ -96,7 +96,7 @@ define([
 
             // this is the POST version
 			query = (query && (typeof query == 'string') && (query.charAt(0) == "?")) ? query.substr(1) : query;
-			console.log("DO POST: ", query)
+			//console.log("DO POST: ", query)
 			var results = dojo.rawXhrPost({
                 url: this.target,
 				postData: query || "",

@@ -56,7 +56,7 @@ define([
 		
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: title, loading: true, trackWidth: 32,fill: fill, stroke: stroke, gap: 0, background: background},
+				options: {title: title, loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background},
 			})
 
 
@@ -98,7 +98,7 @@ define([
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 10,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
 				data: refseqs
 			},"perimeter",true);
 
@@ -127,12 +127,12 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",visible: true, max: .6, min: 0,trackWidth: 64,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",visible: true, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {title: "GC Skew",visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 32,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
+				options: {title: "GC Skew",visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
 			},"outer")
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
