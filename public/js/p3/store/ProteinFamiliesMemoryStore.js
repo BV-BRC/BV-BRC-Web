@@ -93,7 +93,9 @@ define([
 
 				var familyIdList = [];
 				familyStat.forEach(function(element){
-					familyIdList.push(element.val);
+					if(element.val != ""){
+						familyIdList.push(element.val);
+					}
 				});
 
 				// sub query - genome distribution
@@ -125,14 +127,15 @@ define([
 					}), function(res){
 
 						var genomeFamilyDist = response.facets.stat.buckets;
-						var familyGenomeIdStr = {};
 						var familyGenomeCount = {};
 						var familyGenomeIdCountMap = {};
 						var familyGenomeIdSet = {};
 						var genomePosMap = {};
-						_self.genome_ids.forEach(function(genomeId){
-							genomePosMap[genomeId] = _self.genome_ids.indexOf(genomeId);
+						_self.genome_ids.forEach(function(genomeId, idx){
+							genomePosMap[genomeId] = idx;
 						});
+
+						window.performance.mark('mark_start_stat1');
 
 						genomeFamilyDist.forEach(function(genome){
 							var genomeId = genome.val;
@@ -141,36 +144,46 @@ define([
 
 							familyBuckets.forEach(function(bucket){
 								var familyId = bucket.val;
-								var genomeCount = bucket.count.toString(16);
-								if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
+								if(familyId != ""){
+									var genomeCount = bucket.count.toString(16);
+									if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
 
-								if(familyId in familyGenomeIdCountMap){
-									familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
-								}
-								else{
-									var genomeIdCount = [];
-									genomeIdCount[genomePos] = genomeCount;
-									familyGenomeIdCountMap[familyId] = genomeIdCount;
-								}
+									if(familyId in familyGenomeIdCountMap){
+										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
+									}
+									else{
+										var genomeIdCount = [];
+										genomeIdCount[genomePos] = genomeCount;
+										familyGenomeIdCountMap[familyId] = genomeIdCount;
+									}
 
-								if(familyId in familyGenomeIdSet){
-									familyGenomeIdSet[familyId].push(genomeId);
-								}
-								else{
-									var genomeIds = [];
-									genomeIds.push(genomeId);
-									familyGenomeIdSet[familyId] = genomeIds;
+									if(familyId in familyGenomeIdSet){
+										familyGenomeIdSet[familyId].push(genomeId);
+									}
+									else{
+										var genomeIds = [];
+										genomeIds.push(genomeId);
+										familyGenomeIdSet[familyId] = genomeIds;
+									}
 								}
 							});
 						});
 
+						window.performance.mark('mark_end_stat1');
+						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
+
+						window.performance.mark('mark_start_stat2');
+
 						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-							var genomeIdStr = familyGenomeIdCountMap[familyId];
-							familyGenomeIdStr[familyId] = genomeIdStr.join("");
 							familyGenomeCount[familyId] = familyGenomeIdSet[familyId].filter(function(value, index, self){
 								return self.indexOf(value) === index;
 							}).length;
 						});
+
+						window.performance.mark('mark_end_stat2');
+						window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
+
+						window.performance.mark('mark_start_stat3');
 
 						var data = {};
 						var familyRefHash = {};
@@ -182,35 +195,54 @@ define([
 
 						familyStat.forEach(function(element){
 							var familyId = element.val;
-							var featureCount = element.count;
-							var std = 0;
-							if(featureCount > 1){
-								var sumSq = element.ss || 0;
-								var sum = element.sum || 0;
-								var realSq = sumSq - (sum * sum) / featureCount;
-								std = Math.sqrt(realSq / (featureCount - 1));
-							}
+							if(familyId != ""){
+								var featureCount = element.count;
+								var std = 0;
+								if(featureCount > 1){
+									var sumSq = element.ss || 0;
+									var sum = element.sum || 0;
+									var realSq = sumSq - (sum * sum) / featureCount;
+									std = Math.sqrt(realSq / (featureCount - 1));
+								}
 
-							element.family_id = familyId;
-							element.feature_count = featureCount;
-							element.aa_length_std = std;
-							element.description = familyRefHash[element.val];
-							element.genome_count = familyGenomeCount[familyId];
-							element.genomes = familyGenomeIdStr[familyId];
-							delete element.val;
-							delete element.ss;
-							delete element.sum;
-							data[familyId] = element;
+								data[familyId] = {
+									family_id: familyId,
+									feature_count: featureCount,
+									genome_count: familyGenomeCount[familyId],
+									aa_length_std: std,
+									aa_length_max: element.aa_length_max,
+									aa_length_mean: element.aa_length_mean,
+									aa_length_min: element.aa_length_min,
+									description: familyRefHash[familyId],
+									genomes: familyGenomeIdCountMap[familyId].join("")
+								};
+							}
 						});
+						window.performance.mark('mark_end_stat3');
+						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
 						console.log(data);
 
-						var gridData = [];
-						Object.keys(data).forEach(function(key){
-							gridData.push(data[key]);
-						});
-						//gridData.sort(function(a, b){
-						//	return (a.family_id).localeCompare(b.family_id);
+						window.performance.mark('mark_start_stat4');
+
+						//var gridData = [];
+						//Object.keys(data).forEach(function(key){
+						//	gridData.push(data[key]);
 						//});
+						var arrayKeys = Object.keys(data);
+						var arrayLength = arrayKeys.length;
+						var gridData = new Array(arrayLength);
+						for(var i = 0; i < arrayLength; i++){
+							gridData[i] = data[arrayKeys[i]];
+						}
+						window.performance.mark('mark_end_stat4');
+						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
+						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
+
+						var measures = window.performance.getEntriesByType('measure');
+						for(var i = 0, len = measures.length; i < len; ++i){
+							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
+						}
+
 						_self.setData(gridData);
 						//console.log(gridData);
 
