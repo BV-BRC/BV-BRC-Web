@@ -5,20 +5,23 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser"
+	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser",
+	"../SequenceGridContainer"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser){
+			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
+			SequenceGridContainer
+){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
 		"query": null,
 		containerType: "genome_group",
-		genome_id: "",
+		genome_id: "", 
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
@@ -133,6 +136,13 @@ define([
 				id: this.viewer.id + "_" + "phylogeny"
 			});
 
+			this.sequences = new SequenceGridContainer({
+				title: "Sequences",
+				id: this.viewer.id + "_" + "sequences",
+				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+			});
+
+
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
@@ -176,6 +186,7 @@ define([
 			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.browser);
 			this.viewer.addChild(this.circular);
+			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);

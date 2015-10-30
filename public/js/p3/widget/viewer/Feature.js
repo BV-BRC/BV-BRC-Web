@@ -31,14 +31,14 @@ define([
 			this.inherited(arguments);
 			this.overview = this.createOverviewPanel();
 			this.genomeBrowser=new ContentPane({title: "Genome Browser", id: this.viewer.id + "_genomeBrowser", content: "Genome Browser"})
-			this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
+			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
 			this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"})
 			this.transcriptomics=new ContentPane({title: "Transcriptomics", id: this.viewer.id + "_transcriptomics", content: "Transcriptomics"})
 			this.correlatedGenes=new ContentPane({title: "Correlated Genes", id: this.viewer.id + "_correlatedGenes", content: "Correlated Genes"})
 			
 			this.viewer.addChild(this.overview)
 			this.viewer.addChild(this.genomeBrowser);
-			this.viewer.addChild(this.compareRegionViewer);
+			// this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
 		}
