@@ -39,9 +39,6 @@ define([
 			console.log("addTrack Event: ", event)
 			var tr = domConstruct.create("tr",{},this.trackTable);
 			var color = domConstruct.create("td",{}, tr);
-			if (typeof event.track.fill == 'function'){
-				domConstruct.create("span", {innerHTML: "F", style: {border: "1px solid black", "font-size": ".85em", "font-weight": "600", padding: "2px", width: "20px",height: "20px", "vertical-align": "middle", "text-align": "center", margin: "2px"}},color)
-			}else{
 				var fg,bg;
 				var foregroundIsStroke=false;
 
@@ -62,8 +59,11 @@ define([
 					}
 
 				}
+
 				var colorPicker = new ColorPicker({
 					style: "margin:2px;",
+					enableBackgroundSelector: true,
+					enableForegroundSelector: !(typeof event.track.fill == 'function'),
 					foregroundColor: fg,
 					backgroundColor: bg
 				});
@@ -78,7 +78,7 @@ define([
 				colorPicker.watch("foregroundColor", function(attr,oldVal,color){
 					event.track.set("foregroundColor", color)
 				})
-			}
+			
 			domConstruct.create("td", {innerHTML: event.track.title},tr)
 			var td = domConstruct.create('td', {style:{"word-wrap": "nowrap","text-align": "right", "font-size": ".85em"}},tr);
 
