@@ -54,6 +54,9 @@ define([
 				case "pathways":
 					activeTab.set("state", this.state);
 					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
+					break;
 				default:
 					activeTab.set("state", activeQueryState);
 					break;

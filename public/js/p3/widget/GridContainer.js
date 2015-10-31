@@ -33,7 +33,7 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state){
-			//console.log("GridContainer onSetState: ", state);
+			console.log("GridContainer onSetState: ", state);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;
