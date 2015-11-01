@@ -28,11 +28,11 @@ define([
 			});
 
 			this.viewer.addChild(this.phylogeny,1)
-
 			domConstruct.empty(this.queryNode);
 
 			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
 		},
+		
 		_setTaxon_idAttr: function(id){
 			this.taxon_id = id;
 

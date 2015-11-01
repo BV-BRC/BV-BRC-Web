@@ -50,6 +50,7 @@ define([
 			switch(active){
 				case "overview":
 					break;
+				case "phlyogeny":
 				case "proteinFamilies":
 				case "pathways":
 					activeTab.set("state", this.state);
@@ -83,6 +84,7 @@ define([
 			var activeTab = this[active];
 
 			switch(active){
+				case "phylogeny":
 				case "overview":
 					activeTab.set("state", state);
 					break;
