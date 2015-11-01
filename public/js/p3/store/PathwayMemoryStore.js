@@ -17,11 +17,17 @@ define([
 		idProperty: "pathway_id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
-
+		genome_ids: null,
 		onSetState: function(attr, oldVal, state){
 			//console.log("PathwayMemoryStore setState: ", state);
 			if(state && state.genome_ids && state.genome_ids.length > 0){
-				this.genome_ids = state.genome_ids || [];
+				var cur = this.genome_ids.join("");
+				var next = state.genome_ids.join("");
+				if (cur != next){
+					this.set("genome_ids", state.genome_ids || []);
+					this._loaded = false;
+					delete this._loadingDeferred;
+				}
 			}
 		},
 		constructor: function(options){
@@ -42,7 +48,9 @@ define([
 			else{
 				var _self = this;
 				var results;
+				console.log("Initiate NON LOADED Query: ", query)
 				var qr = QueryResults(when(this.loadData(), function(){
+					console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
@@ -74,13 +82,26 @@ define([
 			var state = this.state || {};
 
 			if(!state.genome_ids || state.genome_ids.length < 1){
-				console.log("No Genome IDS");
+				console.log("No Genome IDS, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					this._loaded = true;
+					def.resolve(true);
+				}), 0)
+				return def.promise;
+	
 			}
 
 			var lq;
 
 			if(state && state.genome_ids){
-				lq = "genome_id:(" + state.genome_ids.join(" or ") + ")"
+			//	lq = state.genome_ids.map(function(x){ return "genome_id:" + x}).join(" OR ");
+				lq = "genome_id:(" + state.genome_ids.join(" OR ") + ")";
 			}
 
 			console.log("PathwayMemoryStore LoadData Query: ", lq);
@@ -90,6 +111,7 @@ define([
 				rows: 1,
 				facet: true,
 				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}}'
+
 			};
 			var q = Object.keys(query).map(function(p){
 				return p + "=" + query[p]
@@ -97,14 +119,16 @@ define([
 
 			var _self = this;
 			console.log("Load Data: ", q)
-			this._loadingDeferred = when(request.get(this.apiServer + '/pathway/?' + q, {
+			this._loadingDeferred = when(request.post(this.apiServer + '/pathway/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				}
+				},
+				data: q
+
 			}), function(response){
 				console.log("Pathway Base Query Response:", response);
 				var pathwayIdList = [];
@@ -157,6 +181,7 @@ define([
 					console.log("setData() rows: ", data.length);
 					_self.setData(data);
 					_self._loaded = true;
+
 					return true;
 				});
 			});

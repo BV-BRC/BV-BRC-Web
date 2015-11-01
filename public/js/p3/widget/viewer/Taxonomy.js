@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../InteractionsContainer"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, InteractionsContainer){
+			TranscriptomicsContainer, JBrowser, Phylogeny){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -21,6 +21,14 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
+
+			this.phylogeny = new Phylogeny({
+				title: "Phylogeny",
+				id: this.viewer.id + "_" + "phylogeny"
+			});
+
+			this.viewer.addChild(this.phylogeny,1)
+
 			domConstruct.empty(this.queryNode);
 
 			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
@@ -60,17 +68,19 @@ define([
 
 			this.set("taxon_id", parts[parts.length - 1]);
 
+			state.search = "eq(taxon_lineage_ids," + this.taxon_id + ")";
+
 			//console.log("GenomeList onSetState()");
 			this.inherited(arguments);
-			this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
-			//console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
-			switch(active){
-				case "genomes":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(taxon_lineage_ids," + this.taxon_id + ")"}));
-					break;
-			}
+			// this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			// var activeTab = this[active];
+			// switch(active){
+			// 	case "genomes":
+			// 		activeTab.set("state", lang.mixin({}, this.state, {search: "eq(taxon_lineage_ids," + this.taxon_id + ")"}));
+			// 		break;
+			// }
 		},
 
 		buildHeaderContent: function(taxon){

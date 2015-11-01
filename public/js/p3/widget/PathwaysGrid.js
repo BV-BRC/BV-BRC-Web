@@ -95,6 +95,7 @@ define([
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set("state", state);
+				this.refresh();
 			}
 		},
 

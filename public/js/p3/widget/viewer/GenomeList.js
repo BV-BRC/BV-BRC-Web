@@ -24,14 +24,11 @@ define([
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
 			//console.log("GenomeList SetQuery: ", query, this);
-			// if (query == this.query){
-			// 	console.log("GenomeList: Skip Unchanged query", query);
+
+			this._set("query", query);
+			// if(!this._started){
 			// 	return;
 			// }
-			this._set("query", query);
-			if(!this._started){
-				return;
-			}
 
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
@@ -68,20 +65,29 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//console.log("GenomeList onSetState()");
-			this.inherited(arguments);
-			this.set("query", state.search);
-			//console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
-			//console.log("onSetState Active Tab: ", active);
-			switch(active){
-				case "genomes":
-					//console.log("Set Genomes activeTab state: ", state, " tab: ", activeTab);
-					activeTab.set("state", state);
-					//console.log(" after activeTab set()");
-					break;
+			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			
+
+			if (!state.genome_ids){
+				console.log("	NO Genome_IDS")
+				if (state.search == oldVal.search){
+					console.log("		Same Search")
+					console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					this.set("state", lang.mixin({},state,{genome_ids: oldVal.genome_ids}))	
+					return;
+				}else{
+					this.set("query", state.search);
+				}
+			}else if (state.search!=oldVal.search){
+				console.log("SET QUERY: ", state.search);
+				this.set("query", state.search);
 			}
+			
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			// if (active=="genomes"){ this.setActivePanelState() };
+
+			this.inherited(arguments);
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
@@ -90,30 +96,55 @@ define([
 			this.queryNode.innerHTML = "Genome List Query: " + decodeURIComponent(newVal);
 		},
 
-		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids);
-			this.state.genome_ids = genome_ids;
-			// var gidQueryState = lang.mixin({},this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))",hashParams: {}})
-			var activeQueryState = lang.mixin({}, this.state, {search: "?in(genome_id,(" + genome_ids.join(",") + "))"});
-			// console.log("gidQueryState: ", gidQueryState);
+		setActivePanelState: function(){
+
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active Query State: ", activeQueryState);
 			console.log("Active: ", active);
 
 			var activeTab = this[active];
+
+
+
+			if (!activeTab){
+				console.log("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
 			switch(active){
 				case "genomes":
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
 				case "pathways":
-					activeTab.set("state", lang.mixin({}, this.state, {genome_ids: genome_ids, search: ""}));
+					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
 					break;
 				default:
-					activeTab.set("state", activeQueryState);
+					var activeQueryState;
+					if (this.state && this.state.genome_ids){
+						console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "?in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// console.log("gidQueryState: ", gidQueryState);
+						console.log("Active Query State: ", activeQueryState);
+
+					}
+
+					if (activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
 					break;
 			}
+			console.log("Set Active State COMPLETE");
+		},
 
+		onSetGenomeIds: function(attr, oldVal, genome_ids){
+			console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			this.state.genome_ids = genome_ids;
+			this.setActivePanelState();
 		},
 
 		createOverviewPanel: function(state){
@@ -139,14 +170,6 @@ define([
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
-			this.phylogeny = new ContentPane({
-				maxGenomeCount: 5000,
-				content: "Phylogeny",
-				title: "Phylogeny",
-				id: this.viewer.id + "_" + "phylogeny",
-				disabled: true,
-				state: this.state
-			});
 			this.genomes = new GenomeGridContainer({
 				title: "Genomes",
 				id: this.viewer.id + "_" + "genomes",
@@ -174,13 +197,13 @@ define([
 				title: "Pathways",
 				id: this.viewer.id + "_" + "pathways",
 				disabled: true,
-				state: this.state
+				// state: this.state
 			});
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
 				id: this.viewer.id + "_" + "proteinFamilies",
 				disabled: true,
-				state: this.state
+				// state: this.state
 			});
 			this.transcriptomics = new TranscriptomicsContainer({
 				title: "Transcriptomics",
@@ -192,7 +215,6 @@ define([
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomes);
 			this.viewer.addChild(this.sequences);
-			this.viewer.addChild(this.phylogeny);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
 			this.viewer.addChild(this.pathways);

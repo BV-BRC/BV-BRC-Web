@@ -28,7 +28,8 @@ define([
 
 		onSetQuery: function(attr,oldVal, query){
 			query = query + "&select(eid)&limit(25000)"
-			xhr.get(this.apiServer + "/transcriptomics_experiment/?" + query,{
+			query = (query && (query.charAt(0)=="?"))?query.substr(1):query
+			xhr.post(this.apiServer + "/transcriptomics_experiment/?",{
 				headers: {
 					"accept": "application/json",
 	              	"content-type": "application/json",
@@ -36,6 +37,7 @@ define([
 	                'X-Requested-With': null,
 	                'Authorization': (window.App.authorizationToken || "")
 	            },
+	            postData: query,
 	            handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
 				console.log("eids: ", eids);

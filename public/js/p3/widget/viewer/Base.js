@@ -34,7 +34,8 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 
-		onSetState: function(attr, oldVal, newVal){},
+		onSetState: function(attr, oldVal, newVal){
+		},
 
 		onSetAnchor: function(evt){
 
