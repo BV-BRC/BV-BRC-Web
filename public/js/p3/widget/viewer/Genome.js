@@ -50,9 +50,13 @@ define([
 			switch(active){
 				case "overview":
 					break;
+				case "phlyogeny":
 				case "proteinFamilies":
 				case "pathways":
 					activeTab.set("state", this.state);
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
 					break;
 				default:
 					activeTab.set("state", activeQueryState);
@@ -80,6 +84,7 @@ define([
 			var activeTab = this[active];
 
 			switch(active){
+				case "phylogeny":
 				case "overview":
 					activeTab.set("state", state);
 					break;

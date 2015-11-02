@@ -498,7 +498,7 @@ define([
 		            var shareURL = thisObj.makeCurrentViewURL();
 		            if( thisObj.config.updateBrowserURL && window.history && window.history.replaceState )
 		                window.history.replaceState( {},"", shareURL );
-		            document.title = thisObj.browserMeta().title + ' ' + thisObj.view.visibleRegionLocString();
+		            //document.title = thisObj.browserMeta().title + ' ' + thisObj.view.visibleRegionLocString();
 		        };
 		        dojo.connect( this, "onCoarseMove",                     updateLocationBar );
 		        this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged',  updateLocationBar );

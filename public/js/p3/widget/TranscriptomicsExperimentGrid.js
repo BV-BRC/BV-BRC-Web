@@ -21,6 +21,7 @@ define([
 			eid: {label: "Experiment ID", field: "eid",hidden:true},
 			title: {label: "Title", field: "title", hidden: false},
 			comparisons: {label: "Comparisons", field: "comparisions",  hidden: false},
+			samples: {label: "Samples", field: "samples", hidden: false},
 			genes:{label: "Genes", field: "genes",hidden: false},
 			pubmed:{label: "PubMed", field: "pmid",hidden: false},
 			linkout:{label: "Link Out", field: "",hidden: false},

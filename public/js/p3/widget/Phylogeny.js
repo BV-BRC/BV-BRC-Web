@@ -7,18 +7,59 @@ define([
 	console.log("jsphylosvg: ", Smits);
 
 	return declare([WidgetBase],{
-		newickURL: "/public/766.nwk",
 		type: "rectangular",
+		state: null,
+		taxon_id: null,
+		newick: null,
+		apiServer: window.App.dataAPI,
+
 		postCreate: function(){
 			this.containerNode = this.canvasNode = domConstruct.create("div",{id: this.id +"_canvas"}, this.domNode);
-
+			this.watch("state", lang.hitch(this, "onSetState"));
+			this.watch("taxon_id", lang.hitch(this,"onSetTaxonId"))
+			this.watch("newick", lang.hitch(this,"renderTree"))
 		},
-		startup: function(){
-			var _self=this;
-			request.get(this.newickURL).then(lang.hitch(this,function(newick){
-				this.newick=newick;
-				this.resize();
+
+		onSetState: function(attr,oldVal,state){
+			console.log("Phylogeny onSetState: ", state);
+			if (!state) { return; }
+
+			if (state.genome){
+				this.set("taxon_id", state.genome.taxon_id);
+			}else if (state.taxonomy){
+				this.set("taxon_id", state.taxonomy.taxon_id);
+			}
+		},
+
+		onSetTaxonId: function(attr,oldVal,taxonId){
+			console.log("taxonId: ", taxonId);
+
+			request.get(this.apiServer + "/taxonomy/" + taxonId,{
+				headers: {accept: "application/newick"}
+			}).then(lang.hitch(this,function(newick){
+				console.log("Set Newick");
+				this.set('newick', newick);
 			}));
+		},
+
+		renderTree: function(){
+			if (!this.newick){
+				console.log("No Newick File To Render")
+				return;
+			}
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.paddingX = 5;
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.alignRight = true;
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.minHeightBetweenLines = 5;
+			// Smits.PhyloCanvas.Render.Parameters.Rectangular.
+			Smits.PhyloCanvas.Render.Parameters.Rectangular.bufferX = 400;
+			Smits.PhyloCanvas.Render.Parameters.Circular.bufferRadius = .75;
+			Smits.PhyloCanvas.Render.Parameters.Circular.bufferAngle = 0;
+			domConstruct.empty(this.canvasNode);
+			this.canvas = new Smits.PhyloCanvas({newick:this.newick}, this.canvasNode,this._contentBox.w,(this._contentBox.h*5), this.type);
+		},
+
+		onFirstView: function(){
+			this.renderTree();
 		},
 		resize: function(changeSize, resultSize){
             var node = this.domNode;
@@ -57,24 +98,14 @@ define([
                     w: bb.w - pe.w,
                     h: bb.h - pe.h
             };
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.paddingX = 5;
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.alignRight = true;
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.minHeightBetweenLines = 5;
-			// Smits.PhyloCanvas.Render.Parameters.Rectangular.
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.bufferX = 400;
-			Smits.PhyloCanvas.Render.Parameters.Circular.bufferRadius = .75;
-			Smits.PhyloCanvas.Render.Parameters.Circular.bufferAngle = 0;
-			if (this.newick){
-				if (this.debounceTimer){
-					clearTimeout(this.debounceTimer);
-				}
-				this.debounceTimer = setTimeout(lang.hitch(this, function(){
-					domConstruct.empty(this.canvasNode);
-					this.canvas = new Smits.PhyloCanvas({newick:this.newick}, this.canvasNode,this._contentBox.w,(this._contentBox.h*5), this.type);
-					delete this.debounceTimer;
-				}),250);
+
+			if (this.debounceTimer){
+				clearTimeout(this.debounceTimer);
 			}
-          
+			this.debounceTimer = setTimeout(lang.hitch(this, function(){
+				this.renderTree();
+			}),250);
+	      
 		}
 
 	});

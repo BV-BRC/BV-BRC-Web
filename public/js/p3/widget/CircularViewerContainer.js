@@ -15,6 +15,7 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 
+
 		_setQueryAttr: function(query){
 		},
 
@@ -57,7 +58,7 @@ define([
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
 				options: {
-					title: title, loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
+					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
 						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
 					},
@@ -90,8 +91,6 @@ define([
 				}).sort(function(a,b){
 					return a.name > b.name;
 				})
-
-				console.log("Features: ", refseqs)
 
 				track.set("data", refseqs)
 
@@ -135,12 +134,12 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",visible: false, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {title: "GC Skew",visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
+				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
 			},"outer")
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
@@ -195,11 +194,6 @@ define([
 			console.log("CircularViewerContainer onSetState", state);
 			if (state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
-				
-				// this.addFeatureTrack(state.genome_ids[0], "eq(feature_type,CDS)", false, [71, 154, 43], null)
-				// this.addFeatureTrack(state.genome_ids[0], "eq(feature_type,tRNA)", null, [154, 58, 133], null)
-				// this.addFeatureTrack(state.genome_ids[0], "eq(feature_type,pseudogene)", null, [154, 58, 133], null)
-				// this.addFeatureTrack(state.genome_ids[0], "eq(feature_type,rRNA)", null, [154, 58, 133], null)
 			}
 		},
 

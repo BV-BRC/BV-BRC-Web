@@ -39,6 +39,8 @@ define([
 		onSetState: function(attr, oldVal, state){
 			console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
+			if (!state) { return; };
+
 			if(this.pathwaysGrid){
 				//console.log("Set PathwaysGrid State: ", state);
 				this.pathwaysGrid.set('state', state);

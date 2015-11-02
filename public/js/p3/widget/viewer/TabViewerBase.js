@@ -23,6 +23,8 @@ define([
 				return;
 			}
 
+			this.setActivePanelState();
+
 			if (state.hashParams && state.hashParams.view_tab) {
 				if (this[state.hashParams.view_tab]) {
 					var vt = this[state.hashParams.view_tab];
