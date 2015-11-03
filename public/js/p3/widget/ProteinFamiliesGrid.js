@@ -93,7 +93,11 @@ define([
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
+				console.log("ProteinFamiliesGrid _setState()")
 				this.store.set('state', state);
+
+				console.log("ProteinFamiliesGrid Call Grid Refresh()")
+				this.refresh();
 			}
 		},
 		createStore: function(server, token, state){

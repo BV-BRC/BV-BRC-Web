@@ -45,13 +45,16 @@ define([
 		},
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-
-			//console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
+			if (!state) { return; }
+			console.log("PathwaysGridContainer _setStateAttr: ", state);
 			if(this.grid){
+				console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
+			}else{
+				console.log("No Grid Yet (PathwaysGridContainer)");
 			}
 
-			this._set('state', state);
+			this._set("state", state);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful","dojo/_base/Deferred"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang, Stateful){
+			when, lang, Stateful,Deferred){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
@@ -13,9 +13,14 @@ define([
 
 		onSetState: function(attr, oldVal, state){
 			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
-			if(state && state.genome_ids && state.genome_ids.length > 0){
-				this.genome_ids = state.genome_ids || [];
+			var cur = (this.genome_ids||[]).join("");
+			var next = (state.genome_ids||[]).join("");
+			if (cur != next){
+				this.set("genome_ids", state.genome_ids || []);
+				this._loaded = false;
+				delete this._loadingDeferred;
 			}
+			
 		},
 		constructor: function(options){
 			this._loaded = false;
@@ -62,6 +67,25 @@ define([
 				return this._loadingDeferred;
 			}
 
+			var state = this.state || {};
+
+			if(!state.genome_ids || state.genome_ids.length < 1){
+				console.log("No Genome IDS, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					this._loaded = true;
+					def.resolve(true);
+				}), 0)
+				return def.promise;
+	
+			}
+
+
 			// TODO: change family Id based on params
 			var familyType = 'figfam';
 			var familyId = familyType + '_id';
@@ -79,16 +103,17 @@ define([
 
 			var _self = this;
 
-			this._loadingDeferred = when(request.get(this.apiServer + '/genome_feature/?' + q, {
+			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				}
+				},
+				data: q
 			}), function(response){
-
+				console.log("PFS First Response")
 				var familyStat = response.facets.stat.buckets;
 
 				var familyIdList = [];
@@ -99,8 +124,9 @@ define([
 				});
 
 				// sub query - genome distribution
-				query['json.facet'] = '{stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
+				query=q +'&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
 
+				console.log("Do Second Request to /genome_feature/")
 				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
@@ -111,6 +137,7 @@ define([
 					},
 					data: query
 				}), function(response){
+					console.log("PFS Second Response")
 
 					return when(request.post(_self.apiServer + '/protein_family_ref/', {
 						handleAs: 'json',
@@ -125,7 +152,7 @@ define([
 							rows: 1000000
 						}
 					}), function(res){
-
+						console.log("PFS Third Response");
 						var genomeFamilyDist = response.facets.stat.buckets;
 						var familyGenomeCount = {};
 						var familyGenomeIdCountMap = {};
@@ -136,7 +163,7 @@ define([
 						});
 
 						window.performance.mark('mark_start_stat1');
-
+						console.log("Build Genome Family Dist");
 						genomeFamilyDist.forEach(function(genome){
 							var genomeId = genome.val;
 							var genomePos = genomePosMap[genomeId];
@@ -169,11 +196,12 @@ define([
 							});
 						});
 
+						console.log("Complete Genome Family Dist")
 						window.performance.mark('mark_end_stat1');
 						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
 
 						window.performance.mark('mark_start_stat2');
-
+						console.log("familyGenomeCount")
 						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
 							familyGenomeCount[familyId] = familyGenomeIdSet[familyId].filter(function(value, index, self){
 								return self.indexOf(value) === index;
@@ -193,6 +221,7 @@ define([
 							}
 						});
 
+						console.log("FamilyStat")
 						familyStat.forEach(function(element){
 							var familyId = element.val;
 							if(familyId != ""){
@@ -220,7 +249,7 @@ define([
 						});
 						window.performance.mark('mark_end_stat3');
 						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
-						console.log(data);
+						// console.log(data);
 
 						window.performance.mark('mark_start_stat4');
 
@@ -238,20 +267,17 @@ define([
 						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
 						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
 
+
 						var measures = window.performance.getEntriesByType('measure');
 						for(var i = 0, len = measures.length; i < len; ++i){
 							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
 						}
-
+						console.log("Set Data: ", gridData);
 						_self.setData(gridData);
-						//console.log(gridData);
-
 						_self._loaded = true;
 						return true;
 					}, function(err){
-
-					}, function(update){
-						// console.log(update);
+						console.log("Error in ProteinFamiliesStore: ", err)
 					});
 				});
 			});
