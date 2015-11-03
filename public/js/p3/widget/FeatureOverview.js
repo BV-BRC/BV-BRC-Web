@@ -7,24 +7,33 @@ define([
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct) {
+			ChartTooltip, domConstruct){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
 		templateString: Template,
 		apiServiceUrl: window.App.dataAPI,
 		feature: null,
-		"_setFeatureAttr": function(feature) {
-			this.feature = feature;
-			//console.log("Set Feature", feature);
+		state: null,
 
-			this.getSummaryData();
-
-			if(this._started){
-				this.refresh();
+		_setStateAttr: function(state){
+			this._set("state", state);
+			if(state.feature){
+				this.set("feature", state.feature);
+			}else{
+				//
 			}
 		},
-		"_setRelatedFeatureListAttr": function(summary) {
+
+		_setFeatureAttr: function(feature){
+			this.feature = feature;
+			console.log("Set Feature", feature);
+
+			this.createSummary(feature);
+			this.getSummaryData();
+			this.set("functionalProperties", feature);
+		},
+		_setRelatedFeatureListAttr: function(summary){
 
 			domConstruct.empty(this.relatedFeatureNode);
 			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.relatedFeatureNode);
@@ -40,7 +49,7 @@ define([
 			domConstruct.create("th", {innerHTML: "AA Length"}, htr);
 			domConstruct.create("th", {innerHTML: "Product"}, htr);
 
-			summary.forEach(function(row) {
+			summary.forEach(function(row){
 				var tr = domConstruct.create('tr', {}, tbody);
 				domConstruct.create("td", {innerHTML: row.annotation}, tr);
 				domConstruct.create("td", {innerHTML: row.alt_locus_tag}, tr);
@@ -51,7 +60,7 @@ define([
 				domConstruct.create("td", {innerHTML: row.product || '(feature type: ' + row.feature_type + ')'}, tr);
 			});
 		},
-		"_setFunctionalPropertiesAttr": function(feature) {
+		_setFunctionalPropertiesAttr: function(feature){
 
 			domConstruct.empty(this.functionalPropertiesNode);
 			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.functionalPropertiesNode);
@@ -84,13 +93,13 @@ define([
 			// TODO: implement structure
 			// TODO: implement protein interaction
 		},
-		getSummaryData: function() {
+		getSummaryData: function(){
 			// getting uniprot mapping
 			if(this.feature.gi != null){
 				xhr.get(this.apiServiceUrl + "/id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)&http_accept=application/solr+json", {
 					handleAs: "json",
 					headers: {"accept": "application/solr+json"}
-				}).then(lang.hitch(this, function(data) {
+				}).then(lang.hitch(this, function(data){
 					//console.log("Uniprot Accessions: ", data);
 
 					// TODO: process uniprot mapping
@@ -99,52 +108,49 @@ define([
 
 			// get related feature list
 			if(this.feature.pos_group != null){
-				xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
+				//xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
+				xhr.get(this.apiServiceUrl + "/genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)&http_accept=application/solr+json", {
 					handleAs: "json",
 					headers: {"accept": "application/solr+json"}
-				}).then(lang.hitch(this, function(data) {
+				}).then(lang.hitch(this, function(data){
 					var relatedFeatures = data.response.docs;
-					//console.log("Related Features: ", relatedFeatures);
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
 			}
 		},
-		refresh: function() {
-			if(this.feature && this.feature.feature_id){
-				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + this.feature.patric_id + '</span>';
-				if(this.feature.refseq_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + this.feature.refseq_locus_tag + '</span>';
+		createSummary: function(feature){
+			if(feature && feature.feature_id){
+				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>';
+				if(feature.refseq_locus_tag != null){
+					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>';
 				}
-				if(this.feature.alt_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + this.feature.alt_locus_tag + '</span>';
+				if(feature.alt_locus_tag != null){
+					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
 				}
 
 				this.proteinIdList.innerHTML = '';
-				if(this.feature.protein_id != null){
-					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + this.feature.protein_id + '</span>';
+				if(feature.protein_id != null){
+					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.protein_id + '</span>';
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + this.feature.gene || '' + '</div>';
-				if(this.feature.strand == '+'){
+				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + feature.gene || '' + '</div>';
+				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<img id="strand" alt="forward strand" src="/patric/images/forward.png"/>';
 				}else{
 					this.featureBoxNode.innerHTML += '<img id="strand" alt="reverse strand" src="/patric/images/reverse.png"/>';
 				}
 				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
 
-				this.set("functionalProperties", this.feature);
 			}else{
-				console.log("Invalid Feature: ", this.feature);
+				console.log("Invalid Feature: ", feature);
 			}
-			this._started = true;
 		},
-		startup: function() {
+		startup: function(){
 			if(this._started){
 				return;
 			}
 			this.inherited(arguments);
-			this.refresh();
 		}
 	});
 });
