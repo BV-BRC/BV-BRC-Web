@@ -4,13 +4,13 @@ define([
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/
+	"../TranscriptomicsContainer", "../CorrelatedGenesContainer"/*,"JBrowse/Browser"*/
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
 			ActionBar, ContainerActionBar, PathwaysContainer,
-			TranscriptomicsContainer/*, JBrowser*/){
+			TranscriptomicsContainer, CorrelatedGenesContainer/*, JBrowser*/){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -26,6 +26,7 @@ define([
 			}
 			var state = this.state = this.state || {};
 			this.feature_id = id;
+			this.state.feature_id = id;
 
 			xhr.get(this.apiServiceUrl + "/genome_feature/" + id, {
 				headers: {
@@ -45,9 +46,9 @@ define([
 			switch(active){
 				case "overview":
 					break;
-				//case "pathways":
-				//	activeTab.set("state", this.state);
-				//	break;
+				case "correlatedGenes":
+					activeTab.set("state", this.state);
+					break;
 				//case "transcriptomics":
 				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
 				//	break;
@@ -132,10 +133,11 @@ define([
 				id: this.viewer.id + "_transcriptomics",
 				content: "Transcriptomics"
 			});
-			this.correlatedGenes = new ContentPane({
+			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes",
-				content: "Correlated Genes"
+				content: "Correlated Genes",
+				state: this.state
 			});
 
 			this.viewer.addChild(this.overview);
