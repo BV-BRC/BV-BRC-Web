@@ -107,8 +107,29 @@ define([
 			var _self=this;
 			this.containerNode=this.domNode;
 			dom.setSelectable(this.domNode, false)
+
+                        var tooltip = new Tooltip({
+                                connectId: this.domNode,
+                                selector: ".ActionButtonWrapper",
+                                getContent: function(matched){
+                                        //console.log("Matched: ", matched);
+                                        var rel = matched.attributes.rel.value;
+                                        //console.log("REL: ", rel);
+                                        if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
+                                                //console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+                                                return _self._actions[rel].options.tooltip
+                                        }else if (matched.attributes.title && matched.attributes.title.value){
+                                                return  matched.attributes.title.value;
+                                        }
+                                        return false;
+                                },
+                                position: ["above"]
+                        });
+
+
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
 				//console.log("evt.target: ", evt.target);
+				tooltip.close();
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
 					target = evt.target;
@@ -127,23 +148,7 @@ define([
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
 //				//console.log("mouseover evt: ", evt.target);
 //			});	
-			new Tooltip({
-				connectId: this.domNode,
-				selector: ".ActionButtonWrapper",
-				getContent: function(matched){
-					//console.log("Matched: ", matched);
-					var rel = matched.attributes.rel.value;
-					//console.log("REL: ", rel);
-					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-						//console.log("_self._actions[rel]:", rel, _self._actions[rel]);
-						return _self._actions[rel].options.tooltip
-					}else if (matched.attributes.title && matched.attributes.title.value){
-						return  matched.attributes.title.value;
-					}
-					return false;
-				},
-				position: ["above"]
-			});
+
 	
 		},
 
