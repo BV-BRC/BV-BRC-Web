@@ -136,9 +136,9 @@ define([
 				// feature box
 				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + feature.gene || '' + '</div>';
 				if(feature.strand == '+'){
-					this.featureBoxNode.innerHTML += '<img id="strand" alt="forward strand" src="/patric/images/forward.png"/>';
+					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{
-					this.featureBoxNode.innerHTML += '<img id="strand" alt="reverse strand" src="/patric/images/reverse.png"/>';
+					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}
 				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
 

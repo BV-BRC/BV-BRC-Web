@@ -511,6 +511,7 @@
   border-style: solid;
   border-color: rgb(171, 172, 172);
   border-radius: 10px 10px;
+  padding-bottom: 3px;
 }
 
 #feature_box #gene_symbol {
