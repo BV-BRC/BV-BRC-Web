@@ -1168,8 +1168,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 			for(var i=0; i<column_data.length; i++) {
 				var column = column_data[i].text;
-				console.log("column_data.length=" + column_data.length + " column=", column);
-				console.log("item[column]=", item.column);
+				//console.log("column_data.length=" + column_data.length + " column=", column);
+				//console.log("item[column]=", item.column);
 			
 				if (column) 
 				{
