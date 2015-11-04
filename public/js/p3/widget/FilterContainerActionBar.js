@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "./ContainerActionBar", "dojo/_base/lang",
 	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
-	"dijit/form/Textbox","./FacetFilter","dojo/request","dojo/on",
+	"dijit/form/TextBox","./FacetFilter","dojo/request","dojo/on",
 	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
 	"dijit/focus"
 ], function(

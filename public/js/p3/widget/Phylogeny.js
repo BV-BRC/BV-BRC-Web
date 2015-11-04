@@ -1,10 +1,9 @@
 define([
-	"dojo/_base/declare", "raphael/raphael", "jsphylosvg/jsphylosvg",
+	"dojo/_base/declare",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
-	"dojo/dom-geometry", "dojo/dom-style"
-], function(declare, Raphael, jsphylosvg, WidgetBase, request,domConstruct,lang,domGeometry,domStyle){
-	console.log("Raphael: ", Raphael);
-	console.log("jsphylosvg: ", Smits);
+	"dojo/dom-geometry", "dojo/dom-style", "d3/d3"
+], function(declare, WidgetBase, request,domConstruct,lang,domGeometry,domStyle,d3){
+
 
 	return declare([WidgetBase],{
 		type: "rectangular",
@@ -47,15 +46,7 @@ define([
 				console.log("No Newick File To Render")
 				return;
 			}
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.paddingX = 5;
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.alignRight = true;
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.minHeightBetweenLines = 5;
-			// Smits.PhyloCanvas.Render.Parameters.Rectangular.
-			Smits.PhyloCanvas.Render.Parameters.Rectangular.bufferX = 400;
-			Smits.PhyloCanvas.Render.Parameters.Circular.bufferRadius = .75;
-			Smits.PhyloCanvas.Render.Parameters.Circular.bufferAngle = 0;
-			domConstruct.empty(this.canvasNode);
-			this.canvas = new Smits.PhyloCanvas({newick:this.newick}, this.canvasNode,this._contentBox.w,(this._contentBox.h*5), this.type);
+			console.log("D3: ", d3);
 		},
 
 		onFirstView: function(){

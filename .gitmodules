@@ -56,3 +56,6 @@
 [submodule "public/js/circulus"]
 	path = public/js/circulus
 	url = git@github.com:dmachi/circulus
+[submodule "public/js/d3"]
+	path = public/js/d3
+	url = https://github.com/mbostock/d3.git

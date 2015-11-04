@@ -4,7 +4,7 @@ define([
 	"dojo/dom-style","dojo/dom-construct",'dojo/_base/array',
 	"dojo/_base/Deferred","dojo/DeferredList","lazyload",
 	"dojo/request","dojo/on",
-    'dijit/form/ComboBox',
+	'dijit/form/ComboBox',
 	'dijit/form/Button',
 	'dijit/form/Select',
 	'dijit/form/ToggleButton',
@@ -15,9 +15,9 @@ define([
 	'dijit/layout/ContentPane',
 	'dijit/layout/BorderContainer',
 	"JBrowse/Util",
-    'JBrowse/View/InfoDialog',
-    'JBrowse/View/FileDialog',
-    'JBrowse/GenomeView'
+	'JBrowse/View/InfoDialog',
+	'JBrowse/View/FileDialog',
+	'JBrowse/GenomeView'
 ], function(
 	declare, WidgetBase, JBrowser,
 	domConstruct, lang, domGeometry, 
@@ -25,19 +25,19 @@ define([
 	Deferred,DeferredList,lazyLoad,
 	request,on,
 	dijitComboBox,
-    dijitButton,
-    dijitSelectBox,
-    dijitToggleButton,
-    dijitDropDownButton,
-    dijitDropDownMenu,
-    dijitMenuItem,
-    dojoxTriStateCheckBox,
-    dijitContentPane,
-    dijitBorderContainer,
-    Util,
-    InfoDialog,
-    FileDialog,
-    GenomeView
+	dijitButton,
+	dijitSelectBox,
+	dijitToggleButton,
+	dijitDropDownButton,
+	dijitDropDownMenu,
+	dijitMenuItem,
+	dojoxTriStateCheckBox,
+	dijitContentPane,
+	dijitBorderContainer,
+	Util,
+	InfoDialog,
+	FileDialog,
+	GenomeView
 ){
 
 
