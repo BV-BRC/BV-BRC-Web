@@ -163,8 +163,39 @@ define([
 					}
 				},
 				true
-			],
-			[
+			],[
+				"ViewFeatureItem",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "VIEW",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Feature",
+					validContainerTypes: ["feature_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+				}, 
+				false	
+			],[
+				"ViewGenomeItem",
+				"MultiButton fa icon-genome fa-2x", 
+				{
+					label: "GENOME",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Genome",
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					console.log("sel: ", sel)
+					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				}, 
+				false
+			],[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -183,25 +214,6 @@ define([
 						orient: ["below"]
 					});
 				},
-				false
-			]
-
-			,[
-				"ViewGenomeItem",
-				"MultiButton fa icon-genome fa-2x", 
-				{
-					label: "GENOME",
-					validTypes:["*"],
-					multiple: false,
-					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
-				},
-				function(selection){
-					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
 				false
 			],[
 				"MultipleSeqAlignment",
