@@ -50,17 +50,18 @@ define("p3/router", ["dojo/_base/declare", "dojo/router/RouterBase"],function(de
 
 		go: function(href, state){
 			console.log("go(" + href + ")", state)
+			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 			if (href!=this._currentPath){
+				// console.log("pushState")
 				window.history.pushState(state || {},"route", href);
-				this.currentPath = href;
 				this._handlePathChange(href, state||{})
-			}else{
-				window.history.replaceState(state);
+			}else if (state){
+				window.history.replaceState(state || {});
 			}
 		},
 
 		replaceState: function(state){
-			console.log("Router.replaceState()",state)
+			// console.log("Router.replaceState()",state)
 			window.history.replaceState(state);
 		},
 
@@ -135,43 +136,42 @@ define("p3/router", ["dojo/_base/declare", "dojo/router/RouterBase"],function(de
 	    },
 
 		_handlePathChange: function(newPath, state){
-			console.log("Handle Path Change", arguments)
+			// console.log("Handle Path Change", arguments)
 		 	var i, j, li, lj, routeObj, result,
-                allowChange, parameterNames, params,
-                routes = this._routes,
-                currentPath = this._currentPath;
+	                allowChange, parameterNames, params,
+			routes = this._routes,
+			currentPath = this._currentPath;
 
-	        if(!this._started){ return allowChange; }
+			if(!this._started){ return allowChange; }
 
-	        allowChange = true;
+			allowChange = true;
 
-	        for(i=0, li=routes.length; i<li; ++i){
-                routeObj = routes[i];
-                console.log("Route Obj route:", routeObj.route);
-                result = routeObj.route.exec(newPath);
-                console.log("Result from route: ", result)
-                if(result){
-                    if(routeObj.parameterNames){
-                        parameterNames = routeObj.parameterNames;
-                        params = {};
+			for(i=0, li=routes.length; i<li; ++i){
+				routeObj = routes[i];
+				// console.log("Checking Route: ", routeObj.route);
+				result = routeObj.route.exec(newPath);
+				if(result){
+					// console.log( "   Found Route: ", routeObj.parameterNames);
+					if(routeObj.parameterNames){
+						parameterNames = routeObj.parameterNames;
+						params = {};
 
-                        for(j=0, lj=parameterNames.length; j<lj; ++j){
-                            params[parameterNames[j]] = result[j+1];
-                        }
-                    }else{
-                            params = result.slice(1);
-                    }
-                    allowChange = routeObj.fire(params, currentPath, newPath, state);
-                }
-	        }
+						for(j=0, lj=parameterNames.length; j<lj; ++j){
+							params[parameterNames[j]] = result[j+1];
+						}
+					}else{
+						params = result.slice(1);
+					}
+					allowChange = routeObj.fire(params, currentPath, newPath, state);
+				}
+			}
 
-	        console.log("Allow Change: ", allowChange)
-	        if(allowChange){
-	                this._currentPath = newPath;
-	        }
+			// console.log("Allow Change: ", allowChange)
+			if(allowChange){
+				this._currentPath = newPath;
+			}
 
-	        return allowChange;
-
+			return allowChange;
 		},
 
 		startup: function(){
@@ -182,16 +182,16 @@ define("p3/router", ["dojo/_base/declare", "dojo/router/RouterBase"],function(de
 			this.currentState = window.history.state
 
 			window.onpopstate = function(evt){
-				console.log("onpopstate(): ", evt)
-				_self._handlePathChange(location.pathname, evt.state)
+				// console.log("onpopstate(): ", evt)
+				_self._handlePathChange(location.pathname + location.search + location.hash, evt.state)
 			}
 
 			if (!this._currentPath){
-				console.log("No Current Path")
-				this.go(location.pathname)
+				// console.log("No Current Path",location)
+				this.go(location.pathname + location.search + location.hash)
 			}else{
-				console.log("Call handlePathChange", location.pathname)
-				this._handlePathChange(location.pathname,this.currentState||{})
+				// console.log("Call handlePathChange", location.pathname)
+				this._handlePathChange(location.pathname + location.search + location.hash,this.currentState||{})
 			}
 		}
 	})();

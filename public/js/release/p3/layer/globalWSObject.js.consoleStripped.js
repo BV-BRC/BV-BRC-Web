@@ -2004,6 +2004,42 @@
 				{
 					 location:"../rql",
 					 name:"rql"
+				},
+				{
+					 location:"../JBrowse",
+					 name:"JBrowse"
+				},
+				{
+					 location:"../jszlib",
+					 name:"jszlib"
+				},
+				{
+					 location:"../FileSaver",
+					 name:"FileSaver"
+				},
+				{
+					 location:"../circulus",
+					 name:"circulus"
+				},
+				{
+					 location:"../lazyload",
+					 main:"lazyload",
+					 name:"lazyload"
+				},
+				{
+					 location:"../jDataView",
+					 main:"jdataview",
+					 name:"jDataView"
+				},
+				{
+					 location:"../d3",
+					 main:"index.js",
+					 name:"d3"
+				},
+				{
+					 location:"../swfobject",
+					 main:"swfobject.js",
+					 name:"swfobject"
 				}
 		]
 });require({cache:{
@@ -16382,10 +16418,12 @@ define(["p3/WorkspaceManager"], function(WS){
 'p3/WorkspaceManager':function(){
 define([
     "dojo/request", "dojo/_base/declare","dojo/_base/lang",
-    "dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful"
+    "dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful",
+    "dojo/promise/all"
 ],function(
     xhr,declare,lang,
-    Deferred,Topic,RPC,Stateful
+    Deferred,Topic,RPC,Stateful,
+    All
 ){
 
     var WorkspaceManager = (declare([Stateful], {
@@ -16795,11 +16833,11 @@ define([
                 paths = [paths];
             }
             paths = paths.map(function(p){ return decodeURIComponent(p); })
-             0 && console.log('getObjects: ', paths, "metadata_only:", metadataOnly)
             return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
                  0 && console.log("results[0]", results[0])
                 var objs = results[0];
-                return objs.map(function(obj) {
+		var fin=[];
+                var defs = objs.map(function(obj) {
                      0 && console.log("obj: ", obj);
                     var meta = {
                         name: obj[0][0],
@@ -16815,15 +16853,40 @@ define([
                         global_permission: obj[0][10],
                         link_reference: obj[0][11]
                     }
-                    if (metadataOnly) { return meta; }
+                    if (metadataOnly) { fin.push(meta);return true }
 
-                    var res = {
-                        metadata: meta,
-                        data: obj[1]
-                    }
-                     0 && console.log("getObjects() res", res);
-                    return res;
+
+		    if (!meta.link_reference){
+	                    var res = {
+				metadata: meta,
+				data: obj[1]
+		            }
+			   fin.push(res);
+                           return true;
+                    }else{
+			
+ 			  var d = xhr.get(meta.link_reference + "?download", {
+				headers: {
+					Authorization: "OAuth " + window.App.authorizationToken,	
+				        "X-Requested-With": null
+				}
+			  });
+
+			  return Deferred.when(d,function(data){
+				fin.push({
+	  			    metadata: meta,
+				    data: data
+				});
+				return true;
+			  }, function(err){
+				 0 && console.log("Error Retrieving data object from shock :", err, meta.link_reference);
+			  });  
+		    }	
                 });
+
+		return Deferred.when(All(defs), function(){
+			return fin;
+		});
             });
 
         },
@@ -17300,6 +17363,85 @@ return declare("dojo.Stateful", null, {
 
 });
 
+});
+
+},
+'dojo/promise/all':function(){
+define([
+	"../_base/array",
+	"../Deferred",
+	"../when"
+], function(array, Deferred, when){
+	"use strict";
+
+	// module:
+	//		dojo/promise/all
+
+	var some = array.some;
+
+	return function all(objectOrArray){
+		// summary:
+		//		Takes multiple promises and returns a new promise that is fulfilled
+		//		when all promises have been resolved or one has been rejected.
+		// description:
+		//		Takes multiple promises and returns a new promise that is fulfilled
+		//		when all promises have been resolved or one has been rejected. If one of
+		//		the promises is rejected, the returned promise is also rejected. Canceling
+		//		the returned promise will *not* cancel any passed promises.
+		// objectOrArray: Object|Array?
+		//		The promise will be fulfilled with a list of results if invoked with an
+		//		array, or an object of results when passed an object (using the same
+		//		keys). If passed neither an object or array it is resolved with an
+		//		undefined value.
+		// returns: dojo/promise/Promise
+
+		var object, array;
+		if(objectOrArray instanceof Array){
+			array = objectOrArray;
+		}else if(objectOrArray && typeof objectOrArray === "object"){
+			object = objectOrArray;
+		}
+
+		var results;
+		var keyLookup = [];
+		if(object){
+			array = [];
+			for(var key in object){
+				if(Object.hasOwnProperty.call(object, key)){
+					keyLookup.push(key);
+					array.push(object[key]);
+				}
+			}
+			results = {};
+		}else if(array){
+			results = [];
+		}
+
+		if(!array || !array.length){
+			return new Deferred().resolve(results);
+		}
+
+		var deferred = new Deferred();
+		deferred.promise.always(function(){
+			results = keyLookup = null;
+		});
+		var waiting = array.length;
+		some(array, function(valueOrPromise, index){
+			if(!object){
+				keyLookup.push(index);
+			}
+			when(valueOrPromise, function(value){
+				if(!deferred.isFulfilled()){
+					results[keyLookup[index]] = value;
+					if(--waiting === 0){
+						deferred.resolve(results);
+					}
+				}
+			}, deferred.reject);
+			return deferred.isFulfilled();
+		});
+		return deferred.promise;	// dojo/promise/Promise
+	};
 });
 
 }}});

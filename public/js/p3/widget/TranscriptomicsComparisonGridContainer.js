@@ -83,7 +83,7 @@ define([
 				false
 			]
 		]),
-		gridCtor: Grid,
+		gridCtor: Grid
 
 	});
 });

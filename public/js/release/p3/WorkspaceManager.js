@@ -1,9 +1,11 @@
 define("p3/WorkspaceManager", [
     "dojo/request", "dojo/_base/declare","dojo/_base/lang",
-    "dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful"
+    "dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful",
+    "dojo/promise/all"
 ],function(
     xhr,declare,lang,
-    Deferred,Topic,RPC,Stateful
+    Deferred,Topic,RPC,Stateful,
+    All
 ){
 
     var WorkspaceManager = (declare([Stateful], {
@@ -413,11 +415,11 @@ define("p3/WorkspaceManager", [
                 paths = [paths];
             }
             paths = paths.map(function(p){ return decodeURIComponent(p); })
-            console.log('getObjects: ', paths, "metadata_only:", metadataOnly)
             return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
                 console.log("results[0]", results[0])
                 var objs = results[0];
-                return objs.map(function(obj) {
+		var fin=[];
+                var defs = objs.map(function(obj) {
                     console.log("obj: ", obj);
                     var meta = {
                         name: obj[0][0],
@@ -433,15 +435,40 @@ define("p3/WorkspaceManager", [
                         global_permission: obj[0][10],
                         link_reference: obj[0][11]
                     }
-                    if (metadataOnly) { return meta; }
+                    if (metadataOnly) { fin.push(meta);return true }
 
-                    var res = {
-                        metadata: meta,
-                        data: obj[1]
-                    }
-                    console.log("getObjects() res", res);
-                    return res;
+
+		    if (!meta.link_reference){
+	                    var res = {
+				metadata: meta,
+				data: obj[1]
+		            }
+			   fin.push(res);
+                           return true;
+                    }else{
+			
+ 			  var d = xhr.get(meta.link_reference + "?download", {
+				headers: {
+					Authorization: "OAuth " + window.App.authorizationToken,	
+				        "X-Requested-With": null
+				}
+			  });
+
+			  return Deferred.when(d,function(data){
+				fin.push({
+	  			    metadata: meta,
+				    data: data
+				});
+				return true;
+			  }, function(err){
+				console.log("Error Retrieving data object from shock :", err, meta.link_reference);
+			  });  
+		    }	
                 });
+
+		return Deferred.when(All(defs), function(){
+			return fin;
+		});
             });
 
         },

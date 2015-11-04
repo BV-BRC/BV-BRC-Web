@@ -1,36 +1,5 @@
-
-.mblDomButtonWhiteCross {
-  position: relative;
-  width: 29px;
-  height: 29px;
-}
-.mblDomButtonWhiteCross > div {
-  position: absolute;
-  top: 12px;
-  left: 7px;
-  width: 14px;
-  height: 2px;
-  margin: 0px;
-  font-size: 1px;
-  border: 1px solid #808080;
-  background-color: #ffffff;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-  -moz-transform: rotate(45deg);
-  border-radius: 2px;
-}
-.mblDomButtonWhiteCross > div > div {
-  position: absolute;
-  top: -7px;
-  left: 5px;
-  width: 2px;
-  height: 14px;
-  margin: 0px;
-  font-size: 1px;
-  border: 1px solid #808080;
-  background-color: #ffffff;
-  border-radius: 2px;
-}
+@import "../common/domButtons/DomButtonWhiteCross.css";
+/* dojox.mobile.TabBar */
 .mblTabBar {
   position: relative;
   margin: 0px;
@@ -44,6 +13,7 @@
   border-top: 1px solid #cdd5df;
   border-bottom: 1px solid #007aff;
 }
+/* dojox.mobile.TabBarButton */
 .mblTabBarFill .mblTabBarButton {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -73,6 +43,7 @@
 .mblTabBarButtonSelected .mblTabBarButtonIconParent2 {
   display: block;
 }
+/* barType="tabBar" */
 .mblTabBarTabBar {
   height: 48px;
   border-top: 1px solid #000000;
@@ -94,6 +65,7 @@
   border-radius: 3px;
   color: #007aff;
 }
+/* barType="segmentedControl" */
 .mblTabBarSegmentedControl {
   background-image: none;
   background-color: #eeeeee;
@@ -146,6 +118,7 @@
   height: auto;
   border: none;
 }
+/* barType="standardTab" */
 .mblTabBarStandardTab {
   background-image: none;
   background-color: #eeeeee;
@@ -177,6 +150,7 @@
 .mblTabBarStandardTab .mblTabBarButtonHasIcon .mblTabBarButtonLabel {
   margin-left: 20px;
 }
+/* barType="slimTab" */
 .mblTabBarSlimTab {
   height: 30px;
   padding: 0px;
@@ -213,6 +187,7 @@
 .mblTabBarSlimTab .mblTabBarButtonHasIcon .mblTabBarButtonLabel {
   margin-left: 20px;
 }
+/* barType="flatTab" */
 .mblTabBarFlatTab {
   height: 30px;
   padding: 0px;
@@ -237,6 +212,7 @@
 .mblTabBarFlatTab .mblTabBarButtonHasIcon .mblTabBarButtonLabel {
   margin-left: 20px;
 }
+/* barType="tallTab" */
 .mblTabBarTallTab {
   height: 64px;
   border-top: 1px solid #cdd5df;

@@ -7,10 +7,12 @@
 	right: 0;
 	top: 0;
 }
+
 .dgrid-rtl-swap .dgrid-hider-toggle {
 	right: auto;
 	left: 0;
 }
+
 .dgrid-hider-menu {
 	position: absolute;
 	top: 0;
@@ -23,10 +25,12 @@
 	overflow-x: hidden;
 	overflow-y: auto;
 }
+
 .dgrid-rtl-swap .dgrid-hider-menu {
 	right: auto;
 	left: 17px;
 }
+
 .dgrid-hider-menu-row {
 	position: relative;
 	padding: 2px;
@@ -41,12 +45,14 @@
 	display: block;
 	padding-left: 20px;
 }
+
 html.has-quirks .dgrid-hider-menu-check,
 html.has-ie-6-7 .dgrid-hider-menu-check {
-	
+	/* IE < 8 seems to ignore padding: 0, so counteract */
 	top: 0;
 	left: 0;
 }
+
 #dgrid-css-extensions-ColumnHider-loaded {
 	display: none;
 }
