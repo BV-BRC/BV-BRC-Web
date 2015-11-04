@@ -1,5 +1,5 @@
 require({cache:{
-'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}"}});
+'url:dgrid/css/extensions/CompoundColumns.css':{"cssText":".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}","xCss":"height=;border-bottom=;display=;"}}});
 define("dgrid/extensions/CompoundColumns", [
 	"dojo/_base/lang",
 	"dojo/_base/declare",

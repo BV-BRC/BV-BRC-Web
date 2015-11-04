@@ -99,13 +99,10 @@ define('xstyle/core/generate', [
 									}
 								}
 							}
-						}else{
-							// it is plain rule (not a call), we need to apply the 
-							// auto-generated selector, so CSS is properly applied
-							put(lastElement, part.selector);
-							// do any elemental updates
-							stackOfElementsToUpdate.push(part.selector, lastElement);
-						}
+						}//else{
+							// it is plain rule (not a call), this should already be applied in element
+							// generation
+						//}
 					}else if(typeof part == 'string'){
 						// actual CSS selector syntax, we generate the elements specified
 						if(part.charAt(0) == '='){
@@ -161,8 +158,22 @@ define('xstyle/core/generate', [
 										'' :
 										'span') + prefix + value;
 								}else{
-									var tagName = value.match(/^[-\w]+/)[0];
-									var target = rule.getDefinition(tagName);
+									var tagNameMatch = value.match(/^[-\w]+/);
+									if(!tagNameMatch){
+										throw new SyntaxError('Unable to parse selector', value);
+									}
+									var tagName = tagNameMatch[0];
+									var target;
+									if(j === parts.length - 1 && nextPart && nextPart.selector){
+										// followed by a rule that should be applied
+										if(!nextPart.bases){
+											// apply extends first
+											utils.extend(nextPart, tagName);
+										}
+										target = nextPart;
+									} else {
+										target = rule.getDefinition(tagName);
+									}
 									// see if we have a definition for the element
 									if(target && (target.then || target.newElement)){
 										nextElement = (function(nextElement, beforeElement, value, tagName){
@@ -220,12 +231,8 @@ define('xstyle/core/generate', [
 								topElement = topElement || nextElement;
 								if(j < parts.length - 1 || (nextElement != lastElement &&
 									// avoid infinite loop if it is a nop selector
-									nextElement != element &&
-									// if the next part is a rule, than it should be extending it
-									// already, so we don't want to double apply
-									(!nextPart || !nextPart.base)
-									)){
-									stackOfElementsToUpdate.push(null, nextElement);
+									nextElement != element)){
+									stackOfElementsToUpdate.push(j == parts.length - 1 && nextPart && nextPart.selector, nextElement);
 								}
 								lastElement = nextElement;
 							}).apply(this, parts[j]);
@@ -278,7 +285,7 @@ define('xstyle/core/generate', [
 				part.expressionResult = expressionResult;
 				// setup an invalidation object, to rerender when data changes
 				// TODO: fix this
-				expressionDefinition.depend && expressionDefinition.depend({
+				expressionDefinition.dependencyOf && expressionDefinition.dependencyOf({
 					invalidate: function(invalidated){
 						// TODO: should we use elemental's renderer?
 						// TODO: do we need to closure the scope of any of these variables
@@ -352,8 +359,8 @@ define('xstyle/core/generate', [
 							forSelector(value, rule)(element);
 						}else{
 							// if it is an array, we do iterative rendering
-							var eachHandler = nextPart && nextPart.eachProperty &&
-								nextPart.each;
+							var eachHandler = nextPart && nextPart.definitions &&
+								nextPart.definitions.each;
 							// we create a rule for the item elements
 							var eachRule = rule.newRule();
 							// if 'each' is defined, we will use it render each item 

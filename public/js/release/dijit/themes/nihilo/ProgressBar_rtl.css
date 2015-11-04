@@ -1,8 +1,13 @@
 
+/****
+		dijit.ProgressBar
+ ****/
+
 .nihilo .dijitProgressBarRtl .dijitProgressBarFull {
 	border-left-width: 1px;
 	border-right: 0px;
 }
+
 .nihilo .dijitProgressBarIndeterminateRtl .dijitProgressBarTile {
 	-moz-transform: scaleX(-1);
 	-o-transform: scaleX(-1);
@@ -11,3 +16,6 @@
 	filter: FlipH;
 	-ms-filter: "FlipH";
 }
+
+
+

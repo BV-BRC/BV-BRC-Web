@@ -418,7 +418,7 @@ define([
             return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
                 console.log("results[0]", results[0])
                 var objs = results[0];
-		var final=[];
+		var fin=[];
                 var defs = objs.map(function(obj) {
                     console.log("obj: ", obj);
                     var meta = {
@@ -435,7 +435,7 @@ define([
                         global_permission: obj[0][10],
                         link_reference: obj[0][11]
                     }
-                    if (metadataOnly) { final.push(meta);return true }
+                    if (metadataOnly) { fin.push(meta);return true }
 
 
 		    if (!meta.link_reference){
@@ -443,7 +443,7 @@ define([
 				metadata: meta,
 				data: obj[1]
 		            }
-			   final.push(res);
+			   fin.push(res);
                            return true;
                     }else{
 			
@@ -455,7 +455,7 @@ define([
 			  });
 
 			  return Deferred.when(d,function(data){
-				final.push({
+				fin.push({
 	  			    metadata: meta,
 				    data: data
 				});
@@ -467,7 +467,7 @@ define([
                 });
 
 		return Deferred.when(All(defs), function(){
-			return final;
+			return fin;
 		});
             });
 

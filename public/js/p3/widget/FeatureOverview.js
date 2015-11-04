@@ -36,7 +36,7 @@ define([
 		_setRelatedFeatureListAttr: function(summary){
 
 			domConstruct.empty(this.relatedFeatureNode);
-			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.relatedFeatureNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.relatedFeatureNode);
 			var thead = domConstruct.create("thead", {}, table);
 			var tbody = domConstruct.create("tbody", {}, table);
 
@@ -63,7 +63,7 @@ define([
 		_setFunctionalPropertiesAttr: function(feature){
 
 			domConstruct.empty(this.functionalPropertiesNode);
-			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.functionalPropertiesNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.functionalPropertiesNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			var htr = domConstruct.create("tr", {}, tbody);

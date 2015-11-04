@@ -1,5 +1,5 @@
 require({cache:{
-'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}"}});
+'url:dgrid/css/extensions/ColumnReorder.css':{"cssText":".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}","xCss":"display=;border-left=;border-right=;display=;"}}});
 define("dgrid/extensions/ColumnReorder", [
 	"dojo/_base/lang",
 	"dojo/_base/declare",

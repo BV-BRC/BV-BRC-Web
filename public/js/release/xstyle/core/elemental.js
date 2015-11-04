@@ -1,13 +1,30 @@
-define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils', 'dojo/on', 'dojo/query'], function(put, utils, on){
+define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils'], function(put, utils){
 	// using delegation, listen for any input changes in the document and 'put' the value  
 	// TODO: add a hook so one could add support for IE8, or maybe this event delegation isn't really that useful
 	var doc = document;
 	var nextId = 1;
 	var hasAddEventListener = !!doc.addEventListener;
-	on(doc, hasAddEventListener ? 'change,keydown' : 'focusout,keydown', function(event){
-		if(event.type == 'keydown' && event.keyCode != 13){
-			return;
-		}
+	var needsCapture = {
+		blur: 'focusout',
+		focus: 'focusin'
+	};
+	on(doc, 'change', null, inputChanged);
+	// IE doesn't change on enter, and there isn't really any feature to detect to demonstrate that
+	if (navigator.userAgent.match(/MSIE|Trident/)){
+		on(doc, 'keydown', null, function(event){
+			if(event.keyCode == 13){
+				var element = event.target;
+				if(document.createEvent){
+					event = document.createEvent('Events');
+					event.initEvent('change', true, true);
+					element.dispatchEvent(event);
+				}else{
+					document.onchange({target: element});
+				}
+			}
+		});
+	}
+	function inputChanged(event){
 		var element = event.target;
 		// get the variable computation so we can put the value
 		for(var i = 0, l = inputConnectors.length; i < l; i++){
@@ -38,23 +55,43 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils', 'dojo/
 				// TODO: should we return here, now that we found a match?
 			}
 		}
-	});
+	}
 /*	sometime we might reimplement this, but for now just relying on dojo/on
-	function on(target, event, rule, listener){
+right now, the main thing missing from this on implementation is the ability
+to do capture
+Have considered doing class name comparison, but any advantage is iffy:
+http://jsperf.com/matches-vs-classname-check
+*/
+	function on(target, type, rule, listener){
 		// this function can be overriden to provide better event handling
 		hasAddEventListener ?
-			target.addEventListener(event, select, false) :
-			target.attachEvent('on' + event, function(event){
-				event.target = event.srcElement;
-				select(event);
-			});
+			target.addEventListener(type, select, !!needsCapture[type]) :
+			ieListen(target, needsCapture[type] || type, select);
 		function select(event){
 			// do event delegation
-			if(!rule || matchesRule(event.target, rule)){
-				listener(event);
+			if(!rule){
+				return listener(event);
 			}
+			var element = event.target;
+			do{
+				if(matchesRule(element, rule)){
+					return listener(event);
+				}
+			}while((element = element.parentNode) && element.nodeType === 1);
 		}
-	}*/
+	}
+	function ieListen(target, type, listener){
+		type = 'on' + type;
+		var previousListener = target[type];
+		target[type] = function(event){
+			event = event || window.event;
+			event.target = event.target || event.srcElement;
+			if(previousListener){
+				previousListener(event);
+			}
+			listener(event);
+		};
+	}
 
 	// elemental section, this code is for property handlers that need to mutate the DOM for elements
 	// that match it's rule
@@ -138,12 +175,11 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils', 'dojo/
 	var isCurrent;
 	function renderWaiting(){
 		// render all the elements in the queue to be rendered
-		for(var i = 0; i < renderQueue.length; i++){
-			var element = renderQueue[i];
+		while(renderQueue.length){
+			var element = renderQueue.shift();
 			var renderings = element.renderings, currentStyle = element.elementalStyle;
-			delete element.renderings;
-			for(var j = 0; j < renderings.length; j++){
-				var rendering = renderings[j];
+			while(renderings.length){
+				var rendering = renderings.shift();
 				var renderer = rendering.renderer;
 				var rendered = renderer.rendered;
 				// determine if this renderer matches the current computed style
@@ -158,11 +194,11 @@ define('xstyle/core/elemental', ['put-selector/put', 'xstyle/core/utils', 'dojo/
 				}
 				if(rendered && !isCurrent && renderer.unrender){
 					renderer.unrender(element);
-					renderings.splice(j--, 1); // TODO: need to remove duplicate rendered items as well
+					//renderings.splice(j--, 1); // TODO: need to remove duplicate rendered items as well
 				}
 			}
+			element.renderings = undefined;
 		}
-		renderQueue = [];
 	}
 	function update(element, selector){
 		/* TODO: At some point, might want to use getMatchedCSSRules for faster access to matching rules

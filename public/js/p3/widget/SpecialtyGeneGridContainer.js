@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on",
+	"dojo/_base/lang","dojo/on"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog,FacetFilterPanel,
@@ -62,7 +62,7 @@ define([
 				true
 			]
 		]),
-		gridCtor: Grid,
+		gridCtor: Grid
 
 	});
 });

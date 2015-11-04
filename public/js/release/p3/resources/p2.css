@@ -1,25 +1,36 @@
 
+
 .zero_result_mask {
   background-image: none;
   padding: 5px 10px 5px 5px;
 }
+
+/* PATRIC customized checkbox */
 .x-grid-checkheader {
   height: 14px;
   background: transparent url(/patric/images/unchecked.gif) no-repeat 50% -2px;
 }
+
 .x-grid-checkheader-checked {
     background-image: url(/patric/images/checked.gif);
 }
+
+/* GenomeSelector */
+
 #GenomeSelector .x-tree-checkbox {
   position: relative;
   background: url(/patric/images/checkboxes.gif) no-repeat top left;
 }
+
 #GenomeSelector .x-tree-checkbox-checked {
   background-position: 0 -13px;
 }
+
 #GenomeSelector .x-tree-checkbox-partial {
   background-position: 0 -26px;
 }
+
+/* GenericSelector: used for facet panel in genome list, experiment list */
 #GenericSelector .x-tree-lines .x-tree-elbow-line {
   height: 16px;
   background: none;
@@ -27,6 +38,8 @@
 #GenericSelector .x-grid-cell-inner-treecolumn {
   padding: 3px 0 2px 0;
 }
+
+/* css for search tools links */
 .tools-icon {
   display: inline-block;
   line-height: 22px;
@@ -34,42 +47,55 @@
   background-position: left center;
   background-repeat: no-repeat;
 }
+
 .icon-genomefinder	{
   background-image: url(/patric/images/genome_finder.png);
 }
+
 .icon-featurefinder	{
   background-image: url(/patric/images/feature_finder.png);
 }
+
 .icon-comparativepathway{
   background-image: url(/patric/images/comparative_pathway_tool.png);
 }
+
 .icon-proteinfamily	{
   background-image: url(/patric/images/protein_family_sorter.png);
 }
+
 .icon-gosearch {
   background-image: url(/patric/images/go_search.png);
 }
+
 .icon-ecsearch {
   background-image: url(/patric/images/ec_search.png);
 }
+
+/* css for global search */
+
 #leftnav {
   margin-left: 10px;
   width: 200px !important;
   background-color: #F4F4F4;
 }
+
 #leftnav li {
   display: block;
 }
+
 .mitem > .kl,
 #ms > .kl,
 .msel {
   font-size: 13px;
 }
+
 .msel {
   color: #CC6600;
   cursor: pointer;
   font-weight: bold;
 }
+
 .mitem,
 #showmodes {
   border-bottom: 1px solid transparent;
@@ -77,30 +103,38 @@
   opacity: 1.0;
   padding-left: 26px;
 }
+
 #ab_name,
 #leftnav {
   -webkit-transition: margin-left .1s ease-out;
 }
+
 #rcnt {
 }
+
 .mw {
   height: 1050px;
 }
+
 .mitem > .kl, #ms > .kl, .msel {
   font-size: 13px;
 }
+
 .mitem > .kl, #ms > .kl {
   color: #222;
   display: block;
 }
+
 .mitem:hover, #showmodes:hover, #showmodes:hover {
   opacity: 1.0;
   background-color: #eee;
 }
+
 .lnsep {
   border-bottom: 1px solid #efefef;
   margin: 14px 4px 14px 10px;
 }
+
 .sfbg {
   background: white;
   height: 71px;
@@ -108,42 +142,50 @@
   position: absolute;
   width: 100%;
 }
+
 .sfbgg {
   background: whiteSmoke;
   border-bottom: 1px solid #e5e5e5;
   height: 71px;
 }
+
 .lst-td {
   border: solid #999;
   border-width: 0 0 1px 1px;
 }
+
 .lst-d {
   background-color: white;
   border: 1px solid #d9d9d9;
   border-top-color: silver;
   height: 27px;
 }
+
 .lst-t {
   width: 100%;
   height: 26px;
   padding: 0;
   background: white;
 }
+
 .gsib_a {
   width: 100%;
   vertical-align: middle;
   padding: 4px 5px 0;
 }
+
 #searchform {
   position: absolute;
   top: 299px;
   width: 100%;
   z-index: 99;
 }
+
 #center_col {
   margin: 0 45px 0 220px;
   padding: 0 8px;
 }
+
 #resultStats {
   color: #555;
   font-size: 13px;
@@ -153,51 +195,66 @@
   white-space: nowrap;
   padding: 6px 0 6px 80px;
 }
+
 .global_em {
   font-weight: bold;
 }
+
 .x-tree-noicon{
   width: 0;
 }
+
+/* css for Disease view */
+
 #idvg-legend-edges {
   margin-left: 8px;
 }
+
 #graph_legend .idvg-legend {
   background-color: transparent;
 }
+
 #graph_legend .idvg-legend-block {
   float: left;
   border: 1px #9ebec8 solid;
   padding: 5px;
   margin:  2px;
 }
+
 #graph_legend .idvg-legend-title {
   font-weight: bold;
   color: #0e4771;
   padding-bottom: 6px;
 }
+
 #graph_legend .idvg-legend-entry {
   margin-left: 8px;
   padding-bottom: 15px;
   line-height: 22px;
 }
+
 #graph_legend .idvg-legend-entry-title {
   padding-bottom: 2px;
   font-style: italic;
 }
+
 #graph_legend .idvg-legend-symbol img {
   height: 20px;
   width: 20px;
   padding-right: 4px;
   vertical-align: middle;
 }
+
 #graph_legend .idvg-legend-label {
   vertical-align: middle;
 }
+
+/* css for Literature panel */
 #filter {
   padding: 10px;
   background-color: #e5e8ee;
 }
+
 #filter .curSel {
   color: #fff;
   background-image: none;
@@ -205,31 +262,40 @@
   text-decoration: none;
   display: block;
 }
+
 #filter h2 {
   font-size: 1.2em;
 }
+
 #filter h3 {
   margin: 0 0 2px;
 }
+
 #filter a {
   text-decoration: none;
   padding-left: 7px !important;
 }
+
 #filter a:hover {
   text-decoration: underline;
 }
+
+/* css for layout. set position for breadcrumb portlet */
 #regionTop {
   width: 967px;
   margin: 0 auto;
   overflow: hidden;
   position: relative;
 }
+
 #fluid_page_wrapper {
   padding: 0px 5px 3px 5px; 
 }
+
 .x-tab-bar-body {
   border-style: none;
 }
+
 .msg-box-below-topnav {
   width: 967px;
   margin: 5px auto;
@@ -238,25 +304,32 @@
   background: yellow;
   border-radius: 4px;
 }
+
+/* css for workspace */
 .x-browser-view {
   font: 11px Arial, Helvetica, sans-serif;
 }
+
 .x-browser-view .thumb {
   padding: 3px;
 }
+
 .x-browser-view .title {
   padding-top: 3px;
   font-weight: bold;
 }
+
 .x-browser-view .type {
   padding-top: 3px;
   font-size: 10px;
   font-style: italic;
 }
+
 .x-browser-view .updated {
   padding-top: 3px;
   font-size: 10px;
 }
+
 .x-browser-view .thumb-wrap {
   text-align: center;
   float: left;
@@ -264,58 +337,76 @@
   padding: 5px;
   width: 160px;
 }
+
 .x-browser-view .x-item-selected .thumb {
   background: #8db2e3;
 }
+
 .x-browser-view .loading-indicator {
   font-size: 8pt;
   background: transparent url(/patric/images/loading.gif) no-repeat left;
   padding-left: 20px;
   margin: 10px;
 }
+
 #browser-toolbar .x-box-inner {
   background-color: #ffffff;
 }
+
 .x-infoeditor-view img {
   float: left;
   padding-right: 3px;
 }
+
 .x-infoeditor-view .title {
   float: left;
   width: 110px;
   font-size: 14px;
   font-weight: bold;
 }
+
 .x-infoeditor-view .loading-indicator {
   font-size: 8pt;
   background: transparent url(/patric/images/loading.gif) no-repeat left;
   padding-left: 20px;
   margin: 10px;
 }
+
 .x-infoeditor-view .x-panel-body b {
   color: #000000;
   font-weight: bold;
 }
+
 .x-btn-edit{
   background-image:url(/patric/images/info-btn-edit.png) !important;
 }
+
 #group-viewer-toolbar .x-box-inner{
   background-color: #ffffff;
 }
+
+/* css for blast result page */
+
 #blast-landing {
 }
+
 #blast-results-table {
   padding: 10px;
 }
+
 #blast-results-table pre {
   font-family: 'Courier New', Courier, monospace;
 }
+
+/* AddtoCart MessageBox */
+
 #atc-msg-div {
   position: absolute;
   top: 12px;
   width: 120px;
   z-index: 20000;
 }
+
 #atc-msg-div .msg {
   border-radius: 8px;
   -moz-border-radius: 8px;
@@ -333,6 +424,8 @@
 #atc-msg-div .msg p {
   margin: 0;
 }
+
+/* css for enews */
 .icon-publications {
   background-image: url(/patric/images/icon-publications.png);
 }
@@ -348,6 +441,8 @@
 .icon-presentations {
   background-image: url(/patric/images/icon-meetings.png);
 }
+
+/* css sprites for footer icons */
 .footer-icons {
   background: url(/patric/images/footer-icons.png) no-repeat top left; 
   height: 16px;
@@ -379,6 +474,8 @@
 .sprite-icon-youtube{
   background-position: 0 -119px;
 }
+
+/* css for toggle button used in literature page */
 .toggleButton {
   height: 9px;
   line-height: 9px;
@@ -395,12 +492,17 @@
 .toggleButtonShow {
   background-position: 0px -9px;
 }
+
+/* css for tab background icon used in transcriptomics tabl (gene-level-page) */
 .icon-pie-chart {
   background: url(/patric/images/icon-pie-chart.png) no-repeat;
 }
 .icon-bar-chart {
   background: url(/patric/images/icon-bar-chart.png) no-repeat;
 }
+
+/* css for feature overview page */
+
 #feature_box {
   background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.30, #E0E1E1), color-stop(0.70, #FFFFFF));
   width: 100px;
@@ -409,7 +511,9 @@
   border-style: solid;
   border-color: rgb(171, 172, 172);
   border-radius: 10px 10px;
+  padding-bottom: 3px;
 }
+
 #feature_box #gene_symbol {
   font-size: 24px;
   color: #225780;
@@ -420,31 +524,44 @@
   text-align: center;
   height: 55px;
 }
+
 #feature_box #feature_type {
   text-align: center;
 }
+
 #feature_box #strand {
   padding: 0px 12px;
 }
+
 #iframe_rast {
   width: 100%; 
 }
+
+/* css for phylogeny tree controller */
+
 #tree_controls fieldset {
   float: left;
   width: 25%;
 }
+
 #tree_controls input[type=radio] {
   margin-left: 20px;
 }
+
+/* css for JMol viewer */
 #sv_controls {
   padding: 5px;
 }
+
 #sv_controls label {
   padding-left: 20px;
 }
+
+/* css for query box */
 .queryblock {
   width: 240px;
 }
+
 .queryblock label {
   display: block; 
   padding: 0 10px 0 15px;
@@ -454,6 +571,8 @@
   position: relative;
   top: 3px;
 }
+
+/* TB Community Landing PAge */
 #tb-home-genomes {
   background:#fff;
   padding: 5px;
@@ -492,6 +611,8 @@
   padding: 10px;
   font-size: 12px;
 }
+
+/* Searches and Tools */
 .showing_result_for {
   color:#999;
   font-size: 13px;
@@ -501,15 +622,24 @@
   white-space: nowrap;
   padding: 6px 0 6px 10px;
 }
+
 #FIGfamSorter_4genome_grid .x-grid-cell-inner {
   padding: 3px 0 2px 0;
 }
+
 @charset "UTF-8";
+/* Color Palette */
+/* Font Families */
+/* Set the font sizes for the vertical rhythm */
+/* Blueprint configurable variables */
+/* Compass configurable variables */
+/* other measurements */
 html {
   margin: 0;
   padding: 0;
   border: 0;
 }
+
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section, summary, blockquote, q, th, td, caption, table,
 div, span, object, iframe, p,
@@ -536,6 +666,7 @@ blockquote, q {
 blockquote:before, blockquote:after, q:before, q:after {
   content: "";
 }
+
 th, td, caption {
   float: none !important;
   text-align: left;
@@ -547,9 +678,11 @@ table {
   border-spacing: 0;
   vertical-align: middle;
 }
+
 a img {
   border: none;
 }
+
 body {
   font-size: 81.25%;
   line-height: 1.462em;
@@ -557,11 +690,14 @@ body {
 html > body {
   font-size: 13px;
 }
+
 .container {
   width: 967px;
   margin: 0 auto;
   position: relative;
 }
+
+/* Layout */
 body {
   background: #f4f4f4;
 }
@@ -691,9 +827,11 @@ div.main-header .main-nav .submenu {
   -o-border-bottom-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+
 div.main-header .main-nav .hover .submenu{
 	display: inherit;
 }
+
 div.main-header .main-nav .submenu header p {
   margin: 0px;
   padding: 5px 10px;
@@ -786,16 +924,19 @@ div.main-header .toolbar .workspace {
 * html body  div.main-header .toolbar .workspace {
   overflow-x: hidden;
 }
+
 body.logged-out > header .login .logged-out {
   display: inline;
 }
 body.logged-out > header .login .logged-in {
   display: none;
 }
+
 .container.main-container {
   margin-top: 15px;
   margin-bottom: 30px;
 }
+
 .container.tabs-above {
   margin-top: 20px;
   margin-bottom: 0px;
@@ -803,6 +944,7 @@ body.logged-out > header .login .logged-in {
 .fluid-tabs-container {
   margin: 20px 0px;
 }
+
 .bottom {
   background: #dbe3e5;
   border-top: #c0cbcf 1px solid;
@@ -892,10 +1034,12 @@ body .bottom .block.has-icon {
   padding-left: 34px;
   background-position: 12px 12px;
 }
+
 body .bottom.bottom-alternate {
   background: #dfdfdf;
   border-top: none;
 }
+
 body footer.main-footer {
   background: #34698e;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #09456f), color-stop(100%, #34698e));
@@ -937,6 +1081,7 @@ body footer.main-footer .container .column .wrapper {
 body footer.main-footer ul.left {
   width: 99px;
 }
+
 body.sidebar .container {
   overflow: hidden;
 }
@@ -958,12 +1103,15 @@ body.sidebar .container section.main {
 * html body.sidebar .container section.main {
   overflow-x: hidden;
 }
+
 body.fluid > .container {
   width: 100%;
 }
 body.fluid > .container #main {
   padding: 0px 20px;
 }
+
+/* Generic Layout Classes */
 .right {
   float: right;
 }
@@ -985,6 +1133,7 @@ body.fluid > .container #main {
 .two-third {
   width: 66.6666666%;
 }
+
 .has-border {
   border: #dfdfdf 1px solid;
 }
@@ -994,9 +1143,12 @@ body.fluid > .container #main {
 .side-margins {
   margin: 0 20px;
 }
+
+/* Figures and Images */
 figure img {
   border: #dbe3e5 1px solid;
 }
+
 .figure-right {
   float: right;
   display: inline;
@@ -1056,6 +1208,8 @@ figure.caption-bottom figcaption {
 figure.caption-bottom figcaption .wrapper {
   padding: 12px;
 }
+
+/* Tabs */
 .tabs .ui-tabs-hide {
   display: none;
 }
@@ -1117,6 +1271,8 @@ figure.caption-bottom figcaption .wrapper {
 .tabs ul.tab-headers li.sel a:active {
   color: white;
 }
+
+/* Forms */
 form .optional {
   background: #edf7f9;
 }
@@ -1169,6 +1325,8 @@ form .metal-select-container select {
   padding: 0 8px;
   margin: -2px 0 0 -2px;
 }
+
+/* form in a window */
 .window form label {
   font-weight: bold;
   font-size: 12px;
@@ -1186,6 +1344,8 @@ form .metal-select-container select {
 .window form table td.restrict-width {
   width: 220px;
 }
+
+/* Windows / Portlets / Modals */
 .window header {
   background: #34698e;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #34698e), color-stop(100%, #09456f));
@@ -1222,6 +1382,7 @@ form .metal-select-container select {
   width: 16px;
   display: inline-block;
 }
+
 .window.half {
   width: 355px;
 }
@@ -1244,6 +1405,7 @@ form .metal-select-container select {
 .window.left.last {
   margin-right: 0px;
 }
+/* callouts */
 .callout {
   width: 320px;
   border: #aec9d2 1px solid;
@@ -1263,11 +1425,55 @@ form .metal-select-container select {
   background-image: linear-gradient(#34698e, #09456f 20px);
   padding-top: 30px;
 }
+
+/* special containers */
 .has-icon {
   padding-left: 22px;
   background-repeat: no-repeat;
   background-position: top left;
 }
+/*
+.icon-events {
+  background-image: url(/patric/images/icon-events.png);
+}
+.icon-updates {
+  background-image: url(/patric/images/icon-updates.png);
+}
+.icon-publications {
+  background-image: url(/patric/images/icon-publications.png);
+}
+.icon-new {
+  background-image: url(/patric/images/icon-new.png);
+}
+.icon-meetings {
+  background-image: url(/patric/images/icon-meetings.png);
+}
+.icon-subscribe {
+  background-image: url(/patric/images/icon-subscribe.png);
+}
+.icon-twitter {
+  background-image: url(/patric/images/icon-twitter.png);
+}
+.icon-facebook {
+  background-image: url(/patric/images/icon-facebook.png);
+}
+.icon-blogs {
+  background-image: url(/patric/images/icon-blogs.png);
+}
+.icon-enews {
+  background-image: url(/patric/images/icon-enews.png);
+}
+.icon-rss {
+  background-image: url(/patric/images/icon-rss.png);
+}
+.icon-youtube {
+  background-image: url(/patric/images/icon-youtube.png);
+}
+.icon-share {
+  background-image: url(/patric/images/icon-share.png);
+}
+*/
+/* Image Overlays */
 .img-overlay {
   position: relative;
   overflow: hidden;
@@ -1292,38 +1498,50 @@ form .metal-select-container select {
 .img-overlay .right-pos {
   right: 0px;
 }
+
+/* ---------------------- */
+/* Default element styles */
+/* ---------------------- */
 body {
   line-height: 1.5;
   font-family: Arial, sans-serif;
   color: #333333;
   font-size: 81.25%; }
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
   color: #222222; }
   h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {
     margin: 0; }
+
 h1 {
   font-size: 3em;
   line-height: 1;
   margin-bottom: 0.50em; }
+
 h2 {
   font-size: 2em;
   margin-bottom: 0.75em; }
+
 h3 {
   font-size: 1.5em;
   line-height: 1;
   margin-bottom: 1.00em; }
+
 h4 {
   font-size: 1.2em;
   line-height: 1.25;
   margin-bottom: 1.25em; }
+
 h5 {
   font-size: 1em;
   font-weight: bold;
   margin-bottom: 1.50em; }
+
 h6 {
   font-size: 1em;
   font-weight: bold; }
+
 p {
   margin: 0 0 1.5em; }
   p .left {
@@ -1336,6 +1554,7 @@ p {
     float: right;
     margin: 1.5em 0 1.5em 1.5em;
     padding: 0; }
+
 a {
   text-decoration: underline;
   color: #0066cc; }
@@ -1347,69 +1566,96 @@ a {
     color: #0099ff; }
   a:active {
     color: #bf00ff; }
+
 blockquote {
   margin: 1.5em;
   color: #666666;
   font-style: italic; }
+
 strong, dfn {
   font-weight: bold; }
+
 em, dfn {
   font-style: italic; }
+
 sup, sub {
   line-height: 0; }
+
 abbr, acronym {
   border-bottom: 1px dotted #666666; }
+
 address {
   margin: 0 0 1.5em;
   font-style: italic; }
+
 del {
   color: #666666; }
+
 pre {
   margin: 1.5em 0;
   white-space: pre; }
+
 pre, code, tt {
   font: 1em "Didact Gothic", Arial, Helvetica, sans-serif;
   line-height: 1.5; }
+
 li ul, li ol {
   margin: 0; }
+
 ul, ol {
   margin: 0 1.5em 1.5em 0;
   padding-left: 1.5em; }
+
 ul {
   list-style-type: disc; }
+
 ol {
   list-style-type: decimal; }
+
 dl {
   margin: 0 0 1.5em 0; }
   dl dt {
     font-weight: bold; }
+
 dd {
   margin-left: 1.5em; }
+
 table {
   margin-bottom: 1.4em;
   width: 100%; }
+
 th {
   font-weight: bold; }
+
 thead th {
   background: #c3d9ff; }
+
 th, td, caption {
   padding: 4px 10px 4px 5px; }
+
 table.striped tr:nth-child(even) td,
 table tr.even td {
   background: #e5ecf9; }
+
 tfoot {
   font-style: italic; }
+
 caption {
   background: #eeeeee; }
+
 .quiet {
   color: #666666; }
+
 .loud {
   color: #111111; }
+
+/* Force safari into a nicer antialiasing mode. */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-font-smoothing: antialiased;
   -o-font-smoothing: antialiased;
 }
+
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   color: inherit;
@@ -1497,56 +1743,84 @@ tfoot {
 caption {
   background: none;
 }
+
+/* -------------------------- */
+/* Generic Typography Classes */
+/* -------------------------- */
+/* =Font styles */
 .sans {
   font-family: Arial, sans-serif; }
+
 .sans-alternate {
   font-family: "Didact Gothic", Arial, Helvetica, sans-serif; }
+
+/* =Font size */
 .smallest {
   font-size: 11px;
   line-height: 13px; }
+
 .small {
   font-size: 12px;
   line-height: 13px; }
+
 .normal {
   font-size: 13px; }
+
 .large {
   font-size: 14px;
   line-height: 18px; }
+
 .largest {
   font-size: 16px;
   line-height: 18px; }
+
 .mega {
   font-size: 34px;
   line-height: 28px; }
+
+/* =Text Styles */
 .center-text {
   text-align: center; }
+
 .right-align-text {
   text-align: right; }
+
 .left-align-text {
   text-align: left; }
+
 .normal-weight {
   font-weight: normal; }
+
 .bold {
   font-weight: bold; }
+
 .italic {
   font-style: italic; }
+
 .upper {
   text-transform: uppercase; }
+
 .normal-case {
   text-transform: none; }
+
 .letters-wide {
   letter-spacing: 0.1em; }
+
 .letters-wider {
   letter-spacing: 0.3em; }
+
 .label {
   font-weight: bold;
   text-transform: uppercase; }
+
 .intro {
   font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
   font-size: 16px;
   line-height: 20px; }
+
 .deep-indent {
   margin-left: 45px; }
+
 .quote {
   margin-bottom: 17px;
   padding: 17px;
@@ -1563,46 +1837,70 @@ caption {
     line-height: 12px;
     text-align: right;
     margin-top: 8.5px; }
+
+/* =Vertical Rhythm Classes */
 .close {
   margin-bottom: 2px; }
+
 .close2x {
   margin-bottom: .4em; }
+
 .far {
   margin-bottom: .8em; }
+
 .far2x {
   margin-bottom: 1.6em; }
+
 .far4x {
   margin-bottom: 3.2em; }
+
 .down {
   padding-top: 0.8em; }
+
 .down2x {
   padding-top: 1.3em; }
+
 .down-close {
   padding-top: 2px; }
+
 .tight-paragraphs p {
   margin: 0 0 2px 0; }
+
 .loose-paragraphs p {
   margin: 0 0 12px 0; }
+
+/* =Text Colors */
 .ondark {
   color: #fff; }
+
 .light {
   color: #666666; }
+
 .highlight {
   color: #1fa1c3; }
+
 .highlight-b {
   color: #ccff99; }
+
 .highlight-c {
   color: #227194; }
+
 .highlight-d {
   color: #7bc4d8; }
+
 .highlight-e {
   color: #09456f; }
+
 .highlight-f {
   color: #87b934; }
+
+/* =Link Styles */
 .linkstyle-highlight a {
   color: #1fa1c3; }
+
 .linkstyle-highlight-b a {
   color: #7bc4d8; }
+
 .linkstyle-highlight-c a {
   color: white; }
   .linkstyle-highlight-c a:visited {
@@ -1611,6 +1909,7 @@ caption {
     color: white; }
   .linkstyle-highlight-c a:active {
     color: white; }
+
 .linkstyle-highlight-d a {
   color: #666666; }
   .linkstyle-highlight-d a:visited {
@@ -1619,16 +1918,20 @@ caption {
     color: black; }
   .linkstyle-highlight-d a:active {
     color: #666666; }
+
 .no-underline-links a {
   text-decoration: none; }
+
 a.double-arrow-link:after {
   content: ' »'; }
+
 a.icon-left {
   display: inline-block;
   line-height: 16px;
   padding-left: 25px;
   background-position: left center;
   background-repeat: no-repeat; }
+
 .button {
   background: #09456f;
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #34698e), color-stop(100%, #09456f));
@@ -1647,7 +1950,7 @@ a.icon-left {
   padding: 3px 10px;
   color: #fff;
   text-align: center;
-   }
+  /* If there are links inside the button block */ }
   .button a {
     color: white; }
     .button a:visited {
@@ -1690,6 +1993,7 @@ a.icon-left {
     background: url(/patric/images/arrow-white-e-offset.png) no-repeat center right, -o-linear-gradient(#09456f, #34698e);
     background: url(/patric/images/arrow-white-e-offset.png) no-repeat center right, -ms-linear-gradient(#09456f, #34698e);
     background: url(/patric/images/arrow-white-e-offset.png) no-repeat center right, linear-gradient(#09456f, #34698e); }
+
 .button.highlight {
   background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #86b834), color-stop(100%, #659626));
   background-image: -webkit-linear-gradient(#86b834, #659626);
@@ -1707,6 +2011,7 @@ a.icon-left {
     background-image: -ms-linear-gradient(#659626, #86b834);
     background-image: linear-gradient(#659626, #86b834);
     border: rgba(101, 150, 37, 0.7) 1px inset; }
+
 a.button {
   padding: 5px 10px;
   line-height: 1.1em;
@@ -1720,6 +2025,7 @@ a.button {
     color: white; }
   a.button:hover {
     text-decoration: none; }
+
 .button.close-slate {
   padding: 0px;
   background: none;
@@ -1733,6 +2039,7 @@ a.button {
   height: 14px;
   width: 45px;
   display: inline-block; }
+
 .breadcrumbs {
   color: #666666;
   font-weight: bold;
@@ -1748,41 +2055,54 @@ a.button {
     font-size: 12px;
     font-weight: normal;
   }
+
 .browse-data li.active a {
   color: black; }
+
+/* =Header Styles */
 h1 {
   font-size: 30px;
   line-height: 32px;
   margin-bottom: 0.5em; }
+
 h2 {
   font-size: 20px;
   line-height: 28px;
   margin-bottom: 0.125em; }
+
 h3 {
   font-size: 16px;
   line-height: 20px;
   margin-bottom: 0.125em; }
+
 h4 {
   font-size: 14px;
   line-height: 16px;
   margin-bottom: 0.25em; }
+
 h5 {
   font-size: 10px;
   line-height: 12px;
   margin-bottom: 1.50em; }
+
 h6 {
   font-size: 10px;
   line-height: 12px;
   margin-bottom: 1.50em; }
+
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
+
 h2.xxl {
   font-size: 30px; }
+
 h2.xl {
   font-size: 26px; }
+
 h3.xl {
   font-size: 20px; }
+
 .section-title {
   background: #dbe3e5; }
   .section-title span.wrap {
@@ -1792,26 +2112,35 @@ h3.xl {
     color: #666666;
     font-weight: normal;
     font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+/*  padding-top: 10px;
+    padding-bottom: 10px; }*/
     padding-top: 5px;
     padding-bottom: 5px; }
   .section-title.normal-case span.wrap {
     text-transform: none; }
+
 .section-title-b {
   background: #c3c3c3; }
+
 .invert .section-title {
   background: #34698e; }
   .invert .section-title span {
     background: #09456f;
     color: #fff; }
+
 .workflow-title {
   background: #f4f4f4;
   border-bottom: #dfdfdf 3px solid; }
   .workflow-title.no-border {
     border-bottom: 0px; }
+
+/* =Lists */
 .small-bullets li {
   background: url(/patric/images/bullet-black-small.png) no-repeat 6px 4px; }
+
 .white-bullets li {
   background: url(/patric/images/bullet-white.png) no-repeat 5px 5px; }
+
 .no-decoration {
   padding-left: 0; }
   .no-decoration li {
@@ -1819,24 +2148,30 @@ h3.xl {
     padding-left: 0;
     margin-left: 0;
     list-style: none; }
+
 .no-bullets {
   padding-left: 0; }
   .no-bullets li {
     background-image: none;
     padding-left: .8em;
     list-style: none; }
+
 .long-list li {
   padding: 7px 0px 7px 20px;
   margin: 0px;
   background-position: 9px 12px; }
 .long-list li.alt {
   background-color: #e7ecef; }
+
 ul.long-list {
   padding: 0px; }
+
 .tight-list li {
   margin: 0px; }
+
 .loose-list li {
   margin: 7px 0px; }
+
 .inline {
   padding-left: 0; }
   .inline li {
@@ -1846,10 +2181,14 @@ ul.long-list {
     display: inline-block;
     vertical-align: middle;
 }
+/*    .inline li {
+      display: inline; }
+*/
 .inline.wide-inline li {
   margin-right: 20px; }
 .inline.wide-inline li.last {
   margin-right: 0px; }
+
 ul.inline.prev-next .prev {
   margin-right: 5px; }
   ul.inline.prev-next .prev a {
@@ -1864,8 +2203,9 @@ ul.inline.prev-next .next {
 ul.inline.prev-next .disabled a {
   color: #c3c3c3;
   cursor: default; }
+
 ul.wordcloud {
-   }
+  /*text-transform: capitalize;*/ }
   ul.wordcloud li.cloud-rank-1 a {
     opacity: 0.2;
     font-size: 12px; }
@@ -1887,49 +2227,67 @@ ul.wordcloud {
       color: #333333; }
     ul.wordcloud li.cloud-rank-5 a:active {
       color: black; }
+
+/* @group Arrows */
 .arrow-slate-e {
   padding-right: 7px;
   background: transparent url(/patric/images/arrow-slate-e.png) scroll no-repeat right center; }
+
 .arrow-slate-e-up {
   padding-right: 7px;
   background: transparent url(/patric/images/arrow-slate-e-up.png) scroll no-repeat right center; }
+
 .arrow-slate-e-down {
   padding-right: 7px;
   background: transparent url(/patric/images/arrow-slate-e-down.png) scroll no-repeat right center; }
+
 .arrow-cyan-e {
   padding-right: 7px;
   background: transparent url(/patric/images/arrow-cyan-e.png) scroll no-repeat right center; }
+
 .arrow-white-e {
   padding-right: 7px;
   background: transparent url(/patric/images/arrow-white-e.png) scroll no-repeat right center; }
+
+/* @group HRs */
 hr.img-hr-third {
   background: url(/patric/images/hr-third-glow.png) no-repeat center center; }
+
 hr.sidebar-divider {
   background: #aec9d2;
   height: 1px; }
+
+/* @group Figures and Figure Captions */
 figure .photo-credit {
   text-align: right;
   font-size: 9px; }
 figure figcaption {
   font-size: 13px;
   line-height: 19px; }
+
+/* @group Tables */
 th.sub-section {
   background: #d2d2d2;
   color: #666666; }
+
 tr.alt td {
   background: #ebebeb; }
+
 tbody th {
   background: #fff; }
+
 p.table-caption {
   padding: 5px 15px;
   color: #666666;
   font-size: 11px; }
+
 table.thick-border {
   border-bottom: #09456f 4px solid; }
   table.thick-border td.first {
     border-left: #09456f 4px solid; }
   table.thick-border td.last {
     border-right: #09456f 4px solid; }
+
 table.basic {
   font-size: 11px;
   border-collapse: separate;
@@ -1938,13 +2296,16 @@ table.basic {
   border-right: #d3d3d3 1px solid; }
   table.basic th, table.basic td, table.basic caption {
     padding: 4px 10px 4px 5px; }
+
 table.basic thead th {
   background: #fff;
   color: #666666;
   font-weight: bold; }
+
 table.basic td, th {
   border-top: #d3d3d3 1px solid;
   border-left: #d3d3d3 1px solid; }
+
 table.no-decoration {
   border: none;
 }
@@ -1982,6 +2343,7 @@ aside.sidebar form.enews-signup input[type="text"] {
   width: 132px;
   margin-right: 3px;
   padding: 3px; }
+
 .home .feature #nicefade_wrapper {
   margin: 0 auto;
   position: relative; }
@@ -1989,7 +2351,7 @@ aside.sidebar form.enews-signup input[type="text"] {
     width: 967px;
     height: 320px;
     overflow: hidden;
-    
+    /*zoom: 1;*/
     position: relative;
     margin: 0px;
     padding: 0px; }
@@ -2013,7 +2375,7 @@ aside.sidebar form.enews-signup input[type="text"] {
     margin: 0px;
     padding: 0px;
     overflow: hidden;
-    
+    /*zoom: 1;*/
     position: absolute;
     bottom: 0px;
     background: url(/patric/images/bg-home-feature-dropshadow-invert.png) no-repeat bottom center; }
@@ -2036,7 +2398,7 @@ aside.sidebar form.enews-signup input[type="text"] {
     border-right: #87b934 1px solid;
     border-left: #2a5d40 1px solid;
     overflow: hidden;
-     }
+    /*zoom: 1;*/ }
     .home .feature nav.feature-nav ul li {
       float: left;
 	  width: 199px;
@@ -2064,7 +2426,7 @@ aside.sidebar form.enews-signup input[type="text"] {
   width: 321px; }
 .home .two-thirds-col {
   overflow: hidden;
-   }
+  /*zoom: 1;*/ }
   .home .two-thirds-col > .column {
     display: inline;
     float: left;
@@ -2074,7 +2436,7 @@ aside.sidebar form.enews-signup input[type="text"] {
       overflow-x: hidden; }
     .home .two-thirds-col > .column .two-col {
       overflow: hidden;
-       }
+      /*zoom: 1;*/ }
       .home .two-thirds-col > .column .two-col .column {
         display: inline;
         float: left;
@@ -2098,29 +2460,33 @@ aside.sidebar form.enews-signup input[type="text"] {
       overflow-x: hidden; }
 .home ul.browse-data li {
   width: 85px; }
+
 #dlp-hp ul li {
 	display: inline-table;
 	width: 103px;
 }
 #dlp-hp figure img {
 	border: 0;
-	
+	/*width: 84px;*/
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
 }
 #dlp-hp figcaption {
 	color: #09456f;
-	
+	/*font-family: Arial, sans-serif;*/
 	font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
 	font-size: 12px;
 	font-weight: bold;
 	text-align: center;
 }
+
+/*body.home > .container {*/
 body.home .main-container {
   background: url(/patric/images/bg-home-feature-dropshadow.png) no-repeat top center;
   margin-top: 0px;
   padding-top: 30px; }
+
 .step {
   overflow: hidden;
   position: relative;
@@ -2140,7 +2506,7 @@ body.home .main-container {
       height: 20px; }
   .step .wrapper-base {
     overflow: hidden;
-     }
+    /*zoom: 1;*/ }
     .step .wrapper-base .base {
       width: 640px;
       float: left; }
@@ -2161,7 +2527,7 @@ body.home .main-container {
       float: left; }
     .step .wrapper-base aside.support {
       overflow: hidden;
-      
+      /*zoom: 1;*/
       overflow: hidden;
       position: relative; }
       .step .wrapper-base aside.support img.overlay {
@@ -2215,7 +2581,7 @@ body.home .main-container {
       z-index: 200; }
     .step .carousel li.slide {
       overflow: hidden;
-      
+      /*zoom: 1;*/
       margin: 0px;
       padding: 0px; }
       .step .carousel li.slide .wrapper-inner {
@@ -2223,9 +2589,11 @@ body.home .main-container {
         margin: 42px 40px 20px 25px; }
   .step .carousel.active {
     bottom: 0%; }
+
 .x-tab-button {
   text-decoration: none;
 }
+
 .label-box-orange {
 	border: rgb(224,117,20) 2px solid;
 	border-radius: 5px;
@@ -2233,6 +2601,7 @@ body.home .main-container {
 	color: white;
 	background: rgb(244,137,40);
 }
+/* fixing extjs 4.2. tooltip bug */
 .x-tip {
   width: auto !important;
 }
@@ -2242,3 +2611,4 @@ body.home .main-container {
 .x-tip-body span {
   width: auto !important;
 }
+/* end of fixing bug */

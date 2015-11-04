@@ -16,6 +16,7 @@ html.mobile,
 .mblBackground {
   background-color: #000000;
 }
+/* Button Colors */
 .mblColorBlue {
   color: #ffffff;
   background-color: #2362dd;
@@ -26,6 +27,7 @@ html.mobile,
   background-image: -webkit-gradient(linear, left top, right bottom, from(#7a9de9), to(#2362dd));
   background-image: linear-gradient(to right bottom, #7a9de9 0%, #2362dd 100%);
 }
+/* Default Button Colors */
 .mblColorDefault {
   color: #ffffff;
   background-color: transparent;

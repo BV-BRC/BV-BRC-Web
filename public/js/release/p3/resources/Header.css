@@ -10,6 +10,7 @@
 	box-shadow: 4px 0px 4px;
 	border-bottom: 1px solid #333;
 }
+
 .TopMenuBar {
 	width: 100%;
 	height: 13px;
@@ -21,32 +22,47 @@
 	padding-right: 4px;
 	padding:2px;
 }
+
+/*
+.TopMenuBar > A,
+.TopMenuBar > SPAN {
+	margin-right: 8px;
+	cursor: pointer;
+}
+*/
+
 .Authenticated .TopMenuLink.HideWithAuth {
 	display: none;
 }
+
 .Authenticated .TopMenuLink.ShowWithAuth {
 	display: inline;
 }
+
 .TopMenuLink {
 	display: inline;
 	margin-right: 8px;
 	cursor: pointer;
 	color: #fff;
 }
+
+
 .P3Header {
 	width: 100%;
-	height: 25px;
-	background: #34698e; 
+/*	height: 32px;*/
+	background: #34698e; /*#3a69b9;*/
 	padding:0px;
 	margin-top:0px;
 	border-top: 1px solid #999;
 }
+
 .P3Header .logo {
-	font-size:1.3em;
+	font-size:1.6em;
 	color: #fff;
-	font-weight: 900;
+	font-weight: 200;
 	margin-left: 8px;
 }
+
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
 .topMenuButton {
 	background: inherit;
@@ -55,19 +71,23 @@
 	border: 0px;
 	box-shadow: 0 0 0;
 }
+
 .P3Header .logo:hover,
 .topMenuButton:hover{
 	color: orange;
 }
+
 .TopMenuLink,
 .TopMenuLink:visited,
 .P3Header A,
 .P3Header A:visited {
 	text-decoration:none;
 };
+
 .patric .TopMenuBar *:focus{
     outline: 0;
 }
+
 .patric .dijitTooltipDialogPopup {
 	margin-top: -10px;
 }

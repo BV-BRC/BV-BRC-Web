@@ -1,7 +1,7 @@
 var profile = {      
 	basePath: "./", 
 	layerOptimize: "closure", 
-	cssOptimize:"comments.keepLines",
+	cssOptimize:false, //"comments.keepLines",
 	releaseDir: "./release",
 	stripConsole: "all",
 	mini: true,
@@ -55,10 +55,38 @@ var profile = {
 			name: "rql", 
 			location: "./rql"
 		},
-		{ name: 'jDataView', location: '../jDataView/src', main: 'jdataview' },
-		{ name: "JBrowse", location: "../jbrowse.repo/src/JBrowse" },
-		{ name: "Raphael", location: "../raphael", main: "raphael"},
-		{ name: "jsphylosvg", location: "../jsphylosvg-1.55", main: "jsphylosvg"}
+		{ 
+			name: "JBrowse", 
+			location: "./JBrowse"
+		},
+		{
+			name: "jszlib",
+			location: "./jszlib"
+		},
+		{
+			name: "FileSaver",
+			location: "./FileSaver"
+		},
+		{
+			name: "circulus",
+			location: "./circulus"
+		},
+		{
+			name: "lazyload",
+			location: "./lazyload/",
+			main: "lazyload"
+		},
+		{ name: 'jDataView', location: './jDataView/src', main: 'jdataview' },
+		{
+			name: "d3",
+			location: "./d3"
+		},
+		{
+			name: "swfobject",
+			location: "./swfobject"
+		}
+	
+
 	
 	], 
 

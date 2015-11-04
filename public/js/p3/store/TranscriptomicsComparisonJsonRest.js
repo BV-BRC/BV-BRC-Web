@@ -1,6 +1,6 @@
 define([
      "dojo/_base/declare",
-     "./P3JsonRest",
+     "./P3JsonRest"
 ], function(
     declare,
     Store

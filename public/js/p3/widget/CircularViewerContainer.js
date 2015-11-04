@@ -142,12 +142,12 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}}
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
+				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}}
 			},"outer")
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){

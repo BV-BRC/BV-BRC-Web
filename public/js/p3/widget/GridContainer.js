@@ -163,30 +163,22 @@ define([
 					}
 				},
 				true
-			],
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
+			],[
+				"ViewFeatureItem",
+				"MultiButton fa icon-eye2 fa-2x", 
 				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+					label: "VIEW",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Feature",
+					validContainerTypes: ["feature_data"]
 				},
 				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-
-			,[
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+				}, 
+				false	
+			],[
 				"ViewGenomeItem",
 				"MultiButton fa icon-genome fa-2x", 
 				{
@@ -194,7 +186,7 @@ define([
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"],
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -204,12 +196,31 @@ define([
 				}, 
 				false
 			],[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT,
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+				},
+				function(selection){
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
+				},
+				false
+			],[
 				"MultipleSeqAlignment",
 				"fa icon-alignment fa-2x",
 				{
 					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
-
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
 				}, 
 				function(selection){
 					var selection = self.actionPanel.get('selection')
@@ -221,7 +232,7 @@ define([
 				"idmapping",
 				"fa icon-exchange fa-2x",
 				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
 				},
 				function(selection){
 
@@ -239,7 +250,7 @@ define([
 				"Pathway Summary",
 				"fa icon-git-pull-request fa-2x",
 				{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
 				}, 
 				function(selection){
 					new Dialog({content: "IMPLEMENT ME!"}).show();
@@ -305,7 +316,7 @@ define([
 					"className": "BrowserHeader",
 					dataModel: this.dataModel,
 					facetFields: this.facetFields,
-					state: this.state,
+					state: this.state
 				});
 
 				// console.log("gridcontainer startup()", this.state)

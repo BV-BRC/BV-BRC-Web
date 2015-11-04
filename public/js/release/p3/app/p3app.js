@@ -29,13 +29,13 @@ define("p3/app/p3app", [
 
 			on(document.body,"keypress", function(evt){
 				var charOrCode = evt.charCode || evt.keyCode;
-				console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
+				// console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
 			
 				if ((charOrCode==4) && evt.ctrlKey && evt.shiftKey){
 					if (!this._devDlg) {
 						this._devDlg = new Dialog({title: "Debugging Panel", content:'<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'});
 					}
-					console.log("Dialog: ", this._devDlg);
+					// console.log("Dialog: ", this._devDlg);
 					if (this._devDlg.open){
 						this._devDlg.hide();
 					}else{
@@ -43,9 +43,24 @@ define("p3/app/p3app", [
 					}
 				}	
 			});
+
+			/*
+			Router.register("\/$", function(params, oldPath, newPath, state){
+				console.log("HOME route", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				newState.widgetClass="dijit/layout/ContentPane";
+				newState.requireAuth=false;
+				console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+			*/
 	
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Workspace URL Callback", params.newPath);
+				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -56,12 +71,29 @@ define("p3/app/p3app", [
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
+				// console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="p3/widget/AdvancedSearch";
+				newState.value=path;
+				newState.set= "path";
+				newState.requireAuth=true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
+
+
 			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Upload URL Callback", params.newPath);
+				// console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -72,14 +104,14 @@ define("p3/app/p3app", [
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
 
 
 			Router.register("\/workspace(\/.*)", function(params, oldPath, newPath, state){
-				console.log("Workspace URL Callback", params.newPath);
+				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
 					newState[prop]=params.state[prop]
@@ -94,37 +126,60 @@ define("p3/app/p3app", [
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
+
+			function getState(params,path){
+				var parser = document.createElement("a");
+				parser.href = path;
+				var newState = {}
+
+
+				newState.href=path;
+				newState.prev = params.oldPath;
+
+				if (parser.search){
+					newState.search = (parser.search.charAt(0)=="?")?parser.search.substr(1):parser.search
+				}else{
+					newState.search="";
+				}
+				newState.hash = parser.hash;
+				newState.pathname = parser.pathname
+
+				if (newState.hash){
+					newState.hash = (newState.hash.charAt(0)=="#")?newState.hash.substr(1):newState.hash;
+					// console.log("PARSE HASH: ", newState.hash)
+					newState.hashParams=newState.hashParams||{};
+
+					var hps = newState.hash.split("&")
+					hps.forEach(function(t){
+						var tup = t.split("=")
+						if (tup[0] && tup[1]){
+							newState.hashParams[tup[0]]=tup[1];
+						}
+					})
+					// console.log("newState.hashParams: ", newState.hashParams)
+				}
+				return newState;
+			}
+
 			Router.register("\/view(\/.*)", function(params, path){
-				console.log("view URL Callback", arguments);
-				
-				var parts = path.split("/")
+				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
+				var newState = getState(params,path);
+
+				var parts = newState.pathname.split("/")
 				parts.shift();
 				var type = parts.shift();
-				if (parts.length>0){
-					viewerParams = parts.join("/");
-				}else{
-					viewerParams="";
-				}
-				console.log("Parts:", parts, type, viewerParams)
-
-				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
-				}
-		
-			
-				console.log("Parts:", parts, type, path)
+	
 				newState.widgetClass="p3/widget/viewer/" + type;
-				newState.value=viewerParams;
-				newState.set= "params";
-				console.log("Navigate to ", newState);
+				console.log("'/view/' New Navigation State: ", newState);
 				_self.navigate(newState);
 			});
+
+
 			Router.register("\/app(\/.*)", function(params, path){
-				console.log("view URL Callback", arguments);
+				// console.log("view URL Callback", arguments);
 				
 				var parts = path.split("/")
 				parts.shift();
@@ -134,7 +189,7 @@ define("p3/app/p3app", [
 				}else{
 					viewerParams="";
 				}
-				console.log("Parts:", parts, type, viewerParams)
+				// console.log("Parts:", parts, type, viewerParams)
 
 				var newState = {href: params.newPath}
 				for (var prop in params.state){
@@ -142,12 +197,12 @@ define("p3/app/p3app", [
 				}
 		
 			
-				console.log("Parts:", parts, type, path)
+				// console.log("Parts:", parts, type, path)
 				newState.widgetClass="p3/widget/app/" + type;
 				newState.value=viewerParams;
 				newState.set= "params";
 				newState.requireAuth=true;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
@@ -159,7 +214,7 @@ define("p3/app/p3app", [
 			}
 
 			if (this.serviceAPI && this.user){
-				console.log("Setup API Service @ ", this.serviceAPI);
+				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
 /*
@@ -176,12 +231,8 @@ define("p3/app/p3app", [
 			// },2000);
 
 			this.toaster = new Toaster({positionDirection: "tl-down", messageTopic: "/Notification", duration: 3000});
-			//this.leftDrawer = new Drawer({topic: "/overlay/left"}).placeAt(document.body);
-			//this.leftDrawer.startup();
-			//console.log("leftDrawer", this.leftDrawer)
-			// setTimeout(function(){
-			// 	Topic.publish("/overlay/left", {action: "set", panel: ContentPane});
-			// }, 1000);
+			// this.leftDrawer = new Drawer({title: '', handleContent: '<i  class="fa fa-3x icon-filter">', topic: "/overlay/left"}).placeAt(document.body);
+			// this.leftDrawer.startup();
 
 			//this.rightDrawer = new Drawer({topic: "/overlay/right", "class":"RightDrawer"}).placeAt(document.body);
 			//this.rightDrawer.startup();

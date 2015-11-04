@@ -1,8 +1,13 @@
 
+/****
+		dijit.ProgressBar
+ ****/
+
 .soria  .dijitProgressBarRtl .dijitProgressBarFull {
 	border-left-width: 1px;
 	border-right: 0px;
 }
+
 .soria  .dijitProgressBarIndeterminateRtl .dijitProgressBarTile {
 	-moz-transform: scaleX(-1);
 	-o-transform: scaleX(-1);
