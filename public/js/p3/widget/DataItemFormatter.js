@@ -998,7 +998,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					linkTitle = true;
 				}
 			}
-			console.log("url=" + url + ", linkTitle=" + linkTitle);
+			//console.log("url=" + url + ", linkTitle=" + linkTitle);
 	
 			var hdr_div = domConstruct.create("div", {}, div);
 
@@ -1067,8 +1067,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 				for(var j=0; j<value.length; j++) {
 					var column = value[j].text;
-					console.log("column=", column);
-					console.log("item[column]=", item[column]);
+					//console.log("column=", column);
+					//console.log("item[column]=", item[column]);
 					
 					if (column)
 					{
