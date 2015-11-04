@@ -23,7 +23,7 @@ define([
 			if(state && state.genome_ids && state.genome_ids.length > 0){
 				var cur = this.genome_ids.join("");
 				var next = state.genome_ids.join("");
-				if (cur != next){
+				if(cur != next){
 					this.set("genome_ids", state.genome_ids || []);
 					this._loaded = false;
 					delete this._loadingDeferred;
@@ -48,7 +48,7 @@ define([
 			else{
 				var _self = this;
 				var results;
-				console.log("Initiate NON LOADED Query: ", query)
+				console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
 					console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
@@ -92,15 +92,15 @@ define([
 					this.setData([]);
 					this._loaded = true;
 					def.resolve(true);
-				}), 0)
+				}), 0);
 				return def.promise;
-	
+
 			}
 
 			var lq;
 
 			if(state && state.genome_ids){
-			//	lq = state.genome_ids.map(function(x){ return "genome_id:" + x}).join(" OR ");
+				//	lq = state.genome_ids.map(function(x){ return "genome_id:" + x}).join(" OR ");
 				lq = "genome_id:(" + state.genome_ids.join(" OR ") + ")";
 			}
 
@@ -118,7 +118,7 @@ define([
 			}).join("&");
 
 			var _self = this;
-			console.log("Load Data: ", q)
+			console.log("Load Data: ", q);
 			this._loadingDeferred = when(request.post(this.apiServer + '/pathway/', {
 				handleAs: 'json',
 				headers: {

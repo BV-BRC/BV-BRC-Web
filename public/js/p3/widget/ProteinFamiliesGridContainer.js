@@ -2,7 +2,8 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog",
-	"dojo/_base/lang"
+	"dojo/_base/lang","dojo/text!./templates/IDMapping.html",
+	"dijit/Dialog","dijit/popup","dojo/on"
 
 ], function(declare, GridContainer, on,
 			ProteinFamiliesGrid, popup, Topic,
@@ -45,13 +46,16 @@ define([
 		},
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-
-			//console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
+			if (!state) { return; }
+			console.log("PathwaysGridContainer _setStateAttr: ", state);
 			if(this.grid){
+				console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
+			}else{
+				console.log("No Grid Yet (PathwaysGridContainer)");
 			}
 
-			this._set('state', state);
+			this._set("state", state);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([

@@ -9,9 +9,6 @@ define([
 	TooltipDialog,FacetFilterPanel,Topic
 ){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
-	var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
-
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
 	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
 
@@ -75,31 +72,6 @@ define([
 					on.emit(this.domNode,"ToggleFilters",{});
 				},
 				true
-			]
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewGenome",
-				"fa icon-eye fa-2x",
-				{label: "OPEN",ignoreDataType:true, multiple: false,validTypes:["*"], tooltip: "Open Genome View"},
-				function(selection){
-					console.log("Selected Genome: ", selection);
-					Topic.publish("/navigate", {"href": "/view/Genome/" + selection[0].genome_id});
-				},
-				false
-			],
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{label: "FASTA",ignoreDataType:true, multiple: true,validTypes:["*"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT},
-				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
 			]
 		])
 	});

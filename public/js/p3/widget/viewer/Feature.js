@@ -1,27 +1,117 @@
 define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../GenomeOverview",
-	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
-	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer"/*,"JBrowse/Browser"*/, "../InteractionsContainer","../Phylogeny"
+	"../formatter", "../TabContainer", "../FeatureOverview",
+	"dojo/request", "dojo/_base/lang",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
+	"../TranscriptomicsContainer", "../CorrelatedGenesContainer"/*,"JBrowse/Browser"*/
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, GenomeOverview,
-			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
-			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer/*, JBrowser*/, InteractionsContainer, Phylogeny){
+			formatter, TabContainer, FeatureOverview,
+			xhr, lang,
+			ActionBar, ContainerActionBar, PathwaysContainer,
+			TranscriptomicsContainer, CorrelatedGenesContainer/*, JBrowser*/){
 	return declare([TabViewerBase], {
-		"baseClass": "GenomeGroup",
+		"baseClass": "FeatureGroup",
 		"disabled": false,
 		"query": null,
-		containerType: "genome_group",
-		genome_id: "",
+		containerType: "feature_group",
+		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		createOverviewPanel: function(state){
-			return new ContentPane({content: "Overview", title: "Overview",id: this.viewer.id + "_" + "overview", state: this.state});
+
+		_setFeature_idAttr: function(id){
+
+			if(!id){
+				return;
+			}
+			var state = this.state = this.state || {};
+			this.feature_id = id;
+			this.state.feature_id = id;
+
+			xhr.get(this.apiServiceUrl + "/genome_feature/" + id, {
+				headers: {
+					accept: "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(feature){
+				this.set("feature", feature)
+			}));
+
+			var activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + id + ")"});
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+					break;
+				case "correlatedGenes":
+					activeTab.set("state", this.state);
+					break;
+				//case "transcriptomics":
+				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
+				//	break;
+				default:
+					activeTab.set("state", activeQueryState);
+					break;
+			}
+		},
+
+		onSetState: function(attr, oldVal, state){
+			var parts = this.state.pathname.split("/");
+			this.set("feature_id", parts[parts.length - 1]);
+
+			if(!state){
+				return;
+			}
+
+			if(state.hashParams && state.hashParams.view_tab){
+
+				if(this[state.hashParams.view_tab]){
+					var vt = this[state.hashParams.view_tab];
+					vt.set("visible", true);
+					this.viewer.selectChild(vt);
+				}else{
+					// console.log("No view-tab supplied in State Object");
+				}
+			}
+		},
+
+		buildHeaderContent: function(feature){
+			// TODO: implement
+		},
+
+		_setFeatureAttr: function(feature){
+			var state = this.state || {};
+
+			state.feature = feature;
+
+			//this.viewHeader.set("content", this.buildHeaderContent(feature));
+
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+					activeTab.set("state", state);
+					break;
+				default:
+					break;
+			}
+
+			this._set("feature", feature);
+
+			this.resize();
+		},
+
+		createOverviewPanel: function(){
+			return new FeatureOverview({
+				content: "Overview",
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview",
+				state: this.state
+			});
 		},
 		postCreate: function(){
 			if(!this.state){
@@ -29,14 +119,28 @@ define([
 			}
 
 			this.inherited(arguments);
+
 			this.overview = this.createOverviewPanel();
-			this.genomeBrowser=new ContentPane({title: "Genome Browser", id: this.viewer.id + "_genomeBrowser", content: "Genome Browser"})
+			this.genomeBrowser = new ContentPane({
+				title: "Genome Browser",
+				id: this.viewer.id + "_genomeBrowser",
+				content: "Genome Browser"
+			});
 			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
-			this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"})
-			this.transcriptomics=new ContentPane({title: "Transcriptomics", id: this.viewer.id + "_transcriptomics", content: "Transcriptomics"})
-			this.correlatedGenes=new ContentPane({title: "Correlated Genes", id: this.viewer.id + "_correlatedGenes", content: "Correlated Genes"})
-			
-			this.viewer.addChild(this.overview)
+			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
+			this.transcriptomics = new ContentPane({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_transcriptomics",
+				content: "Transcriptomics"
+			});
+			this.correlatedGenes = new CorrelatedGenesContainer({
+				title: "Correlated Genes",
+				id: this.viewer.id + "_correlatedGenes",
+				content: "Correlated Genes",
+				state: this.state
+			});
+
+			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
 			// this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);

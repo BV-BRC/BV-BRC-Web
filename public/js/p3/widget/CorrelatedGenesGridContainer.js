@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./PathwaysGrid", "dijit/popup", "dojo/topic",
+	"./CorrelatedGenesGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang",
+	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
-			PathwaysGrid, popup, Topic,
+			CorrelatedGenesGrid, popup, Topic,
 			TooltipDialog, FacetFilterPanel,
 			lang){
 
@@ -36,8 +36,8 @@ define([
 	});
 
 	return declare([GridContainer], {
-		gridCtor: PathwaysGrid,
-		containerType: "pathway_data",
+		gridCtor: CorrelatedGenesGrid,
+		containerType: "feature_data",
 		facetFields: ["annotation", "feature_type"],
 		enableFilterPanel: false,
 		apiServer: window.App.dataServiceURL,
@@ -71,16 +71,41 @@ define([
 				true
 			]
 		]),
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT
+				},
+				function(selection){
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
+				},
+				false
+			]
+
+		]),
 
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-			if (!state) { return; }
-			console.log("PathwaysGridContainer _setStateAttr: ", state);
+			if(!state){
+				return;
+			}
+			//console.log("CorrelatedGenesGridContainer _setStateAttr: ", state.feature_id);
 			if(this.grid){
 				console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (PathwaysGridContainer)");
+				console.log("No Grid Yet (CorrelatedGenesGridContainer)");
 			}
 
 			this._set("state", state);

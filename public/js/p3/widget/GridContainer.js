@@ -1,10 +1,48 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel",
-	"dojo/topic", "dojo/query", "dijit/layout/ContentPane"
+	"dojo/topic", "dojo/query", "dijit/layout/ContentPane","dojo/text!./templates/IDMapping.html",
+	"dijit/Dialog","dijit/popup","dijit/TooltipDialog"
 ], function(declare, BorderContainer, on,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel,
-			Topic, query, ContentPane){
+			Topic, query, ContentPane,IDMappingTemplate,
+			Dialog,popup,TooltipDialog){
+
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function() {
+			popup.close(viewFASTATT);
+		}
+	});
+
+
+	var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+
+	on(idMappingTTDialog.domNode, "TD:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection')
+		console.log("selection: ", selection);
+		var ids = selection.map(function(d){ return d['feature_id']; });
+
+		console.log("ID MAP ", ids)
+		// xhr.post("/view/idmap, {
+		// 	data: {
+		// 		keyword: ids.join(","),
+		// 		from: "feature_id",
+		// 		fromGroup: "PATRIC",
+		// 		to: rel,
+		// 		toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
+		// 		sraction: 'save_params'	
+		// 	}
+		// }).then(function(results){
+		// 	document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
+		// });
+		popup.close(idMappingTTDialog);
+	});
+
+
+
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -125,6 +163,92 @@ define([
 					}
 				},
 				true
+			],
+			[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT,
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+				},
+				function(selection){
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
+				},
+				false
+			]
+
+			,[
+				"ViewGenomeItem",
+				"MultiButton fa icon-genome fa-2x", 
+				{
+					label: "GENOME",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Genome",
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"],
+				},
+				function(selection){
+					var sel = selection[0];
+					console.log("sel: ", sel)
+					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				}, 
+				false
+			],[
+				"MultipleSeqAlignment",
+				"fa icon-alignment fa-2x",
+				{
+					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+
+				}, 
+				function(selection){
+					var selection = self.actionPanel.get('selection')
+					var ids = selection.map(function(d){ return d['feature_id']; });
+						console.log("OPEN MSA VIEWER");
+				},
+				false
+			],[
+				"idmapping",
+				"fa icon-exchange fa-2x",
+				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+				},
+				function(selection){
+
+					console.log("TTDlg: ", idMappingTTDialog);
+					console.log("this: ", this);
+					popup.open({
+						popup: idMappingTTDialog,
+						// around: this._actions.idmapping.button,
+						orient: ["below"]
+					});
+					console.log("popup idmapping", selection);
+				}, 
+				false
+			],[
+				"Pathway Summary",
+				"fa icon-git-pull-request fa-2x",
+				{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
+					validContainerTypes: ["sequence_data","feature_data","spgene_data"],
+				}, 
+				function(selection){
+					new Dialog({content: "IMPLEMENT ME!"}).show();
+					// var selection = self.actionPanel.get('selection')
+					// var ids = selection.map(function(d){ return d['feature_id']; });
+					
+				}, 
+				false
+
 			]
 		],
 
@@ -161,8 +285,18 @@ define([
 				console.error("Missing this.gridCtor in GridContainer");
 				return;
 			}
+
+			this.grid = new this.gridCtor({
+				region: "center",
+				query: this.buildQuery(),
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
 			if(this.enableFilterPanel){
 				// console.log("Create FilterPanel: ", this.state);
+
+				console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
 				this.containerActionBar = this.filterPanel = new ContainerActionBar({
 					region: "top",
@@ -171,7 +305,7 @@ define([
 					"className": "BrowserHeader",
 					dataModel: this.dataModel,
 					facetFields: this.facetFields,
-					state: this.state
+					state: this.state,
 				});
 
 				// console.log("gridcontainer startup()", this.state)
@@ -192,26 +326,14 @@ define([
 				}));
 			}
 
-			// console.log("This.query firstView: ", this.query);
-			// console.log("this.filter: firstView: ", this.filter);
-			// console.log("Create Grid firstView   Query:  ", this.query, " State: ",this.state)
 
-			// To Avoid creating an initial grid with a query of "" (which sends an unneeded request), create a starting query if we can to pass to the new grid
-
-			// console.log("GridContainer create grid", this.state, q)
-			// console.log("GridContainer API Server: ", this.apiServer)
-			this.grid = new this.gridCtor({
-				region: "center",
-				query: this.buildQuery(),
-				state: this.state,
-				apiServer: this.apiServer
-			});
 
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
 				style: "width:48px;text-align:center;",
-				splitter: false
+				splitter: false,
+				currentContainerWidget: this
 			});
 
 			this.itemDetailPanel = new ItemDetailPanel({

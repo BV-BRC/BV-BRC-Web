@@ -13,7 +13,8 @@
 @import url("../../jbrowse.repo/export_dialog.css");
 
 /* CSS styles for the various types of feature glyphs */
-@import url("../../jbrowse.repo/track_styles.css");
+/*@import url("../../jbrowse.repo/track_styles.css");*/
+@import url("/public/js/p3/resources/jbrowse/track_styles.css");
 @import url("../../jbrowse.repo/hierarchical_track_selector.css");
 @import url("../../jbrowse.repo/faceted_track_selector.css");
 

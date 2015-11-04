@@ -18,6 +18,7 @@ define([
 			if(this.proteinFamiliesGrid){
 				this.proteinFamiliesGrid.set('state', state);
 			}
+
 			if(this.filterPanelGrid){
 				this.filterPanelGrid.set('query', 'in(genome_id,(' + state.genome_ids + '))');
 			}
