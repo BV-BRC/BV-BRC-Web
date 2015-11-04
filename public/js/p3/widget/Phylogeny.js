@@ -1,22 +1,32 @@
 define([
-	"dojo/_base/declare",
+	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
 	"dojo/dom-geometry", "dojo/dom-style", "d3/d3"
-], function(declare, WidgetBase, request,domConstruct,lang,domGeometry,domStyle,d3){
+], function(declare, PhyloTree, TreeNavSVG, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3){
 
 
 	return declare([WidgetBase],{
+		"baseClass": "Phylogeny",
 		type: "rectangular",
 		state: null,
 		taxon_id: null,
 		newick: null,
+        jsonTree: null,
+        tree:null,
 		apiServer: window.App.dataAPI,
 
 		postCreate: function(){
 			this.containerNode = this.canvasNode = domConstruct.create("div",{id: this.id +"_canvas"}, this.domNode);
+            this.controlDiv = domConstruct.create("div",{id:"control_area"},this.containerNode);
+            this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},this.controlDiv);
+            this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},this.controlDiv);
+            this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},this.controlDiv);
+            this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},this.controlDiv);
+            this.treeDiv = domConstruct.create("div",{id:"tree-container"},this.containerNode);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("taxon_id", lang.hitch(this,"onSetTaxonId"))
-			this.watch("newick", lang.hitch(this,"renderTree"))
+			this.watch("newick", lang.hitch(this,"processTree"))
+            
 		},
 
 		onSetState: function(attr,oldVal,state){
@@ -41,6 +51,25 @@ define([
 			}));
 		},
 
+        processTree: function(){
+			if (!this.newick){
+				console.log("No Newick File To Render")
+				return;
+			}
+            this.tree = new d3Tree.d3Tree("#tree-container", {phylogram:false, fontSize:10});
+            this.tree.setTree(this.newick);
+        },
+
+
+
+        updateTree: function(){
+			if (!this.tree){
+				console.log("No tree to update")
+				return;
+			}
+            //this.tree.update();
+        },
+
 		renderTree: function(){
 			if (!this.newick){
 				console.log("No Newick File To Render")
@@ -50,7 +79,7 @@ define([
 		},
 
 		onFirstView: function(){
-			this.renderTree();
+			this.updateTree();
 		},
 		resize: function(changeSize, resultSize){
             var node = this.domNode;
@@ -94,7 +123,7 @@ define([
 				clearTimeout(this.debounceTimer);
 			}
 			this.debounceTimer = setTimeout(lang.hitch(this, function(){
-				this.renderTree();
+				this.updateTree();
 			}),250);
 	      
 		}

@@ -60,10 +60,11 @@ define([
 				options: {
 					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
-						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						//return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						return DataItemFormatter(item,"feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"feature_data")
+						return DataItemFormatter(item,"feature_data", {hideExtra: true, linkTitle: true})
 					}
 				}
 			})
@@ -105,7 +106,14 @@ define([
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null},
+					formatPopupContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {mini: true, linkTitle: true})
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {hideExtra: true, linkTitle: true})
+					}
+				},
 				data: refseqs
 			},"perimeter",true);
 
