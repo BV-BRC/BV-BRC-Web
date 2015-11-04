@@ -1,10 +1,8 @@
 define([
-	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG", "raphael/raphael", "jsphylosvg/jsphylosvg",
+	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
 	"dojo/dom-geometry", "dojo/dom-style", "d3/d3"
-], function(declare, PhyloTree, TreeNavSVG, Raphael, jsphylosvg, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3){
-	console.log("Raphael: ", Raphael);
-	console.log("jsphylosvg: ", Smits);
+], function(declare, PhyloTree, TreeNavSVG, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3){
 
 
 	return declare([WidgetBase],{
@@ -58,19 +56,18 @@ define([
 				console.log("No Newick File To Render")
 				return;
 			}
-            this.renderPhylo();
+            this.tree = new d3Tree.d3Tree("#tree-container", {phylogram:false, fontSize:10});
+            this.tree.setTree(this.newick);
         },
 
 
 
-        renderPhylo: function(){
-			if (!this.newick){
-				console.log("No Newick File To Render")
+        updateTree: function(){
+			if (!this.tree){
+				console.log("No tree to update")
 				return;
 			}
-
-            this.tree = new d3Tree.d3Tree("#tree-container", {phylogram:false, fontSize:10});
-            this.tree.setTree(this.newick);
+            //this.tree.update();
         },
 
 		renderTree: function(){
@@ -82,7 +79,7 @@ define([
 		},
 
 		onFirstView: function(){
-			this.renderPhylo();
+			this.updateTree();
 		},
 		resize: function(changeSize, resultSize){
             var node = this.domNode;
@@ -126,7 +123,7 @@ define([
 				clearTimeout(this.debounceTimer);
 			}
 			this.debounceTimer = setTimeout(lang.hitch(this, function(){
-				this.renderPhylo();
+				this.updateTree();
 			}),250);
 	      
 		}
