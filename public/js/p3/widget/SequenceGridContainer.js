@@ -59,28 +59,7 @@ define([
 				true
 			]
 		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection) {
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-		]),
+		// selectionActions: [GridContainer.prototype.selectionActions[0]],
 		gridCtor: Grid
 	});
 });

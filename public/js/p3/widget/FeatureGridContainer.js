@@ -29,6 +29,7 @@ define([
 		popup.close(downloadTT);
 	});
 
+
 	return declare([GridContainer],{
 		gridCtor: FeatureGrid,
 		containerType: "feature_data",
@@ -61,18 +62,6 @@ define([
 					on.emit(this.domNode,"ToggleFilters",{});
 				},
 				true
-			]
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFeature",
-				"fa icon-eye fa-2x",
-				{label: "OPEN",ignoreDataType:true, multiple: false,validTypes:["*"], tooltip: "Open Genome View"},
-				function(selection){
-					console.log("Selected Genome: ", selection);
-					Topic.publish("/navigate", {"href": "/view/Feature/" + selection[0].feature_id});
-				},
-				false
 			]
 		])
 	});

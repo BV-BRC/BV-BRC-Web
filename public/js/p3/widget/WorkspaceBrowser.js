@@ -55,7 +55,7 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/Genome?cType=genome&cId=" + sel.genome_id
+				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
 			this.actionPanel.addAction("ViewFeatureGroupItem","MultiButton fa fa-eye fa-2x", {
@@ -67,7 +67,7 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/Feature?cType=feature&cId=" + sel.feature_id
+				window.location = "/view/Feature/" + sel.feature_id
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeFromFeature","MultiButton fa icon-genome fa-2x", {
@@ -79,7 +79,7 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/Genome?cType=genome&cId=" + sel.genome_id
+				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
 			this.actionPanel.addAction("ViewCDSFeatures","MultiButton fa icon-genome-features-cds fa-2x", {
@@ -91,7 +91,7 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+sel.genome_id
+				window.location = "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
 			}, true);
 
 			this.actionPanel.addAction("ViewGenomeBrowser","MultiButton fa icon-genome_browser fa-2x", {
@@ -103,7 +103,7 @@ define([
 			},function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenes&cId=" + sel.genome_id
+				window.location = "/view/Genome/"+ sel.genome_id + "#view_tab=browser";
 			}, true);
 
 
@@ -201,7 +201,7 @@ define([
 			this.browserHeader.addAction("ViewAnnotatedGenome","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome"}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				var url= "/portal/portal/patric/Genome?cType=genome&cId=" + gid;
+				var url= "/view/Genome/" + gid;
 				window.location=url;
 
 			}, true);
@@ -219,14 +219,14 @@ define([
 			this.browserHeader.addAction("ViewAnnotatedGenomeCDS","fa icon-genome-features-cds fa-2x",{label:"CDS", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View CDS for Annotated Genome"}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/portal/portal/patric/FeatureTable?cType=genome&featuretype=CDS&annotation=PATRIC&filtertype=&cId="+gid;
+				window.location = "/view/Genome/"+gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))";
 
 			}, true);
 
 			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser","fa icon-genome_browser fa-2x",{label:"BROWSER", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome in Genome Browser"}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/portal/portal/patric/GenomeBrowser?cType=genome&loc=0..10000&tracks=DNA,PATRICGenes,RefSeqGenes&cId=" + + gid;
+				window.location = "/view/Genome/"+gid+"#view_tab=browser"; 
 
 			}, true);
 

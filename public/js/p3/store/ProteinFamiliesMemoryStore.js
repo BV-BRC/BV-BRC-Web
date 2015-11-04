@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful","dojo/_base/Deferred"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang, Stateful,Deferred){
+			when, lang, Stateful, Deferred){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
@@ -12,15 +12,15 @@ define([
 		state: null,
 
 		onSetState: function(attr, oldVal, state){
-			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
-			var cur = (this.genome_ids||[]).join("");
-			var next = (state.genome_ids||[]).join("");
-			if (cur != next){
+			//console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
+			var cur = (this.genome_ids || []).join("");
+			var next = (state.genome_ids || []).join("");
+			if(cur != next){
 				this.set("genome_ids", state.genome_ids || []);
 				this._loaded = false;
 				delete this._loadingDeferred;
 			}
-			
+
 		},
 		constructor: function(options){
 			this._loaded = false;
@@ -80,11 +80,10 @@ define([
 					this.setData([]);
 					this._loaded = true;
 					def.resolve(true);
-				}), 0)
+				}), 0);
 				return def.promise;
-	
-			}
 
+			}
 
 			// TODO: change family Id based on params
 			var familyType = 'figfam';
@@ -113,7 +112,7 @@ define([
 				},
 				data: q
 			}), function(response){
-				console.log("PFS First Response")
+				console.log("PFS First Response");
 				var familyStat = response.facets.stat.buckets;
 
 				var familyIdList = [];
@@ -124,9 +123,9 @@ define([
 				});
 
 				// sub query - genome distribution
-				query=q +'&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
+				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
 
-				console.log("Do Second Request to /genome_feature/")
+				console.log("Do Second Request to /genome_feature/");
 				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
@@ -137,7 +136,7 @@ define([
 					},
 					data: query
 				}), function(response){
-					console.log("PFS Second Response")
+					console.log("PFS Second Response");
 
 					return when(request.post(_self.apiServer + '/protein_family_ref/', {
 						handleAs: 'json',
@@ -179,7 +178,7 @@ define([
 										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
 									}
 									else{
-										var genomeIdCount = [];
+										var genomeIdCount = new Array(_self.genome_ids.length);
 										genomeIdCount[genomePos] = genomeCount;
 										familyGenomeIdCountMap[familyId] = genomeIdCount;
 									}
@@ -188,7 +187,7 @@ define([
 										familyGenomeIdSet[familyId].push(genomeId);
 									}
 									else{
-										var genomeIds = [];
+										var genomeIds = new Array(_self.genome_ids.length);
 										genomeIds.push(genomeId);
 										familyGenomeIdSet[familyId] = genomeIds;
 									}
@@ -196,16 +195,18 @@ define([
 							});
 						});
 
-						console.log("Complete Genome Family Dist")
+						console.log("Complete Genome Family Dist");
 						window.performance.mark('mark_end_stat1');
 						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
 
 						window.performance.mark('mark_start_stat2');
-						console.log("familyGenomeCount")
+						console.log("familyGenomeCount");
 						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-							familyGenomeCount[familyId] = familyGenomeIdSet[familyId].filter(function(value, index, self){
-								return self.indexOf(value) === index;
-							}).length;
+							var hashSet = {};
+							familyGenomeIdSet[familyId].forEach(function(value){
+								hashSet[value] = true;
+							});
+							familyGenomeCount[familyId] = Object.keys(hashSet).length;
 						});
 
 						window.performance.mark('mark_end_stat2');
@@ -216,12 +217,15 @@ define([
 						var data = {};
 						var familyRefHash = {};
 						res.response.docs.forEach(function(el){
-							if(familyRefHash[el.family_id] == null){
+							if(!(el.family_id in familyRefHash)){
 								familyRefHash[el.family_id] = el.family_product;
 							}
 						});
+						window.performance.mark('mark_end_stat3');
+						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
 
-						console.log("FamilyStat")
+						console.log("FamilyStat");
+						window.performance.mark('mark_start_stat4');
 						familyStat.forEach(function(element){
 							var familyId = element.val;
 							if(familyId != ""){
@@ -247,11 +251,11 @@ define([
 								};
 							}
 						});
-						window.performance.mark('mark_end_stat3');
-						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
+						window.performance.mark('mark_end_stat4');
+						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
 						// console.log(data);
 
-						window.performance.mark('mark_start_stat4');
+						window.performance.mark('mark_start_stat5');
 
 						//var gridData = [];
 						//Object.keys(data).forEach(function(key){
@@ -263,10 +267,9 @@ define([
 						for(var i = 0; i < arrayLength; i++){
 							gridData[i] = data[arrayKeys[i]];
 						}
-						window.performance.mark('mark_end_stat4');
-						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
-						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
-
+						window.performance.mark('mark_end_stat5');
+						window.performance.measure('measure_protein_family_stat5', 'mark_start_stat5', 'mark_end_stat5');
+						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat5');
 
 						var measures = window.performance.getEntriesByType('measure');
 						for(var i = 0, len = measures.length; i < len; ++i){

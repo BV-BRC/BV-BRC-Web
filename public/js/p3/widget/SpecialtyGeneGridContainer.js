@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on"
+	"dojo/_base/lang","dojo/on",
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog,FacetFilterPanel,
@@ -29,6 +29,7 @@ define([
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
 		popup.close(downloadTT);
 	});
+
 
 	return declare([GridContainer], {
 		containerType: "spgene_data",
@@ -59,28 +60,6 @@ define([
 					});
 				},
 				true
-			]
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection) {
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
 			]
 		]),
 		gridCtor: Grid,

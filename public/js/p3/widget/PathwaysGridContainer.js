@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
@@ -70,29 +70,6 @@ define([
 				},
 				true
 			]
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-
 		]),
 
 		_setStateAttr: function(state){

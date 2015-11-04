@@ -142,7 +142,7 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: .6, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
