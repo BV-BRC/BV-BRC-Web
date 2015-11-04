@@ -56,3 +56,6 @@
 [submodule "public/js/circulus"]
 	path = public/js/circulus
 	url = git@github.com:dmachi/circulus
+[submodule "public/js/phyloview"]
+	path = public/js/phyloview
+	url = https://github.com/aswarren/phyloview
