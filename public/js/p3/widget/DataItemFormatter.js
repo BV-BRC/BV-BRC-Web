@@ -35,20 +35,24 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'feature_type'
 			}, {
 				name : 'PATRIC ID',
-				text : 'patric_id'
+				text : 'patric_id',
+				mini :	true
 			}, {
-				name : 'Refseq Locus Tag',
+				name : 'RefSeq Locus Tag',
 				text : 'refseq_locus_tag',
-				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
+				link : 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				mini :	true
 			}, {
 				name : 'Alt Locus Tag',
 				text : 'alt_locus_tag'
 			}, {
-				name : 'Gene',
-				text : 'gene'
+				name : 'Gene Symbol',
+				text : 'gene',
+				mini :	true
 			}, {
 				name : 'Product',
-				text : 'product'
+				text : 'product',
+				mini :	true
 			}, {
 				name : 'NA Length',
 				text : 'na_length'
@@ -84,7 +88,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'go'
 			}, {
 				name : 'Location',
-				text : 'location'
+				text : 'location',
+				mini :	true
 			}, {
 				name : 'Segments',
 				text : 'segments'
@@ -152,7 +157,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {
 				name : 'Version',
-				text : '_version_'
+				text : '_version_',
+				data_hide: true
 			}, {
 				name : 'Date Inserted',
 				text : 'date_inserted'
@@ -196,8 +202,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/"+item.feature_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
@@ -216,7 +222,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				name : 'PATRIC ID',
 				text : 'patric_id'
 			}, {
-				name : 'Refseq Locus Tag',
+				name : 'RefSeq Locus Tag',
 				text : 'refseq_locus_tag',
 				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
@@ -257,7 +263,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				name : 'Evidence',
 				text : 'evidence'
 			}, {
-				name : 'PMID',
+				name : 'PubMed',
 				text : 'pmid',
 				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
 			}, {
@@ -299,7 +305,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {
 				name : 'Version',
-				text : '_version_'
+				text : '_version_',
+				data_hide: true
 			}, {
 				name : 'Date Inserted',
 				text : 'date_inserted'
@@ -335,8 +342,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/"+item.feature_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
@@ -386,8 +393,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.pathway_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, item.pathway_name, "fa icon-genome-features fa-2x", "/view/Pathways/"+item.pathway_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
@@ -434,12 +441,310 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.family_id, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, item.family_id, "fa icon-genome-features fa-2x", "/view/ProteinFamilies/"+item.family_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
 
+		"sequence_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Genome Name',
+				text : 'genome_name',
+				mini :	true
+			}, {
+				name : 'Genome ID',
+				text : 'genome_id'
+			}, {
+				name : 'Accession',
+				text : 'accession'
+			}, {
+				name : 'Sequence ID',
+				text : 'sequence_id',
+				link : 'http://www.ncbi.nlm.nih.gov/nuccore/',
+				mini :	true
+			}, {
+				name : 'Length',
+				text : 'length',
+				mini :	true
+			}, {
+				name : 'GC Content',
+				text : 'gc_content',
+				mini :	true
+			}, {
+				name : 'Sequence Type',
+				text : 'sequence_type'
+			}, {
+				name : 'Topology',
+				text : 'topology'
+			}, {
+				name : 'Description',
+				text : 'description'
+			}, {
+				name : 'Chromosome',
+				text : 'chromosome'
+			}, {
+				name : 'Plasmid',
+				text : 'plasmid'
+			}, {
+				name : 'GI',
+				text : 'gi',
+				link : 'http://www.ncbi.nlm.nih.gov/nuccore/'
+			}, {
+				name : 'Taxon ID',
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : 'version'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Public',
+				text : 'public'
+			}, {
+				name : 'Owner',
+				text : 'owner'
+			}, {
+				name : 'User Read',
+				text : 'user_read'
+			}, {
+				name : 'User Write',
+				text : 'user_write'
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/"+item.genome_id, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+
+		"transcriptomics_experiment_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Experiment ID',
+				text : 'eid'
+			}, {
+				name : 'EXPID',
+				text : 'expid',
+				data_hide: true
+			}, {
+				name : 'Title',
+				text : 'title'
+			}, {
+				name : 'Comparisons',
+				text : 'samples'
+			}, {
+				name : 'Genes',
+				text : 'genes'
+			}, {
+				name : 'PubMed',
+				text : 'pmid',
+				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+			}, {
+				name : 'Link Out',
+				text : 'accession',
+				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+			}, {
+				name : 'Organism',
+				text : 'organism'
+			}, {
+				name : 'Strain',
+				text : 'strain'
+			}, {
+				name : 'Gene Modification',
+				text : 'mutant'
+			}, {
+				name : 'Experimental Condition',
+				text : 'condition'
+			}, {
+				name : 'Time Series',
+				text : 'timeseries'
+			}, {
+				name : 'Platforms',
+				text : 'platforms'
+			}, {
+				name : 'Genome IDs',
+				text : 'genome_ids'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Author',
+				text : 'author'
+			}, {
+				name : 'PI',
+				text : 'pi'
+			}, {
+				name : 'Institution',
+				text : 'institution'
+			}, {
+				name : 'Description',
+				text : 'description'
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Document Type',
+				text : 'document_type',
+				data_hide: true
+			}, {
+				name : 'Document ID',
+				text : 'document_id',
+				data_hide: true			
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/"+item.eid, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+
+		"transcriptomics_sample_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Sample ID',
+				text : 'pid'
+			}, {
+				name : 'Experiment ID',
+				text : 'eid'
+			}, {
+				name : 'EXPID',
+				text : 'expid',
+				data_hide: true
+			}, {
+				name : 'Title',
+				text : 'expname'
+			}, {
+				name : 'Samples',
+				text : 'samples'
+			}, {
+				name : 'Genes',
+				text : 'genes'
+			}, {
+				name : 'Significant Genes (Log Ratio)',
+				text : 'sig_log_ratio',
+			}, {
+				name : 'Significant Genes (Z Score)',
+				text : 'sig_z_score',
+			}, {
+				name : 'PubMed',
+				text : 'pmid',
+				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+			}, {
+				name : 'Link Out',
+				text : 'accession',
+				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+			}, {
+				name : 'Organism',
+				text : 'organism'
+			}, {
+				name : 'Strain',
+				text : 'strain'
+			}, {
+				name : 'Gene Modification',
+				text : 'mutant'
+			}, {
+				name : 'Experimental Condition',
+				text : 'condition'
+			}, {
+				name : 'Time Point',
+				text : 'timepoint'
+			}, {
+				name : 'Channels',
+				text : 'channels'
+			}, {
+				name : 'Platform',
+				text : 'platform'
+			}, {
+				name : 'Genome IDs',
+				text : 'genome_ids'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Exp Mean',
+				text : 'expmean',
+				data_hide: true
+			}, {
+				name : 'Exp Stddev',
+				text : 'expstddev',
+				data_hide: true
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Document Type',
+				text : 'document_type',
+				data_hide: true
+			}, {
+				name : 'Document ID',
+				text : 'document_id',
+				data_hide: true			
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/"+item.pid, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+		
 		"genome_data": function(item, options){
 			// do some other type formatting here and return it
 			//console.log("Running genome_data formatter");
@@ -450,17 +755,20 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var metadataGenomeSummaryValue = {};
 			metadataGenomeSummaryValue['Organism Info'] = [{
 				name : 'Genome ID',
-				text : 'genome_id'
+				text : 'genome_id',
+				mini :	true
 			}, {
 				name : 'Genome Name',
-				text : 'genome_name'
+				text : 'genome_name',
+				mini :	true
 			}, {
 				name : 'NCBI Taxon ID',
 				text : 'taxon_id',
 				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='								
 			}, {
 				name : 'Genome Status',
-				text : 'genome_status'
+				text : 'genome_status',
+				mini :	true
 			}, {
 				name : 'Organism Name',
 				text : 'organism_name'
@@ -509,11 +817,13 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}, {
 				name : 'BioProject Accession',
 				text : 'bioproject_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/bioproject/?term='
+				link : 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
+				mini :	true
 			}, {
 				name : 'BioSample Accession',
 				text : 'biosample_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/biosample/'
+				link : 'http://www.ncbi.nlm.nih.gov/biosample/',
+				mini :	true
 			}, {
 				name : 'Assembly Accession',
 				text : 'assembly_accession',
@@ -665,21 +975,31 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 	
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x");
+			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/"+item.genome_id, options);
 
 			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + item.chromosomes + ", Plasmids: " + item.plasmids + ", Contigs: " + item.contigs;
 			var tr = domConstruct.create("tr", {},tbody);
 			var tda = domConstruct.create("td", {innerHTML: "Summary:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
 			var tdb = domConstruct.create("td", {innerHTML: summary}, tr);
 
-			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody);
+			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody, options);
 
 			return div;
 
 		}	
 	}
 
-	function displayHeader(div, item_name, icon_name) {
+	function displayHeader(div, item_name, icon_name, url, options) {
+			var linkTitle = false;
+			if (options)
+			{
+				if (options.linkTitle == true)
+				{
+					linkTitle = true;
+				}
+			}
+			console.log("url=" + url + ", linkTitle=" + linkTitle);
+	
 			var hdr_div = domConstruct.create("div", {}, div);
 
 			var hdr_table = domConstruct.create("table", {} , div);
@@ -687,7 +1007,16 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var hdr_th = domConstruct.create("tr",{},hdr_tbody);
 			var hdr_tda = domConstruct.create("td",{}, hdr_th);
 			var span = domConstruct.create("span", {class: icon_name}, hdr_tda);
-			var hdr_tdb = domConstruct.create("td",{innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			var hdr_tdb; 
+			
+			if (linkTitle == true)
+			{
+				hdr_tdb = domConstruct.create("td",{innerHTML: "<a href='" + url + "'>" + item_name + "</a>", style: "font-weight: bold"}, hdr_th);
+			}
+			else
+			{
+				hdr_tdb= domConstruct.create("td",{innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			}
 
 			var dtl_div = domConstruct.create("div", {}, div);
 			var table = domConstruct.create("table", {} , dtl_div);
@@ -700,22 +1029,39 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return tbody;		
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, tbody) {	
+	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options) {	
 			var diaplayColumns = {};
 			var tr;
 			var tda;
 			var tdb;
 
+			var mini = false;
+			var hideExtra = false;
+			
+			if (options)
+			{
+				if (options.mini == true)
+				{
+					mini = true;
+				}
+				if (options.hideExtra == true)
+				{
+					hideExtra = true;
+				}
+			}
+			
 			for(var i=0; i< meta_data_section.length; i++)
 			{
-				tr = domConstruct.create("tr", {},tbody);
-				tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-				tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+				if (mini == false)
+				{
+					tr = domConstruct.create("tr", {},tbody);
+					tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+					tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 
-				tr = domConstruct.create("tr", {},tbody);
-				tda = domConstruct.create("td", {innerHTML: meta_data_section[i]+":", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-				tdb = domConstruct.create("td", {innerHTML: ""}, tr);
-				
+					tr = domConstruct.create("tr", {},tbody);
+					tda = domConstruct.create("td", {innerHTML: meta_data_section[i]+":", style: "font-weight: bold", nowrap: "nowrap" }, tr);
+					tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+				}				
 
 				var value = meta_data[meta_data_section[i]];
 
@@ -728,24 +1074,42 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					{
 						diaplayColumns[column] = 1;
 					}
-					
+										
 					if (column && item[column])
 					{
 						//console.log("column=", column);
 						//console.log("item[column]=", item[column]);
 						//console.log("value[j].name=", value[j].name);
-						
-						if (value[j].link && item[column] != "-")
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+
+						if (mini == false)
+						{						
+							if (value[j].link && item[column] != "-")
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							}
+							else
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							}
 						}
-						else
+						else if (value[j].mini == true)
 						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							if (value[j].link && item[column] != "-")
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							}
+							else
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							}						
 						}
 					}
 				}
@@ -756,34 +1120,51 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 			var additional = 0;
 			
-			Object.keys(item).sort().forEach(function(key){
-				if (diaplayColumns[key] != 1 && item[key])
-				{
-					if (additional ==0)
-					{
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-					
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
-					}
-					additional ++;
-					tr = domConstruct.create("tr",{},tbody)
-					tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-					tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-				}
-			},this);
+			if (hideExtra == false && mini == false)
+			{	 
 			
+				Object.keys(item).sort().forEach(function(key){
+					if (diaplayColumns[key] != 1 && item[key])
+					{
+						if (additional ==0)
+						{
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+					
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+						}
+						additional ++;
+						tr = domConstruct.create("tr",{},tbody)
+						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
+						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
+					}
+				},this);
+			}
 	}	
 
 
-	function displayDetail(item, column_data, tbody) {	
+	function displayDetail(item, column_data, tbody, options) {	
 			var diaplayColumns = {};
 			var tr;
 			var tda;
 			var tdb;
+			var mini = false;
+			var hideExtra = false;
+			
+			if (options)
+			{
+				if (options.mini == true)
+				{
+					mini = true;
+				}
+				if (options.hideExtra == true)
+				{
+					hideExtra = true;
+				}
+			}
 
 			for(var i=0; i<column_data.length; i++) {
 				var column = column_data[i].text;
@@ -800,18 +1181,35 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					//console.log("column=", column);
 					//console.log("item[column]=", item[column]);
 					
-					
-					if (column_data[i].link && item[column] != "-")
+					if (mini == false)
 					{
-						tr = domConstruct.create("tr",{},tbody);
-						tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						if (column_data[i].link && item[column] != "-")
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						}
+						else
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						}
 					}
-					else
+					else if (column_data[i].mini == true)
 					{
-						tr = domConstruct.create("tr",{},tbody);
-						tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						if (column_data[i].link && item[column] != "-")
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						}
+						else
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						}
 					}
 				}
 				
@@ -819,26 +1217,29 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			
 			var additional = 0;
 			console.log("diaplayColumns=", diaplayColumns);
-		
-			Object.keys(item).sort().forEach(function(key){
-				if (diaplayColumns[key] != 1 && item[key])
-				{
-					if (additional ==0)
+			
+			if (hideExtra == false && mini == false)
+			{	 
+				Object.keys(item).sort().forEach(function(key){
+					if (diaplayColumns[key] != 1 && item[key])
 					{
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+						if (additional ==0)
+						{
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 					
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+						}
+						additional ++;
+						tr = domConstruct.create("tr",{},tbody)
+						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
+						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
 					}
-					additional ++;
-					tr = domConstruct.create("tr",{},tbody)
-					tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-					tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-				}
-			},this);												
+				},this);
+			}												
 	}
 	
 	return function(item, type, options) {

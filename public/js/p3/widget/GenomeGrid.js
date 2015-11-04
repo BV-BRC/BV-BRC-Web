@@ -62,25 +62,21 @@ define([
 			},
 			sequences: {
 				label: 'Sequences',
-				field: 'sequences',
-				hidden: true /*, formatter:renderTotal*/
+				field: 'sequences'
 			},
 			patric_cds: {
 				label: 'PATRIC CDS',
-				field: 'patric_cds',
-				// formatter: formatter.linkGenomePATRICCDS
+				field: 'patric_cds'
 			},
 			brc1_cds: {
 				label: 'BRC1 CDS',
 				field: 'brc1_cds',
-				hidden: true,
-				// formatter: formatter.linkGenomeBRC1CDS
+				hidden: true
 			},
 			refseq_cds: {
 				label: 'RefSeq CDS',
 				field: 'refseq_cds',
-				hidden: true,
-				// formatter: formatter.linkGenomeRefSeqCDS
+				hidden: true
 			},
 			isolation_country: {
 				label: 'Isolation Country',

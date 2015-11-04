@@ -36,7 +36,7 @@ define([
 		"createSummary": function(genome) {
 
 			domConstruct.empty(this.genomeSummaryNode);
-			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.genomeSummaryNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.genomeSummaryNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			var htr = domConstruct.create("tr", {}, tbody);
@@ -112,7 +112,7 @@ define([
 		},
 		"_setSpecialtyGeneSummaryAttr": function(summary) {
 			domConstruct.empty(this.specialtyGeneSummaryNode);
-			var table = domConstruct.create("table", {class: "basic stripe far2x"}, this.specialtyGeneSummaryNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.specialtyGeneSummaryNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			var htr = domConstruct.create("tr", {}, tbody);

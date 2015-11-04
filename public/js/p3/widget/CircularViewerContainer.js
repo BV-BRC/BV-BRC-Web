@@ -60,10 +60,11 @@ define([
 				options: {
 					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
-						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						//return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						return DataItemFormatter(item,"feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"feature_data")
+						return DataItemFormatter(item,"feature_data", {hideExtra: true, linkTitle: true})
 					}
 				}
 			})
@@ -105,7 +106,14 @@ define([
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null},
+					formatPopupContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {mini: true, linkTitle: true})
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {hideExtra: true, linkTitle: true})
+					}
+				},
 				data: refseqs
 			},"perimeter",true);
 
@@ -134,12 +142,12 @@ define([
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
 	
-				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}},
+				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}}
 			},"outer")
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}},
+				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}}
 			},"outer")
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){

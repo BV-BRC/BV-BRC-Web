@@ -196,14 +196,12 @@ define([
 			this.pathways = new PathwaysContainer({
 				title: "Pathways",
 				id: this.viewer.id + "_" + "pathways",
-				disabled: true,
-				// state: this.state
+				disabled: true
 			});
 			this.proteinFamilies = new ProteinFamiliesContainer({
 				title: "Protein Families",
 				id: this.viewer.id + "_" + "proteinFamilies",
-				disabled: true,
-				// state: this.state
+				disabled: true
 			});
 			this.transcriptomics = new TranscriptomicsContainer({
 				title: "Transcriptomics",

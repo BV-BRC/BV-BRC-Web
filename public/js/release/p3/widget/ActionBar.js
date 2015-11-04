@@ -1,11 +1,11 @@
 define("p3/widget/ActionBar", [
 	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
 	"dojo/dom-class","./Button","dojo/dom-construct",
-	"dijit/Tooltip"
+	"dijit/Tooltip","dojo/dom"
 ], function(
 	declare, WidgetBase, on,
 	domClass,Button,domConstruct,
-	Tooltip
+	Tooltip,dom
 ){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
@@ -17,11 +17,12 @@ define("p3/widget/ActionBar", [
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
-			//console.log("Widget: ", widget.containerType, widget);
+			console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
 			
-			if (widget === this.currentContainerWidget) { return; }
+			if (widget.currentContainer === this.currentContainerWidget) { return; }
 			this.currentContainerType=widget.containerType;
 			this.currentContainerWidget = widget;
+			console.log("CurrentContainerType: ", this.currentContainerType)
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
@@ -53,7 +54,7 @@ define("p3/widget/ActionBar", [
 //				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
-					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
+						return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
 				},this);	
 			
 
@@ -72,6 +73,16 @@ define("p3/widget/ActionBar", [
 				var act = this._actions[an];
 				var validTypes = act.options.validTypes||[];
 				//console.log("validTypes for action : ",an, validTypes);
+
+				if (act.options.min && (sel.length < act.options.min )){
+					return false;
+				}
+
+				if (act.options.max && (sel.length > act.options.max )){
+					return false;
+				}
+
+
 				var validContainerTypes = act.options.validContainerTypes || null;
 
 				if (validContainerTypes){
@@ -79,6 +90,7 @@ define("p3/widget/ActionBar", [
 					//console.log("Current ContainerType: ", this.currentContainerType);
 					//console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
+						console.log("T: ", t, " Current Container Type: ", this.currentContainerType)
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
 						return false;
@@ -106,8 +118,30 @@ define("p3/widget/ActionBar", [
 			this.inherited(arguments);
 			var _self=this;
 			this.containerNode=this.domNode;
+			dom.setSelectable(this.domNode, false)
+
+            var tooltip = new Tooltip({
+                    connectId: this.domNode,
+                    selector: ".ActionButtonWrapper",
+                    getContent: function(matched){
+                            //console.log("Matched: ", matched);
+                            var rel = matched.attributes.rel.value;
+                            //console.log("REL: ", rel);
+                            if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
+                                    //console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+                                    return _self._actions[rel].options.tooltip
+                            }else if (matched.attributes.title && matched.attributes.title.value){
+                                    return  matched.attributes.title.value;
+                            }
+                            return false;
+                    },
+                    position: ["above"]
+            });
+
+
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
 				//console.log("evt.target: ", evt.target);
+				tooltip.close();
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
 					target = evt.target;
@@ -126,29 +160,14 @@ define("p3/widget/ActionBar", [
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
 //				//console.log("mouseover evt: ", evt.target);
 //			});	
-			new Tooltip({
-				connectId: this.domNode,
-				selector: ".ActionButtonWrapper",
-				getContent: function(matched){
-					//console.log("Matched: ", matched);
-					var rel = matched.attributes.rel.value;
-					//console.log("REL: ", rel);
-					if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-						//console.log("_self._actions[rel]:", rel, _self._actions[rel]);
-						return _self._actions[rel].options.tooltip
-					}else if (matched.attributes.title && matched.attributes.title.value){
-						return  matched.attributes.title.value;
-					}
-					return false;
-				},
-				position: ["above"]
-			});
+
 	
 		},
 
 		addAction: function(name,classes,opts,fn,enabled){
-			var wrapper = domConstruct.create("div", {"class": "ActionButtonWrapper",rel:name});
-			var b = domConstruct.create("div",{'className':(enabled?"":"dijitHidden ")+"ActionButton " +classes},wrapper);
+			// console.log("Add Action: ", name, classes, opts,enabled);
+			var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
+			var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
 
 			if (opts && opts.label) {
 				var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);

@@ -37,7 +37,7 @@ define([
 			parsed: _parsed,
 			selected: [],
 			byCategory: {},
-			keywords: [],
+			keywords: []
 		}
 
 		function walk(term){

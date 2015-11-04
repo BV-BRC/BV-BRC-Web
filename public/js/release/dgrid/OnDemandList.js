@@ -151,6 +151,8 @@ return declare([List, _StoreMixin], {
 
 		// Establish query options, mixing in our own.
 		// (The getter returns a delegated object, so simply using mixin is safe.)
+		console.log("QueryOptions: ", this.get("queryOptions"));
+
 		options = lang.mixin(this.get("queryOptions"), options, 
 			{ start: 0, count: this.minRowsPerPage },
 			"level" in query ? { queryLevel: query.level } : null);
@@ -257,7 +259,9 @@ return declare([List, _StoreMixin], {
 			dfd = this._refreshDeferred = new Deferred();
 			
 			// renderQuery calls _trackError internally
+
 			results = self.renderQuery(function(queryOptions){
+				console.log("QueryOptions: ", queryOptions)
 				return self.store.query(self.query, queryOptions);
 			});
 			if(typeof results === "undefined"){
@@ -458,6 +462,7 @@ return declare([List, _StoreMixin], {
 				
 				count = Math.ceil(count);
 				offset = Math.min(Math.floor(offset), preload.count - count);
+				console.log("grid.get queryOPtions: ", grid.get("queryOptions"));
 				var options = lang.mixin(grid.get("queryOptions"), preload.options);
 				preload.count -= count;
 				var beforeNode = preloadNode,

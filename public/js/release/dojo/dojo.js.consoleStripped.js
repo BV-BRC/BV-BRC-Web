@@ -2004,6 +2004,42 @@
 				{
 					 location:"../rql",
 					 name:"rql"
+				},
+				{
+					 location:"../JBrowse",
+					 name:"JBrowse"
+				},
+				{
+					 location:"../jszlib",
+					 name:"jszlib"
+				},
+				{
+					 location:"../FileSaver",
+					 name:"FileSaver"
+				},
+				{
+					 location:"../circulus",
+					 name:"circulus"
+				},
+				{
+					 location:"../lazyload",
+					 main:"lazyload",
+					 name:"lazyload"
+				},
+				{
+					 location:"../jDataView",
+					 main:"jdataview",
+					 name:"jDataView"
+				},
+				{
+					 location:"../d3",
+					 main:"index.js",
+					 name:"d3"
+				},
+				{
+					 location:"../swfobject",
+					 main:"swfobject.js",
+					 name:"swfobject"
 				}
 		]
 });require({cache:{

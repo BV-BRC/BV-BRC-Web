@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang",
+	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,

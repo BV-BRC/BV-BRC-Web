@@ -14,7 +14,6 @@ define("p3/widget/JobManager", [
 		path: "/",
 
 		listJobs: function() {
-			console.log("listJobs()");
 			return Deferred.when(JobManager.getJobs(),function(res){ return res; }, function(err) {
 				console.log("Error Getting Jobs:", err);
 				_self.showError(err);

@@ -41,9 +41,9 @@ define("p3/widget/UploadStatus", [
 			});
 		},
 		onUploadMessage: function(msg){
-			console.log("UPLOADMMANAGER MESSAGE: ", msg);
+			// console.log("UPLOADMMANAGER MESSAGE: ", msg);
 			if (msg && msg.type=="UploadStatSummary"){
-				console.log("UploadStatSummary: ", msg.summary);
+				// console.log("UploadStatSummary: ", msg.summary);
 				this._uploads.inProgress=msg.summary.inProgress;
 				this._uploads.complete = msg.summary.complete;
 				this._uploads.progress = msg.summary.progress;
@@ -72,7 +72,7 @@ define("p3/widget/UploadStatus", [
 
 
 			if (msg && msg.type == "UploadProgress"){
-				console.log("UploadProgress msg: ", msg);
+				// console.log("UploadProgress msg: ", msg);
 				if (this._uploads.files[msg.filename]){
 					this._uploads.files[msg.filename] = msg;
 				}
@@ -82,16 +82,16 @@ define("p3/widget/UploadStatus", [
 					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
 				},this);
 				content.push("</tbody></table></div>");
-				console.log("Panel Content: ", content.join(""));
+				// console.log("Panel Content: ", content.join(""));
 				UploadSummaryPanel.set('content', content.join(""));
 
 				UploadManager.getUploadSummary().then(lang.hitch(this, function(res){
 					var stats = res.summary;
-					console.log("getUploadSummary cb stats: ", res);
-					console.log("Stats.progress: ", stats.progress);
+					// console.log("getUploadSummary cb stats: ", res);
+					// console.log("Stats.progress: ", stats.progress);
 
 					this._uploads.progress = stats.progress;
-					console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
+					// console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
 					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
 					if (this._uploads.inProgress>0){
 						domClass.remove(this.uploadingProgress,"dijitHidden");

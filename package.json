@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
-    "postinstall": "cd ./node_modules/msa && npm install --unsafe-perm && cd ../msa-tnt && npm install --unsafe-perm"
+    "//postinstall": "cd ./node_modules/msa && npm install --unsafe-perm && cd ../msa-tnt && npm install --unsafe-perm"
   },
   "dependencies": {
     "biojs-io-newick": "^1.5.0",

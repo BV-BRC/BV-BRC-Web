@@ -1,9 +1,10 @@
-
+/* This stylesheet provides the CSS for the LightboxNano */
 .nano-background {
 	background-color: #000;
 	position: absolute;
 	z-index: 9999998;
 }
+
 .nano-image {
 	cursor: pointer;
 	position: absolute;
@@ -12,6 +13,7 @@
 	z-index: 9999999;
 	border: 10px solid #fff;
 }
+
 .nano-image-hidden {
 	visibility: hidden;
 }
