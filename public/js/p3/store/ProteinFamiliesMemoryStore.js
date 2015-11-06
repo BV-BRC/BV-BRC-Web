@@ -112,7 +112,6 @@ define([
 				},
 				data: q
 			}), function(response){
-				console.log("PFS First Response");
 				var familyStat = response.facets.stat.buckets;
 
 				var familyIdList = [];
@@ -136,7 +135,6 @@ define([
 					},
 					data: query
 				}), function(response){
-					console.log("PFS Second Response");
 
 					return when(request.post(_self.apiServer + '/protein_family_ref/', {
 						handleAs: 'json',
@@ -151,7 +149,6 @@ define([
 							rows: 1000000
 						}
 					}), function(res){
-						console.log("PFS Third Response");
 						var genomeFamilyDist = response.facets.stat.buckets;
 						var familyGenomeCount = {};
 						var familyGenomeIdCountMap = {};
@@ -162,7 +159,6 @@ define([
 						});
 
 						window.performance.mark('mark_start_stat1');
-						console.log("Build Genome Family Dist");
 						genomeFamilyDist.forEach(function(genome){
 							var genomeId = genome.val;
 							var genomePos = genomePosMap[genomeId];
@@ -195,12 +191,10 @@ define([
 							});
 						});
 
-						console.log("Complete Genome Family Dist");
 						window.performance.mark('mark_end_stat1');
 						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
 
 						window.performance.mark('mark_start_stat2');
-						console.log("familyGenomeCount");
 						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
 							var hashSet = {};
 							familyGenomeIdSet[familyId].forEach(function(value){
@@ -224,7 +218,6 @@ define([
 						window.performance.mark('mark_end_stat3');
 						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
 
-						console.log("FamilyStat");
 						window.performance.mark('mark_start_stat4');
 						familyStat.forEach(function(element){
 							var familyId = element.val;
