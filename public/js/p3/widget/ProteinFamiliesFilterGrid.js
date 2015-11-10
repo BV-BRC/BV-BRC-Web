@@ -1,13 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/GenomeJsonRest", "dojo/request",
+	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore", "dojo/request",
 	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
 			aspect, CellSelection, selector, put){
-	var store = new Store({});
+
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
 
@@ -27,7 +27,7 @@ define([
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
-		store: store,
+		store: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		selectionModel: "extended",
@@ -49,13 +49,6 @@ define([
 			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
-			}
-			if(options && options.state){
-				var state = options.state;
-				if(state.genome_ids){
-					console.log("initializing filter grid with ", state.genome_ids);
-					this.query = 'in(genome_id,(' + state.genome_ids + '))';
-				}
 			}
 		},
 		startup: function(){
@@ -139,6 +132,7 @@ define([
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set('state', state);
+				this.refresh();
 			}
 		},
 		createStore: function(server, token, state){

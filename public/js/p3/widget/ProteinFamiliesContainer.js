@@ -20,7 +20,7 @@ define([
 			}
 
 			if(this.filterPanelGrid){
-				this.filterPanelGrid.set('query', 'in(genome_id,(' + state.genome_ids + '))');
+				this.filterPanelGrid.set('state', state);
 			}
 			this._set('state', state);
 		},
@@ -73,7 +73,12 @@ define([
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content: "heatmap"});
+			this.heatmap = new ProteinFamiliesHeatmapContainer({
+				title: "Heatmap",
+				content: "heatmap",
+				dataGridContainer: this.proteinFamiliesGrid,
+				filterGrid: this.filterPanelGrid
+			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 

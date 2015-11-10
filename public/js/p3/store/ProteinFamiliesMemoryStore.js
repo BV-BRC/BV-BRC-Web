@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred", "./HeatmapDataTypes"
 ], function(declare, request,
 			Memory, QueryResults,
 			when, lang, Stateful, Deferred){
@@ -33,6 +33,10 @@ define([
 
 		query: function(query, opts){
 			query = query || {};
+			//console.warn("query: ", query, opts);
+			if(opts.sort == undefined){
+				opts.sort = [{attribute: "family_id", descending: false}];
+			}
 			if(this._loaded){
 				return this.inherited(arguments);
 			}
@@ -208,7 +212,6 @@ define([
 
 						window.performance.mark('mark_start_stat3');
 
-						var data = {};
 						var familyRefHash = {};
 						res.response.docs.forEach(function(el){
 							if(!(el.family_id in familyRefHash)){
@@ -219,6 +222,8 @@ define([
 						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
 
 						window.performance.mark('mark_start_stat4');
+						//var data = new Array(Object.keys(familyRefHash).length);
+						var data = [];
 						familyStat.forEach(function(element){
 							var familyId = element.val;
 							if(familyId != ""){
@@ -231,7 +236,7 @@ define([
 									std = Math.sqrt(realSq / (featureCount - 1));
 								}
 
-								data[familyId] = {
+								var row = {
 									family_id: familyId,
 									feature_count: featureCount,
 									genome_count: familyGenomeCount[familyId],
@@ -242,34 +247,20 @@ define([
 									description: familyRefHash[familyId],
 									genomes: familyGenomeIdCountMap[familyId].join("")
 								};
+								data.push(row);
 							}
 						});
 						window.performance.mark('mark_end_stat4');
 						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
 						// console.log(data);
 
-						window.performance.mark('mark_start_stat5');
-
-						//var gridData = [];
-						//Object.keys(data).forEach(function(key){
-						//	gridData.push(data[key]);
-						//});
-						var arrayKeys = Object.keys(data);
-						var arrayLength = arrayKeys.length;
-						var gridData = new Array(arrayLength);
-						for(var i = 0; i < arrayLength; i++){
-							gridData[i] = data[arrayKeys[i]];
-						}
-						window.performance.mark('mark_end_stat5');
-						window.performance.measure('measure_protein_family_stat5', 'mark_start_stat5', 'mark_end_stat5');
-						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat5');
+						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
 
 						var measures = window.performance.getEntriesByType('measure');
 						for(var i = 0, len = measures.length; i < len; ++i){
 							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
 						}
-						console.log("Set Data: ", gridData);
-						_self.setData(gridData);
+						_self.setData(data);
 						_self._loaded = true;
 						return true;
 					}, function(err){
@@ -278,6 +269,94 @@ define([
 				});
 			});
 			return this._loadingDeferred;
+		},
+
+		getHeatmapData: function(filterData){
+
+			var rows = [];
+			var cols = [];
+			var keeps = [];
+			var colorStop = [];
+
+			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
+				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
+
+				for(j = 0; j < keeps.length; j++){
+					pick = keeps[j];
+					iSend += intensity.charAt(pick);
+					++pick;
+					iSend += intensity.charAt(pick);
+
+					iSendDecimal = parseInt(intensity.charAt(pick - 1) + intensity.charAt(pick), 16);
+
+					if(maxIntensity <= iSendDecimal){
+						maxIntensity = iSendDecimal;
+					}
+				}
+
+				labelColor = ((i % 2) == 0) ? 0x000066 : null;
+				columnColor = ((i % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+
+				cols[i] = new Column(i, groupId, family.description, iSend, labelColor, columnColor, meta);
+
+				return maxIntensity;
+			}
+
+			// rows - genomes
+			filterData.forEach(function(genome, idx){
+				keeps.push(2 * idx);
+				var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+				var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+
+				rows.push(new Row(idx, genome.genome_id, genome.genome_name, labelColor, rowColor));
+
+				//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
+			});
+
+			// cols - families
+			//console.warn(this);
+			var maxIntensity = 0;
+			//this.data.forEach(function(family, idx){
+			var data = this.query("", {});
+			//console.log(data);
+			data.forEach(function(family, idx){
+				var meta = {
+					'instances': family.feature_count,
+					'members': family.genome_count,
+					'min': family.aa_length_min,
+					'max': family.aa_length_max
+				};
+				maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
+			});
+
+			// colorStop
+			if(maxIntensity == 1){
+				colorStop = [new ColorStop(1, 0xfadb4e)];
+			}else if(maxIntensity == 2){
+				colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
+			}else if(maxIntensity >= 3){
+				colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
+			}
+
+			//console.log(rows, cols, colorStop);
+
+			return {
+				'rows': rows,
+				'columns': cols,
+				'colorStops': colorStop,
+				'rowLabel': 'Genomes',
+				'colLabel': 'Protein Families',
+				'rowTrunc': 'mid',
+				'colTrunc': 'end',
+				'offset': 1,
+				'digits': 2,
+				'countLabel': 'Members',
+				'negativeBit': false,
+				'cellLabelField': '',
+				'cellLabelsOverrideCount': false,
+				'beforeCellLabel': '',
+				'afterCellLabel': ''
+			};
 		}
 	});
 });
