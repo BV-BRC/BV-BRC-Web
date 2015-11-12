@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"dijit/layout/ContentPane", "dojo/topic"
+	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ContentPane, Topic){
+			ContentPane, Topic, RadioButton, domConstruct){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -52,6 +52,48 @@ define([
 				style: "width:400px; overflow:auto;",
 				splitter: true
 			});
+
+			var familyTypePanel = new ContentPane({
+				region: "top"
+			});
+			// plfam
+			var rb_plfam = new RadioButton({
+				name: "familyType",
+				value: "plfam"
+			});
+			rb_plfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "plfam")
+			});
+			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)"});
+			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
+
+			// pgfam
+			var rb_pgfam = new RadioButton({
+				name: "familyType",
+				value: "pgfam"
+			});
+			rb_pgfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "pgfam")
+			});
+			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)"});
+			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
+
+			// figfam
+			var rb_figfam = new RadioButton({
+				name: "familyType",
+				value: "figfam",
+				checked: true
+			});
+			rb_figfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "figfam")
+			});
+			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
+			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
+
+			filterPanel.addChild(familyTypePanel);
 
 			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
 				state: this.state

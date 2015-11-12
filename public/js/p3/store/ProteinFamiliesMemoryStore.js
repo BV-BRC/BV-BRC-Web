@@ -1,15 +1,20 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred", "./HeatmapDataTypes"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
+	"dojo/topic", "./HeatmapDataTypes"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred){
+			when, lang, Stateful, Deferred,
+			Topic){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
+		params: {
+			familyType: 'figfam'
+		},
 
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
@@ -29,6 +34,22 @@ define([
 				this.apiServer = options.apiServer;
 			}
 			this.watch('state', lang.hitch(this, 'onSetState'));
+
+			var self = this;
+
+			Topic.subscribe("ProteinFamilies", function(){
+				console.log("received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				if (key === "familyType") {
+					self.params.familyType = value;
+				}
+
+				delete self._loadingDeferred;
+				self._loaded = false;
+				self.loadData();
+				self.set("refresh");
+			});
 		},
 
 		query: function(query, opts){
@@ -90,7 +111,7 @@ define([
 			}
 
 			// TODO: change family Id based on params
-			var familyType = 'figfam';
+			var familyType = this.params.familyType;
 			var familyId = familyType + '_id';
 
 			var query = {

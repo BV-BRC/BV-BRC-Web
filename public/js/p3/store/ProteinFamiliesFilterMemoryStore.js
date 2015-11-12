@@ -83,8 +83,6 @@ define([
 
 			}
 
-			// TODO: change family Id based on params
-
 			var query = {
 				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
 				rows: this.genome_ids.length
