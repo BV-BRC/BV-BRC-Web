@@ -134,7 +134,7 @@ define([
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + feature.gene || '' + '</div>';
+				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
 				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{
