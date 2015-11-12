@@ -75,7 +75,7 @@ define([], function()
 		this.meta = meta;
 	};
 
-	function rgbTohsv(RGB, HSV){
+	/*function rgbTohsv(RGB, HSV){
 		r = RGB.r / 255;
 		g = RGB.g / 255;
 		b = RGB.b / 255;
@@ -111,7 +111,7 @@ define([], function()
 		HSV.v *= 100;
 	}
 
-	/*function hsvTorgb(HSV, RGB){
+	function hsvTorgb(HSV, RGB){
 
 		var h = HSV.h / 360;
 		var s = HSV.s / 100;

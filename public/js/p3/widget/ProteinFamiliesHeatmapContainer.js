@@ -22,6 +22,35 @@ define([
 		visible: false,
 		dataGridContainer: null,
 		filterGrid: null,
+		containerActions: [
+			[
+				"Flip Axis",
+				"fa icon-rotate-left fa-2x",
+				{label:"Flip Axis",multiple: false,validTypes:["*"]},
+				function(selection){
+					// TODO: implement
+				},
+				true
+			],
+			[
+				"Cluster",
+				"fa icon-make-group fa-2x",
+				{label:"Cluster",multiple: false,validTypes:["*"]},
+				function(selection){
+					// TODO: implement
+				},
+				true
+			],
+			[
+				"Advanced Clustering",
+				"fa icon-make-group fa-2x",
+				{label:"Advanced Clustering",multiple: false,validTypes:["*"]},
+				function(selection){
+					// TODO: implement
+				},
+				true
+			]
+		],
 		constructor: function(options){
 			this.dataGridContainer = options.dataGridContainer;
 			this.filterGrid = options.filterGrid;
@@ -65,9 +94,17 @@ define([
 				return;
 			}
 
-			//this.addChild(new ContentPane({region:"top", title:"actionbar", content:"placeholder for action bars"}));
+			// action buttons for heatmap viewer
+			this.containerActionBar = new ContainerActionBar({
+				region: "top"
+			});
+			this.containerActions.forEach(function(a){
+				this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+			}, this);
+			this.addChild(this.containerActionBar);
+
 			//TODO: add legend
-			this.addChild(new ContentPane({region: "center", content: "", id: "flashTarget"}));
+			this.addChild(new ContentPane({region: "center", content: "<div id='flashTarget'></div>", style:"padding:0"}));
 
 			this.inherited(arguments);
 			this._firstView = true;

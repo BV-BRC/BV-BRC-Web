@@ -2,11 +2,13 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct"
+	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
+	"dijit/form/Textarea"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ContentPane, Topic, RadioButton, domConstruct){
+			ContentPane, Topic, RadioButton, domConstruct,
+			TextArea){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -64,7 +66,7 @@ define([
 			rb_plfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "familyType", "plfam")
 			});
-			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)"});
+			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
 			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
 			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
 
@@ -76,7 +78,7 @@ define([
 			rb_pgfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "familyType", "pgfam")
 			});
-			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)"});
+			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
 			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
 			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
 
@@ -95,10 +97,24 @@ define([
 
 			filterPanel.addChild(familyTypePanel);
 
+			// genome list grid
 			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
 				state: this.state
 			});
 			filterPanel.addChild(this.filterPanelGrid);
+
+			//// other filter items
+			var otherFilterPanel = new ContentPane({
+				region: "botton"
+			});
+			var ta_keyword = new TextArea({
+
+			});
+			var label_keyword = domConstruct.create("label", {innerHTML:"Filter by one or more keywords"});
+			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
+			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
+
+			filterPanel.addChild(otherFilterPanel);
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
