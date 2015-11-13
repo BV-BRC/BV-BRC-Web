@@ -3,12 +3,12 @@ define([
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
 	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
-	"dijit/form/Textarea"
+	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
 			ContentPane, Topic, RadioButton, domConstruct,
-			TextArea){
+			TextArea, TextBox, Button){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -105,14 +105,91 @@ define([
 
 			//// other filter items
 			var otherFilterPanel = new ContentPane({
-				region: "botton"
+				region: "bottom"
 			});
 			var ta_keyword = new TextArea({
-
+				style: "width:215px; min-height:75px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML:"Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
+
+			//
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var rb_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "perfect"
+			});
+			rb_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
+			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_non_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "non_perfect"
+			});
+			rb_non_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
+			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_all_match = new RadioButton({
+				name: "familyMatch",
+				value: "all_match",
+				checked: true
+			});
+			rb_all_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
+			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
+
+			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
+			var tb_num_protein_family_min = new TextBox({
+				name: "numProteinFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_protein_family_max = new TextBox({
+				name: "numProteinFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place(label_num_protein_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
+			var tb_num_genome_family_min = new TextBox({
+				name: "numGenomeFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_genome_family_max = new TextBox({
+				name: "numGenomeFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_num_genome_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			var btn_submit = new Button({
+				label: "Filter"
+			});
+			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
 
 			filterPanel.addChild(otherFilterPanel);
 
