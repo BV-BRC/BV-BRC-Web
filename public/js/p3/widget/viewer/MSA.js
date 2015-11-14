@@ -37,13 +37,13 @@ define([
                 handleAs: "json"
 			}).then(lang.hitch(this, function(res){
 				console.log("Check Res: ", res.response.numFound)
-				if (res && res.response && res.response.numFound && (res.response.numFound < this.maxSequences)){
+				if (res && res.response && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
 					console.log("  Amount OK")
 					def.resolve(res.response.numFound);
 					return;
 				}
 				console.log("   TOO Many Sequences");
-				def.reject(false);
+				def.reject(res.response.numFound);
 			}))
 
 			return def.promise;
@@ -51,11 +51,15 @@ define([
 		onSetState: function(attr,oldVal, state){
 			console.log("MSA Viewer onSetState: ", state);
 			if (state && state.search){
-				when(this.checkSequenceCount(state.search), lang.hitch(this, function(ok){
-					console.log("CHECK SEQ COUNT ok: ", ok)
-					this.doAlignment()
-				}), lang.hitch(this, function(){
-					this.showError("There are too many sequences in your query.  Please reduce to below 500 Sequences.");
+				when(this.checkSequenceCount(state.search), lang.hitch(this, function(count){
+					console.log("CHECK SEQ COUNT ok: ", count)
+					if (count<2){
+						this.showError("There must be at least two matching sequences for a query.  Your query found " + count + " sequences.");
+					}else{
+						this.doAlignment()
+					}
+				}), lang.hitch(this, function(count){
+					this.showError("There are too many sequences in your query results (" + count + ").  Please reduce to below 500 Sequences.");
 				}))
 			}
 		},
