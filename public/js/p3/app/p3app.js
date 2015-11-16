@@ -217,6 +217,10 @@ define([
 				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
+
+			if (this.dataAPI){
+				this.api.data = RPC(this.dataAPI,this.authorizationToken);
+			}
 /*
 			Topic.subscribe("/ActiveWorkspace", function(as){
 				console.log("SET App.activeWorkspace",as)
