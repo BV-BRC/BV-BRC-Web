@@ -219,6 +219,9 @@ define([
 			}
 
 			if (this.dataAPI){
+				if (this.dataAPI.charAt(-1)!="/"){
+					this.dataAPI = this.dataAPI + "/";
+				}
 				this.api.data = RPC(this.dataAPI,this.authorizationToken);
 			}
 /*
