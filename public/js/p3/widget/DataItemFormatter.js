@@ -393,7 +393,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.pathway_name, "fa icon-genome-features fa-2x", "/view/Pathways/"+item.pathway_id, options);
+			var tbody = displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/"+item.pathway_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -441,7 +441,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.family_id, "fa icon-genome-features fa-2x", "/view/ProteinFamilies/"+item.family_id, options);
+			var tbody = displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/"+item.family_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
