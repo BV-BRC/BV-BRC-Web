@@ -116,11 +116,11 @@ define([
 		},
 		flashRequestsData: function(flashObjectID){
 			//console.log("flashRequestData is called", flashObjectID);
-			var filterData = this.filterGrid.store.data;
-			//console.warn(filterData);
+			var filterStore = this.filterGrid.store;
+			//console.warn(filterStore);
 			var dataStore = this.dataGridContainer.grid.store;
 			//console.log(dataStore);
-			var currentData = dataStore.getHeatmapData(filterData);
+			var currentData = dataStore.getHeatmapData(filterStore);
 			//console.log(currentData);
 			return currentData;
 		}

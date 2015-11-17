@@ -16,8 +16,8 @@ define([
 			familyType: 'figfam'
 		},
 
-		onSetState: function(attr, oldVal, state){
-			//console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
+		/*onSetState: function(attr, oldVal, state){
+			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids, state.genomeFilterStatus);
 			var cur = (this.genome_ids || []).join("");
 			var next = (state.genome_ids || []).join("");
 			if(cur != next){
@@ -26,14 +26,14 @@ define([
 				delete this._loadingDeferred;
 			}
 
-		},
+		},*/
 		constructor: function(options){
 			this._loaded = false;
 			this.genome_ids = [];
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
-			this.watch('state', lang.hitch(this, 'onSetState'));
+			//this.watch('state', lang.hitch(this, 'onSetState'));
 
 			var self = this;
 
@@ -41,15 +41,63 @@ define([
 				console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
-				if (key === "familyType") {
-					self.params.familyType = value;
+				switch(key){
+					case "genomeIds":
+						self.genome_ids = value;
+						self.reload();
+						break;
+					case "familyType":
+						self.params.familyType = value;
+						self.reload();
+						break;
+					case "genomeFilter":
+						self.genomeFilter(value);
+						break;
+					default:
+						break;
 				}
-
-				delete self._loadingDeferred;
-				self._loaded = false;
-				self.loadData();
-				self.set("refresh");
 			});
+		},
+		genomeFilter: function(gfs){
+			var self = this;
+			if(self._filtered == undefined){ // first time
+				self._filtered = true;
+				self._original = this.query("", {});
+			}
+			var data = self._original;
+			var newData = [];
+
+			var tsStart = window.performance.now();
+			data.forEach(function(family){
+
+				var skip = false;
+
+				Object.keys(gfs).forEach(function(genomeId){
+					var index = gfs[genomeId].getIndex();
+					var status = gfs[genomeId].getStatus();
+					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index*2+1), 16));
+					if(status == 1 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) > 0){
+						skip = true;
+					}
+					else if(status == 0 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) == 0){
+						skip = true;
+					}
+				});
+				if(!skip){
+					newData.push(family);
+				}
+			});
+			console.log("genomeFilter took " + (window.performance.now() - tsStart) + " ms");
+
+			self.setData(newData);
+			self.set("refresh");
+		},
+		reload: function(){
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
 		},
 
 		query: function(query, opts){
@@ -94,7 +142,7 @@ define([
 
 			var state = this.state || {};
 
-			if(!state.genome_ids || state.genome_ids.length < 1){
+			if(!this.genome_ids || this.genome_ids.length < 1){
 				console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -110,13 +158,13 @@ define([
 
 			}
 
-			// TODO: change family Id based on params
 			var familyType = this.params.familyType;
 			var familyId = familyType + '_id';
 
 			var query = {
 				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
 				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
+				//fq: "figfam_id:(FIG01956050)",
 				rows: 0,
 				facet: true,
 				'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
@@ -137,6 +185,13 @@ define([
 				},
 				data: q
 			}), function(response){
+				//console.warn(response);
+				if(response.facets.count == 0){
+					// data is not available
+					_self.setData([]);
+					_self._loaded = true;
+					return true;
+				}
 				var familyStat = response.facets.stat.buckets;
 
 				var familyIdList = [];
@@ -199,7 +254,7 @@ define([
 										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
 									}
 									else{
-										var genomeIdCount = new Array(_self.genome_ids.length);
+										var genomeIdCount = new Array(_self.genome_ids.length).fill('00');
 										genomeIdCount[genomePos] = genomeCount;
 										familyGenomeIdCountMap[familyId] = genomeIdCount;
 									}
@@ -292,7 +347,7 @@ define([
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(filterData){
+		getHeatmapData: function(filterStore){
 
 			var rows = [];
 			var cols = [];
@@ -324,20 +379,22 @@ define([
 			}
 
 			// rows - genomes
-			filterData.forEach(function(genome, idx){
-				keeps.push(2 * idx);
-				var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
-				var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+			filterStore.data.forEach(function(genome, idx){
+				var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+				if(gfs.getStatus() != '1'){
+					keeps.push(2 * gfs.getIndex());
+					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-				rows.push(new Row(idx, genome.genome_id, genome.genome_name, labelColor, rowColor));
+					rows.push(new Row(gfs.getIndex(), genome.genome_id, genome.genome_name, labelColor, rowColor));
 
-				//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
+					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
+				}
 			});
 
 			// cols - families
 			//console.warn(this);
 			var maxIntensity = 0;
-			//this.data.forEach(function(family, idx){
 			var data = this.query("", {});
 			//console.log(data);
 			data.forEach(function(family, idx){

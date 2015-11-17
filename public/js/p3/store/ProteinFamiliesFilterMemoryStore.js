@@ -1,10 +1,42 @@
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
+	"dojo/topic"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred){
+			when, lang, Stateful, Deferred,
+			Topic){
+
+	var genomeFilterStatus = (function(){
+		function init(index, genome_name){
+			this.index = index;
+			this.status = ' ';
+			this.genome_name = genome_name;
+		}
+
+		function getIndex(){
+			return this.index;
+		}
+
+		function getGenomeName(){
+			return this.genome_name;
+		}
+
+		function getStatus(){
+			return this.status;
+		}
+
+		function setStatus(status){
+			this.status = status;
+		}
+
+		return function(){
+			this.init = init, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
+			return this;
+		}
+	})();
+
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
@@ -85,7 +117,8 @@ define([
 
 			var query = {
 				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
-				rows: this.genome_ids.length
+				rows: this.genome_ids.length,
+				sort: "genome_name asc"
 			};
 			var q = Object.keys(query).map(function(p){
 				return p + "=" + query[p]
@@ -104,6 +137,18 @@ define([
 				data: q
 			}), function(response){
 				var data = response.response.docs;
+
+				// set genomeFilterStatus
+				var genomeIds = [];
+				state.genomeFilterStatus = {};
+				data.forEach(function(genome, idx){
+					var gfs = new genomeFilterStatus();
+					gfs.init(idx, genome.genome_name);
+					state.genomeFilterStatus[genome.genome_id] = gfs;
+					genomeIds.push(genome.genome_id);
+				});
+
+				Topic.publish("ProteinFamilies", "genomeIds", genomeIds);
 
 				_self.setData(data);
 				_self._loaded = true;
