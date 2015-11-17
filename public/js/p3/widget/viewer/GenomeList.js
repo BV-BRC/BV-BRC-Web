@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer"
+	"../SequenceGridContainer","../../util/PathJoin"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer){
+			SequenceGridContainer,PathJoin){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 5000,
@@ -33,7 +33,7 @@ define([
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = this.apiServiceUrl + "/genome/?" + (this.query) + "&select(genome_id)&limit(5000)";
+			var url = PathJoin(this.apiServiceUrl,"genome","?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
 			console.log("url: ", url);
 			xhr.get(url, {

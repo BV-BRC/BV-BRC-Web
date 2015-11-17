@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/pathJoin"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -40,7 +40,7 @@ define([
 
 			state.taxon_id = id;
 
-			xhr.get(this.apiServiceUrl + "/taxonomy/" + id, {
+			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
 				headers: {
 					accept: "application/json"
 				},

@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./FilterContainerActionBar","dijit/layout/StackContainer", "dijit/layout/TabController",
 	"dijit/layout/ContentPane", "./TranscriptomicsExperimentGridContainer","dojo/topic","dojo/_base/lang",
-	"./TranscriptomicsComparisonGridContainer","dojo/request"
+	"./TranscriptomicsComparisonGridContainer","dojo/request","../util/PathJoin"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, FilterContainerActionBar,TabContainer,StackController,
 	ContentPane,TranscriptomicsExperimentGridContainer,Topic,lang,
-	TranscriptomicsComparisonGridContainer,xhr
+	TranscriptomicsComparisonGridContainer,xhr,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -29,7 +29,7 @@ define([
 		onSetQuery: function(attr,oldVal, query){
 			query = query + "&select(eid)&limit(25000)"
 			query = (query && (query.charAt(0)=="?"))?query.substr(1):query
-			xhr.post(this.apiServer + "/transcriptomics_experiment/?",{
+			xhr.post(PathJoin(this.apiServer,"transcriptomics_experiment/?"),{
 				headers: {
 					"accept": "application/json",
 	              	"content-type": "application/json",
