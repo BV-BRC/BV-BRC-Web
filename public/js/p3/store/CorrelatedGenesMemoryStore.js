@@ -19,9 +19,9 @@ define([
 		state: null,
 		feature_id: null,
 		onSetState: function(attr, oldVal, state){
-			if(state && state.feature_id){
+			if(state && state.feature && state.feature.feature_id){
 				var cur = this.feature_id;
-				var next = state.feature_id;
+				var next = state.feature.feature_id;
 				if(cur != next){
 					this.set("feature_id", state.feature_id || {});
 					this._loaded = false;
@@ -73,14 +73,15 @@ define([
 		},
 
 		loadData: function(){
+			var _self = this;
 
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
 			var state = this.state || {};
 
-			if(!state.feature_id){
-				console.log("No Feature, use empty data set for initial store");
+			if(!state.feature){
+				//console.log("No Feature, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -88,26 +89,39 @@ define([
 				var def = new Deferred();
 				setTimeout(lang.hitch(this, function(){
 					this.setData([]);
-					this._loaded = true;
+					_self._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;
 			}
 
-			var _self = this;
+			// TODO: read from state later
+			state.cutoff_value = 0.4;
+			state.cutoff_dir = 'pos';
 
-			this._loadingDeferred = when(request.get(_self.apiServer + '/genome_feature/' + state.feature_id, {
+			this._loadingDeferred = when(request.post(_self.apiServer + '/transcriptomics_gene/', {
 				handleAs: 'json',
 				headers: {
-					'Accept': "application/json"
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + state.feature.genome_id,
+					fq: '{!correlation fieldId=refseq_locus_tag fieldCondition=pid fieldValue=log_ratio srcId=' + state.feature.refseq_locus_tag + ' filterCutOff=' + state.cutoff_value + ' filterDir=' + state.cutoff_dir + ' cost=101}',
+					rows: 0,
+					'json.nl': 'map'
 				}
-			}), function(feature){
+			}), function(response){
 
-				// TODO: read from state later
-				state.cutoff_value = 0.4;
-				state.cutoff_dir = 'pos';
+				var refseqLocusTagList = [];
+				response.correlation.forEach(function(element){
+					refseqLocusTagList.push(element.id);
+				});
 
-				return when(request.post(_self.apiServer + '/transcriptomics_gene/', {
+				// sub query
+				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
 						'Accept': "application/solr+json",
@@ -116,51 +130,28 @@ define([
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
 					data: {
-						q: 'genome_id:' + feature.genome_id,
-						fq: '{!correlation fieldId=refseq_locus_tag fieldCondition=pid fieldValue=log_ratio srcId=' + feature.refseq_locus_tag + ' filterCutOff=' + state.cutoff_value + ' filterDir=' + state.cutoff_dir + ' cost=101}',
-						rows: 0,
-						'json.nl': 'map'
+						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ')',
+						fq: 'annotation:PATRIC',
+						rows: refseqLocusTagList.length
 					}
-				}), function(response){
+				}), function(res){
 
-					var refseqLocusTagList = [];
-					response.correlation.forEach(function(element){
-						refseqLocusTagList.push(element.id);
-					});
-
-					// sub query
-					return when(request.post(_self.apiServer + '/genome_feature/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/solr+json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-						},
-						data: {
-							q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ')',
-							fq: 'annotation:PATRIC',
-							rows: refseqLocusTagList.length
+					var featureHash = {};
+					res.response.docs.forEach(function(el){
+						if(featureHash[el.refseq_locus_tag] == null){
+							featureHash[el.refseq_locus_tag] = el;
 						}
-					}), function(res){
-
-						var featureHash = {};
-						res.response.docs.forEach(function(el){
-							if(featureHash[el.refseq_locus_tag] == null){
-								featureHash[el.refseq_locus_tag] = el;
-							}
-						});
-
-						var data = [];
-						response.correlation.forEach(function(element){
-							data.push(lang.mixin({}, element, featureHash[element.id]));
-						});
-						//console.log(data);
-						_self.setData(data);
-						_self._loaded = true;
-
-						return true;
 					});
+
+					var data = [];
+					response.correlation.forEach(function(element){
+						data.push(lang.mixin({}, element, featureHash[element.id]));
+					});
+					//console.log(data);
+					_self.setData(data);
+					_self._loaded = true;
+
+					return true;
 				});
 			});
 			return this._loadingDeferred;
