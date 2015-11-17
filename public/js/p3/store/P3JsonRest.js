@@ -17,7 +17,12 @@ define([
 	return declare([Store, Evented], {
 		constructor: function(options) {
 			// console.log("P3JsonRest Options", options);
-			this.target = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") + "/" + this.dataModel + "/";
+			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+			if (baseUrl.charAt(-1)!=="/"){
+				baseUrl = baseUrl + "/";
+			}
+
+			this.target = baseUrl + this.dataModel + "/";
             this.headers = {
                 "accept": "application/json",
               //  "//content-type": "application/json",

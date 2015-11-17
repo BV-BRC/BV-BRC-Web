@@ -5,9 +5,14 @@
 				packages: [
 					{ name: 'lazyload', location: "../lazyload",main: 'lazyload' },
 					{ name: 'jDataView', location: '../jDataView/src', main: 'jdataview' }
-
-				]	
+				]
                         }
+                </script>
+                <script type="text/javascript" src="/js/msa/msa.min.js"></script>
+                <script type="text/javascript" src="/node_modules/msa-tnt/node_modules/biojs-io-newick/build/biojs-io-newick.min.js"></script>
+                <script type="text/javascript" src="/node_modules/msa-tnt/build/bundle.js"></script>
+                <script> window.newick = require("biojs-io-newick");
+                window.mt = require("msa-tnt");
                 </script>
                 <% if (request&&request.production){ %>
                         <script src="/js/release/dojo/dojo.js"></script>

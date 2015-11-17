@@ -3,12 +3,12 @@ define([
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "dojo/_base/Deferred",
 	"dojo/request", "dojo/_base/lang","dojo/when",
-	"../ActionBar", "../ContainerActionBar"
+	"../ActionBar", "../ContainerActionBar", "d3/d3"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang,when,
-			ActionBar
+			ActionBar, d3
 ){
 	return declare([Base], {
 		"disabled": false,
