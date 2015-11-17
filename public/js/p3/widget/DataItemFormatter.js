@@ -1075,7 +1075,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 						diaplayColumns[column] = 1;
 					}
 										
-					if (column && item[column])
+					if (column && (item[column] || item[column] == "0"))
 					{
 						//console.log("column=", column);
 						//console.log("item[column]=", item[column]);
@@ -1176,7 +1176,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					diaplayColumns[column] = 1;
 				}		
 				
-				if (column && item[column] && !column_data[i].data_hide)
+				if (column && (item[column] || item[column] == "0") && !column_data[i].data_hide)
 				{
 					//console.log("column=", column);
 					//console.log("item[column]=", item[column]);
@@ -1244,9 +1244,28 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 	
 	return function(item, type, options) {
 		console.log("Format Data: ", type, item);
+		var new_type = type;
 		var out;
-		if (type && formatters[type]) {
-			out = formatters[type](item,options)
+		if (type == "genome_group")
+		{
+			new_type = "genome_data";		
+		}
+		else if (type == "feature_group")
+		{
+			new_type = "feature_data";				
+		}
+		else if (type == "experiment")
+		{
+			new_type = "transcriptomics_sample_data";				
+		}
+		/*
+		else if (type == "experiment_group")
+		{
+			new_type = "transcriptomics_experiment_data";				
+		}
+		*/
+		if (new_type && formatters[new_type]) {
+			out = formatters[new_type](item,options)
 		}else{
 			out = formatters["default"](item,options);
 		}
