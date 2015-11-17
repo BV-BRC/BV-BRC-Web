@@ -45,10 +45,11 @@ define([
 
 			switch(active){
 				case "overview":
-					break;
 				case "correlatedGenes":
-					activeTab.set("state", this.state);
 					break;
+				//case "pathways":
+				//	activeTab.set("state", state);
+				//	break;
 				//case "transcriptomics":
 				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
 				//	break;
@@ -94,6 +95,7 @@ define([
 
 			switch(active){
 				case "overview":
+				case "correlatedGenes":
 					activeTab.set("state", state);
 					break;
 				default:
@@ -136,8 +138,7 @@ define([
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes",
-				content: "Correlated Genes",
-				state: this.state
+				content: "Correlated Genes"
 			});
 
 			this.viewer.addChild(this.overview);

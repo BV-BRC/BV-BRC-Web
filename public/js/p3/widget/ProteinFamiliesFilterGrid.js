@@ -1,13 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/GenomeJsonRest", "dojo/request",
-	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put"
+	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore", "dojo/request",
+	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put", "dojo/topic"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect, CellSelection, selector, put){
-	var store = new Store({});
+			aspect, CellSelection, selector, put, Topic){
+
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
 
@@ -22,12 +22,16 @@ define([
 		return input;
 	};
 
+	var filterSelectorChecked = function(value, cell, object){
+		return filterSelector(true, cell, object);
+	};
+
 	return declare([Grid, CellSelection], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
-		store: store,
+		store: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		selectionModel: "extended",
@@ -36,7 +40,7 @@ define([
 		columns: {
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
-			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelector),
+			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
 			genome_name: {label: 'Genome Name', field: 'genome_name'}/*,
 			genome_status: {label: 'Genome Status', field: 'genome_status'},
 			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
@@ -49,13 +53,6 @@ define([
 			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
-			}
-			if(options && options.state){
-				var state = options.state;
-				if(state.genome_ids){
-					console.log("initializing filter grid with ", state.genome_ids);
-					this.query = 'in(genome_id,(' + state.genome_ids + '))';
-				}
 			}
 		},
 		startup: function(){
@@ -70,6 +67,7 @@ define([
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
+				var state = _self.store.state;
 
 				if(cell.row){
 					// data row is clicked
@@ -85,7 +83,7 @@ define([
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
-						_self.params.state.genome_ids.forEach(function(genomeId){
+						state.genome_ids.forEach(function(genomeId){
 							if(_self.cell(genomeId, el).element.input.checked == false){
 								allSelected = false;
 							}
@@ -95,7 +93,7 @@ define([
 
 				}else{
 					// if header is clicked, reset the selections & update
-					_self.params.state.genome_ids.forEach(function(genomeId){
+					state.genome_ids.forEach(function(genomeId){
 						options.forEach(function(el){
 							if(el === colId){
 								toggleSelection(_self.cell(genomeId, el).element.input, true);
@@ -114,7 +112,20 @@ define([
 				}
 
 				// update filter
-				// TODO: implement
+				Object.keys(state.genomeFilterStatus).forEach(function(genomeId){
+					var status = options.findIndex(function(el){
+						if(_self.cell(genomeId, el).element.input.checked) {
+							return el;
+						}
+					});
+					//console.log(genomeId, status);
+					state.genomeFilterStatus[genomeId].setStatus(status);
+				});
+
+				//Object.keys(state.genomeFilterStatus).forEach(function(el){
+				//	console.warn(state.genomeFilterStatus[el].getGenomeName(), state.genomeFilterStatus[el].getStatus());
+				//});
+				Topic.publish("ProteinFamilies", "genomeFilter", state.genomeFilterStatus);
 			});
 
 			aspect.before(_self, 'renderArray', function(results){
@@ -139,6 +150,7 @@ define([
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set('state', state);
+				this.refresh();
 			}
 		},
 		createStore: function(server, token, state){
