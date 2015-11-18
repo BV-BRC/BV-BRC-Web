@@ -55,6 +55,7 @@ define([
 		design: "headline",
 		facetFields: [],
 		enableFilterPanel: true,
+		defaultFilter: "",
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			this._firstView = false;
@@ -85,7 +86,23 @@ define([
 			if(state.hashParams){
 				if(state.hashParams.filter){
 					q.push(state.hashParams.filter)
+				}else if (!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', state);
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter;
+					this.set('state',state);
+					return;
 				}
+			}else{
+				state.hashParams={}
+				if (!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter
+				}
+				this.set('state', state);
+				return;
 			}
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 

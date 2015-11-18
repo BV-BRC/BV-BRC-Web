@@ -216,9 +216,10 @@ define([
 
 			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
-			var kbot = domConstruct.create("div", {style: {"margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "right"}}, keywordSearchBox)
-			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {"float": "left"}}, kbot);
-			var clear = domConstruct.create("span", {style: {"float": "right"},innerHTML: "CLEAR"}, kbot)
+			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
+			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
+			var clear = domConstruct.create("i", {"class": "fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){

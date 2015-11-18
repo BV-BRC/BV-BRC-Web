@@ -10,25 +10,28 @@
 		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
 			<td style="text-align:left;">
 				<a href="/"><span class="logo">PATRIC</span></a>
+				&nbsp;
 				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
 					<span>Explore</span>
 					<div data-dojo-type="dijit/TooltipDialog">
-						<div style="width:350px">
+						<div >
 							<table><tbody>
 								<tr>
-									<td style='vertical-align: top'>
-										<div>by Data Type</div>
-										<div>
-											<a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a>
-										</div>
-										</div>User Content</div>
-										<div>
-											<a class="navigationLink" href="/workspace/">Workspaces</a>
-										</div>
+									<td style='vertical-align: top;width:175px'>
+										<div class="menuHeader">by Data Type</div>
+											<div><i class="fa icon-caret-down fa-1x"></i>&nbsp;Genomes</div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))">Antibiotic Resistance</a></div>
+											<div><a class="navigationLink" href="/view/FeatureList/?keyword(*)">Genomic Features</a></div>
+											<div><a class="navigationLink" href="/view/">Protein Families</a></div>
+											<div><a class="navigationLink" href="/view/">Specialty Genes</a></div>
+											<div><a class="navigationLink" href="/view/">Transcriptomics</a></div>
 									</td>
-									<td></td>
-									<td style='vertical-align: top'>
-										</div>by Organism</div>
+									<td style='width:5px;'></td>
+									<td style='vertical-align: top;width:225px;'>
+										<div class="menuHeader">by Organism</div>
 										<table>
 											<tr>
 												<td><a class="navigationLink" href="/view/Taxonomy/1386">Bacillus</a></td>
@@ -92,21 +95,83 @@
 					</div>
 				</div>
 				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+					<span>Workspaces</span>
+	
+					<div data-dojo-type="dijit/TooltipDialog">
+						<div >
+							<table><tbody>
+								<tr>
+									<td style='vertical-align: top;width:175px'>
+
+										<div><i class="fa icon-caret-down fa-1x"></i>&nbsp;Your Workspaces</div>
+
+										<div style="padding-left:12px;"><a class="navigationLink" href="/workspace/">Home</a></div>
+										<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
+										<div><a class="navigationLink" href="/workspace/PATRIC@patricbrc.org/">PATRIC</a></div>
+										<div><a class="navigationLink" href="/workspace/">Public</a></div>
+										<div><a class="navigationLink" href="/workspace/">Published</a></div>
+									</td>
+									<td style="width:5px;"></td>
+									<td style='vertical-align:top;'>
+										<div class="menuHeader">Specialty Workspaces</div>
+										<div><a class="" href="//enews.patricbrc.org/patric-collaborations/">PATRIC Collaborations</a></div>
+										<div><a class="" href="//enews.patricbrc.org/patric-dbps/">PATRIC DBPs</a></div>
+										<div><a class="" href="//enews.patricbrc.org/niaid-clinical-proteomics/">NIAID Clinical Proteomics</a></div>
+										<div><a class="" href="//enews.patricbrc.org/niaid-genome-sequencing/">NIAID Genome Sequencing</a></div>
+										<div><a class="" href="//enews.patricbrc.org/niaid-structural-genomics/">NIAID Structural Genomics</a></div>
+										<div><a class="" href="//enews.patricbrc.org/niaid-systems-biology/">NIAID Systems Biology</a></div>
+										<div><a class="" href="//enews.patricbrc.org/niaid-functional-genomics/">NIAID Functional Genomics</a></div>
+									</td>
+								</tr>
+							</tbody></table>
+						</div>
+					</div>
+				</div>
+	
+				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
 					<span>Tools</span>
 	
 					<div data-dojo-type="dijit/TooltipDialog">
-					<div><a class="navigationLink" href="/app/Assembly">Genome Assembly</a></div>
-					<div><a class="navigationLink" href="/app/Annotation">Genome Annotation</a></div>
-					<div><a class="navigationLink" href="/app/Expression">Expression Import</a></div>
-					<div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysi</a></div>
-					<div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
-					<div><a class="navigationLink" href="/app/Reconstruct">Model Reconsturction</a></div>
+						<div >
+							<table><tbody>
+								<tr>
+									<td style='vertical-align: top;width: 180px;'>
+										<div class="menuHeader">Genomics</div>
+										<div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
+										<div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
+										<div class="menuHeader">Transcriptomics</div>
+										<div><a class="navigationLink" href="/app/Expression">Expression Import</a></div>
 
+									</td>
+									<td style="width:5px;"></td>
+									<td style="width:180px;">
+										<div class="menuHeader">Metabolic Modelling</div>
+
+										<div><a class="navigationLink" href="/app/Reconstruct">Model Reconstruction</a></div>
+										<div class="menuHeader">Other</div>
+										<div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+										<div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
+									</td>
+								</tr>
+							</tbody></table>
+						</div>
+					</div>
 				</div>
+				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+					<span>Help</span>
+
+					<div data-dojo-type="dijit/TooltipDialog">
+						<div><a class="navigationLink" href="/app/Assembly">Tutorials</a></div>
+ 						<div><a class="navigationLink" href="/app/Assembly">User Guides</a></div>
+						<div><a class="navigationLink" href="/app/Assembly">Report a Problem</a></div>
+						<div><a class="navigationLink" href="/app/Assembly">Contact Us</a></div>
+					</div>
+				</div>
+
 			</div>
 			</td>
 			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
-				<input data-dojo-type="p3/widget/GlobalSearch" style="font-size:1.3em;" />
+				<input data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
 			</td>
 		</tr></tbody></table>
 	</div>

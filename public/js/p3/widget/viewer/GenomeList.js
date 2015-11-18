@@ -84,8 +84,8 @@ define([
 			}
 			
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// if (active=="genomes"){ this.setActivePanelState() };
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			if (active=="genomes"){ this.setActivePanelState() };
 
 			this.inherited(arguments);
 		},
