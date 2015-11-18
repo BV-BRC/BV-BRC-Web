@@ -38,7 +38,7 @@ define([
 			var self = this;
 
 			Topic.subscribe("ProteinFamilies", function(){
-				console.log("received:", arguments);
+				//console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
@@ -49,9 +49,11 @@ define([
 					case "familyType":
 						self.params.familyType = value;
 						self.reload();
+						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
 						break;
 					case "genomeFilter":
 						self.genomeFilter(value);
+						Topic.publish("ProteinFamiliesHeatmap", "refresh");
 						break;
 					default:
 						break;
