@@ -84,8 +84,8 @@ define([
 			}
 			
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// if (active=="genomes"){ this.setActivePanelState() };
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			if (active=="genomes"){ this.setActivePanelState() };
 
 			this.inherited(arguments);
 		},
@@ -99,7 +99,7 @@ define([
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active: ", active);
+			console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -125,7 +125,7 @@ define([
 					var activeQueryState;
 					if (this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "?in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
 						console.log("Active Query State: ", activeQueryState);
 

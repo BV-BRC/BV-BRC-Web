@@ -37,6 +37,7 @@ define([
 		filter: "",
 		maxGenomeCount: 5000,
 		dataModel: "genome_feature",
+		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
 		},

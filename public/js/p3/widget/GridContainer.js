@@ -55,6 +55,7 @@ define([
 		design: "headline",
 		facetFields: [],
 		enableFilterPanel: true,
+		defaultFilter: "",
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			this._firstView = false;
@@ -71,7 +72,7 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state){
-			console.log("GridContainer onSetState: ", state);
+			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;
@@ -83,9 +84,37 @@ define([
 			}
 
 			if(state.hashParams){
+				console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
+					console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
+				}else if (!oldState && this.defaultFilter){
+					console.log("       No original state, using default Filter");
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', state);
+					return;
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					console.log("       Found oldState with hashparams.filter, using");
+					state.hashParams.filter = oldState.hashParams.filter;
+					this.set('state',state);
+					return;
+				}else if (this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', state);
+					return;
+				}else{
+					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+
 				}
+			}else{
+				state.hashParams={}
+				if (!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter
+				}
+				this.set('state', state);
+				return;
 			}
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
