@@ -22,7 +22,7 @@ define([
             this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},this.controlDiv);
             this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},this.controlDiv);
             this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},this.controlDiv);
-            this.treeDiv = domConstruct.create("div",{id:"tree-container"},this.containerNode);
+            this.treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},this.containerNode);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("taxon_id", lang.hitch(this,"onSetTaxonId"))
 			this.watch("newick", lang.hitch(this,"processTree"))
@@ -33,7 +33,9 @@ define([
 			console.log("Phylogeny onSetState: ", state);
 			if (!state) { return; }
 
-			if (state.genome){
+			if (state.taxon_id){
+				this.set('taxon_id', state.taxon_id)
+			}else if (state.genome){
 				this.set("taxon_id", state.genome.taxon_id);
 			}else if (state.taxonomy){
 				this.set("taxon_id", state.taxonomy.taxon_id);
@@ -47,8 +49,14 @@ define([
 				headers: {accept: "application/newick"}
 			}).then(lang.hitch(this,function(newick){
 				console.log("Set Newick");
+				if (!newick){
+					console.log("No Newick in Request Response");
+					return;
+				}
 				this.set('newick', newick);
-			}));
+			}),function(err){
+				console.log("Error Retreiving newick for Taxon: ", err)
+			});
 		},
 
         processTree: function(){
@@ -56,7 +64,10 @@ define([
 				console.log("No Newick File To Render")
 				return;
 			}
-            this.tree = new d3Tree.d3Tree("#tree-container", {phylogram:false, fontSize:10});
+			if (!this.tree){
+	            this.tree = new d3Tree.d3Tree("#" + this.id + "tree-container", {phylogram:false, fontSize:10});
+	        }
+
             this.tree.setTree(this.newick);
         },
 

@@ -85,6 +85,53 @@ define([
 			// }
 		},
 
+		setActivePanelState: function(){
+
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			console.log("Active: ", active, "state: ", this.state);
+
+			var activeTab = this[active];
+
+
+
+			if (!activeTab){
+				console.log("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
+			switch(active){
+				case "phylogeny":
+				case "genomes":
+					console.log("setting ",active," state: ", this.state);
+					activeTab.set("state", this.state);
+					break;
+				case "proteinFamilies":
+				case "pathways":
+					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
+					break;
+				default:
+					var activeQueryState;
+					if (this.state && this.state.genome_ids){
+						console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// console.log("gidQueryState: ", gidQueryState);
+						console.log("Active Query State: ", activeQueryState);
+
+					}
+
+					if (activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
+					break;
+			}
+			console.log("Set Active State COMPLETE");
+		},
+
 		buildHeaderContent: function(taxon){
 			var taxon_lineage_names = taxon.lineage_names.slice(1);
 			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
