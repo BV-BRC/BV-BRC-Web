@@ -2,12 +2,14 @@ define([
 	"dijit/form/FilteringSelect","dojo/_base/declare",
 	"dojo/store/JsonRest","dojo/dom-construct","dijit/TooltipDialog",
 	"dojo/on","dijit/popup","dojo/_base/lang","dojo/dom-construct",
-	"dijit/form/CheckBox","dojo/string","dojo/when","dijit/form/_AutoCompleterMixin"
+	"dijit/form/CheckBox","dojo/string","dojo/when","dijit/form/_AutoCompleterMixin",
+	"../util/PathJoin"
 ], function(
 	FilteringSelect, declare, 
 	Store,domConstr,TooltipDialog,
 	on,popup,lang,domConstr,Checkbox,
-	string,when,AutoCompleterMixin
+	string,when,AutoCompleterMixin,
+	PathJoin
 ){
 	
 	return declare([FilteringSelect,AutoCompleterMixin], {
@@ -30,7 +32,7 @@ define([
 			var _self=this;
 			if (!this.store){
 				
-				this.store = new Store({target: this.apiServiceUrl + "/genome/", idProperty: "genome_id", headers: {accept: "application/json","Authorization":(window.App.authorizationToken||"")}});
+				this.store = new Store({target: PathJoin(this.apiServiceUrl, "genome") + "/", idProperty: "genome_id", headers: {accept: "application/json","Authorization":(window.App.authorizationToken||"")}});
 
 			}
 

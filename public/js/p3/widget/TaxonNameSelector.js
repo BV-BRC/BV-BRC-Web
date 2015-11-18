@@ -33,7 +33,7 @@ define([
 		constructorSOLR: function(){
 			var _self=this;
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", headers: {accept: "application/json", "content-type": "application/solrquery+x-www-form-urlencoded"}});
+				this.store = new Store({target: PathJoin(this.apiServiceUrl,"taxonomy")+"/", idProperty: "taxon_id", headers: {accept: "application/json", "content-type": "application/solrquery+x-www-form-urlencoded"}});
 			}
 
 			var orig = this.store.query;

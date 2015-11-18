@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
 	"./TrackController","circulus/Viewer","circulus/LineTrack",
-	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter"
+	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter","../util/PathJoin"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter
+	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -29,7 +29,7 @@ define([
 
 			var query = "?eq(genome_id," + gid + ")&select(topology,gi,accession,length,sequence_id,gc_content,owner,sequence_type,taxon_id,public,genome_id,genome_name,date_inserted,date_modified" + (includeSequences?",sequence":"")+ ")&sort(+accession)&limit(1000)";
 
-			return xhr.get(this.apiServiceUrl + "/genome_sequence/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl, "genome_sequence", query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -70,7 +70,7 @@ define([
 			})
 
 
-			return xhr.get(this.apiServiceUrl + "/genome_feature/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl,"genome_feature",query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,

@@ -1,11 +1,11 @@
 define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang"],
+		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"],
 	function(declare, Grid, Store, DijitRegistry, Pagination,
 			 Keyboard, Selection, formatter, ColumnResizer,
 			 ColumnHider, DnD, DnDSource,
-			 Deferred, aspect, lang) {
+			 Deferred, aspect, lang,PathJoin) {
 		return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -86,7 +86,7 @@ define([
 			createStore: function(dataModel, pk, token) {
 				// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
 				var store = new Store({
-					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/", idProperty: pk, headers: {
+					target: PathJoin((this.apiServer ? (this.apiServer) : ""),dataModel) + "/", idProperty: pk, headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
 						'X-Requested-With': null,

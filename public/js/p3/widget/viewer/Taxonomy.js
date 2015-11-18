@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/pathJoin"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -40,7 +40,7 @@ define([
 
 			state.taxon_id = id;
 
-			xhr.get(this.apiServiceUrl + "/taxonomy/" + id, {
+			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
 				headers: {
 					accept: "application/json"
 				},
@@ -53,6 +53,8 @@ define([
 
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
+
+			this.overview.set('content',  "TAXON OVERVIEW<br><pre>" + JSON.stringify(taxonomy,null,4) + "</pre>");
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -87,7 +89,7 @@ define([
 			var taxon_lineage_names = taxon.lineage_names.slice(1);
 			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
 			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
 			return out.join("&nbsp;&raquo;&nbsp;");
 		},

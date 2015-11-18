@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
 	"dojo/request", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
-	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter"
+	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter","../util/PathJoin"
 ], function(declare, on, Deferred,
 			domClass, domConstruct,WidgetBase,
 			xhr, lang, domAttr,Query,
-			domGeometry,domStyle,FacetFilter) {
+			domGeometry,domStyle,FacetFilter,PathJoin) {
 
 
     function parseFacetCounts(facets){
@@ -39,7 +39,7 @@ define([
 				var f = "&facet(" + this.facetFields.map(function(field){
 					return "(field," + field + ")"
 				}).join(",") + ",(mincount,1))";
-				var url = this.apiServer + "/" + this.dataModel + "/" + query + "&limit(1)" + f;
+				var url = PathJoin(this.apiServer,this.dataModel, query + "&limit(1)" + f);
 				console.log("URL", url)
 
 				return xhr.get(url, {

@@ -1,8 +1,8 @@
 define([
 	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
-	"dojo/dom-geometry", "dojo/dom-style", "d3/d3"
-], function(declare, PhyloTree, TreeNavSVG, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3){
+	"dojo/dom-geometry", "dojo/dom-style", "d3/d3","../util/PathJoin"
+], function(declare, PhyloTree, TreeNavSVG, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3,PathJoin){
 
 
 	return declare([WidgetBase],{
@@ -43,7 +43,7 @@ define([
 		onSetTaxonId: function(attr,oldVal,taxonId){
 			console.log("taxonId: ", taxonId);
 
-			request.get(this.apiServer + "/taxonomy/" + taxonId,{
+			request.get(PathJoin(this.apiServer, "taxonomy", taxonId),{
 				headers: {accept: "application/newick"}
 			}).then(lang.hitch(this,function(newick){
 				console.log("Set Newick");
