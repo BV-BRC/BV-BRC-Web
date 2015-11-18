@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct){
+			ChartTooltip, domConstruct,PathJoin){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -96,7 +96,7 @@ define([
 		getSummaryData: function(){
 			// getting uniprot mapping
 			if(this.feature.gi != null){
-				xhr.get(this.apiServiceUrl + "/id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)&http_accept=application/solr+json", {
+				xhr.get(PathJoin(this.apiServiceUrl,"id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
 					handleAs: "json",
 					headers: {"accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
@@ -109,7 +109,7 @@ define([
 			// get related feature list
 			if(this.feature.pos_group != null){
 				//xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
-				xhr.get(this.apiServiceUrl + "/genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)&http_accept=application/solr+json", {
+				xhr.get(PathJoin(this.apiServiceUrl, "genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)"), {
 					handleAs: "json",
 					headers: {"accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
@@ -134,7 +134,7 @@ define([
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + feature.gene || '' + '</div>';
+				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
 				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{

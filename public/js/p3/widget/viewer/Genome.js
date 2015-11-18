@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser",
-	"../SequenceGridContainer"
+	"../SequenceGridContainer","../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
-			SequenceGridContainer
+			SequenceGridContainer,PathJoin
 ){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
@@ -33,7 +33,7 @@ define([
 			this.genome_id = id;
 			this.state.genome_ids = [id];
 
-			xhr.get(this.apiServiceUrl + "/genome/" + id, {
+			xhr.get(PathJoin(this.apiServiceUrl,"genome", id), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -56,7 +56,7 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
 					break;
 				default:
 					activeTab.set("state", activeQueryState);

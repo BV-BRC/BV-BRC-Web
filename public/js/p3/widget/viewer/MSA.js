@@ -3,12 +3,12 @@ define([
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "dojo/_base/Deferred",
 	"dojo/request", "dojo/_base/lang","dojo/when",
-	"../ActionBar", "../ContainerActionBar", "d3/d3"
+	"../ActionBar", "../ContainerActionBar", "d3/d3","../../util/PathJoin"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang,when,
-			ActionBar, d3
+			ActionBar,ContainerActionBar,d3,PathJoin
 ){
 	return declare([Base], {
 		"disabled": false,
@@ -26,9 +26,10 @@ define([
 		},
 		checkSequenceCount: function(query){
 			var q = query + "&limit(1)";
-			console.log("Check Sequence Count: ",this.apiServiceUrl + "/genome_feature/", q );
 			var def = new Deferred();
-			xhr.post(this.apiServiceUrl + "/genome_feature/",{
+			var url = PathJoin(this.apiServiceUrl,"genome_feature")+"/";
+			console.log("CheckSeqCount URL: ", url);
+			xhr.post(url,{
 				data: q,
 				headers:  {
 					"accept": "application/solr+json",

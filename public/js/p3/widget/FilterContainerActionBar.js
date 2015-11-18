@@ -3,13 +3,13 @@ define([
 	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
 	"dijit/form/TextBox","./FacetFilter","dojo/request","dojo/on",
 	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
-	"dijit/focus"
+	"dijit/focus","../util/PathJoin"
 ], function(
 	declare, ContainerActionBar,lang,
 	domConstruct,domGeometry, domStyle,domClass,
 	Textbox, FacetFilter,xhr,on,
 	RQLParser,FilteredValueButton,Query,Deferred,
-	focusUtil
+	focusUtil,PathJoin
 ){
 
 
@@ -517,12 +517,12 @@ define([
 			// console.log(idx, " q: ", query);
 			// console.log(idx, " Facets: ", f);
 
-			var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
+			//var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
 			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
 		 	// console.log("Facet Query: ", q)
-			var fr =  xhr(this.apiServer + "/" + this.dataModel + "/", {
+			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
 				method: "POST",
 				handleAs: "json",
 				data: q,
