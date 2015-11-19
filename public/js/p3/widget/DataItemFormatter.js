@@ -1083,7 +1083,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 						if (mini == false)
 						{						
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1098,7 +1098,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 						}
 						else if (value[j].mini == true)
 						{
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1183,7 +1183,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					
 					if (mini == false)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
@@ -1198,7 +1198,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					}
 					else if (column_data[i].mini == true)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
