@@ -1,11 +1,12 @@
-define("xstyle/ext/widget", ['dojo/Deferred'], function(Deferred){
+define("xstyle/ext/widget", [], function(){
 	var nextId = 0;
 	var literals = {
 		'true': true,
 		'false': false,
 		'null': null
-	};
+	}
 	function parse(value, callback, type, rule){
+		var Class, prototype;
 		if(rule){
 			var widgetCssClass = 'x-widget-' + nextId++; 
 			// create new rule for the generated elements
@@ -113,7 +114,7 @@ define("xstyle/ext/widget", ['dojo/Deferred'], function(Deferred){
 	Widget.widget = def.widget;
 	Widget.role = def.role;
 	return {
-		put: function(value, rule){
+		put: function(value, rule, name){
 			// used for a widget property:
 			//	widget: {
 			//		type: 'dijit/form/Button';
@@ -121,17 +122,12 @@ define("xstyle/ext/widget", ['dojo/Deferred'], function(Deferred){
 			//	}
 			return {
 				then: function(callback){
-					var deferred = new Deferred();
 					parse(value[0].eachProperty ? value[0] : rule, function(renderer){
-						deferred.resolve({
-							forElement: function(element){
-								renderer(element);
-							}
-						});
-					}, typeof value == 'string' && value, rule);
-					return deferred.then(callback);
+						rule.elements(renderer);
+						callback();
+					}, typeof value == "string" && value, rule); 
 				}
-			};
+			}
 		},
 		parse: parse
 		/*,

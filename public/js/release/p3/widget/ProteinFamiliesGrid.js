@@ -102,11 +102,14 @@ define("p3/widget/ProteinFamiliesGrid", [
 		},
 		createStore: function(server, token, state){
 
-			return new Store({
+			var store = new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
+			store.watch('refresh', lang.hitch(this, "refresh"));
+
+			return store;
 		}
 	});
 });

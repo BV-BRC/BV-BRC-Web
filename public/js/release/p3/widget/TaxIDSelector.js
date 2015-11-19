@@ -2,13 +2,13 @@ define("p3/widget/TaxIDSelector", [
 	"dijit/form/FilteringSelect","dojo/_base/declare",
 	"dojo/store/JsonRest","dojo/_base/lang","dojo/dom-construct",
 	"./TaxonNameSelector","dojo/on","dijit/TooltipDialog",
-	"dijit/popup"
+	"dijit/popup","../util/PathJoin"
 
 ], function(
 	FilteringSelect, declare, 
 	Store,lang,domConstr,
 	TaxonNameSelector,on,TooltipDialog,
-	popup
+	popup,PathJoin
 ){
 	
 	return declare([FilteringSelect], {
@@ -28,7 +28,7 @@ define("p3/widget/TaxIDSelector", [
 		constructor: function(){
 			var _self=this;
 			if (!this.store){
-				this.store = new Store({target: this.apiServiceUrl + "/taxonomy/", idProperty: "taxon_id", headers: {accept: "application/json", "Authorization":(window.App.authorizationToken||"")}});
+				this.store = new Store({target: PathJoin(this.apiServiceUrl,"taxonomy")+"/", idProperty: "taxon_id", headers: {accept: "application/json", "Authorization":(window.App.authorizationToken||"")}});
 			}
 
                         var orig = this.store.query;

@@ -1,5 +1,5 @@
-define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
-		function(utils, es6){
+define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/observe'],
+		function(utils, observe){
 	function Definition(computeValue){
 		// computeValue: This is function (or promise to a function) that is called to calculate
 		// the value of this definition
@@ -31,7 +31,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 					});
 					element.xcleanup = function(destroy){
 						if(destroy){
-							es6.unobserve(result, observer);
+							observe.unobserve(result, observer);
 						}
 					};
 					return result[key];
@@ -54,7 +54,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 					}
 				}
 			};
-			es6.observe(object, observer);
+			observe.observe(object, observer);
 			if(observer.addKey){
 				observer.addKey(key);
 			}
@@ -67,7 +67,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 		cache: noCacheEntry,
 		valueOf: function(){
 			// first check to see if we have the variable already computed
-			var useCache = this.dependents || this._properties;
+			var useCache = this.dependents;
 			if(useCache){
 				// TODO: use when
 				if(this.cache !== noCacheEntry){
@@ -144,7 +144,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 						if(!cacheObserve){
 							cacheObserve = parentDefinition.cacheObserve = setupObserve(parentDefinition, object, key);
 						}else if(cacheObserve.addKey){
-							// used by the es6 to setup setters
+							// used by the polyfill to setup setters
 							cacheObserve.addKey(key);
 						}
 						return object[key];
@@ -182,7 +182,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 			// TODO: there might actually be a collection of observers
 			var observer = this.cacheObserve;
 			if(observer){
-				es6.unobserve(this.cache, observer);
+				observe.unobserve(this.cache, observer);
 				this.cacheObserve = null;
 			}
 			this.cache = noCacheEntry;
@@ -199,22 +199,13 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 				}
 			}
 		},
-		dependencyOf: function(dependent){
+		depend: function(dependent){
 			(this.dependents || (this.dependents = [])).push(dependent);
 		},
-		notDependencyOf: function(dependent){
-			var dependents = this.dependents || 0;
-			for(var i = 0; i < dependents.length; i++){
-				if(dependents[i] === dependent){
-					dependents.splice(i--, 1);
-				}
-			}
-		},
 		setReverseCompute: function(reverse){
-			this.put = function(){
-				var result = reverse.apply(this, arguments);
+			this.put = function(value){
+				reverse(value);
 				this.invalidate();
-				return result;
 			};
 		},
 		setCompute: function(compute){
@@ -236,7 +227,7 @@ define("xstyle/core/Definition", ['xstyle/core/utils', 'xstyle/core/es6'],
 				listener(this.valueOf());
 			}
 			var definition = this;
-			return this.dependencyOf({
+			return this.depend({
 				invalidate: function(){
 					listener(definition.valueOf());
 				}

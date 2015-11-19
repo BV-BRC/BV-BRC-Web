@@ -667,10 +667,10 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'genes'
 			}, {
 				name : 'Significant Genes (Log Ratio)',
-				text : 'sig_log_ratio',
+				text : 'sig_log_ratio'
 			}, {
 				name : 'Significant Genes (Z Score)',
-				text : 'sig_z_score',
+				text : 'sig_z_score'
 			}, {
 				name : 'PubMed',
 				text : 'pmid',
@@ -1006,7 +1006,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var hdr_tbody = domConstruct.create("tbody",{}, hdr_table);
 			var hdr_th = domConstruct.create("tr",{},hdr_tbody);
 			var hdr_tda = domConstruct.create("td",{}, hdr_th);
-			var span = domConstruct.create("span", {class: icon_name}, hdr_tda);
+			var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
 			var hdr_tdb; 
 			
 			if (linkTitle == true)

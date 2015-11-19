@@ -2053,6 +2053,10 @@
 					 location:"../swfobject",
 					 main:"swfobject.js",
 					 name:"swfobject"
+				},
+				{
+					 location:"../phyloview",
+					 name:"phyloview"
 				}
 		]
 });require({cache:{

@@ -5,8 +5,8 @@ define('xstyle/core/base', [
 	'xstyle/core/utils',
 	'put-selector/put',
 	'xstyle/core/Rule',
-	'xstyle/core/es6'
-], function(elemental, expression, Definition, utils, put, Rule, es6){
+	'dojo/Deferred'
+], function(elemental, expression, Definition, utils, put, Rule, Deferred){
 	// this module defines the base definitions intrisincally available in xstyle stylesheets
 	var testDiv = put('div');
 	var ua = navigator.userAgent;
@@ -209,11 +209,11 @@ define('xstyle/core/base', [
 			}
 			return {
 				then: function(callback){
-					return new es6.Promise(function(resolve){
-						require([mid], function(module){
-							resolve(module);
-						});						
-					}).then(callback);
+					var deferred = new Deferred();
+					require([mid], function(module){
+						deferred.resolve(callback(module));
+					});
+					return deferred.promise;
 				}
 			};
 		}),
@@ -351,7 +351,8 @@ define('xstyle/core/base', [
 				// add listener
 				return {
 					forRule: function(rule){
-						elemental.on(document, name.charAt(2).toLowerCase() + name.slice(3), rule,
+						elemental.on(document, 
+								elemental.on.selector(rule.selector, name.charAt(2).toLowerCase() + name.slice(3)),
 								function(event){
 							currentEvent = event;
 							// execute the event listener by calling valueOf

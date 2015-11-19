@@ -192,7 +192,7 @@ define([
 
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
-		},
+		}
 
 	});
 });

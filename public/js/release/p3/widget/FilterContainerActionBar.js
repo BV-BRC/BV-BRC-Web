@@ -3,13 +3,13 @@ define("p3/widget/FilterContainerActionBar", [
 	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
 	"dijit/form/TextBox","./FacetFilter","dojo/request","dojo/on",
 	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
-	"dijit/focus"
+	"dijit/focus","../util/PathJoin"
 ], function(
 	declare, ContainerActionBar,lang,
 	domConstruct,domGeometry, domStyle,domClass,
 	Textbox, FacetFilter,xhr,on,
 	RQLParser,FilteredValueButton,Query,Deferred,
-	focusUtil
+	focusUtil,PathJoin
 ){
 
 
@@ -216,9 +216,10 @@ define("p3/widget/FilterContainerActionBar", [
 
 			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
-			var kbot = domConstruct.create("div", {style: {"margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "right"}}, keywordSearchBox)
-			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {"float": "left"}}, kbot);
-			var clear = domConstruct.create("span", {style: {"float": "right"},innerHTML: "CLEAR"}, kbot)
+			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
+			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
+			var clear = domConstruct.create("i", {"class": "fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){
@@ -517,12 +518,12 @@ define("p3/widget/FilterContainerActionBar", [
 			// console.log(idx, " q: ", query);
 			// console.log(idx, " Facets: ", f);
 
-			var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
+			//var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
 			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
 		 	// console.log("Facet Query: ", q)
-			var fr =  xhr(this.apiServer + "/" + this.dataModel + "/", {
+			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
 				method: "POST",
 				handleAs: "json",
 				data: q,
