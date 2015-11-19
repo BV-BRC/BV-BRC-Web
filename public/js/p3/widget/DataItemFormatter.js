@@ -23,8 +23,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			//console.log("Running feature_data formatter");
 			//return domConstruct.create("div", {innerHTML: "hello"});
 
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name : 'Genome Name',
 				text : 'genome_name'
 			}, {
@@ -345,6 +344,44 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/"+item.feature_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
+			return div;
+		},
+
+		"taxonomy_data": function(item, options){
+			options = options || {}
+			var featureColumns = [{
+				name : 'Taxonomy ID',
+				text : 'taxon_id'
+			}, {
+				name : 'Taxon Name',
+				text : 'taxon_name'
+			}, {
+				name : 'Taxon Rank',
+				text : 'taxon_rank'
+			}, {
+				name : 'Other Names',
+				text : 'other_names'
+			}, {
+				name : 'Lineage',
+				text : 'lineage_names'
+			}, {
+				name : 'Lineage Ranks',
+				text : 'lineage_ranks'
+			}, {
+				name : 'Lineage IDs',
+				text : 'lineage_ids'
+			},{
+				name : 'Genetic Code',
+				text : 'genetic_code'
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Createe Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			console.log("Display Detail Complete")
+			
 			return div;
 		},
 
