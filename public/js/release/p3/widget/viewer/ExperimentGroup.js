@@ -2,12 +2,12 @@ define("p3/widget/viewer/ExperimentGroup", [
 	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
 	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
 	"../Grid","../formatter","../../WorkspaceManager","dojo/_base/lang",
-	"dojo/_base/Deferred","dojo/store/JsonRest","dojo/promise/all"
+	"dojo/_base/Deferred","dojo/store/JsonRest","dojo/promise/all","../../util/PathJoin"
 ], function(
 	declare, BorderContainer, on,
 	domClass,ContentPane,domConstruct,
 	Grid,formatter,WorkspaceManager,lang,
-	Deferred,Store,All
+	Deferred,Store,All,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -116,7 +116,7 @@ define("p3/widget/viewer/ExperimentGroup", [
 		startup: function(){
 			if (this._started) {return;}
 			if (!this.store) {
-				this.store=new Store({target: window.App.dataAPI+ "/transcriptomics_experiment", header: {accept: "application/json"}});
+				this.store=new Store({target: PathJoin(window.App.dataAPI,"transcriptomics_experiment"), header: {accept: "application/json"}});
 			}
 			this.viewHeader = new ContentPane({content: "Loading Experiments...<br><br>", region: "top"});
 			this.viewer = new Grid({
@@ -127,7 +127,7 @@ define("p3/widget/viewer/ExperimentGroup", [
 					dataType: {label: "Data Type", field: "data_type"},
 					title: {label: "Title", field: "title"},
 					comparisons: {label: "Comparisons", field: "samples"},
-					genes: {label: "Genes", field: "genesTotal"},
+					genes: {label: "Genes", field: "genesTotal", formatter: function(val){ console.log("FORMAT Genes Total: ", val); return val.toString(val); }},
 					pubmed: {label: "PubMed", field: "pmid"},
 					organism: {label: "Organism", field: "organism"}
 				}

@@ -1,9 +1,11 @@
 define([
 	"dijit/form/FilteringSelect","dojo/_base/declare",
-	"dojo/store/JsonRest","dojo/_base/lang","dojo/when"
+	"dojo/store/JsonRest","dojo/_base/lang","dojo/when",
+	"../util/PathJoin"
 ], function(
 	FilteringSelect, declare, 
-	Store,lang,when
+	Store,lang,when,
+	PathJoin
 ){
 	
 	return declare([FilteringSelect], {

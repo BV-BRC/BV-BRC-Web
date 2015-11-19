@@ -219,6 +219,13 @@ define([
 				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
+
+			if (this.dataAPI){
+				if (this.dataAPI.charAt(-1)!="/"){
+					this.dataAPI = this.dataAPI + "/";
+				}
+				this.api.data = RPC(this.dataAPI,this.authorizationToken);
+			}
 /*
 			Topic.subscribe("/ActiveWorkspace", function(as){
 				console.log("SET App.activeWorkspace",as)
@@ -14095,12 +14102,14 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 				headers: {
 //					accept: "application/json",
 //					"content-type": "application/json",
+					"content-type": "application/jsonrpc+json",
 					"Authorization": token,
 					"X-Requested-With": false
 				},
 				handleAs: "json",
 				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
 			}),function(response){
+				// console.log("JSON RPC RESPONSE: ", response);
 				if (response.error){
 					return def.reject(response.error);
 				}
@@ -22421,6 +22430,33 @@ define([
 			if (evt.charOrCode==keys.ENTER) {
 				var query = this.searchInput.get('value');
 				var searchFilter = this.searchFilter.get('value');
+				if (!query){
+					return;
+				}
+
+				switch(searchFilter){
+					case "genome":
+						var parts = query.split(" ");
+						if (parts){
+							q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
+							console.log(" Mapped: ", q, "Num Parts: ", parts.length)
+
+							if (parts.length>1){
+								q = "and(" + q.join(",") + ")";
+							}else{
+								q = q[0]
+							}
+							console.log("Q: ",q)
+							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
+							this.searchInput.set("value", '');
+						}else{
+							return;
+						}
+
+					default: 
+						console.log("Do Search: ", searchFilter, query);
+				}
+
 				console.log("Do Search: ", searchFilter, query);
 			}
 		},
@@ -27423,7 +27459,7 @@ define([
 
 
 
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: true, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.actionPanel);
 			this.addChild(this.itemDetailPanel);
@@ -29958,7 +29994,7 @@ define([
 });
 },
 'xstyle/has-class':function(){
-define(['dojo/has'], function(has){
+define(["dojo/has"], function(has){
 	var tested = {};
 	return function(){
 		var test, args = arguments;
@@ -29969,14 +30005,13 @@ define(['dojo/has'], function(has){
 				var parts = test.match(/^(no-)?(.+?)((-[\d\.]+)(-[\d\.]+)?)?$/), // parse the class name
 					hasResult = has(parts[2]), // the actual has test
 					lower = -parts[4]; // lower bound if it is in the form of test-4 or test-4-6 (would be 4)
-				// if it has a range boundary, compare to see if we are in it
-				if((lower > 0 ? lower <= hasResult && (-parts[5] || lower) >= hasResult :
+				if((lower > 0 ? lower <= hasResult && (-parts[5] || lower) >= hasResult :  // if it has a range boundary, compare to see if we are in it
 						!!hasResult) == !parts[1]){ // parts[1] is the no- prefix that can negate the result
 					document.documentElement.className += ' has-' + test;
 				}
 			}
 		}
-	};
+	}
 });
 },
 'xstyle/css':function(){
@@ -29995,7 +30030,7 @@ define(["require"], function(moduleRequire){
 		var docElement = document.documentElement;
 		var testDiv = docElement.insertBefore(document.createElement(tag), docElement.firstChild);
 		testDiv.id = id;
-		var styleValue = (testDiv.currentStyle || getComputedStyle(testDiv, null) || {})[property];
+		var styleValue = (testDiv.currentStyle || getComputedStyle(testDiv, null))[property];
 		docElement.removeChild(testDiv);
  		return styleValue;
  	} 
@@ -30030,7 +30065,7 @@ define(["require"], function(moduleRequire){
 				var parser = testElementStyle('x-parse', null, 'content');
 				var sheet = styleSheetElement && 
 					(styleSheetElement.sheet || styleSheetElement.styleSheet);
-				if(parser && parser != 'none' && parser != 'normal'){
+				if(parser && parser != 'none'){
 					// TODO: wait for parser to load
 					require([eval(parser)], function(parser){
 						if(styleSheetElement){
@@ -34969,8 +35004,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			//console.log("Running feature_data formatter");
 			//return domConstruct.create("div", {innerHTML: "hello"});
 
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name : 'Genome Name',
 				text : 'genome_name'
 			}, {
@@ -34981,20 +35015,24 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'feature_type'
 			}, {
 				name : 'PATRIC ID',
-				text : 'patric_id'
+				text : 'patric_id',
+				mini :	true
 			}, {
-				name : 'Refseq Locus Tag',
+				name : 'RefSeq Locus Tag',
 				text : 'refseq_locus_tag',
-				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
+				link : 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				mini :	true
 			}, {
 				name : 'Alt Locus Tag',
 				text : 'alt_locus_tag'
 			}, {
-				name : 'Gene',
-				text : 'gene'
+				name : 'Gene Symbol',
+				text : 'gene',
+				mini :	true
 			}, {
 				name : 'Product',
-				text : 'product'
+				text : 'product',
+				mini :	true
 			}, {
 				name : 'NA Length',
 				text : 'na_length'
@@ -35030,7 +35068,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'go'
 			}, {
 				name : 'Location',
-				text : 'location'
+				text : 'location',
+				mini :	true
 			}, {
 				name : 'Segments',
 				text : 'segments'
@@ -35098,7 +35137,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {
 				name : 'Version',
-				text : '_version_'
+				text : '_version_',
+				data_hide: true
 			}, {
 				name : 'Date Inserted',
 				text : 'date_inserted'
@@ -35142,8 +35182,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/"+item.feature_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
@@ -35162,7 +35202,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				name : 'PATRIC ID',
 				text : 'patric_id'
 			}, {
-				name : 'Refseq Locus Tag',
+				name : 'RefSeq Locus Tag',
 				text : 'refseq_locus_tag',
 				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
@@ -35203,7 +35243,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				name : 'Evidence',
 				text : 'evidence'
 			}, {
-				name : 'PMID',
+				name : 'PubMed',
 				text : 'pmid',
 				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
 			}, {
@@ -35245,7 +35285,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				data_hide: true
 			}, {
 				name : 'Version',
-				text : '_version_'
+				text : '_version_',
+				data_hide: true
 			}, {
 				name : 'Date Inserted',
 				text : 'date_inserted'
@@ -35281,9 +35322,47 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/"+item.feature_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
+			return div;
+		},
+
+		"taxonomy_data": function(item, options){
+			options = options || {}
+			var featureColumns = [{
+				name : 'Taxonomy ID',
+				text : 'taxon_id'
+			}, {
+				name : 'Taxon Name',
+				text : 'taxon_name'
+			}, {
+				name : 'Taxon Rank',
+				text : 'taxon_rank'
+			}, {
+				name : 'Other Names',
+				text : 'other_names'
+			}, {
+				name : 'Lineage',
+				text : 'lineage_names'
+			}, {
+				name : 'Lineage Ranks',
+				text : 'lineage_ranks'
+			}, {
+				name : 'Lineage IDs',
+				text : 'lineage_ids'
+			},{
+				name : 'Genetic Code',
+				text : 'genetic_code'
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Createe Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			console.log("Display Detail Complete")
+			
 			return div;
 		},
 
@@ -35332,8 +35411,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.pathway_name, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/"+item.pathway_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
@@ -35380,12 +35459,310 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.family_id, "fa icon-genome-features fa-2x");
-			displayDetail(item, featureColumns, tbody);
+			var tbody = displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/"+item.family_id, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
 
+		"sequence_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Genome Name',
+				text : 'genome_name',
+				mini :	true
+			}, {
+				name : 'Genome ID',
+				text : 'genome_id'
+			}, {
+				name : 'Accession',
+				text : 'accession'
+			}, {
+				name : 'Sequence ID',
+				text : 'sequence_id',
+				link : 'http://www.ncbi.nlm.nih.gov/nuccore/',
+				mini :	true
+			}, {
+				name : 'Length',
+				text : 'length',
+				mini :	true
+			}, {
+				name : 'GC Content',
+				text : 'gc_content',
+				mini :	true
+			}, {
+				name : 'Sequence Type',
+				text : 'sequence_type'
+			}, {
+				name : 'Topology',
+				text : 'topology'
+			}, {
+				name : 'Description',
+				text : 'description'
+			}, {
+				name : 'Chromosome',
+				text : 'chromosome'
+			}, {
+				name : 'Plasmid',
+				text : 'plasmid'
+			}, {
+				name : 'GI',
+				text : 'gi',
+				link : 'http://www.ncbi.nlm.nih.gov/nuccore/'
+			}, {
+				name : 'Taxon ID',
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : 'version'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Public',
+				text : 'public'
+			}, {
+				name : 'Owner',
+				text : 'owner'
+			}, {
+				name : 'User Read',
+				text : 'user_read'
+			}, {
+				name : 'User Write',
+				text : 'user_write'
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/"+item.genome_id, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+
+		"transcriptomics_experiment_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Experiment ID',
+				text : 'eid'
+			}, {
+				name : 'EXPID',
+				text : 'expid',
+				data_hide: true
+			}, {
+				name : 'Title',
+				text : 'title'
+			}, {
+				name : 'Comparisons',
+				text : 'samples'
+			}, {
+				name : 'Genes',
+				text : 'genes'
+			}, {
+				name : 'PubMed',
+				text : 'pmid',
+				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+			}, {
+				name : 'Link Out',
+				text : 'accession',
+				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+			}, {
+				name : 'Organism',
+				text : 'organism'
+			}, {
+				name : 'Strain',
+				text : 'strain'
+			}, {
+				name : 'Gene Modification',
+				text : 'mutant'
+			}, {
+				name : 'Experimental Condition',
+				text : 'condition'
+			}, {
+				name : 'Time Series',
+				text : 'timeseries'
+			}, {
+				name : 'Platforms',
+				text : 'platforms'
+			}, {
+				name : 'Genome IDs',
+				text : 'genome_ids'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Author',
+				text : 'author'
+			}, {
+				name : 'PI',
+				text : 'pi'
+			}, {
+				name : 'Institution',
+				text : 'institution'
+			}, {
+				name : 'Description',
+				text : 'description'
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Document Type',
+				text : 'document_type',
+				data_hide: true
+			}, {
+				name : 'Document ID',
+				text : 'document_id',
+				data_hide: true			
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/"+item.eid, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+
+		"transcriptomics_sample_data": function(item, options){
+			options = options || {}
+
+			//console.log("Running spgene_data formatter");
+			//return domConstruct.create("div", {innerHTML: "hello"});
+
+			var featureColumns = {};
+			featureColumns = [{
+				name : 'Sample ID',
+				text : 'pid'
+			}, {
+				name : 'Experiment ID',
+				text : 'eid'
+			}, {
+				name : 'EXPID',
+				text : 'expid',
+				data_hide: true
+			}, {
+				name : 'Title',
+				text : 'expname'
+			}, {
+				name : 'Samples',
+				text : 'samples'
+			}, {
+				name : 'Genes',
+				text : 'genes'
+			}, {
+				name : 'Significant Genes (Log Ratio)',
+				text : 'sig_log_ratio'
+			}, {
+				name : 'Significant Genes (Z Score)',
+				text : 'sig_z_score'
+			}, {
+				name : 'PubMed',
+				text : 'pmid',
+				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+			}, {
+				name : 'Link Out',
+				text : 'accession',
+				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+			}, {
+				name : 'Organism',
+				text : 'organism'
+			}, {
+				name : 'Strain',
+				text : 'strain'
+			}, {
+				name : 'Gene Modification',
+				text : 'mutant'
+			}, {
+				name : 'Experimental Condition',
+				text : 'condition'
+			}, {
+				name : 'Time Point',
+				text : 'timepoint'
+			}, {
+				name : 'Channels',
+				text : 'channels'
+			}, {
+				name : 'Platform',
+				text : 'platform'
+			}, {
+				name : 'Genome IDs',
+				text : 'genome_ids'
+			}, {
+				name : 'Release Date',
+				text : 'release_date'
+			}, {
+				name : 'Exp Mean',
+				text : 'expmean',
+				data_hide: true
+			}, {
+				name : 'Exp Stddev',
+				text : 'expstddev',
+				data_hide: true
+			}, {
+				name : 'text',
+				text : 'text',
+				data_hide: true
+			}, {
+				name : 'Version',
+				text : '_version_',
+				data_hide: true
+			}, {
+				name : 'Date Inserted',
+				text : 'date_inserted'
+			}, {
+				name : 'Date Modified',
+				text : 'date_modified'
+			}, {
+				name : 'Document Type',
+				text : 'document_type',
+				data_hide: true
+			}, {
+				name : 'Document ID',
+				text : 'document_id',
+				data_hide: true			
+			}];
+
+			var div = domConstruct.create("div");			
+			var tbody = displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/"+item.pid, options);
+			displayDetail(item, featureColumns, tbody, options);
+
+			return div;
+		},
+		
 		"genome_data": function(item, options){
 			// do some other type formatting here and return it
 			//console.log("Running genome_data formatter");
@@ -35396,17 +35773,20 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var metadataGenomeSummaryValue = {};
 			metadataGenomeSummaryValue['Organism Info'] = [{
 				name : 'Genome ID',
-				text : 'genome_id'
+				text : 'genome_id',
+				mini :	true
 			}, {
 				name : 'Genome Name',
-				text : 'genome_name'
+				text : 'genome_name',
+				mini :	true
 			}, {
 				name : 'NCBI Taxon ID',
 				text : 'taxon_id',
 				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='								
 			}, {
 				name : 'Genome Status',
-				text : 'genome_status'
+				text : 'genome_status',
+				mini :	true
 			}, {
 				name : 'Organism Name',
 				text : 'organism_name'
@@ -35455,11 +35835,13 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}, {
 				name : 'BioProject Accession',
 				text : 'bioproject_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/bioproject/?term='
+				link : 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
+				mini :	true
 			}, {
 				name : 'BioSample Accession',
 				text : 'biosample_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/biosample/'
+				link : 'http://www.ncbi.nlm.nih.gov/biosample/',
+				mini :	true
 			}, {
 				name : 'Assembly Accession',
 				text : 'assembly_accession',
@@ -35611,21 +35993,31 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 	
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x");
+			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/"+item.genome_id, options);
 
 			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + item.chromosomes + ", Plasmids: " + item.plasmids + ", Contigs: " + item.contigs;
 			var tr = domConstruct.create("tr", {},tbody);
 			var tda = domConstruct.create("td", {innerHTML: "Summary:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
 			var tdb = domConstruct.create("td", {innerHTML: summary}, tr);
 
-			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody);
+			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody, options);
 
 			return div;
 
 		}	
 	}
 
-	function displayHeader(div, item_name, icon_name) {
+	function displayHeader(div, item_name, icon_name, url, options) {
+			var linkTitle = false;
+			if (options)
+			{
+				if (options.linkTitle == true)
+				{
+					linkTitle = true;
+				}
+			}
+			//console.log("url=" + url + ", linkTitle=" + linkTitle);
+	
 			var hdr_div = domConstruct.create("div", {}, div);
 
 			var hdr_table = domConstruct.create("table", {} , div);
@@ -35633,7 +36025,16 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var hdr_th = domConstruct.create("tr",{},hdr_tbody);
 			var hdr_tda = domConstruct.create("td",{}, hdr_th);
 			var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
-			var hdr_tdb = domConstruct.create("td",{innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			var hdr_tdb; 
+			
+			if (linkTitle == true)
+			{
+				hdr_tdb = domConstruct.create("td",{innerHTML: "<a href='" + url + "'>" + item_name + "</a>", style: "font-weight: bold"}, hdr_th);
+			}
+			else
+			{
+				hdr_tdb= domConstruct.create("td",{innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			}
 
 			var dtl_div = domConstruct.create("div", {}, div);
 			var table = domConstruct.create("table", {} , dtl_div);
@@ -35646,52 +36047,87 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return tbody;		
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, tbody) {	
+	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options) {	
 			var diaplayColumns = {};
 			var tr;
 			var tda;
 			var tdb;
 
+			var mini = false;
+			var hideExtra = false;
+			
+			if (options)
+			{
+				if (options.mini == true)
+				{
+					mini = true;
+				}
+				if (options.hideExtra == true)
+				{
+					hideExtra = true;
+				}
+			}
+			
 			for(var i=0; i< meta_data_section.length; i++)
 			{
-				tr = domConstruct.create("tr", {},tbody);
-				tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-				tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+				if (mini == false)
+				{
+					tr = domConstruct.create("tr", {},tbody);
+					tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+					tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 
-				tr = domConstruct.create("tr", {},tbody);
-				tda = domConstruct.create("td", {innerHTML: meta_data_section[i]+":", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-				tdb = domConstruct.create("td", {innerHTML: ""}, tr);
-				
+					tr = domConstruct.create("tr", {},tbody);
+					tda = domConstruct.create("td", {innerHTML: meta_data_section[i]+":", style: "font-weight: bold", nowrap: "nowrap" }, tr);
+					tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+				}				
 
 				var value = meta_data[meta_data_section[i]];
 
 				for(var j=0; j<value.length; j++) {
 					var column = value[j].text;
-					console.log("column=", column);
-					console.log("item[column]=", item[column]);
+					//console.log("column=", column);
+					//console.log("item[column]=", item[column]);
 					
 					if (column)
 					{
 						diaplayColumns[column] = 1;
 					}
-					
-					if (column && item[column])
+										
+					if (column && (item[column] || item[column] == "0"))
 					{
 						//console.log("column=", column);
 						//console.log("item[column]=", item[column]);
 						//console.log("value[j].name=", value[j].name);
-						
-						if (value[j].link && item[column] != "-")
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+
+						if (mini == false)
+						{						
+							if (value[j].link && item[column] != "-")
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							}
+							else
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							}
 						}
-						else
+						else if (value[j].mini == true)
 						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							if (value[j].link && item[column] != "-")
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							}
+							else
+							{
+								tr = domConstruct.create("tr",{},tbody);
+								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
+								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+							}						
 						}
 					}
 				}
@@ -35702,62 +36138,96 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 			var additional = 0;
 			
-			Object.keys(item).sort().forEach(function(key){
-				if (diaplayColumns[key] != 1 && item[key])
-				{
-					if (additional ==0)
-					{
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-					
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
-					}
-					additional ++;
-					tr = domConstruct.create("tr",{},tbody)
-					tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-					tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-				}
-			},this);
+			if (hideExtra == false && mini == false)
+			{	 
 			
+				Object.keys(item).sort().forEach(function(key){
+					if (diaplayColumns[key] != 1 && item[key])
+					{
+						if (additional ==0)
+						{
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+					
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+						}
+						additional ++;
+						tr = domConstruct.create("tr",{},tbody)
+						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
+						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
+					}
+				},this);
+			}
 	}	
 
 
-	function displayDetail(item, column_data, tbody) {	
+	function displayDetail(item, column_data, tbody, options) {	
 			var diaplayColumns = {};
 			var tr;
 			var tda;
 			var tdb;
+			var mini = false;
+			var hideExtra = false;
+			
+			if (options)
+			{
+				if (options.mini == true)
+				{
+					mini = true;
+				}
+				if (options.hideExtra == true)
+				{
+					hideExtra = true;
+				}
+			}
 
 			for(var i=0; i<column_data.length; i++) {
 				var column = column_data[i].text;
-				console.log("column_data.length=" + column_data.length + " column=", column);
-				console.log("item[column]=", item.column);
+				//console.log("column_data.length=" + column_data.length + " column=", column);
+				//console.log("item[column]=", item.column);
 			
 				if (column) 
 				{
 					diaplayColumns[column] = 1;
 				}		
 				
-				if (column && item[column] && !column_data[i].data_hide)
+				if (column && (item[column] || item[column] == "0") && !column_data[i].data_hide)
 				{
 					//console.log("column=", column);
 					//console.log("item[column]=", item[column]);
 					
-					
-					if (column_data[i].link && item[column] != "-")
+					if (mini == false)
 					{
-						tr = domConstruct.create("tr",{},tbody);
-						tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						if (column_data[i].link && item[column] != "-")
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						}
+						else
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						}
 					}
-					else
+					else if (column_data[i].mini == true)
 					{
-						tr = domConstruct.create("tr",{},tbody);
-						tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						if (column_data[i].link && item[column] != "-")
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						}
+						else
+						{
+							tr = domConstruct.create("tr",{},tbody);
+							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
+							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						}
 					}
 				}
 				
@@ -35765,33 +36235,55 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			
 			var additional = 0;
 			console.log("diaplayColumns=", diaplayColumns);
-		
-			Object.keys(item).sort().forEach(function(key){
-				if (diaplayColumns[key] != 1 && item[key])
-				{
-					if (additional ==0)
+			
+			if (hideExtra == false && mini == false)
+			{	 
+				Object.keys(item).sort().forEach(function(key){
+					if (diaplayColumns[key] != 1 && item[key])
 					{
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+						if (additional ==0)
+						{
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 					
-						tr = domConstruct.create("tr", {},tbody);
-						tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+							tr = domConstruct.create("tr", {},tbody);
+							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
+						}
+						additional ++;
+						tr = domConstruct.create("tr",{},tbody)
+						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
+						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
 					}
-					additional ++;
-					tr = domConstruct.create("tr",{},tbody)
-					tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-					tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-				}
-			},this);												
+				},this);
+			}												
 	}
 	
 	return function(item, type, options) {
 		console.log("Format Data: ", type, item);
+		var new_type = type;
 		var out;
-		if (type && formatters[type]) {
-			out = formatters[type](item,options)
+		if (type == "genome_group")
+		{
+			new_type = "genome_data";		
+		}
+		else if (type == "feature_group")
+		{
+			new_type = "feature_data";				
+		}
+		else if (type == "experiment")
+		{
+			new_type = "transcriptomics_sample_data";				
+		}
+		/*
+		else if (type == "experiment_group")
+		{
+			new_type = "transcriptomics_experiment_data";				
+		}
+		*/
+		if (new_type && formatters[new_type]) {
+			out = formatters[new_type](item,options)
 		}else{
 			out = formatters["default"](item,options);
 		}
@@ -38549,6 +39041,14 @@ return sorter;
 },
 'p3/widget/viewer/GenomeList':function(){
 define([
+        "dojo/_base/declare", "./_GenomeList"
+], function(declare, GenomeList) {
+        return declare([GenomeList], {});
+});
+
+},
+'p3/widget/viewer/_GenomeList':function(){
+define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/_base/lang",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct", "dojo/topic",
 	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
@@ -38556,7 +39056,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer"
+	"../SequenceGridContainer","../../util/PathJoin"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -38564,12 +39064,12 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer){
+			SequenceGridContainer,PathJoin){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 5000,
 		totalGenomes: 0,
-
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set (5000 Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -38583,7 +39083,7 @@ define([
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = this.apiServiceUrl + "/genome/?" + (this.query) + "&select(genome_id)&limit(5000)";
+			var url = PathJoin(this.apiServiceUrl,"genome","?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
 			console.log("url: ", url);
 			xhr.get(url, {
@@ -38634,8 +39134,8 @@ define([
 			}
 			
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// if (active=="genomes"){ this.setActivePanelState() };
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			if (active=="genomes"){ this.setActivePanelState() };
 
 			this.inherited(arguments);
 		},
@@ -38643,13 +39143,13 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = "Genome List Query: " + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active: ", active);
+			console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -38675,7 +39175,7 @@ define([
 					var activeQueryState;
 					if (this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "?in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
 						console.log("Active Query State: ", activeQueryState);
 
@@ -38800,11 +39300,13 @@ define([
 				this.removeChild(this.warningPanel);
 			}
 		},
+
+
 		showWarning: function(msg){
 			if(!this.warningPanel){
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">Your genome list is too large to view all of the supplemental data.  Filter the genomes and then press the Anchor button to enable the disabled tabs.</div>',
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -38874,25 +39376,43 @@ define([
 		"query": null,
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
-
+		defaultTab: "overview",
 		onSetState: function(attr, oldState, state) {
+			console.log("TabViewerBase onSetState()", state);
 			if (!state) {
 				return;
 			}
 
+			console.log("    Cal setActivePanelState");
 			this.setActivePanelState();
+			if (!state.hashParams){
+				if (oldState.hashParams && oldState.hashParams.view_tab){
+					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
+				}else{
+					state.hashParams = {"view_tab": this.defaultTab}
+				}
+			}
+			console.log("    Check for Hash Params: ", state.hashParams)
+			if (state.hashParams){
+			    if (!state.hashParams.view_tab){
+			    	state.hashParams.view_tab=this.defaultTab;
+			    }
 
-			if (state.hashParams && state.hashParams.view_tab) {
+			    console.log("Looking for Active Tab: ", state.hashParams.view_tab)
+
 				if (this[state.hashParams.view_tab]) {
 					var vt = this[state.hashParams.view_tab];
+					console.log("Found View Tab")
 					vt.set("visible", true);
+					console.log("Select View Tab")
 					this.viewer.selectChild(vt);
-				}
-				else {
+				}else {
 					console.log("No view-tab supplied in State Object");
 				}
 			}
 		},
+
+		setActivePanelState: function(){},
 
 		postCreate: function() {
 			this.inherited(arguments);
@@ -53951,6 +54471,7 @@ define([
 		filter: "",
 		maxGenomeCount: 5000,
 		dataModel: "genome_feature",
+		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
 		},
@@ -54040,6 +54561,7 @@ define([
 		design: "headline",
 		facetFields: [],
 		enableFilterPanel: true,
+		defaultFilter: "",
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			this._firstView = false;
@@ -54056,7 +54578,7 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state){
-			console.log("GridContainer onSetState: ", state);
+			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;
@@ -54068,9 +54590,37 @@ define([
 			}
 
 			if(state.hashParams){
+				console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
+					console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
+				}else if (!oldState && this.defaultFilter){
+					console.log("       No original state, using default Filter");
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', state);
+					return;
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					console.log("       Found oldState with hashparams.filter, using");
+					state.hashParams.filter = oldState.hashParams.filter;
+					this.set('state',state);
+					return;
+				}else if (this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', state);
+					return;
+				}else{
+					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+
 				}
+			}else{
+				state.hashParams={}
+				if (!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter
+				}
+				this.set('state', state);
+				return;
 			}
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
@@ -54148,8 +54698,39 @@ define([
 					}
 				},
 				true
-			],
-			[
+			],[
+				"ViewFeatureItem",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "VIEW",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Feature",
+					validContainerTypes: ["feature_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+				}, 
+				false	
+			],[
+				"ViewGenomeItem",
+				"MultiButton fa icon-genome fa-2x", 
+				{
+					label: "GENOME",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Genome",
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					console.log("sel: ", sel)
+					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				}, 
+				false
+			],[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -54168,25 +54749,6 @@ define([
 						orient: ["below"]
 					});
 				},
-				false
-			]
-
-			,[
-				"ViewGenomeItem",
-				"MultiButton fa icon-genome fa-2x", 
-				{
-					label: "GENOME",
-					validTypes:["*"],
-					multiple: false,
-					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
-				},
-				function(selection){
-					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
 				false
 			],[
 				"MultipleSeqAlignment",
@@ -54424,13 +54986,13 @@ define([
 	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
 	"dijit/form/TextBox","./FacetFilter","dojo/request","dojo/on",
 	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
-	"dijit/focus"
+	"dijit/focus","../util/PathJoin"
 ], function(
 	declare, ContainerActionBar,lang,
 	domConstruct,domGeometry, domStyle,domClass,
 	Textbox, FacetFilter,xhr,on,
 	RQLParser,FilteredValueButton,Query,Deferred,
-	focusUtil
+	focusUtil,PathJoin
 ){
 
 
@@ -54637,9 +55199,14 @@ define([
 
 			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
-			var kbot = domConstruct.create("div", {style: {"margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "right"}}, keywordSearchBox)
-			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {"float": "left"}}, kbot);
-			var clear = domConstruct.create("span", {style: {"float": "right"},innerHTML: "CLEAR"}, kbot)
+			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
+			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
+			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+
+			on(clear,"click", lang.hitch(this,function(){
+				this.keywordSearch.set('value','');
+			}))
+			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){
@@ -54647,6 +55214,11 @@ define([
 				// console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
 				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
 				// console.log("WOULD EMIT: keywords : ", val);
+				if (val){
+					domClass.remove(clear,"dijitHidden");
+				}else{
+					domClass.add(clear,"dijitHidden");
+				}
 				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: val});
 			}));
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
@@ -54938,12 +55510,12 @@ define([
 			// console.log(idx, " q: ", query);
 			// console.log(idx, " Facets: ", f);
 
-			var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
+			//var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
 			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
 		 	// console.log("Facet Query: ", q)
-			var fr =  xhr(this.apiServer + "/" + this.dataModel + "/", {
+			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
 				method: "POST",
 				handleAs: "json",
 				data: q,
@@ -55334,6 +55906,37 @@ define([
 });
 
 },
+'p3/util/PathJoin':function(){
+define([], function(){
+
+  return function(/* path segments */) {
+      console.log("JOIN PATH PARTS: ", arguments);
+      // Split the inputs into a list of path commands.
+      var parts = [];
+
+      for (var i = 0, l = arguments.length; i < l; i++) {
+        console.log("arguments[i]",i, arguments[i]);
+        if (arguments[i]) {
+          if (typeof arguments[i] != 'string'){
+            arguments[i]=arguments[i].toString();
+          }
+          if (arguments[i].charAt(0) == "/"){
+            arguments[i] = arguments[i].substr(1);
+          }
+          if (arguments[i].charAt(arguments[i].length-1) == "/"){
+            arguments[i] = arguments[i].substr(0,arguments[i].length-1);
+          }
+          parts.push(arguments[i]);
+        }
+      }
+      var out = parts.join('/');
+      console.log("OUT: ", out);
+
+      return out;
+  }
+});
+
+},
 'p3/widget/FeatureGrid':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
@@ -55422,11 +56025,11 @@ define([
 define([
 		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang"],
+		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"],
 	function(declare, Grid, Store, DijitRegistry, Pagination,
 			 Keyboard, Selection, formatter, ColumnResizer,
 			 ColumnHider, DnD, DnDSource,
-			 Deferred, aspect, lang) {
+			 Deferred, aspect, lang,PathJoin) {
 		return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
 			constructor: function() {
 				this.dndParams.creator = lang.hitch(this, function(item, hint) {
@@ -55507,7 +56110,7 @@ define([
 			createStore: function(dataModel, pk, token) {
 				// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
 				var store = new Store({
-					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/", idProperty: pk, headers: {
+					target: PathJoin((this.apiServer ? (this.apiServer) : ""),dataModel) + "/", idProperty: pk, headers: {
 						"accept": "application/json",
 						"content-type": "application/json",
 						'X-Requested-With': null,
@@ -55519,6 +56122,7 @@ define([
 			}
 		});
 	});
+
 },
 'dgrid/extensions/Pagination':function(){
 define(["../_StoreMixin", "dojo/_base/declare", "dojo/_base/array", "dojo/_base/lang", "dojo/_base/Deferred",
@@ -56491,7 +57095,12 @@ define([
 	return declare([Store, Evented], {
 		constructor: function(options) {
 			// console.log("P3JsonRest Options", options);
-			this.target = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") + "/" + this.dataModel + "/";
+			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+			if (baseUrl.charAt(-1)!=="/"){
+				baseUrl = baseUrl + "/";
+			}
+
+			this.target = baseUrl + this.dataModel + "/";
             this.headers = {
                 "accept": "application/json",
               //  "//content-type": "application/json",
@@ -56601,11 +57210,11 @@ define([
 	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
 	"dojo/request", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
-	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter"
+	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter","../util/PathJoin"
 ], function(declare, on, Deferred,
 			domClass, domConstruct,WidgetBase,
 			xhr, lang, domAttr,Query,
-			domGeometry,domStyle,FacetFilter) {
+			domGeometry,domStyle,FacetFilter,PathJoin) {
 
 
     function parseFacetCounts(facets){
@@ -56638,7 +57247,7 @@ define([
 				var f = "&facet(" + this.facetFields.map(function(field){
 					return "(field," + field + ")"
 				}).join(",") + ",(mincount,1))";
-				var url = this.apiServer + "/" + this.dataModel + "/" + query + "&limit(1)" + f;
+				var url = PathJoin(this.apiServer,this.dataModel, query + "&limit(1)" + f);
 				console.log("URL", url)
 
 				return xhr.get(url, {
@@ -56948,6 +57557,7 @@ define([
 			}
 	})
 });
+
 },
 'p3/widget/SpecialtyGeneGridContainer':function(){
 define([
@@ -57435,14 +58045,14 @@ define([
 define([
 		"dojo/_base/declare", "dgrid/OnDemandGrid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang"
+		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang
+		Deferred, aspect, lang,PathJoin
 	) {
 		return declare([Grid, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
 			constructor: function() {
@@ -57540,7 +58150,7 @@ define([
 				console.log("Create Store for ", dataModel, " at ", this.apiServer);
 
 				var store = new Store({
-					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
+					target: PathJoin((this.apiServer ? (this.apiServer) : ""), dataModel) + "/",
 					idProperty: "rownum",
 					headers: {
 						"accept": "application/json",
@@ -57561,6 +58171,7 @@ define([
 		});
 
 	});
+
 },
 'dgrid/OnDemandGrid':function(){
 define(["dojo/_base/declare", "./Grid", "./OnDemandList"], function(declare, Grid, OnDemandList){
@@ -58718,11 +59329,13 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"dijit/layout/ContentPane", "dojo/topic"
+	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
+	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ContentPane, Topic){
+			ContentPane, Topic, RadioButton, domConstruct,
+			TextArea, TextBox, Button){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -58731,12 +59344,12 @@ define([
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			if(this.proteinFamiliesGrid){
-				this.proteinFamiliesGrid.set('state', state);
-			}
+			//if(this.proteinFamiliesGrid){
+			//	this.proteinFamiliesGrid.set('state', state);
+			//}
 
 			if(this.filterPanelGrid){
-				this.filterPanelGrid.set('query', 'in(genome_id,(' + state.genome_ids + '))');
+				this.filterPanelGrid.set('state', state);
 			}
 			this._set('state', state);
 		},
@@ -58769,10 +59382,143 @@ define([
 				splitter: true
 			});
 
+			var familyTypePanel = new ContentPane({
+				region: "top"
+			});
+			// plfam
+			var rb_plfam = new RadioButton({
+				name: "familyType",
+				value: "plfam"
+			});
+			rb_plfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "plfam")
+			});
+			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
+			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
+
+			// pgfam
+			var rb_pgfam = new RadioButton({
+				name: "familyType",
+				value: "pgfam"
+			});
+			rb_pgfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "pgfam")
+			});
+			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
+			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
+
+			// figfam
+			var rb_figfam = new RadioButton({
+				name: "familyType",
+				value: "figfam",
+				checked: true
+			});
+			rb_figfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "figfam")
+			});
+			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
+			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
+
+			filterPanel.addChild(familyTypePanel);
+
+			// genome list grid
 			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
 				state: this.state
 			});
 			filterPanel.addChild(this.filterPanelGrid);
+
+			//// other filter items
+			var otherFilterPanel = new ContentPane({
+				region: "bottom"
+			});
+			var ta_keyword = new TextArea({
+				style: "width:215px; min-height:75px"
+			});
+			var label_keyword = domConstruct.create("label", {innerHTML:"Filter by one or more keywords"});
+			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
+			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
+
+			//
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var rb_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "perfect"
+			});
+			rb_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
+			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_non_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "non_perfect"
+			});
+			rb_non_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
+			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_all_match = new RadioButton({
+				name: "familyMatch",
+				value: "all_match",
+				checked: true
+			});
+			rb_all_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
+			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
+
+			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
+			var tb_num_protein_family_min = new TextBox({
+				name: "numProteinFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_protein_family_max = new TextBox({
+				name: "numProteinFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place(label_num_protein_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
+			var tb_num_genome_family_min = new TextBox({
+				name: "numGenomeFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_genome_family_max = new TextBox({
+				name: "numGenomeFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_num_genome_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			var btn_submit = new Button({
+				label: "Filter"
+			});
+			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			filterPanel.addChild(otherFilterPanel);
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
@@ -58789,7 +59535,12 @@ define([
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new ProteinFamiliesHeatmapContainer({title: "Heatmap", content: "heatmap"});
+			this.heatmap = new ProteinFamiliesHeatmapContainer({
+				title: "Heatmap",
+				content: "heatmap",
+				dataGridContainer: this.proteinFamiliesGrid,
+				filterGrid: this.filterPanelGrid
+			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
@@ -59019,6 +59770,793 @@ define([
 		},
 		createStore: function(server, token, state){
 
+			var store = new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: state || this.state
+			});
+			store.watch('refresh', lang.hitch(this, "refresh"));
+
+			return store;
+		}
+	});
+});
+
+},
+'p3/store/ProteinFamiliesMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/request",
+	"dojo/store/Memory", "dojo/store/util/QueryResults",
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
+	"dojo/topic", "./HeatmapDataTypes"
+], function(declare, request,
+			Memory, QueryResults,
+			when, lang, Stateful, Deferred,
+			Topic){
+	return declare([Memory, Stateful], {
+		baseQuery: {},
+		apiServer: window.App.dataServiceURL,
+		idProperty: "family_id",
+		state: null,
+		params: {
+			familyType: 'figfam'
+		},
+
+		/*onSetState: function(attr, oldVal, state){
+			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids, state.genomeFilterStatus);
+			var cur = (this.genome_ids || []).join("");
+			var next = (state.genome_ids || []).join("");
+			if(cur != next){
+				this.set("genome_ids", state.genome_ids || []);
+				this._loaded = false;
+				delete this._loadingDeferred;
+			}
+
+		},*/
+		constructor: function(options){
+			this._loaded = false;
+			this.genome_ids = [];
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+			//this.watch('state', lang.hitch(this, 'onSetState'));
+
+			var self = this;
+
+			Topic.subscribe("ProteinFamilies", function(){
+				//console.log("received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "genomeIds":
+						self.genome_ids = value;
+						self.reload();
+						break;
+					case "familyType":
+						self.params.familyType = value;
+						self.reload();
+						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
+						break;
+					case "genomeFilter":
+						self.genomeFilter(value);
+						Topic.publish("ProteinFamiliesHeatmap", "refresh");
+						break;
+					default:
+						break;
+				}
+			});
+		},
+		genomeFilter: function(gfs){
+			var self = this;
+			if(self._filtered == undefined){ // first time
+				self._filtered = true;
+				self._original = this.query("", {});
+			}
+			var data = self._original;
+			var newData = [];
+
+			var tsStart = window.performance.now();
+			data.forEach(function(family){
+
+				var skip = false;
+
+				Object.keys(gfs).forEach(function(genomeId){
+					var index = gfs[genomeId].getIndex();
+					var status = gfs[genomeId].getStatus();
+					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index*2+1), 16));
+					if(status == 1 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) > 0){
+						skip = true;
+					}
+					else if(status == 0 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) == 0){
+						skip = true;
+					}
+				});
+				if(!skip){
+					newData.push(family);
+				}
+			});
+			console.log("genomeFilter took " + (window.performance.now() - tsStart) + " ms");
+
+			self.setData(newData);
+			self.set("refresh");
+		},
+		reload: function(){
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			query = query || {};
+			//console.warn("query: ", query, opts);
+			if(opts.sort == undefined){
+				opts.sort = [{attribute: "family_id", descending: false}];
+			}
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				var qr = QueryResults(when(this.loadData(), function(){
+					results = _self.query(query, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+
+			var state = this.state || {};
+
+			if(!this.genome_ids || this.genome_ids.length < 1){
+				console.log("No Genome IDS, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					this._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+
+			}
+
+			var familyType = this.params.familyType;
+			var familyId = familyType + '_id';
+
+			var query = {
+				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
+				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
+				//fq: "figfam_id:(FIG01956050)",
+				rows: 0,
+				facet: true,
+				'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
+			};
+			var q = Object.keys(query).map(function(p){
+				return p + "=" + query[p]
+			}).join("&");
+
+			var _self = this;
+
+			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+				},
+				data: q
+			}), function(response){
+				//console.warn(response);
+				if(response.facets.count == 0){
+					// data is not available
+					_self.setData([]);
+					_self._loaded = true;
+					return true;
+				}
+				var familyStat = response.facets.stat.buckets;
+
+				var familyIdList = [];
+				familyStat.forEach(function(element){
+					if(element.val != ""){
+						familyIdList.push(element.val);
+					}
+				});
+
+				// sub query - genome distribution
+				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
+
+				console.log("Do Second Request to /genome_feature/");
+				return when(request.post(_self.apiServer + '/genome_feature/', {
+					handleAs: 'json',
+					headers: {
+						'Accept': "application/solr+json",
+						'Content-Type': "application/solrquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					},
+					data: query
+				}), function(response){
+
+					return when(request.post(_self.apiServer + '/protein_family_ref/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/solr+json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						},
+						data: {
+							q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
+							rows: 1000000
+						}
+					}), function(res){
+						var genomeFamilyDist = response.facets.stat.buckets;
+						var familyGenomeCount = {};
+						var familyGenomeIdCountMap = {};
+						var familyGenomeIdSet = {};
+						var genomePosMap = {};
+						_self.genome_ids.forEach(function(genomeId, idx){
+							genomePosMap[genomeId] = idx;
+						});
+
+						window.performance.mark('mark_start_stat1');
+						genomeFamilyDist.forEach(function(genome){
+							var genomeId = genome.val;
+							var genomePos = genomePosMap[genomeId];
+							var familyBuckets = genome.families.buckets;
+
+							familyBuckets.forEach(function(bucket){
+								var familyId = bucket.val;
+								if(familyId != ""){
+									var genomeCount = bucket.count.toString(16);
+									if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
+
+									if(familyId in familyGenomeIdCountMap){
+										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
+									}
+									else{
+										var genomeIdCount = new Array(_self.genome_ids.length).fill('00');
+										genomeIdCount[genomePos] = genomeCount;
+										familyGenomeIdCountMap[familyId] = genomeIdCount;
+									}
+
+									if(familyId in familyGenomeIdSet){
+										familyGenomeIdSet[familyId].push(genomeId);
+									}
+									else{
+										var genomeIds = new Array(_self.genome_ids.length);
+										genomeIds.push(genomeId);
+										familyGenomeIdSet[familyId] = genomeIds;
+									}
+								}
+							});
+						});
+
+						window.performance.mark('mark_end_stat1');
+						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
+
+						window.performance.mark('mark_start_stat2');
+						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
+							var hashSet = {};
+							familyGenomeIdSet[familyId].forEach(function(value){
+								hashSet[value] = true;
+							});
+							familyGenomeCount[familyId] = Object.keys(hashSet).length;
+						});
+
+						window.performance.mark('mark_end_stat2');
+						window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
+
+						window.performance.mark('mark_start_stat3');
+
+						var familyRefHash = {};
+						res.response.docs.forEach(function(el){
+							if(!(el.family_id in familyRefHash)){
+								familyRefHash[el.family_id] = el.family_product;
+							}
+						});
+						window.performance.mark('mark_end_stat3');
+						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
+
+						window.performance.mark('mark_start_stat4');
+						//var data = new Array(Object.keys(familyRefHash).length);
+						var data = [];
+						familyStat.forEach(function(element){
+							var familyId = element.val;
+							if(familyId != ""){
+								var featureCount = element.count;
+								var std = 0;
+								if(featureCount > 1){
+									var sumSq = element.ss || 0;
+									var sum = element.sum || 0;
+									var realSq = sumSq - (sum * sum) / featureCount;
+									std = Math.sqrt(realSq / (featureCount - 1));
+								}
+
+								var row = {
+									family_id: familyId,
+									feature_count: featureCount,
+									genome_count: familyGenomeCount[familyId],
+									aa_length_std: std,
+									aa_length_max: element.aa_length_max,
+									aa_length_mean: element.aa_length_mean,
+									aa_length_min: element.aa_length_min,
+									description: familyRefHash[familyId],
+									genomes: familyGenomeIdCountMap[familyId].join("")
+								};
+								data.push(row);
+							}
+						});
+						window.performance.mark('mark_end_stat4');
+						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
+						// console.log(data);
+
+						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
+
+						var measures = window.performance.getEntriesByType('measure');
+						for(var i = 0, len = measures.length; i < len; ++i){
+							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
+						}
+						_self.setData(data);
+						_self._loaded = true;
+						return true;
+					}, function(err){
+						console.log("Error in ProteinFamiliesStore: ", err)
+					});
+				});
+			});
+			return this._loadingDeferred;
+		},
+
+		getHeatmapData: function(filterStore){
+
+			var rows = [];
+			var cols = [];
+			var keeps = [];
+			var colorStop = [];
+
+			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
+				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
+
+				for(j = 0; j < keeps.length; j++){
+					pick = keeps[j];
+					iSend += intensity.charAt(pick);
+					++pick;
+					iSend += intensity.charAt(pick);
+
+					iSendDecimal = parseInt(intensity.charAt(pick - 1) + intensity.charAt(pick), 16);
+
+					if(maxIntensity <= iSendDecimal){
+						maxIntensity = iSendDecimal;
+					}
+				}
+
+				labelColor = ((i % 2) == 0) ? 0x000066 : null;
+				columnColor = ((i % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+
+				cols[i] = new Column(i, groupId, family.description, iSend, labelColor, columnColor, meta);
+
+				return maxIntensity;
+			}
+
+			// rows - genomes
+			filterStore.data.forEach(function(genome, idx){
+				var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+				if(gfs.getStatus() != '1'){
+					keeps.push(2 * gfs.getIndex());
+					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+
+					rows.push(new Row(gfs.getIndex(), genome.genome_id, genome.genome_name, labelColor, rowColor));
+
+					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
+				}
+			});
+
+			// cols - families
+			//console.warn(this);
+			var maxIntensity = 0;
+			var data = this.query("", {});
+			//console.log(data);
+			data.forEach(function(family, idx){
+				var meta = {
+					'instances': family.feature_count,
+					'members': family.genome_count,
+					'min': family.aa_length_min,
+					'max': family.aa_length_max
+				};
+				maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
+			});
+
+			// colorStop
+			if(maxIntensity == 1){
+				colorStop = [new ColorStop(1, 0xfadb4e)];
+			}else if(maxIntensity == 2){
+				colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
+			}else if(maxIntensity >= 3){
+				colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
+			}
+
+			//console.log(rows, cols, colorStop);
+
+			return {
+				'rows': rows,
+				'columns': cols,
+				'colorStops': colorStop,
+				'rowLabel': 'Genomes',
+				'colLabel': 'Protein Families',
+				'rowTrunc': 'mid',
+				'colTrunc': 'end',
+				'offset': 1,
+				'digits': 2,
+				'countLabel': 'Members',
+				'negativeBit': false,
+				'cellLabelField': '',
+				'cellLabelsOverrideCount': false,
+				'beforeCellLabel': '',
+				'afterCellLabel': ''
+			};
+		}
+	});
+});
+},
+'p3/store/HeatmapDataTypes':function(){
+define([], function()
+{
+	//function DataSet(/* array */rows, /* array */columns, rowTrunc, colTrunc, rowLabel, colLabel, /* array */colorStops, digits, offset, negativeBit, /* array */rTree, /* array */cTree){
+	//	this.rows = rows;
+	//	this.columns = columns;
+	//	this.rowTrunc = rowTrunc;
+	//	this.colTrunc = colTrunc;
+	//	this.rowLabel = rowLabel;
+	//	this.colLabel = colLabel;
+	//	//this.countLabel = countLabel;
+	//	this.offset = offset;
+	//	this.digits = digits;
+	//	this.negativeBit = negativeBit;
+	//	this.rowTree = rTree;
+	//	this.colTree = cTree;
+	//	this.colorStops = colorStops;
+	//
+	//	this.cellLabelField = "";
+	//	this.cellLabelsOverrideCount = false;
+	//	this.beforeCellLabel = "";
+	//	this.afterCellLabel = "";
+	//}
+
+// Creates a color stop to give to the heatmap
+// `position` The *end* position of the color stop, expressed as a float between 0 and 1. Color stops defined at position 0 are ignored.
+// `color` The color for the stop expressed as an integer (hexidecimal values OK)
+	this.ColorStop = function(position, color){
+		this.position = position;
+		this.color = color;
+	};
+
+// Creates a new Row item for the heatmap.
+//
+// `order`		order of the item in the set
+// `rowID`		machine-readable identifier for the row
+// `rowLabel`		human-readable identifier for the row
+// `labelColor`	the foreground (text color) for the label
+// `bgColor`		the background (gradient color) for the label
+// `[meta]`		arbitrary object that contains any other meta data
+
+	//function Row(order, rowID, rowLabel, labelColor, bgColor, meta){
+	this.Row = function(order, rowID, rowLabel, labelColor, bgColor, meta){
+		this.order = order;
+		this.rowID = rowID;
+		this.rowLabel = rowLabel;
+		this.labelColor = labelColor;
+		this.bgColor = bgColor;
+		this.meta = meta;
+	};
+
+// Creates a new column item for the heatmap
+//
+// `order`		order of the item in the set
+// `colID`		machine-readable identifier for the row
+// `colLabel`		human-readable identifier for the row
+// `labelColor`	the foreground (text color) for the label
+// `distribution`	Distribution of column over rows using hex pairs; should follow row order.
+// `bgColor`		the background (gradient color) for the label
+// `[meta]`		arbitrary object that contains any other meta data.
+//
+// ### Distribution example:
+//		this.distribution = "0105F000";
+// * Row 1: 1 occurance
+// * Row 2: 5 occurances
+// * Row 3: 240 occurances
+// * Row 4: 0 occurances
+
+	this.Column = function(order, colID, colLabel, dist, labelColor, bgColor, meta){
+		this.order = order;
+		this.colID = colID;
+		this.colLabel = colLabel;
+		this.distribution = dist;
+		this.labelColor = labelColor;
+		this.bgColor = bgColor;
+		this.meta = meta;
+	};
+
+	/*function rgbTohsv(RGB, HSV){
+		r = RGB.r / 255;
+		g = RGB.g / 255;
+		b = RGB.b / 255;
+		// Scale to unity.
+		var minVal = Math.min(r, g, b);
+		var maxVal = Math.max(r, g, b);
+		var delta = maxVal - minVal;
+		HSV.v = maxVal;
+		if(delta == 0){
+			HSV.h = 0;
+			HSV.s = 0;
+		}else{
+			HSV.s = delta / maxVal;
+			var del_R = (((maxVal - r) / 6) + (delta / 2)) / delta;
+			var del_G = (((maxVal - g) / 6) + (delta / 2)) / delta;
+			var del_B = (((maxVal - b) / 6) + (delta / 2)) / delta;
+			if(r == maxVal){
+				HSV.h = del_B - del_G;
+			}else if(g == maxVal){
+				HSV.h = (1 / 3) + del_R - del_B;
+			}else if(b == maxVal){
+				HSV.h = (2 / 3) + del_G - del_R;
+			}
+			if(HSV.h < 0){
+				HSV.h += 1;
+			}
+			if(HSV.h > 1){
+				HSV.h -= 1;
+			}
+		}
+		HSV.h *= 360;
+		HSV.s *= 100;
+		HSV.v *= 100;
+	}
+
+	function hsvTorgb(HSV, RGB){
+
+		var h = HSV.h / 360;
+		var s = HSV.s / 100;
+		var v = HSV.v / 100;
+		if(s == 0){
+			RGB.r = v * 255;
+			RGB.g = v * 255;
+			RGB.b = v * 255;
+		}else{
+			var_h = h * 6;
+			var_i = Math.floor(var_h);
+			var_1 = v * (1 - s);
+			var_2 = v * (1 - s * (var_h - var_i));
+			var_3 = v * (1 - s * (1 - (var_h - var_i)));
+			if(var_i == 0){
+				var_r = v;
+				var_g = var_3;
+				var_b = var_1;
+			}else if(var_i == 1){
+				var_r = var_2;
+				var_g = v;
+				var_b = var_1;
+			}else if(var_i == 2){
+				var_r = var_1;
+				var_g = v;
+				var_b = var_3;
+			}else if(var_i == 3){
+				var_r = var_1;
+				var_g = var_2;
+				var_b = v;
+			}else if(var_i == 4){
+				var_r = var_3;
+				var_g = var_1;
+				var_b = v;
+			}else{
+				var_r = v;
+				var_g = var_1;
+				var_b = var_2;
+			}
+			RGB.r = var_r * 255;
+			RGB.g = var_g * 255;
+			RGB.b = var_b * 255;
+		}
+
+	}
+
+	function componentTohex(c){
+		var hex = c.toString(16);
+		return hex.length == 1 ? "0" + hex : hex;
+	}
+
+	function rgbTohex(r, g, b){
+		return "0x" + componentTohex(~~r) + componentTohex(~~g) + componentTohex(~~b);
+	}*/
+}
+);
+},
+'p3/widget/ProteinFamiliesFilterGrid':function(){
+define([
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore", "dojo/request",
+	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put", "dojo/topic"
+], function(declare, BorderContainer, on, Deferred,
+			domClass, ContentPane, domConstruct,
+			xhr, lang, Grid, formatter, Store, request,
+			aspect, CellSelection, selector, put, Topic){
+
+	var filterSelector = function(value, cell, object){
+		var parent = cell.parentNode;
+
+		// must set the class name on the outer cell in IE for keystrokes to be intercepted
+		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
+		var input = cell.input || (cell.input = put(cell, "input[type=radio]", {
+				tabIndex: -1,
+				checked: value
+			}));
+		input.setAttribute("aria-checked", !!value);
+
+		return input;
+	};
+
+	var filterSelectorChecked = function(value, cell, object){
+		return filterSelector(true, cell, object);
+	};
+
+	return declare([Grid, CellSelection], {
+		region: "center",
+		query: (this.query || ""),
+		apiToken: window.App.authorizationToken,
+		apiServer: window.App.dataServiceURL,
+		store: null,
+		dataModel: "genome",
+		primaryKey: "genome_id",
+		selectionModel: "extended",
+		deselectOnRefresh: true,
+		selectionMode: 'none',
+		columns: {
+			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
+			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
+			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
+			genome_name: {label: 'Genome Name', field: 'genome_name'}/*,
+			genome_status: {label: 'Genome Status', field: 'genome_status'},
+			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
+			host_name: {label: 'Host', field: 'host_name'},
+			disease: {label: 'Disease', field: 'disease'},
+			collection_date: {label: 'Collection Date', field: 'collection_date'},
+			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
+		},
+		constructor: function(options){
+			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
+			if(options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+		},
+		startup: function(){
+			var _self = this;
+			var options = ['present', 'absent', 'mixed'];
+			var toggleSelection = function(element, value){
+				element.checked = value;
+				element.setAttribute("aria-checked", value);
+			};
+
+			this.on(".dgrid-cell:click", function(evt){
+				var cell = _self.cell(evt);
+				var colId = cell.column.id;
+				var columnHeaders = cell.column.grid.columns;
+				var state = _self.store.state;
+
+				if(cell.row){
+					// data row is clicked
+					var rowId = cell.row.id;
+
+					// deselect other radio in the same row
+					options.forEach(function(el){
+						if(el != colId && _self.cell(rowId, el).element.input.checked){
+							toggleSelection(_self.cell(rowId, el).element.input, false);
+						}
+					});
+
+					// check whether entire rows are selected & mark as needed
+					options.forEach(function(el){
+						var allSelected = true;
+						state.genome_ids.forEach(function(genomeId){
+							if(_self.cell(genomeId, el).element.input.checked == false){
+								allSelected = false;
+							}
+						});
+						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
+					});
+
+				}else{
+					// if header is clicked, reset the selections & update
+					state.genome_ids.forEach(function(genomeId){
+						options.forEach(function(el){
+							if(el === colId){
+								toggleSelection(_self.cell(genomeId, el).element.input, true);
+							}else{
+								toggleSelection(_self.cell(genomeId, el).element.input, false);
+							}
+						});
+					});
+
+					// deselect other radio in the header
+					options.forEach(function(el){
+						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked){
+							toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
+						}
+					});
+				}
+
+				// update filter
+				Object.keys(state.genomeFilterStatus).forEach(function(genomeId){
+					var status = options.findIndex(function(el){
+						if(_self.cell(genomeId, el).element.input.checked) {
+							return el;
+						}
+					});
+					//console.log(genomeId, status);
+					state.genomeFilterStatus[genomeId].setStatus(status);
+				});
+
+				//Object.keys(state.genomeFilterStatus).forEach(function(el){
+				//	console.warn(state.genomeFilterStatus[el].getGenomeName(), state.genomeFilterStatus[el].getStatus());
+				//});
+				Topic.publish("ProteinFamilies", "genomeFilter", state.genomeFilterStatus);
+			});
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			this.inherited(arguments);
+			this._started = true;
+		},
+
+		state: null,
+		postCreate: function(){
+			this.inherited(arguments);
+		},
+		_setApiServer: function(server){
+			this.apiServer = server;
+		},
+		_setState: function(state){
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set('state', state);
+				this.refresh();
+			}
+		},
+		createStore: function(server, token, state){
+
 			return new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
@@ -59029,22 +60567,53 @@ define([
 });
 
 },
-'p3/store/ProteinFamiliesMemoryStore':function(){
+'p3/store/ProteinFamiliesFilterMemoryStore':function(){
 define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred"
+	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
+	"dojo/topic"
 ], function(declare, request,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred){
+			when, lang, Stateful, Deferred,
+			Topic){
+
+	var genomeFilterStatus = (function(){
+		function init(index, genome_name){
+			this.index = index;
+			this.status = ' ';
+			this.genome_name = genome_name;
+		}
+
+		function getIndex(){
+			return this.index;
+		}
+
+		function getGenomeName(){
+			return this.genome_name;
+		}
+
+		function getStatus(){
+			return this.status;
+		}
+
+		function setStatus(status){
+			this.status = status;
+		}
+
+		return function(){
+			this.init = init, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
+			return this;
+		}
+	})();
+
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
-		idProperty: "family_id",
+		idProperty: "genome_id",
 		state: null,
 
 		onSetState: function(attr, oldVal, state){
-			//console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids);
 			var cur = (this.genome_ids || []).join("");
 			var next = (state.genome_ids || []).join("");
 			if(cur != next){
@@ -59052,7 +60621,6 @@ define([
 				this._loaded = false;
 				delete this._loadingDeferred;
 			}
-
 		},
 		constructor: function(options){
 			this._loaded = false;
@@ -59117,16 +60685,10 @@ define([
 
 			}
 
-			// TODO: change family Id based on params
-			var familyType = 'figfam';
-			var familyId = familyType + '_id';
-
 			var query = {
 				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
-				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
-				rows: 0,
-				facet: true,
-				'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
+				rows: this.genome_ids.length,
+				sort: "genome_name asc"
 			};
 			var q = Object.keys(query).map(function(p){
 				return p + "=" + query[p]
@@ -59134,7 +60696,7 @@ define([
 
 			var _self = this;
 
-			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
+			this._loadingDeferred = when(request.post(this.apiServer + '/genome/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -59144,356 +60706,28 @@ define([
 				},
 				data: q
 			}), function(response){
-				console.log("PFS First Response");
-				var familyStat = response.facets.stat.buckets;
+				var data = response.response.docs;
 
-				var familyIdList = [];
-				familyStat.forEach(function(element){
-					if(element.val != ""){
-						familyIdList.push(element.val);
-					}
+				// set genomeFilterStatus
+				var genomeIds = [];
+				state.genomeFilterStatus = {};
+				data.forEach(function(genome, idx){
+					var gfs = new genomeFilterStatus();
+					gfs.init(idx, genome.genome_name);
+					state.genomeFilterStatus[genome.genome_id] = gfs;
+					genomeIds.push(genome.genome_id);
 				});
 
-				// sub query - genome distribution
-				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
+				Topic.publish("ProteinFamilies", "genomeIds", genomeIds);
 
-				console.log("Do Second Request to /genome_feature/");
-				return when(request.post(_self.apiServer + '/genome_feature/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/solrquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-					},
-					data: query
-				}), function(response){
-					console.log("PFS Second Response");
-
-					return when(request.post(_self.apiServer + '/protein_family_ref/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/solr+json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-						},
-						data: {
-							q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
-							rows: 1000000
-						}
-					}), function(res){
-						console.log("PFS Third Response");
-						var genomeFamilyDist = response.facets.stat.buckets;
-						var familyGenomeCount = {};
-						var familyGenomeIdCountMap = {};
-						var familyGenomeIdSet = {};
-						var genomePosMap = {};
-						_self.genome_ids.forEach(function(genomeId, idx){
-							genomePosMap[genomeId] = idx;
-						});
-
-						window.performance.mark('mark_start_stat1');
-						console.log("Build Genome Family Dist");
-						genomeFamilyDist.forEach(function(genome){
-							var genomeId = genome.val;
-							var genomePos = genomePosMap[genomeId];
-							var familyBuckets = genome.families.buckets;
-
-							familyBuckets.forEach(function(bucket){
-								var familyId = bucket.val;
-								if(familyId != ""){
-									var genomeCount = bucket.count.toString(16);
-									if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
-
-									if(familyId in familyGenomeIdCountMap){
-										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
-									}
-									else{
-										var genomeIdCount = new Array(_self.genome_ids.length);
-										genomeIdCount[genomePos] = genomeCount;
-										familyGenomeIdCountMap[familyId] = genomeIdCount;
-									}
-
-									if(familyId in familyGenomeIdSet){
-										familyGenomeIdSet[familyId].push(genomeId);
-									}
-									else{
-										var genomeIds = new Array(_self.genome_ids.length);
-										genomeIds.push(genomeId);
-										familyGenomeIdSet[familyId] = genomeIds;
-									}
-								}
-							});
-						});
-
-						console.log("Complete Genome Family Dist");
-						window.performance.mark('mark_end_stat1');
-						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
-
-						window.performance.mark('mark_start_stat2');
-						console.log("familyGenomeCount");
-						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-							var hashSet = {};
-							familyGenomeIdSet[familyId].forEach(function(value){
-								hashSet[value] = true;
-							});
-							familyGenomeCount[familyId] = Object.keys(hashSet).length;
-						});
-
-						window.performance.mark('mark_end_stat2');
-						window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
-
-						window.performance.mark('mark_start_stat3');
-
-						var data = {};
-						var familyRefHash = {};
-						res.response.docs.forEach(function(el){
-							if(!(el.family_id in familyRefHash)){
-								familyRefHash[el.family_id] = el.family_product;
-							}
-						});
-						window.performance.mark('mark_end_stat3');
-						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
-
-						console.log("FamilyStat");
-						window.performance.mark('mark_start_stat4');
-						familyStat.forEach(function(element){
-							var familyId = element.val;
-							if(familyId != ""){
-								var featureCount = element.count;
-								var std = 0;
-								if(featureCount > 1){
-									var sumSq = element.ss || 0;
-									var sum = element.sum || 0;
-									var realSq = sumSq - (sum * sum) / featureCount;
-									std = Math.sqrt(realSq / (featureCount - 1));
-								}
-
-								data[familyId] = {
-									family_id: familyId,
-									feature_count: featureCount,
-									genome_count: familyGenomeCount[familyId],
-									aa_length_std: std,
-									aa_length_max: element.aa_length_max,
-									aa_length_mean: element.aa_length_mean,
-									aa_length_min: element.aa_length_min,
-									description: familyRefHash[familyId],
-									genomes: familyGenomeIdCountMap[familyId].join("")
-								};
-							}
-						});
-						window.performance.mark('mark_end_stat4');
-						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
-						// console.log(data);
-
-						window.performance.mark('mark_start_stat5');
-
-						//var gridData = [];
-						//Object.keys(data).forEach(function(key){
-						//	gridData.push(data[key]);
-						//});
-						var arrayKeys = Object.keys(data);
-						var arrayLength = arrayKeys.length;
-						var gridData = new Array(arrayLength);
-						for(var i = 0; i < arrayLength; i++){
-							gridData[i] = data[arrayKeys[i]];
-						}
-						window.performance.mark('mark_end_stat5');
-						window.performance.measure('measure_protein_family_stat5', 'mark_start_stat5', 'mark_end_stat5');
-						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat5');
-
-						var measures = window.performance.getEntriesByType('measure');
-						for(var i = 0, len = measures.length; i < len; ++i){
-							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
-						}
-						console.log("Set Data: ", gridData);
-						_self.setData(gridData);
-						_self._loaded = true;
-						return true;
-					}, function(err){
-						console.log("Error in ProteinFamiliesStore: ", err)
-					});
-				});
+				_self.setData(data);
+				_self._loaded = true;
+				return true;
 			});
 			return this._loadingDeferred;
 		}
 	});
 });
-},
-'p3/widget/ProteinFamiliesFilterGrid':function(){
-define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/GenomeJsonRest", "dojo/request",
-	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, CellSelection, selector, put){
-	var store = new Store({});
-	var filterSelector = function(value, cell, object){
-		var parent = cell.parentNode;
-
-		// must set the class name on the outer cell in IE for keystrokes to be intercepted
-		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
-		var input = cell.input || (cell.input = put(cell, "input[type=radio]", {
-				tabIndex: -1,
-				checked: value
-			}));
-		input.setAttribute("aria-checked", !!value);
-
-		return input;
-	};
-
-	return declare([Grid, CellSelection], {
-		region: "center",
-		query: (this.query || ""),
-		apiToken: window.App.authorizationToken,
-		apiServer: window.App.dataServiceURL,
-		store: store,
-		dataModel: "genome",
-		primaryKey: "genome_id",
-		selectionModel: "extended",
-		deselectOnRefresh: true,
-		selectionMode: 'none',
-		columns: {
-			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
-			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
-			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelector),
-			genome_name: {label: 'Genome Name', field: 'genome_name'}/*,
-			genome_status: {label: 'Genome Status', field: 'genome_status'},
-			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
-			host_name: {label: 'Host', field: 'host_name'},
-			disease: {label: 'Disease', field: 'disease'},
-			collection_date: {label: 'Collection Date', field: 'collection_date'},
-			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
-		},
-		constructor: function(options){
-			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
-			if(options && options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-			if(options && options.state){
-				var state = options.state;
-				if(state.genome_ids){
-					console.log("initializing filter grid with ", state.genome_ids);
-					this.query = 'in(genome_id,(' + state.genome_ids + '))';
-				}
-			}
-		},
-		startup: function(){
-			var _self = this;
-			var options = ['present', 'absent', 'mixed'];
-			var toggleSelection = function(element, value){
-				element.checked = value;
-				element.setAttribute("aria-checked", value);
-			};
-
-			this.on(".dgrid-cell:click", function(evt){
-				var cell = _self.cell(evt);
-				var colId = cell.column.id;
-				var columnHeaders = cell.column.grid.columns;
-
-				if(cell.row){
-					// data row is clicked
-					var rowId = cell.row.id;
-
-					// deselect other radio in the same row
-					options.forEach(function(el){
-						if(el != colId && _self.cell(rowId, el).element.input.checked){
-							toggleSelection(_self.cell(rowId, el).element.input, false);
-						}
-					});
-
-					// check whether entire rows are selected & mark as needed
-					options.forEach(function(el){
-						var allSelected = true;
-						_self.params.state.genome_ids.forEach(function(genomeId){
-							if(_self.cell(genomeId, el).element.input.checked == false){
-								allSelected = false;
-							}
-						});
-						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
-					});
-
-				}else{
-					// if header is clicked, reset the selections & update
-					_self.params.state.genome_ids.forEach(function(genomeId){
-						options.forEach(function(el){
-							if(el === colId){
-								toggleSelection(_self.cell(genomeId, el).element.input, true);
-							}else{
-								toggleSelection(_self.cell(genomeId, el).element.input, false);
-							}
-						});
-					});
-
-					// deselect other radio in the header
-					options.forEach(function(el){
-						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked){
-							toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
-						}
-					});
-				}
-
-				// update filter
-				// TODO: implement
-			});
-
-			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
-					_self.set("totalRows", x);
-				});
-			});
-
-			this.inherited(arguments);
-			this._started = true;
-		},
-
-		state: null,
-		postCreate: function(){
-			this.inherited(arguments);
-		},
-		_setApiServer: function(server){
-			this.apiServer = server;
-		},
-		_setState: function(state){
-			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				this.store.set('state', state);
-			}
-		},
-		createStore: function(server, token, state){
-
-			return new Store({
-				token: token,
-				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state
-			});
-		}
-	});
-});
-
-},
-'p3/store/GenomeJsonRest':function(){
-define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	autoFacet: false,
-	        idProperty: "genome_id",
-        	facetFields: ["feature_type", "annotation"],
-        	dataModel: "genome"
-        });
-});
-
-
 },
 'dgrid/CellSelection':function(){
 define([
@@ -59911,6 +61145,54 @@ define([
 		gutters: false,
 		state: null,
 		visible: false,
+		dataGridContainer: null,
+		filterGrid: null,
+		flashDom: null,
+		containerActions: [
+			[
+				"Flip Axis",
+				"fa icon-rotate-left fa-2x",
+				{label:"Flip Axis",multiple: false,validTypes:["*"]},
+				"flipAxises",
+				true
+			],
+			[
+				"Cluster",
+				"fa icon-make-group fa-2x",
+				{label:"Cluster",multiple: false,validTypes:["*"]},
+				function(selection){
+					// TODO: implement
+				},
+				true
+			],
+			[
+				"Advanced Clustering",
+				"fa icon-make-group fa-2x",
+				{label:"Advanced Clustering",multiple: false,validTypes:["*"]},
+				function(selection){
+					// TODO: implement
+				},
+				true
+			]
+		],
+		constructor: function(options){
+			this.dataGridContainer = options.dataGridContainer;
+			this.filterGrid = options.filterGrid;
+
+			var self = this;
+			// subscribe
+			Topic.subscribe("ProteinFamiliesHeatmap", function(){
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "refresh":
+						self.flashReady();
+						break;
+					default:
+						break;
+				}
+			});
+		},
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
 
@@ -59933,24 +61215,110 @@ define([
 				wmode: 'transparent'
 			};
 			var attributes = {
-				id: 'ProteinFamilySorter',
-				name: 'ProteinFamilySorter'
+				id: 'ProteinFamilyHeatMap',
+				name: 'ProteinFamilyHeatMap'
 			};
 			var target = document.getElementById("flashTarget");
+			// binding flash functions
+			window.flashReady = lang.hitch(this, "flashReady");
+			window.flashRequestsData = lang.hitch(this, "flashRequestsData");
+			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
+			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
+			//["flashReady", "flashRequestsData"].forEach(function(item){
+			//	window[item] = lang.hitch(this, item);
+			//});
 			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
+			this.flashDom = document.getElementById("ProteinFamilyHeatMap");
 		},
 		onFirstView: function(){
 			if(this._firstView){
 				return;
 			}
 
-			//this.addChild(new ContentPane({region:"top", title:"actionbar", content:"placeholder for action bars"}));
+			// action buttons for heatmap viewer
+			this.containerActionBar = new ContainerActionBar({
+				region: "top"
+			});
+			this.containerActions.forEach(function(a){
+				this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+			}, this);
+			this.addChild(this.containerActionBar);
+
 			//TODO: add legend
-			this.addChild(new ContentPane({region: "center", content: "", id: "flashTarget"}));
+			this.addChild(new ContentPane({region: "center", content: "<div id='flashTarget'></div>", style:"padding:0"}));
 
 			this.inherited(arguments);
 			this._firstView = true;
+		},
+		// flash interface functions
+		flashReady: function(flashObjectID){
+			var target = document.getElementById(flashObjectID) || this.flashDom;
+			this._prepareHeatmapData();
+			target.refreshData(); // this triggers flashRequestsData callback
+			//console.log("flashReady is called", flashObjectID, target);
+		},
+		flashRequestsData: function(){
+			return this.currentData;
+		},
+		_prepareHeatmapData: function(){
+			var filterStore = this.filterGrid.store;
+			//console.warn(filterStore);
+			var dataStore = this.dataGridContainer.grid.store;
+			//console.log(dataStore);
+			this.currentData = dataStore.getHeatmapData(filterStore);
+			//console.log(currentData);
+		},
+		flashCellClicked: function(flashObjectID, colID, rowID){
+			// TODO: implement this
+			console.log("flashCellClicked is called ", colID, rowID);
+		},
+		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
+			// TODO: implement this
+			console.log("flashCellsSelected is called", colIDs, rowIDs);
+		},
+		flipAxises: function(){
+			var currentData = this.currentData;
+			var flippedDistribution = new Array(currentData.rows.length);
+			currentData.rows.forEach(function(row, rowIdx){
+				var distribution = [];
+				currentData.columns.forEach(function(col){
+					distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
+				});
+				flippedDistribution[rowIdx] = distribution.join("");
+			});
+
+			// create new rows
+			var newRows = [];
+			currentData.columns.forEach(function(col, colID){
+				newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+			});
+			// create new columns
+			var newColumns = [];
+			currentData.rows.forEach(function(row, rowID){
+				newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
+			});
+
+			this.currentData = {
+				'rows': newRows,
+				'columns': newColumns,
+				'colTrunc': currentData.rowTrunc,
+				'rowTrunc': currentData.colTrunc,
+				'colLabel': currentData.rowLabel,
+				'rowLabel': currentData.colLabel,
+				'offset': 1,
+				'digits': 2,
+				'countLabel': 'Members',
+				'negativeBit': false,
+				'cellLabelField': '',
+				'cellLabelsOverrideCount': false,
+				'beforeCellLabel': '',
+				'afterCellLabel': ''
+			};
+
+			// send message to flash to refresh data reading
+			this.flashDom.refreshData();
 		}
+
 	});
 });
 
@@ -60805,6 +62173,272 @@ define([
 }));
 
 },
+'dijit/form/Textarea':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-style", // domStyle.set
+	"./_ExpandingTextAreaMixin",
+	"./SimpleTextarea"
+], function(declare, domStyle, _ExpandingTextAreaMixin, SimpleTextarea){
+
+	// module:
+	//		dijit/form/Textarea
+
+	return declare("dijit.form.Textarea", [SimpleTextarea, _ExpandingTextAreaMixin], {
+		// summary:
+		//		A textarea widget that adjusts it's height according to the amount of data.
+		//
+		// description:
+		//		A textarea that dynamically expands/contracts (changing it's height) as
+		//		the user types, to display all the text without requiring a scroll bar.
+		//
+		//		Takes nearly all the parameters (name, value, etc.) that a vanilla textarea takes.
+		//		Rows is not supported since this widget adjusts the height.
+
+
+		// TODO: for 2.0, rename this to ExpandingTextArea, and rename SimpleTextarea to TextArea
+
+		baseClass: "dijitTextBox dijitTextArea dijitExpandingTextArea",
+
+		// Override SimpleTextArea.cols to default to width:100%, for backward compatibility
+		cols: "",
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			// tweak textarea style to reduce browser differences
+			domStyle.set(this.textbox, { overflowY: 'hidden', overflowX: 'auto', boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' });
+		}
+	});
+});
+
+},
+'dijit/form/_ExpandingTextAreaMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-construct", // domConstruct.create
+	"dojo/has",
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"dojo/_base/window", // win.body
+	"../Viewport"
+], function(declare, domConstruct, has, lang, on, win, Viewport){
+
+	// module:
+	//		dijit/form/_ExpandingTextAreaMixin
+
+	// feature detection, true for mozilla and webkit
+	has.add("textarea-needs-help-shrinking", function(){
+		var body = win.body(),	// note: if multiple documents exist, doesn't matter which one we use
+			te = domConstruct.create('textarea', {
+			rows:"5",
+			cols:"20",
+			value: ' ',
+			style: {zoom:1, fontSize:"12px", height:"96px", overflow:'hidden', visibility:'hidden', position:'absolute', border:"5px solid white", margin:"0", padding:"0", boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' }
+		}, body, "last");
+		var needsHelpShrinking = te.scrollHeight >= te.clientHeight;
+		body.removeChild(te);
+		return needsHelpShrinking;
+	});
+
+	return declare("dijit.form._ExpandingTextAreaMixin", null, {
+		// summary:
+		//		Mixin for textarea widgets to add auto-expanding capability
+
+		_setValueAttr: function(){
+			this.inherited(arguments);
+			this.resize();
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+			var textarea = this.textbox;
+			textarea.style.overflowY = "hidden";
+			this.own(on(textarea, "focus, resize", lang.hitch(this, "_resizeLater")));
+		},
+
+		startup: function(){ 
+			this.inherited(arguments);
+			this.own(Viewport.on("resize", lang.hitch(this, "_resizeLater")));
+			this._resizeLater();
+		},
+
+		_onInput: function(e){
+			this.inherited(arguments);
+			this.resize();
+		},
+
+		_estimateHeight: function(){
+			// summary:
+			//		Approximate the height when the textarea is invisible with the number of lines in the text.
+			//		Fails when someone calls setValue with a long wrapping line, but the layout fixes itself when the user clicks inside so . . .
+			//		In IE, the resize event is supposed to fire when the textarea becomes visible again and that will correct the size automatically.
+			//
+			var textarea = this.textbox;
+			// #rows = #newlines+1
+			textarea.rows = (textarea.value.match(/\n/g) || []).length + 1;
+		},
+
+		_resizeLater: function(){
+			this.defer("resize");
+		},
+
+		resize: function(){
+			// summary:
+			//		Resizes the textarea vertically (should be called after a style/value change)
+
+			var textarea = this.textbox;
+
+			function textareaScrollHeight(){
+				var empty = false;
+				if(textarea.value === ''){
+					textarea.value = ' ';
+					empty = true;
+				}
+				var sh = textarea.scrollHeight;
+				if(empty){ textarea.value = ''; }
+				return sh;
+			}
+
+			if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
+			if(this.busyResizing){ return; }
+			this.busyResizing = true;
+			if(textareaScrollHeight() || textarea.offsetHeight){
+				var newH = textareaScrollHeight() + Math.max(textarea.offsetHeight - textarea.clientHeight, 0);
+				var newHpx = newH + "px";
+				if(newHpx != textarea.style.height){
+					textarea.style.height = newHpx;
+					textarea.rows = 1; // rows can act like a minHeight if not cleared
+				}
+				if(has("textarea-needs-help-shrinking")){
+					var	origScrollHeight = textareaScrollHeight(),
+						newScrollHeight = origScrollHeight,
+						origMinHeight = textarea.style.minHeight,
+						decrement = 4, // not too fast, not too slow
+						thisScrollHeight,
+						origScrollTop = textarea.scrollTop;
+					textarea.style.minHeight = newHpx; // maintain current height
+					textarea.style.height = "auto"; // allow scrollHeight to change
+					while(newH > 0){
+						textarea.style.minHeight = Math.max(newH - decrement, 4) + "px";
+						thisScrollHeight = textareaScrollHeight();
+						var change = newScrollHeight - thisScrollHeight;
+						newH -= change;
+						if(change < decrement){
+							break; // scrollHeight didn't shrink
+						}
+						newScrollHeight = thisScrollHeight;
+						decrement <<= 1;
+					}
+					textarea.style.height = newH + "px";
+					textarea.style.minHeight = origMinHeight;
+					textarea.scrollTop = origScrollTop;
+				}
+				textarea.style.overflowY = textareaScrollHeight() > textarea.clientHeight ? "auto" : "hidden";
+				if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
+			}else{
+				// hidden content of unknown size
+				this._estimateHeight();
+			}
+			this.busyResizing = false;
+		}
+	});
+});
+
+},
+'dijit/form/SimpleTextarea':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.add
+	"dojo/sniff", // has("ie") has("opera")
+	"./TextBox"
+], function(declare, domClass, has, TextBox){
+
+	// module:
+	//		dijit/form/SimpleTextarea
+
+	return declare("dijit.form.SimpleTextarea", TextBox, {
+		// summary:
+		//		A simple textarea that degrades, and responds to
+		//		minimal LayoutContainer usage, and works with dijit/form/Form.
+		//		Doesn't automatically size according to input, like Textarea.
+		//
+		// example:
+		//	|	<textarea data-dojo-type="dijit/form/SimpleTextarea" name="foo" value="bar" rows=30 cols=40></textarea>
+		//
+		// example:
+		//	|	new SimpleTextarea({ rows:20, cols:30 }, "foo");
+
+		baseClass: "dijitTextBox dijitTextArea",
+
+		// rows: Number
+		//		The number of rows of text.
+		rows: "3",
+
+		// rows: Number
+		//		The number of characters per line.
+		cols: "20",
+
+		templateString: "<textarea ${!nameAttrSetting} data-dojo-attach-point='focusNode,containerNode,textbox' autocomplete='off'></textarea>",
+
+		postMixInProperties: function(){
+			// Copy value from srcNodeRef, unless user specified a value explicitly (or there is no srcNodeRef)
+			// TODO: parser will handle this in 2.0
+			if(!this.value && this.srcNodeRef){
+				this.value = this.srcNodeRef.value;
+			}
+			this.inherited(arguments);
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			if(has("ie") && this.cols){ // attribute selectors is not supported in IE6
+				domClass.add(this.textbox, "dijitTextAreaCols");
+			}
+		},
+
+		filter: function(/*String*/ value){
+			// Override TextBox.filter to deal with newlines... specifically (IIRC) this is for IE which writes newlines
+			// as \r\n instead of just \n
+			if(value){
+				value = value.replace(/\r/g, "");
+			}
+			return this.inherited(arguments);
+		},
+
+		_onInput: function(/*Event?*/ e){
+			// Override TextBox._onInput() to enforce maxLength restriction
+			if(this.maxLength){
+				var maxLength = parseInt(this.maxLength);
+				var value = this.textbox.value.replace(/\r/g, '');
+				var overflow = value.length - maxLength;
+				if(overflow > 0){
+					var textarea = this.textbox;
+					if(textarea.selectionStart){
+						var pos = textarea.selectionStart;
+						var cr = 0;
+						if(has("opera")){
+							cr = (this.textbox.value.substring(0, pos).match(/\r/g) || []).length;
+						}
+						this.textbox.value = value.substring(0, pos - overflow - cr) + value.substring(pos - cr);
+						textarea.setSelectionRange(pos - overflow, pos - overflow);
+					}else if(this.ownerDocument.selection){ //IE
+						textarea.focus();
+						var range = this.ownerDocument.selection.createRange();
+						// delete overflow characters
+						range.moveStart("character", -overflow);
+						range.text = '';
+						// show cursor
+						range.select();
+					}
+				}
+			}
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
 'p3/widget/DiseaseContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
@@ -60945,11 +62579,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
 	"./TrackController","circulus/Viewer","circulus/LineTrack",
-	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter"
+	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter","../util/PathJoin"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter
+	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -60972,7 +62606,7 @@ define([
 
 			var query = "?eq(genome_id," + gid + ")&select(topology,gi,accession,length,sequence_id,gc_content,owner,sequence_type,taxon_id,public,genome_id,genome_name,date_inserted,date_modified" + (includeSequences?",sequence":"")+ ")&sort(+accession)&limit(1000)";
 
-			return xhr.get(this.apiServiceUrl + "/genome_sequence/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl, "genome_sequence", query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -61003,16 +62637,17 @@ define([
 				options: {
 					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
-						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						//return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						return DataItemFormatter(item,"feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"feature_data")
+						return DataItemFormatter(item,"feature_data", {hideExtra: true, linkTitle: true})
 					}
 				}
 			})
 
 
-			return xhr.get(this.apiServiceUrl + "/genome_feature/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl,"genome_feature",query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -61048,7 +62683,14 @@ define([
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null},
+					formatPopupContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {mini: true, linkTitle: true})
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {hideExtra: true, linkTitle: true})
+					}
+				},
 				data: refseqs
 			},"perimeter",true);
 
@@ -63927,12 +65569,12 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./FilterContainerActionBar","dijit/layout/StackContainer", "dijit/layout/TabController",
 	"dijit/layout/ContentPane", "./TranscriptomicsExperimentGridContainer","dojo/topic","dojo/_base/lang",
-	"./TranscriptomicsComparisonGridContainer","dojo/request"
+	"./TranscriptomicsComparisonGridContainer","dojo/request","../util/PathJoin"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, FilterContainerActionBar,TabContainer,StackController,
 	ContentPane,TranscriptomicsExperimentGridContainer,Topic,lang,
-	TranscriptomicsComparisonGridContainer,xhr
+	TranscriptomicsComparisonGridContainer,xhr,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -63954,7 +65596,7 @@ define([
 		onSetQuery: function(attr,oldVal, query){
 			query = query + "&select(eid)&limit(25000)"
 			query = (query && (query.charAt(0)=="?"))?query.substr(1):query
-			xhr.post(this.apiServer + "/transcriptomics_experiment/?",{
+			xhr.post(PathJoin(this.apiServer,"transcriptomics_experiment/?"),{
 				headers: {
 					"accept": "application/json",
 	              	"content-type": "application/json",
@@ -65045,6 +66687,24 @@ define([
 });
 
 },
+'p3/store/GenomeJsonRest':function(){
+define([
+     "dojo/_base/declare",
+     "./P3JsonRest"
+], function(
+    declare,
+    Store
+){
+        return declare([Store], {
+        	autoFacet: false,
+	        idProperty: "genome_id",
+        	facetFields: ["feature_type", "annotation"],
+        	dataModel: "genome"
+        });
+});
+
+
+},
 'p3/widget/SequenceGridContainer':function(){
 define([
 	"dojo/_base/declare", "./GridContainer",
@@ -65079,6 +66739,7 @@ define([
 	});
 
 	return declare([GridContainer], {
+		containerType: "sequence_data",
 		facetFields: ["sequence_type","topology"],
 		maxGenomeCount: 5000,
 		dataModel: "genome_sequence",
@@ -67328,10 +68989,10 @@ return number;
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
 'url:dijit/layout/templates/ScrollingTabController.html':"<div class=\"dijitTabListContainer-${tabPosition}\" style=\"visibility:hidden\">\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerMenuButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_menuBtn\"\n\t\t data-dojo-props=\"containerId: '${containerId}', iconClass: 'dijitTabStripMenuIcon',\n\t\t\t\t\tdropDownPosition: ['below-alt', 'above-alt']\"\n\t\t data-dojo-attach-point=\"_menuBtn\" showLabel=\"false\" title=\"\">&#9660;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_leftBtn\"\n\t\t data-dojo-props=\"iconClass:'dijitTabStripSlideLeftIcon', showLabel:false, title:''\"\n\t\t data-dojo-attach-point=\"_leftBtn\" data-dojo-attach-event=\"onClick: doSlideLeft\">&#9664;</div>\n\t<div data-dojo-type=\"dijit.layout._ScrollingTabControllerButton\"\n\t\t class=\"tabStripButton-${tabPosition}\"\n\t\t id=\"${id}_rightBtn\"\n\t\t data-dojo-props=\"iconClass:'dijitTabStripSlideRightIcon', showLabel:false, title:''\"\n\t\t data-dojo-attach-point=\"_rightBtn\" data-dojo-attach-event=\"onClick: doSlideRight\">&#9654;</div>\n\t<div class='dijitTabListWrapper' data-dojo-attach-point='tablistWrapper'>\n\t\t<div role='tablist' data-dojo-attach-event='onkeydown:onkeydown'\n\t\t\t data-dojo-attach-point='containerNode' class='nowrapTabStrip'></div>\n\t</div>\n</div>",
 'url:dijit/layout/templates/_ScrollingTabControllerButton.html':"<div data-dojo-attach-event=\"ondijitclick:_onClick\" class=\"dijitTabInnerDiv dijitTabContent dijitButtonContents\"  data-dojo-attach-point=\"focusNode\" role=\"button\">\n\t<span role=\"presentation\" class=\"dijitInline dijitTabStripIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point=\"containerNode,titleNode\" class=\"dijitButtonText\"></span>\n</div>",
-'url:dgrid/css/dgrid.css':{"cssText":".dgrid{position:relative;overflow:hidden;border:1px solid #ddd;height:30em;display:block;}.dgrid-header{background-color:#eee;}.dgrid-header-row{position:absolute;right:17px;left:0;}.dgrid-header-scroll{position:absolute;top:0;right:0;}.dgrid-footer{position:absolute;bottom:0;width:100%;}.dgrid-header-hidden, html.has-quirks .dgrid-header-hidden .dgrid-cell{font-size:0;height:0 !important;border-top:none !important;border-bottom:none !important;margin-top:0 !important;margin-bottom:0 !important;padding-top:0 !important;padding-bottom:0 !important;}.dgrid-footer-hidden{display:none;}.dgrid-sortable{cursor:pointer;}.dgrid-header, .dgrid-header-row, .dgrid-footer{overflow:hidden;background-color:#eee;}.dgrid-row-table{border-collapse:collapse;border:none;table-layout:fixed;empty-cells:show;width:100%;height:100%;}.dgrid-cell{padding:0px;text-align:left;overflow:hidden;vertical-align:top;border:1px solid #ddd;border-top-style:none;box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-webkit-box-sizing:border-box;}.dgrid-cell-padding{padding:3px;}.dgrid-content{position:relative;height:99%;}.dgrid-scroller{overflow-x:auto;overflow-y:scroll;position:absolute;top:0px;margin-top:25px;bottom:0px;width:100%;}.dgrid-preload{font-size:0;line-height:0;}.dgrid-loading{position:relative;height:100%;}.dgrid-above{position:absolute;bottom:0;}.ui-icon{width:16px;height:16px;background-image:url(\"data:image/png;base64,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\");}.ui-icon-triangle-1-e{background-position:-32px -16px;}.ui-icon-triangle-1-se{background-position:-48px -16px;}.dgrid-expando-icon{width:16px;height:16px;}.dgrid-tree-container{-webkit-transition-duration:0.3s;-moz-transition-duration:0.3s;-ms-transition-duration:0.3s;-o-transition-duration:0.3s;transition-duration:0.3s;overflow:hidden;}.dgrid-tree-container.dgrid-tree-resetting{-webkit-transition-duration:0;-moz-transition-duration:0;-ms-transition-duration:0;-o-transition-duration:0;transition-duration:0;}.dgrid-sort-arrow{background-position:-64px -16px;display:block;float:right;margin:0 4px 0 5px;height:12px;}.dgrid-sort-up .dgrid-sort-arrow{background-position:0px -16px;}.dgrid-selected{background-color:#bfd6eb;}.dgrid-input{width:99%;}html.has-mozilla .dgrid *:focus, html.has-opera .dgrid *:focus{outline:1px dotted;}html.has-ie-6-7.has-no-quirks .dgrid-row-table{width:auto;}html.has-quirks .dgrid-row-table, html.has-ie-6 .dgrid-row-table{height:auto;}html.has-quirks .dgrid-header-scroll, html.has-ie-6 .dgrid-header-scroll{font-size:0;}html.has-mozilla .dgrid-focus{outline-offset:-1px;}.dgrid-scrollbar-measure{width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px;}.dgrid-autoheight{height:auto;}.dgrid-autoheight .dgrid-scroller{position:relative;overflow-y:hidden;}.dgrid-autoheight .dgrid-header-scroll{display:none;}.dgrid-autoheight .dgrid-header{right:0;}#dgrid-css-dgrid-loaded{display:none;}","xCss":"html.has-mozilla .dgrid *:focus, html.has-opera .dgrid *\n\n\n:focusoutline=;;display=;background-color=;left=;right=;width=;padding-bottom=;display=;cursor=;background-color=;height=;-webkit-box-sizing=;padding=;height=;width=;line-height=;height=;bottom=;{/17background-image:url(\"data:image/png;base64,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\");background-image=;}background-position=;background-position=;height=;overflow=;transition-duration=;height=;background-position=;background-color=;width=;outline=;width=;height=;font-size=;outline-offset=;top=;height=;overflow-y=;display=;right=;display=;"},
-'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:focus,\nhtml.has-opera .dgrid .dgrid-resize-handle\n:focusoutline=;;z-index=;outline=;{/2filter:chroma(color=pink);filter=;}outline=;height=;border-left=;width=;position=;position=;overflow=;margin-right=;margin-right=;position=;display=;"},
-'url:dgrid/css/extensions/ColumnHider.css':{"cssText":".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}","xCss":"top=;left=;overflow-y=;left=;padding=;padding=;padding-left=;left=;display=;"},
-'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"color=;height=;background=;background=;{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat=;}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat=;}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat=;}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat=;}cursor=;cursor=;font-weight=;padding-left=;padding-right=;"},
+'url:dgrid/css/dgrid.css':{"cssText":".dgrid{position:relative;overflow:hidden;border:1px solid #ddd;height:30em;display:block;}.dgrid-header{background-color:#eee;}.dgrid-header-row{position:absolute;right:17px;left:0;}.dgrid-header-scroll{position:absolute;top:0;right:0;}.dgrid-footer{position:absolute;bottom:0;width:100%;}.dgrid-header-hidden, html.has-quirks .dgrid-header-hidden .dgrid-cell{font-size:0;height:0 !important;border-top:none !important;border-bottom:none !important;margin-top:0 !important;margin-bottom:0 !important;padding-top:0 !important;padding-bottom:0 !important;}.dgrid-footer-hidden{display:none;}.dgrid-sortable{cursor:pointer;}.dgrid-header, .dgrid-header-row, .dgrid-footer{overflow:hidden;background-color:#eee;}.dgrid-row-table{border-collapse:collapse;border:none;table-layout:fixed;empty-cells:show;width:100%;height:100%;}.dgrid-cell{padding:0px;text-align:left;overflow:hidden;vertical-align:top;border:1px solid #ddd;border-top-style:none;box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-webkit-box-sizing:border-box;}.dgrid-cell-padding{padding:3px;}.dgrid-content{position:relative;height:99%;}.dgrid-scroller{overflow-x:auto;overflow-y:scroll;position:absolute;top:0px;margin-top:25px;bottom:0px;width:100%;}.dgrid-preload{font-size:0;line-height:0;}.dgrid-loading{position:relative;height:100%;}.dgrid-above{position:absolute;bottom:0;}.ui-icon{width:16px;height:16px;background-image:url(\"data:image/png;base64,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\");}.ui-icon-triangle-1-e{background-position:-32px -16px;}.ui-icon-triangle-1-se{background-position:-48px -16px;}.dgrid-expando-icon{width:16px;height:16px;}.dgrid-tree-container{-webkit-transition-duration:0.3s;-moz-transition-duration:0.3s;-ms-transition-duration:0.3s;-o-transition-duration:0.3s;transition-duration:0.3s;overflow:hidden;}.dgrid-tree-container.dgrid-tree-resetting{-webkit-transition-duration:0;-moz-transition-duration:0;-ms-transition-duration:0;-o-transition-duration:0;transition-duration:0;}.dgrid-sort-arrow{background-position:-64px -16px;display:block;float:right;margin:0 4px 0 5px;height:12px;}.dgrid-sort-up .dgrid-sort-arrow{background-position:0px -16px;}.dgrid-selected{background-color:#bfd6eb;}.dgrid-input{width:99%;}html.has-mozilla .dgrid *:focus, html.has-opera .dgrid *:focus{outline:1px dotted;}html.has-ie-6-7.has-no-quirks .dgrid-row-table{width:auto;}html.has-quirks .dgrid-row-table, html.has-ie-6 .dgrid-row-table{height:auto;}html.has-quirks .dgrid-header-scroll, html.has-ie-6 .dgrid-header-scroll{font-size:0;}html.has-mozilla .dgrid-focus{outline-offset:-1px;}.dgrid-scrollbar-measure{width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px;}.dgrid-autoheight{height:auto;}.dgrid-autoheight .dgrid-scroller{position:relative;overflow-y:hidden;}.dgrid-autoheight .dgrid-header-scroll{display:none;}.dgrid-autoheight .dgrid-header{right:0;}#dgrid-css-dgrid-loaded{display:none;}","xCss":"html.has-mozilla .dgrid *:{/27};{/17background-image:url(\"data:image/png;base64,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\");}"},
+'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
+'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
+'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
 'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
@@ -67342,9 +69003,9 @@ return number;
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <div class=\"section left half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>\n        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n            Loading Genome Summary...\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n\n        <div data-dojo-attach-point=\"gfDataNode\">\n            Loading Genomic Feature Summary....\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n\n        <div data-dojo-attach-point=\"pfDataNode\">\n            Loading Protein Feature Summary...\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n\n        <div style=\"padding:7px\" data-dojo-attach-point=\"specialtyGeneSummaryNode\">\n            Loading Specialty Gene Summary...\n        </div>\n    </div>\n</div>\n",
-'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"><span data-dojo-attach-event=\"click:clearAll\">CLEAR ALL</span></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:dgrid/css/extensions/Pagination.css':{"cssText":".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}","xCss":"padding=;float=;float=;padding=;font-size=;cursor=;text-align=;margin=;display=;"},
-'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image Locally</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
+'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"font-size:14px;margin-top:-3px;margin-bottom:-1px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
+'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
+'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genome Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'My bacillus cereus'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy Rank/Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",

@@ -2,11 +2,11 @@ define("p3/widget/CircularViewerContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
 	"./TrackController","circulus/Viewer","circulus/LineTrack",
-	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter"
+	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter","../util/PathJoin"
 ], function(
 	declare,BorderContainer,on,
 	ActionBar, ContainerActionBar,TabContainer,
-	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter
+	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter,PathJoin
 ){
 
 	return declare([BorderContainer], {
@@ -29,7 +29,7 @@ define("p3/widget/CircularViewerContainer", [
 
 			var query = "?eq(genome_id," + gid + ")&select(topology,gi,accession,length,sequence_id,gc_content,owner,sequence_type,taxon_id,public,genome_id,genome_name,date_inserted,date_modified" + (includeSequences?",sequence":"")+ ")&sort(+accession)&limit(1000)";
 
-			return xhr.get(this.apiServiceUrl + "/genome_sequence/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl, "genome_sequence", query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -60,16 +60,17 @@ define("p3/widget/CircularViewerContainer", [
 				options: {
 					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
 					formatPopupContent: function(item){
-						return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						//return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
+						return DataItemFormatter(item,"feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"feature_data")
+						return DataItemFormatter(item,"feature_data", {hideExtra: true, linkTitle: true})
 					}
 				}
 			})
 
 
-			return xhr.get(this.apiServiceUrl + "/genome_feature/" + query, {
+			return xhr.get(PathJoin(this.apiServiceUrl,"genome_feature",query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -105,7 +106,14 @@ define("p3/widget/CircularViewerContainer", [
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null}},
+				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null},
+					formatPopupContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {mini: true, linkTitle: true})
+					},
+					formatDialogContent: function(item){
+						return DataItemFormatter(item,"sequence_data", {hideExtra: true, linkTitle: true})
+					}
+				},
 				data: refseqs
 			},"perimeter",true);
 

@@ -84,6 +84,10 @@ var profile = {
 		{
 			name: "swfobject",
 			location: "./swfobject"
+		},
+		{
+			name: "phyloview",
+			location: "./phyloview"
 		}
 	
 

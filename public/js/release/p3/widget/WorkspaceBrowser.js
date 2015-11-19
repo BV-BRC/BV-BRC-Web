@@ -505,7 +505,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 
 
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: true, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.actionPanel);
 			this.addChild(this.itemDetailPanel);

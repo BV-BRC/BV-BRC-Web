@@ -23,8 +23,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			//console.log("Running feature_data formatter");
 			//return domConstruct.create("div", {innerHTML: "hello"});
 
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name : 'Genome Name',
 				text : 'genome_name'
 			}, {
@@ -348,6 +347,44 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			return div;
 		},
 
+		"taxonomy_data": function(item, options){
+			options = options || {}
+			var featureColumns = [{
+				name : 'Taxonomy ID',
+				text : 'taxon_id'
+			}, {
+				name : 'Taxon Name',
+				text : 'taxon_name'
+			}, {
+				name : 'Taxon Rank',
+				text : 'taxon_rank'
+			}, {
+				name : 'Other Names',
+				text : 'other_names'
+			}, {
+				name : 'Lineage',
+				text : 'lineage_names'
+			}, {
+				name : 'Lineage Ranks',
+				text : 'lineage_ranks'
+			}, {
+				name : 'Lineage IDs',
+				text : 'lineage_ids'
+			},{
+				name : 'Genetic Code',
+				text : 'genetic_code'
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Createe Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			console.log("Display Detail Complete")
+			
+			return div;
+		},
+
 		"pathway_data": function(item, options){
 			options = options || {}
 
@@ -667,10 +704,10 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'genes'
 			}, {
 				name : 'Significant Genes (Log Ratio)',
-				text : 'sig_log_ratio',
+				text : 'sig_log_ratio'
 			}, {
 				name : 'Significant Genes (Z Score)',
-				text : 'sig_z_score',
+				text : 'sig_z_score'
 			}, {
 				name : 'PubMed',
 				text : 'pmid',
@@ -1006,7 +1043,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var hdr_tbody = domConstruct.create("tbody",{}, hdr_table);
 			var hdr_th = domConstruct.create("tr",{},hdr_tbody);
 			var hdr_tda = domConstruct.create("td",{}, hdr_th);
-			var span = domConstruct.create("span", {class: icon_name}, hdr_tda);
+			var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
 			var hdr_tdb; 
 			
 			if (linkTitle == true)

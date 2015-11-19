@@ -28,6 +28,7 @@
 @import url("WorkspaceManager.css");
 @import url("AppBase.css");
 @import url("assembly.css");
+@import url("phyloview.css");
 @import url("modeling.css");
 @import url("facetfilter.css");
 @import url("./GenomeList.css");
@@ -426,7 +427,19 @@ div.overview {
 	margin-left: 10px;
 	color: #444;
 }
+.claro .dijitTooltipContainer {
 
+}
+
+.claro .dijitTooltipBelow .dijitTooltipConnector{
+  top: 0;
+  left: 3px;
+  background-position: -31px 0;
+  width: 16px;
+  height: 20px;
+
+
+}
 #faceted_tracksel .faceted_tracksel_on_off.tab {
 	top: 170px;
 	font-size: .6em;

@@ -2040,6 +2040,10 @@
 					 location:"../swfobject",
 					 main:"swfobject.js",
 					 name:"swfobject"
+				},
+				{
+					 location:"../phyloview",
+					 name:"phyloview"
 				}
 		]
 });require({cache:{
@@ -17120,12 +17124,14 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 				headers: {
 //					accept: "application/json",
 //					"content-type": "application/json",
+					"content-type": "application/jsonrpc+json",
 					"Authorization": token,
 					"X-Requested-With": false
 				},
 				handleAs: "json",
 				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
 			}),function(response){
+				//  0 && console.log("JSON RPC RESPONSE: ", response);
 				if (response.error){
 					return def.reject(response.error);
 				}

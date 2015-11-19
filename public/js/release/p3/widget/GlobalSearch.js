@@ -27,6 +27,33 @@ define("p3/widget/GlobalSearch", [
 			if (evt.charOrCode==keys.ENTER) {
 				var query = this.searchInput.get('value');
 				var searchFilter = this.searchFilter.get('value');
+				if (!query){
+					return;
+				}
+
+				switch(searchFilter){
+					case "genome":
+						var parts = query.split(" ");
+						if (parts){
+							q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
+							console.log(" Mapped: ", q, "Num Parts: ", parts.length)
+
+							if (parts.length>1){
+								q = "and(" + q.join(",") + ")";
+							}else{
+								q = q[0]
+							}
+							console.log("Q: ",q)
+							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
+							this.searchInput.set("value", '');
+						}else{
+							return;
+						}
+
+					default: 
+						console.log("Do Search: ", searchFilter, query);
+				}
+
 				console.log("Do Search: ", searchFilter, query);
 			}
 		},

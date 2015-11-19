@@ -1,14 +1,14 @@
 define("p3/widget/Grid", [
 		"dojo/_base/declare", "dgrid/OnDemandGrid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang"
+		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"
 
 	],
 	function(
 		declare, Grid, Store, DijitRegistry,
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang
+		Deferred, aspect, lang,PathJoin
 	) {
 		return declare([Grid, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
 			constructor: function() {
@@ -106,7 +106,7 @@ define("p3/widget/Grid", [
 				console.log("Create Store for ", dataModel, " at ", this.apiServer);
 
 				var store = new Store({
-					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
+					target: PathJoin((this.apiServer ? (this.apiServer) : ""), dataModel) + "/",
 					idProperty: "rownum",
 					headers: {
 						"accept": "application/json",

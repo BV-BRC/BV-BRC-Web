@@ -1,18 +1,18 @@
 define("p3/widget/viewer/Taxonomy", [
-	"dojo/_base/declare", "./GenomeList", "dojo/on",
+	"dojo/_base/declare", "./_GenomeList", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -40,7 +40,7 @@ define("p3/widget/viewer/Taxonomy", [
 
 			state.taxon_id = id;
 
-			xhr.get(this.apiServiceUrl + "/taxonomy/" + id, {
+			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
 				headers: {
 					accept: "application/json"
 				},
@@ -53,6 +53,8 @@ define("p3/widget/viewer/Taxonomy", [
 
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
+
+			this.overview.set('content',  DataItemFormatter(taxonomy, "taxonomy_data",{hideExtra:true}));
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -83,13 +85,60 @@ define("p3/widget/viewer/Taxonomy", [
 			// }
 		},
 
+		setActivePanelState: function(){
+
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			console.log("Active: ", active, "state: ", this.state);
+
+			var activeTab = this[active];
+
+
+
+			if (!activeTab){
+				console.log("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
+			switch(active){
+				case "phylogeny":
+				case "genomes":
+					console.log("setting ",active," state: ", this.state);
+					activeTab.set("state", this.state);
+					break;
+				case "proteinFamilies":
+				case "pathways":
+					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
+					break;
+				default:
+					var activeQueryState;
+					if (this.state && this.state.genome_ids){
+						console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// console.log("gidQueryState: ", gidQueryState);
+						console.log("Active Query State: ", activeQueryState);
+
+					}
+
+					if (activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
+					break;
+			}
+			console.log("Set Active State COMPLETE");
+		},
+
 		buildHeaderContent: function(taxon){
 			var taxon_lineage_names = taxon.lineage_names.slice(1);
 			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
 			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		createOverviewPanel: function(){

@@ -217,6 +217,13 @@ define("p3/app/p3app", [
 				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
+
+			if (this.dataAPI){
+				if (this.dataAPI.charAt(-1)!="/"){
+					this.dataAPI = this.dataAPI + "/";
+				}
+				this.api.data = RPC(this.dataAPI,this.authorizationToken);
+			}
 /*
 			Topic.subscribe("/ActiveWorkspace", function(as){
 				console.log("SET App.activeWorkspace",as)

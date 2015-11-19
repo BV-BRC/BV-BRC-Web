@@ -1,18 +1,18 @@
 define([
-	"dojo/_base/declare", "./GenomeList", "dojo/on",
+	"dojo/_base/declare", "./_GenomeList", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/pathJoin"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -54,7 +54,7 @@ define([
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.overview.set('content',  "TAXON OVERVIEW<br><pre>" + JSON.stringify(taxonomy,null,4) + "</pre>");
+			this.overview.set('content',  DataItemFormatter(taxonomy, "taxonomy_data",{hideExtra:true}));
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -138,7 +138,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		createOverviewPanel: function(){
