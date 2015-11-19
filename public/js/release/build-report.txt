@@ -1,4 +1,4 @@
-Build started: Wed Nov 18 2015 23:12:09 GMT-0500 (EST)
+Build started: Thu Nov 19 2015 00:40:39 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -705,11 +705,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/TreeNavSVG
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.4s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:10.138s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:11.071s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:11.41s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:17.181s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:2.484s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:11.048s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:11.659s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:12.064s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:18.472s)
 info(107) Package Version:
 	package: dojo; version: 1.11.0-pre
 	package: dijit; version: 1.11.0-pre
@@ -1344,9 +1344,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.4s)
+Done (compile time:2.484s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.4s)
+Done (compile time:2.484s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1361,9 +1361,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:10.138s)
+Done (compile time:11.048s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.4s)
+Done (compile time:2.484s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1378,7 +1378,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:10.138s)
+Done (compile time:11.048s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1501,9 +1501,9 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:11.071s)
+Done (compile time:11.659s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.4s)
+Done (compile time:2.484s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1518,7 +1518,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:10.138s)
+Done (compile time:11.048s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1641,7 +1641,7 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:11.071s)
+Done (compile time:11.659s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1768,9 +1768,9 @@ globalWSObject.js.uncompressed.js:17092: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:11.41s)
+Done (compile time:12.064s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:2.4s)
+Done (compile time:2.484s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1785,7 +1785,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:10.138s)
+Done (compile time:11.048s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1908,7 +1908,7 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:11.071s)
+Done (compile time:11.659s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2035,7 +2035,7 @@ globalWSObject.js.uncompressed.js:17092: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:11.41s)
+Done (compile time:12.064s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:556: WARNING - unreachable code
 	}else if( 0 ){
@@ -2069,112 +2069,112 @@ core.js.uncompressed.js:31623: WARNING - unreachable code
 			switch (val) {
 			^
 
-core.js.uncompressed.js:45488: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45527: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0, n = a.length; i < n; f.call(o, a[i], i, a), ++i);
 				                                                           ^
 
-core.js.uncompressed.js:45491: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45530: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); f.call(o, a.next(), i++, a));
 				                                                    ^
 
-core.js.uncompressed.js:45512: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45551: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; i < n; t[i] = f.call(o, a[i], i, a), ++i);
 				                                                    ^
 
-core.js.uncompressed.js:45516: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45555: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); t.push(f.call(o, a.next(), i++, a)));
 				                                                            ^
 
-core.js.uncompressed.js:45715: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45754: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0, n = a.length; i < n; z = f.call(o, z, a[i], i, a), ++i);
 				                                                                  ^
 
-core.js.uncompressed.js:45718: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45757: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); z = f.call(o, z, a.next(), i++, a));
 				                                                           ^
 
-core.js.uncompressed.js:45739: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45778: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 1, n = a.length; i < n; z = f.call(o, z, a[i], i, a), ++i);
 				                                                                  ^
 
-core.js.uncompressed.js:45744: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45783: WARNING - If this if/for/while really shouldnt have a body, use {}
 					for(i = 1; a.hasNext(); z = f.call(o, z, a.next(), i++, a));
 					                                                           ^
 
-core.js.uncompressed.js:45769: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45808: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(var i = a.length; i > 0; --i, z = f.call(o, z, a[i], i, a));
 			                                                               ^
 
-core.js.uncompressed.js:45779: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45818: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a));
 			                                               ^
 
-core.js.uncompressed.js:45802: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45841: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; !pr.call(o, z); t.push(f.call(o, z)), z = g.call(o, z));
 			                                                             ^
 
-core.js.uncompressed.js:45845: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45884: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(var i = a.length - 1; i >= 0; f.call(o, a[i], i, a), --i);
 			                                                             ^
 
-core.js.uncompressed.js:45854: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:45893: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i >= 0; t[j++] = f.call(o, a[i], i, a), --i);
 			                                                  ^
 
-core.js.uncompressed.js:47334: WARNING - unreachable code
+core.js.uncompressed.js:47373: WARNING - unreachable code
 				do{
 				^
 
-core.js.uncompressed.js:54136: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54175: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; i < n; z = f.call(o, z, a[i], i, a), t[++i] = z);
 				                                                           ^
 
-core.js.uncompressed.js:54140: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54179: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); t.push(z = f.call(o, z, a.next(), i++, a)));
 				                                                                   ^
 
-core.js.uncompressed.js:54164: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54203: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(var i = 1; i < n; t[i] = z = f.call(o, z, a[i], i, a), ++i);
 				                                                               ^
 
-core.js.uncompressed.js:54169: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54208: WARNING - If this if/for/while really shouldnt have a body, use {}
 					for(i = 1; a.hasNext(); t.push(z = f.call(o, z, a.next(), i++, a)));
 					                                                                   ^
 
-core.js.uncompressed.js:54195: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54234: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a), t[i] = z);
 			                                                         ^
 
-core.js.uncompressed.js:54207: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:54246: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a), t[i] = z);
 			                                                         ^
 
-core.js.uncompressed.js:54599: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:54638: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if(query == this.query){
 			^
 
-core.js.uncompressed.js:55491: WARNING - unreachable code
+core.js.uncompressed.js:55539: WARNING - unreachable code
 				return;
 				^
 
-core.js.uncompressed.js:55991: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:56039: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if(hint == 'avatar'){
 					^
 
-core.js.uncompressed.js:57322: WARNING - unreachable code
+core.js.uncompressed.js:57370: WARNING - unreachable code
 				 0 && console.log("FILTER: ", out)
 				 ^
 
-core.js.uncompressed.js:58017: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:58065: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:64261: WARNING - unreachable code
+core.js.uncompressed.js:64309: WARNING - unreachable code
 			return this.maxOuterRadius * trackFrac;
 			^
 
 0 error(s), 34 warning(s)
-Done (compile time:17.181s)
+Done (compile time:18.472s)
 
 
 Has Features Detected
@@ -3105,4 +3105,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 83
-	build time: 90.254 seconds
+	build time: 90.93 seconds

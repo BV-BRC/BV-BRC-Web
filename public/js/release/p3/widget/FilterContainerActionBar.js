@@ -218,7 +218,11 @@ define("p3/widget/FilterContainerActionBar", [
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
 			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
 			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
-			var clear = domConstruct.create("i", {"class": "fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+
+			on(clear,"click", lang.hitch(this,function(){
+				this.keywordSearch.set('value','');
+			}))
 			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
@@ -227,6 +231,11 @@ define("p3/widget/FilterContainerActionBar", [
 				// console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
 				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
 				// console.log("WOULD EMIT: keywords : ", val);
+				if (val){
+					domClass.remove(clear,"dijitHidden");
+				}else{
+					domClass.add(clear,"dijitHidden");
+				}
 				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: val});
 			}));
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");

@@ -27459,7 +27459,7 @@ define([
 
 
 
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: false, layoutPriority:1})
+			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: true, layoutPriority:1})
 			this.itemDetailPanel.startup();
 			this.addChild(this.actionPanel);
 			this.addChild(this.itemDetailPanel);
@@ -35004,8 +35004,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			// 0 && console.log("Running feature_data formatter");
 			//return domConstruct.create("div", {innerHTML: "hello"});
 
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name : 'Genome Name',
 				text : 'genome_name'
 			}, {
@@ -35326,6 +35325,44 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/"+item.feature_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
+			return div;
+		},
+
+		"taxonomy_data": function(item, options){
+			options = options || {}
+			var featureColumns = [{
+				name : 'Taxonomy ID',
+				text : 'taxon_id'
+			}, {
+				name : 'Taxon Name',
+				text : 'taxon_name'
+			}, {
+				name : 'Taxon Rank',
+				text : 'taxon_rank'
+			}, {
+				name : 'Other Names',
+				text : 'other_names'
+			}, {
+				name : 'Lineage',
+				text : 'lineage_names'
+			}, {
+				name : 'Lineage Ranks',
+				text : 'lineage_ranks'
+			}, {
+				name : 'Lineage IDs',
+				text : 'lineage_ids'
+			},{
+				name : 'Genetic Code',
+				text : 'genetic_code'
+			}];
+
+			var div = domConstruct.create("div");			
+			 0 && console.log("Createe Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			 0 && console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			 0 && console.log("Display Detail Complete")
+			
 			return div;
 		},
 
@@ -39032,7 +39069,7 @@ define([
 		paramsMap: "query",
 		maxGenomesPerList: 5000,
 		totalGenomes: 0,
-
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set (5000 Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			//  0 && console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) {  0 && console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -39106,7 +39143,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="color:#333"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
@@ -39263,11 +39300,13 @@ define([
 				this.removeChild(this.warningPanel);
 			}
 		},
+
+
 		showWarning: function(msg){
 			if(!this.warningPanel){
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">Your genome list is too large to view all of the supplemental data.  Filter the genomes and then press the Anchor button to enable the disabled tabs.</div>',
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -55162,7 +55201,11 @@ define([
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
 			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
 			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
-			var clear = domConstruct.create("i", {"class": "fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+
+			on(clear,"click", lang.hitch(this,function(){
+				this.keywordSearch.set('value','');
+			}))
 			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
@@ -55171,6 +55214,11 @@ define([
 				//  0 && console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
 				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
 				//  0 && console.log("WOULD EMIT: keywords : ", val);
+				if (val){
+					domClass.remove(clear,"dijitHidden");
+				}else{
+					domClass.add(clear,"dijitHidden");
+				}
 				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: val});
 			}));
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
