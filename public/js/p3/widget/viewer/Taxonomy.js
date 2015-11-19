@@ -1,5 +1,5 @@
 define([
-	"dojo/_base/declare", "./GenomeList", "dojo/on",
+	"dojo/_base/declare", "./_GenomeList", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
@@ -138,7 +138,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return '<i class="fa icon-anchor fa-1x" style="color:#333"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		createOverviewPanel: function(){
