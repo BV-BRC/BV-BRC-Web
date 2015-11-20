@@ -29,27 +29,48 @@ define([
 					return;
 				}
 
-				switch(searchFilter){
-					case "genome":
-						var parts = query.split(" ");
-						if (parts){
-							q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
-							console.log(" Mapped: ", q, "Num Parts: ", parts.length)
+                               var parts = query.split(" ");
+				if (parts){
+					q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
+					console.log(" Mapped: ", q, "Num Parts: ", parts.length)
 
-							if (parts.length>1){
-								q = "and(" + q.join(",") + ")";
-							}else{
-								q = q[0]
-							}
-							console.log("Q: ",q)
+					if (parts.length>1){
+						q = "and(" + q.join(",") + ")";
+					}else{
+						q = q[0]
+					}
+
+					var clear = false;
+					switch(searchFilter){
+						case "amr":
+							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
+							clear=true;	
+							break;	
+
+						case "pathways":
+							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
+							clear=true;	
+							break;	
+						case "sp_genes":
+							Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
+							clear=true;	
+							break;	
+						case "genome_features":
+							Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+							clear=true;	
+							break;
+						case "genomes":
 							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
-							this.searchInput.set("value", '');
-						}else{
-							return;
-						}
+							clear=true;	
+							break;	
+						default: 
+							console.log("Do Search: ", searchFilter, query);
+					}
 
-					default: 
-						console.log("Do Search: ", searchFilter, query);
+					if (clear) {
+						this.searchInput.set("value", '');
+					}
+
 				}
 
 				console.log("Do Search: ", searchFilter, query);

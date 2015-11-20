@@ -218,7 +218,7 @@ define([
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
 			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
 			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
-			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"vertical-align": "bottom", "font-size":"14px","margin-left": "4px"},innerHTML: ""}, kbot)
 
 			on(clear,"click", lang.hitch(this,function(){
 				this.keywordSearch.set('value','');
