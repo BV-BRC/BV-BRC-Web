@@ -7,6 +7,12 @@ define([
 	Store,DijitRegistryExt
 ){
 	return declare([Grid,DijitRegistryExt,Selection], {
+		constructor: function(){
+			this.queryOptions = {
+	                        sort: [{ attribute: "taxon_name", descending: false}]
+			}
+			console.log("this.queryOptions: ", this.queryOptions);
+		},
 		store: new Store({}),
 		columns: [
 			Tree({label: "Name", field:"taxon_name"}),
@@ -15,6 +21,8 @@ define([
 		],
 		startup: function(){
 			var _self=this;
+					sort: [{attribute:"taxon_name"}]
+		
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				var row = _self.row(evt);
