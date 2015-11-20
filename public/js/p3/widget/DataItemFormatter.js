@@ -376,8 +376,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			console.log("Createe Display Header")
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			console.log("Display Detail Complete")
