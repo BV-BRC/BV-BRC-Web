@@ -83,7 +83,7 @@ define([
    	     				break;
 	     			case "species group":
    	     				nextRank="species";
-   	     				nextRankQ = "eq(taxon_rank,species)"
+   	     				nextRankQ = "or(eq(taxon_rank,species),eq(taxon_rank,\%22no%20rank\%22))";
    	     				break;
    	     			case "species":
    	     				nextRank="subspecies";
