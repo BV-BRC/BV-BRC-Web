@@ -10,6 +10,12 @@ define([
 	var store = new Store({});
 
 	return declare([Grid], {
+		constructor: function(){
+			this.queryOptions = {
+	                        sort: [{ attribute: "patric_id", descending: false}]
+			}
+			console.log("this.queryOptions: ", this.queryOptions);
+		},
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
@@ -36,8 +42,14 @@ define([
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
+
+//		queryOptions: {
+//			sort: [{ attribute: "genome_name", descending: true }]
+//		},
+
 		startup: function() {
 			var _self = this;
+
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
@@ -75,6 +87,7 @@ define([
 			});
 
 			this.inherited(arguments);
+
 			this.refresh();
 		}
 	});

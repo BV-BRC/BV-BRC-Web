@@ -336,6 +336,12 @@ define([
 				hidden: true
 			}
 		},
+		defaultSortProperty: "genome_name",
+		constructor: function(){
+			this.queryOptions={
+				sort: [{attribute: this.defaultSortProperty, descending: false}],
+			};
+		},
 		startup: function() {
 			var _self = this
 			// if (this.defaultSortProperty) {

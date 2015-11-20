@@ -1,12 +1,12 @@
 define([], function(){
 
   return function(/* path segments */) {
-      console.log("JOIN PATH PARTS: ", arguments);
+      //console.log("JOIN PATH PARTS: ", arguments);
       // Split the inputs into a list of path commands.
       var parts = [];
 
       for (var i = 0, l = arguments.length; i < l; i++) {
-        console.log("arguments[i]",i, arguments[i]);
+        //console.log("arguments[i]",i, arguments[i]);
         if (arguments[i]) {
           if (typeof arguments[i] != 'string'){
             arguments[i]=arguments[i].toString();
@@ -21,7 +21,7 @@ define([], function(){
         }
       }
       var out = parts.join('/');
-      console.log("OUT: ", out);
+      //console.log("OUT: ", out);
 
       return out;
   }
