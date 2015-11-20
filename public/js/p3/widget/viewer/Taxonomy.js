@@ -5,14 +5,17 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter"
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter",
+	"../TaxonomyTreeGrid"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter,
+			TaxonomyTreeGrid
+){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -27,7 +30,12 @@ define([
 				id: this.viewer.id + "_" + "phylogeny"
 			});
 
+			this.taxontree = new TaxonomyTreeGrid({
+				title: "Taxonomy",
+				id: this.viewer.id + "_" + "taxontree"
+			});
 			this.viewer.addChild(this.phylogeny,1)
+			this.viewer.addChild(this.taxontree,2)
 			domConstruct.empty(this.queryNode);
 
 			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
@@ -39,6 +47,8 @@ define([
 			var state = this.state || {};
 
 			state.taxon_id = id;
+
+
 
 			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
 				headers: {
@@ -99,6 +109,9 @@ define([
 				return;
 			}
 			switch(active){
+				case "taxontree":
+					activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
+					break;
 				case "phylogeny":
 				case "genomes":
 					console.log("setting ",active," state: ", this.state);
