@@ -127,7 +127,7 @@ define([
 					dataType: {label: "Data Type", field: "data_type"},
 					title: {label: "Title", field: "title"},
 					comparisons: {label: "Comparisons", field: "samples"},
-					genes: {label: "Genes", field: "genesTotal", formatter: function(val){ console.log("FORMAT Genes Total: ", val); return val.toString(val); }},
+					genes: {label: "Genes", field: "genesTotal"},
 					pubmed: {label: "PubMed", field: "pmid"},
 					organism: {label: "Organism", field: "organism"}
 				}

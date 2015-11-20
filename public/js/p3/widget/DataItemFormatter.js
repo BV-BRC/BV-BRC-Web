@@ -376,8 +376,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}];
 
 			var div = domConstruct.create("div");			
-			console.log("Createe Display Header")
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			console.log("Display Detail Complete")
@@ -1120,7 +1120,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 						if (mini == false)
 						{						
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1135,7 +1135,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 						}
 						else if (value[j].mini == true)
 						{
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1220,7 +1220,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					
 					if (mini == false)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
@@ -1235,7 +1235,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					}
 					else if (column_data[i].mini == true)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);

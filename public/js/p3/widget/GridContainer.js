@@ -1,10 +1,10 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
+	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane","dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog","dijit/popup","dijit/TooltipDialog"
-], function(declare, BorderContainer, on,
-			ActionBar, ContainerActionBar, lang, ItemDetailPanel,
+], function(declare, BorderContainer, on, domConstruct,
+			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane,IDMappingTemplate,
 			Dialog,popup,TooltipDialog){
 
@@ -15,6 +15,11 @@ define([
 		}
 	});
 
+	var downloadTT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
 
@@ -208,6 +213,22 @@ define([
 				}, 
 				false	
 			],[
+				"ViewSpgeneItem",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "VIEW",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Specialty Gene",
+					validContainerTypes: ["spgene_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+					new Dialog({content: "View specialty gene curation information.  IMPLEMENT ME!"}).show();
+				}, 
+				false	
+			],[			
 				"ViewGenomeItem",
 				"MultiButton fa icon-genome fa-2x", 
 				{
@@ -215,7 +236,7 @@ define([
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data","sequence_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -225,6 +246,70 @@ define([
 				}, 
 				false
 			],[
+				"ViewCDSFeatures",
+				"MultiButton fa icon-genome-features-cds fa-2x",
+				{
+					label: "CDS",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View CDS Features",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+				},
+				false
+			],[
+				"ViewCDSFeaturesSeq",
+				"MultiButton fa icon-genome-features-cds fa-2x",
+				{
+					label: "CDS",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View CDS Features",
+					validContainerTypes: ["sequence_data"]
+				},
+				function(selection){
+					console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession,"+ sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
+				},
+				false
+			],[	
+				"ViewGenomeBrowser",
+				"MultiButton fa icon-genome_browser fa-2x",
+				{					
+					label: "BROWSER",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "Open Genome Browser",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
+				}, 
+				false
+			],[	
+				"ViewGenomeBrowserSeq",
+				"MultiButton fa icon-genome_browser fa-2x",
+				{					
+					label: "BROWSER",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "Open Genome Browser",
+					validContainerTypes: ["sequence_data"]
+				},
+				function(selection){
+					console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
+				}, 
+				false
+			],[						
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -234,7 +319,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+					validContainerTypes: ["genome_data", "sequence_data","feature_data","spgene_data","pathway_data"]
 				},
 				function(selection){
 					popup.open({
@@ -248,8 +333,8 @@ define([
 				"MultipleSeqAlignment",
 				"fa icon-alignment fa-2x",
 				{
-					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+					label:"MSA",ignoreDataType:true, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
 					var selection = self.actionPanel.get('selection')
@@ -258,10 +343,23 @@ define([
 				},
 				false
 			],[
-				"idmapping",
+				"MultipleSeqAlignmentFeatures",
+				"fa icon-alignment fa-2x",
+				{
+					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["feature_data","spgene_data"]
+				}, 
+				function(selection){
+					var selection = self.actionPanel.get('selection')
+					var ids = selection.map(function(d){ return d['feature_id']; });
+						console.log("OPEN MSA VIEWER");
+				},
+				false
+			],[
+				"idmappingFeatures",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+				{label:"ID MAP",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+					validContainerTypes: ["feature_data","spgene_data"]
 				},
 				function(selection){
 
@@ -276,10 +374,38 @@ define([
 				}, 
 				false
 			],[
-				"Pathway Summary",
+				"idmapping",
+				"fa icon-exchange fa-2x",
+				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+					validContainerTypes: ["proteinfamily_data","pathway_data"]
+				},
+				function(selection){
+
+					console.log("TTDlg: ", idMappingTTDialog);
+					console.log("this: ", this);
+					popup.open({
+						popup: idMappingTTDialog,
+						// around: this._actions.idmapping.button,
+						orient: ["below"]
+					});
+					console.log("popup idmapping", selection);
+				}, 
+				false
+			],[
+				"ExperimentGeneList",
+				"fa icon-list-unordered fa-2x",
+				{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"], tooltip: "View Experiment Gene List"}, 
+				function(selection){
+					console.log("this.currentContainerType: ", this.currentContainerType, this);
+					console.log("View Gene List", selection);
+					new Dialog({content: "IMPLEMENT ME!"}).show();
+				}, 
+				false
+			],[			
+				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
 				{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
 					new Dialog({content: "IMPLEMENT ME!"}).show();
@@ -289,7 +415,53 @@ define([
 				}, 
 				false
 
-			]
+			],[
+				"AddGroup", 
+				"fa icon-folder-open2 fa-2x", 
+				{
+					label:"ADD GROUP",
+					ignoreDataType:true,
+					multiple: true, 
+					validTypes:["*"],
+					tooltip: "Copy selection to a new or existing group", 
+					validContainerTypes:["genome_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+				},
+				function(selection, containerWidget){
+					console.log("Add Items to Group", selection);
+					var dlg = new Dialog({title:"Copy Selection to Group"});
+					var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						},2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode,"first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();						
+				},
+				false
+			],[
+				"DownloadTable",
+				"fa fa-download fa-2x",
+				{
+					label:"DOWNLOAD",
+					multiple: true,
+					validTypes:["*"],
+					tooltip: "Download Table", 
+					tooltipDialog: downloadTT, 
+					validContainerTypes:["genome_data","sequence_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+				}, 
+				function(selection){	
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				false
+			]						
 		],
 
 		buildQuery: function(){
