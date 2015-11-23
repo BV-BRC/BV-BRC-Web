@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare", "./GridContainer",
-	"./SequenceGrid", "dijit/popup",
+	"./TaxonomyTreeGrid", "dijit/popup",
 	"dijit/TooltipDialog","./FacetFilterPanel",
 	"dojo/_base/lang","dojo/on"
 ], function(declare, GridContainer,
@@ -30,11 +30,14 @@ define([
 		popup.close(downloadTT);
 	});
 
+
 	return declare([GridContainer], {
-		containerType: "sequence_data",
-		facetFields: ["sequence_type","topology"],
-		maxGenomeCount: 10000,
-		dataModel: "genome_sequence",
+		facetFields: [],
+		enableFilterPanel: false,
+		dataModel: "taxonomy",
+		containerType: "taxonomy_data",
+		getFilterPanel: function(opts){
+		},
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"ToggleFilters",
@@ -59,7 +62,7 @@ define([
 				true
 			]
 		]),
-		// selectionActions: [GridContainer.prototype.selectionActions[0]],
 		gridCtor: Grid
+
 	});
 });

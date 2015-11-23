@@ -225,7 +225,8 @@ define([
 				function(selection){
 					var sel = selection[0];
 					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-					new Dialog({content: "View specialty gene curation information.  IMPLEMENT ME!"}).show();
+					console.log("View SP GENE: ", sel)
+					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
 				}, 
 				false	
 			],[			
@@ -461,7 +462,55 @@ define([
 					});
 				},
 				false
-			]						
+			],[
+				"ViewTaxon",
+				"fa icon-eye2 fa fa-2x",
+				{
+					label:"VIEW",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Selected Taxonomy", 
+					tooltipDialog: downloadTT, 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id})
+				},
+				false
+			],[
+				"ViewTaxonGenomes",
+				"fa icon-genome fa fa-2x",
+				{
+					label:"GENOMES",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Genome List", 
+					tooltipDialog: downloadTT, 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
+				},
+				false
+			],[
+				"ViewTaxonGenomeFeatures",
+				"fa icon-genome-features-cds fa fa-2x",
+				{
+					label:"CDS",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Genome List", 
+					tooltipDialog: downloadTT, 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
+				},
+				false
+			]							
 		],
 
 		buildQuery: function(){

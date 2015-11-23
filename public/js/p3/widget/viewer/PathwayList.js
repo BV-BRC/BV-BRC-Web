@@ -30,30 +30,30 @@ define([
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl,"pathway","?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
+			// var url = PathJoin(this.apiServiceUrl,"pathway","?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
 
-			console.log("url: ", url);
-			xhr.get(url, {
-				headers: {
-					accept: "application/solr+json",
-					'X-Requested-With': null,
-					'Authorization': (window.App.authorizationToken || "")
-				},
-				handleAs: "json"
-			}).then(function(res){
-				console.log(" URL: ", url);
-				console.log("Get GenomeList Res: ", res);
-				if(res && res.response && res.response.docs){
-					var pathways= res.response.docs;
-					if(pathways){
-						_self._set("total_pathways", res.response.numFound);
-					}
-				}else{
-					console.log("Invalid Response for: ", url);
-				}
-			}, function(err){
-				console.log("Error Retreiving Genomes: ", err)
-			});
+			// console.log("url: ", url);
+			// xhr.get(url, {
+			// 	headers: {
+			// 		accept: "application/solr+json",
+			// 		'X-Requested-With': null,
+			// 		'Authorization': (window.App.authorizationToken || "")
+			// 	},
+			// 	handleAs: "json"
+			// }).then(function(res){
+			// 	console.log(" URL: ", url);
+			// 	console.log("Get GenomeList Res: ", res);
+			// 	if(res && res.response && res.response.docs){
+			// 		var pathways= res.response.docs;
+			// 		if(pathways){
+			// 			_self._set("total_pathways", res.response.numFound);
+			// 		}
+			// 	}else{
+			// 		console.log("Invalid Response for: ", url);
+			// 	}
+			// }, function(err){
+			// 	console.log("Error Retreiving Genomes: ", err)
+			// });
 
 		},
 
@@ -105,8 +105,35 @@ define([
 			}
 
 			switch(active){
+				case "overview":
+					activeTab.set("state",this.state);
+					break;
 				case "pathways":
-					activeTab.set("state", this.state);
+					var search = this.state.search + "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+
+					console.log("PATHWAY LIST SEARCH: ", search);
+					activeTab.set("state", lang.mixin({},this.state,{
+							search: search
+					}));
+					break;
+				case "ecnumbers":
+					var search = this.state.search + "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+
+					console.log("PATHWAY LIST SEARCH: ", search);
+					activeTab.set("state", lang.mixin({},this.state,{
+							search: search
+					}));
+					break;
+				case "genes":
+					var search = this.state.search + "&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+
+					console.log("PATHWAY LIST SEARCH: ", search);
+					activeTab.set("state", lang.mixin({},this.state,{
+							search: search
+					}));
 					break;
 				default:
 					var activeQueryState;
@@ -160,8 +187,25 @@ define([
 			this.pathways= new PathwayGridContainer({
 				title: "Pathways",
 				id: this.viewer.id + "_" + "pathways",
-				disabled: false
+				disabled: false,
+		        primaryKey: "pathway_id",
 			});
+
+			this.ecnumbers= new PathwayGridContainer({
+				title: "EC Numbers",
+				id: this.viewer.id + "_" + "ecnumbers",
+				disabled: false,
+				primaryKey: "ec_number"
+			});
+
+			this.genes= new PathwayGridContainer({
+				title: "Genes",
+				id: this.viewer.id + "_" + "genes",
+				disabled: false,
+				primaryKey: "gene"
+			});
+
+
 			// this.sequences = new SequenceGridContainer({
 			// 	title: "Sequences",
 			// 	id: this.viewer.id + "_" + "sequences",
@@ -179,6 +223,9 @@ define([
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.ecnumbers);
+			this.viewer.addChild(this.genes);
+
 			// this.viewer.addChild(this.sequences);
 			// this.viewer.addChild(this.genomes);
 	

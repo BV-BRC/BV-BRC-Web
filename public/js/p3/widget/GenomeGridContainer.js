@@ -66,9 +66,9 @@ define([
 			[
 				"ToggleFilters",
 				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
+				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters"}, 
 				function(selection){	
-					console.log("Toggle Filters");
+					console.log("Toggle the Filters Panel");
 					on.emit(this.domNode,"ToggleFilters",{});
 				},
 				true

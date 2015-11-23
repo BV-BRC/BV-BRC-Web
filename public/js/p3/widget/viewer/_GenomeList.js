@@ -17,9 +17,9 @@ define([
 			SequenceGridContainer,PathJoin){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
-		maxGenomesPerList: 5000,
+		maxGenomesPerList: 10000,
 		totalGenomes: 0,
-		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set (5000 Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -231,7 +231,7 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
+				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
@@ -254,9 +254,10 @@ define([
 
 		showWarning: function(msg){
 			if(!this.warningPanel){
+				var c = this.warningContent.replace("{{maxGenomesPerList}}",this.maxGenomesPerList)
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});

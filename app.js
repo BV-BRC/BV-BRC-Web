@@ -13,6 +13,7 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var workspace  = require('./routes/workspace');
 var viewers  = require('./routes/viewers');
+var contentViewer = require("./routes/content");
 var apps= require('./routes/apps');
 var uploads = require('./routes/uploads');
 var jobs = require('./routes/jobs');
@@ -106,6 +107,7 @@ app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
 app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
 app.use("/workspace", workspace)
+app.use("/content",contentViewer)
 app.use("/view", viewers)
 app.use("/app", apps)
 app.use("/job", jobs)

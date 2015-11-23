@@ -15,6 +15,7 @@ define([
 	Evented
 ) {
 	return declare([Store, Evented], {
+		headers: null,
 		constructor: function(options) {
 			// console.log("P3JsonRest Options", options);
 			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
@@ -23,13 +24,23 @@ define([
 			}
 
 			this.target = baseUrl + this.dataModel + "/";
-            this.headers = {
-                "accept": "application/json",
-              //  "//content-type": "application/json",
-                "content-type": "application/rqlquery+x-www-form-urlencoded",
-                'X-Requested-With': null,
-                'Authorization': (window.App.authorizationToken || "")
-           }
+			this.init();
+           //  this.headers = {
+           //      "accept": "application/json",
+           //    //  "//content-type": "application/json",
+           //      "content-type": "application/rqlquery+x-www-form-urlencoded",
+           //      'X-Requested-With': null,
+           //      'Authorization': (window.App.authorizationToken || "")
+           // }
+		},
+		init: function(){
+				this.headers={
+		            "accept": "application/json",
+		          //  "//content-type": "application/json",
+		            "content-type": "application/rqlquery+x-www-form-urlencoded",
+		            'X-Requested-With': null,
+		            'Authorization': (window.App.authorizationToken || "")
+				}
 		},
 		autoFacet: false,
 		dataModel: "",
