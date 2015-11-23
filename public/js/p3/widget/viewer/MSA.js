@@ -3,12 +3,12 @@ define([
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "dojo/_base/Deferred",
 	"dojo/request", "dojo/_base/lang","dojo/when",
-	"../ActionBar", "../ContainerActionBar", "d3/d3","../../util/PathJoin"
+	"../ActionBar", "../ContainerActionBar", "d3/d3","phyloview/TreeNavSVG","../../util/PathJoin"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang,when,
-			ActionBar,ContainerActionBar,d3,PathJoin
+			ActionBar,ContainerActionBar,d3,TreeNavSVG,PathJoin
 ){
 	return declare([Base], {
 		"disabled": false,
@@ -106,10 +106,11 @@ define([
         },
 
 		render: function(){
+			this.contentPane.set("content", "");
             var menuDiv = domConstruct.create("div",{},this.contentPane.containerNode);
-            var combineDiv = domConstruct.create("div",{},this.contentPane.containerNode);
-            var treeDiv = domConstruct.create("div",{},combineDiv);
-            var msaDiv = domConstruct.create("div",{}, combineDiv);
+            var combineDiv = domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
+            var treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},combineDiv);
+            var msaDiv = domConstruct.create("div",{"style":{"width":"100%"}}, combineDiv);
 
             //domConstruct.place(menuDiv,this.contentPane.containerNode,"last");
             //domConstruct.place(combineDiv,this.contentPane.containerNode,"last");
@@ -124,12 +125,14 @@ define([
             var opts = {};
             // set your custom properties
             // @see: https://github.com/greenify/biojs-vis-msa/tree/master/src/g
+            opts.seqs=msa_models.seqs;
             opts.el = msaDiv;
             opts.bootstrapMenu=false;
             opts.vis = {
             conserv: false,
             overviewbox: false,
             seqlogo: true,
+            sequences: true,
             labelName: false,
             labelId: false,
             };
@@ -151,9 +154,9 @@ define([
 
             // init msa
             var m = new msa.msa(opts);
-            m.seqs.reset(msa_models.seqs);
-            m.g.config.set("url", "userimport");
-            m.g.trigger("url:userImport");
+            //m.seqs.reset(msa_models.seqs);
+            //m.g.config.set("url", "userimport");
+            //m.g.trigger("url:userImport");
             sel= new mt.selections();
             //treeDiv =document.getElementById("treeDiv");
                 treeDiv.innerHTML="";
@@ -177,7 +180,7 @@ define([
                 delete e.collection;
             //return Object.setPrototypeOf(e, require("backbone-thin").Model.prototype);
             });
-            m.seqs.reset(nodes.models);
+            //m.seqs.reset(nodes.models);
             console.log(m.seqs);
 
             //var nexusData =["20", "19", "38", "85", "(fig.509170.6.peg.19:0.03278,((fig.575586.4.peg.3246:0.0,fig.1120929.3.peg.86:0.0):0.00643,fig.981334.4.peg.3118:0.01314):0.06506,((fig.1405803.3.peg.6190:2.30354,((fig.1313303.3.peg.2841:0.0,fig.291331.8.peg.1145:0.0,fig.342109.8.peg.1061:0.0,fig.360094.4.peg.4335:0.0):2.83584,fig.1228988.4.peg.5452:1.00753):1.76172):1.37146,((fig.1392540.3.peg.2502:0.00016,((fig.665944.3.peg.5249:0.00016,(fig.1284812.3.peg.4952:0.02124,fig.665944.3.peg.5052:0.00015):0.04230):1.80493,((fig.1159496.3.peg.81:0.00616,fig.1159560.3.peg.58:0.03605):1.03487,(fig.758829.3.peg.2647:0.00015,(fig.1185418.3.peg.2928:0.00017,fig.1432547.3.peg.8379:0.02325):0.18273):0.65301):1.98034):1.24802):0.12367,fig.1330047.3.peg.969:0.05795):0.04715):0.00011);", "fig.1405803.3.peg.6190", "Pseudomonas_alcaligenes_MRY13-0052", "-----------------MYDFKKYVLDIALKQVNEH-----------TDIIVKVEQHKTGRSITGFSFSFKQKNQPRIQSNLKEIRIR--", "fig.1313303.3.peg.2841", "Xanthomonas_oryzae_ATCC_35933", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.291331.8.peg.1145", "Xanthomonas_oryzae_pv._oryzae_KACC_10331", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.342109.8.peg.1061", "Xanthomonas_oryzae_pv._oryzae_MAFF_311018", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.360094.4.peg.4335", "Xanthomonas_oryzae_pv._oryzae_PXO99A", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.665944.3.peg.5249", "Klebsiella_sp._4_1_44FAA", "----------------------------MRQQLTREYAT--------GRFRGDKEALKREVERRVQERMLLSR--GNNYTRLATAPL---", "fig.1284812.3.peg.4952", "Klebsiella_pneumoniae_UHKPC81", "----------------------------MRQQLTREYAT--------GRFRGDHEALKREVERRVQERMLLSR--GNNYTRLATVPI---", "fig.665944.3.peg.5052", "Klebsiella_sp._4_1_44FAA", "----------------------------MRQQLTREYAT--------GRFRGDKEALKREVERRVQERMLLSR--GNNYTRLATVPI---", "fig.1228988.4.peg.5452", "Klebsiella_pneumoniae_subsp._pneumoniae_KpMDU1", "-----------------------------------------M-----SEYGVKSDTLELSFVEFVKMCGFNSRRSNKKNARSHQ------", "fig.1392540.3.peg.2502", "Acinetobacter_nectaris_CIP_110549", "-----------------MTDAQRHLFANKMSKMPEM-----------SKYSQGTESYQ-EFATRIAEMLLQPEKFRELYPLLEKNGFKL-", "fig.1330047.3.peg.969", "Acinetobacter_junii_MTCC_11364", "-----------------MTDSQRHLFANKMSEMPEM-----------SKYSQGTESYQ-QFAVRIAEMLLHPEKFKELYPILEKAGFKA-", "fig.509170.6.peg.19", "Acinetobacter_baumannii_SDF", "-----------------MTDAQRHLFANKMSEMPEM-----------SKYSQGTESYQ-QFSIRIADMLLEPEKFRELYPILEKAGFKG-", "fig.575586.4.peg.3246", "Acinetobacter_johnsonii_SH046", "-----------------------------MSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFQP-", "fig.1120929.3.peg.86", "Acinetobacter_towneri_DSM_14962_=_CIP_107472", "-----------------------------MSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFQP-", "fig.981334.4.peg.3118", "Acinetobacter_radioresistens_DSM_6976_=_NBRC_102413_=_CIP_103788", "-----------------MTDAQRHLFANKMSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFNP-", "fig.758829.3.peg.2647", "Escherichia_coli_ECA-0157", "MRKAMEQLRDIGYLDYTEFKRGRATYFSVHYRNPKLISSPVKVPRKEEEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1185418.3.peg.2928", "Klebsiella_pneumoniae_subsp._pneumoniae_ST512-K30BO", "------------------------------MKVPRKA----------EEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1432547.3.peg.8379", "Klebsiella_pneumoniae_IS22", "------------------------------MKVPRKE----------EEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1159496.3.peg.81", "Cronobacter_dublinensis_subsp._lactaridi_LMG_23825", "----MEQLKEIGYLDYSEIKRGRVVYFHIHYRRPKLRPQSLP-----GALPAGEELQT-DNAAAVEEQGEMVMLTKEELALLEKIRKGQI", "fig.1159560.3.peg.58", "Cronobacter_dublinensis_subsp._lausannensis_LMG_23824", "----MEQLKEIGYLDYTEIKRGRVVYFHIHYRRPKLRPQSLP-----GALPAGEELPA-DNAAAVEEQGEMVMLTKEELALLEKIRKGQI"];
@@ -209,6 +212,10 @@ define([
             m.addView("menu", defMenu);
 
             m.render();
+            //var msaDiv2=document.getElementsByClassName("biojs_msa_seqblock")[0];
+            //var ctx = msaDiv2.getContext("2d");
+            //ctx.fillStyle = "#FF0000";
+            //ctx.fillRect(0,0,150,75);
             m.el.parentElement.parentElement.insertBefore(menuOpts.el, combineDiv);
             //m.el.parentElement.insertBefore(menuOpts.el, combineDiv);
             var initialHidden=0;
