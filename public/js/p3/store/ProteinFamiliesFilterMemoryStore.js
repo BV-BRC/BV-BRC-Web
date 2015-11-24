@@ -42,6 +42,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "genome_id",
 		state: null,
+		pfState: null,
 
 		onSetState: function(attr, oldVal, state){
 			var cur = (this.genome_ids || []).join("");
@@ -58,6 +59,7 @@ define([
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.pfState = options.pfState;
 			this.watch('state', lang.hitch(this, 'onSetState'));
 		},
 
@@ -139,16 +141,19 @@ define([
 				var data = response.response.docs;
 
 				// set genomeFilterStatus
-				var genomeIds = [];
-				state.genomeFilterStatus = {};
+				var _genomeIds = [];
+				var _genomeFilterStatus = {};
 				data.forEach(function(genome, idx){
 					var gfs = new genomeFilterStatus();
 					gfs.init(idx, genome.genome_name);
-					state.genomeFilterStatus[genome.genome_id] = gfs;
-					genomeIds.push(genome.genome_id);
+					_genomeFilterStatus[genome.genome_id] = gfs;
+					_genomeIds.push(genome.genome_id);
 				});
 
-				Topic.publish("ProteinFamilies", "genomeIds", genomeIds);
+				_self.pfState.genomeIds = _genomeIds;
+				_self.pfState.genomeFilterStatus = _genomeFilterStatus;
+
+				Topic.publish("ProteinFamilies", "genomeIds", _self.pfState);
 
 				_self.setData(data);
 				_self._loaded = true;
