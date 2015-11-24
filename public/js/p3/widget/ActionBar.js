@@ -90,7 +90,6 @@ define([
 					//console.log("Current ContainerType: ", this.currentContainerType);
 					//console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
-						console.log("T: ", t, " Current Container Type: ", this.currentContainerType)
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
 						return false;

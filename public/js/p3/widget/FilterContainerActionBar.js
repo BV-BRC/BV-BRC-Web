@@ -29,8 +29,13 @@ define([
     }
 
     function parseQuery(filter){
-    	var _parsed = RQLParser.parse(filter)
-			// console.log("PARSED RQL:", parsed);
+    	try {
+    		var _parsed = RQLParser.parse(filter)
+    	}catch(err){
+    		console.log("Unable To Parse Query: ", filter);
+    		return;
+    	}
+    	
 		var _self=this;
 
 		var parsed = {
