@@ -189,7 +189,16 @@ define([
 					var node = DataItemFormatter(item,this.containerWidget.containerType)
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
-				} else{
+				} else if (item && item._formatterType) {
+
+					domClass.remove(this.domNode, "workspaceItem");
+					domClass.add(this.domNode, "dataItem");
+
+					var node = DataItemFormatter(item,item._formatterType)
+					domConstruct.empty(this.itemBody);
+					domConstruct.place(node, this.itemBody, "first");
+
+				}else{
 
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");

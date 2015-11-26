@@ -1,9 +1,9 @@
 define([
-		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
+		"dojo/_base/declare", "./Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
 		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
 		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager","dijit/Dialog",
-		"../JobManager"
+		"../JobManager","dojo/on"
 
 	],
 	function(
@@ -11,9 +11,14 @@ define([
 		Keyboard, Selection, formatter, ColumnResizer,
 		ColumnHider, DnD, DnDSource,
 		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,Dialog,
-		JobManager
+		JobManager,on
 	) {
+
+
+		var store = JobManager.getStore();
+
 		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
+			store: store,
 			columns: {
 				"status_indicator": {
 					label: "",
@@ -80,7 +85,6 @@ define([
 				})
 
 			},
-			store: null,
 			selectionMode: "single",
 			allowTextSelection: false,
 			deselectOnRefresh: false,
@@ -160,77 +164,44 @@ define([
 					});
 				});
 
-				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
-					var row = _self.row(evt);
-					//console.log("dblclick row:", row)
-					if (row.data && row.data.status && row.data.status=="completed"){
-						//console.log("row.data: ", row.data);
-						Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
-					}else{
-						_self.showErrorDialog(row.data);
-					}
-/*
-                                        on.emit(_self.domNode, "ItemDblClick", {
-                                                item_path: row.data.path,
-                                                item: row.data,
-                                                bubbles: true,
+				// this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+				// 	var row = _self.row(evt);
+				// 	//console.log("dblclick row:", row)
+				// 	if (row.data && row.data.status && row.data.status=="completed"){
+				// 		//console.log("row.data: ", row.data);
+				// 		Topic.publish("/navigate", {href: "/workspace" + row.data.parameters.output_path+ "/" + row.data.parameters.output_file});
+				// 	}else{
+				// 		_self.showErrorDialog(row.data);
+				// 	}
 
-                                        });
-                                        //console.log('after emit');
-*/
-				});
+				// });
+
 				_selection={};
 				Topic.publish("/select", []);
 
-			/*
 				this.on("dgrid-select", function(evt) {
-					//console.log("dgrid-select");
-					var rows = event.rows;
-					Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-					var sel = Object.keys(_selection).map(function(s) { _selection[s].type="job_status_reference"; return _selection[s]; });
-					//console.log("sel: ", sel);
+					console.log('dgrid-select: ', evt);
+					var newEvt = {
+						rows: evt.rows,
+						selected: evt.grid.selection,
+						grid: _self,
+						bubbles: true,
+						cancelable: true
+					};
+					on.emit(_self.domNode, "select", newEvt);
 				});
 				this.on("dgrid-deselect", function(evt) {
-					//console.log("dgrid-select");
-					var rows = event.rows;
-					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
-					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					Topic.publish("/select", sel);
+					console.log("dgrid-select");
+					var newEvt = {
+						rows: evt.rows,
+						selected: evt.grid.selection,
+						grid: _self,
+						bubbles: true,
+						cancelable: true
+					};
+					on.emit(_self.domNode, "deselect", newEvt);
 				});
-			*/
-			/*
-				var activeItem;
-				this.on(".dgrid-content:contextmenu", function(evt){
-					var row=_self.row(evt);
-					activeItem = row;
-					//console.log("activeItem: ", row.data);
-				});
-
-				var menu = new Menu({
-					  // Hook menu at domNode level since it stops propagation, and would
-					  // block any contextmenu events delegated from the domNode otherwise
-					  targetNodeIds: [this.domNode]
-				});
-
-				menu.addChild(new MenuItem({
-					label: "Delete Object",
-					onClick: function() {
-						if (activeItem) {
-							//console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
-							if (activeItem.data.type=="folder"){
-								WorkspaceManager.deleteFolder([activeItem.data.path]);
-							}else{
-								WorkspaceManager.deleteObject([activeItem.data.path],true);
-							}
-							
-						}
-					}
-				}));
-
-				this.inherited(arguments);
-				this._started = true;
-			*/
-
+			
 			},
 			_setActiveFilter: function(filter) {
 				//console.log("Set Active Filter: ", filter, "started:", this._started);
