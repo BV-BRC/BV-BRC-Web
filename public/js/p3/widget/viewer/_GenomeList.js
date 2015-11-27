@@ -165,7 +165,7 @@ define([
 
 			this.overview = this.createOverviewPanel(this.state);
 			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Genome List Query:  "});
+			this.queryNode = domConstruct.create("span", {});
 
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");

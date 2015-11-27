@@ -111,7 +111,7 @@ define([
 
 			this.grid = new JobsGrid({region:"center"});
 			this.actionBar = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:48px;text-align:center;"});
-			this.itemDetailPanel = new ItemDetailPanel({region:"right",layoutPriority:1,splitter:true});
+			this.itemDetailPanel = new ItemDetailPanel({region:"right",layoutPriority:1,splitter:true,style: "width:250px;"});
 
 			this.setupActions();
 

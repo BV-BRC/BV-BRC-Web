@@ -103,6 +103,11 @@ define([
 				selfAccept: false,
 				copyOnly: true
 			},
+			queryOptions: {
+				sort: [
+					{attribute: "completed_time"}
+				]
+			},
 
 			/*
                 _setApiServer: function(server){

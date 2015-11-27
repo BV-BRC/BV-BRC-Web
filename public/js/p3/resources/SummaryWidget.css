@@ -1,0 +1,38 @@
+.SummaryWidget .tableNode,
+.SummaryWidget .chartNode,
+.chartView .tableNode,
+.tableView .chartNode {
+	display: none;
+	border: 0px;
+}
+
+.SummaryWidget.chartView .chartNode,
+.SummaryWidget.tableView .tableNode {
+	display: block;
+}
+
+.SummaryWidget .actionButtons .fa {
+	color: #333;
+}
+
+.SummaryWidget .actionButtions .fa:hover {
+	color: orange;
+}
+
+.SummaryWidget.tableView .actionButtons .TableButton.fa,
+.SummaryWidget.chartView .actionButtons .ChartButton.fa {
+	color: green;
+}
+
+.SummaryWidget .dgrid-scroller {
+	overflow-y: auto;
+}
+
+TH.dgrid-cell.field-feature_type {
+	border-left: 0px;
+}
+
+.dgrid-cell.field-PATRIC,
+.dgrid-cell.field-RefSeq {
+	text-align: center;
+}
