@@ -5,16 +5,16 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter",
-	"../TaxonomyTreeGridContainer"
+	"../TranscriptomicsContainer", "../Phylogeny","../../util/PathJoin","../DataItemFormatter",
+	"../TaxonomyTreeGridContainer","../TaxonomyOverview"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter,
-			TaxonomyTreeGrid
+			TranscriptomicsContainer, Phylogeny, PathJoin,DataItemFormatter,
+			TaxonomyTreeGrid,TaxonomyOverview
 ){
 	return declare([GenomeList], {
 		params: null,
@@ -64,7 +64,7 @@ define([
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.overview.set('content',  DataItemFormatter(taxonomy, "taxonomy_data",{hideExtra:true}));
+			this.overview.set('taxonomy',  taxonomy);
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -155,8 +155,7 @@ define([
 		},
 
 		createOverviewPanel: function(){
-			return new ContentPane({
-				content: "Taxonomy Overview",
+			return new TaxonomyOverview({
 				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
 			});

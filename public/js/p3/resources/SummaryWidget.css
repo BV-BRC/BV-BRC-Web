@@ -3,7 +3,10 @@
 .chartView .tableNode,
 .tableView .chartNode {
 	display: none;
-	border: 0px;
+}
+
+.tableView .chartNode {
+	border: 1px solid #aaa;
 }
 
 .SummaryWidget.chartView .chartNode,

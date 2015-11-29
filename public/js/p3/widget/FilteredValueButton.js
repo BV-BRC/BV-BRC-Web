@@ -15,7 +15,7 @@ define([
 		selected: null,
 
 		_setSelectedAttr: function(selected){
-			console.log("FFV _setSelected: ", selected);
+			// console.log("FFV _setSelected: ", selected);
 			
 			var content = [];
 			selected = selected.map(function(s,idx){ 
@@ -27,6 +27,9 @@ define([
 					content.push(co.join(""));
 					return s
 			},this)
+			this._set("selected", selected);
+
+			if (!this._started){ this._set("selected", selected); return; }
 
 			if (content.length==1){
 				this.selectedNode.innerHTML=content[0];
@@ -39,15 +42,17 @@ define([
 	
 		},
 		clearAll: function(){
-			console.log("Clear Selected")
+			// console.log("Clear Selected")
 			this.innerHTML="";
-			console.log("clear Category: ", this.category);
+			// console.log("clear Category: ", this.category);
 			on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, selected: [], bubbles: true, cancelable: true})
 			// this._set("selected",[])
 		},
 		startup: function(){
+			if (this._started){ return; }
 			this.inherited(arguments);
-			console.log("FilteredValueButton Startup()", this.selected);
+			// console.log("FilteredValueButton Startup()", this.selected);
+			this.set('selected', this.selected);
 		},
 		postCreate: function(){
 			this.inherited(arguments);

@@ -41,6 +41,7 @@ define([
 		headers: {"accept": "application/solr+json"},
 
 		onSetQuery: function(attr,oldVal,query){
+			console.log("SummaryWidget onSetQuery: ", query)
 			return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel,"?" + this.query + this.baseQuery),{
 				handleAs: "json",
 				headers: this.headers,

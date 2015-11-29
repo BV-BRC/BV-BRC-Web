@@ -444,3 +444,12 @@ div.overview {
 	top: 170px;
 	font-size: .6em;
 }
+
+.patric .GridContainer TH.dgrid-cell {
+	font-size: .95em;
+}
+
+.patric .GridContainer TD.dgrid-cell {
+	font-size: .85em;
+	white-space: nowrap;
+}

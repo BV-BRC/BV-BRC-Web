@@ -100,21 +100,21 @@ define([
 			this.minimized=true;
 		},
 		_setStateAttr: function(state){
-			console.log("FilterContainerActionBar setStateAttr: ",state);
+			// console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state)
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr,oldVal, state){
-				console.log("FilterContainerActionBar onSetState: ", state)
+				// console.log("FilterContainerActionBar onSetState: ", state)
 				state.search = (state.search && (state.search.charAt(0)=="?"))?state.search.substr(1):(state.search||"");
 				// console.log("FilterContainerActionBar onSetState() ", state);
 				this._refresh();
 		},
 
 		_refresh: function(){
-			console.log("Refresh FilterContainerActionBar");
+			// console.log("Refresh FilterContainerActionBar");
 			var parsedQuery={};
 			var parsedFilter={};
 			var state = this.get('state') || {};
@@ -129,7 +129,9 @@ define([
 
 			if (state && state.hashParams && state.hashParams.filter){
 				// console.log("state.hashParams.filter: ", state.hashParams.filter);
-				parsedFilter = parseQuery(state.hashParams.filter)
+				if (state.hashParams.filter!="false"){
+					parsedFilter = parseQuery(state.hashParams.filter)
+				}
 				this._set("filter", state.hashParams.filter);
 			}
 			// console.log("Parsed Query: ", parsedQuery);
@@ -139,7 +141,7 @@ define([
 			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length>0)?parsedFilter.keywords.join(" "):"");
 			on(this.keywordSearch.domNode, "keypress", lang.hitch(this,function(evt){
 				var code = evt.charCode || evt.keyCode;
-				console.log("Keypress: ", code);
+				// console.log("Keypress: ", code);
 				if (code == 13){
 					focusUtil.curNode && focusUtil.curNode.blur();
 				}
@@ -153,7 +155,7 @@ define([
 			// for each of the facet widgets, get updated facet counts and update the content.
 			Object.keys(this._ffWidgets).forEach(function(category){
 				// console.log("Category: ", category)
-				this._updateFilteredCounts(category, parsedFilter.byCategory,parsedFilter.keywords||[])
+				this._updateFilteredCounts(category, parsedFilter?parsedFilter.byCategory:false,parsedFilter?parsedFilter.keywords:[])
 			},this)
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
@@ -164,16 +166,21 @@ define([
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value,true);	
 					}else{
-						console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
+						// console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
 						// this._ffWidgets[sel.field].toggle(sel.value,false);
 					}
+				},this)
+			}else{
+				// console.log("DELETE _ffWidgets")
+				Object.keys(this._ffWidgets).forEach(function(cat){
+					this._ffWidgets[cat].clearSelection();
 				},this)
 			}
 
 			// build/toggle the top level selected filter buttons
 			if (parsedFilter && parsedFilter.byCategory){
 				Object.keys(parsedFilter.byCategory).forEach(function(cat){
-					// console.log("Looking for ffValueButton[" + cat + "]");
+					 // console.log("Looking for ffValueButton[" + cat + "]");
 					if (!this._ffValueButtons[cat]){
 						// console.log("Create ffValueButton: ", cat, parsedFilter.byCategory[cat]);
 						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: parsedFilter.byCategory[cat]});
@@ -184,6 +191,13 @@ define([
 						// console.log("Found ffValueButton. Set Selected");
 						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
 					}
+				},this)
+			}else{
+				// console.log("DELETE __ffValueButtons")
+				Object.keys(this._ffValueButtons).forEach(function(cat){
+					var b = this._ffValueButtons[cat];
+					b.destroy();
+					delete this._ffValueButtons[cat];
 				},this)
 			}
 
@@ -334,6 +348,7 @@ define([
 						}
 					}
 
+					if (!filter){ filter = "false"}
 					// console.log("Set Filter: ", filter)
 					this.set("filter", filter);
 
@@ -398,7 +413,7 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-			// console.log("Internal Query: ", q);
+			console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				 // console.log("Facet Results: ",r);
 				w.set("data", r[category]);
@@ -469,7 +484,7 @@ define([
 		},
 		_setFacetFieldsAttr: function(fields){
 			this.facetFields = fields;
-			console.log("Set Facet Fields: ", fields);
+			// console.log("Set Facet Fields: ", fields);
 			if (!this._started){return;}
 
 			fields.sort().forEach(lang.hitch(this,function(f){
@@ -536,7 +551,7 @@ define([
 			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-		 	// console.log("Facet Query: ", q)
+		 	console.log("Facet Query: ", q)
 			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
 				method: "POST",
 				handleAs: "json",

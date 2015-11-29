@@ -233,7 +233,7 @@ define([
 					parts.push(q)
 				}
 			}
-			if(evt.filter){
+			if(evt.filter & evt.filter!="false"){
 				parts.push(evt.filter)
 			}
 

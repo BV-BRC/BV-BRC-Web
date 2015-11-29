@@ -114,7 +114,6 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-				case "pathways":
 					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
@@ -276,7 +275,7 @@ define([
 					parts.push(q)
 				}
 			}
-			if(evt.filter){
+			if(evt.filter && evt.filter!="false"){
 				parts.push(evt.filter)
 			}
 
@@ -290,13 +289,20 @@ define([
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q);
+			console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
-			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+
+			if(this.state.hashParams && this.state.hashParams.view_tab){
+				hp = {view_tab: this.state.hashParams.view_tab}
 			}else{
 				hp = {}
 			}
+
+
+
+			hp.filter="false"
+
+			console.log("HP: ",JSON.stringify(hp))
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");

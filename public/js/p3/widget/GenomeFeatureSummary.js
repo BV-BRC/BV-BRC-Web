@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin) {
+			ChartTooltip, domConstruct,PathJoin,easing) {
 	return declare([SummaryWidget], {
 			dataModel: "genome_feature",
 			query: "",
@@ -79,13 +79,14 @@ define([
 						//labelOffset: 20,
 						labelFunc: function(o){
 							return o.annotation;
-						}
+						},
+						animate: { duration: 1000, easing: easing.linear} 
 					});
 					
 					this.chart.addAxis("x", {
 						majorLabels: true,
 						minorTicks: false,
-						minorLabels: false,
+						minorLabels: true,
 						microTicks: false,
 						labels: this._chartLabels
 
@@ -109,6 +110,13 @@ define([
 
 					console.log("Render GF DATA", this.chart);
 					this.chart.render();
+				}else{
+
+					Object.keys(this.data).forEach(lang.hitch(this,function(key){
+						this.chart.updateSeries(key,this.data[key]);
+					}));
+					this.chart.render();
+
 				}
 			},
 

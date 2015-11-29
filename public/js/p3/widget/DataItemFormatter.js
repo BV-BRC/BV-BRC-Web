@@ -503,13 +503,16 @@ define([
 				text : 'other_names'
 			}, {
 				name : 'Lineage',
-				text : 'lineage_names'
+				text : 'lineage_names',
+				data_hide: true
 			}, {
 				name : 'Lineage Ranks',
-				text : 'lineage_ranks'
+				text : 'lineage_ranks',
+				data_hide: true
 			}, {
 				name : 'Lineage IDs',
-				text : 'lineage_ids'
+				text : 'lineage_ids',
+				data_hide: true
 			},{
 				name : 'Genetic Code',
 				text : 'genetic_code'

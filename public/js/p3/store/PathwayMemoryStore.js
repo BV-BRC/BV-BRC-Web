@@ -4,40 +4,51 @@ define([
 	"dojo/store/Memory",
 	"dojo/store/util/QueryResults",
 	"dojo/when", "dojo/_base/lang",
-	"dojo/_base/Deferred", "dojo/Stateful"
+	"dojo/_base/Deferred", "dojo/Stateful",
+	"../util/PathJoin"
 
 ], function(declare,
 			request,
 			Memory,
 			QueryResults,
 			when, lang,
-			Deferred, Stateful){
+			Deferred, Stateful,
+			PathJoin
+
+){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		idProperty: "pathway_id",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null,
+		type: "pathway",
 		onSetState: function(attr, oldVal, state){
-			//console.log("PathwayMemoryStore setState: ", state);
-			if(state && state.genome_ids && state.genome_ids.length > 0){
-				var cur = this.genome_ids.join("");
-				var next = state.genome_ids.join("");
-				if(cur != next){
-					this.set("genome_ids", state.genome_ids || []);
-					this._loaded = false;
+			var ov, nv;
+			if (oldVal){ ov = oldVal.search + oldVal.filter};
+			if (state) { nv = state.search + state.filter };
+
+			console.log("MEMORY STORE onSetState: ", state, oldVal)
+			// if (ov!=nv){
+				console.log("clear memory store data")
+				this._loaded = false;
+				if (this._loadingDeferred){
+					console.log("Deleting _loadingDeferred", this._loadingDeferred);
 					delete this._loadingDeferred;
 				}
-			}
+			// }
 		},
-		constructor: function(options){
-			//console.log("PMS Ctor Options: ", options);
+		constructor: function(opts){
+			this.init(opts);
+		},
+		init: function(options){
+			options=options||{}
+			console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
-			if(options.apiServer){
-				this.apiServer = options.apiServer
-			}
+			lang.mixin(this,options);
 			this.watch("state", lang.hitch(this, "onSetState"))
+			console.log("INIT COMPLETE: ", this)
 		},
 
 		query: function(query, opts){
@@ -48,6 +59,7 @@ define([
 			else{
 				var _self = this;
 				var results;
+				console.log("Beofre LOAD type: ", this.type)
 				console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
 					console.log("Do actual Query Against loadData() data. QR: ", qr);
@@ -74,6 +86,49 @@ define([
 			}
 		},
 
+		queryTypes: {
+			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+				     "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+
+			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+					  "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+					"&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+		},
+		buildQuery: function(){
+			var q = [];
+			if(this.state){
+				if(this.state.search){
+					console.log("buildQuery SEARCH: ", this.state.search );
+
+					q.push((this.state.search.charAt(0)=="?")?this.state.search.substr(1):this.state.search);
+				}else if (this.state.genome_ids){
+					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
+				}
+
+				if(this.state.hashParams && this.state.hashParams.filter){
+					if (this.state.hashParams.filter!="false"){
+						q.push(this.state.hashParams.filter);
+					}
+				}
+				if(q.length < 1){
+					q = "";
+				}
+				else if(q.length == 1){
+					q = q[0];
+				}
+				else{
+					q = "and(" + q.join(",") + ")";
+				}
+			}else{
+				q = ""
+			}
+			q = q + this.queryTypes[this.type];
+
+			console.log("End Build Query: ", q)
+			return (q.charAt(0)=="?")?q.substr(1):q ;
+		},
+
 		loadData: function(){
 
 			if(this._loadingDeferred){
@@ -81,7 +136,7 @@ define([
 			}
 			var state = this.state || {};
 
-			if(!state.genome_ids || state.genome_ids.length < 1){
+			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
 				console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -97,94 +152,82 @@ define([
 
 			}
 
-			var lq;
 
-			if(state && state.genome_ids){
-				//	lq = state.genome_ids.map(function(x){ return "genome_id:" + x}).join(" OR ");
-				lq = "genome_id:(" + state.genome_ids.join(" OR ") + ")";
-			}
+			// var lq;
 
-			console.log("PathwayMemoryStore LoadData Query: ", lq);
+			// if(state && state.genome_ids){
+			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
+			// }
 
-			var query = {
-				q: lq,
-				rows: 1,
-				facet: true,
-				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}}'
-
-			};
-			var q = Object.keys(query).map(function(p){
-				return p + "=" + query[p]
-			}).join("&");
+			console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
+			var q = this.buildQuery();
 
 			var _self = this;
 			console.log("Load Data: ", q);
-			this._loadingDeferred = when(request.post(this.apiServer + '/pathway/', {
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer,'pathway')+'/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
 				},
 				data: q
 
-			}), function(response){
+			}), lang.hitch(this,function(response){
+
+				var docs=[]
+				var props = {
+					"pathway": "pathway_id",
+					"ecnumber": "ec_number",
+					"genes": 'gene'
+				}
 				console.log("Pathway Base Query Response:", response);
-				var pathwayIdList = [];
-				response.facets.stat.buckets.forEach(function(element){
-					pathwayIdList.push(element.val);
-				});
-				var data = [];
-				// sub query
-				var pathwayRefHash = {};
-				return when(request.post(_self.apiServer + '/pathway_ref/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/solrquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-					},
-					data: {
-						q: 'pathway_id:(' + pathwayIdList.join(' OR ') + ')',
-						rows: 1000000
-					}
-				}), function(res){
-					res.response.docs.forEach(function(el){
-						if(pathwayRefHash[el.pathway_id] == null){
-							pathwayRefHash[el.pathway_id] = {
-								pathway_name: el.pathway_name,
-								pathway_class: el.pathway_class
-							};
-						}
-					});
+				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
+				if (response && response.grouped  && response.grouped[props[this.type]]){
+					var ds = response.grouped[props[this.type]].doclist.docs;
+					var buckets = response.facets.stat.buckets;
+                	var map={};
+                	buckets.forEach(function(b){
+                		map[b["val"]]=b;
+                		delete b["val"];
+                	})
 
-					response.facets.stat.buckets.forEach(function(element){
-						var ec_cons = 0,
-							gene_cons = 0;
-						if(element.genome_count > 0 && element.ec_count > 0){
-							ec_cons = element.genome_ec / element.genome_count / element.ec_count * 100;
-							gene_cons = element.gene_count / element.genome_count / element.ec_count;
+                	docs = ds.map(function(doc){
+                		var p = props[this.type];
+                		var pv = doc[p];
+                		// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
+                		lang.mixin(doc,map[pv]||{})
+                		if (doc.genome_ec && doc.genome_count){
+	                  		doc.ec_cons = (doc.genome_ec /doc.genome_count / doc.ec_count * 100).toFixed(2);
+	                  	}else{
+	                  		doc.ec_cons=0;
+	                  	}
+	                  	if (doc.gene_count && doc.genome_count){
+							doc.gene_cons =(doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+						}else{
+							doc.gene_cons=0;
 						}
-						var el = {
-							pathway_id: element.val,
-							ec_cons: ec_cons,
-							gene_cons: gene_cons
-						};
-						el.pathway_name = pathwayRefHash[element.val].pathway_name;
-						el.pathway_class = pathwayRefHash[element.val].pathway_class;
-						//el.annotation = self.params.annotation;
-						delete element.val;
-						data.push(lang.mixin(el, element));
-					});
-					console.log("setData() rows: ", data.length);
-					_self.setData(data);
-					_self._loaded = true;
+                		return doc;
+                	},this)
+					console.log("doc count: ", docs.length);
 
+					_self.setData(docs);
+					_self._loaded =true;
 					return true;
-				});
-			});
+
+				}else{
+					console.log("Unable to Process Response: ", response)
+					_self.setData([]),
+					_self._loaded=true;
+					return false;
+				}
+			}), lang.hitch(this, function(err){
+				console.log("Error Loading Data: ", err);
+				_self.setData([]),
+				_self._loaded=true;
+				return err;
+			}));
 			return this._loadingDeferred;
 		}
 	})

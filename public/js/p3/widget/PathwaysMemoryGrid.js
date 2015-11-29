@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
+	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
 	"dojo/aspect"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
@@ -16,7 +16,9 @@ define([
 		dataModel: "pathway",
 		primaryKey: "pathway_id",
 		selectionModel: "extended",
+		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
+		store: null,
 		columns: {
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
@@ -28,12 +30,7 @@ define([
 			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
 			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
 		},
-		constructor: function(options){
-			console.log("PathwaysGrid Ctor: ", options);
-			if(options && options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-		},
+
 		startup: function(){
 			var _self = this;
 
@@ -79,19 +76,18 @@ define([
 				});
 			});
 
-			this.inherited(arguments);
 			this._started = true;
 		},
 		state: null,
-		postCreate: function(){
-			this.inherited(arguments);
-		},
+
 		_setApiServer: function(server){
 			this.apiServer = server;
 		},
 
 		_setState: function(state){
+			console.log("PMS SET STATE: ", state, this.store)
 			if(!this.store){
+				console.log("CREATE STORE FROM PMG _setState()")
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set("state", state);
@@ -100,11 +96,12 @@ define([
 		},
 
 		createStore: function(server, token, state){
-
+			console.log("createStore()")
 			//console.log("CreateStore() server: ", server);
 			//console.log("CreateStore() token: ", token);
 			//console.log("CreateStore() state: ", state);
 			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
+			if (this.store) { return this.store }
 
 			return new Store({
 				token: token,

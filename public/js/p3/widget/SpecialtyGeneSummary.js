@@ -2,12 +2,12 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin) {
+			ChartTooltip, domConstruct,PathJoin,easing) {
 	return declare([SummaryWidget], {
 			dataModel: "sp_gene",
 			query: "",
@@ -46,13 +46,14 @@ define([
 						markers: true,
 						gap: 5,
 						labels: true,
-						labelStyle: "outside"
+						labelStyle: "outside",
+						animate: { duration: 1000, easing: easing.linear} 
 					});
 					
 					this.chart.addAxis("x", {
 						majorLabels: true,
 						minorTicks: false,
-						minorLabels: false,
+						minorLabels: true,
 						microTicks: false,
 						labels: this._chartLabels
 
@@ -71,6 +72,10 @@ define([
 					this.chart.addSeries("source",this.data);
 
 					console.log("Render GF DATA", this.chart);
+					this.chart.render();
+				}else{
+
+					this.chart.updateSeries("source",this.data);
 					this.chart.render();
 				}
 			},
