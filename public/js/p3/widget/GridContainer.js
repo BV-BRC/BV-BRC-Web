@@ -108,7 +108,7 @@ define([
 
 			if (state.hashParams && state.hashParams.filter && state.hashParams.filter=="false"){
 				// filter set to false, no filtering
-				
+
 			}else if(state.hashParams){
 				console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
@@ -130,7 +130,7 @@ define([
 					return;
 				}else{
 					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
-
+					
 				}
 			}else{
 				state.hashParams={}
@@ -145,7 +145,7 @@ define([
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				//console.log("    FilterPanel found");
+				console.log("    FilterPanel Found (in GridContainer): ", state);
 				this.filterPanel.set("state", state);
 			}
 			// console.log("setState query: ",q.join("&"), " state: ", state)

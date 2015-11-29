@@ -118,7 +118,6 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-				case "pathways":
 					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;

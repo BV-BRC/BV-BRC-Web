@@ -39,6 +39,7 @@ define([
 		state: null,
 		maxGenomeCount: 5000,
 		apiServer: window.App.dataServiceURL,
+	    defaultFilter: "eq(annotation,%22PATRIC%22)",
 
 
 		postCreate: function(){
@@ -118,6 +119,7 @@ define([
 				type: "pathway",
 				state: this.state,
 				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
 				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
 				queryOptions: {
@@ -132,6 +134,7 @@ define([
 				type: "ec_number",
 				state: this.state,
 				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
 				columns: lang.mixin({},this.pathwaysGrid.get('columns'),{ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
 				store: ecNumberStore,
@@ -146,6 +149,7 @@ define([
 				type: "gene",
 				state: this.state,
 				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
 				columns: lang.mixin({},this.ecNumbersGrid.get('columns'),{gene: {label: 'Gene', field: 'gene'},ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
 				store: geneStore,

@@ -38,6 +38,7 @@ define([
 	return declare([GridContainer], {
 		gridCtor: PathwaysGrid,
 		containerType: "pathway_data",
+		defaultFilter: "eq(annotation,%22PATRIC%22)",
 		facetFields: ["annotation", "feature_type"],
 		enableFilterPanel: false,
 		apiServer: window.App.dataServiceURL,
