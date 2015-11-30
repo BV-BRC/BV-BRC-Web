@@ -29,7 +29,8 @@ define([
             typeMenu.addChild( new MenuItem({label: "phylogram", onClick:lang.hitch(this,function(){this.setTreeType("phylogram")})}));
             typeMenu.addChild( new MenuItem({label: "cladogram", onClick:lang.hitch(this,function(){this.setTreeType("cladogram")})}));
             typeMenu.startup();
-            var typeButton = new DropDownButton({name:"typeButton", label:"tree type",dropDown:typeMenu},typeMenuDom).startup();
+            this.typeButton = new DropDownButton({name:"typeButton", label:this.phylogram ? "phylogram" : "cladogram",dropDown:typeMenu},typeMenuDom);
+            this.typeButton.startup();
             //this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
             this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},menuDiv);
             this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},menuDiv);
@@ -96,7 +97,7 @@ define([
         togglePhylo:function(){
             this.phylogram=!this.phylogram;
             this.tree.setPhylogram(this.phylogram);
-            //this.typeButton.set("label", this.phylogram ? "cladogram" : "phylogram");
+            this.typeButton.set("label", this.phylogram ? "phylogram" : "cladogram");
         },
 
 
