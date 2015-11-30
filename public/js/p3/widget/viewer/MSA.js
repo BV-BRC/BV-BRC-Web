@@ -291,15 +291,20 @@ define([
             //noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
             //m.addView("menu", defMenu);
 
-            this.typeButtonDom = domConstruct.create("input",{type:"button"},menuDiv);
-            this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
+            var typeMenuDom = domConstruct.create("div",{},menuDiv);
+            var typeMenu = new DropDownMenu({ style: "display: none;"});
+            typeMenu.addChild( new MenuItem({label: "phylogram", onClick:lang.hitch(this,function(){this.setTreeType("phylogram")})}));
+            typeMenu.addChild( new MenuItem({label: "cladogram", onClick:lang.hitch(this,function(){this.setTreeType("cladogram")})}));
+            typeMenu.startup();
+            var typeButton = new DropDownButton({name:"typeButton", label:"tree type",dropDown:typeMenu},typeMenuDom).startup();
+            //this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
             var colorMenuDom = domConstruct.create("div",{},menuDiv);
             var colorMenu = new DropDownMenu({ style: "display: none;"});
             schemes.forEach(lang.hitch(this, function(scheme){
                 colorMenu.addChild( new MenuItem({label: scheme.name, onClick:function(){m.g.colorscheme.set("scheme",scheme.id)}}));
             }));
             colorMenu.startup();
-            colorButton = new DropDownButton({name:"colorButton", label:"color",dropDown:colorMenu},colorMenuDom).startup();
+            var colorButton = new DropDownButton({name:"colorButton", label:"color",dropDown:colorMenu},colorMenuDom).startup();
             this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},menuDiv);
             this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},menuDiv);
             this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},menuDiv);
@@ -325,10 +330,19 @@ define([
             treeLoaded=true;
 		},
 
+        setTreeType:function(treeType){
+            if(this.phylogram && treeType == "cladogram"){
+                this.togglePhylo();
+            }
+            else if ((!this.phylogram) && treeType == "phylogram"){
+                this.togglePhylo();
+            }
+        },
+
         togglePhylo:function(){
             this.phylogram=!this.phylogram;
             this.tree.setPhylogram(this.phylogram);
-            this.typeButton.set("label", this.phylogram ? "cladogram" : "phylogram");
+            //this.typeButton.set("label", this.phylogram ? "cladogram" : "phylogram");
         },
 
 		doAlignment: function(){
