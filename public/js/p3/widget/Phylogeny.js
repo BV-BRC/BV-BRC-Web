@@ -30,7 +30,7 @@ define([
             typeMenu.addChild( new MenuItem({label: "cladogram", onClick:lang.hitch(this,function(){this.setTreeType("cladogram")})}));
             typeMenu.startup();
             var typeButton = new DropDownButton({name:"typeButton", label:"tree type",dropDown:typeMenu},typeMenuDom).startup();
-            this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
+            //this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
             this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},menuDiv);
             this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},menuDiv);
             this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},menuDiv);
