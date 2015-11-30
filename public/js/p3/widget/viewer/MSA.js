@@ -3,20 +3,25 @@ define([
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "dojo/_base/Deferred",
 	"dojo/request", "dojo/_base/lang","dojo/when",
-	"../ActionBar", "../ContainerActionBar", "phyloview/PhyloTree", "d3/d3","phyloview/TreeNavSVG","../../util/PathJoin"
+	"../ActionBar", "../ContainerActionBar", "phyloview/PhyloTree", "d3/d3","phyloview/TreeNavSVG","../../util/PathJoin","dijit/form/Button",
+    "dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang,when,
-			ActionBar,ContainerActionBar,d3,PhyloTree,d3Tree,PathJoin
+			ActionBar,ContainerActionBar,PhyloTree,
+            d3,d3Tree,PathJoin,Button,
+            DropDownButton, DropDownMenu, MenuItem
 ){
 	return declare([Base], {
+		"baseClass": "Phylogeny",
 		"disabled": false,
 		"query": null,
 		"loading": false,
 		data: null,
         dataMap: {},
         tree: null,
+        phylogram: false,
 
 		maxSequences: 500,
 
@@ -111,13 +116,14 @@ define([
             var menuDiv = domConstruct.create("div",{},this.contentPane.containerNode);
             var combineDiv = domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
             var treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},combineDiv);
-            treeDiv.setAttribute("style", "padding-top:96px; width:35%; vertical-align:top; overflow-x:scroll; display:inline-block; border-right:1px solid grey;");
+            treeDiv.setAttribute("style", "padding-top:106px; width:35%; vertical-align:top; overflow-x:scroll; display:inline-block; border-right:1px solid grey;");
             var msaDiv = domConstruct.create("div",{"style":{"width":"100%"}}, combineDiv);
             msaDiv.style.display="inline-block";
             msaDiv.style.width="64%";
             msaDiv.style.overflowX="scroll";
             msaDiv.style.overflowY="hidden";
             msaDiv.style.verticalAlign="bottom";
+            msaDiv.style.paddingBottom="10px";
 
             //domConstruct.place(menuDiv,this.contentPane.containerNode,"last");
             //domConstruct.place(combineDiv,this.contentPane.containerNode,"last");
@@ -205,8 +211,8 @@ define([
             }*/
 
 	        this.tree = new d3Tree();
-            this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:false, fontSize:10});
-            this.tree.setTree(this.data.tree.replace(/\|/g,'.'));
+            this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:this.phylogram, fontSize:12});
+            this.tree.setTree(this.data.tree);
             //this.tree.setTree(this.data.tree);
 
             var menuOpts = {};
@@ -216,10 +222,87 @@ define([
             menuOpts.msa = m;
             var defMenu = new msa.menu.defaultmenu(menuOpts);
 
-            var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
-            noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
-            m.addView("menu", defMenu);
 
+            var schemes=[{
+            name:"Zappo",id:"zappo"
+            },
+            {
+            name: "Taylor",
+            id: "taylor"
+            },
+            {
+            name: "Hydrophobicity",
+            id: "hydro"
+            },
+            {
+            name: "Lesk",
+            id: "lesk"
+            },
+            {
+            name: "Cinema",
+            id: "cinema"
+            },
+            {
+            name: "MAE",
+            id: "mae"
+            },
+            {
+            name: "Clustal",
+            id: "clustal"
+            },
+            {
+            name: "Clustal2",
+            id: "clustal2"
+            },
+            {
+            name: "Turn",
+            id: "turn"
+            },
+            {
+            name: "Strand",
+            id: "strand"
+            },
+            {
+            name: "Buried",
+            id: "buried"
+            },
+            {
+            name: "Helix",
+            id: "helix"
+            },
+            {
+            name: "Nucleotide",
+            id: "nucleotide"
+            },
+            {
+            name: "Purine",
+            id: "purine"
+            },
+            {
+            name: "PID",
+            id: "pid"
+            },
+            {
+            name: "No color",
+            id: "foo"
+            }];
+
+            //var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
+            //noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
+            //m.addView("menu", defMenu);
+
+            this.typeButtonDom = domConstruct.create("input",{type:"button"},menuDiv);
+            this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
+            var colorMenuDom = domConstruct.create("div",{},menuDiv);
+            var colorMenu = new DropDownMenu({ style: "display: none;"});
+            schemes.forEach(lang.hitch(this, function(scheme){
+                colorMenu.addChild( new MenuItem({label: scheme.name, onClick:function(){m.g.colorscheme.set("scheme",scheme.id)}}));
+            }));
+            colorMenu.startup();
+            colorButton = new DropDownButton({name:"colorButton", label:"color",dropDown:colorMenu},colorMenuDom).startup();
+            this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},menuDiv);
+            this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},menuDiv);
+            this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},menuDiv);
             m.render();
             //var msaDiv2=document.getElementsByClassName("biojs_msa_seqblock")[0];
             //var ctx = msaDiv2.getContext("2d");
@@ -237,9 +320,16 @@ define([
             msaDiv.style.overflowX="scroll";
             msaDiv.style.overflowY="hidden";
             msaDiv.style.verticalAlign="bottom";
+            msaDiv.style.paddingBottom="10px";
             msaDiv.style.height=(treeHeight+115).toString()+"px";
             treeLoaded=true;
 		},
+
+        togglePhylo:function(){
+            this.phylogram=!this.phylogram;
+            this.tree.setPhylogram(this.phylogram);
+            this.typeButton.set("label", this.phylogram ? "cladogram" : "phylogram");
+        },
 
 		doAlignment: function(){
 			console.log("doAlignment()");

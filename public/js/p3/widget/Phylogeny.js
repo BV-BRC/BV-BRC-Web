@@ -65,7 +65,8 @@ define([
 				return;
 			}
 			if (!this.tree){
-	            this.tree = new d3Tree.d3Tree("#" + this.id + "tree-container", {phylogram:false, fontSize:10});
+	            this.tree = new TreeNavSVG();
+                this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:true, fontSize:10});
 	        }
 
             this.tree.setTree(this.newick);
