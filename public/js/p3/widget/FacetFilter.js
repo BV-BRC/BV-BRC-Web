@@ -9,7 +9,7 @@ define([
 			domGeometry,domStyle, when) {
 
 	return declare([WidgetBase,Templated], {
-		templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory">${category}</div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
+		templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
 		baseClass: "FacetFilter",
 		category: "NAME",
 		data: null,
@@ -18,10 +18,21 @@ define([
 		constructor: function(){
 			this._selected = {};
 		},
+
+		_setCategoryAttr: function(category){
+			var cat = category.replace("_"," ");
+			this._set('category', category);
+
+			if (this._started && this.categoryNode){
+				this.categoryNode.innerHTML = cat;
+			}
+		},
+
 		_setDataAttr: function(data, selected){
-			// console.log("_setDataAttr", data, selected);
+
+			 // console.log("_setDataAttr", data, selected);
 			if  (selected){ this.selected = selected }
-			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected);			
+			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected, "Type: ", typeof data);			
 			if (!data){return}
 			if (this.data && this.data instanceof Deferred){
 				var promise = this.data;
@@ -39,37 +50,40 @@ define([
 
 			// console.log("selected: ", this.selected)
 
-			data.forEach(function(obj){
-				var name = decodeURIComponent(obj.label || obj.val);
-				// console.log("data obj: ", name, obj);
-				var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
-				var sel;
+			if (data.forEach){
 
-				if (
-						this._selected[name] ||
-						(this.selected.indexOf(name) >= 0)
-					){
-					sel = "selected"
-				}else{
-					sel="";
-				}
-				// console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
-				//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
-				var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
-				// console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
-				domConstruct.place(n,this.containerNode,sel?"first":"last")
-				this.containerNode.scrollTop=0;
-			},this);
+				data.forEach(function(obj){
+					var name = decodeURIComponent(obj.label || obj.val);
+					// console.log("data obj: ", name, obj);
+					var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
+					var sel;
+
+					if (
+							this._selected[name] ||
+							(this.selected.indexOf(name) >= 0)
+						){
+						sel = "selected"
+					}else{
+						sel="";
+					}
+					// console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
+					//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
+					var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
+					// console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
+					domConstruct.place(n,this.containerNode,sel?"first":"last")
+					this.containerNode.scrollTop=0;
+				},this);
 			// this._refreshFilter();
-
-			if (promise){
-				promise.resolve(true);
+			
+				if (promise){
+					promise.resolve(true);
+				}
 			}
 		},
 
 		toggle: function(name,value){
 			name = name.replace(/\"/g,"");
-			console.log("Toggle: ", name, value, " Data:", this.data);
+			// console.log("Toggle: ", name, value, " Data:", this.data);
 			when(this.data, lang.hitch(this,function(){
 				var node = this["_value_" + name];
 				// console.log("Toggle Node: ", node, " Set to: ", value?"TRUE":"Opposite", domClass.contains(node, "Selected"));
@@ -113,6 +127,11 @@ define([
 					// }
 				}
 				// console.log(name, " this.selected: ", this.selected)
+				if (this.selected && this.selected.length>0){
+					domClass.add(this.categoryNode, "selected");
+				}else{
+					domClass.remove(this.categoryNode, "selected");
+				}
 			}))
 			// this._refreshFilter();
 		},
@@ -125,14 +144,14 @@ define([
 			this._refreshFilter();
 		},
 		_refreshFilter: function(){
-			console.log("FacetFilter _refreshFilter()  started: ", this._started);
+			// console.log("FacetFilter _refreshFilter()  started: ", this._started);
 			var selected = [];
 	
 			Query(".selected", this.containerNode).forEach(function(node){
 				// console.log(".selected Node: ", node)
 				selected.push(domAttr.get(node,"rel"));
 			})
-			console.log("_refreshFilter selected() : ", selected);
+			// console.log("_refreshFilter selected() : ", selected);
 			var curFilter = this.filter;
 			// this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
 			if (selected.length<1){
@@ -143,7 +162,7 @@ define([
 				this.filter = "or(" + selected.map(function(s){ return "eq(" + this.category + ',' + encodeURIComponent('"' + s + '"') + ')'},this).join(",") + ")";
 			}
 
-			console.log("_refreshFilter selected[]: ", selected)
+			// console.log("_refreshFilter selected[]: ", selected)
 
 			if (selected.length > 0){
 				domClass.add(this.categoryNode, "selected");
@@ -153,32 +172,39 @@ define([
 
 			this._set("selected", selected);
 
-			console.log("selected: ", selected)
-			console.log("new filter: ", this.filter, " curFilter: ", curFilter);
+			// console.log("selected: ", selected)
+			// console.log("new filter: ", this.filter, " curFilter: ", curFilter);
 	
 			// if (this.filter != curFilter){
-				console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
+				// console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
 				on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, filter: this.filter, selected: selected, bubbles: true, cancelable: true})
 			// }
 		},
 
 		toggleItem: function(evt){
 			var rel = domAttr.get(evt.target, "rel")
-			console.log("onToggle: ", rel)
+			// console.log("onToggle: ", rel)
 			domClass.toggle(evt.target, "selected");
 			this._refreshFilter();
 		},
 
 		clearSelection: function(){
-			console.log("CLEAR SELECTION")
+			// console.log("CLEAR SELECTION")
 			this.set('data', this.data, []);
+			domClass.remove(this.categoryNode, "selected")
 		},
 
 		postCreate: function(){
 			this.inherited(arguments);
 			on(this.domNode, ".FacetValue:click", lang.hitch(this,"toggleItem"))
+			if (this.categoryNode&&this.category){
+				this.categoryNode.innerHTML = this.category;
+			}
 			if (!this.data){ this.data = new Deferred();}
+
 		},
+
+
 		resize: function(changeSize, resultSize){
 	        var node = this.domNode;
 

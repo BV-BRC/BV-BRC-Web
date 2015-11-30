@@ -35,7 +35,7 @@
 @import url("./GenomeViewer.css");
 @import url("./p2.css");
 @import url("./JobsGrid.css");
-
+@import url("./SummaryWidget.css");
 
 /*@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");*/
 
@@ -443,4 +443,13 @@ div.overview {
 #faceted_tracksel .faceted_tracksel_on_off.tab {
 	top: 170px;
 	font-size: .6em;
+}
+
+.patric .GridContainer TH.dgrid-cell {
+	font-size: .95em;
+}
+
+.patric .GridContainer TD.dgrid-cell {
+	font-size: .85em;
+	white-space: nowrap;
 }

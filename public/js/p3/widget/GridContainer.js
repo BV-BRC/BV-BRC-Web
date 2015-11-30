@@ -50,6 +50,7 @@ define([
 
 
 	return declare([BorderContainer], {
+		class: "GridContainer",
 		gutters: false,
 		gridCtor: null,
 		query: "",
@@ -61,9 +62,26 @@ define([
 		facetFields: [],
 		enableFilterPanel: true,
 		defaultFilter: "",
+		store: null,
 		apiServer: window.App.dataServiceURL,
+		queryOptions: null,
+		columns:null,
+
+		_setColumnsAttr: function(columns){
+			if (this.grid){ 
+				this.grid.set('columns', columns)
+			}
+			this._set('columns', columns); 
+		},
+
+		_getColumnsAttr: function(columns){
+			if (this.grid){ return this.grid.get('columns'); } 
+			return this.columns || {};
+		},
+
 		constructor: function(){
 			this._firstView = false;
+			console.log("GRIDCONTAINER CTOR() ", arguments)
 		},
 
 		postCreate: function(){
@@ -88,7 +106,10 @@ define([
 				q.push(state.search);
 			}
 
-			if(state.hashParams){
+			if (state.hashParams && state.hashParams.filter && state.hashParams.filter=="false"){
+				// filter set to false, no filtering
+
+			}else if(state.hashParams){
 				console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
 					console.log("       Found state.hashParams.filter, using");
@@ -109,7 +130,7 @@ define([
 					return;
 				}else{
 					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
-
+					
 				}
 			}else{
 				state.hashParams={}
@@ -124,7 +145,7 @@ define([
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				// console.log("    FilterPanel found");
+				console.log("    FilterPanel Found (in GridContainer): ", state);
 				this.filterPanel.set("state", state);
 			}
 			// console.log("setState query: ",q.join("&"), " state: ", state)
@@ -134,10 +155,10 @@ define([
 		_setQueryAttr: function(query){
 			//console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
 			//console.log("    Query: ", query, "this.query: ", this.query)
-			if(query == this.query){
+			// if(query == this.query){
 				//console.log("  Not Skipping Query Update (unchanged)");
 				// return;
-			}
+			// }
 
 			this.query = query;
 			// this.query = query || "?keyword(*)"
@@ -163,7 +184,7 @@ define([
 
 		visible: false,
 		_setVisibleAttr: function(visible){
-			// console.log("GridContainer setVisible: ", visible)
+			console.log("GridContainer setVisible: ", visible)
 			this.visible = visible;
 			if(this.visible && !this._firstView){
 				// console.log("Trigger First View: ", this.id)
@@ -230,6 +251,23 @@ define([
 				}, 
 				false	
 			],[			
+				"ViewGenomeItemFromGenome",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "GENOME",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Genome",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					console.log("sel: ", sel)
+					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				}, 
+				false
+			],[			
 				"ViewGenomeItem",
 				"MultiButton fa icon-genome fa-2x", 
 				{
@@ -237,7 +275,7 @@ define([
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data","sequence_data"]
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","sequence_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -538,25 +576,7 @@ define([
 			return q;
 		},
 
-		onFirstView: function(){
-			if(this._firstView){
-				return;
-			}
-			if(!this.gridCtor){
-				console.error("Missing this.gridCtor in GridContainer");
-				return;
-			}
-
-			this.grid = new this.gridCtor({
-				region: "center",
-				query: this.buildQuery(),
-				state: this.state,
-				apiServer: this.apiServer
-			});
-
-			if(this.enableFilterPanel){
-				// console.log("Create FilterPanel: ", this.state);
-
+		createFilterPanel: function(){
 				console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
 				this.containerActionBar = this.filterPanel = new ContainerActionBar({
@@ -585,6 +605,42 @@ define([
 						})
 					}
 				}));
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+			if(!this.gridCtor){
+				console.error("Missing this.gridCtor in GridContainer");
+				return;
+			}
+
+			var o = {
+				region: "center",
+				query: this.buildQuery(),
+				state: this.state,
+				apiServer: this.apiServer,
+				visible: true
+			}
+
+			if (this.columns){
+				o.columns = this.columns;
+			}
+
+			if (this.queryOptions){
+				o.queryOptions = this.queryOptions;
+			}
+
+			console.log("GridContainer onFirstView create Grid: ", o)
+
+			if (this.store){ o.store = this.store }
+			this.grid = new this.gridCtor(o);
+
+			if(this.enableFilterPanel){
+				// console.log("Create FilterPanel: ", this.state);
+
+				this.createFilterPanel();
 			}
 
 
@@ -690,6 +746,13 @@ define([
 				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
 			}, this);
 
+		},
+		startup: function(){
+			console.log("GridContainer Startup()  isVisible: ", this.visible);
+			if (this._started){ return; }
+			if (this.visible){ this.onFirstView() }
+			if (this.state){ this.set('state', this.state)}
+			this.inherited(arguments)
 		}
 	});
 });

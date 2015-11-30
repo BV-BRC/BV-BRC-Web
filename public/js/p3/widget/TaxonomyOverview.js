@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dijit/_WidgetsInTemplateMixin",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeOverview.html",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","./GenomeFeatureSummary","./DataItemFormatter","./SpecialtyGeneSummary"
 
@@ -11,37 +11,40 @@ define([
 			SpecialtyGeneSummary) {
 
 	return declare([WidgetBase,Templated,_WidgetsInTemplateMixin], {
-		baseClass: "GenomeOverview",
+		baseClass: "TaxonomyOverview",
 		disabled: false,
 		templateString: Template,
 		apiServiceUrl: window.App.dataAPI,
 		genome: null,
 		state: null,
+		genome_ids: null,
 
 		_setStateAttr: function(state){
 			this._set("state", state);
-			if (state.genome){
-				this.set("genome", state.genome);
-			}
-		},
 
-		"_setGenomeAttr": function(genome) {
-			this.genome = genome;
-			this.createSummary(genome);
+			console.log("TAXON OVERVIEW SET STATE: ", state)
+			if (state.taxonomy){
+				this.set("taxonomy", state.taxonomy);
+			}
+
 		
 			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 					if (this[w]){
-						this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
+						this[w].set('query', this.state.search)
 					}
-			},this)
+			},this)		},
 
+		"_setTaxonomyAttr": function(genome) {
+			this.genome = genome;
+			this.createSummary(genome);
+	
 		},
 
 		"createSummary": function(genome) {
-			domConstruct.empty(this.genomeSummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "genome_data",{hideExtra:true}), this.genomeSummaryNode,"first");
+			domConstruct.empty(this.taxonomySummaryNode);
+			domConstruct.place(DataItemFormatter(genome, "taxonomy_data",{hideExtra:true}), this.taxonomySummaryNode,"first");
 		},
 
 		startup: function(){

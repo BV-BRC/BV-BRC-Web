@@ -38,6 +38,11 @@
 	text-align: left;
 	border-bottom: 1px solid #fff;
 	padding: 4px;
+	text-transform: capitalize;
+}
+
+.facetCategory {
+	text-transform: capitalize;
 }
 
 .facetCategory.selected {

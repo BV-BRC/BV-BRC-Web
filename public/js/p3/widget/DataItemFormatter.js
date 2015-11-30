@@ -1,4 +1,11 @@
-define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
+define([
+	"dojo/date/locale","dojo/dom-construct","dojo/dom-class",
+	"dijit/form/Button","../JobManager","dijit/TitlePane"
+], function(
+	locale,domConstruct,domClass,
+	Button,JobManager,TitlePane
+
+){
 
 	var formatters = {
 		"default": function(item, options){
@@ -16,6 +23,139 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 			return table;
 		},
+
+		"job_parameters": function(item,options){
+			function renderObject(obj,target, depth){
+				if (!depth){ depth=1 }
+				if (typeof obj == 'object') {
+					var props = Object.keys(obj);
+					props.forEach(function(p){
+						if (typeof obj[p] == 'object'){
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*5) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{},tr);
+							renderObject(obj[p],tbody,depth+1);
+						}else{
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*10) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{innerHTML: obj[p]},tr);
+						}
+					})
+				}
+			}
+		},
+		"completed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			console.log("Display Detail Complete")
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+		"failed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+
+	
+			var tpDiv = domConstruct.create("div",{},div);
+			var dlg = new TitlePane({title: "Error Output",open: false},tpDiv);
+			dlg.watch("open", function(attr,oldVal,open){
+				if (!open){return;}
+				JobManager.queryTaskDetail(item.id,true,true).then(function(detail){
+					//console.log("JOB DETAIL: ", detail);
+					clearTimeout(timer);
+					if (detail.stderr) {
+						dlg.set("content","<pre>" + detail.stderr + "</pre>");
+					}else{
+						dlg.set("content","Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail,null,4) + "</pre>");
+					}
+				}, function(err){
+					dlg.set("content","Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+			})
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+
 
 		"feature_data": function(item, options){
 			options = options || {}
@@ -363,13 +503,16 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'other_names'
 			}, {
 				name : 'Lineage',
-				text : 'lineage_names'
+				text : 'lineage_names',
+				data_hide: true
 			}, {
 				name : 'Lineage Ranks',
-				text : 'lineage_ranks'
+				text : 'lineage_ranks',
+				data_hide: true
 			}, {
 				name : 'Lineage IDs',
-				text : 'lineage_ids'
+				text : 'lineage_ids',
+				data_hide: true
 			},{
 				name : 'Genetic Code',
 				text : 'genetic_code'
