@@ -32,6 +32,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
+		pfState: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		selectionModel: "extended",
@@ -54,6 +55,7 @@ define([
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.pfState = options.pfState;
 		},
 		startup: function(){
 			var _self = this;
@@ -112,20 +114,20 @@ define([
 				}
 
 				// update filter
-				Object.keys(state.genomeFilterStatus).forEach(function(genomeId){
+				Object.keys(_self.pfState.genomeFilterStatus).forEach(function(genomeId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(genomeId, el).element.input.checked) {
+						if(_self.cell(genomeId, el).element.input.checked){
 							return el;
 						}
 					});
 					//console.log(genomeId, status);
-					state.genomeFilterStatus[genomeId].setStatus(status);
+					_self.pfState.genomeFilterStatus[genomeId].setStatus(status);
 				});
 
-				//Object.keys(state.genomeFilterStatus).forEach(function(el){
-				//	console.warn(state.genomeFilterStatus[el].getGenomeName(), state.genomeFilterStatus[el].getStatus());
+				//Object.keys(pfState.genomeFilterStatus).forEach(function(el){
+				//	console.warn(pfState.genomeFilterStatus[el].getGenomeName(), pfState.genomeFilterStatus[el].getStatus());
 				//});
-				Topic.publish("ProteinFamilies", "genomeFilter", state.genomeFilterStatus);
+				Topic.publish("ProteinFamilies", "genomeFilter", _self.pfState.genomeFilterStatus);
 			});
 
 			aspect.before(_self, 'renderArray', function(results){
@@ -158,7 +160,8 @@ define([
 			return new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state
+				state: state || this.state,
+				pfState: this.pfState
 			});
 		}
 	});

@@ -1,13 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
 	"./ContainerActionBar", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog",
-	"dojo/_base/lang", "swfobject/swfobject"
+	"dijit/TooltipDialog", "dijit/Dialog",
+	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin"
 
 ], function(declare, ContentPane, BorderContainer, on,
 			ContainerActionBar, popup, Topic,
-			TooltipDialog,
-			lang, swfobject){
+			TooltipDialog, Dialog,
+			lang, swfobject, request, PathJoin){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -21,20 +21,20 @@ define([
 		state: null,
 		visible: false,
 		dataGridContainer: null,
-		filterGrid: null,
+		pfState: null,
 		flashDom: null,
 		containerActions: [
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
-				{label:"Flip Axis",multiple: false,validTypes:["*"]},
+				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
 				"flipAxises",
 				true
 			],
 			[
 				"Cluster",
 				"fa icon-make-group fa-2x",
-				{label:"Cluster",multiple: false,validTypes:["*"]},
+				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				function(selection){
 					// TODO: implement
 				},
@@ -43,7 +43,7 @@ define([
 			[
 				"Advanced Clustering",
 				"fa icon-make-group fa-2x",
-				{label:"Advanced Clustering",multiple: false,validTypes:["*"]},
+				{label: "Advanced Clustering", multiple: false, validTypes: ["*"]},
 				function(selection){
 					// TODO: implement
 				},
@@ -52,7 +52,8 @@ define([
 		],
 		constructor: function(options){
 			this.dataGridContainer = options.dataGridContainer;
-			this.filterGrid = options.filterGrid;
+			this.pfState = options.pfState;
+			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
@@ -120,7 +121,11 @@ define([
 			this.addChild(this.containerActionBar);
 
 			//TODO: add legend
-			this.addChild(new ContentPane({region: "center", content: "<div id='flashTarget'></div>", style:"padding:0"}));
+			this.addChild(new ContentPane({
+				region: "center",
+				content: "<div id='flashTarget'></div>",
+				style: "padding:0"
+			}));
 
 			this.inherited(arguments);
 			this._firstView = true;
@@ -128,28 +133,104 @@ define([
 		// flash interface functions
 		flashReady: function(flashObjectID){
 			var target = document.getElementById(flashObjectID) || this.flashDom;
-			this._prepareHeatmapData();
-			target.refreshData(); // this triggers flashRequestsData callback
 			//console.log("flashReady is called", flashObjectID, target);
+			if(typeof(target.refreshData) == "function"){
+				this._prepareHeatmapData();
+				target.refreshData(); // this triggers flashRequestsData callback
+			}
 		},
 		flashRequestsData: function(){
+			//console.log("flashRequestsData is called");
 			return this.currentData;
 		},
 		_prepareHeatmapData: function(){
-			var filterStore = this.filterGrid.store;
-			//console.warn(filterStore);
+			//console.log("_prepareHeatmapData is called");
 			var dataStore = this.dataGridContainer.grid.store;
-			//console.log(dataStore);
-			this.currentData = dataStore.getHeatmapData(filterStore);
-			//console.log(currentData);
+			//console.log("dataStore: ", dataStore);
+			this.currentData = dataStore.getHeatmapData(this.pfState);
+			//console.log("currentData: ", this.currentData);
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
-			// TODO: implement this
-			console.log("flashCellClicked is called ", colID, rowID);
+			//console.log("flashCellClicked is called ", colID, rowID);
+			var originalAxis = this._checkAxis(colID, rowID);
+
+			var familyId = originalAxis.columnIds;
+			var genomeId = originalAxis.rowIds;
+
+			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "))";
+
+			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				}
+			}).then(lang.hitch(this, function(response){
+				var feature = response[0];
+				this.dialog.set('content', JSON.stringify(feature));
+				this.dialog.show();
+			}));
+
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			// TODO: implement this
-			console.log("flashCellsSelected is called", colIDs, rowIDs);
+			//console.log("flashCellsSelected is called", colIDs, rowIDs);
+			var originalAxis = this._checkAxis(colIDs, rowIDs);
+
+			var familyIds = originalAxis.columnIds;
+			var genomeIds = originalAxis.rowIds;
+			var membersCount = this._countMembers(colIDs, rowIDs);
+
+			var text = [];
+			text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
+			text.push('<b>Family Selected:</b> ' + familyIds.length);
+			text.push('<b>Members:</b> ' + membersCount);
+
+			this.dialog.set('content', text.join('<br/>'));
+			this.dialog.show();
+		},
+		_countMembers: function(colIDs, rowIDs){
+			var columns = this.currentData.columns;
+			var rows = this.currentData.rows;
+
+			var rowPositions = [];
+			var count = 0;
+
+			//console.log(columns, rows);
+			rows.forEach(function(row){
+				rowIDs.forEach(function(rowID){
+					if(rowID === row.rowID){
+						rowPositions.push(row.order * 2);
+					}
+				})
+			});
+			//console.log(rowPositions);
+
+			columns.forEach(function(col){
+				colIDs.forEach(function(colID){
+					if(colID === col.colID){
+						rowPositions.forEach(function(pos){
+							//console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
+							count += parseInt(col.distribution.substr(pos, 2), 16);
+						});
+					}
+				});
+			});
+
+			return count;
+		},
+		_checkAxis: function(columnIds, rowIds){
+			var originalAxis = {};
+
+			if(this.pfState.heatmapAxis === "Transposed"){
+				originalAxis.columnIds = rowIds;
+				originalAxis.rowIds = columnIds;
+			}else{
+				originalAxis.columnIds = columnIds;
+				originalAxis.rowIds = rowIds;
+			}
+			return originalAxis;
 		},
 		flipAxises: function(){
 			var currentData = this.currentData;
@@ -189,6 +270,13 @@ define([
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
 
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
