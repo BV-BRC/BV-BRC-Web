@@ -63,7 +63,7 @@ define([
 						var tr = domConstruct.create("tr", {},tbody);
 						var td = domConstruct.create("td",{innerHTML: pubmedSummary.result[value].pubdate}, tr);
 						tr = domConstruct.create("tr",{},tbody);
-						td = domConstruct.create("td",{innerHTML: pubmedSummary.result[value].title}, tr);
+						td = domConstruct.create("td",{innerHTML: "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + value + "' target ='_blank'>" + pubmedSummary.result[value].title + "</a>"}, tr);
 						tr = domConstruct.create("tr",{},tbody);
 						var author = pubmedSummary.result[value].lastauthor + " et al.";
 					
