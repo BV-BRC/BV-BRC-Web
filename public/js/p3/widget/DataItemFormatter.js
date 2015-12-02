@@ -491,7 +491,8 @@ define([
 			options = options || {}
 			var featureColumns = [{
 				name : 'Taxonomy ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name : 'Taxon Name',
 				text : 'taxon_name'

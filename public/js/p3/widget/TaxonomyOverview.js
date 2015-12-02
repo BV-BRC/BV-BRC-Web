@@ -2,13 +2,13 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dijit/_WidgetsInTemplateMixin",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","./GenomeFeatureSummary","./DataItemFormatter","./SpecialtyGeneSummary"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","./GenomeFeatureSummary","./DataItemFormatter","./SpecialtyGeneSummary", "./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on,_WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct,PathJoin,GenomeFeatureSummary,DataItemFormatter,
-			SpecialtyGeneSummary) {
+			SpecialtyGeneSummary,ExternalItemFormatter) {
 
 	return declare([WidgetBase,Templated,_WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
@@ -45,6 +45,14 @@ define([
 		"createSummary": function(genome) {
 			domConstruct.empty(this.taxonomySummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data",{hideExtra:true}), this.taxonomySummaryNode,"first");
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data",{hideExtra:true}), this.pubmedSummaryNode,"first");
+		},
+
+		onShowMore: function(){
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.empty(this.pubmedSummaryNode2);
+			domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data",{hideExtra:false}), this.pubmedSummaryNode2,"first");
 		},
 
 		startup: function(){
