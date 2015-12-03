@@ -79,7 +79,7 @@ define([
 			}
 			if (!this.tree){
 	            this.tree = new TreeNavSVG();
-                this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:this.phylogram, fontSize:10});
+                this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:this.phylogram, fontSize:10, colorGenus:true});
 	        }
 
             this.tree.setTree(this.newick);
