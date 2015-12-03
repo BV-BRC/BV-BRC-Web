@@ -12,28 +12,13 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
-		params: {
-			familyType: 'figfam'
-		},
+		pfState: null,
 
-		/*onSetState: function(attr, oldVal, state){
-			console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids, state.genomeFilterStatus);
-			var cur = (this.genome_ids || []).join("");
-			var next = (state.genome_ids || []).join("");
-			if(cur != next){
-				this.set("genome_ids", state.genome_ids || []);
-				this._loaded = false;
-				delete this._loadingDeferred;
-			}
-
-		},*/
 		constructor: function(options){
 			this._loaded = false;
-			this.genome_ids = [];
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
-			//this.watch('state', lang.hitch(this, 'onSetState'));
 
 			var self = this;
 
@@ -43,11 +28,11 @@ define([
 
 				switch(key){
 					case "genomeIds":
-						self.genome_ids = value;
+						self.pfState = value;
 						self.reload();
 						break;
 					case "familyType":
-						self.params.familyType = value;
+						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
 						break;
@@ -142,9 +127,7 @@ define([
 				return this._loadingDeferred;
 			}
 
-			var state = this.state || {};
-
-			if(!this.genome_ids || this.genome_ids.length < 1){
+			if(!this.pfState || this.pfState.genomeIds.length < 1){
 				console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -160,11 +143,11 @@ define([
 
 			}
 
-			var familyType = this.params.familyType;
+			var familyType = this.pfState.familyType;
 			var familyId = familyType + '_id';
 
 			var query = {
-				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
+				q: "genome_id:(" + this.pfState.genomeIds.join(' OR ') + ")",
 				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
 				//fq: "figfam_id:(FIG01956050)",
 				rows: 0,
@@ -236,7 +219,8 @@ define([
 						var familyGenomeIdCountMap = {};
 						var familyGenomeIdSet = {};
 						var genomePosMap = {};
-						_self.genome_ids.forEach(function(genomeId, idx){
+						var genome_ids = _self.pfState.genomeIds;
+						genome_ids.forEach(function(genomeId, idx){
 							genomePosMap[genomeId] = idx;
 						});
 
@@ -256,7 +240,7 @@ define([
 										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
 									}
 									else{
-										var genomeIdCount = new Array(_self.genome_ids.length).fill('00');
+										var genomeIdCount = new Array(genome_ids.length).fill('00');
 										genomeIdCount[genomePos] = genomeCount;
 										familyGenomeIdCountMap[familyId] = genomeIdCount;
 									}
@@ -265,7 +249,7 @@ define([
 										familyGenomeIdSet[familyId].push(genomeId);
 									}
 									else{
-										var genomeIds = new Array(_self.genome_ids.length);
+										var genomeIds = new Array(genome_ids.length);
 										genomeIds.push(genomeId);
 										familyGenomeIdSet[familyId] = genomeIds;
 									}
@@ -349,7 +333,7 @@ define([
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(filterStore){
+		getHeatmapData: function(pfState){
 
 			var rows = [];
 			var cols = [];
@@ -381,14 +365,18 @@ define([
 			}
 
 			// rows - genomes
-			filterStore.data.forEach(function(genome, idx){
-				var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			//console.log("pfState: ", pfState);
+			//filterStore.data.forEach(function(genome, idx){
+			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			pfState.genomeIds.forEach(function(genomeId, idx){
+				var gfs = pfState.genomeFilterStatus[genomeId];
 				if(gfs.getStatus() != '1'){
 					keeps.push(2 * gfs.getIndex());
 					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
 					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-					rows.push(new Row(gfs.getIndex(), genome.genome_id, genome.genome_name, labelColor, rowColor));
+					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
+					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
 
 					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
 				}
