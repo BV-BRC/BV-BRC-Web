@@ -369,30 +369,17 @@ define([
 				},
 				false
 			],[
-				"MultipleSeqAlignment",
-				"fa icon-alignment fa-2x",
-				{
-					label:"MSA",ignoreDataType:true, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["proteinfamily_data","pathway_data"]
-				}, 
-				function(selection){
-					var selection = self.actionPanel.get('selection')
-					var ids = selection.map(function(d){ return d['feature_id']; });
-						console.log("OPEN MSA VIEWER");
-				},
-				false
-			],[
 				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
 				{
 					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data","spgene_data"]
+					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
 					console.log("MSA Selection: ", selection);
 					var ids = selection.map(function(d){ return d['feature_id']; });
 					console.log("OPEN MSA VIEWER");
-					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.join(",") + "))"});
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
 
 				},
 				false

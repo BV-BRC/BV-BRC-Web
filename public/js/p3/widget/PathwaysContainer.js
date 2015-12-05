@@ -39,7 +39,7 @@ define([
 		state: null,
 		maxGenomeCount: 5000,
 		apiServer: window.App.dataServiceURL,
-	    defaultFilter: "eq(annotation,%22PATRIC%22)",
+		defaultFilter: "eq(annotation,%22PATRIC%22)",
 
 
 		postCreate: function(){
