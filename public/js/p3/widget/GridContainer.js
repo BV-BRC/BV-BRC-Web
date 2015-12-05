@@ -389,9 +389,11 @@ define([
 					validContainerTypes: ["feature_data","spgene_data"]
 				}, 
 				function(selection){
-					var selection = self.actionPanel.get('selection')
+					console.log("MSA Selection: ", selection);
 					var ids = selection.map(function(d){ return d['feature_id']; });
-						console.log("OPEN MSA VIEWER");
+					console.log("OPEN MSA VIEWER");
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.join(",") + "))"});
+
 				},
 				false
 			],[
