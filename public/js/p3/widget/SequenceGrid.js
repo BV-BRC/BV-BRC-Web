@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SequenceJsonRest"
+	"./PageGrid", "./formatter","../store/SequenceJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store, selector) {
 
 		var store = new Store({});
 
@@ -18,6 +18,7 @@ define([
 		primaryKey: "sequence_id",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			sequence_id: {label: "Sequence ID", field: "sequence_id", hidden: true},
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: false},

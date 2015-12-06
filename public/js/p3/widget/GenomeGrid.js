@@ -334,7 +334,21 @@ define([
 				label: 'Additional Metadata',
 				field: 'additional_metadata',
 				hidden: true
+			},
+			date_inserted: {
+				label: 'Index Date',
+				field: 'date_inserted',
+				hidden: true,
+				formatter: formatter.dateOnly
+			},
+
+			date_modified: {
+				label: 'Last Index Date',
+				field: 'date_modified',
+				hidden: false,
+				formatter: formatter.dateOnly
 			}
+
 		},
 		defaultSortProperty: "genome_name",
 		constructor: function(){

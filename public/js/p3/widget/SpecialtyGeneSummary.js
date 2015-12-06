@@ -45,6 +45,7 @@ define([
 						type: "Columns",
 						markers: true,
 						gap: 5,
+						maxBarSize: 20,
 						labels: true,
 						labelStyle: "outside",
 						animate: { duration: 1000, easing: easing.linear} 

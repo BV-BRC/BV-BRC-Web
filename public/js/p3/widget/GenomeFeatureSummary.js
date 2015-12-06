@@ -8,6 +8,8 @@ define([
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct,PathJoin,easing) {
+	var LOG10 = Math.log(10);
+
 	return declare([SummaryWidget], {
 			dataModel: "genome_feature",
 			query: "",
@@ -48,7 +50,7 @@ define([
 					values.forEach(function(val,idx){
 						if (!summary.pivot.some(function(pv){
 							if (pv.value==val){
-								gfData[summary.value].push({text: pv.value, x:idx, y: pv.count, annotation: summary.value})
+								gfData[summary.value].push({text: pv.value, x:idx, y: Math.log(pv.count)/LOG10,count:pv.count, annotation: summary.value})
 								byFeature[pv.value][summary.value]=pv.count
 								return true;
 							}
@@ -73,8 +75,9 @@ define([
 					this.chart.addPlot("default", {
 						type: "ClusteredColumns",
 						markers: true,
-						gap: 5,
+						gap: 2,
 						labels: true,
+						minBarSize: 5,
 						labelStyle: "inside",
 						//labelOffset: 20,
 						labelFunc: function(o){
@@ -85,20 +88,42 @@ define([
 					
 					this.chart.addAxis("x", {
 						majorLabels: true,
-						minorTicks: false,
+						minorTicks: true,
 						minorLabels: true,
-						microTicks: false,
-						labels: this._chartLabels
-
+						microTicks: true,
+						labels: [this._chartLabels]
 					});
 
-					this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
+					this.chart.addAxis("y", {
+						title: "Feature Count",
+						vertical: true,
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: true,
+						microTicks: true,
+						natural: true,
+						includeZero: true,
+						labels: [
+							{value: 0, text: "1"},
+							{value: 1, text: "10"},
+							{value: 2, text: "100"},
+							{value: 3, text: "1000"},
+							{value: 4, text: "10^4"},
+							{value: 5, text: "10^5"},
+							{value: 6, text: "10^6"},
+							{value: 7, text: "10^7"},
+							{value: 8, text: "10^8"},
+							{value: 9, text: "10^9"}
+						]
+
+					});
+					// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
 
 					new ChartTooltip(this.chart, "default", {
 						text: function(o){
 							console.log("O: ", o)
 							var d = o.run.data[o.index];
-							return d.annotation + " " + d.text + "s (" + d.y + ")"
+							return d.annotation + " " + d.text + "s (" + d.count + ")"
 						}
 					});
 

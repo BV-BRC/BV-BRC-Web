@@ -53,16 +53,8 @@ define([
 						orient: ["below"]
 					});
 				},
-				true
-			],
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
 		])
 	});
