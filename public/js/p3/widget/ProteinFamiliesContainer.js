@@ -28,7 +28,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);

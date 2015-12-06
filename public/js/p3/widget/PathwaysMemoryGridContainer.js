@@ -77,6 +77,7 @@ define([
 					dataModel: this.dataModel,
 					facetFields: this.facetFields,
 					state: this.state,
+					currentContainerWidget: this,
 					_setQueryAttr: function(query){
 						// console.log("_setQueryAttr: ", query)
 						var p = _self.typeMap[_self.type];
@@ -141,16 +142,8 @@ define([
 						orient: ["below"]
 					});
 				},
-				true
-			],[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters"}, 
-				function(selection){	
-					console.log("Toggle the Filters Panel");
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
 		]),
 

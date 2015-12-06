@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer","../../util/PathJoin"
+	"../SequenceGridContainer","../../util/PathJoin","../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -14,12 +14,12 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer,PathJoin){
+			SequenceGridContainer,PathJoin,QueryToEnglish){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
-		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click APPLY FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -91,9 +91,12 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + "</div>");
+
+			var content = QueryToEnglish(newVal);
+			console.log("English Content: ", content)
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -230,13 +233,15 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
+				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal)
 				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
+					console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
 					child.set("disabled", false);
 				}
-			});
+			},this);
 
 			if(hasDisabled){
 				this.showWarning();

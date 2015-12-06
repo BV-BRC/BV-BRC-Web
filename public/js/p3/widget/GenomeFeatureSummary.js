@@ -75,9 +75,9 @@ define([
 					this.chart.addPlot("default", {
 						type: "ClusteredColumns",
 						markers: true,
-						gap: 2,
+						gap: 1,
 						labels: true,
-						minBarSize: 5,
+						// minBarSize: 5,
 						labelStyle: "inside",
 						//labelOffset: 20,
 						labelFunc: function(o){
@@ -89,8 +89,8 @@ define([
 					this.chart.addAxis("x", {
 						majorLabels: true,
 						minorTicks: true,
-						minorLabels: true,
-						microTicks: true,
+						minorLabels: false,
+						microTicks: false,
 						labels: [this._chartLabels]
 					});
 

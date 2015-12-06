@@ -37,7 +37,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 

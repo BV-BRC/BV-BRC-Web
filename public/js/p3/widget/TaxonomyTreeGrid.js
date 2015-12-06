@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare","dgrid/OnDemandGrid","dgrid/Tree","dojo/on","dgrid/Selection",
-	"../store/TaxonomyJsonRest","dgrid/extensions/DijitRegistry"
+	"../store/TaxonomyJsonRest","dgrid/extensions/DijitRegistry","dojo/_base/lang"
 
 ],function(
 	declare,Grid,Tree,on,Selection,
-	Store,DijitRegistryExt
+	Store,DijitRegistryExt,lang
 ){
 	return declare([Grid,DijitRegistryExt,Selection], {
 		constructor: function(){
@@ -15,9 +15,11 @@ define([
 		},
 		store: new Store({}),
 		columns: [
-			Tree({label: "Name", field:"taxon_name"}),
+			Tree({label: "Name", field:"taxon_name", shouldExpand: function(row,level,prevExpanded){
+				return (prevExpanded || (level < 1))
+			}}),
 			{label: "Rank", field: "taxon_rank"},
-			{label: "Genomes", field: "genomes"}
+			{label: "Genomes", field: "genomes",style: "width:50px;"}
 		],
 		startup: function(){
 			var _self=this;
@@ -66,7 +68,17 @@ define([
 				on.emit(_self.domNode, "deselect", newEvt);
 				return;
 			});
+
+			// this.on("dgrid-refresh-complete", lang.hitch(this,function(){
+			// 	console.log("Refresh complete, expand first row");
+			// 	setTimeout(lang.hitch(this, function(){
+			// 		this.expand(0,true);
+			// 	}),250);
+			// }))
+
 			this.inherited(arguments);
 		}
+
+
 	});
 })

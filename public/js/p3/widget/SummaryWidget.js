@@ -38,14 +38,27 @@ define([
 			this["render_" + this.view]();
 		},
 
-		headers: {"accept": "application/solr+json"},
+		headers: {
+			"accept": "application/solr+json",
+			"content-type": "application/rqlquery+x-www-form-urlencoded",
+            'X-Requested-With': null,
+            'Authorization': (window.App.authorizationToken || "")
+		},
 
 		onSetQuery: function(attr,oldVal,query){
-			console.log("SummaryWidget onSetQuery: ", query)
-			return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel,"?" + this.query + this.baseQuery),{
+			console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl,this.dataModel)+"/")
+			console.log("Do SummaryWidget Query: ", this.query + this.baseQuery)
+			return xhr.post(PathJoin(this.apiServiceUrl,this.dataModel)+"/",{
 				handleAs: "json",
 				headers: this.headers,
+				data: this.query + this.baseQuery
 			}).then(lang.hitch(this,"processData")) 
+			
+			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
+			// 	handleAs: "json",
+			// 	headers: this.headers
+			// }).then(lang.hitch(this,"processData")) 
+
 		},
 
 		onSetData: function(attr,oldVal,data){

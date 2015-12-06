@@ -35,7 +35,7 @@ define([
 		containerType: "feature_data",
 		facetFields: ["annotation","feature_type"],
 		filter: "",
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){

@@ -13,7 +13,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		query: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		facetFields: TranscriptomicsExperimentGridContainer.prototype.facetFields,
 		containerActions: TranscriptomicsExperimentGridContainer.prototype.containerActions,
 		apiServer: window.App.dataAPI,

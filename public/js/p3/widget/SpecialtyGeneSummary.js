@@ -54,7 +54,7 @@ define([
 					this.chart.addAxis("x", {
 						majorLabels: true,
 						minorTicks: false,
-						minorLabels: true,
+						minorLabels: false,
 						microTicks: false,
 						labels: this._chartLabels
 
