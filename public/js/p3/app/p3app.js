@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare",
 	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr","dojo/dom-construct",
-	"dijit/registry","dojo/request",
+	"dijit/registry","dojo/request","dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest","dojox/widget/Toaster",
 	"dojo/ready","./app","../router",
@@ -11,7 +11,7 @@ define([
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
-	Registry,xhr,
+	Registry,xhr,lang,
 	Deferred,
 	JsonRest,Toaster,
 	Ready,App,
@@ -265,8 +265,22 @@ define([
 			// }, 1000);
 
 
+			if (this.user && this.user.id){
+				domAttr.set("YourWorkspaceLink",'href','/workspace/' + this.user.id  )
+			}
+			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
+
 
 			this.inherited(arguments);
+		},
+
+		updateUserWorkspaceList: function(data){
+			console.log("updateUserWorkspaceList: ", data);
+			domConstruct.empty("YourWorkspaces");
+			data.forEach(function(ws){
+				var d = domConstruct.create("div", {style: {"padding-left":"12px"}}, dom.byId("YourWorkspaces"))
+				domConstruct.create("a", {'class':'navigationLink', href: "/workspace" + ws.path, innerHTML: ws.name}, d);
+			})
 		},
 
 		search_all_header: function(){

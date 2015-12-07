@@ -87,11 +87,11 @@ define([
 		if (keywords.length<1){
 
 		}else if (keywords.length==1){
-			out.push("that keyword match " + keywords[0])
+			out.push("that match the keyword "  + keywords[0] )
 		}else if (keywords.length==2){
-			out.push("that keyword match " + keywords.join(' <span class="queryOperator"> AND </span> '))
+			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
 		}else{
-			out.push("that keyword match " + keywords.slice(0,keywords.length-1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length-1])
+			out.push("that match all of the keywords " + keywords.slice(0,keywords.length-1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length-1])
 		}
 
 		console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));

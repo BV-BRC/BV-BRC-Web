@@ -179,8 +179,8 @@ define([
 
 		},
 		_setQueryAttr: function(query){
-			//console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
-			//console.log("    Query: ", query, "this.query: ", this.query)
+			console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			console.log("    Query: ", query, "this.query: ", this.query)
 			// if(query == this.query){
 				//console.log("  Not Skipping Query Update (unchanged)");
 				// return;
@@ -639,6 +639,7 @@ define([
 				region: "center",
 				query: this.buildQuery(),
 				state: this.state,
+				query: this.query,
 				apiServer: this.apiServer,
 				visible: true
 			}
@@ -688,6 +689,7 @@ define([
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.itemDetailPanel);
+			
 
 			this.setupActions();
 			this.listen();

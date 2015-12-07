@@ -13,7 +13,7 @@ define([
 	return declare([SummaryWidget], {
 			dataModel: "genome_feature",
 			query: "",
-			baseQuery: "&limit(1)&facet((pivot,(annotation,feature_type)),(mincount,0))",
+			baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
 			columns: [
 				{label: " ", field: "feature_type", renderCell: function(obj,val,node){ node.innerHTML= '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"}},
 				{label: "PATRIC", field: "PATRIC", renderCell: function(obj,val,node){ node.innerHTML=obj.PATRIC?('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>"):"0"}},
@@ -75,7 +75,7 @@ define([
 					this.chart.addPlot("default", {
 						type: "ClusteredColumns",
 						markers: true,
-						gap: 1,
+						gap: 3,
 						labels: true,
 						// minBarSize: 5,
 						labelStyle: "inside",
