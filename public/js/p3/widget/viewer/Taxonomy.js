@@ -118,7 +118,7 @@ define([
 			switch(active){
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
-					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")"}));
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) 	+ ")"}));
 					break;
 				case "phylogeny":
 				case "genomes":

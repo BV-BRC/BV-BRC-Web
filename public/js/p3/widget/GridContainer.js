@@ -486,7 +486,21 @@ define([
 				function(selection, containerWidget){
 					console.log("Add Items to Group", selection);
 					var dlg = new Dialog({title:"Copy Selection to Group"});
-					var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+					var type;
+
+					if (!containerWidget){ console.log("Container Widget not setup for addGroup"); return; }
+
+					if (containerWidget.containerType=="genome_data"){
+						type="genome_group"
+					}else if (containerWidget.containerType=="feature_data"){
+						type="feature_group";
+					}
+
+					if (!type){
+						console.error("Missing type for AddGroup")
+						return;
+					}
+					var stg = new SelectionToGroup({selection: selection, type: type,path: containerWidget.get("path")});
 					on(dlg.domNode, "dialogAction", function(evt){
 						dlg.hide();
 						setTimeout(function(){
@@ -639,7 +653,6 @@ define([
 				region: "center",
 				query: this.buildQuery(),
 				state: this.state,
-				query: this.query,
 				apiServer: this.apiServer,
 				visible: true
 			}

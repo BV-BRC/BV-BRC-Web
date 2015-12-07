@@ -18,7 +18,7 @@ define([
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			// "Selection Checkboxes": selector({}),
 			family_id: {label: 'ID', field: 'family_id'},
 			feature_count: {label: 'Proteins', field: 'feature_count'},
 			genome_count: {label: 'Genomes', field: 'genome_count'},
