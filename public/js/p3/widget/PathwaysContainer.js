@@ -156,7 +156,7 @@ define([
 				enableFilterPanel: true,
 				queryOptions: {
 					sort: [{attribute: "gene"}]
-				},
+				}
 			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
