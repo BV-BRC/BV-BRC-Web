@@ -141,7 +141,7 @@ define([
 				enableFilterPanel: true,
 				queryOptions: {
 					sort: [{attribute: "ec_number"}]
-				},
+				}
 			});
 
 			this.genesGrid = new PathwaysGridContainer({
