@@ -1,10 +1,10 @@
 define("p3/widget/SpecialtyGeneGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest"
+	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -18,6 +18,7 @@ define("p3/widget/SpecialtyGeneGrid", [
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},

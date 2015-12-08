@@ -518,6 +518,7 @@ define("p3/WorkspaceManager", [
         },
 
         _userWorkspacesSetter: function(val){
+            Topic.publish("/userWorkspaces", val);
             this.userWorkspaces = val;
         },
 

@@ -1,7 +1,7 @@
 define("p3/app/p3app", [
 	"dojo/_base/declare",
 	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr","dojo/dom-construct",
-	"dijit/registry","dojo/request",
+	"dijit/registry","dojo/request","dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest","dojox/widget/Toaster",
 	"dojo/ready","./app","../router",
@@ -11,7 +11,7 @@ define("p3/app/p3app", [
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
-	Registry,xhr,
+	Registry,xhr,lang,
 	Deferred,
 	JsonRest,Toaster,
 	Ready,App,
@@ -104,6 +104,23 @@ define("p3/app/p3app", [
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
+				// console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+
+			Router.register("\/content(\/.*)", function(params, oldPath, newPath, state){
+				// console.log("Upload URL Callback", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="dijit/layout/ContentPane";
+				newState.value="http://localhost:3001/content" + path;
+				newState.set= "href";
+				newState.requireAuth=false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -248,8 +265,22 @@ define("p3/app/p3app", [
 			// }, 1000);
 
 
+			if (this.user && this.user.id){
+				domAttr.set("YourWorkspaceLink",'href','/workspace/' + this.user.id  )
+			}
+			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
+
 
 			this.inherited(arguments);
+		},
+
+		updateUserWorkspaceList: function(data){
+			console.log("updateUserWorkspaceList: ", data);
+			domConstruct.empty("YourWorkspaces");
+			data.forEach(function(ws){
+				var d = domConstruct.create("div", {style: {"padding-left":"12px"}}, dom.byId("YourWorkspaces"))
+				domConstruct.create("a", {'class':'navigationLink', href: "/workspace" + ws.path, innerHTML: ws.name}, d);
+			})
 		},
 
 		search_all_header: function(){

@@ -15,7 +15,7 @@
 	padding: 0px;
 	white-space: nowrap;
 	vertical-align: top;
-	max-width: 250px;
+	max-width: 350px;
 }
 
 
@@ -38,6 +38,11 @@
 	text-align: left;
 	border-bottom: 1px solid #fff;
 	padding: 4px;
+	text-transform: capitalize;
+}
+
+.facetCategory {
+	text-transform: capitalize;
 }
 
 .facetCategory.selected {

@@ -1,10 +1,10 @@
 define("p3/widget/TranscriptomicsExperimentGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest"
+	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -18,10 +18,10 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 		primaryKey: "eid",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			eid: {label: "Experiment ID", field: "eid",hidden:true},
 			title: {label: "Title", field: "title", hidden: false},
-			comparisons: {label: "Comparisons", field: "comparisions",  hidden: false},
-			samples: {label: "Samples", field: "samples", hidden: false},
+			samples: {label: "Comparisons", field: "samples", hidden: false},
 			genes:{label: "Genes", field: "genes",hidden: false},
 			pubmed:{label: "PubMed", field: "pmid",hidden: false},
 			linkout:{label: "Link Out", field: "",hidden: false},

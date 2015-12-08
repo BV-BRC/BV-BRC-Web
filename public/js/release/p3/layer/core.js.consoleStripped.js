@@ -3,7 +3,7 @@ require({cache:{
 define([
 	"dojo/_base/declare",
 	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr","dojo/dom-construct",
-	"dijit/registry","dojo/request",
+	"dijit/registry","dojo/request","dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest","dojox/widget/Toaster",
 	"dojo/ready","./app","../router",
@@ -13,7 +13,7 @@ define([
 ],function(
 	declare,
 	Topic,on,dom,domClass,domAttr,domConstruct,
-	Registry,xhr,
+	Registry,xhr,lang,
 	Deferred,
 	JsonRest,Toaster,
 	Ready,App,
@@ -106,6 +106,23 @@ define([
 				newState.value=path;
 				newState.set= "path";
 				newState.requireAuth=true;
+				//  0 && console.log("Navigate to ", newState);
+				_self.navigate(newState);
+			});
+
+
+			Router.register("\/content(\/.*)", function(params, oldPath, newPath, state){
+				//  0 && console.log("Upload URL Callback", params.newPath);
+				var newState = {href: params.newPath}
+				for (var prop in params.state){
+					newState[prop]=params.state[prop]
+				}
+		
+				var path = params.params[0] || "/"
+				newState.widgetClass="dijit/layout/ContentPane";
+				newState.value="http://localhost:3001/content" + path;
+				newState.set= "href";
+				newState.requireAuth=false;
 				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -250,8 +267,22 @@ define([
 			// }, 1000);
 
 
+			if (this.user && this.user.id){
+				domAttr.set("YourWorkspaceLink",'href','/workspace/' + this.user.id  )
+			}
+			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
+
 
 			this.inherited(arguments);
+		},
+
+		updateUserWorkspaceList: function(data){
+			 0 && console.log("updateUserWorkspaceList: ", data);
+			domConstruct.empty("YourWorkspaces");
+			data.forEach(function(ws){
+				var d = domConstruct.create("div", {style: {"padding-left":"12px"}}, dom.byId("YourWorkspaces"))
+				domConstruct.create("a", {'class':'navigationLink', href: "/workspace" + ws.path, innerHTML: ws.name}, d);
+			})
 		},
 
 		search_all_header: function(){
@@ -14694,6 +14725,7 @@ define([
         },
 
         _userWorkspacesSetter: function(val){
+            Topic.publish("/userWorkspaces", val);
             this.userWorkspaces = val;
         },
 
@@ -22434,27 +22466,48 @@ define([
 					return;
 				}
 
-				switch(searchFilter){
-					case "genome":
-						var parts = query.split(" ");
-						if (parts){
-							q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
-							 0 && console.log(" Mapped: ", q, "Num Parts: ", parts.length)
+                               var parts = query.split(" ");
+				if (parts){
+					q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
+					 0 && console.log(" Mapped: ", q, "Num Parts: ", parts.length)
 
-							if (parts.length>1){
-								q = "and(" + q.join(",") + ")";
-							}else{
-								q = q[0]
-							}
-							 0 && console.log("Q: ",q)
+					if (parts.length>1){
+						q = "and(" + q.join(",") + ")";
+					}else{
+						q = q[0]
+					}
+
+					var clear = false;
+					switch(searchFilter){
+						case "amr":
+							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
+							clear=true;	
+							break;	
+
+						case "pathways":
+							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
+							clear=true;	
+							break;	
+						case "sp_genes":
+							Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
+							clear=true;	
+							break;	
+						case "genome_features":
+							Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+							clear=true;	
+							break;
+						case "genomes":
 							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
-							this.searchInput.set("value", '');
-						}else{
-							return;
-						}
+							clear=true;	
+							break;	
+						default: 
+							 0 && console.log("Do Search: ", searchFilter, query);
+					}
 
-					default: 
-						 0 && console.log("Do Search: ", searchFilter, query);
+					if (clear) {
+						this.searchInput.set("value", '');
+					}
+
 				}
 
 				 0 && console.log("Do Search: ", searchFilter, query);
@@ -27500,11 +27553,11 @@ define([
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeGroup");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/WSGenomeGroup");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/WSFeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
 					case "model":
@@ -34639,31 +34692,32 @@ return function(column, editor, editOn){
 
 },
 'p3/JobManager':function(){
-define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all"], 
+define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all","dojo/store/Memory","dojo/store/Observable","dojo/when"], 
 
-function(Deferred,Topic,xhr,All){
+function(Deferred,Topic,xhr,All,MemoryStore,Observable,when){
 	// 0 && console.log("Start Job Manager");
 	var Jobs = {}
 	var ready = new Deferred();
 	var firstRun=true;
 
+	var _DataStore = new Observable(new MemoryStore({data:[]}));
+
 	function PollJobs() {
 		if (window.App && window.App.api && window.App.api.service) {
-			Deferred.when(window.App.api.service("AppService.enumerate_tasks",[0,50]), function(tasks){
+			Deferred.when(window.App.api.service("AppService.enumerate_tasks",[0,1000]), function(tasks){
 //				// 0 && console.log("tasks: ", tasks);
 				tasks[0].forEach(function(task){
-					if (!Jobs[task.id]){
-						Jobs[task.id]=task;
-					//	Topic.publish("/Jobs", {type: "JobStatus", job: task});
-					}else{
-						if (Jobs[task.id].status != task.status){
-							var oldJob= Jobs[task.id];
-							Jobs[task.id] = task;
-					//		Topic.publish("/Jobs", {type: "JobStatusChanged", job: task, status: task.status, oldStatus: oldJob.status});	
-						}else{
-							Jobs[task.id]=task;
+					when(_DataStore.get(task.id),function(oldTask){
+						if (!oldTask){
+							_DataStore.put(task);
+						}else if (oldTask.status != task.status){
+							_DataStore.put(task);
 						}
-					}
+					}, function(err){
+						 0 && console.log("ERROR RETRIEVING TASK ", err)
+					})
+	
+					_DataStore.put(task);
 				});
 
 				Deferred.when(getJobSummary(), function(msg){
@@ -34676,7 +34730,7 @@ function(Deferred,Topic,xhr,All){
 				}
 				setTimeout(function(){
 					PollJobs();
-				},10000)
+				},15000)
 			});
 		}else{
 			setTimeout(function(){
@@ -34691,17 +34745,20 @@ function(Deferred,Topic,xhr,All){
 			// 0 && console.log("getJobSummary() from api_service");
 			var def = new Deferred();
 			var summary = {total: 0}
-			Deferred.when(ready, function(){
-				Object.keys(Jobs).forEach(function(id){
-					var job = Jobs[id];
-					summary.total++;
-					if (!summary[job.status]){
-						summary[job.status]=1;
-					}else{
-						summary[job.status]++;
-					}
-				});
-				def.resolve({type: "JobStatusSummary",summary: summary});
+			when(ready, function(){
+				when(_DataStore.query({}),function(Jobs){
+				 	Jobs.forEach(function(job){
+						summary.total++;
+						if (!summary[job.status]){
+							summary[job.status]=1;
+						}else{
+							summary[job.status]++;
+						}
+					});
+					def.resolve({type: "JobStatusSummary",summary: summary});
+				}, function(err){
+					 0 && console.log("Error Generating Job Summary", err)
+				})
 			});
 
 			return def.promise;
@@ -34759,10 +34816,491 @@ function(Deferred,Topic,xhr,All){
 					return Jobs[id];
 				});
 			});
+		},
+
+		getStore: function(){
+			return _DataStore;
 		}
 	}
 
 })
+
+},
+'dojo/store/Memory':function(){
+define(["../_base/declare", "./util/QueryResults", "./util/SimpleQueryEngine" /*=====, "./api/Store" =====*/],
+function(declare, QueryResults, SimpleQueryEngine /*=====, Store =====*/){
+
+// module:
+//		dojo/store/Memory
+
+// No base class, but for purposes of documentation, the base class is dojo/store/api/Store
+var base = null;
+/*===== base = Store; =====*/
+
+return declare("dojo.store.Memory", base, {
+	// summary:
+	//		This is a basic in-memory object store. It implements dojo/store/api/Store.
+	constructor: function(options){
+		// summary:
+		//		Creates a memory object store.
+		// options: dojo/store/Memory
+		//		This provides any configuration information that will be mixed into the store.
+		//		This should generally include the data property to provide the starting set of data.
+		for(var i in options){
+			this[i] = options[i];
+		}
+		this.setData(this.data || []);
+	},
+	// data: Array
+	//		The array of all the objects in the memory store
+	data:null,
+
+	// idProperty: String
+	//		Indicates the property to use as the identity property. The values of this
+	//		property should be unique.
+	idProperty: "id",
+
+	// index: Object
+	//		An index of data indices into the data array by id
+	index:null,
+
+	// queryEngine: Function
+	//		Defines the query engine to use for querying the data store
+	queryEngine: SimpleQueryEngine,
+	get: function(id){
+		// summary:
+		//		Retrieves an object by its identity
+		// id: Number
+		//		The identity to use to lookup the object
+		// returns: Object
+		//		The object in the store that matches the given id.
+		return this.data[this.index[id]];
+	},
+	getIdentity: function(object){
+		// summary:
+		//		Returns an object's identity
+		// object: Object
+		//		The object to get the identity from
+		// returns: Number
+		return object[this.idProperty];
+	},
+	put: function(object, options){
+		// summary:
+		//		Stores an object
+		// object: Object
+		//		The object to store.
+		// options: dojo/store/api/Store.PutDirectives?
+		//		Additional metadata for storing the data.  Includes an "id"
+		//		property if a specific id is to be used.
+		// returns: Number
+		var data = this.data,
+			index = this.index,
+			idProperty = this.idProperty;
+		var id = object[idProperty] = (options && "id" in options) ? options.id : idProperty in object ? object[idProperty] : Math.random();
+		if(id in index){
+			// object exists
+			if(options && options.overwrite === false){
+				throw new Error("Object already exists");
+			}
+			// replace the entry in data
+			data[index[id]] = object;
+		}else{
+			// add the new object
+			index[id] = data.push(object) - 1;
+		}
+		return id;
+	},
+	add: function(object, options){
+		// summary:
+		//		Creates an object, throws an error if the object already exists
+		// object: Object
+		//		The object to store.
+		// options: dojo/store/api/Store.PutDirectives?
+		//		Additional metadata for storing the data.  Includes an "id"
+		//		property if a specific id is to be used.
+		// returns: Number
+		(options = options || {}).overwrite = false;
+		// call put with overwrite being false
+		return this.put(object, options);
+	},
+	remove: function(id){
+		// summary:
+		//		Deletes an object by its identity
+		// id: Number
+		//		The identity to use to delete the object
+		// returns: Boolean
+		//		Returns true if an object was removed, falsy (undefined) if no object matched the id
+		var index = this.index;
+		var data = this.data;
+		if(id in index){
+			data.splice(index[id], 1);
+			// now we have to reindex
+			this.setData(data);
+			return true;
+		}
+	},
+	query: function(query, options){
+		// summary:
+		//		Queries the store for objects.
+		// query: Object
+		//		The query to use for retrieving objects from the store.
+		// options: dojo/store/api/Store.QueryOptions?
+		//		The optional arguments to apply to the resultset.
+		// returns: dojo/store/api/Store.QueryResults
+		//		The results of the query, extended with iterative methods.
+		//
+		// example:
+		//		Given the following store:
+		//
+		// 	|	var store = new Memory({
+		// 	|		data: [
+		// 	|			{id: 1, name: "one", prime: false },
+		//	|			{id: 2, name: "two", even: true, prime: true},
+		//	|			{id: 3, name: "three", prime: true},
+		//	|			{id: 4, name: "four", even: true, prime: false},
+		//	|			{id: 5, name: "five", prime: true}
+		//	|		]
+		//	|	});
+		//
+		//	...find all items where "prime" is true:
+		//
+		//	|	var results = store.query({ prime: true });
+		//
+		//	...or find all items where "even" is true:
+		//
+		//	|	var results = store.query({ even: true });
+		return QueryResults(this.queryEngine(query, options)(this.data));
+	},
+	setData: function(data){
+		// summary:
+		//		Sets the given data as the source for this store, and indexes it
+		// data: Object[]
+		//		An array of objects to use as the source of data.
+		if(data.items){
+			// just for convenience with the data format IFRS expects
+			this.idProperty = data.identifier || this.idProperty;
+			data = this.data = data.items;
+		}else{
+			this.data = data;
+		}
+		this.index = {};
+		for(var i = 0, l = data.length; i < l; i++){
+			this.index[data[i][this.idProperty]] = i;
+		}
+	}
+});
+
+});
+
+},
+'dojo/store/util/SimpleQueryEngine':function(){
+define(["../../_base/array" /*=====, "../api/Store" =====*/], function(arrayUtil /*=====, Store =====*/){
+
+// module:
+//		dojo/store/util/SimpleQueryEngine
+
+return function(query, options){
+	// summary:
+	//		Simple query engine that matches using filter functions, named filter
+	//		functions or objects by name-value on a query object hash
+	//
+	// description:
+	//		The SimpleQueryEngine provides a way of getting a QueryResults through
+	//		the use of a simple object hash as a filter.  The hash will be used to
+	//		match properties on data objects with the corresponding value given. In
+	//		other words, only exact matches will be returned.
+	//
+	//		This function can be used as a template for more complex query engines;
+	//		for example, an engine can be created that accepts an object hash that
+	//		contains filtering functions, or a string that gets evaluated, etc.
+	//
+	//		When creating a new dojo.store, simply set the store's queryEngine
+	//		field as a reference to this function.
+	//
+	// query: Object
+	//		An object hash with fields that may match fields of items in the store.
+	//		Values in the hash will be compared by normal == operator, but regular expressions
+	//		or any object that provides a test() method are also supported and can be
+	//		used to match strings by more complex expressions
+	//		(and then the regex's or object's test() method will be used to match values).
+	//
+	// options: dojo/store/api/Store.QueryOptions?
+	//		An object that contains optional information such as sort, start, and count.
+	//
+	// returns: Function
+	//		A function that caches the passed query under the field "matches".  See any
+	//		of the "query" methods on dojo.stores.
+	//
+	// example:
+	//		Define a store with a reference to this engine, and set up a query method.
+	//
+	//	|	var myStore = function(options){
+	//	|		//	...more properties here
+	//	|		this.queryEngine = SimpleQueryEngine;
+	//	|		//	define our query method
+	//	|		this.query = function(query, options){
+	//	|			return QueryResults(this.queryEngine(query, options)(this.data));
+	//	|		};
+	//	|	};
+
+	// create our matching query function
+	switch(typeof query){
+		default:
+			throw new Error("Can not query with a " + typeof query);
+		case "object": case "undefined":
+			var queryObject = query;
+			query = function(object){
+				for(var key in queryObject){
+					var required = queryObject[key];
+					if(required && required.test){
+						// an object can provide a test method, which makes it work with regex
+						if(!required.test(object[key], object)){
+							return false;
+						}
+					}else if(required != object[key]){
+						return false;
+					}
+				}
+				return true;
+			};
+			break;
+		case "string":
+			// named query
+			if(!this[query]){
+				throw new Error("No filter function " + query + " was found in store");
+			}
+			query = this[query];
+			// fall through
+		case "function":
+			// fall through
+	}
+	function execute(array){
+		// execute the whole query, first we filter
+		var results = arrayUtil.filter(array, query);
+		// next we sort
+		var sortSet = options && options.sort;
+		if(sortSet){
+			results.sort(typeof sortSet == "function" ? sortSet : function(a, b){
+				for(var sort, i=0; sort = sortSet[i]; i++){
+					var aValue = a[sort.attribute];
+					var bValue = b[sort.attribute];
+					// valueOf enables proper comparison of dates
+					aValue = aValue != null ? aValue.valueOf() : aValue;
+					bValue = bValue != null ? bValue.valueOf() : bValue;
+					if (aValue != bValue){
+						return !!sort.descending == (aValue == null || aValue > bValue) ? -1 : 1;
+					}
+				}
+				return 0;
+			});
+		}
+		// now we paginate
+		if(options && (options.start || options.count)){
+			var total = results.length;
+			results = results.slice(options.start || 0, (options.start || 0) + (options.count || Infinity));
+			results.total = total;
+		}
+		return results;
+	}
+	execute.matches = query;
+	return execute;
+};
+
+});
+
+},
+'dojo/store/Observable':function(){
+define(["../_base/kernel", "../_base/lang", "../when", "../_base/array" /*=====, "./api/Store" =====*/
+], function(kernel, lang, when, array /*=====, Store =====*/){
+
+// module:
+//		dojo/store/Observable
+
+var Observable = function(/*Store*/ store){
+	// summary:
+	//		The Observable store wrapper takes a store and sets an observe method on query()
+	//		results that can be used to monitor results for changes.
+	//
+	// description:
+	//		Observable wraps an existing store so that notifications can be made when a query
+	//		is performed.
+	//
+	// example:
+	//		Create a Memory store that returns an observable query, and then log some
+	//		information about that query.
+	//
+	//	|	var store = Observable(new Memory({
+	//	|		data: [
+	//	|			{id: 1, name: "one", prime: false},
+	//	|			{id: 2, name: "two", even: true, prime: true},
+	//	|			{id: 3, name: "three", prime: true},
+	//	|			{id: 4, name: "four", even: true, prime: false},
+	//	|			{id: 5, name: "five", prime: true}
+	//	|		]
+	//	|	}));
+	//	|	var changes = [], results = store.query({ prime: true });
+	//	|	var observer = results.observe(function(object, previousIndex, newIndex){
+	//	|		changes.push({previousIndex:previousIndex, newIndex:newIndex, object:object});
+	//	|	});
+	//
+	//		See the Observable tests for more information.
+
+	var undef, queryUpdaters = [], revision = 0;
+	// a Comet driven store could directly call notify to notify observers when data has
+	// changed on the backend
+	// create a new instance
+	store = lang.delegate(store);
+	
+	store.notify = function(object, existingId){
+		revision++;
+		var updaters = queryUpdaters.slice();
+		for(var i = 0, l = updaters.length; i < l; i++){
+			updaters[i](object, existingId);
+		}
+	};
+	var originalQuery = store.query;
+	store.query = function(query, options){
+		options = options || {};
+		var results = originalQuery.apply(this, arguments);
+		if(results && results.forEach){
+			var nonPagedOptions = lang.mixin({}, options);
+			delete nonPagedOptions.start;
+			delete nonPagedOptions.count;
+
+			var queryExecutor = store.queryEngine && store.queryEngine(query, nonPagedOptions);
+			var queryRevision = revision;
+			var listeners = [], queryUpdater;
+			results.observe = function(listener, includeObjectUpdates){
+				if(listeners.push(listener) == 1){
+					// first listener was added, create the query checker and updater
+					queryUpdaters.push(queryUpdater = function(changed, existingId){
+						when(results, function(resultsArray){
+							var atEnd = resultsArray.length != options.count;
+							var i, l, listener;
+							if(++queryRevision != revision){
+								throw new Error("Query is out of date, you must observe() the query prior to any data modifications");
+							}
+							var removedObject, removedFrom = -1, insertedInto = -1;
+							if(existingId !== undef){
+								// remove the old one
+								for(i = 0, l = resultsArray.length; i < l; i++){
+									var object = resultsArray[i];
+									if(store.getIdentity(object) == existingId){
+										removedObject = object;
+										removedFrom = i;
+										if(queryExecutor || !changed){// if it was changed and we don't have a queryExecutor, we shouldn't remove it because updated objects would be eliminated
+											resultsArray.splice(i, 1);
+										}
+										break;
+									}
+								}
+							}
+							if(queryExecutor){
+								// add the new one
+								if(changed &&
+										// if a matches function exists, use that (probably more efficient)
+										(queryExecutor.matches ? queryExecutor.matches(changed) : queryExecutor([changed]).length)){
+
+									var firstInsertedInto = removedFrom > -1 ? 
+										removedFrom : // put back in the original slot so it doesn't move unless it needs to (relying on a stable sort below)
+										resultsArray.length;
+									resultsArray.splice(firstInsertedInto, 0, changed); // add the new item
+									insertedInto = array.indexOf(queryExecutor(resultsArray), changed); // sort it
+									// we now need to push the change back into the original results array
+									resultsArray.splice(firstInsertedInto, 1); // remove the inserted item from the previous index
+									
+									if((options.start && insertedInto == 0) ||
+										(!atEnd && insertedInto == resultsArray.length)){
+										// if it is at the end of the page, assume it goes into the prev or next page
+										insertedInto = -1;
+									}else{
+										resultsArray.splice(insertedInto, 0, changed); // and insert into the results array with the correct index
+									}
+								}
+							}else if(changed){
+								// we don't have a queryEngine, so we can't provide any information
+								// about where it was inserted or moved to. If it is an update, we leave it's position alone, other we at least indicate a new object
+								if(existingId !== undef){
+									// an update, keep the index the same
+									insertedInto = removedFrom;
+								}else if(!options.start){
+									// a new object
+									insertedInto = store.defaultIndex || 0;
+									resultsArray.splice(insertedInto, 0, changed);
+								}
+							}
+							if((removedFrom > -1 || insertedInto > -1) &&
+									(includeObjectUpdates || !queryExecutor || (removedFrom != insertedInto))){
+								var copyListeners = listeners.slice();
+								for(i = 0;listener = copyListeners[i]; i++){
+									listener(changed || removedObject, removedFrom, insertedInto);
+								}
+							}
+						});
+					});
+				}
+				var handle = {};
+				// TODO: Remove cancel in 2.0.
+				handle.remove = handle.cancel = function(){
+					// remove this listener
+					var index = array.indexOf(listeners, listener);
+					if(index > -1){ // check to make sure we haven't already called cancel
+						listeners.splice(index, 1);
+						if(!listeners.length){
+							// no more listeners, remove the query updater too
+							queryUpdaters.splice(array.indexOf(queryUpdaters, queryUpdater), 1);
+						}
+					}
+				};
+				return handle;
+			};
+		}
+		return results;
+	};
+	var inMethod;
+	function whenFinished(method, action){
+		var original = store[method];
+		if(original){
+			store[method] = function(value){
+				var originalId;
+				if(method === 'put'){
+					originalId = store.getIdentity(value);
+				}
+				if(inMethod){
+					// if one method calls another (like add() calling put()) we don't want two events
+					return original.apply(this, arguments);
+				}
+				inMethod = true;
+				try{
+					var results = original.apply(this, arguments);
+					when(results, function(results){
+						action((typeof results == "object" && results) || value, originalId);
+					});
+					return results;
+				}finally{
+					inMethod = false;
+				}
+			};
+		}
+	}
+	// monitor for updates by listening to these methods
+	whenFinished("put", function(object, originalId){
+		store.notify(object, originalId);
+	});
+	whenFinished("add", function(object){
+		store.notify(object);
+	});
+	whenFinished("remove", function(id){
+		store.notify(undefined, id);
+	});
+
+	return store;
+};
+
+lang.setObject("dojo.store.Observable", Observable);
+
+return Observable;
+});
 
 },
 'p3/widget/ItemDetailPanel':function(){
@@ -34957,7 +35495,16 @@ define([
 					var node = DataItemFormatter(item,this.containerWidget.containerType)
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
-				} else{
+				} else if (item && item._formatterType) {
+
+					domClass.remove(this.domNode, "workspaceItem");
+					domClass.add(this.domNode, "dataItem");
+
+					var node = DataItemFormatter(item,item._formatterType)
+					domConstruct.empty(this.itemBody);
+					domConstruct.place(node, this.itemBody, "first");
+
+				}else{
 
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
@@ -34979,7 +35526,14 @@ define([
 
 },
 'p3/widget/DataItemFormatter':function(){
-define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
+define([
+	"dojo/date/locale","dojo/dom-construct","dojo/dom-class",
+	"dijit/form/Button","../JobManager","dijit/TitlePane"
+], function(
+	locale,domConstruct,domClass,
+	Button,JobManager,TitlePane
+
+){
 
 	var formatters = {
 		"default": function(item, options){
@@ -34997,6 +35551,139 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 			return table;
 		},
+
+		"job_parameters": function(item,options){
+			function renderObject(obj,target, depth){
+				if (!depth){ depth=1 }
+				if (typeof obj == 'object') {
+					var props = Object.keys(obj);
+					props.forEach(function(p){
+						if (typeof obj[p] == 'object'){
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*5) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{},tr);
+							renderObject(obj[p],tbody,depth+1);
+						}else{
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*10) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{innerHTML: obj[p]},tr);
+						}
+					})
+				}
+			}
+		},
+		"completed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			 0 && console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			 0 && console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			 0 && console.log("Display Detail Complete")
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+		"failed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			 0 && console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			 0 && console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+
+	
+			var tpDiv = domConstruct.create("div",{},div);
+			var dlg = new TitlePane({title: "Error Output",open: false},tpDiv);
+			dlg.watch("open", function(attr,oldVal,open){
+				if (!open){return;}
+				JobManager.queryTaskDetail(item.id,true,true).then(function(detail){
+					// 0 && console.log("JOB DETAIL: ", detail);
+					clearTimeout(timer);
+					if (detail.stderr) {
+						dlg.set("content","<pre>" + detail.stderr + "</pre>");
+					}else{
+						dlg.set("content","Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail,null,4) + "</pre>");
+					}
+				}, function(err){
+					dlg.set("content","Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+			})
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+
 
 		"feature_data": function(item, options){
 			options = options || {}
@@ -35332,7 +36019,8 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			options = options || {}
 			var featureColumns = [{
 				name : 'Taxonomy ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name : 'Taxon Name',
 				text : 'taxon_name'
@@ -35344,21 +36032,24 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 				text : 'other_names'
 			}, {
 				name : 'Lineage',
-				text : 'lineage_names'
+				text : 'lineage_names',
+				data_hide: true
 			}, {
 				name : 'Lineage Ranks',
-				text : 'lineage_ranks'
+				text : 'lineage_ranks',
+				data_hide: true
 			}, {
 				name : 'Lineage IDs',
-				text : 'lineage_ids'
+				text : 'lineage_ids',
+				data_hide: true
 			},{
 				name : 'Genetic Code',
 				text : 'genetic_code'
 			}];
 
 			var div = domConstruct.create("div");			
-			 0 && console.log("Createe Display Header")
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			 0 && console.log("Create Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
 			 0 && console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			 0 && console.log("Display Detail Complete")
@@ -36101,7 +36792,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 
 						if (mini == false)
 						{						
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -36116,7 +36807,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 						}
 						else if (value[j].mini == true)
 						{
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -36201,7 +36892,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					
 					if (mini == false)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
@@ -36216,7 +36907,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 					}
 					else if (column_data[i].mini == true)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
@@ -36291,6 +36982,301 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		 0 && console.log("output: ", out);
 		return out;
 	}
+});
+
+},
+'dijit/TitlePane':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.setSelectable
+	"dojo/dom-attr", // domAttr.set or get domAttr.remove
+	"dojo/dom-class", // domClass.replace
+	"dojo/dom-geometry", // domGeometry.setMarginBox domGeometry.getMarginBox
+	"dojo/fx", // fxUtils.wipeIn fxUtils.wipeOut
+	"dojo/has",
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/keys", // keys.DOWN_ARROW keys.ENTER
+	"./_CssStateMixin",
+	"./_TemplatedMixin",
+	"./layout/ContentPane",
+	"dojo/text!./templates/TitlePane.html",
+	"./_base/manager",    // defaultDuration
+	"./a11yclick"	// template uses ondijitclick
+], function(array, declare, dom, domAttr, domClass, domGeometry, fxUtils, has, kernel, keys,
+			_CssStateMixin, _TemplatedMixin, ContentPane, template, manager){
+
+	// module:
+	//		dijit/TitlePane
+
+	var TitlePane = declare("dijit.TitlePane", [ContentPane, _TemplatedMixin, _CssStateMixin], {
+		// summary:
+		//		A pane with a title on top, that can be expanded or collapsed.
+		//
+		// description:
+		//		An accessible container with a title Heading, and a content
+		//		section that slides open and closed. TitlePane is an extension to
+		//		`dijit/layout/ContentPane`, providing all the useful content-control aspects from it.
+		//
+		// example:
+		//	|	// load a TitlePane from remote file:
+		//	|	var foo = new dijit.TitlePane({ href: "foobar.html", title:"Title" });
+		//	|	foo.startup();
+		//
+		// example:
+		//	|	<!-- markup href example: -->
+		//	|	<div data-dojo-type="dijit/TitlePane" data-dojo-props="href: 'foobar.html', title: 'Title'"></div>
+		//
+		// example:
+		//	|	<!-- markup with inline data -->
+		//	|	<div data-dojo-type="dijit/TitlePane" title="Title">
+		//	|		<p>I am content</p>
+		//	|	</div>
+
+		// title: String
+		//		Title of the pane
+		title: "",
+		_setTitleAttr: { node: "titleNode", type: "innerHTML" }, // override default where title becomes a hover tooltip
+
+		// open: Boolean
+		//		Whether pane is opened or closed.
+		open: true,
+
+		// toggleable: Boolean
+		//		Whether pane can be opened or closed by clicking the title bar.
+		toggleable: true,
+
+		// tabIndex: String
+		//		Tabindex setting for the title (so users can tab to the title then
+		//		use space/enter to open/close the title pane)
+		tabIndex: "0",
+
+		// duration: Integer
+		//		Time in milliseconds to fade in/fade out
+		duration: manager.defaultDuration,
+
+		// baseClass: [protected] String
+		//		The root className to be placed on this widget's domNode.
+		baseClass: "dijitTitlePane",
+
+		templateString: template,
+
+		// doLayout: [protected] Boolean
+		//		Don't change this parameter from the default value.
+		//		This ContentPane parameter doesn't make sense for TitlePane, since TitlePane
+		//		is never a child of a layout container, nor should TitlePane try to control
+		//		the size of an inner widget.
+		doLayout: false,
+
+		// Tooltip is defined in _WidgetBase but we need to handle the mapping to DOM here
+		_setTooltipAttr: {node: "focusNode", type: "attribute", attribute: "title"}, // focusNode spans the entire width, titleNode doesn't
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			dom.setSelectable(this.titleNode, false);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// Hover and focus effect on title bar, except for non-toggleable TitlePanes
+			// This should really be controlled from _setToggleableAttr() but _CssStateMixin
+			// doesn't provide a way to disconnect a previous _trackMouseState() call
+			if(this.toggleable){
+				this._trackMouseState(this.titleBarNode, this.baseClass + "Title");
+			}
+
+			// setup open/close animations
+			var hideNode = this.hideNode, wipeNode = this.wipeNode;
+			this._wipeIn = fxUtils.wipeIn({
+				node: wipeNode,
+				duration: this.duration,
+				beforeBegin: function(){
+					hideNode.style.display = "";
+				}
+			});
+			this._wipeOut = fxUtils.wipeOut({
+				node: wipeNode,
+				duration: this.duration,
+				onEnd: function(){
+					hideNode.style.display = "none";
+				}
+			});
+		},
+
+		_setOpenAttr: function(/*Boolean*/ open, /*Boolean*/ animate){
+			// summary:
+			//		Hook to make set("open", boolean) control the open/closed state of the pane.
+			// open: Boolean
+			//		True if you want to open the pane, false if you want to close it.
+
+			array.forEach([this._wipeIn, this._wipeOut], function(animation){
+				if(animation && animation.status() == "playing"){
+					animation.stop();
+				}
+			});
+
+			if(animate){
+				var anim = this[open ? "_wipeIn" : "_wipeOut"];
+				anim.play();
+			}else{
+				this.hideNode.style.display = this.wipeNode.style.display = open ? "" : "none";
+			}
+
+			// load content (if this is the first time we are opening the TitlePane
+			// and content is specified as an href, or href was set when hidden)
+			if(this._started){
+				if(open){
+					this._onShow();
+				}else{
+					this.onHide();
+				}
+			}
+
+			this.containerNode.setAttribute("aria-hidden", open ? "false" : "true");
+			this.focusNode.setAttribute("aria-pressed", open ? "true" : "false");
+
+			this._set("open", open);
+
+			this._setCss();
+		},
+
+		_setToggleableAttr: function(/*Boolean*/ canToggle){
+			// summary:
+			//		Hook to make set("toggleable", boolean) work.
+			// canToggle: Boolean
+			//		True to allow user to open/close pane by clicking title bar.
+
+			this.focusNode.setAttribute("role", canToggle ? "button" : "heading");
+			if(canToggle){
+				this.focusNode.setAttribute("aria-controls", this.id + "_pane");
+				this.focusNode.setAttribute("tabIndex", this.tabIndex);
+				this.focusNode.setAttribute("aria-pressed", this.open);
+			}else{
+				domAttr.remove(this.focusNode, "aria-controls");
+				domAttr.remove(this.focusNode, "tabIndex");
+				domAttr.remove(this.focusNode, "aria-pressed");
+			}
+
+			this._set("toggleable", canToggle);
+
+			this._setCss();
+		},
+
+		_setContentAttr: function(/*String|DomNode|Nodelist*/ content){
+			// summary:
+			//		Hook to make set("content", ...) work.
+			//		Typically called when an href is loaded.  Our job is to make the animation smooth.
+
+			if(!this.open || !this._wipeOut || this._wipeOut.status() == "playing"){
+				// we are currently *closing* the pane (or the pane is closed), so just let that continue
+				this.inherited(arguments);
+			}else{
+				if(this._wipeIn && this._wipeIn.status() == "playing"){
+					this._wipeIn.stop();
+				}
+
+				// freeze container at current height so that adding new content doesn't make it jump
+				domGeometry.setMarginBox(this.wipeNode, { h: domGeometry.getMarginBox(this.wipeNode).h });
+
+				// add the new content (erasing the old content, if any)
+				this.inherited(arguments);
+
+				// call _wipeIn.play() to animate from current height to new height
+				if(this._wipeIn){
+					this._wipeIn.play();
+				}else{
+					this.hideNode.style.display = "";
+				}
+			}
+		},
+
+		toggle: function(){
+			// summary:
+			//		Switches between opened and closed state
+			// tags:
+			//		private
+
+			this._setOpenAttr(!this.open, true);
+		},
+
+		_setCss: function(){
+			// summary:
+			//		Set the open/close css state for the TitlePane
+			// tags:
+			//		private
+
+			var node = this.titleBarNode || this.focusNode;
+			var oldCls = this._titleBarClass;
+			this._titleBarClass = this.baseClass + "Title" + (this.toggleable ? "" : "Fixed") + (this.open ? "Open" : "Closed");
+			domClass.replace(node, this._titleBarClass, oldCls || "");
+
+			// Back compat, remove for 2.0
+			domClass.replace(node, this._titleBarClass.replace("TitlePaneTitle", ""), (oldCls || "").replace("TitlePaneTitle", ""));
+
+			this.arrowNodeInner.innerHTML = this.open ? "-" : "+";
+		},
+
+		_onTitleKey: function(/*Event*/ e){
+			// summary:
+			//		Handler for when user hits a key
+			// tags:
+			//		private
+
+			if(e.keyCode == keys.DOWN_ARROW && this.open){
+				this.containerNode.focus();
+				e.preventDefault();
+			}
+		},
+
+		_onTitleClick: function(){
+			// summary:
+			//		Handler when user clicks the title bar
+			// tags:
+			//		private
+			if(this.toggleable){
+				this.toggle();
+			}
+		},
+
+		setTitle: function(/*String*/ title){
+			// summary:
+			//		Deprecated.  Use set('title', ...) instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated("dijit.TitlePane.setTitle() is deprecated.  Use set('title', ...) instead.", "", "2.0");
+			this.set("title", title);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		TitlePane.extend({
+			_setTitleAttr: function(/*String*/ title){
+				// Override default where title becomes a hover tooltip
+				this._set("title", title);
+				this.titleNode.innerHTML = title;
+				this.applyTextDir(this.titleNode);
+			},
+
+			_setTooltipAttr: function(/*String*/ tooltip){
+				this._set("tooltip", tooltip);
+				if(this.textDir){
+					tooltip = this.enforceTextDirWithUcc(null, tooltip);
+				}
+				domAttr.set(this.focusNode, "title", tooltip);			// focusNode spans the entire width, titleNode doesn't
+			},
+
+			_setTextDirAttr: function(textDir){
+				if(this._created && this.textDir != textDir){
+					this._set("textDir", textDir);
+					this.set("title", this.title);
+					this.set("tooltip", this.tooltip);
+				}
+			}
+		});
+	}
+
+	return TitlePane;
 });
 
 },
@@ -36387,7 +37373,6 @@ define([
 					// 0 && console.log("Current ContainerType: ", this.currentContainerType);
 					// 0 && console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
-						 0 && console.log("T: ", t, " Current Container Type: ", this.currentContainerType)
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
 						return false;
@@ -36437,7 +37422,7 @@ define([
 
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				// 0 && console.log("evt.target: ", evt.target);
+				 0 && console.log("evt.target: ", evt.target);
 				tooltip.close();
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
@@ -36461,8 +37446,9 @@ define([
 	
 		},
 
-		addAction: function(name,classes,opts,fn,enabled){
+		addAction: function(name,classes,opts,fn,enabled,target){
 			//  0 && console.log("Add Action: ", name, classes, opts,enabled);
+			target = target || this.containerNode;
 			var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
 			var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
 
@@ -36470,7 +37456,7 @@ define([
 				var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
 			}		
 
-			domConstruct.place(wrapper,this.containerNode,"last");
+			domConstruct.place(wrapper,target,"last");
 
 			this._actions[name]={
 				options: opts,
@@ -37219,9 +38205,9 @@ define([
 			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
 				 0 && console.log("set selection(): ", arguments);
 			}))
-//			if (!this.path) {
+			if (!this.path) {
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
-//			}
+			}
 			this.inherited(arguments);
 			this.groupNameBox.set('path', this.path);
 			this.workspaceObjectSelector.set('path', this.path);
@@ -39056,7 +40042,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer","../../util/PathJoin"
+	"../SequenceGridContainer","../../util/PathJoin","../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -39064,12 +40050,12 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer,PathJoin){
+			SequenceGridContainer,PathJoin,QueryToEnglish){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
-		maxGenomesPerList: 5000,
+		maxGenomesPerList: 10000,
 		totalGenomes: 0,
-		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set (5000 Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click APPLY FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			//  0 && console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) {  0 && console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -39141,9 +40127,12 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + "</div>");
+
+			var content = QueryToEnglish(newVal);
+			 0 && console.log("English Content: ", content)
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -39164,7 +40153,6 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-				case "pathways":
 					 0 && console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
@@ -39215,7 +40203,7 @@ define([
 
 			this.overview = this.createOverviewPanel(this.state);
 			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Genome List Query:  "});
+			this.queryNode = domConstruct.create("span", {});
 
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
@@ -39281,13 +40269,15 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
+				 0 && console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal)
+				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
+					 0 && console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
 					child.set("disabled", false);
 				}
-			});
+			},this);
 
 			if(hasDisabled){
 				this.showWarning();
@@ -39304,9 +40294,10 @@ define([
 
 		showWarning: function(msg){
 			if(!this.warningPanel){
+				var c = this.warningContent.replace("{{maxGenomesPerList}}",this.maxGenomesPerList)
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -39325,7 +40316,7 @@ define([
 					parts.push(q)
 				}
 			}
-			if(evt.filter){
+			if(evt.filter && evt.filter!="false"){
 				parts.push(evt.filter)
 			}
 
@@ -39339,13 +40330,20 @@ define([
 				q = "";
 			}
 
-			 0 && console.log("SetAnchor to: ", q);
+			 0 && console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
-			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+
+			if(this.state.hashParams && this.state.hashParams.view_tab){
+				hp = {view_tab: this.state.hashParams.view_tab}
 			}else{
 				hp = {}
 			}
+
+
+
+			hp.filter="false"
+
+			 0 && console.log("HP: ",JSON.stringify(hp))
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
@@ -39680,220 +40678,56 @@ define([
 },
 'p3/widget/GenomeOverview':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/GenomeOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct"
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dijit/_WidgetsInTemplateMixin",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeOverview.html",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","./GenomeFeatureSummary","./DataItemFormatter","./SpecialtyGeneSummary"
 
-], function(declare, WidgetBase, on,
+], function(declare, WidgetBase, on,_WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct) {
-	return declare([WidgetBase, Templated], {
+			ChartTooltip, domConstruct,PathJoin,GenomeFeatureSummary,DataItemFormatter,
+			SpecialtyGeneSummary) {
+
+	return declare([WidgetBase,Templated,_WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
 		disabled: false,
 		templateString: Template,
 		apiServiceUrl: window.App.dataAPI,
 		genome: null,
-		genomeFeatureSummary: null,
 		state: null,
 
 		_setStateAttr: function(state){
 			this._set("state", state);
 			if (state.genome){
 				this.set("genome", state.genome);
-			}else{
-				//  0 && console.log("Attempted to set genome without genome object in state");
-
 			}
 		},
 
 		"_setGenomeAttr": function(genome) {
 			this.genome = genome;
-			//  0 && console.log("Set Genome", genome);
 			this.createSummary(genome);
-			this.getSummaryData();
-		},
-		"createSummary": function(genome) {
+		
+			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
-			domConstruct.empty(this.genomeSummaryNode);
-			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.genomeSummaryNode);
-			var tbody = domConstruct.create("tbody", {}, table);
-
-			var htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Summary", colspan: 2, scope: "row", style: "width:30%"}, htr);
-			domConstruct.create("td", {innerHTML: "Length: " + this.genome.genome_length + "bp, Chromosomes: " + this.genome.chromosomes + ", Plasmids: " + this.genome.plasmids + ", Contigs: " + this.genome.contigs}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Organism Info", rowspan: 3, scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Genome ID"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.genome_id}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("td", {innerHTML: "Genome Status"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.genome_status}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("td", {innerHTML: "Antimicrobial Resistance"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.antimicrobial_resistance || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Isolation Info", rowspan: 2, scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Collection Date"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.collection_date || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("td", {innerHTML: "Isolation Country"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.isolation_country || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Host Info", scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Host Name"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.host_name || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Sequence Info", scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Sequencing Status"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.sequencing_status || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Phenotype Info", scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Disease"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.disease || '&nbsp;'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Project Info", scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: "Completion Date"}, htr);
-			domConstruct.create("td", {innerHTML: this.genome.completion_date || '&nbsp;'}, htr);
-		},
-
-		"_setProteinFeatureSummaryAttr": function(summary) {
-			var gfData = [];
-			Object.keys(summary).forEach(function(prop) {
-				gfData.push({text: prop, x: 0, y: summary[prop]});
-			});
-			 0 && console.log("GF DATA: ", gfData);
-
-			if(!this.pfPieChart){
-				this.pfPieChart = new Chart2D(this.pfPieChartNode);
-				this.pfPieChart.setTheme(Theme);
-
-				this.pfPieChart.addPlot("default", {
-					type: "Pie",
-					radius: 75,
-					labels: true,
-					labelOffset: -30
-				});
-				this.pfPieChart.addSeries("default", gfData);
-				new MoveSlice(this.pfPieChart, "default");
-				new ChartTooltip(this.pfPieChart, "default");
-			}
-
-			this.pfPieChart.render();
-		},
-		"_setSpecialtyGeneSummaryAttr": function(summary) {
-			domConstruct.empty(this.specialtyGeneSummaryNode);
-			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.specialtyGeneSummaryNode);
-			var tbody = domConstruct.create("tbody", {}, table);
-
-			var htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("td", {}, htr);
-			domConstruct.create("td", {innerHTML: "Source"}, htr);
-			domConstruct.create("td", {innerHTML: "Genes"}, htr);
-
-			Object.keys(summary).forEach(function(prop) {
-				var tr = domConstruct.create('tr', {}, tbody);
-				var property_source = prop.split(':');
-				domConstruct.create("td", {innerHTML: property_source[0]}, tr);
-				domConstruct.create("td", {innerHTML: property_source[1]}, tr);
-				domConstruct.create("td", {innerHTML: summary[prop]}, tr);
-			});
-		},
-		getSummaryData: function() {
-
-			// specialty gene
-			xhr.get(this.apiServiceUrl + "/sp_gene/?eq(genome_id," + this.genome.genome_id + ")&limit(1)&facet((field,property_source),(mincount,1),(sort,index))&http_accept=application/solr+json", {
-				handleAs: "json",
-				headers: {"accept": "application/solr+json"}
-			}).then(lang.hitch(this, function(data) {
-				var sgSummary = {};
-				var idx = 0;
-				while(idx < data.facet_counts.facet_fields.property_source.length - 1){
-					sgSummary[data.facet_counts.facet_fields.property_source[idx]] = data.facet_counts.facet_fields.property_source[idx + 1];
-					idx += 2;
-				}
-				// 0 && console.log("Specialty Gene Summary: ", sgSummary);
-				this.set("specialtyGeneSummary", sgSummary);
-			}));
-
-		},
-
-		startup: function() {
-			if(this._started){
-				return;
-			}
-			this.inherited(arguments);
-		}
-	});
-});
-
-},
-'dijit/_Templated':function(){
-define([
-	"./_WidgetBase",
-	"./_TemplatedMixin",
-	"./_WidgetsInTemplateMixin",
-	"dojo/_base/array", // array.forEach
-	"dojo/_base/declare", // declare
-	"dojo/_base/lang", // lang.extend lang.isArray
-	"dojo/_base/kernel" // kernel.deprecated
-], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, array, declare, lang, kernel){
-
-	// module:
-	//		dijit/_Templated
-
-	// These arguments can be specified for widgets which are used in templates.
-	// Since any widget can be specified as sub widgets in template, mix it
-	// into the base widget class.  (This is a hack, but it's effective.)
-	// Remove for 2.0.   Also, hide from API doc parser.
-	lang.extend(_WidgetBase, /*===== {} || =====*/ {
-		waiRole: "",
-		waiState:""
-	});
-
-	return declare("dijit._Templated", [_TemplatedMixin, _WidgetsInTemplateMixin], {
-		// summary:
-		//		Deprecated mixin for widgets that are instantiated from a template.
-		//		Widgets should use _TemplatedMixin plus if necessary _WidgetsInTemplateMixin instead.
-
-		// widgetsInTemplate: [protected] Boolean
-		//		Should we parse the template to find widgets that might be
-		//		declared in markup inside it?  False by default.
-		widgetsInTemplate: false,
-
-		constructor: function(){
-			kernel.deprecated(this.declaredClass + ": dijit._Templated deprecated, use dijit._TemplatedMixin and if necessary dijit._WidgetsInTemplateMixin", "", "2.0");
-		},
-
-		_processNode: function(baseNode, getAttrFunc){
-			var ret = this.inherited(arguments);
-
-			// Do deprecated waiRole and waiState
-			var role = getAttrFunc(baseNode, "waiRole");
-			if(role){
-				baseNode.setAttribute("role", role);
-			}
-			var values = getAttrFunc(baseNode, "waiState");
-			if(values){
-				array.forEach(values.split(/\s*,\s*/), function(stateValue){
-					if(stateValue.indexOf('-') != -1){
-						var pair = stateValue.split('-');
-						baseNode.setAttribute("aria-"+pair[0], pair[1]);
+			sumWidgets.forEach(function(w){
+					if (this[w]){
+						this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
 					}
-				});
-			}
+			},this)
 
-			return ret;
+		},
+
+		"createSummary": function(genome) {
+			domConstruct.empty(this.genomeSummaryNode);
+			domConstruct.place(DataItemFormatter(genome, "genome_data",{hideExtra:true}), this.genomeSummaryNode,"first");
+		},
+
+		startup: function(){
+			if (this._started){ return; }
+			this.inherited(arguments);
+
+			if (this.genome) { this.set("genome", this.genome); }
 		}
 	});
 });
@@ -52727,1173 +53561,24 @@ return easingFuncs;
 });
 
 },
-'dojox/charting/themes/ThreeD':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "../Theme", "./gradientGenerator", "./PrimaryColors", "dojo/colors" /* for sanitize */, "./common"],
-	function(lang, ArrayUtil, Theme, gradientGenerator, PrimaryColors, themes){
-
-	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],	// the same is in PrimaryColors
-		defaultFill = {type: "linear", space: "shape", x1: 0, y1: 0, x2: 100, y2: 0},
-		// 3D cylinder map is calculated using dojox.gfx3d
-		cyl3dMap = [
-			{o: 0.00, i: 174}, {o: 0.08, i: 231}, {o: 0.18, i: 237}, {o: 0.30, i: 231},
-			{o: 0.39, i: 221}, {o: 0.49, i: 206}, {o: 0.58, i: 187}, {o: 0.68, i: 165},
-			{o: 0.80, i: 128}, {o: 0.90, i: 102}, {o: 1.00, i: 174}
-		],
-		hiliteIndex = 2, hiliteIntensity = 100,
-		cyl3dFills = ArrayUtil.map(colors, function(c){
-			var fill = lang.delegate(defaultFill),
-				colors = fill.colors = gradientGenerator.generateGradientByIntensity(c, cyl3dMap),
-				hilite = colors[hiliteIndex].color;
-			// add highlight
-			hilite.r += hiliteIntensity;
-			hilite.g += hiliteIntensity;
-			hilite.b += hiliteIntensity;
-			hilite.sanitize();
-			return fill;
-		});
-
-	themes.ThreeD = PrimaryColors.clone();
-	themes.ThreeD.series.shadow = {dx: 1, dy: 1, width: 3, color: [0, 0, 0, 0.15]};
-
-	themes.ThreeD.next = function(elementType, mixin, doPost){
-		if(elementType == "bar" || elementType == "column"){
-			// custom processing for bars and columns: substitute fills
-			var index = this._current % this.seriesThemes.length,
-				s = this.seriesThemes[index], old = s.fill;
-			s.fill = cyl3dFills[index];
-			var theme = Theme.prototype.next.apply(this, arguments);
-			// cleanup
-			s.fill = old;
-			return theme;
-		}
-		return Theme.prototype.next.apply(this, arguments);
-	};
-	
-	return themes.ThreeD;
-});
-
-},
-'dojox/charting/Theme':function(){
-define(["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/Color", "./SimpleTheme",
-	    "dojox/color/_base", "dojox/color/Palette", "dojox/gfx/gradutils"],
-	function(lang, declare, Color, SimpleTheme, colorX, Palette){
-	
-	var Theme = declare("dojox.charting.Theme", SimpleTheme, {
-	// summary:
-	//		A Theme is a pre-defined object, primarily JSON-based, that makes up the definitions to
-	//		style a chart. It extends SimpleTheme with additional features like color definition by
-	//		palettes and gradients definition.
+'dojox/charting/themes/WatersEdge':function(){
+define(["../SimpleTheme", "./common"], function(SimpleTheme, themes){
+	themes.WatersEdge = new SimpleTheme({
+		colors: [
+			"#437cc0",
+			"#6256a5",
+			"#4552a3",
+			"#43c4f2",
+			"#4b66b0"
+		]
 	});
-
-	/*=====
-	var __DefineColorArgs = {
-		// summary:
-		//		The arguments object that can be passed to define colors for a theme.
-		// num: Number?
-		//		The number of colors to generate.  Defaults to 5.
-		// colors: String[]|dojo/_base/Color[]?
-		//		A pre-defined set of colors; this is passed through to the Theme directly.
-		// hue: Number?
-		//		A hue to base the generated colors from (a number from 0 - 359).
-		// saturation: Number?
-		//		If a hue is passed, this is used for the saturation value (0 - 100).
-		// low: Number?
-		//		An optional value to determine the lowest value used to generate a color (HSV model)
-		// high: Number?
-		//		An optional value to determine the highest value used to generate a color (HSV model)
-		// base: String|dojo/_base/Color?
-		//		A base color to use if we are defining colors using dojox.color.Palette
-		// generator: String?
-		//		The generator function name from dojox/color/Palette.
-	};
-	=====*/
-	lang.mixin(Theme, {
-
-		defineColors: function(kwArgs){
-			// summary:
-			//		Generate a set of colors for the theme based on keyword
-			//		arguments.
-			// kwArgs: __DefineColorArgs
-			//		The arguments object used to define colors.
-			// returns: dojo/_base/Color[]
-			//		An array of colors for use in a theme.
-			//
-			// example:
-			//	|	var colors = Theme.defineColors({
-			//	|		base: "#369",
-			//	|		generator: "compound"
-			//	|	});
-			//
-			// example:
-			//	|	var colors = Theme.defineColors({
-			//	|		hue: 60,
-			//	|		saturation: 90,
-			//	|		low: 30,
-			//	|		high: 80
-			//	|	});
-			kwArgs = kwArgs || {};
-			var l, c = [], n = kwArgs.num || 5;	// the number of colors to generate
-			if(kwArgs.colors){
-				// we have an array of colors predefined, so fix for the number of series.
-				l = kwArgs.colors.length;
-				for(var i = 0; i < n; i++){
-					c.push(kwArgs.colors[i % l]);
-				}
-				return c;	//	dojo.Color[]
-			}
-			if(kwArgs.hue){
-				// single hue, generate a set based on brightness
-				var s = kwArgs.saturation || 100,	// saturation
-					st = kwArgs.low || 30,
-					end = kwArgs.high || 90;
-				// we'd like it to be a little on the darker side.
-				l = (end + st) / 2;
-				// alternately, use "shades"
-				return Palette.generate(
-					colorX.fromHsv(kwArgs.hue, s, l), "monochromatic"
-				).colors;
-			}
-			if(kwArgs.generator){
-				//	pass a base color and the name of a generator
-				return colorX.Palette.generate(kwArgs.base, kwArgs.generator).colors;
-			}
-			return c;	//	dojo.Color[]
-		},
-
-		generateGradient: function(fillPattern, colorFrom, colorTo){
-			var fill = lang.delegate(fillPattern);
-			fill.colors = [
-				{offset: 0, color: colorFrom},
-				{offset: 1, color: colorTo}
-			];
-			return fill;
-		},
-
-		generateHslColor: function(color, luminance){
-			color = new Color(color);
-			var hsl    = color.toHsl(),
-				result = colorX.fromHsl(hsl.h, hsl.s, luminance);
-			result.a = color.a;	// add missing opacity
-			return result;
-		},
-
-		generateHslGradient: function(color, fillPattern, lumFrom, lumTo){
-			color = new Color(color);
-			var hsl       = color.toHsl(),
-				colorFrom = colorX.fromHsl(hsl.h, hsl.s, lumFrom),
-				colorTo   = colorX.fromHsl(hsl.h, hsl.s, lumTo);
-			colorFrom.a = colorTo.a = color.a;	// add missing opacity
-			return Theme.generateGradient(fillPattern, colorFrom, colorTo);	// Object
-		}
-	});
-
-	// for compatibility
-	Theme.defaultMarkers = SimpleTheme.defaultMarkers;
-	Theme.defaultColors = SimpleTheme.defaultColors;
-	Theme.defaultTheme = SimpleTheme.defaultTheme;
-
-	return Theme;
-});
-
-},
-'dojox/color/_base':function(){
-define(["../main", "dojo/_base/lang", "dojo/_base/Color", "dojo/colors"],
-	function(dojox, lang, Color, colors){
-
-var cx = lang.getObject("color", true, dojox);
-/*===== cx = dojox.color =====*/
-		
-//	alias all the dojo.Color mechanisms
-cx.Color=Color;
-cx.blend=Color.blendColors;
-cx.fromRgb=Color.fromRgb;
-cx.fromHex=Color.fromHex;
-cx.fromArray=Color.fromArray;
-cx.fromString=Color.fromString;
-
-//	alias the dojo.colors mechanisms
-cx.greyscale=colors.makeGrey;
-
-lang.mixin(cx,{
-	fromCmy: function(/* Object|Array|int */cyan, /*int*/magenta, /*int*/yellow){
-		// summary:
-		//		Create a dojox.color.Color from a CMY defined color.
-		//		All colors should be expressed as 0-100 (percentage)
-	
-		if(lang.isArray(cyan)){
-			magenta=cyan[1], yellow=cyan[2], cyan=cyan[0];
-		} else if(lang.isObject(cyan)){
-			magenta=cyan.m, yellow=cyan.y, cyan=cyan.c;
-		}
-		cyan/=100, magenta/=100, yellow/=100;
-	
-		var r=1-cyan, g=1-magenta, b=1-yellow;
-		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
-	},
-	
-	fromCmyk: function(/* Object|Array|int */cyan, /*int*/magenta, /*int*/yellow, /*int*/black){
-		// summary:
-		//		Create a dojox.color.Color from a CMYK defined color.
-		//		All colors should be expressed as 0-100 (percentage)
-	
-		if(lang.isArray(cyan)){
-			magenta=cyan[1], yellow=cyan[2], black=cyan[3], cyan=cyan[0];
-		} else if(lang.isObject(cyan)){
-			magenta=cyan.m, yellow=cyan.y, black=cyan.b, cyan=cyan.c;
-		}
-		cyan/=100, magenta/=100, yellow/=100, black/=100;
-		var r,g,b;
-		r = 1-Math.min(1, cyan*(1-black)+black);
-		g = 1-Math.min(1, magenta*(1-black)+black);
-		b = 1-Math.min(1, yellow*(1-black)+black);
-		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
-	},
-		
-	fromHsl: function(/* Object|Array|int */hue, /* int */saturation, /* int */luminosity){
-		// summary:
-		//		Create a dojox.color.Color from an HSL defined color.
-		//		hue from 0-359 (degrees), saturation and luminosity 0-100.
-	
-		if(lang.isArray(hue)){
-			saturation=hue[1], luminosity=hue[2], hue=hue[0];
-		} else if(lang.isObject(hue)){
-			saturation=hue.s, luminosity=hue.l, hue=hue.h;
-		}
-		saturation/=100;
-		luminosity/=100;
-	
-		while(hue<0){ hue+=360; }
-		while(hue>=360){ hue-=360; }
-		
-		var r, g, b;
-		if(hue<120){
-			r=(120-hue)/60, g=hue/60, b=0;
-		} else if (hue<240){
-			r=0, g=(240-hue)/60, b=(hue-120)/60;
-		} else {
-			r=(hue-240)/60, g=0, b=(360-hue)/60;
-		}
-		
-		r=2*saturation*Math.min(r, 1)+(1-saturation);
-		g=2*saturation*Math.min(g, 1)+(1-saturation);
-		b=2*saturation*Math.min(b, 1)+(1-saturation);
-		if(luminosity<0.5){
-			r*=luminosity, g*=luminosity, b*=luminosity;
-		}else{
-			r=(1-luminosity)*r+2*luminosity-1;
-			g=(1-luminosity)*g+2*luminosity-1;
-			b=(1-luminosity)*b+2*luminosity-1;
-		}
-		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
-	}
-});
-	
-cx.fromHsv = function(/* Object|Array|int */hue, /* int */saturation, /* int */value){
-	// summary:
-	//		Create a dojox.color.Color from an HSV defined color.
-	//		hue from 0-359 (degrees), saturation and value 0-100.
-
-	if(lang.isArray(hue)){
-		saturation=hue[1], value=hue[2], hue=hue[0];
-	} else if (lang.isObject(hue)){
-		saturation=hue.s, value=hue.v, hue=hue.h;
-	}
-	
-	if(hue==360){ hue=0; }
-	saturation/=100;
-	value/=100;
-	
-	var r, g, b;
-	if(saturation==0){
-		r=value, b=value, g=value;
-	}else{
-		var hTemp=hue/60, i=Math.floor(hTemp), f=hTemp-i;
-		var p=value*(1-saturation);
-		var q=value*(1-(saturation*f));
-		var t=value*(1-(saturation*(1-f)));
-		switch(i){
-			case 0:{ r=value, g=t, b=p; break; }
-			case 1:{ r=q, g=value, b=p; break; }
-			case 2:{ r=p, g=value, b=t; break; }
-			case 3:{ r=p, g=q, b=value; break; }
-			case 4:{ r=t, g=p, b=value; break; }
-			case 5:{ r=value, g=p, b=q; break; }
-		}
-	}
-	return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
-};
-lang.extend(Color,{
-	toCmy: function(){
-		// summary:
-		//		Convert this Color to a CMY definition.
-		var cyan=1-(this.r/255), magenta=1-(this.g/255), yellow=1-(this.b/255);
-		return { c:Math.round(cyan*100), m:Math.round(magenta*100), y:Math.round(yellow*100) };		//	Object
-	},
-		
-	toCmyk: function(){
-		// summary:
-		//		Convert this Color to a CMYK definition.
-		var cyan, magenta, yellow, black;
-		var r=this.r/255, g=this.g/255, b=this.b/255;
-		black = Math.min(1-r, 1-g, 1-b);
-		cyan = (1-r-black)/(1-black);
-		magenta = (1-g-black)/(1-black);
-		yellow = (1-b-black)/(1-black);
-		return { c:Math.round(cyan*100), m:Math.round(magenta*100), y:Math.round(yellow*100), b:Math.round(black*100) };	//	Object
-	},
-		
-	toHsl: function(){
-		// summary:
-		//		Convert this Color to an HSL definition.
-		var r=this.r/255, g=this.g/255, b=this.b/255;
-		var min = Math.min(r, b, g), max = Math.max(r, g, b);
-		var delta = max-min;
-		var h=0, s=0, l=(min+max)/2;
-		if(l>0 && l<1){
-			s = delta/((l<0.5)?(2*l):(2-2*l));
-		}
-		if(delta>0){
-			if(max==r && max!=g){
-				h+=(g-b)/delta;
-			}
-			if(max==g && max!=b){
-				h+=(2+(b-r)/delta);
-			}
-			if(max==b && max!=r){
-				h+=(4+(r-g)/delta);
-			}
-			h*=60;
-		}
-		return { h:h, s:Math.round(s*100), l:Math.round(l*100) };	//	Object
-	},
-	
-	toHsv: function(){
-		// summary:
-		//		Convert this Color to an HSV definition.
-		var r=this.r/255, g=this.g/255, b=this.b/255;
-		var min = Math.min(r, b, g), max = Math.max(r, g, b);
-		var delta = max-min;
-		var h = null, s = (max==0)?0:(delta/max);
-		if(s==0){
-			h = 0;
-		}else{
-			if(r==max){
-				h = 60*(g-b)/delta;
-			}else if(g==max){
-				h = 120 + 60*(b-r)/delta;
-			}else{
-				h = 240 + 60*(r-g)/delta;
-			}
-	
-			if(h<0){ h+=360; }
-		}
-		return { h:h, s:Math.round(s*100), v:Math.round(max*100) };	//	Object
-	}
-});
-
-return cx;
-});
-
-},
-'dojo/colors':function(){
-define(["./_base/kernel", "./_base/lang", "./_base/Color", "./_base/array"], function(dojo, lang, Color, ArrayUtil){
-	// module:
-	//		dojo/colors
-
-	/*=====
-	return {
-		// summary:
-		//		Color utilities, extending Base dojo.Color
-	};
-	=====*/
-
-	var ColorExt = {};
-	lang.setObject("dojo.colors", ColorExt);
-
-//TODO: this module appears to break naming conventions
-
-	// this is a standard conversion prescribed by the CSS3 Color Module
-	var hue2rgb = function(m1, m2, h){
-		if(h < 0){ ++h; }
-		if(h > 1){ --h; }
-		var h6 = 6 * h;
-		if(h6 < 1){ return m1 + (m2 - m1) * h6; }
-		if(2 * h < 1){ return m2; }
-		if(3 * h < 2){ return m1 + (m2 - m1) * (2 / 3 - h) * 6; }
-		return m1;
-	};
-	// Override base Color.fromRgb with the impl in this module
-	dojo.colorFromRgb = Color.fromRgb = function(/*String*/ color, /*dojo/_base/Color?*/ obj){
-		// summary:
-		//		get rgb(a) array from css-style color declarations
-		// description:
-		//		this function can handle all 4 CSS3 Color Module formats: rgb,
-		//		rgba, hsl, hsla, including rgb(a) with percentage values.
-		var m = color.toLowerCase().match(/^(rgba?|hsla?)\(([\s\.\-,%0-9]+)\)/);
-		if(m){
-			var c = m[2].split(/\s*,\s*/), l = c.length, t = m[1], a;
-			if((t == "rgb" && l == 3) || (t == "rgba" && l == 4)){
-				var r = c[0];
-				if(r.charAt(r.length - 1) == "%"){
-					// 3 rgb percentage values
-					a = ArrayUtil.map(c, function(x){
-						return parseFloat(x) * 2.56;
-					});
-					if(l == 4){ a[3] = c[3]; }
-					return Color.fromArray(a, obj); // dojo/_base/Color
-				}
-				return Color.fromArray(c, obj); // dojo/_base/Color
-			}
-			if((t == "hsl" && l == 3) || (t == "hsla" && l == 4)){
-				// normalize hsl values
-				var H = ((parseFloat(c[0]) % 360) + 360) % 360 / 360,
-					S = parseFloat(c[1]) / 100,
-					L = parseFloat(c[2]) / 100,
-					// calculate rgb according to the algorithm
-					// recommended by the CSS3 Color Module
-					m2 = L <= 0.5 ? L * (S + 1) : L + S - L * S,
-					m1 = 2 * L - m2;
-				a = [
-					hue2rgb(m1, m2, H + 1 / 3) * 256,
-					hue2rgb(m1, m2, H) * 256,
-					hue2rgb(m1, m2, H - 1 / 3) * 256,
-					1
-				];
-				if(l == 4){ a[3] = c[3]; }
-				return Color.fromArray(a, obj); // dojo/_base/Color
-			}
-		}
-		return null;	// dojo/_base/Color
-	};
-
-	var confine = function(c, low, high){
-		// summary:
-		//		sanitize a color component by making sure it is a number,
-		//		and clamping it to valid values
-		c = Number(c);
-		return isNaN(c) ? high : c < low ? low : c > high ? high : c;	// Number
-	};
-
-	Color.prototype.sanitize = function(){
-		// summary:
-		//		makes sure that the object has correct attributes
-		var t = this;
-		t.r = Math.round(confine(t.r, 0, 255));
-		t.g = Math.round(confine(t.g, 0, 255));
-		t.b = Math.round(confine(t.b, 0, 255));
-		t.a = confine(t.a, 0, 1);
-		return this;	// dojo/_base/Color
-	};
-
-	ColorExt.makeGrey = Color.makeGrey = function(/*Number*/ g, /*Number?*/ a){
-		// summary:
-		//		creates a greyscale color with an optional alpha
-		return Color.fromArray([g, g, g, a]);	// dojo/_base/Color
-	};
-
-	// mixin all CSS3 named colors not already in _base, along with SVG 1.0 variant spellings
-	lang.mixin(Color.named, {
-		"aliceblue":	[240,248,255],
-		"antiquewhite": [250,235,215],
-		"aquamarine":	[127,255,212],
-		"azure":	[240,255,255],
-		"beige":	[245,245,220],
-		"bisque":	[255,228,196],
-		"blanchedalmond":	[255,235,205],
-		"blueviolet":	[138,43,226],
-		"brown":	[165,42,42],
-		"burlywood":	[222,184,135],
-		"cadetblue":	[95,158,160],
-		"chartreuse":	[127,255,0],
-		"chocolate":	[210,105,30],
-		"coral":	[255,127,80],
-		"cornflowerblue":	[100,149,237],
-		"cornsilk": [255,248,220],
-		"crimson":	[220,20,60],
-		"cyan": [0,255,255],
-		"darkblue": [0,0,139],
-		"darkcyan": [0,139,139],
-		"darkgoldenrod":	[184,134,11],
-		"darkgray": [169,169,169],
-		"darkgreen":	[0,100,0],
-		"darkgrey": [169,169,169],
-		"darkkhaki":	[189,183,107],
-		"darkmagenta":	[139,0,139],
-		"darkolivegreen":	[85,107,47],
-		"darkorange":	[255,140,0],
-		"darkorchid":	[153,50,204],
-		"darkred":	[139,0,0],
-		"darksalmon":	[233,150,122],
-		"darkseagreen": [143,188,143],
-		"darkslateblue":	[72,61,139],
-		"darkslategray":	[47,79,79],
-		"darkslategrey":	[47,79,79],
-		"darkturquoise":	[0,206,209],
-		"darkviolet":	[148,0,211],
-		"deeppink": [255,20,147],
-		"deepskyblue":	[0,191,255],
-		"dimgray":	[105,105,105],
-		"dimgrey":	[105,105,105],
-		"dodgerblue":	[30,144,255],
-		"firebrick":	[178,34,34],
-		"floralwhite":	[255,250,240],
-		"forestgreen":	[34,139,34],
-		"gainsboro":	[220,220,220],
-		"ghostwhite":	[248,248,255],
-		"gold": [255,215,0],
-		"goldenrod":	[218,165,32],
-		"greenyellow":	[173,255,47],
-		"grey": [128,128,128],
-		"honeydew": [240,255,240],
-		"hotpink":	[255,105,180],
-		"indianred":	[205,92,92],
-		"indigo":	[75,0,130],
-		"ivory":	[255,255,240],
-		"khaki":	[240,230,140],
-		"lavender": [230,230,250],
-		"lavenderblush":	[255,240,245],
-		"lawngreen":	[124,252,0],
-		"lemonchiffon": [255,250,205],
-		"lightblue":	[173,216,230],
-		"lightcoral":	[240,128,128],
-		"lightcyan":	[224,255,255],
-		"lightgoldenrodyellow": [250,250,210],
-		"lightgray":	[211,211,211],
-		"lightgreen":	[144,238,144],
-		"lightgrey":	[211,211,211],
-		"lightpink":	[255,182,193],
-		"lightsalmon":	[255,160,122],
-		"lightseagreen":	[32,178,170],
-		"lightskyblue": [135,206,250],
-		"lightslategray":	[119,136,153],
-		"lightslategrey":	[119,136,153],
-		"lightsteelblue":	[176,196,222],
-		"lightyellow":	[255,255,224],
-		"limegreen":	[50,205,50],
-		"linen":	[250,240,230],
-		"magenta":	[255,0,255],
-		"mediumaquamarine": [102,205,170],
-		"mediumblue":	[0,0,205],
-		"mediumorchid": [186,85,211],
-		"mediumpurple": [147,112,219],
-		"mediumseagreen":	[60,179,113],
-		"mediumslateblue":	[123,104,238],
-		"mediumspringgreen":	[0,250,154],
-		"mediumturquoise":	[72,209,204],
-		"mediumvioletred":	[199,21,133],
-		"midnightblue": [25,25,112],
-		"mintcream":	[245,255,250],
-		"mistyrose":	[255,228,225],
-		"moccasin": [255,228,181],
-		"navajowhite":	[255,222,173],
-		"oldlace":	[253,245,230],
-		"olivedrab":	[107,142,35],
-		"orange":	[255,165,0],
-		"orangered":	[255,69,0],
-		"orchid":	[218,112,214],
-		"palegoldenrod":	[238,232,170],
-		"palegreen":	[152,251,152],
-		"paleturquoise":	[175,238,238],
-		"palevioletred":	[219,112,147],
-		"papayawhip":	[255,239,213],
-		"peachpuff":	[255,218,185],
-		"peru": [205,133,63],
-		"pink": [255,192,203],
-		"plum": [221,160,221],
-		"powderblue":	[176,224,230],
-		"rosybrown":	[188,143,143],
-		"royalblue":	[65,105,225],
-		"saddlebrown":	[139,69,19],
-		"salmon":	[250,128,114],
-		"sandybrown":	[244,164,96],
-		"seagreen": [46,139,87],
-		"seashell": [255,245,238],
-		"sienna":	[160,82,45],
-		"skyblue":	[135,206,235],
-		"slateblue":	[106,90,205],
-		"slategray":	[112,128,144],
-		"slategrey":	[112,128,144],
-		"snow": [255,250,250],
-		"springgreen":	[0,255,127],
-		"steelblue":	[70,130,180],
-		"tan":	[210,180,140],
-		"thistle":	[216,191,216],
-		"tomato":	[255,99,71],
-		"turquoise":	[64,224,208],
-		"violet":	[238,130,238],
-		"wheat":	[245,222,179],
-		"whitesmoke":	[245,245,245],
-		"yellowgreen":	[154,205,50]
-	});
-
-	return Color;	// TODO: return ColorExt, not Color
-});
-
-},
-'dojox/color/Palette':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "./_base"],
-	function(lang, arr, dxc){
-
-	/***************************************************************
-	*	dojox.color.Palette
-	*
-	*	The Palette object is loosely based on the color palettes
-	*	at Kuler (http://kuler.adobe.com).  They are 5 color palettes
-	*	with the base color considered to be the third color in the
-	*	palette (for generation purposes).
-	*
-	*	Palettes can be generated from well-known algorithms or they
-	* 	can be manually created by passing an array to the constructor.
-	*
-	*	Palettes can be transformed, using a set of specific params
-	*	similar to the way shapes can be transformed with dojox.gfx.
-	*	However, unlike with transformations in dojox.gfx, transforming
-	* 	a palette will return you a new Palette object, in effect
-	* 	a clone of the original.
-	***************************************************************/
-
-	//	ctor ----------------------------------------------------------------------------
-	dxc.Palette = function(/* String|Array|dojox.color.Color|dojox.color.Palette */base){
-		// summary:
-		//		An object that represents a palette of colors.
-		// description:
-		//		A Palette is a representation of a set of colors.  While the standard
-		//		number of colors contained in a palette is 5, it can really handle any
-		//		number of colors.
-		//
-		//		A palette is useful for the ability to transform all the colors in it
-		//		using a simple object-based approach.  In addition, you can generate
-		//		palettes using dojox.color.Palette.generate; these generated palettes
-		//		are based on the palette generators at http://kuler.adobe.com.
-
-		// colors: dojox.color.Color[]
-		//		The actual color references in this palette.
-		this.colors = [];
-		if(base instanceof dxc.Palette){
-			this.colors = base.colors.slice(0);
-		}
-		else if(base instanceof dxc.Color){
-			this.colors = [ null, null, base, null, null ];
-		}
-		else if(lang.isArray(base)){
-			this.colors = arr.map(base.slice(0), function(item){
-				if(lang.isString(item)){ return new dxc.Color(item); }
-				return item;
-			});
-		}
-		else if (lang.isString(base)){
-			this.colors = [ null, null, new dxc.Color(base), null, null ];
-		}
-	}
-
-	//	private functions ---------------------------------------------------------------
-
-	//	transformations
-	function tRGBA(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var r=(param=="dr")?item.r+val:item.r,
-				g=(param=="dg")?item.g+val:item.g,
-				b=(param=="db")?item.b+val:item.b,
-				a=(param=="da")?item.a+val:item.a
-			ret.colors.push(new dxc.Color({
-				r: Math.min(255, Math.max(0, r)),
-				g: Math.min(255, Math.max(0, g)),
-				b: Math.min(255, Math.max(0, b)),
-				a: Math.min(1, Math.max(0, a))
-			}));
-		});
-		return ret;
-	}
-
-	function tCMY(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toCmy(),
-				c=(param=="dc")?o.c+val:o.c,
-				m=(param=="dm")?o.m+val:o.m,
-				y=(param=="dy")?o.y+val:o.y;
-			ret.colors.push(dxc.fromCmy(
-				Math.min(100, Math.max(0, c)),
-				Math.min(100, Math.max(0, m)),
-				Math.min(100, Math.max(0, y))
-			));
-		});
-		return ret;
-	}
-
-	function tCMYK(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toCmyk(),
-				c=(param=="dc")?o.c+val:o.c,
-				m=(param=="dm")?o.m+val:o.m,
-				y=(param=="dy")?o.y+val:o.y,
-				k=(param=="dk")?o.b+val:o.b;
-			ret.colors.push(dxc.fromCmyk(
-				Math.min(100, Math.max(0, c)),
-				Math.min(100, Math.max(0, m)),
-				Math.min(100, Math.max(0, y)),
-				Math.min(100, Math.max(0, k))
-			));
-		});
-		return ret;
-	}
-
-	function tHSL(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toHsl(),
-				h=(param=="dh")?o.h+val:o.h,
-				s=(param=="ds")?o.s+val:o.s,
-				l=(param=="dl")?o.l+val:o.l;
-			ret.colors.push(dxc.fromHsl(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, l))));
-		});
-		return ret;
-	}
-
-	function tHSV(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toHsv(),
-				h=(param=="dh")?o.h+val:o.h,
-				s=(param=="ds")?o.s+val:o.s,
-				v=(param=="dv")?o.v+val:o.v;
-			ret.colors.push(dxc.fromHsv(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, v))));
-		});
-		return ret;
-	}
-
-	//	helper functions
-	function rangeDiff(val, low, high){
-		//	given the value in a range from 0 to high, find the equiv
-		//		using the range low to high.
-		return high-((high-val)*((high-low)/high));
-	}
-
-/*=====
-var __transformArgs = {
-	// summary:
-	//		The keywords argument to be passed to the dojox.color.Palette.transform function.  Note that
-	//		while all arguments are optional, *some* arguments must be passed.  The basic concept is that
-	//		you pass a delta value for a specific aspect of a color model (or multiple aspects of the same
-	//		color model); for instance, if you wish to transform a palette based on the HSV color model,
-	//		you would pass one of "dh", "ds", or "dv" as a value.
-	// use: String?
-	//		Specify the color model to use for the transformation.  Can be "rgb", "rgba", "hsv", "hsl", "cmy", "cmyk".
-	// dr: Number?
-	//		The delta to be applied to the red aspect of the RGB/RGBA color model.
-	// dg: Number?
-	//		The delta to be applied to the green aspect of the RGB/RGBA color model.
-	// db: Number?
-	//		The delta to be applied to the blue aspect of the RGB/RGBA color model.
-	// da: Number?
-	//		The delta to be applied to the alpha aspect of the RGBA color model.
-	// dc: Number?
-	//		The delta to be applied to the cyan aspect of the CMY/CMYK color model.
-	// dm: Number?
-	//		The delta to be applied to the magenta aspect of the CMY/CMYK color model.
-	// dy: Number?
-	//		The delta to be applied to the yellow aspect of the CMY/CMYK color model.
-	// dk: Number?
-	//		The delta to be applied to the black aspect of the CMYK color model.
-	// dh: Number?
-	//		The delta to be applied to the hue aspect of the HSL/HSV color model.
-	// ds: Number?
-	//		The delta to be applied to the saturation aspect of the HSL/HSV color model.
-	// dl: Number?
-	//		The delta to be applied to the luminosity aspect of the HSL color model.
-	// dv: Number?
-	//		The delta to be applied to the value aspect of the HSV color model.
-};
-var __generatorArgs = {
-	// summary:
-	//		The keyword arguments object used to create a palette based on a base color.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-};
-var __analogousArgs = {
-	// summary:
-	//		The keyword arguments object that is used to create a 5 color palette based on the
-	//		analogous rules as implemented at http://kuler.adobe.com, using the HSV color model.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-	// high: Number?
-	//		The difference between the hue of the base color and the highest hue.  In degrees, default is 60.
-	// low: Number?
-	//		The difference between the hue of the base color and the lowest hue.  In degrees, default is 18.
-};
-var __splitComplementaryArgs = {
-	// summary:
-	//		The keyword arguments object used to create a palette based on the split complementary rules
-	//		as implemented at http://kuler.adobe.com.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-	// da: Number?
-	//		The delta angle to be used to determine where the split for the complementary rules happen.
-	//		In degrees, the default is 30.
-};
-=====*/
-
-	//	object methods ---------------------------------------------------------------
-	lang.extend(dxc.Palette, {
-		transform: function(/*__transformArgs*/kwArgs){
-			// summary:
-			//		Transform the palette using a specific transformation function
-			//		and a set of transformation parameters.
-			// description:
-			//		{palette}.transform is a simple way to uniformly transform
-			//		all of the colors in a palette using any of 5 formulae:
-			//		RGBA, HSL, HSV, CMYK or CMY.
-			//
-			//		Once the forumula to be used is determined, you can pass any
-			//		number of parameters based on the formula "d"[param]; for instance,
-			//		{ use: "rgba", dr: 20, dg: -50 } will take all of the colors in
-			//		palette, add 20 to the R value and subtract 50 from the G value.
-			//
-			//		Unlike other types of transformations, transform does *not* alter
-			//		the original palette but will instead return a new one.
-			var fn=tRGBA;	//	the default transform function.
-			if(kwArgs.use){
-				//	we are being specific about the algo we want to use.
-				var use=kwArgs.use.toLowerCase();
-				if(use.indexOf("hs")==0){
-					if(use.charAt(2)=="l"){ fn=tHSL; }
-					else { fn=tHSV; }
-				}
-				else if(use.indexOf("cmy")==0){
-					if(use.charAt(3)=="k"){ fn=tCMYK; }
-					else { fn=tCMY; }
-				}
-			}
-			//	try to guess the best choice.
-			else if("dc" in kwArgs || "dm" in kwArgs || "dy" in kwArgs){
-				if("dk" in kwArgs){ fn = tCMYK; }
-				else { fn = tCMY; }
-			}
-			else if("dh" in kwArgs || "ds" in kwArgs){
-				if("dv" in kwArgs){ fn = tHSV; }
-				else { fn = tHSL; }
-			}
-
-			var palette = this;
-			for(var p in kwArgs){
-				//	ignore use
-				if(p=="use"){ continue; }
-				palette = fn(palette, p, kwArgs[p]);
-			}
-			return palette;		//	dojox.color.Palette
-		},
-		clone: function(){
-			// summary:
-			//		Clones the current palette.
-			return new dxc.Palette(this);	//	dojox.color.Palette
-		}
-	});
-
-	lang.mixin(dxc.Palette, {
-		generators: {
-			analogous:function(/* __analogousArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the analogous rules as implemented at
-				//		http://kuler.adobe.com.
-				var high=args.high||60, 	//	delta between base hue and highest hue (subtracted from base)
-					low=args.low||18,		//	delta between base hue and lowest hue (added to base)
-					base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv=base.toHsv();
-
-				//	generate our hue angle differences
-				var h=[
-					(hsv.h+low+360)%360,
-					(hsv.h+Math.round(low/2)+360)%360,
-					hsv.h,
-					(hsv.h-Math.round(high/2)+360)%360,
-					(hsv.h-high+360)%360
-				];
-
-				var s1=Math.max(10, (hsv.s<=95)?hsv.s+5:(100-(hsv.s-95))),
-					s2=(hsv.s>1)?hsv.s-1:21-hsv.s,
-					v1=(hsv.v>=92)?hsv.v-9:Math.max(hsv.v+9, 20),
-					v2=(hsv.v<=90)?Math.max(hsv.v+5, 20):(95+Math.ceil((hsv.v-90)/2)),
-					s=[ s1, s2, hsv.s, s1, s1 ],
-					v=[ v1, v2, hsv.v, v1, v2 ]
-
-				return new dxc.Palette(arr.map(h, function(hue, i){
-					return dxc.fromHsv(hue, s[i], v[i]);
-				}));		//	dojox.color.Palette
-			},
-
-			monochromatic: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the monochromatic rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-				
-				//	figure out the saturation and value
-				var s1 = (hsv.s-30>9)?hsv.s-30:hsv.s+30,
-					s2 = hsv.s,
-					v1 = rangeDiff(hsv.v, 20, 100),
-					v2 = (hsv.v-20>20)?hsv.v-20:hsv.v+60,
-					v3 = (hsv.v-50>20)?hsv.v-50:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(hsv.h, s1, v1),
-					dxc.fromHsv(hsv.h, s2, v3),
-					base,
-					dxc.fromHsv(hsv.h, s1, v3),
-					dxc.fromHsv(hsv.h, s2, v2)
-				]);		//	dojox.color.Palette
-			},
-
-			triadic: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the triadic rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = (hsv.h+57+360)%360,
-					h2 = (hsv.h-157+360)%360,
-					s1 = (hsv.s>20)?hsv.s-10:hsv.s+10,
-					s2 = (hsv.s>90)?hsv.s-10:hsv.s+10,
-					s3 = (hsv.s>95)?hsv.s-5:hsv.s+5,
-					v1 = (hsv.v-20>20)?hsv.v-20:hsv.v+20,
-					v2 = (hsv.v-30>20)?hsv.v-30:hsv.v+30,
-					v3 = (hsv.v-30>70)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, hsv.v),
-					dxc.fromHsv(hsv.h, s2, v2),
-					base,
-					dxc.fromHsv(h2, s2, v1),
-					dxc.fromHsv(h2, s3, v3)
-				]);		//	dojox.color.Palette
-			},
-
-			complementary: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the complementary rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
-					s1 = Math.max(hsv.s-10, 0),
-					s2 = rangeDiff(hsv.s, 10, 100),
-					s3 = Math.min(100, hsv.s+20),
-					v1 = Math.min(100, hsv.v+30),
-					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(hsv.h, s1, v1),
-					dxc.fromHsv(hsv.h, s2, v2),
-					base,
-					dxc.fromHsv(h1, s3, v2),
-					dxc.fromHsv(h1, hsv.s, hsv.v)
-				]);		//	dojox.color.Palette
-			},
-
-			splitComplementary: function(/* __splitComplementaryArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the split complementary rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					dangle = args.da || 30,
-					hsv = base.toHsv();
-
-				var baseh = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
-					h1 = (baseh-dangle+360)%360,
-					h2 = (baseh+dangle)%360,
-					s1 = Math.max(hsv.s-10, 0),
-					s2 = rangeDiff(hsv.s, 10, 100),
-					s3 = Math.min(100, hsv.s+20),
-					v1 = Math.min(100, hsv.v+30),
-					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, v1),
-					dxc.fromHsv(h1, s2, v2),
-					base,
-					dxc.fromHsv(h2, s3, v2),
-					dxc.fromHsv(h2, hsv.s, hsv.v)
-				]);		//	dojox.color.Palette
-			},
-
-			compound: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the compound rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = ((hsv.h*2)+18<360)?(hsv.h*2)+18:Math.floor(hsv.h/2)-18,
-					h2 = ((hsv.h*2)+120<360)?(hsv.h*2)+120:Math.floor(hsv.h/2)-120,
-					h3 = ((hsv.h*2)+99<360)?(hsv.h*2)+99:Math.floor(hsv.h/2)-99,
-					s1 = (hsv.s-40>10)?hsv.s-40:hsv.s+40,
-					s2 = (hsv.s-10>80)?hsv.s-10:hsv.s+10,
-					s3 = (hsv.s-25>10)?hsv.s-25:hsv.s+25,
-					v1 = (hsv.v-40>10)?hsv.v-40:hsv.v+40,
-					v2 = (hsv.v-20>80)?hsv.v-20:hsv.v+20,
-					v3 = Math.max(hsv.v, 20);
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, v1),
-					dxc.fromHsv(h1, s2, v2),
-					base,
-					dxc.fromHsv(h2, s3, v3),
-					dxc.fromHsv(h3, s2, v2)
-				]);		//	dojox.color.Palette
-			},
-
-			shades: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the shades rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var s  = (hsv.s==100 && hsv.v==0)?0:hsv.s,
-					v1 = (hsv.v-50>20)?hsv.v-50:hsv.v+30,
-					v2 = (hsv.v-25>=20)?hsv.v-25:hsv.v+55,
-					v3 = (hsv.v-75>=20)?hsv.v-75:hsv.v+5,
-					v4 = Math.max(hsv.v-10, 20);
-
-				return new dxc.Palette([
-					new dxc.fromHsv(hsv.h, s, v1),
-					new dxc.fromHsv(hsv.h, s, v2),
-					base,
-					new dxc.fromHsv(hsv.h, s, v3),
-					new dxc.fromHsv(hsv.h, s, v4)
-				]);		//	dojox.color.Palette
-			}
-		},
-		generate: function(/* String|dojox.color.Color */base, /* Function|String */type){
-			// summary:
-			//		Generate a new Palette using any of the named functions in
-			//		dojox.color.Palette.generators or an optional function definition.  Current
-			//		generators include "analogous", "monochromatic", "triadic", "complementary",
-			//		"splitComplementary", and "shades".
-			if(lang.isFunction(type)){
-				return type({ base: base });	//	dojox.color.Palette
-			}
-			else if(dxc.Palette.generators[type]){
-				return dxc.Palette.generators[type]({ base: base });	//	dojox.color.Palette
-			}
-			throw new Error("dojox.color.Palette.generate: the specified generator ('" + type + "') does not exist.");
-		}
-	});
-	
-	return dxc.Palette;
-});
-
-},
-'dojox/charting/themes/gradientGenerator':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "dojo/_base/Color", "../Theme", "dojox/color/_base", "./common"], 
-	function(lang, arr, Color, Theme, dxcolor, themes){
-	
-	var gg = lang.getObject("gradientGenerator", true, themes);
-
-	gg.generateFills = function(colors, fillPattern, lumFrom, lumTo){
-		// summary:
-		//		generates 2-color gradients using pure colors, a fill pattern, and two luminance values
-		// colors: Array
-		//		Array of colors to generate gradients for each.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		return arr.map(colors, function(c){	// Array
-			return Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo);
-		});
-	};
-	
-	gg.updateFills = function(themes, fillPattern, lumFrom, lumTo){
-		// summary:
-		//		transforms solid color fills into 2-color gradients using a fill pattern, and two luminance values
-		// themes: Array
-		//		Array of mini-themes (usually series themes or marker themes), which fill will be transformed.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		arr.forEach(themes, function(t){
-			if(t.fill && !t.fill.type){
-				t.fill = Theme.generateHslGradient(t.fill, fillPattern, lumFrom, lumTo);
-			}
-		});
-	};
-	
-	gg.generateMiniTheme = function(colors, fillPattern, lumFrom, lumTo, lumStroke){
-		// summary:
-		//		generates mini-themes with 2-color gradients using colors, a fill pattern, and three luminance values
-		// colors: Array
-		//		Array of colors to generate gradients for each.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		// lumStroke: Number
-		//		Stroke luminance value (0-100).
-		return arr.map(colors, function(c){	// Array
-			c = new dxcolor.Color(c);
-			return {
-				fill:   Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo),
-				stroke: {color: Theme.generateHslColor(c, lumStroke)}
-			};
-		});
-	};
-	
-	gg.generateGradientByIntensity = function(color, intensityMap){
-		// summary:
-		//		generates gradient colors using an intensity map
-		// color: dojo.Color
-		//		Color to use to generate gradients.
-		// intensityMap: Array
-		//		Array of tuples {o, i}, where o is a gradient offset (0-1),
-		//		and i is an intensity (0-255).
-		color = new Color(color);
-		return arr.map(intensityMap, function(stop){	// Array
-			var s = stop.i / 255;
-			return {
-				offset: stop.o,
-				color:  new Color([color.r * s, color.g * s, color.b * s, color.a])
-			};
-		});
-	};
-	
-	return gg;
+	return  themes.WatersEdge;
 });
 
 },
 'dojox/charting/themes/common':function(){
 define(["dojo/_base/lang"], function(lang){
 	return lang.getObject("dojox.charting.themes", true);
-});
-
-},
-'dojox/charting/themes/PrimaryColors':function(){
-define(["../Theme", "./gradientGenerator", "./common"], function(Theme, gradientGenerator, themes){
-
-	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],
-		defaultFill = {type: "linear", space: "plot", x1: 0, y1: 0, x2: 0, y2: 100};
-
-	themes.PrimaryColors = new Theme({
-		seriesThemes: gradientGenerator.generateMiniTheme(colors, defaultFill, 90, 40, 25)
-	});
-	
-	return themes.PrimaryColors;
 });
 
 },
@@ -54431,6 +54116,497 @@ define(["dijit/Tooltip", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/wi
 });
 
 },
+'p3/util/PathJoin':function(){
+define([], function(){
+
+  return function(/* path segments */) {
+      // 0 && console.log("JOIN PATH PARTS: ", arguments);
+      // Split the inputs into a list of path commands.
+      var parts = [];
+
+      for (var i = 0, l = arguments.length; i < l; i++) {
+        // 0 && console.log("arguments[i]",i, arguments[i]);
+        if (arguments[i]) {
+          if (typeof arguments[i] != 'string'){
+            arguments[i]=arguments[i].toString();
+          }
+          if (arguments[i].charAt(0) == "/"){
+            arguments[i] = arguments[i].substr(1);
+          }
+          if (arguments[i].charAt(arguments[i].length-1) == "/"){
+            arguments[i] = arguments[i].substr(0,arguments[i].length-1);
+          }
+          parts.push(arguments[i]);
+        }
+      }
+      var out = parts.join('/');
+      // 0 && console.log("OUT: ", out);
+
+      return out;
+  }
+});
+
+},
+'p3/widget/GenomeFeatureSummary':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "./SummaryWidget",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
+
+], function(declare, WidgetBase, on,
+			domClass, SummaryWidget,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct,PathJoin,easing) {
+	var LOG10 = Math.log(10);
+
+	return declare([SummaryWidget], {
+			dataModel: "genome_feature",
+			query: "",
+			baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
+			columns: [
+				{label: " ", field: "feature_type", renderCell: function(obj,val,node){ node.innerHTML= '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"}},
+				{label: "PATRIC", field: "PATRIC", renderCell: function(obj,val,node){ node.innerHTML=obj.PATRIC?('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>"):"0"}},
+				{label: "RefSeq", field: "RefSeq", renderCell: function(obj,val,node){ node.innerHTML= obj.RefSeq?('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>"):"0"}}
+			],
+			processData: function(data){
+				 0 && console.log("FACET PIVOTS: ",data.facet_counts.facet_pivot['annotation,feature_type'] )
+
+				if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']) { 0 && console.log("INVALID SUMMARY DATA", data); return; }
+				data = data.facet_counts.facet_pivot['annotation,feature_type']
+				var gfData = {}
+				this._chartLabels = []
+				var byFeature={}
+
+				var values={}
+				 0 && console.log("SummarY: ", data)
+		
+				data.forEach(function(summary){
+					summary.pivot.forEach(function(pv,idx){
+						values[pv.value]=true;
+						byFeature[pv.value]={feature_type: pv.value};
+					});
+				});
+
+				var values = Object.keys(values);
+
+				values.forEach(function(val,idx){
+					this._chartLabels.push({text: val, value: idx})
+				},this)
+
+				data.forEach(function(summary){
+					if (!gfData[summary.value]){ gfData[summary.value]=[]}
+
+					values.forEach(function(val,idx){
+						if (!summary.pivot.some(function(pv){
+							if (pv.value==val){
+								gfData[summary.value].push({text: pv.value, x:idx, y: Math.log(pv.count)/LOG10,count:pv.count, annotation: summary.value})
+								byFeature[pv.value][summary.value]=pv.count
+								return true;
+							}
+							return false;
+						})){
+							gfData[summary.value].push({text: val, y: 0, x: idx, annotation: summary.value});
+						}
+					})
+				});
+
+				this._tableData = Object.keys(byFeature).map(function(f){  return byFeature[f]; })
+
+				this.set('data', gfData);
+			},
+
+			render_chart: function(){
+				 0 && console.log("RENDER CHART")
+				if(!this.chart){
+					this.chart = new Chart2D(this.chartNode);
+					this.chart.setTheme(Theme);
+
+					this.chart.addPlot("default", {
+						type: "ClusteredColumns",
+						markers: true,
+						gap: 3,
+						labels: true,
+						// minBarSize: 5,
+						labelStyle: "inside",
+						//labelOffset: 20,
+						labelFunc: function(o){
+							return o.annotation;
+						},
+						animate: { duration: 1000, easing: easing.linear} 
+					});
+					
+					this.chart.addAxis("x", {
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: false,
+						microTicks: false,
+						labels: [this._chartLabels]
+					});
+
+					this.chart.addAxis("y", {
+						title: "Feature Count",
+						vertical: true,
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: true,
+						microTicks: true,
+						natural: true,
+						includeZero: true,
+						labels: [
+							{value: 0, text: "1"},
+							{value: 1, text: "10"},
+							{value: 2, text: "100"},
+							{value: 3, text: "1000"},
+							{value: 4, text: "10^4"},
+							{value: 5, text: "10^5"},
+							{value: 6, text: "10^6"},
+							{value: 7, text: "10^7"},
+							{value: 8, text: "10^8"},
+							{value: 9, text: "10^9"}
+						]
+
+					});
+					// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
+
+					new ChartTooltip(this.chart, "default", {
+						text: function(o){
+							 0 && console.log("O: ", o)
+							var d = o.run.data[o.index];
+							return d.annotation + " " + d.text + "s (" + d.count + ")"
+						}
+					});
+
+					 0 && console.log("Data to Render: ",this.data)
+
+					Object.keys(this.data).forEach(lang.hitch(this,function(key){
+						this.chart.addSeries(key,this.data[key]);
+					}));
+
+					 0 && console.log("Render GF DATA", this.chart);
+					this.chart.render();
+				}else{
+
+					Object.keys(this.data).forEach(lang.hitch(this,function(key){
+						this.chart.updateSeries(key,this.data[key]);
+					}));
+					this.chart.render();
+
+				}
+			},
+
+			render_table: function(){
+				this.inherited(arguments);
+				 0 && console.log("RenderArray: ", this._tableData);
+				this.grid.refresh();
+				this.grid.renderArray(this._tableData);
+			}
+
+	})
+});
+},
+'p3/widget/SummaryWidget':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dojo/dom-geometry","dojo/dom-style",
+	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dgrid/Grid"
+
+], function(declare, WidgetBase, on,domGeometry,domStyle,
+			domClass, Templated, Template,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct,PathJoin,Grid) {
+	return declare([WidgetBase, Templated], {
+		baseClass: "SummaryWidget",
+		templateString: Template,
+		dataModel: "",
+		query: "",
+		baseQuery: "",
+		data: null,
+		view: "chart",
+		apiServiceUrl: window.App.dataAPI,
+		loading: false,
+		gridOptions: {
+			style: "border: 0px;"
+		},
+		showChart: function(){
+			 0 && console.log("showChart")
+			this.set('view',"chart")
+		},
+		showTable: function(){
+			 0 && console.log("showTable");
+			this.set("view", "table")
+		},
+		onSetView: function(attr,oldVal,view){
+			 0 && console.log("onSetView ", view)
+			if (oldVal){
+				domClass.remove(this.domNode,oldVal+"View")
+			}
+			domClass.add(this.domNode,view + "View")
+			this["render_" + this.view]();
+		},
+
+		headers: {
+			"accept": "application/solr+json",
+			"content-type": "application/rqlquery+x-www-form-urlencoded",
+            'X-Requested-With': null,
+            'Authorization': (window.App.authorizationToken || "")
+		},
+
+		onSetQuery: function(attr,oldVal,query){
+			 0 && console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl,this.dataModel)+"/")
+			 0 && console.log("Do SummaryWidget Query: ", this.query + this.baseQuery)
+			return xhr.post(PathJoin(this.apiServiceUrl,this.dataModel)+"/",{
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + this.baseQuery
+			}).then(lang.hitch(this,"processData")) 
+			
+			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
+			// 	handleAs: "json",
+			// 	headers: this.headers
+			// }).then(lang.hitch(this,"processData")) 
+
+		},
+
+		onSetData: function(attr,oldVal,data){
+			 0 && console.log("onSetData: ", data);
+			this["render_" + this.view]();
+		},
+
+		processData: function(data){
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+
+		},
+
+		render_table: function(){
+			 0 && console.log("Render Table")
+			if (!this.grid){
+				var opts = this.gridOptions || {}
+				opts.columns = this.columns;
+				this.grid = new Grid(opts,this.tableNode)
+				this.grid.startup();
+			}
+		},
+
+		postCreate: function(){
+			this.inherited(arguments)
+			domClass.add(this.domNode, this.view + "View")
+
+			this.watch("view", lang.hitch(this, "onSetView"))
+			this.watch("query", lang.hitch(this, "onSetQuery"))
+			this.watch("data", lang.hitch(this,"onSetData"))
+
+
+			if (this.query && this.dataModel){
+				this.onSetQuery("query",this.query,this.query);
+			}
+		},
+
+		resize: function(changeSize, resultSize){
+		    var node = this.domNode;
+
+		    // set margin box size, unless it wasn't specified, in which case use current size
+		    if(changeSize){
+
+		            domGeometry.setMarginBox(node, changeSize);
+		    }
+
+		    // If either height or width wasn't specified by the user, then query node for it.
+		    // But note that setting the margin box and then immediately querying dimensions may return
+		    // inaccurate results, so try not to depend on it.
+
+		    var mb = resultSize || {};
+		    lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+		    if( !("h" in mb) || !("w" in mb) ){
+		            mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+		    }
+
+		    // Compute and save the size of my border box and content box
+		    // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+		    var cs = domStyle.getComputedStyle(node);
+		    var me = domGeometry.getMarginExtents(node, cs);
+		    var be = domGeometry.getBorderExtents(node, cs);
+		    var bb = (this._borderBox = {
+		            w: mb.w - (me.w + be.w),
+		            h: mb.h - (me.h + be.h)
+		    });
+		    var pe = domGeometry.getPadExtents(node, cs);
+		    this._contentBox = {
+		            l: domStyle.toPixelValue(node, cs.paddingLeft),
+		            t: domStyle.toPixelValue(node, cs.paddingTop),
+		            w: bb.w - pe.w,
+		            h: bb.h - pe.h
+		    };
+
+		    var actionBarMB = domGeometry.getMarginBox(this.actionButtonsNode);
+
+			domGeometry.setMarginBox(this.chartNode,{h: this._contentBox.h - actionBarMB.h})
+  			domGeometry.setMarginBox(this.tableNode,{h: this._contentBox.h - actionBarMB.h})
+		    // this._browser.resize();
+		}
+	})
+});
+
+},
+'dijit/_Templated':function(){
+define([
+	"./_WidgetBase",
+	"./_TemplatedMixin",
+	"./_WidgetsInTemplateMixin",
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // lang.extend lang.isArray
+	"dojo/_base/kernel" // kernel.deprecated
+], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, array, declare, lang, kernel){
+
+	// module:
+	//		dijit/_Templated
+
+	// These arguments can be specified for widgets which are used in templates.
+	// Since any widget can be specified as sub widgets in template, mix it
+	// into the base widget class.  (This is a hack, but it's effective.)
+	// Remove for 2.0.   Also, hide from API doc parser.
+	lang.extend(_WidgetBase, /*===== {} || =====*/ {
+		waiRole: "",
+		waiState:""
+	});
+
+	return declare("dijit._Templated", [_TemplatedMixin, _WidgetsInTemplateMixin], {
+		// summary:
+		//		Deprecated mixin for widgets that are instantiated from a template.
+		//		Widgets should use _TemplatedMixin plus if necessary _WidgetsInTemplateMixin instead.
+
+		// widgetsInTemplate: [protected] Boolean
+		//		Should we parse the template to find widgets that might be
+		//		declared in markup inside it?  False by default.
+		widgetsInTemplate: false,
+
+		constructor: function(){
+			kernel.deprecated(this.declaredClass + ": dijit._Templated deprecated, use dijit._TemplatedMixin and if necessary dijit._WidgetsInTemplateMixin", "", "2.0");
+		},
+
+		_processNode: function(baseNode, getAttrFunc){
+			var ret = this.inherited(arguments);
+
+			// Do deprecated waiRole and waiState
+			var role = getAttrFunc(baseNode, "waiRole");
+			if(role){
+				baseNode.setAttribute("role", role);
+			}
+			var values = getAttrFunc(baseNode, "waiState");
+			if(values){
+				array.forEach(values.split(/\s*,\s*/), function(stateValue){
+					if(stateValue.indexOf('-') != -1){
+						var pair = stateValue.split('-');
+						baseNode.setAttribute("aria-"+pair[0], pair[1]);
+					}
+				});
+			}
+
+			return ret;
+		}
+	});
+});
+
+},
+'p3/widget/SpecialtyGeneSummary':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "./SummaryWidget",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
+
+], function(declare, WidgetBase, on,
+			domClass, SummaryWidget,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct,PathJoin,easing) {
+	return declare([SummaryWidget], {
+			dataModel: "sp_gene",
+			query: "",
+			baseQuery: "&limit(1)&facet((field,source),(mincount,1))",
+			columns: [
+				{label: " ", field: "text", renderCell: function(obj,val,node){ node.innerHTML= ""}},
+				{label: "Source", field: "text"},
+				{label: "Genes", field: "y"}
+			],
+			processData: function(res){
+				this._chartLabels=[];
+				 0 && console.log("Data: ", res)
+				if (!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source) {  0 && console.log("INVALID SUMMARY DATA"); return; }
+				var d = res.facet_counts.facet_fields.source;
+				var data = []
+				var idx=0;
+				for (var i=0;i<d.length;i+=2){
+					data.push({text: d[i],x:idx, y: d[i+1]})
+					this._chartLabels.push({value: idx,text: d[i]})
+					idx++;
+				}
+
+				this._tableData = data;
+
+				this.set('data', data);
+			},
+
+			render_chart: function(){
+				 0 && console.log("RENDER CHART")
+				if(!this.chart){
+					this.chart = new Chart2D(this.chartNode);
+					this.chart.setTheme(Theme);
+
+					this.chart.addPlot("default", {
+						type: "Columns",
+						markers: true,
+						gap: 5,
+						maxBarSize: 20,
+						labels: true,
+						labelStyle: "outside",
+						animate: { duration: 1000, easing: easing.linear} 
+					});
+					
+					this.chart.addAxis("x", {
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+
+					});
+
+					this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Gene Count"});
+
+					new ChartTooltip(this.chart, "default", {
+						text: function(o){
+							 0 && console.log("O: ", o)
+							var d = o.run.data[o.index];
+							return d.text + " (" + d.y + ")"
+						}
+					});
+
+					this.chart.addSeries("source",this.data);
+
+					 0 && console.log("Render GF DATA", this.chart);
+					this.chart.render();
+				}else{
+
+					this.chart.updateSeries("source",this.data);
+					this.chart.render();
+				}
+			},
+
+			render_table: function(){
+				this.inherited(arguments);
+				 0 && console.log("RenderArray: ", this._tableData);
+				this.grid.refresh();
+				this.grid.renderArray(this._tableData);
+			}
+
+	})
+});
+},
 'p3/widget/FeatureGridContainer':function(){
 define([
 	"dojo/_base/declare", "./GridContainer","dojo/on",
@@ -54469,7 +54645,7 @@ define([
 		containerType: "feature_data",
 		facetFields: ["annotation","feature_type"],
 		filter: "",
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
@@ -54487,16 +54663,8 @@ define([
 						orient: ["below"]
 					});
 				},
-				true
-			],
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
 		])
 	});
@@ -54505,22 +54673,52 @@ define([
 },
 'p3/widget/GridContainer':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
+	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane","dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog","dijit/popup","dijit/TooltipDialog"
-], function(declare, BorderContainer, on,
-			ActionBar, ContainerActionBar, lang, ItemDetailPanel,
+], function(declare, BorderContainer, on, domConstruct,
+			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane,IDMappingTemplate,
 			Dialog,popup,TooltipDialog){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function() {
 			popup.close(viewFASTATT);
 		}
 	});
 
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+		var idType;
+
+		var ids = sel.map(function(d,idx){
+			if (!idType){
+				if (d['feature_id']){
+					idType="feature_id";
+				}else if (d['patric_id']) {
+					idType="patric_id"
+				}else if (d['alt_locus_tag']){
+					idType="alt_locus_tag";
+				}
+				 0 && console.log("SET ID TYPE TO: ", idType)
+			}
+
+			return d[idType];
+		});
+
+
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+	})
+	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
+	var downloadSelectionTT = new TooltipDialog({
+		content: dstContent, onMouseLeave: function(){
+			popup.close(downloadSelectionTT);
+		}
+	});
 
 	var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
 
@@ -54551,6 +54749,7 @@ define([
 
 
 	return declare([BorderContainer], {
+		"class": "GridContainer",
 		gutters: false,
 		gridCtor: null,
 		query: "",
@@ -54562,9 +54761,27 @@ define([
 		facetFields: [],
 		enableFilterPanel: true,
 		defaultFilter: "",
+		store: null,
 		apiServer: window.App.dataServiceURL,
+		queryOptions: null,
+		columns:null,
+		enableAnchorButton: false,
+
+		_setColumnsAttr: function(columns){
+			if (this.grid){ 
+				this.grid.set('columns', columns)
+			}
+			this._set('columns', columns); 
+		},
+
+		_getColumnsAttr: function(columns){
+			if (this.grid){ return this.grid.get('columns'); } 
+			return this.columns || {};
+		},
+
 		constructor: function(){
 			this._firstView = false;
+			 0 && console.log("GRIDCONTAINER CTOR() ", arguments)
 		},
 
 		postCreate: function(){
@@ -54589,7 +54806,10 @@ define([
 				q.push(state.search);
 			}
 
-			if(state.hashParams){
+			if (state.hashParams && state.hashParams.filter && state.hashParams.filter=="false"){
+				// filter set to false, no filtering
+
+			}else if(state.hashParams){
 				 0 && console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
 					 0 && console.log("       Found state.hashParams.filter, using");
@@ -54610,7 +54830,7 @@ define([
 					return;
 				}else{
 					 0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
-
+					
 				}
 			}else{
 				state.hashParams={}
@@ -54625,7 +54845,7 @@ define([
 			//  0 && console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				//  0 && console.log("    FilterPanel found");
+				 0 && console.log("    FilterPanel Found (in GridContainer): ", state);
 				this.filterPanel.set("state", state);
 			}
 			//  0 && console.log("setState query: ",q.join("&"), " state: ", state)
@@ -54633,12 +54853,12 @@ define([
 
 		},
 		_setQueryAttr: function(query){
-			// 0 && console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
-			// 0 && console.log("    Query: ", query, "this.query: ", this.query)
-			if(query == this.query){
+			 0 && console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			 0 && console.log("    Query: ", query, "this.query: ", this.query)
+			// if(query == this.query){
 				// 0 && console.log("  Not Skipping Query Update (unchanged)");
 				// return;
-			}
+			// }
 
 			this.query = query;
 			// this.query = query || "?keyword(*)"
@@ -54664,7 +54884,7 @@ define([
 
 		visible: false,
 		_setVisibleAttr: function(visible){
-			//  0 && console.log("GridContainer setVisible: ", visible)
+			 0 && console.log("GridContainer setVisible: ", visible)
 			this.visible = visible;
 			if(this.visible && !this._firstView){
 				//  0 && console.log("Trigger First View: ", this.id)
@@ -54714,6 +54934,40 @@ define([
 				}, 
 				false	
 			],[
+				"ViewSpgeneItem",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "VIEW",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Specialty Gene",
+					validContainerTypes: ["spgene_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+					 0 && console.log("View SP GENE: ", sel)
+					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
+				}, 
+				false	
+			],[			
+				"ViewGenomeItemFromGenome",
+				"MultiButton fa icon-eye2 fa-2x", 
+				{
+					label: "GENOME",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View Genome",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					var sel = selection[0];
+					 0 && console.log("sel: ", sel)
+					 0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				}, 
+				false
+			],[			
 				"ViewGenomeItem",
 				"MultiButton fa icon-genome fa-2x", 
 				{
@@ -54721,7 +54975,7 @@ define([
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","genome_data"]
+					validContainerTypes: ["sequence_data","feature_data","spgene_data","sequence_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -54731,6 +54985,70 @@ define([
 				}, 
 				false
 			],[
+				"ViewCDSFeatures",
+				"MultiButton fa icon-genome-features-cds fa-2x",
+				{
+					label: "CDS",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View CDS Features",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					 0 && console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+				},
+				false
+			],[
+				"ViewCDSFeaturesSeq",
+				"MultiButton fa icon-genome-features-cds fa-2x",
+				{
+					label: "CDS",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "View CDS Features",
+					validContainerTypes: ["sequence_data"]
+				},
+				function(selection){
+					 0 && console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession,"+ sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
+				},
+				false
+			],[	
+				"ViewGenomeBrowser",
+				"MultiButton fa icon-genome_browser fa-2x",
+				{					
+					label: "BRWSR",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "Open Genome Browser",
+					validContainerTypes: ["genome_data"]
+				},
+				function(selection){
+					 0 && console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
+				}, 
+				false
+			],[	
+				"ViewGenomeBrowserSeq",
+				"MultiButton fa icon-genome_browser fa-2x",
+				{					
+					label: "BRWSR",
+					validTypes:["*"],
+					multiple: false,
+					tooltip: "Open Genome Browser",
+					validContainerTypes: ["sequence_data"]
+				},
+				function(selection){
+					 0 && console.log("selection: ", selection);
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
+				}, 
+				false
+			],[						
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -54740,9 +55058,12 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+					validContainerTypes: ["genome_data", "sequence_data","feature_data","spgene_data","pathway_data"]
 				},
 				function(selection){
+					 0 && console.log("view FASTA")
+					viewFASTATT.selection = selection;
+					 0 && console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -54751,23 +55072,25 @@ define([
 				},
 				false
 			],[
-				"MultipleSeqAlignment",
+				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
 				{
 					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
-					var selection = self.actionPanel.get('selection')
+					 0 && console.log("MSA Selection: ", selection);
 					var ids = selection.map(function(d){ return d['feature_id']; });
-						 0 && console.log("OPEN MSA VIEWER");
+					 0 && console.log("OPEN MSA VIEWER");
+					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
+
 				},
 				false
 			],[
-				"idmapping",
+				"idmappingFeatures",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+				{label:"ID MAP",ignoreDataType:true,min:1, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+					validContainerTypes: ["feature_data","spgene_data"]
 				},
 				function(selection){
 
@@ -54782,10 +55105,38 @@ define([
 				}, 
 				false
 			],[
-				"Pathway Summary",
+				"idmapping",
+				"fa icon-exchange fa-2x",
+				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+					validContainerTypes: ["proteinfamily_data","pathway_data"]
+				},
+				function(selection){
+
+					 0 && console.log("TTDlg: ", idMappingTTDialog);
+					 0 && console.log("this: ", this);
+					popup.open({
+						popup: idMappingTTDialog,
+						// around: this._actions.idmapping.button,
+						orient: ["below"]
+					});
+					 0 && console.log("popup idmapping", selection);
+				}, 
+				false
+			],[
+				"ExperimentGeneList",
+				"fa icon-list-unordered fa-2x",
+				{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"], tooltip: "View Experiment Gene List"}, 
+				function(selection){
+					 0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
+					 0 && console.log("View Gene List", selection);
+					new Dialog({content: "IMPLEMENT ME!"}).show();
+				}, 
+				false
+			],[			
+				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
-				{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data"]
+				{label:"PTHWY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
+					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
 					new Dialog({content: "IMPLEMENT ME!"}).show();
@@ -54795,7 +55146,114 @@ define([
 				}, 
 				false
 
-			]
+			],[
+				"AddGroup", 
+				"fa icon-object-group fa-2x", 
+				{
+					label:"GROUP",
+					ignoreDataType:true,
+					multiple: true, 
+					validTypes:["*"],
+					tooltip: "Copy selection to a new or existing group", 
+					validContainerTypes:["genome_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+				},
+				function(selection, containerWidget){
+					 0 && console.log("Add Items to Group", selection);
+					var dlg = new Dialog({title:"Copy Selection to Group"});
+					var type;
+
+					if (!containerWidget){  0 && console.log("Container Widget not setup for addGroup"); return; }
+
+					if (containerWidget.containerType=="genome_data"){
+						type="genome_group"
+					}else if (containerWidget.containerType=="feature_data"){
+						type="feature_group";
+					}
+
+					if (!type){
+						 0 && console.error("Missing type for AddGroup")
+						return;
+					}
+					var stg = new SelectionToGroup({selection: selection, type: type,path: containerWidget.get("path")});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						},2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode,"first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();						
+				},
+				false
+			],[
+				"DownloadSelection",
+				"fa fa-download fa-2x",
+				{
+					label:"DWNLD",
+					multiple: true,
+					validTypes:["*"],
+					tooltip: "Download Selection", 
+					tooltipDialog: downloadSelectionTT, 
+					validContainerTypes:["genome_data","sequence_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+				}, 
+				function(selection){	
+					this.selectionActionBar._actions.DownloadSelection.selection = selection;
+					popup.open({
+						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.DownloadSelection.button,
+						orient: ["below"]
+					});
+				},
+				false
+			],[
+				"ViewTaxon",
+				"fa icon-eye2 fa fa-2x",
+				{
+					label:"VIEW",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Selected Taxonomy", 
+					tooltipDialog: downloadSelectionTT, 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id})
+				},
+				false
+			],[
+				"ViewTaxonGenomes",
+				"fa icon-genome fa fa-2x",
+				{
+					label:"VIEW",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Genome List", 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
+				},
+				false
+			],[
+				"ViewTaxonGenomeFeatures",
+				"fa icon-genome-features-cds fa fa-2x",
+				{
+					label:"CDS",
+					multiple: false,
+					validTypes:["*"],
+					tooltip: "View Genome List", 
+					validContainerTypes:["taxonomy_data"]
+				}, 
+				function(selection){	
+					var sel = selection[0];
+					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
+				},
+				false
+			]							
 		],
 
 		buildQuery: function(){
@@ -54823,25 +55281,7 @@ define([
 			return q;
 		},
 
-		onFirstView: function(){
-			if(this._firstView){
-				return;
-			}
-			if(!this.gridCtor){
-				 0 && console.error("Missing this.gridCtor in GridContainer");
-				return;
-			}
-
-			this.grid = new this.gridCtor({
-				region: "center",
-				query: this.buildQuery(),
-				state: this.state,
-				apiServer: this.apiServer
-			});
-
-			if(this.enableFilterPanel){
-				//  0 && console.log("Create FilterPanel: ", this.state);
-
+		createFilterPanel: function(){
 				 0 && console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
 				this.containerActionBar = this.filterPanel = new ContainerActionBar({
@@ -54851,7 +55291,9 @@ define([
 					"className": "BrowserHeader",
 					dataModel: this.dataModel,
 					facetFields: this.facetFields,
-					state: this.state
+					state: this.state,
+					enableAnchorButton: this.enableAnchorButton,
+					currentContainerWidget: this
 				});
 
 				//  0 && console.log("gridcontainer startup()", this.state)
@@ -54870,6 +55312,42 @@ define([
 						})
 					}
 				}));
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+			if(!this.gridCtor){
+				 0 && console.error("Missing this.gridCtor in GridContainer");
+				return;
+			}
+
+			var o = {
+				region: "center",
+				query: this.buildQuery(),
+				state: this.state,
+				apiServer: this.apiServer,
+				visible: true
+			}
+
+			if (this.columns){
+				o.columns = this.columns;
+			}
+
+			if (this.queryOptions){
+				o.queryOptions = this.queryOptions;
+			}
+
+			 0 && console.log("GridContainer onFirstView create Grid: ", o)
+
+			if (this.store){ o.store = this.store }
+			this.grid = new this.gridCtor(o);
+
+			if(this.enableFilterPanel){
+				//  0 && console.log("Create FilterPanel: ", this.state);
+
+				this.createFilterPanel();
 			}
 
 
@@ -54898,6 +55376,7 @@ define([
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.itemDetailPanel);
+			
 
 			this.setupActions();
 			this.listen();
@@ -54937,7 +55416,7 @@ define([
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				//  0 && console.log("toggleFilters");
+				 0 && console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -54946,15 +55425,15 @@ define([
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					//  0 && console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					 0 && console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
-						this.filterPanel.minimized = false;
+						this.filterPanel.set("minimized",false);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize + 150
 						});
 					}
 					else{
-						this.filterPanel.minimized = false;
+						this.filterPanel.set("minimized",true);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize
 						});
@@ -54967,14 +55446,21 @@ define([
 		setupActions: function(){
 			if(this.containerActionBar){
 				this.containerActions.forEach(function(a){
-					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
 				}, this);
 			}
 
 			this.selectionActions.forEach(function(a){
-				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
 			}, this);
 
+		},
+		startup: function(){
+			 0 && console.log("GridContainer Startup()  isVisible: ", this.visible);
+			if (this._started){ return; }
+			if (this.visible){ this.onFirstView() }
+			if (this.state){ this.set('state', this.state)}
+			this.inherited(arguments)
 		}
 	});
 });
@@ -55012,8 +55498,13 @@ define([
     }
 
     function parseQuery(filter){
-    	var _parsed = RQLParser.parse(filter)
-			//  0 && console.log("PARSED RQL:", parsed);
+    	try {
+    		var _parsed = RQLParser.parse(filter)
+    	}catch(err){
+    		 0 && console.log("Unable To Parse Query: ", filter);
+    		return;
+    	}
+    	
 		var _self=this;
 
 		var parsed = {
@@ -55059,10 +55550,10 @@ define([
 
 	return declare([ContainerActionBar], {
 		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
-		style: "height: 48px; margin:0px;padding:0px; overflow: hidden;",
+		style: "height: 52px; margin:0px;padding:0px; overflow: hidden;",
 		minimized: true,
-		minSize: 48,
-		absoluteMinSize: 48,
+		minSize: 52,
+		absoluteMinSize: 52,
 		query: "",
 		state: null,
 		filter:"",
@@ -55071,6 +55562,7 @@ define([
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
 		state: null,
+		enableAnchorButton: false,
 		constructor: function(){
 			this._ffWidgets={};
 			this._ffValueButtons={};
@@ -55078,21 +55570,21 @@ define([
 			this.minimized=true;
 		},
 		_setStateAttr: function(state){
-			 0 && console.log("FilterContainerActionBar setStateAttr: ",state);
+			//  0 && console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state)
 			//  0 && console.log("_setStateAttr query: ", state.search, this.query);
 			//  0 && console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr,oldVal, state){
-				 0 && console.log("FilterContainerActionBar onSetState: ", state)
+				//  0 && console.log("FilterContainerActionBar onSetState: ", state)
 				state.search = (state.search && (state.search.charAt(0)=="?"))?state.search.substr(1):(state.search||"");
 				//  0 && console.log("FilterContainerActionBar onSetState() ", state);
 				this._refresh();
 		},
 
 		_refresh: function(){
-			 0 && console.log("Refresh FilterContainerActionBar");
+			//  0 && console.log("Refresh FilterContainerActionBar");
 			var parsedQuery={};
 			var parsedFilter={};
 			var state = this.get('state') || {};
@@ -55107,7 +55599,9 @@ define([
 
 			if (state && state.hashParams && state.hashParams.filter){
 				//  0 && console.log("state.hashParams.filter: ", state.hashParams.filter);
-				parsedFilter = parseQuery(state.hashParams.filter)
+				if (state.hashParams.filter!="false"){
+					parsedFilter = parseQuery(state.hashParams.filter)
+				}
 				this._set("filter", state.hashParams.filter);
 			}
 			//  0 && console.log("Parsed Query: ", parsedQuery);
@@ -55117,7 +55611,7 @@ define([
 			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length>0)?parsedFilter.keywords.join(" "):"");
 			on(this.keywordSearch.domNode, "keypress", lang.hitch(this,function(evt){
 				var code = evt.charCode || evt.keyCode;
-				 0 && console.log("Keypress: ", code);
+				//  0 && console.log("Keypress: ", code);
 				if (code == 13){
 					focusUtil.curNode && focusUtil.curNode.blur();
 				}
@@ -55131,7 +55625,7 @@ define([
 			// for each of the facet widgets, get updated facet counts and update the content.
 			Object.keys(this._ffWidgets).forEach(function(category){
 				//  0 && console.log("Category: ", category)
-				this._updateFilteredCounts(category, parsedFilter.byCategory,parsedFilter.keywords||[])
+				this._updateFilteredCounts(category, parsedFilter?parsedFilter.byCategory:false,parsedFilter?parsedFilter.keywords:[])
 			},this)
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
@@ -55142,42 +55636,109 @@ define([
 						//  0 && console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value,true);	
 					}else{
-						 0 && console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
+						//  0 && console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
 						// this._ffWidgets[sel.field].toggle(sel.value,false);
 					}
+				},this)
+			}else{
+				//  0 && console.log("DELETE _ffWidgets")
+				Object.keys(this._ffWidgets).forEach(function(cat){
+					this._ffWidgets[cat].clearSelection();
 				},this)
 			}
 
 			// build/toggle the top level selected filter buttons
 			if (parsedFilter && parsedFilter.byCategory){
 				Object.keys(parsedFilter.byCategory).forEach(function(cat){
-					//  0 && console.log("Looking for ffValueButton[" + cat + "]");
+					 //  0 && console.log("Looking for ffValueButton[" + cat + "]");
 					if (!this._ffValueButtons[cat]){
 						//  0 && console.log("Create ffValueButton: ", cat, parsedFilter.byCategory[cat]);
 						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: parsedFilter.byCategory[cat]});
 						//  0 && console.log("ffv: ", ffv, " smallContentNode: ", this.smallContentNode);
-						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+						domConstruct.place(ffv.domNode,this.centerButtons, "last")
 						ffv.startup();
 					}else{
 						//  0 && console.log("Found ffValueButton. Set Selected");
 						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
 					}
 				},this)
+			}else{
+				//  0 && console.log("DELETE __ffValueButtons")
+				Object.keys(this._ffValueButtons).forEach(function(cat){
+					var b = this._ffValueButtons[cat];
+					b.destroy();
+					delete this._ffValueButtons[cat];
+				},this)
 			}
 
 
 
 		},
+
+		setButtonText: function(action,text){
+			 0 && console.log("setButtonText: ", action, text)
+			var textNode = this._actions[action].textNode
+			 0 && console.log("textNode: ", textNode);
+			textNode.innerHTML = text;
+		},
 		postCreate: function(){
-			// this.inherited(arguments);
+			this.inherited(arguments);
 			// domConstruct.destroy(this.pathContainer);
 			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
-			this.inherited(arguments);
 			domConstruct.destroy(this.pathContainer);
+			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView", style:{margin: "2px"}},this.domNode)
+			var table = this.smallContentNode = domConstruct.create("table", {style: {"border-collapse": "collapse", margin: "0px","padding":"0px", background: "#fff"}}, this.smallContentNode);
 
-			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView"}, this.domNode);	
+			var tr = domConstruct.create("tr",{},table);
+			this.leftButtons = domConstruct.create("td",{style: {"width":"1px", "text-align": "left", padding: "4px","white-space":"nowrap", background: "#fff"}}, tr);
+			this.containerNode = this.actionButtonContainer = this.centerButtons = domConstruct.create("td",{style: {"border": "0px", "border-left": "2px solid #aaa", "text-align": "left", padding: "4px", background: "#fff"}}, tr);
+			this.rightButtons = domConstruct.create("td",{style: {"text-align": "right", padding: "4px", background: "#fff",width: "1px","white-space":"nowrap"}}, tr);
+			// var str = domConstruct.create("tr",{},table);
+			// var std = domConstruct.create("td",{"colspan": 3,style: {padding: "0px",margin:"0px"}},str);
+			// var tfb1 = domConstruct.create("div",{style: {"text-align":"center"}},std);
+			// var tfb = domConstruct.create("div", {style: {display: "inline-block","border":"1px solid #aaa", width: "100px", "font-size":".75em","margin": "auto"},innerHTML: "SHOW FILTERS"}, tfb1)
+
+
+
 			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);		
-			domConstruct.place(this.containerNode, this.smallContentNode, "first");
+			// domConstruct.place(this.containerNode, this.smallContentNode, "first");
+			var _self=this;
+			var setAnchor=function(){
+				var q = _self.query;
+				 0 && console.log("Anchor: ", this.state)
+				if (_self.state && _self.state.hashParams && _self.state.hashParams.filter){
+
+				       // q = "and(" + q + "," + this.filter + ")";
+				       //  0 && console.log("New Anchor Query:",q)
+				       on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: _self.state.hashParams.filter})
+				}else{
+				        0 && console.log("No Filters to set new anchor");
+				}
+			}
+
+
+			function toggleFilters(){
+					 0 && console.log("Toggle the Filters Panel",_self.domNode);
+					on.emit(_self.currentContainerWidget.domNode,"ToggleFilters",{});
+			}
+
+			this.addAction("ToggleFilters","fa icon-filter fa-1x",{style: {"font-size": ".5em"},label: "SHOW FILTERS",validType: ["*"], tooltip: "Toggle the filter display"},toggleFilters,true,this.rightButtons);
+			
+			this.watch("minimized", lang.hitch(this,function(attr,oldVal,minimized){
+				 0 && console.log("FilterContainerActionBar minimized: ", minimized)
+				if (this.minimized){
+					this.setButtonText("ToggleFilters","SHOW FILTERS")
+				}else{
+					this.setButtonText("ToggleFilters","HIDE FILTERS")
+				}
+			}));
+
+
+
+			if (this.enableAnchorButton){
+				this.addAction("AnchorCurrentFilters","fa icon-anchor fa-1x",{style: {"font-size": ".5em"},label: "APPLY FITLERS",validType: ["*"], tooltip: "Anchor the active filter to update the current context."},setAnchor,true,this.rightButtons);
+			}
+
 
 			this.fullViewNode = domConstruct.create("div", {"class": "FullFilterView", style: {"white-space": "nowrap","vertical-align": "top", margin:"0px", "margin-top":"5px",background: "#333","padding": "0px", "overflow-y": "hidden", "overflow-x": "auto"}}, this.domNode)
 			this.fullViewContentNode = domConstruct.create("div", {style: {}},this.fullViewNode)
@@ -55197,11 +55758,11 @@ define([
   				}
 			})
 
-			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
+			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.centerButtons)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
 			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
 			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
-			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"font-size":"14px","margin-left": "4px", "margin-top":"-3px", "margin-bottom":"-1px"},innerHTML: ""}, kbot)
+			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"vertical-align": "bottom", "font-size":"14px","margin-left": "4px"},innerHTML: ""}, kbot)
 
 			on(clear,"click", lang.hitch(this,function(){
 				this.keywordSearch.set('value','');
@@ -55312,6 +55873,7 @@ define([
 						}
 					}
 
+					if (!filter){ filter = "false"}
 					//  0 && console.log("Set Filter: ", filter)
 					this.set("filter", filter);
 
@@ -55376,7 +55938,7 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-			//  0 && console.log("Internal Query: ", q);
+			 0 && console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				 //  0 && console.log("Facet Results: ",r);
 				w.set("data", r[category]);
@@ -55424,7 +55986,7 @@ define([
 				Object.keys(byCat).forEach(function(cat){
 					if (!this._ffValueButtons[cat]){
 						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: byCat[cat]});
-						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+						domConstruct.place(ffv.domNode,this.centerButtons, "last")
 					}else{
 						this._ffValueButtons[cat].set('selected', byCat[cat])
 					}
@@ -55447,7 +56009,7 @@ define([
 		},
 		_setFacetFieldsAttr: function(fields){
 			this.facetFields = fields;
-			 0 && console.log("Set Facet Fields: ", fields);
+			//  0 && console.log("Set Facet Fields: ", fields);
 			if (!this._started){return;}
 
 			fields.sort().forEach(lang.hitch(this,function(f){
@@ -55514,7 +56076,7 @@ define([
 			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
 		 	//  0 && console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-		 	//  0 && console.log("Facet Query: ", q)
+		 	 0 && console.log("Facet Query: ", q)
 			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
 				method: "POST",
 				handleAs: "json",
@@ -55551,6 +56113,10 @@ define([
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
 			this.onSetState('state', "", this.state);
+
+			if (this.currentContainerWidget){
+				this.currentContainerWidget.resize();
+			}
 		},
 		resize: function(changeSize, resultSize){
 			        var node = this.domNode;
@@ -55587,9 +56153,9 @@ define([
 			        }
 
 			        if (mb.h<=Math.max(this.minSize, this.absoluteMinSize)){
-			        	this.minimized=true;
+			        	this.set("minimized",true);
 			        }else{
-			        	this.minimized=false;
+			        	this.set("minimized",false);
 			        }
 
 			        // Compute and save the size of my border box and content box
@@ -55613,6 +56179,35 @@ define([
 			        	this._ffWidgets[name].resize({h: this._contentBox.h-4});	        	
 			        },this);
 
+			},
+			addAction: function(name,classes,opts,fn,enabled,target){
+				 0 && console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+				if (target && typeof target=='string'){
+					if (target=="left"){
+						target = this.leftButtons;
+					}else if (target=="right"){
+						target = this.rightButtons;
+					}
+				}
+
+				//  0 && console.log("Add Action: ", name, classes, opts,enabled);
+				target = target || this.leftButtons;
+				var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
+				var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
+
+				if (opts && opts.label) {
+					var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
+				}		
+
+				domConstruct.place(wrapper,target,"last");
+
+				this._actions[name]={
+					options: opts,
+					action: fn,
+					button: wrapper,
+					textNode: t
+				};
+					
 			}
 
 	});
@@ -55631,7 +56226,7 @@ define([
 			domGeometry,domStyle, when) {
 
 	return declare([WidgetBase,Templated], {
-		templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory">${category}</div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
+		templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
 		baseClass: "FacetFilter",
 		category: "NAME",
 		data: null,
@@ -55640,10 +56235,21 @@ define([
 		constructor: function(){
 			this._selected = {};
 		},
+
+		_setCategoryAttr: function(category){
+			var cat = category.replace("_"," ");
+			this._set('category', category);
+
+			if (this._started && this.categoryNode){
+				this.categoryNode.innerHTML = cat;
+			}
+		},
+
 		_setDataAttr: function(data, selected){
-			//  0 && console.log("_setDataAttr", data, selected);
+
+			 //  0 && console.log("_setDataAttr", data, selected);
 			if  (selected){ this.selected = selected }
-			//  0 && console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected);			
+			//  0 && console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected, "Type: ", typeof data);			
 			if (!data){return}
 			if (this.data && this.data instanceof Deferred){
 				var promise = this.data;
@@ -55661,37 +56267,40 @@ define([
 
 			//  0 && console.log("selected: ", this.selected)
 
-			data.forEach(function(obj){
-				var name = decodeURIComponent(obj.label || obj.val);
-				//  0 && console.log("data obj: ", name, obj);
-				var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
-				var sel;
+			if (data.forEach){
 
-				if (
-						this._selected[name] ||
-						(this.selected.indexOf(name) >= 0)
-					){
-					sel = "selected"
-				}else{
-					sel="";
-				}
-				//  0 && console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
-				//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
-				var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
-				//  0 && console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
-				domConstruct.place(n,this.containerNode,sel?"first":"last")
-				this.containerNode.scrollTop=0;
-			},this);
+				data.forEach(function(obj){
+					var name = decodeURIComponent(obj.label || obj.val);
+					//  0 && console.log("data obj: ", name, obj);
+					var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
+					var sel;
+
+					if (
+							this._selected[name] ||
+							(this.selected.indexOf(name) >= 0)
+						){
+						sel = "selected"
+					}else{
+						sel="";
+					}
+					//  0 && console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
+					//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
+					var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
+					//  0 && console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
+					domConstruct.place(n,this.containerNode,sel?"first":"last")
+					this.containerNode.scrollTop=0;
+				},this);
 			// this._refreshFilter();
-
-			if (promise){
-				promise.resolve(true);
+			
+				if (promise){
+					promise.resolve(true);
+				}
 			}
 		},
 
 		toggle: function(name,value){
 			name = name.replace(/\"/g,"");
-			 0 && console.log("Toggle: ", name, value, " Data:", this.data);
+			//  0 && console.log("Toggle: ", name, value, " Data:", this.data);
 			when(this.data, lang.hitch(this,function(){
 				var node = this["_value_" + name];
 				//  0 && console.log("Toggle Node: ", node, " Set to: ", value?"TRUE":"Opposite", domClass.contains(node, "Selected"));
@@ -55735,6 +56344,11 @@ define([
 					// }
 				}
 				//  0 && console.log(name, " this.selected: ", this.selected)
+				if (this.selected && this.selected.length>0){
+					domClass.add(this.categoryNode, "selected");
+				}else{
+					domClass.remove(this.categoryNode, "selected");
+				}
 			}))
 			// this._refreshFilter();
 		},
@@ -55747,14 +56361,14 @@ define([
 			this._refreshFilter();
 		},
 		_refreshFilter: function(){
-			 0 && console.log("FacetFilter _refreshFilter()  started: ", this._started);
+			//  0 && console.log("FacetFilter _refreshFilter()  started: ", this._started);
 			var selected = [];
 	
 			Query(".selected", this.containerNode).forEach(function(node){
 				//  0 && console.log(".selected Node: ", node)
 				selected.push(domAttr.get(node,"rel"));
 			})
-			 0 && console.log("_refreshFilter selected() : ", selected);
+			//  0 && console.log("_refreshFilter selected() : ", selected);
 			var curFilter = this.filter;
 			// this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
 			if (selected.length<1){
@@ -55765,7 +56379,7 @@ define([
 				this.filter = "or(" + selected.map(function(s){ return "eq(" + this.category + ',' + encodeURIComponent('"' + s + '"') + ')'},this).join(",") + ")";
 			}
 
-			 0 && console.log("_refreshFilter selected[]: ", selected)
+			//  0 && console.log("_refreshFilter selected[]: ", selected)
 
 			if (selected.length > 0){
 				domClass.add(this.categoryNode, "selected");
@@ -55775,32 +56389,39 @@ define([
 
 			this._set("selected", selected);
 
-			 0 && console.log("selected: ", selected)
-			 0 && console.log("new filter: ", this.filter, " curFilter: ", curFilter);
+			//  0 && console.log("selected: ", selected)
+			//  0 && console.log("new filter: ", this.filter, " curFilter: ", curFilter);
 	
 			// if (this.filter != curFilter){
-				 0 && console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
+				//  0 && console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
 				on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, filter: this.filter, selected: selected, bubbles: true, cancelable: true})
 			// }
 		},
 
 		toggleItem: function(evt){
 			var rel = domAttr.get(evt.target, "rel")
-			 0 && console.log("onToggle: ", rel)
+			//  0 && console.log("onToggle: ", rel)
 			domClass.toggle(evt.target, "selected");
 			this._refreshFilter();
 		},
 
 		clearSelection: function(){
-			 0 && console.log("CLEAR SELECTION")
+			//  0 && console.log("CLEAR SELECTION")
 			this.set('data', this.data, []);
+			domClass.remove(this.categoryNode, "selected")
 		},
 
 		postCreate: function(){
 			this.inherited(arguments);
 			on(this.domNode, ".FacetValue:click", lang.hitch(this,"toggleItem"))
+			if (this.categoryNode&&this.category){
+				this.categoryNode.innerHTML = this.category;
+			}
 			if (!this.data){ this.data = new Deferred();}
+
 		},
+
+
 		resize: function(changeSize, resultSize){
 	        var node = this.domNode;
 
@@ -55865,7 +56486,7 @@ define([
 		selected: null,
 
 		_setSelectedAttr: function(selected){
-			 0 && console.log("FFV _setSelected: ", selected);
+			//  0 && console.log("FFV _setSelected: ", selected);
 			
 			var content = [];
 			selected = selected.map(function(s,idx){ 
@@ -55877,6 +56498,9 @@ define([
 					content.push(co.join(""));
 					return s
 			},this)
+			this._set("selected", selected);
+
+			if (!this._started){ this._set("selected", selected); return; }
 
 			if (content.length==1){
 				this.selectedNode.innerHTML=content[0];
@@ -55889,15 +56513,17 @@ define([
 	
 		},
 		clearAll: function(){
-			 0 && console.log("Clear Selected")
+			//  0 && console.log("Clear Selected")
 			this.innerHTML="";
-			 0 && console.log("clear Category: ", this.category);
+			//  0 && console.log("clear Category: ", this.category);
 			on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, selected: [], bubbles: true, cancelable: true})
 			// this._set("selected",[])
 		},
 		startup: function(){
+			if (this._started){ return; }
 			this.inherited(arguments);
-			 0 && console.log("FilteredValueButton Startup()", this.selected);
+			//  0 && console.log("FilteredValueButton Startup()", this.selected);
+			this.set('selected', this.selected);
 		},
 		postCreate: function(){
 			this.inherited(arguments);
@@ -55906,50 +56532,25 @@ define([
 });
 
 },
-'p3/util/PathJoin':function(){
-define([], function(){
-
-  return function(/* path segments */) {
-       0 && console.log("JOIN PATH PARTS: ", arguments);
-      // Split the inputs into a list of path commands.
-      var parts = [];
-
-      for (var i = 0, l = arguments.length; i < l; i++) {
-         0 && console.log("arguments[i]",i, arguments[i]);
-        if (arguments[i]) {
-          if (typeof arguments[i] != 'string'){
-            arguments[i]=arguments[i].toString();
-          }
-          if (arguments[i].charAt(0) == "/"){
-            arguments[i] = arguments[i].substr(1);
-          }
-          if (arguments[i].charAt(arguments[i].length-1) == "/"){
-            arguments[i] = arguments[i].substr(0,arguments[i].length-1);
-          }
-          parts.push(arguments[i]);
-        }
-      }
-      var out = parts.join('/');
-       0 && console.log("OUT: ", out);
-
-      return out;
-  }
-});
-
-},
 'p3/widget/FeatureGrid':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store, selector) {
 
 
 	var store = new Store({});
 
 	return declare([Grid], {
+		constructor: function(){
+			this.queryOptions = {
+	                        sort: [{ attribute: "genome_name", descending: false},{ attribute: "strand", descending: false},{ attribute: "start", descending: false}]
+			}
+			 0 && console.log("this.queryOptions: ", this.queryOptions);
+		},
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
@@ -55959,6 +56560,7 @@ define([
 		deselectOnRefresh: true,
 		store: store,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
@@ -55976,8 +56578,14 @@ define([
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
+
+//		queryOptions: {
+//			sort: [{ attribute: "genome_name", descending: true }]
+//		},
+
 		startup: function() {
 			var _self = this;
+
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				var row = _self.row(evt);
 				// 0 && console.log("dblclick row:", row);
@@ -56015,6 +56623,7 @@ define([
 			});
 
 			this.inherited(arguments);
+
 			this.refresh();
 		}
 	});
@@ -56576,7 +57185,9 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 			//		Loads the given page.  Note that page numbers start at 1.
 			var grid = this,
 				dfd = new Deferred();
-			
+		
+			 0 && console.log("GOTO PAGE QueryOptions: ", grid.get('queryOptions'), this.queryOptions);
+	
 			var result = this._trackError(function(){
 				var count = grid.rowsPerPage,
 					start = (page - 1) * count,
@@ -56613,6 +57224,7 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 				grid._isLoading = true;
 				
 				// Run new query and pass it into renderArray
+				 0 && console.log("GRID _STOREMIXIN QUERY: ", grid.query, " QUERY OPTIONS: ", options);
 				results = grid.store.query(grid.query, options);
 				
 				Deferred.when(grid.renderArray(results, null, options), function(rows){
@@ -56809,15 +57421,16 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 			// summary:
 			//		Assigns a new query (and optionally queryOptions) to the list,
 			//		and tells it to refresh.
-			
+		
+			 0 && console.log("DGRID _setQuery queryOptions: ", queryOptions)	
 			var sort = queryOptions && queryOptions.sort;
-			
 			this.query = query !== undefined ? query : this.query;
 			this.queryOptions = queryOptions || this.queryOptions;
 			
 			// If we have new sort criteria, pass them through sort
 			// (which will update _sort and call refresh in itself).
 			// Otherwise, just refresh.
+			 0 && console.log("Sort: ", sort);
 			sort ? this.set("sort", sort) : this.refresh();
 		},
 		setStore: function(store, query, queryOptions){
@@ -57093,6 +57706,7 @@ define([
 	Evented
 ) {
 	return declare([Store, Evented], {
+		headers: null,
 		constructor: function(options) {
 			//  0 && console.log("P3JsonRest Options", options);
 			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
@@ -57101,13 +57715,23 @@ define([
 			}
 
 			this.target = baseUrl + this.dataModel + "/";
-            this.headers = {
-                "accept": "application/json",
-              //  "//content-type": "application/json",
-                "content-type": "application/rqlquery+x-www-form-urlencoded",
-                'X-Requested-With': null,
-                'Authorization': (window.App.authorizationToken || "")
-           }
+			this.init();
+           //  this.headers = {
+           //      "accept": "application/json",
+           //    //  "//content-type": "application/json",
+           //      "content-type": "application/rqlquery+x-www-form-urlencoded",
+           //      'X-Requested-With': null,
+           //      'Authorization': (window.App.authorizationToken || "")
+           // }
+		},
+		init: function(){
+				this.headers={
+		            "accept": "application/json",
+		          //  "//content-type": "application/json",
+		            "content-type": "application/rqlquery+x-www-form-urlencoded",
+		            'X-Requested-With': null,
+		            'Authorization': (window.App.authorizationToken || "")
+				}
 		},
 		autoFacet: false,
 		dataModel: "",
@@ -57202,6 +57826,210 @@ define([
 		}
 
 	});
+});
+
+},
+'dgrid/selector':function(){
+define(["dojo/_base/kernel", "dojo/_base/array", "dojo/on", "dojo/aspect", "dojo/_base/sniff", "put-selector/put"],
+function(kernel, arrayUtil, on, aspect, has, put){
+	return function(column, type){
+		
+		var listeners = [],
+			grid, headerCheckbox;
+		
+		if(!column){ column = {}; }
+		
+		if(column.type){
+			column.selectorType = column.type;
+			kernel.deprecated("columndef.type", "use columndef.selectorType instead", "dgrid 0.4");
+		}
+		// accept type as argument to Selector function, or from column def
+		column.selectorType = type = type || column.selectorType || "checkbox";
+		column.sortable = false;
+
+		function disabled(item) {
+			return !grid.allowSelect(grid.row(item));
+		}
+		
+		function changeInput(value){
+			// creates a function that modifies the input on an event
+			return function(event){
+				var rows = event.rows,
+					len = rows.length,
+					state = "false",
+					selection, mixed, i;
+				
+				for(i = 0; i < len; i++){
+					var element = grid.cell(rows[i], column.id).element;
+					if(!element){ continue; } // skip if row has been entirely removed
+					element = (element.contents || element).input;
+					if(element && !element.disabled){
+						// only change the value if it is not disabled
+						element.checked = value;
+						element.setAttribute("aria-checked", value);
+					}
+				}
+				if(headerCheckbox.type == "checkbox"){
+					selection = grid.selection;
+					mixed = false;
+					// see if the header checkbox needs to be indeterminate
+					for(i in selection){
+						// if there is anything in the selection, than it is indeterminate
+						if(selection[i] != grid.allSelected){
+							mixed = true;
+							break;
+						}
+					}
+					headerCheckbox.indeterminate = mixed;
+					headerCheckbox.checked = grid.allSelected;
+					if (mixed) {
+						state = "mixed";
+					} else if (grid.allSelected) {
+						state = "true";
+					}
+					headerCheckbox.setAttribute("aria-checked", state);
+				}
+			};
+		}
+		
+		function onSelect(event){
+			// we would really only care about click, since other input sources, like spacebar
+			// trigger a click, but the click event doesn't provide access to the shift key in firefox, so
+			// listen for keydown's as well to get an event in firefox that we can properly retrieve
+			// the shiftKey property from
+			if(event.type == "click" || event.keyCode == 32 || (!has("opera") && event.keyCode == 13) || event.keyCode === 0){
+				var row = grid.row(event);
+				grid._selectionTriggerEvent = event;
+				
+				if(row){
+					if(grid.allowSelect(row)){
+						var lastRow = grid._lastSelected && grid.row(grid._lastSelected);
+						
+						if(type == "radio"){
+							if(!lastRow || lastRow.id != row.id){
+								grid.clearSelection();
+								grid.select(row, null, true);
+								grid._lastSelected = row.element;
+							}
+						}else{
+							if(row){
+								if(event.shiftKey){
+									// make sure the last input always ends up checked for shift key
+									changeInput(true)({rows: [row]});
+								}else{
+									// no shift key, so no range selection
+									lastRow = null;
+								}
+								lastRow = event.shiftKey ? lastRow : null;
+								grid.select(lastRow || row, row, lastRow ? undefined : null);
+								grid._lastSelected = row.element;
+							}
+						}
+					}
+				}else{
+					// No row resolved; must be the select-all checkbox.
+					put(this, (grid.allSelected ? "!" : ".") + "dgrid-select-all");
+					grid[grid.allSelected ? "clearSelection" : "selectAll"]();
+				}
+				grid._selectionTriggerEvent = null;
+			}
+		}
+		
+		function setupSelectionEvents(){
+			// register one listener at the top level that receives events delegated
+			grid._hasSelectorInputListener = true;
+			listeners.push(grid.on(".dgrid-selector:click,.dgrid-selector:keydown", onSelect));
+			var handleSelect = grid._handleSelect;
+			grid._handleSelect = function(event){
+				// ignore the default select handler for events that originate from the selector column
+				if(this.cell(event).column != column){
+					handleSelect.apply(this, arguments);
+				}
+			};
+			
+			// Set up disabled and grid.allowSelect to match each other's behaviors
+			if(typeof column.disabled == "function"){
+				var originalAllowSelect = grid.allowSelect,
+					originalDisabled = column.disabled;
+
+				// Wrap allowSelect to consult both the original allowSelect and disabled
+				grid.allowSelect = function(row){
+					var allow = originalAllowSelect.call(this, row);
+
+					if (originalDisabled === disabled) {
+						return allow;
+					} else {
+						return allow && !originalDisabled.call(column, row.data);
+					}
+				};
+
+				// Then wrap disabled to simply call the new allowSelect
+				column.disabled = disabled;
+			}else{
+				// If no disabled function was specified, institute a default one
+				// which honors allowSelect
+				column.disabled = disabled;
+			}
+			// register listeners to the select and deselect events to change the input checked value
+			listeners.push(grid.on("dgrid-select", changeInput(true)));
+			listeners.push(grid.on("dgrid-deselect", changeInput(false)));
+		}
+		
+		var renderInput = typeof type == "function" ? type : function(value, cell, object){
+			var parent = cell.parentNode,
+				disabled;
+			
+			if(!grid._hasSelectorInputListener){
+				setupSelectionEvents();
+			}
+			
+			// column.disabled gets initialized or wrapped in setupSelectionEvents
+			disabled = column.disabled;
+
+			// must set the class name on the outer cell in IE for keystrokes to be intercepted
+			put(parent && parent.contents ? parent : cell, ".dgrid-selector");
+			var input = cell.input || (cell.input = put(cell, "input[type="+type + "]", {
+				tabIndex: isNaN(column.tabIndex) ? -1 : column.tabIndex,
+				disabled: disabled && (typeof disabled == "function" ?
+					disabled.call(column, object) : disabled),
+				checked: value
+			}));
+			input.setAttribute("aria-checked", !!value);
+			
+			return input;
+		};
+		
+		aspect.after(column, "init", function(){
+			grid = column.grid;
+		});
+		
+		aspect.after(column, "destroy", function(){
+			arrayUtil.forEach(listeners, function(l){ l.remove(); });
+			grid._hasSelectorInputListener = false;
+		});
+		
+		column.renderCell = function(object, value, cell, options, header){
+			var row = object && grid.row(object);
+			value = row && grid.selection[row.id];
+			renderInput(value, cell, object);
+		};
+		column.renderHeaderCell = function(th){
+			var label = "label" in column ? column.label :
+				column.field || "";
+			
+			if(type == "radio" || !grid.allowSelectAll){
+				th.appendChild(document.createTextNode(label));
+				if(!grid._hasSelectorInputListener){
+					setupSelectionEvents();
+				}
+			}else{
+				renderInput(false, th, {});
+			}
+			headerCheckbox = th.lastChild;
+		};
+		
+		return column;
+	};
 });
 
 },
@@ -57634,10 +58462,10 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest"
+	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -57651,6 +58479,7 @@ define([
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},
@@ -57728,10 +58557,13 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./PathwaysGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog"
+	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
+	"../store/PathwayMemoryStore"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
-			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog){
+			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
+			PathwayMemoryStore
+){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -57748,12 +58580,12 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		 0 && console.log("REL: ", rel);
+		//  0 && console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		 0 && console.log("selection: ", selection);
-		 0 && console.log("DownloadQuery: ", dataType, currentQuery);
+		//  0 && console.log("selection: ", selection);
+		//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
@@ -57761,32 +58593,63 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
+		defaultFilter: "eq(annotation,%22PATRIC%22)",
+
+
+		postCreate: function(){
+			this.inherited(arguments);
+			this.watch("state", lang.hitch(this, "onSetState"));
+		},
+
 		onSetState: function(attr, oldVal, state){
-			 0 && console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//  0 && console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
 			if (!state) { return; };
 
 			if(this.pathwaysGrid){
 				// 0 && console.log("Set PathwaysGrid State: ", state);
+				this.pathwayStore.set('state', state)
 				this.pathwaysGrid.set('state', state);
 			}
 
-			 0 && console.log("call _set(state) ", state);
+			if(this.ecNumbersGrid){
+				// 0 && console.log("Set PathwaysGrid State: ", state);
+				this.ecNumberStore.set('state', state)
+				this.ecNumbersGrid.set('state', state);
+			}
 
-			this._set("state", state);
+			if(this.genesGrid){
+				// 0 && console.log("Set PathwaysGrid State: ", state);
+				this.geneStore.set('state', state)
+				this.genesGrid.set('state', state);
+			}
+
+			//  0 && console.log("call _set(state) ", state);
+
+			// this._set("state", state);
 		},
 
 		visible: false,
 		_setVisibleAttr: function(visible){
+
 			this.visible = visible;
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-			}
-			if(this.pathwaysGrid){
-				this.pathwaysGrid.set("visible", true)
+				
+				if(this.pathwaysGrid){
+					this.pathwaysGrid.set("visible", true)
+				}
+
+				if(this.ecNumbersGrid){
+					this.ecNumbersGrid.set("visible", true)
+				}
+
+				if(this.genesGrid){
+					this.genesGrid.set("visible", true)
+				}
 			}
 		},
 
@@ -57803,16 +58666,54 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			// 0 && console.log("PathwayContainer Create Pathways Grid.  State: ", this.state, "API Server: ", this.apiServer);
+			var pathwayStore = this.pathwayStore =  new PathwayMemoryStore({type: "pathway", state: this.state});
+			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber", state: this.state});
+			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes", state: this.state});
+
 			this.pathwaysGrid = new PathwaysGridContainer({
 				title: "Pathways",
-				content: "Pathways Grid",
+				type: "pathway",
 				state: this.state,
-				apiServer: this.apiServer
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				store: pathwayStore,
+				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
+				queryOptions: {
+					sort: [{attribute: "pathway_id"}]
+				},
+				enableFilterPanel: true,
+				visible: true
 			});
 
-			this.ecNumbersGrid = new ContentPane({title: "EC Numbers", content: "EC Numbers Grid", state: this.state});
-			this.genesGrid = new ContentPane({title: "Genes", content: "Genes Grid", state: this.state});
+			this.ecNumbersGrid = new PathwaysGridContainer({
+				title: "EC Numbers",
+				type: "ec_number",
+				state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
+				columns: lang.mixin({},this.pathwaysGrid.get('columns'),{ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				store: ecNumberStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "ec_number"}]
+				}
+			});
+
+			this.genesGrid = new PathwaysGridContainer({
+				title: "Genes",
+				type: "gene",
+				state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
+				columns: lang.mixin({},this.ecNumbersGrid.get('columns'),{gene: {label: 'Gene', field: 'gene'},ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				store: geneStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "gene"}]
+				}
+			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
@@ -57822,24 +58723,793 @@ define([
 			this.tabContainer.addChild(this.ecNumbersGrid);
 			this.tabContainer.addChild(this.genesGrid);
 
+			this._firstView = true;
+		}
+
+	})
+});
+
+
+},
+'p3/widget/PathwaysMemoryGridContainer':function(){
+define([
+	"dojo/_base/declare", "./GridContainer", "dojo/on",
+	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
+	"dijit/TooltipDialog","./FilterContainerActionBar",
+	"dojo/_base/lang"
+
+], function(declare, GridContainer, on,
+			PathwaysGrid, popup, Topic,
+			TooltipDialog, ContainerActionBar,
+			lang){
+
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		//  0 && console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
+		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+		//  0 && console.log("selection: ", selection);
+		//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		popup.close(downloadTT);
+	});
+
+	return declare([GridContainer], {
+		gridCtor: PathwaysGrid,
+		containerType: "pathway_data",
+		defaultFilter: "eq(annotation,%22PATRIC%22)",
+		facetFields: ["annotation", "feature_type"],
+		enableFilterPanel: false,
+		apiServer: window.App.dataServiceURL,
+		store: null,
+		visible: true,
+		dataModel: "pathway",
+		type: "pathway",
+		typeMap: {
+			"pathway": "pathway_id",
+			"ec_number": "ec_number",
+			"gene": "gene"
+		},
+		_setQueryAttr: function(query){
+			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
+		},
+
+		buildQuery: function(){
+			return "";
+		},
+
+		_setStoreAttr: function(store){
+			if ( this.grid ) {
+				this.grid.store = store;
+			}
+			this._set('store', store);
+		},
+
+		createFilterPanel: function(){
+				//  0 && console.log("Create Container ActionBar with currentContainerWidget: ", this)
+				var _self=this;
+				this.containerActionBar = this.filterPanel = new ContainerActionBar({
+					region: "top",
+					layoutPriority: 7,
+					splitter: true,
+					"className": "BrowserHeader",
+					dataModel: this.dataModel,
+					facetFields: this.facetFields,
+					state: this.state,
+					currentContainerWidget: this,
+					_setQueryAttr: function(query){
+						//  0 && console.log("_setQueryAttr: ", query)
+						var p = _self.typeMap[_self.type];
+						query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
+						 0 && console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+						this._set("query", query)
+						this.getFacets(query).then(lang.hitch(this, function(facets){
+							//  0 && console.log("_setQuery got facets: ", facets)
+							if (!facets) {  0 && console.log("No Facets Returned"); return; }
+
+							Object.keys(facets).forEach(function(cat){
+								 //  0 && console.log("Facet Category: ", cat);
+								if (this._ffWidgets[cat]){
+									//  0 && console.log("this.state: ", this.state);
+									var selected = this.state.selected;
+									 //  0 && console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+									this._ffWidgets[cat].set('data', facets[cat], selected);
+								}else{
+									 //  0 && console.log("Missing ffWidget for : ", cat);
+								}
+							},this);
+
+						}));
+
+					}
+				});
+
+				//  0 && console.log("gridcontainer startup()", this.state)
+				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
+					//  0 && console.log("FILTER PANEL SET FILTER", arguments)
+					//  0 && console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
+					//  0 && console.log("setFilter Watch() callback", newVal);
+					if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+						//  0 && console.log("Emit UpdateHash: ", newVal);
+						on.emit(this.domNode, "UpdateHash", {
+							bubbles: true,
+							cancelable: true,
+							hashProperty: "filter",
+							value: newVal,
+							oldValue: oldVal
+						})
+					}
+				}));
+		},
+
+
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"DownloadTable",
+				"fa fa-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true,
+				"left"
+			]
+		]),
+
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if (!state) { return; }
+			 0 && console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
+			if(this.grid){
+				//  0 && console.log("   call set state on this.grid: ", this.grid);
+				this.grid.set('state', state);
+
+			}else{
+				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
+			}
+
+			this._set("state", state);
+		}
+	});
+});
+
+},
+'p3/widget/PathwaysMemoryGrid':function(){
+define([
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
+	"dojo/aspect","dgrid/selector"
+], function(declare, BorderContainer, on, Deferred,
+			domClass, ContentPane, domConstruct,
+			xhr, lang, Grid, formatter, Store, request,
+			aspect,selector){
+	return declare([Grid], {
+		region: "center",
+		query: (this.query || ""),
+		apiToken: window.App.authorizationToken,
+		apiServer: window.App.dataServiceURL,
+		store: null,
+		dataModel: "pathway",
+		primaryKey: "pathway_id",
+		selectionModel: "extended",
+		loadingMessage: "Loading pathways.  This may take several minutes...",
+		deselectOnRefresh: true,
+		store: null,
+		columns: {
+			// "Selection Checkboxes": selector({}),
+			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+			annotation: {label: 'Annotation', field: 'annotation'},
+			genome_count: {label: 'Unique Genome Count', field: 'genome_count'},
+			gene_count: {label: 'Unique Gene Count', field: 'gene_count'},
+			ec_count: {label: 'Unique EC Count', field: 'ec_count'},
+			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
+			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+		},
+
+		startup: function(){
+			var _self = this;
+
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				// 0 && console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				 0 && console.log('after emit');
+			});
+
+			this.on("dgrid-select", function(evt){
+				// 0 && console.log('dgrid-select: ', evt);
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "select", newEvt);
+			});
+
+			this.on("dgrid-deselect", function(evt){
+				// 0 && console.log("dgrid-deselect");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+			});
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			this._started = true;
+		},
+		state: null,
+
+		_setApiServer: function(server){
+			this.apiServer = server;
+		},
+
+		_setState: function(state){
+			 0 && console.log("PMS SET STATE: ", state, this.store)
+			if(!this.store){
+				 0 && console.log("CREATE STORE FROM PMG _setState()")
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set("state", state);
+				this.refresh();
+			}
+		},
+
+		createStore: function(server, token, state){
+			 0 && console.log("createStore()")
+			// 0 && console.log("CreateStore() server: ", server);
+			// 0 && console.log("CreateStore() token: ", token);
+			// 0 && console.log("CreateStore() state: ", state);
+			// 0 && console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
+			if (this.store) { return this.store }
+
+			return new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: state || this.state
+			});
+		}
+	});
+});
+
+},
+'p3/store/PathwayMemoryStore':function(){
+define([
+	"dojo/_base/declare",
+	"dojo/request",
+	"dojo/store/Memory",
+	"dojo/store/util/QueryResults",
+	"dojo/when", "dojo/_base/lang",
+	"dojo/_base/Deferred", "dojo/Stateful",
+	"../util/PathJoin"
+
+], function(declare,
+			request,
+			Memory,
+			QueryResults,
+			when, lang,
+			Deferred, Stateful,
+			PathJoin
+
+){
+	return declare([Memory, Stateful], {
+		baseQuery: {},
+		idProperty: "pathway_id",
+		apiServer: window.App.dataServiceURL,
+		state: null,
+		genome_ids: null,
+		type: "pathway",
+		onSetState: function(attr, oldVal, state){
+			var ov, nv;
+			if (oldVal){ ov = oldVal.search + oldVal.filter};
+			if (state) { nv = state.search + state.filter };
+
+			 0 && console.log("MEMORY STORE onSetState: ", state, oldVal)
+			// if (ov!=nv){
+				 0 && console.log("clear memory store data")
+				this._loaded = false;
+				if (this._loadingDeferred){
+					 0 && console.log("Deleting _loadingDeferred", this._loadingDeferred);
+					delete this._loadingDeferred;
+				}
+			// }
+		},
+		constructor: function(opts){
+			this.init(opts);
+		},
+		init: function(options){
+			options=options||{}
+			 0 && console.log("PMS Ctor Options: ", options);
+			this._loaded = false;
+			this.genome_ids = [];
+			lang.mixin(this,options);
+			this.watch("state", lang.hitch(this, "onSetState"))
+			 0 && console.log("INIT COMPLETE: ", this)
+		},
+
+		query: function(query, opts){
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				 0 && console.log("Beofre LOAD type: ", this.type)
+				 0 && console.log("Initiate NON LOADED Query: ", query);
+				var qr = QueryResults(when(this.loadData(), function(){
+					 0 && console.log("Do actual Query Against loadData() data. QR: ", qr);
+					results = _self.query(query || {}, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		queryTypes: {
+			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+				     "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+
+			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+					  "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+					"&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+		},
+		buildQuery: function(){
+			var q = [];
+			if(this.state){
+				if(this.state.search){
+					 0 && console.log("buildQuery SEARCH: ", this.state.search );
+
+					q.push((this.state.search.charAt(0)=="?")?this.state.search.substr(1):this.state.search);
+				}else if (this.state.genome_ids){
+					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
+				}
+
+				if(this.state.hashParams && this.state.hashParams.filter){
+					if (this.state.hashParams.filter!="false"){
+						q.push(this.state.hashParams.filter);
+					}
+				}
+				if(q.length < 1){
+					q = "";
+				}
+				else if(q.length == 1){
+					q = q[0];
+				}
+				else{
+					q = "and(" + q.join(",") + ")";
+				}
+			}else{
+				q = ""
+			}
+			q = q + this.queryTypes[this.type];
+
+			 0 && console.log("End Build Query: ", q)
+			return (q.charAt(0)=="?")?q.substr(1):q ;
+		},
+
+		loadData: function(){
+
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+			var state = this.state || {};
+
+			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
+				 0 && console.log("No Genome IDS, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					this._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+
+			}
+
+
+			// var lq;
+
+			// if(state && state.genome_ids){
+			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
+			// }
+
+			 0 && console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
+			var q = this.buildQuery();
+
+			var _self = this;
+			 0 && console.log("Load Data: ", q);
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer,'pathway')+'/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+				},
+				data: q
+
+			}), lang.hitch(this,function(response){
+
+				var docs=[]
+				var props = {
+					"pathway": "pathway_id",
+					"ecnumber": "ec_number",
+					"genes": 'gene'
+				}
+				 0 && console.log("Pathway Base Query Response:", response);
+				//  0 && console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
+				if (response && response.grouped  && response.grouped[props[this.type]]){
+					var ds = response.grouped[props[this.type]].doclist.docs;
+					var buckets = response.facets.stat.buckets;
+                	var map={};
+                	buckets.forEach(function(b){
+                		map[b["val"]]=b;
+                		delete b["val"];
+                	})
+
+                	docs = ds.map(function(doc){
+                		var p = props[this.type];
+                		var pv = doc[p];
+                		//  0 && console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
+                		lang.mixin(doc,map[pv]||{})
+                		if (doc.genome_ec && doc.genome_count){
+	                  		doc.ec_cons = (doc.genome_ec /doc.genome_count / doc.ec_count * 100).toFixed(2);
+	                  	}else{
+	                  		doc.ec_cons=0;
+	                  	}
+	                  	if (doc.gene_count && doc.genome_count){
+							doc.gene_cons =(doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+						}else{
+							doc.gene_cons=0;
+						}
+                		return doc;
+                	},this)
+					 0 && console.log("doc count: ", docs.length);
+
+					_self.setData(docs);
+					_self._loaded =true;
+					return true;
+
+				}else{
+					 0 && console.log("Unable to Process Response: ", response)
+					_self.setData([]),
+					_self._loaded=true;
+					return false;
+				}
+			}), lang.hitch(this, function(err){
+				 0 && console.log("Error Loading Data: ", err);
+				_self.setData([]),
+				_self._loaded=true;
+				return err;
+			}));
+			return this._loadingDeferred;
+		}
+	})
+});
+},
+'p3/widget/ProteinFamiliesContainer':function(){
+define([
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
+	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
+	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
+], function(declare, BorderContainer, on, lang,
+			ActionBar, ContainerActionBar, TabContainer, StackController,
+			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
+			ContentPane, Topic, RadioButton, domConstruct,
+			TextArea, TextBox, Button){
+
+	// configurations for proteinFamilies components (grid, filter, heatmap)
+	var pfState = {
+		'familyType': 'figfam', // default
+		'heatmapAxis': '',
+		'genomeIds': [],
+		'genomeFilterStatus': {},
+		'clusterRowOrder': [],
+		'clusterColumnOrder': [],
+		'perfectFamMatch': 'A',
+		'min_member_count': null,
+		'max_member_count': null,
+		'min_genome_count': null,
+		'max_genome_count': null
+	};
+
+	return declare([BorderContainer], {
+		gutters: false,
+		state: null,
+		maxGenomeCount: 10000,
+		apiServer: window.App.dataServiceURL,
+		onSetState: function(attr, oldVal, state){
+			// 0 && console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//if(this.proteinFamiliesGrid){
+			//	this.proteinFamiliesGrid.set('state', state);
+			//}
+
+			if(this.filterPanelGrid){
+				this.filterPanelGrid.set('state', state);
+			}
+			this._set('state', state);
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+
+			if(this.visible && !this._firstView){
+				this.onFirstView();
+			}
+			if(this.proteinFamiliesGrid){
+				this.proteinFamiliesGrid.set('visible', true);
+			}
+			if(this.heatmap){
+				this.heatmap.set('visible', true);
+			}
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+
+			var filterPanel = new ContentPane({
+				region: "left",
+				title: "filter",
+				content: "Filter By",
+				style: "width:400px; overflow:auto;",
+				splitter: true
+			});
+
+			var familyTypePanel = new ContentPane({
+				region: "top"
+			});
+			// plfam
+			var rb_plfam = new RadioButton({
+				name: "familyType",
+				value: "plfam"
+			});
+			rb_plfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "plfam")
+			});
+			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
+			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
+
+			// pgfam
+			var rb_pgfam = new RadioButton({
+				name: "familyType",
+				value: "pgfam"
+			});
+			rb_pgfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "pgfam")
+			});
+			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
+			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
+
+			// figfam
+			var rb_figfam = new RadioButton({
+				name: "familyType",
+				value: "figfam",
+				checked: true
+			});
+			rb_figfam.on("click", function(){
+				Topic.publish("ProteinFamilies", "familyType", "figfam")
+			});
+			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
+			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
+			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
+
+			filterPanel.addChild(familyTypePanel);
+
+			// genome list grid
+			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
+				state: this.state,
+				pfState: pfState
+			});
+			filterPanel.addChild(this.filterPanelGrid);
+
+			//// other filter items
+			var otherFilterPanel = new ContentPane({
+				region: "bottom"
+			});
+			var ta_keyword = new TextArea({
+				style: "width:215px; min-height:75px"
+			});
+			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
+			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
+			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
+
+			//
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var rb_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "perfect"
+			});
+			rb_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
+			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_non_perfect_match = new RadioButton({
+				name: "familyMatch",
+				value: "non_perfect"
+			});
+			rb_non_perfect_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
+			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
+
+			var rb_all_match = new RadioButton({
+				name: "familyMatch",
+				value: "all_match",
+				checked: true
+			});
+			rb_all_match.on("click", function(){
+				//Topic.publish()
+			});
+			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
+			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
+
+			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
+			var tb_num_protein_family_min = new TextBox({
+				name: "numProteinFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_protein_family_max = new TextBox({
+				name: "numProteinFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place(label_num_protein_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
+			var tb_num_genome_family_min = new TextBox({
+				name: "numGenomeFamilyMin",
+				value: "",
+				style: "width: 40px"
+			});
+			var tb_num_genome_family_max = new TextBox({
+				name: "numGenomeFamilyMax",
+				value: "",
+				style: "width:40px"
+			});
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(label_num_genome_family, otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_min.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
+			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
+
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			var btn_submit = new Button({
+				label: "Filter"
+			});
+			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			filterPanel.addChild(otherFilterPanel);
+
+			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
+
+			var tabController = new StackController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
+				title: "Table",
+				content: "Protein Families Table",
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
+			this.heatmap = new ProteinFamiliesHeatmapContainer({
+				title: "Heatmap",
+				content: "heatmap",
+				dataGridContainer: this.proteinFamiliesGrid,
+				pfState: pfState
+			});
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			this.tabContainer.addChild(this.proteinFamiliesGrid);
+			this.tabContainer.addChild(this.heatmap);
+			this.addChild(tabController);
+			this.addChild(this.tabContainer);
+			this.addChild(filterPanel);
+
 			this.inherited(arguments);
 			this._firstView = true;
 		}
 	});
 });
-
-
 },
-'p3/widget/PathwaysGridContainer':function(){
+'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./PathwaysGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang"
+	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
+	"dijit/TooltipDialog",
+	"dojo/_base/lang","dojo/text!./templates/IDMapping.html",
+	"dijit/Dialog","dijit/popup","dojo/on"
 
 ], function(declare, GridContainer, on,
-			PathwaysGrid, popup, Topic,
-			TooltipDialog, FacetFilterPanel,
+			ProteinFamiliesGrid, popup, Topic,
+			TooltipDialog,
 			lang){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
@@ -57869,18 +59539,25 @@ define([
 	});
 
 	return declare([GridContainer], {
-		gridCtor: PathwaysGrid,
-		containerType: "pathway_data",
-		facetFields: ["annotation", "feature_type"],
+		gridCtor: ProteinFamiliesGrid,
+		containerType: "proteinfamily_data",
+		facetFields: [],
 		enableFilterPanel: false,
-		apiServer: window.App.dataServiceURL,
-
 		_setQueryAttr: function(query){
-			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
+			//block default query handler for now.
 		},
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if (!state) { return; }
+			 0 && console.log("PathwaysGridContainer _setStateAttr: ", state);
+			if(this.grid){
+				 0 && console.log("   call set state on this.grid: ", this.grid);
+				this.grid.set('state', state);
+			}else{
+				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
+			}
 
-		buildQuery: function(){
-			return "";
+			this._set("state", state);
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
@@ -57904,57 +59581,66 @@ define([
 				true
 			]
 		]),
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewFASTA",
+				"fa icon-fasta fa-2x",
+				{
+					label: "FASTA",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "View FASTA Data",
+					tooltipDialog: viewFASTATT
+				},
+				function(selection){
+					popup.open({
+						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ViewFASTA.button,
+						orient: ["below"]
+					});
+				},
+				false
+			]
 
-		_setStateAttr: function(state){
-			this.inherited(arguments);
-			if (!state) { return; }
-			 0 && console.log("PathwaysGridContainer _setStateAttr: ", state);
-			if(this.grid){
-				 0 && console.log("   call set state on this.grid: ", this.grid);
-				this.grid.set('state', state);
-			}else{
-				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
-			}
-
-			this._set("state", state);
-		}
+		])
 	});
 });
 
 },
-'p3/widget/PathwaysGrid':function(){
+'p3/widget/ProteinFamiliesGrid':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect"
+	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
+	"dojo/aspect","dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect){
+			aspect, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
-		dataModel: "pathway",
-		primaryKey: "pathway_id",
+		dataModel: "genome_feature",
+		primaryKey: "feature_id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-			annotation: {label: 'Annotation', field: 'annotation'},
-			genome_count: {label: 'Unique Genome Count', field: 'genome_count'},
-			gene_count: {label: 'Unique Gene Count', field: 'gene_count'},
-			ec_count: {label: 'Unique EC Count', field: 'ec_count'},
-			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
-			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+			// "Selection Checkboxes": selector({}),
+			family_id: {label: 'ID', field: 'family_id'},
+			feature_count: {label: 'Proteins', field: 'feature_count'},
+			genome_count: {label: 'Genomes', field: 'genome_count'},
+			description: {label: 'Description', field: 'description'},
+			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
+			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
+			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
+			aa_length_std: {label: 'Std', field: 'aa_length_std'}
 		},
 		constructor: function(options){
-			 0 && console.log("PathwaysGrid Ctor: ", options);
+			// 0 && console.log("ProteinFamiliesGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
@@ -58007,6 +59693,7 @@ define([
 			this.inherited(arguments);
 			this._started = true;
 		},
+
 		state: null,
 		postCreate: function(){
 			this.inherited(arguments);
@@ -58014,28 +59701,27 @@ define([
 		_setApiServer: function(server){
 			this.apiServer = server;
 		},
-
 		_setState: function(state){
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				this.store.set("state", state);
+				 0 && console.log("ProteinFamiliesGrid _setState()")
+				this.store.set('state', state);
+
+				 0 && console.log("ProteinFamiliesGrid Call Grid Refresh()")
 				this.refresh();
 			}
 		},
-
 		createStore: function(server, token, state){
 
-			// 0 && console.log("CreateStore() server: ", server);
-			// 0 && console.log("CreateStore() token: ", token);
-			// 0 && console.log("CreateStore() state: ", state);
-			// 0 && console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
-
-			return new Store({
+			var store = new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
+			store.watch('refresh', lang.hitch(this, "refresh"));
+
+			return store;
 		}
 	});
 });
@@ -58848,941 +60534,6 @@ return declare([List, _StoreMixin], {
 });
 
 },
-'p3/store/PathwayMemoryStore':function(){
-define([
-	"dojo/_base/declare",
-	"dojo/request",
-	"dojo/store/Memory",
-	"dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang",
-	"dojo/_base/Deferred", "dojo/Stateful"
-
-], function(declare,
-			request,
-			Memory,
-			QueryResults,
-			when, lang,
-			Deferred, Stateful){
-	return declare([Memory, Stateful], {
-		baseQuery: {},
-		idProperty: "pathway_id",
-		apiServer: window.App.dataServiceURL,
-		state: null,
-		genome_ids: null,
-		onSetState: function(attr, oldVal, state){
-			// 0 && console.log("PathwayMemoryStore setState: ", state);
-			if(state && state.genome_ids && state.genome_ids.length > 0){
-				var cur = this.genome_ids.join("");
-				var next = state.genome_ids.join("");
-				if(cur != next){
-					this.set("genome_ids", state.genome_ids || []);
-					this._loaded = false;
-					delete this._loadingDeferred;
-				}
-			}
-		},
-		constructor: function(options){
-			// 0 && console.log("PMS Ctor Options: ", options);
-			this._loaded = false;
-			this.genome_ids = [];
-			if(options.apiServer){
-				this.apiServer = options.apiServer
-			}
-			this.watch("state", lang.hitch(this, "onSetState"))
-		},
-
-		query: function(query, opts){
-			query = query || {};
-			if(this._loaded){
-				return this.inherited(arguments);
-			}
-			else{
-				var _self = this;
-				var results;
-				 0 && console.log("Initiate NON LOADED Query: ", query);
-				var qr = QueryResults(when(this.loadData(), function(){
-					 0 && console.log("Do actual Query Against loadData() data. QR: ", qr);
-					results = _self.query(query || {}, opts);
-					qr.total = when(results, function(results){
-						return results.total || results.length
-					});
-					return results;
-				}));
-
-				return qr;
-			}
-		},
-
-		get: function(id, opts){
-			if(this._loaded){
-				return this.inherited(arguments);
-			}
-			else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
-			}
-		},
-
-		loadData: function(){
-
-			if(this._loadingDeferred){
-				return this._loadingDeferred;
-			}
-			var state = this.state || {};
-
-			if(!state.genome_ids || state.genome_ids.length < 1){
-				 0 && console.log("No Genome IDS, use empty data set for initial store");
-
-				//this is done as a deferred instead of returning an empty array
-				//in order to make it happen on the next tick.  Otherwise it
-				//in the query() function above, the callback happens before qr exists
-				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
-					this.setData([]);
-					this._loaded = true;
-					def.resolve(true);
-				}), 0);
-				return def.promise;
-
-			}
-
-			var lq;
-
-			if(state && state.genome_ids){
-				//	lq = state.genome_ids.map(function(x){ return "genome_id:" + x}).join(" OR ");
-				lq = "genome_id:(" + state.genome_ids.join(" OR ") + ")";
-			}
-
-			 0 && console.log("PathwayMemoryStore LoadData Query: ", lq);
-
-			var query = {
-				q: lq,
-				rows: 1,
-				facet: true,
-				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}}'
-
-			};
-			var q = Object.keys(query).map(function(p){
-				return p + "=" + query[p]
-			}).join("&");
-
-			var _self = this;
-			 0 && console.log("Load Data: ", q);
-			this._loadingDeferred = when(request.post(this.apiServer + '/pathway/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				},
-				data: q
-
-			}), function(response){
-				 0 && console.log("Pathway Base Query Response:", response);
-				var pathwayIdList = [];
-				response.facets.stat.buckets.forEach(function(element){
-					pathwayIdList.push(element.val);
-				});
-				var data = [];
-				// sub query
-				var pathwayRefHash = {};
-				return when(request.post(_self.apiServer + '/pathway_ref/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/solrquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-					},
-					data: {
-						q: 'pathway_id:(' + pathwayIdList.join(' OR ') + ')',
-						rows: 1000000
-					}
-				}), function(res){
-					res.response.docs.forEach(function(el){
-						if(pathwayRefHash[el.pathway_id] == null){
-							pathwayRefHash[el.pathway_id] = {
-								pathway_name: el.pathway_name,
-								pathway_class: el.pathway_class
-							};
-						}
-					});
-
-					response.facets.stat.buckets.forEach(function(element){
-						var ec_cons = 0,
-							gene_cons = 0;
-						if(element.genome_count > 0 && element.ec_count > 0){
-							ec_cons = element.genome_ec / element.genome_count / element.ec_count * 100;
-							gene_cons = element.gene_count / element.genome_count / element.ec_count;
-						}
-						var el = {
-							pathway_id: element.val,
-							ec_cons: ec_cons,
-							gene_cons: gene_cons
-						};
-						el.pathway_name = pathwayRefHash[element.val].pathway_name;
-						el.pathway_class = pathwayRefHash[element.val].pathway_class;
-						//el.annotation = self.params.annotation;
-						delete element.val;
-						data.push(lang.mixin(el, element));
-					});
-					 0 && console.log("setData() rows: ", data.length);
-					_self.setData(data);
-					_self._loaded = true;
-
-					return true;
-				});
-			});
-			return this._loadingDeferred;
-		}
-	})
-});
-},
-'dojo/store/Memory':function(){
-define(["../_base/declare", "./util/QueryResults", "./util/SimpleQueryEngine" /*=====, "./api/Store" =====*/],
-function(declare, QueryResults, SimpleQueryEngine /*=====, Store =====*/){
-
-// module:
-//		dojo/store/Memory
-
-// No base class, but for purposes of documentation, the base class is dojo/store/api/Store
-var base = null;
-/*===== base = Store; =====*/
-
-return declare("dojo.store.Memory", base, {
-	// summary:
-	//		This is a basic in-memory object store. It implements dojo/store/api/Store.
-	constructor: function(options){
-		// summary:
-		//		Creates a memory object store.
-		// options: dojo/store/Memory
-		//		This provides any configuration information that will be mixed into the store.
-		//		This should generally include the data property to provide the starting set of data.
-		for(var i in options){
-			this[i] = options[i];
-		}
-		this.setData(this.data || []);
-	},
-	// data: Array
-	//		The array of all the objects in the memory store
-	data:null,
-
-	// idProperty: String
-	//		Indicates the property to use as the identity property. The values of this
-	//		property should be unique.
-	idProperty: "id",
-
-	// index: Object
-	//		An index of data indices into the data array by id
-	index:null,
-
-	// queryEngine: Function
-	//		Defines the query engine to use for querying the data store
-	queryEngine: SimpleQueryEngine,
-	get: function(id){
-		// summary:
-		//		Retrieves an object by its identity
-		// id: Number
-		//		The identity to use to lookup the object
-		// returns: Object
-		//		The object in the store that matches the given id.
-		return this.data[this.index[id]];
-	},
-	getIdentity: function(object){
-		// summary:
-		//		Returns an object's identity
-		// object: Object
-		//		The object to get the identity from
-		// returns: Number
-		return object[this.idProperty];
-	},
-	put: function(object, options){
-		// summary:
-		//		Stores an object
-		// object: Object
-		//		The object to store.
-		// options: dojo/store/api/Store.PutDirectives?
-		//		Additional metadata for storing the data.  Includes an "id"
-		//		property if a specific id is to be used.
-		// returns: Number
-		var data = this.data,
-			index = this.index,
-			idProperty = this.idProperty;
-		var id = object[idProperty] = (options && "id" in options) ? options.id : idProperty in object ? object[idProperty] : Math.random();
-		if(id in index){
-			// object exists
-			if(options && options.overwrite === false){
-				throw new Error("Object already exists");
-			}
-			// replace the entry in data
-			data[index[id]] = object;
-		}else{
-			// add the new object
-			index[id] = data.push(object) - 1;
-		}
-		return id;
-	},
-	add: function(object, options){
-		// summary:
-		//		Creates an object, throws an error if the object already exists
-		// object: Object
-		//		The object to store.
-		// options: dojo/store/api/Store.PutDirectives?
-		//		Additional metadata for storing the data.  Includes an "id"
-		//		property if a specific id is to be used.
-		// returns: Number
-		(options = options || {}).overwrite = false;
-		// call put with overwrite being false
-		return this.put(object, options);
-	},
-	remove: function(id){
-		// summary:
-		//		Deletes an object by its identity
-		// id: Number
-		//		The identity to use to delete the object
-		// returns: Boolean
-		//		Returns true if an object was removed, falsy (undefined) if no object matched the id
-		var index = this.index;
-		var data = this.data;
-		if(id in index){
-			data.splice(index[id], 1);
-			// now we have to reindex
-			this.setData(data);
-			return true;
-		}
-	},
-	query: function(query, options){
-		// summary:
-		//		Queries the store for objects.
-		// query: Object
-		//		The query to use for retrieving objects from the store.
-		// options: dojo/store/api/Store.QueryOptions?
-		//		The optional arguments to apply to the resultset.
-		// returns: dojo/store/api/Store.QueryResults
-		//		The results of the query, extended with iterative methods.
-		//
-		// example:
-		//		Given the following store:
-		//
-		// 	|	var store = new Memory({
-		// 	|		data: [
-		// 	|			{id: 1, name: "one", prime: false },
-		//	|			{id: 2, name: "two", even: true, prime: true},
-		//	|			{id: 3, name: "three", prime: true},
-		//	|			{id: 4, name: "four", even: true, prime: false},
-		//	|			{id: 5, name: "five", prime: true}
-		//	|		]
-		//	|	});
-		//
-		//	...find all items where "prime" is true:
-		//
-		//	|	var results = store.query({ prime: true });
-		//
-		//	...or find all items where "even" is true:
-		//
-		//	|	var results = store.query({ even: true });
-		return QueryResults(this.queryEngine(query, options)(this.data));
-	},
-	setData: function(data){
-		// summary:
-		//		Sets the given data as the source for this store, and indexes it
-		// data: Object[]
-		//		An array of objects to use as the source of data.
-		if(data.items){
-			// just for convenience with the data format IFRS expects
-			this.idProperty = data.identifier || this.idProperty;
-			data = this.data = data.items;
-		}else{
-			this.data = data;
-		}
-		this.index = {};
-		for(var i = 0, l = data.length; i < l; i++){
-			this.index[data[i][this.idProperty]] = i;
-		}
-	}
-});
-
-});
-
-},
-'dojo/store/util/SimpleQueryEngine':function(){
-define(["../../_base/array" /*=====, "../api/Store" =====*/], function(arrayUtil /*=====, Store =====*/){
-
-// module:
-//		dojo/store/util/SimpleQueryEngine
-
-return function(query, options){
-	// summary:
-	//		Simple query engine that matches using filter functions, named filter
-	//		functions or objects by name-value on a query object hash
-	//
-	// description:
-	//		The SimpleQueryEngine provides a way of getting a QueryResults through
-	//		the use of a simple object hash as a filter.  The hash will be used to
-	//		match properties on data objects with the corresponding value given. In
-	//		other words, only exact matches will be returned.
-	//
-	//		This function can be used as a template for more complex query engines;
-	//		for example, an engine can be created that accepts an object hash that
-	//		contains filtering functions, or a string that gets evaluated, etc.
-	//
-	//		When creating a new dojo.store, simply set the store's queryEngine
-	//		field as a reference to this function.
-	//
-	// query: Object
-	//		An object hash with fields that may match fields of items in the store.
-	//		Values in the hash will be compared by normal == operator, but regular expressions
-	//		or any object that provides a test() method are also supported and can be
-	//		used to match strings by more complex expressions
-	//		(and then the regex's or object's test() method will be used to match values).
-	//
-	// options: dojo/store/api/Store.QueryOptions?
-	//		An object that contains optional information such as sort, start, and count.
-	//
-	// returns: Function
-	//		A function that caches the passed query under the field "matches".  See any
-	//		of the "query" methods on dojo.stores.
-	//
-	// example:
-	//		Define a store with a reference to this engine, and set up a query method.
-	//
-	//	|	var myStore = function(options){
-	//	|		//	...more properties here
-	//	|		this.queryEngine = SimpleQueryEngine;
-	//	|		//	define our query method
-	//	|		this.query = function(query, options){
-	//	|			return QueryResults(this.queryEngine(query, options)(this.data));
-	//	|		};
-	//	|	};
-
-	// create our matching query function
-	switch(typeof query){
-		default:
-			throw new Error("Can not query with a " + typeof query);
-		case "object": case "undefined":
-			var queryObject = query;
-			query = function(object){
-				for(var key in queryObject){
-					var required = queryObject[key];
-					if(required && required.test){
-						// an object can provide a test method, which makes it work with regex
-						if(!required.test(object[key], object)){
-							return false;
-						}
-					}else if(required != object[key]){
-						return false;
-					}
-				}
-				return true;
-			};
-			break;
-		case "string":
-			// named query
-			if(!this[query]){
-				throw new Error("No filter function " + query + " was found in store");
-			}
-			query = this[query];
-			// fall through
-		case "function":
-			// fall through
-	}
-	function execute(array){
-		// execute the whole query, first we filter
-		var results = arrayUtil.filter(array, query);
-		// next we sort
-		var sortSet = options && options.sort;
-		if(sortSet){
-			results.sort(typeof sortSet == "function" ? sortSet : function(a, b){
-				for(var sort, i=0; sort = sortSet[i]; i++){
-					var aValue = a[sort.attribute];
-					var bValue = b[sort.attribute];
-					// valueOf enables proper comparison of dates
-					aValue = aValue != null ? aValue.valueOf() : aValue;
-					bValue = bValue != null ? bValue.valueOf() : bValue;
-					if (aValue != bValue){
-						return !!sort.descending == (aValue == null || aValue > bValue) ? -1 : 1;
-					}
-				}
-				return 0;
-			});
-		}
-		// now we paginate
-		if(options && (options.start || options.count)){
-			var total = results.length;
-			results = results.slice(options.start || 0, (options.start || 0) + (options.count || Infinity));
-			results.total = total;
-		}
-		return results;
-	}
-	execute.matches = query;
-	return execute;
-};
-
-});
-
-},
-'p3/widget/ProteinFamiliesContainer':function(){
-define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
-	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
-	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
-], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer, StackController,
-			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ContentPane, Topic, RadioButton, domConstruct,
-			TextArea, TextBox, Button){
-
-	return declare([BorderContainer], {
-		gutters: false,
-		state: null,
-		maxGenomeCount: 5000,
-		apiServer: window.App.dataServiceURL,
-		onSetState: function(attr, oldVal, state){
-			// 0 && console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			//if(this.proteinFamiliesGrid){
-			//	this.proteinFamiliesGrid.set('state', state);
-			//}
-
-			if(this.filterPanelGrid){
-				this.filterPanelGrid.set('state', state);
-			}
-			this._set('state', state);
-		},
-
-		visible: false,
-		_setVisibleAttr: function(visible){
-			this.visible = visible;
-
-			if(this.visible && !this._firstView){
-				this.onFirstView();
-			}
-			if(this.proteinFamiliesGrid){
-				this.proteinFamiliesGrid.set('visible', true);
-			}
-			if(this.heatmap){
-				this.heatmap.set('visible', true);
-			}
-		},
-
-		onFirstView: function(){
-			if(this._firstView){
-				return;
-			}
-
-			var filterPanel = new ContentPane({
-				region: "left",
-				title: "filter",
-				content: "Filter By",
-				style: "width:400px; overflow:auto;",
-				splitter: true
-			});
-
-			var familyTypePanel = new ContentPane({
-				region: "top"
-			});
-			// plfam
-			var rb_plfam = new RadioButton({
-				name: "familyType",
-				value: "plfam"
-			});
-			rb_plfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "plfam")
-			});
-			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
-			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_plfam, familyTypePanel.containerNode, "last");
-
-			// pgfam
-			var rb_pgfam = new RadioButton({
-				name: "familyType",
-				value: "pgfam"
-			});
-			rb_pgfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "pgfam")
-			});
-			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
-			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_pgfam, familyTypePanel.containerNode, "last");
-
-			// figfam
-			var rb_figfam = new RadioButton({
-				name: "familyType",
-				value: "figfam",
-				checked: true
-			});
-			rb_figfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "figfam")
-			});
-			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
-			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
-			domConstruct.place(label_figfam, familyTypePanel.containerNode, "last");
-
-			filterPanel.addChild(familyTypePanel);
-
-			// genome list grid
-			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state
-			});
-			filterPanel.addChild(this.filterPanelGrid);
-
-			//// other filter items
-			var otherFilterPanel = new ContentPane({
-				region: "bottom"
-			});
-			var ta_keyword = new TextArea({
-				style: "width:215px; min-height:75px"
-			});
-			var label_keyword = domConstruct.create("label", {innerHTML:"Filter by one or more keywords"});
-			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
-			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
-
-			//
-			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
-
-			var rb_perfect_match = new RadioButton({
-				name: "familyMatch",
-				value: "perfect"
-			});
-			rb_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
-			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
-			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
-			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
-
-			var rb_non_perfect_match = new RadioButton({
-				name: "familyMatch",
-				value: "non_perfect"
-			});
-			rb_non_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
-			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
-			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
-			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
-
-			var rb_all_match = new RadioButton({
-				name: "familyMatch",
-				value: "all_match",
-				checked: true
-			});
-			rb_all_match.on("click", function(){
-				//Topic.publish()
-			});
-			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
-			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
-			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
-
-			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
-			var tb_num_protein_family_min = new TextBox({
-				name: "numProteinFamilyMin",
-				value: "",
-				style: "width: 40px"
-			});
-			var tb_num_protein_family_max = new TextBox({
-				name: "numProteinFamilyMax",
-				value: "",
-				style: "width:40px"
-			});
-			domConstruct.place(label_num_protein_family, otherFilterPanel.containerNode, "last");
-			domConstruct.place(tb_num_protein_family_min.domNode, otherFilterPanel.containerNode, "last");
-			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
-			domConstruct.place(tb_num_protein_family_max.domNode, otherFilterPanel.containerNode, "last");
-
-			var label_num_genome_family = domConstruct.create("label", {innerHTML: "Number of Genomes per Family<br/>"});
-			var tb_num_genome_family_min = new TextBox({
-				name: "numGenomeFamilyMin",
-				value: "",
-				style: "width: 40px"
-			});
-			var tb_num_genome_family_max = new TextBox({
-				name: "numGenomeFamilyMax",
-				value: "",
-				style: "width:40px"
-			});
-			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
-			domConstruct.place(label_num_genome_family, otherFilterPanel.containerNode, "last");
-			domConstruct.place(tb_num_genome_family_min.domNode, otherFilterPanel.containerNode, "last");
-			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
-			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
-
-
-			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
-			var btn_submit = new Button({
-				label: "Filter"
-			});
-			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
-
-			filterPanel.addChild(otherFilterPanel);
-
-			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
-
-			var tabController = new StackController({
-				containerId: this.id + "_TabContainer",
-				region: "top",
-				"class": "TextTabButtons"
-			});
-
-			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
-				title: "Table",
-				content: "Protein Families Table",
-				state: this.state,
-				apiServer: this.apiServer
-			});
-
-			this.heatmap = new ProteinFamiliesHeatmapContainer({
-				title: "Heatmap",
-				content: "heatmap",
-				dataGridContainer: this.proteinFamiliesGrid,
-				filterGrid: this.filterPanelGrid
-			});
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
-			this.tabContainer.addChild(this.proteinFamiliesGrid);
-			this.tabContainer.addChild(this.heatmap);
-			this.addChild(tabController);
-			this.addChild(this.tabContainer);
-			this.addChild(filterPanel);
-
-			this.inherited(arguments);
-			this._firstView = true;
-		}
-	});
-});
-},
-'p3/widget/ProteinFamiliesGridContainer':function(){
-define([
-	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog",
-	"dojo/_base/lang","dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog","dijit/popup","dojo/on"
-
-], function(declare, GridContainer, on,
-			ProteinFamiliesGrid, popup, Topic,
-			TooltipDialog,
-			lang){
-
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-	var downloadTT = new TooltipDialog({
-		content: dfc, onMouseLeave: function(){
-			popup.close(downloadTT);
-		}
-	});
-
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		 0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		 0 && console.log("selection: ", selection);
-		 0 && console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
-	return declare([GridContainer], {
-		gridCtor: ProteinFamiliesGrid,
-		containerType: "proteinfamily_data",
-		facetFields: [],
-		enableFilterPanel: false,
-		_setQueryAttr: function(query){
-			//block default query handler for now.
-		},
-		_setStateAttr: function(state){
-			this.inherited(arguments);
-			if (!state) { return; }
-			 0 && console.log("PathwaysGridContainer _setStateAttr: ", state);
-			if(this.grid){
-				 0 && console.log("   call set state on this.grid: ", this.grid);
-				this.grid.set('state', state);
-			}else{
-				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
-			}
-
-			this._set("state", state);
-		},
-
-		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"DownloadTable",
-				"fa fa-download fa-2x",
-				{
-					label: "DOWNLOAD",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Download Table",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
-						orient: ["below"]
-					});
-				},
-				true
-			]
-		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-
-		])
-	});
-});
-
-},
-'p3/widget/ProteinFamiliesGrid':function(){
-define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
-	"dojo/aspect"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect){
-	return declare([Grid], {
-		region: "center",
-		query: (this.query || ""),
-		apiToken: window.App.authorizationToken,
-		apiServer: window.App.dataServiceURL,
-		store: null,
-		dataModel: "genome_feature",
-		primaryKey: "feature_id",
-		selectionModel: "extended",
-		deselectOnRefresh: true,
-		columns: {
-			family_id: {label: 'ID', field: 'family_id'},
-			feature_count: {label: 'Proteins', field: 'feature_count'},
-			genome_count: {label: 'Genomes', field: 'genome_count'},
-			description: {label: 'Description', field: 'description'},
-			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
-			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
-			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
-			aa_length_std: {label: 'Std', field: 'aa_length_std'}
-		},
-		constructor: function(options){
-			// 0 && console.log("ProteinFamiliesGrid Ctor: ", options);
-			if(options && options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-		},
-		startup: function(){
-			var _self = this;
-
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
-				var row = _self.row(evt);
-				// 0 && console.log("dblclick row:", row);
-				on.emit(_self.domNode, "ItemDblClick", {
-					item_path: row.data.path,
-					item: row.data,
-					bubbles: true,
-					cancelable: true
-				});
-				 0 && console.log('after emit');
-			});
-
-			this.on("dgrid-select", function(evt){
-				// 0 && console.log('dgrid-select: ', evt);
-				var newEvt = {
-					rows: evt.rows,
-					selected: evt.grid.selection,
-					grid: _self,
-					bubbles: true,
-					cancelable: true
-				};
-				on.emit(_self.domNode, "select", newEvt);
-			});
-
-			this.on("dgrid-deselect", function(evt){
-				// 0 && console.log("dgrid-deselect");
-				var newEvt = {
-					rows: evt.rows,
-					selected: evt.grid.selection,
-					grid: _self,
-					bubbles: true,
-					cancelable: true
-				};
-				on.emit(_self.domNode, "deselect", newEvt);
-			});
-
-			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
-					_self.set("totalRows", x);
-				});
-			});
-
-			this.inherited(arguments);
-			this._started = true;
-		},
-
-		state: null,
-		postCreate: function(){
-			this.inherited(arguments);
-		},
-		_setApiServer: function(server){
-			this.apiServer = server;
-		},
-		_setState: function(state){
-			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				 0 && console.log("ProteinFamiliesGrid _setState()")
-				this.store.set('state', state);
-
-				 0 && console.log("ProteinFamiliesGrid Call Grid Refresh()")
-				this.refresh();
-			}
-		},
-		createStore: function(server, token, state){
-
-			var store = new Store({
-				token: token,
-				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state
-			});
-			store.watch('refresh', lang.hitch(this, "refresh"));
-
-			return store;
-		}
-	});
-});
-
-},
 'p3/store/ProteinFamiliesMemoryStore':function(){
 define([
 	"dojo/_base/declare", "dojo/request",
@@ -59798,28 +60549,13 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
-		params: {
-			familyType: 'figfam'
-		},
+		pfState: null,
 
-		/*onSetState: function(attr, oldVal, state){
-			 0 && console.log("ProteinFamiliesMemoryStore setState: ", state.genome_ids, state.genomeFilterStatus);
-			var cur = (this.genome_ids || []).join("");
-			var next = (state.genome_ids || []).join("");
-			if(cur != next){
-				this.set("genome_ids", state.genome_ids || []);
-				this._loaded = false;
-				delete this._loadingDeferred;
-			}
-
-		},*/
 		constructor: function(options){
 			this._loaded = false;
-			this.genome_ids = [];
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
-			//this.watch('state', lang.hitch(this, 'onSetState'));
 
 			var self = this;
 
@@ -59829,11 +60565,11 @@ define([
 
 				switch(key){
 					case "genomeIds":
-						self.genome_ids = value;
+						self.pfState = value;
 						self.reload();
 						break;
 					case "familyType":
-						self.params.familyType = value;
+						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
 						break;
@@ -59928,9 +60664,7 @@ define([
 				return this._loadingDeferred;
 			}
 
-			var state = this.state || {};
-
-			if(!this.genome_ids || this.genome_ids.length < 1){
+			if(!this.pfState || this.pfState.genomeIds.length < 1){
 				 0 && console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -59946,11 +60680,11 @@ define([
 
 			}
 
-			var familyType = this.params.familyType;
+			var familyType = this.pfState.familyType;
 			var familyId = familyType + '_id';
 
 			var query = {
-				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
+				q: "genome_id:(" + this.pfState.genomeIds.join(' OR ') + ")",
 				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
 				//fq: "figfam_id:(FIG01956050)",
 				rows: 0,
@@ -60022,7 +60756,8 @@ define([
 						var familyGenomeIdCountMap = {};
 						var familyGenomeIdSet = {};
 						var genomePosMap = {};
-						_self.genome_ids.forEach(function(genomeId, idx){
+						var genome_ids = _self.pfState.genomeIds;
+						genome_ids.forEach(function(genomeId, idx){
 							genomePosMap[genomeId] = idx;
 						});
 
@@ -60042,7 +60777,7 @@ define([
 										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
 									}
 									else{
-										var genomeIdCount = new Array(_self.genome_ids.length).fill('00');
+										var genomeIdCount = new Array(genome_ids.length).fill('00');
 										genomeIdCount[genomePos] = genomeCount;
 										familyGenomeIdCountMap[familyId] = genomeIdCount;
 									}
@@ -60051,7 +60786,7 @@ define([
 										familyGenomeIdSet[familyId].push(genomeId);
 									}
 									else{
-										var genomeIds = new Array(_self.genome_ids.length);
+										var genomeIds = new Array(genome_ids.length);
 										genomeIds.push(genomeId);
 										familyGenomeIdSet[familyId] = genomeIds;
 									}
@@ -60135,7 +60870,7 @@ define([
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(filterStore){
+		getHeatmapData: function(pfState){
 
 			var rows = [];
 			var cols = [];
@@ -60167,14 +60902,18 @@ define([
 			}
 
 			// rows - genomes
-			filterStore.data.forEach(function(genome, idx){
-				var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			// 0 && console.log("pfState: ", pfState);
+			//filterStore.data.forEach(function(genome, idx){
+			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			pfState.genomeIds.forEach(function(genomeId, idx){
+				var gfs = pfState.genomeFilterStatus[genomeId];
 				if(gfs.getStatus() != '1'){
 					keeps.push(2 * gfs.getIndex());
 					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
 					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-					rows.push(new Row(gfs.getIndex(), genome.genome_id, genome.genome_name, labelColor, rowColor));
+					// 0 && console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
+					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
 
 					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
 				}
@@ -60434,6 +61173,7 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
+		pfState: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		selectionModel: "extended",
@@ -60456,6 +61196,7 @@ define([
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.pfState = options.pfState;
 		},
 		startup: function(){
 			var _self = this;
@@ -60514,20 +61255,20 @@ define([
 				}
 
 				// update filter
-				Object.keys(state.genomeFilterStatus).forEach(function(genomeId){
+				Object.keys(_self.pfState.genomeFilterStatus).forEach(function(genomeId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(genomeId, el).element.input.checked) {
+						if(_self.cell(genomeId, el).element.input.checked){
 							return el;
 						}
 					});
 					// 0 && console.log(genomeId, status);
-					state.genomeFilterStatus[genomeId].setStatus(status);
+					_self.pfState.genomeFilterStatus[genomeId].setStatus(status);
 				});
 
-				//Object.keys(state.genomeFilterStatus).forEach(function(el){
-				//	 0 && console.warn(state.genomeFilterStatus[el].getGenomeName(), state.genomeFilterStatus[el].getStatus());
+				//Object.keys(pfState.genomeFilterStatus).forEach(function(el){
+				//	 0 && console.warn(pfState.genomeFilterStatus[el].getGenomeName(), pfState.genomeFilterStatus[el].getStatus());
 				//});
-				Topic.publish("ProteinFamilies", "genomeFilter", state.genomeFilterStatus);
+				Topic.publish("ProteinFamilies", "genomeFilter", _self.pfState.genomeFilterStatus);
 			});
 
 			aspect.before(_self, 'renderArray', function(results){
@@ -60560,7 +61301,8 @@ define([
 			return new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state
+				state: state || this.state,
+				pfState: this.pfState
 			});
 		}
 	});
@@ -60612,6 +61354,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "genome_id",
 		state: null,
+		pfState: null,
 
 		onSetState: function(attr, oldVal, state){
 			var cur = (this.genome_ids || []).join("");
@@ -60628,6 +61371,7 @@ define([
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.pfState = options.pfState;
 			this.watch('state', lang.hitch(this, 'onSetState'));
 		},
 
@@ -60709,16 +61453,19 @@ define([
 				var data = response.response.docs;
 
 				// set genomeFilterStatus
-				var genomeIds = [];
-				state.genomeFilterStatus = {};
+				var _genomeIds = [];
+				var _genomeFilterStatus = {};
 				data.forEach(function(genome, idx){
 					var gfs = new genomeFilterStatus();
 					gfs.init(idx, genome.genome_name);
-					state.genomeFilterStatus[genome.genome_id] = gfs;
-					genomeIds.push(genome.genome_id);
+					_genomeFilterStatus[genome.genome_id] = gfs;
+					_genomeIds.push(genome.genome_id);
 				});
 
-				Topic.publish("ProteinFamilies", "genomeIds", genomeIds);
+				_self.pfState.genomeIds = _genomeIds;
+				_self.pfState.genomeFilterStatus = _genomeFilterStatus;
+
+				Topic.publish("ProteinFamilies", "genomeIds", _self.pfState);
 
 				_self.setData(data);
 				_self._loaded = true;
@@ -60918,221 +61665,17 @@ return declare(Selection, {
 });
 
 },
-'dgrid/selector':function(){
-define(["dojo/_base/kernel", "dojo/_base/array", "dojo/on", "dojo/aspect", "dojo/_base/sniff", "put-selector/put"],
-function(kernel, arrayUtil, on, aspect, has, put){
-	return function(column, type){
-		
-		var listeners = [],
-			grid, headerCheckbox;
-		
-		if(!column){ column = {}; }
-		
-		if(column.type){
-			column.selectorType = column.type;
-			kernel.deprecated("columndef.type", "use columndef.selectorType instead", "dgrid 0.4");
-		}
-		// accept type as argument to Selector function, or from column def
-		column.selectorType = type = type || column.selectorType || "checkbox";
-		column.sortable = false;
-
-		function disabled(item) {
-			return !grid.allowSelect(grid.row(item));
-		}
-		
-		function changeInput(value){
-			// creates a function that modifies the input on an event
-			return function(event){
-				var rows = event.rows,
-					len = rows.length,
-					state = "false",
-					selection, mixed, i;
-				
-				for(i = 0; i < len; i++){
-					var element = grid.cell(rows[i], column.id).element;
-					if(!element){ continue; } // skip if row has been entirely removed
-					element = (element.contents || element).input;
-					if(element && !element.disabled){
-						// only change the value if it is not disabled
-						element.checked = value;
-						element.setAttribute("aria-checked", value);
-					}
-				}
-				if(headerCheckbox.type == "checkbox"){
-					selection = grid.selection;
-					mixed = false;
-					// see if the header checkbox needs to be indeterminate
-					for(i in selection){
-						// if there is anything in the selection, than it is indeterminate
-						if(selection[i] != grid.allSelected){
-							mixed = true;
-							break;
-						}
-					}
-					headerCheckbox.indeterminate = mixed;
-					headerCheckbox.checked = grid.allSelected;
-					if (mixed) {
-						state = "mixed";
-					} else if (grid.allSelected) {
-						state = "true";
-					}
-					headerCheckbox.setAttribute("aria-checked", state);
-				}
-			};
-		}
-		
-		function onSelect(event){
-			// we would really only care about click, since other input sources, like spacebar
-			// trigger a click, but the click event doesn't provide access to the shift key in firefox, so
-			// listen for keydown's as well to get an event in firefox that we can properly retrieve
-			// the shiftKey property from
-			if(event.type == "click" || event.keyCode == 32 || (!has("opera") && event.keyCode == 13) || event.keyCode === 0){
-				var row = grid.row(event);
-				grid._selectionTriggerEvent = event;
-				
-				if(row){
-					if(grid.allowSelect(row)){
-						var lastRow = grid._lastSelected && grid.row(grid._lastSelected);
-						
-						if(type == "radio"){
-							if(!lastRow || lastRow.id != row.id){
-								grid.clearSelection();
-								grid.select(row, null, true);
-								grid._lastSelected = row.element;
-							}
-						}else{
-							if(row){
-								if(event.shiftKey){
-									// make sure the last input always ends up checked for shift key
-									changeInput(true)({rows: [row]});
-								}else{
-									// no shift key, so no range selection
-									lastRow = null;
-								}
-								lastRow = event.shiftKey ? lastRow : null;
-								grid.select(lastRow || row, row, lastRow ? undefined : null);
-								grid._lastSelected = row.element;
-							}
-						}
-					}
-				}else{
-					// No row resolved; must be the select-all checkbox.
-					put(this, (grid.allSelected ? "!" : ".") + "dgrid-select-all");
-					grid[grid.allSelected ? "clearSelection" : "selectAll"]();
-				}
-				grid._selectionTriggerEvent = null;
-			}
-		}
-		
-		function setupSelectionEvents(){
-			// register one listener at the top level that receives events delegated
-			grid._hasSelectorInputListener = true;
-			listeners.push(grid.on(".dgrid-selector:click,.dgrid-selector:keydown", onSelect));
-			var handleSelect = grid._handleSelect;
-			grid._handleSelect = function(event){
-				// ignore the default select handler for events that originate from the selector column
-				if(this.cell(event).column != column){
-					handleSelect.apply(this, arguments);
-				}
-			};
-			
-			// Set up disabled and grid.allowSelect to match each other's behaviors
-			if(typeof column.disabled == "function"){
-				var originalAllowSelect = grid.allowSelect,
-					originalDisabled = column.disabled;
-
-				// Wrap allowSelect to consult both the original allowSelect and disabled
-				grid.allowSelect = function(row){
-					var allow = originalAllowSelect.call(this, row);
-
-					if (originalDisabled === disabled) {
-						return allow;
-					} else {
-						return allow && !originalDisabled.call(column, row.data);
-					}
-				};
-
-				// Then wrap disabled to simply call the new allowSelect
-				column.disabled = disabled;
-			}else{
-				// If no disabled function was specified, institute a default one
-				// which honors allowSelect
-				column.disabled = disabled;
-			}
-			// register listeners to the select and deselect events to change the input checked value
-			listeners.push(grid.on("dgrid-select", changeInput(true)));
-			listeners.push(grid.on("dgrid-deselect", changeInput(false)));
-		}
-		
-		var renderInput = typeof type == "function" ? type : function(value, cell, object){
-			var parent = cell.parentNode,
-				disabled;
-			
-			if(!grid._hasSelectorInputListener){
-				setupSelectionEvents();
-			}
-			
-			// column.disabled gets initialized or wrapped in setupSelectionEvents
-			disabled = column.disabled;
-
-			// must set the class name on the outer cell in IE for keystrokes to be intercepted
-			put(parent && parent.contents ? parent : cell, ".dgrid-selector");
-			var input = cell.input || (cell.input = put(cell, "input[type="+type + "]", {
-				tabIndex: isNaN(column.tabIndex) ? -1 : column.tabIndex,
-				disabled: disabled && (typeof disabled == "function" ?
-					disabled.call(column, object) : disabled),
-				checked: value
-			}));
-			input.setAttribute("aria-checked", !!value);
-			
-			return input;
-		};
-		
-		aspect.after(column, "init", function(){
-			grid = column.grid;
-		});
-		
-		aspect.after(column, "destroy", function(){
-			arrayUtil.forEach(listeners, function(l){ l.remove(); });
-			grid._hasSelectorInputListener = false;
-		});
-		
-		column.renderCell = function(object, value, cell, options, header){
-			var row = object && grid.row(object);
-			value = row && grid.selection[row.id];
-			renderInput(value, cell, object);
-		};
-		column.renderHeaderCell = function(th){
-			var label = "label" in column ? column.label :
-				column.field || "";
-			
-			if(type == "radio" || !grid.allowSelectAll){
-				th.appendChild(document.createTextNode(label));
-				if(!grid._hasSelectorInputListener){
-					setupSelectionEvents();
-				}
-			}else{
-				renderInput(false, th, {});
-			}
-			headerCheckbox = th.lastChild;
-		};
-		
-		return column;
-	};
-});
-
-},
 'p3/widget/ProteinFamiliesHeatmapContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
 	"./ContainerActionBar", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog",
-	"dojo/_base/lang", "swfobject/swfobject"
+	"dijit/TooltipDialog", "dijit/Dialog",
+	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin"
 
 ], function(declare, ContentPane, BorderContainer, on,
 			ContainerActionBar, popup, Topic,
-			TooltipDialog,
-			lang, swfobject){
+			TooltipDialog, Dialog,
+			lang, swfobject, request, PathJoin){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -61146,20 +61689,20 @@ define([
 		state: null,
 		visible: false,
 		dataGridContainer: null,
-		filterGrid: null,
+		pfState: null,
 		flashDom: null,
 		containerActions: [
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
-				{label:"Flip Axis",multiple: false,validTypes:["*"]},
+				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
 				"flipAxises",
 				true
 			],
 			[
 				"Cluster",
 				"fa icon-make-group fa-2x",
-				{label:"Cluster",multiple: false,validTypes:["*"]},
+				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				function(selection){
 					// TODO: implement
 				},
@@ -61168,7 +61711,7 @@ define([
 			[
 				"Advanced Clustering",
 				"fa icon-make-group fa-2x",
-				{label:"Advanced Clustering",multiple: false,validTypes:["*"]},
+				{label: "Advanced Clustering", multiple: false, validTypes: ["*"]},
 				function(selection){
 					// TODO: implement
 				},
@@ -61177,7 +61720,8 @@ define([
 		],
 		constructor: function(options){
 			this.dataGridContainer = options.dataGridContainer;
-			this.filterGrid = options.filterGrid;
+			this.pfState = options.pfState;
+			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
@@ -61245,7 +61789,11 @@ define([
 			this.addChild(this.containerActionBar);
 
 			//TODO: add legend
-			this.addChild(new ContentPane({region: "center", content: "<div id='flashTarget'></div>", style:"padding:0"}));
+			this.addChild(new ContentPane({
+				region: "center",
+				content: "<div id='flashTarget'></div>",
+				style: "padding:0"
+			}));
 
 			this.inherited(arguments);
 			this._firstView = true;
@@ -61253,28 +61801,104 @@ define([
 		// flash interface functions
 		flashReady: function(flashObjectID){
 			var target = document.getElementById(flashObjectID) || this.flashDom;
-			this._prepareHeatmapData();
-			target.refreshData(); // this triggers flashRequestsData callback
 			// 0 && console.log("flashReady is called", flashObjectID, target);
+			if(typeof(target.refreshData) == "function"){
+				this._prepareHeatmapData();
+				target.refreshData(); // this triggers flashRequestsData callback
+			}
 		},
 		flashRequestsData: function(){
+			// 0 && console.log("flashRequestsData is called");
 			return this.currentData;
 		},
 		_prepareHeatmapData: function(){
-			var filterStore = this.filterGrid.store;
-			// 0 && console.warn(filterStore);
+			// 0 && console.log("_prepareHeatmapData is called");
 			var dataStore = this.dataGridContainer.grid.store;
-			// 0 && console.log(dataStore);
-			this.currentData = dataStore.getHeatmapData(filterStore);
-			// 0 && console.log(currentData);
+			// 0 && console.log("dataStore: ", dataStore);
+			this.currentData = dataStore.getHeatmapData(this.pfState);
+			// 0 && console.log("currentData: ", this.currentData);
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
-			// TODO: implement this
-			 0 && console.log("flashCellClicked is called ", colID, rowID);
+			// 0 && console.log("flashCellClicked is called ", colID, rowID);
+			var originalAxis = this._checkAxis(colID, rowID);
+
+			var familyId = originalAxis.columnIds;
+			var genomeId = originalAxis.rowIds;
+
+			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "))";
+
+			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				}
+			}).then(lang.hitch(this, function(response){
+				var feature = response[0];
+				this.dialog.set('content', JSON.stringify(feature));
+				this.dialog.show();
+			}));
+
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			// TODO: implement this
-			 0 && console.log("flashCellsSelected is called", colIDs, rowIDs);
+			// 0 && console.log("flashCellsSelected is called", colIDs, rowIDs);
+			var originalAxis = this._checkAxis(colIDs, rowIDs);
+
+			var familyIds = originalAxis.columnIds;
+			var genomeIds = originalAxis.rowIds;
+			var membersCount = this._countMembers(colIDs, rowIDs);
+
+			var text = [];
+			text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
+			text.push('<b>Family Selected:</b> ' + familyIds.length);
+			text.push('<b>Members:</b> ' + membersCount);
+
+			this.dialog.set('content', text.join('<br/>'));
+			this.dialog.show();
+		},
+		_countMembers: function(colIDs, rowIDs){
+			var columns = this.currentData.columns;
+			var rows = this.currentData.rows;
+
+			var rowPositions = [];
+			var count = 0;
+
+			// 0 && console.log(columns, rows);
+			rows.forEach(function(row){
+				rowIDs.forEach(function(rowID){
+					if(rowID === row.rowID){
+						rowPositions.push(row.order * 2);
+					}
+				})
+			});
+			// 0 && console.log(rowPositions);
+
+			columns.forEach(function(col){
+				colIDs.forEach(function(colID){
+					if(colID === col.colID){
+						rowPositions.forEach(function(pos){
+							// 0 && console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
+							count += parseInt(col.distribution.substr(pos, 2), 16);
+						});
+					}
+				});
+			});
+
+			return count;
+		},
+		_checkAxis: function(columnIds, rowIds){
+			var originalAxis = {};
+
+			if(this.pfState.heatmapAxis === "Transposed"){
+				originalAxis.columnIds = rowIds;
+				originalAxis.rowIds = columnIds;
+			}else{
+				originalAxis.columnIds = columnIds;
+				originalAxis.rowIds = rowIds;
+			}
+			return originalAxis;
 		},
 		flipAxises: function(){
 			var currentData = this.currentData;
@@ -61314,6 +61938,13 @@ define([
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+
+			// flip internal flag
+			if(this.pfState.heatmapAxis === ""){
+				this.pfState.heatmapAxis = "Transposed";
+			}else{
+				this.pfState.heatmapAxis = "";
+			}
 
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
@@ -63746,6 +64377,440 @@ define(["./color/_base"], function(dxcolor){
 });
 
 },
+'dojox/color/_base':function(){
+define(["../main", "dojo/_base/lang", "dojo/_base/Color", "dojo/colors"],
+	function(dojox, lang, Color, colors){
+
+var cx = lang.getObject("color", true, dojox);
+/*===== cx = dojox.color =====*/
+		
+//	alias all the dojo.Color mechanisms
+cx.Color=Color;
+cx.blend=Color.blendColors;
+cx.fromRgb=Color.fromRgb;
+cx.fromHex=Color.fromHex;
+cx.fromArray=Color.fromArray;
+cx.fromString=Color.fromString;
+
+//	alias the dojo.colors mechanisms
+cx.greyscale=colors.makeGrey;
+
+lang.mixin(cx,{
+	fromCmy: function(/* Object|Array|int */cyan, /*int*/magenta, /*int*/yellow){
+		// summary:
+		//		Create a dojox.color.Color from a CMY defined color.
+		//		All colors should be expressed as 0-100 (percentage)
+	
+		if(lang.isArray(cyan)){
+			magenta=cyan[1], yellow=cyan[2], cyan=cyan[0];
+		} else if(lang.isObject(cyan)){
+			magenta=cyan.m, yellow=cyan.y, cyan=cyan.c;
+		}
+		cyan/=100, magenta/=100, yellow/=100;
+	
+		var r=1-cyan, g=1-magenta, b=1-yellow;
+		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
+	},
+	
+	fromCmyk: function(/* Object|Array|int */cyan, /*int*/magenta, /*int*/yellow, /*int*/black){
+		// summary:
+		//		Create a dojox.color.Color from a CMYK defined color.
+		//		All colors should be expressed as 0-100 (percentage)
+	
+		if(lang.isArray(cyan)){
+			magenta=cyan[1], yellow=cyan[2], black=cyan[3], cyan=cyan[0];
+		} else if(lang.isObject(cyan)){
+			magenta=cyan.m, yellow=cyan.y, black=cyan.b, cyan=cyan.c;
+		}
+		cyan/=100, magenta/=100, yellow/=100, black/=100;
+		var r,g,b;
+		r = 1-Math.min(1, cyan*(1-black)+black);
+		g = 1-Math.min(1, magenta*(1-black)+black);
+		b = 1-Math.min(1, yellow*(1-black)+black);
+		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
+	},
+		
+	fromHsl: function(/* Object|Array|int */hue, /* int */saturation, /* int */luminosity){
+		// summary:
+		//		Create a dojox.color.Color from an HSL defined color.
+		//		hue from 0-359 (degrees), saturation and luminosity 0-100.
+	
+		if(lang.isArray(hue)){
+			saturation=hue[1], luminosity=hue[2], hue=hue[0];
+		} else if(lang.isObject(hue)){
+			saturation=hue.s, luminosity=hue.l, hue=hue.h;
+		}
+		saturation/=100;
+		luminosity/=100;
+	
+		while(hue<0){ hue+=360; }
+		while(hue>=360){ hue-=360; }
+		
+		var r, g, b;
+		if(hue<120){
+			r=(120-hue)/60, g=hue/60, b=0;
+		} else if (hue<240){
+			r=0, g=(240-hue)/60, b=(hue-120)/60;
+		} else {
+			r=(hue-240)/60, g=0, b=(360-hue)/60;
+		}
+		
+		r=2*saturation*Math.min(r, 1)+(1-saturation);
+		g=2*saturation*Math.min(g, 1)+(1-saturation);
+		b=2*saturation*Math.min(b, 1)+(1-saturation);
+		if(luminosity<0.5){
+			r*=luminosity, g*=luminosity, b*=luminosity;
+		}else{
+			r=(1-luminosity)*r+2*luminosity-1;
+			g=(1-luminosity)*g+2*luminosity-1;
+			b=(1-luminosity)*b+2*luminosity-1;
+		}
+		return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
+	}
+});
+	
+cx.fromHsv = function(/* Object|Array|int */hue, /* int */saturation, /* int */value){
+	// summary:
+	//		Create a dojox.color.Color from an HSV defined color.
+	//		hue from 0-359 (degrees), saturation and value 0-100.
+
+	if(lang.isArray(hue)){
+		saturation=hue[1], value=hue[2], hue=hue[0];
+	} else if (lang.isObject(hue)){
+		saturation=hue.s, value=hue.v, hue=hue.h;
+	}
+	
+	if(hue==360){ hue=0; }
+	saturation/=100;
+	value/=100;
+	
+	var r, g, b;
+	if(saturation==0){
+		r=value, b=value, g=value;
+	}else{
+		var hTemp=hue/60, i=Math.floor(hTemp), f=hTemp-i;
+		var p=value*(1-saturation);
+		var q=value*(1-(saturation*f));
+		var t=value*(1-(saturation*(1-f)));
+		switch(i){
+			case 0:{ r=value, g=t, b=p; break; }
+			case 1:{ r=q, g=value, b=p; break; }
+			case 2:{ r=p, g=value, b=t; break; }
+			case 3:{ r=p, g=q, b=value; break; }
+			case 4:{ r=t, g=p, b=value; break; }
+			case 5:{ r=value, g=p, b=q; break; }
+		}
+	}
+	return new Color({ r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) });	//	dojox.color.Color
+};
+lang.extend(Color,{
+	toCmy: function(){
+		// summary:
+		//		Convert this Color to a CMY definition.
+		var cyan=1-(this.r/255), magenta=1-(this.g/255), yellow=1-(this.b/255);
+		return { c:Math.round(cyan*100), m:Math.round(magenta*100), y:Math.round(yellow*100) };		//	Object
+	},
+		
+	toCmyk: function(){
+		// summary:
+		//		Convert this Color to a CMYK definition.
+		var cyan, magenta, yellow, black;
+		var r=this.r/255, g=this.g/255, b=this.b/255;
+		black = Math.min(1-r, 1-g, 1-b);
+		cyan = (1-r-black)/(1-black);
+		magenta = (1-g-black)/(1-black);
+		yellow = (1-b-black)/(1-black);
+		return { c:Math.round(cyan*100), m:Math.round(magenta*100), y:Math.round(yellow*100), b:Math.round(black*100) };	//	Object
+	},
+		
+	toHsl: function(){
+		// summary:
+		//		Convert this Color to an HSL definition.
+		var r=this.r/255, g=this.g/255, b=this.b/255;
+		var min = Math.min(r, b, g), max = Math.max(r, g, b);
+		var delta = max-min;
+		var h=0, s=0, l=(min+max)/2;
+		if(l>0 && l<1){
+			s = delta/((l<0.5)?(2*l):(2-2*l));
+		}
+		if(delta>0){
+			if(max==r && max!=g){
+				h+=(g-b)/delta;
+			}
+			if(max==g && max!=b){
+				h+=(2+(b-r)/delta);
+			}
+			if(max==b && max!=r){
+				h+=(4+(r-g)/delta);
+			}
+			h*=60;
+		}
+		return { h:h, s:Math.round(s*100), l:Math.round(l*100) };	//	Object
+	},
+	
+	toHsv: function(){
+		// summary:
+		//		Convert this Color to an HSV definition.
+		var r=this.r/255, g=this.g/255, b=this.b/255;
+		var min = Math.min(r, b, g), max = Math.max(r, g, b);
+		var delta = max-min;
+		var h = null, s = (max==0)?0:(delta/max);
+		if(s==0){
+			h = 0;
+		}else{
+			if(r==max){
+				h = 60*(g-b)/delta;
+			}else if(g==max){
+				h = 120 + 60*(b-r)/delta;
+			}else{
+				h = 240 + 60*(r-g)/delta;
+			}
+	
+			if(h<0){ h+=360; }
+		}
+		return { h:h, s:Math.round(s*100), v:Math.round(max*100) };	//	Object
+	}
+});
+
+return cx;
+});
+
+},
+'dojo/colors':function(){
+define(["./_base/kernel", "./_base/lang", "./_base/Color", "./_base/array"], function(dojo, lang, Color, ArrayUtil){
+	// module:
+	//		dojo/colors
+
+	/*=====
+	return {
+		// summary:
+		//		Color utilities, extending Base dojo.Color
+	};
+	=====*/
+
+	var ColorExt = {};
+	lang.setObject("dojo.colors", ColorExt);
+
+//TODO: this module appears to break naming conventions
+
+	// this is a standard conversion prescribed by the CSS3 Color Module
+	var hue2rgb = function(m1, m2, h){
+		if(h < 0){ ++h; }
+		if(h > 1){ --h; }
+		var h6 = 6 * h;
+		if(h6 < 1){ return m1 + (m2 - m1) * h6; }
+		if(2 * h < 1){ return m2; }
+		if(3 * h < 2){ return m1 + (m2 - m1) * (2 / 3 - h) * 6; }
+		return m1;
+	};
+	// Override base Color.fromRgb with the impl in this module
+	dojo.colorFromRgb = Color.fromRgb = function(/*String*/ color, /*dojo/_base/Color?*/ obj){
+		// summary:
+		//		get rgb(a) array from css-style color declarations
+		// description:
+		//		this function can handle all 4 CSS3 Color Module formats: rgb,
+		//		rgba, hsl, hsla, including rgb(a) with percentage values.
+		var m = color.toLowerCase().match(/^(rgba?|hsla?)\(([\s\.\-,%0-9]+)\)/);
+		if(m){
+			var c = m[2].split(/\s*,\s*/), l = c.length, t = m[1], a;
+			if((t == "rgb" && l == 3) || (t == "rgba" && l == 4)){
+				var r = c[0];
+				if(r.charAt(r.length - 1) == "%"){
+					// 3 rgb percentage values
+					a = ArrayUtil.map(c, function(x){
+						return parseFloat(x) * 2.56;
+					});
+					if(l == 4){ a[3] = c[3]; }
+					return Color.fromArray(a, obj); // dojo/_base/Color
+				}
+				return Color.fromArray(c, obj); // dojo/_base/Color
+			}
+			if((t == "hsl" && l == 3) || (t == "hsla" && l == 4)){
+				// normalize hsl values
+				var H = ((parseFloat(c[0]) % 360) + 360) % 360 / 360,
+					S = parseFloat(c[1]) / 100,
+					L = parseFloat(c[2]) / 100,
+					// calculate rgb according to the algorithm
+					// recommended by the CSS3 Color Module
+					m2 = L <= 0.5 ? L * (S + 1) : L + S - L * S,
+					m1 = 2 * L - m2;
+				a = [
+					hue2rgb(m1, m2, H + 1 / 3) * 256,
+					hue2rgb(m1, m2, H) * 256,
+					hue2rgb(m1, m2, H - 1 / 3) * 256,
+					1
+				];
+				if(l == 4){ a[3] = c[3]; }
+				return Color.fromArray(a, obj); // dojo/_base/Color
+			}
+		}
+		return null;	// dojo/_base/Color
+	};
+
+	var confine = function(c, low, high){
+		// summary:
+		//		sanitize a color component by making sure it is a number,
+		//		and clamping it to valid values
+		c = Number(c);
+		return isNaN(c) ? high : c < low ? low : c > high ? high : c;	// Number
+	};
+
+	Color.prototype.sanitize = function(){
+		// summary:
+		//		makes sure that the object has correct attributes
+		var t = this;
+		t.r = Math.round(confine(t.r, 0, 255));
+		t.g = Math.round(confine(t.g, 0, 255));
+		t.b = Math.round(confine(t.b, 0, 255));
+		t.a = confine(t.a, 0, 1);
+		return this;	// dojo/_base/Color
+	};
+
+	ColorExt.makeGrey = Color.makeGrey = function(/*Number*/ g, /*Number?*/ a){
+		// summary:
+		//		creates a greyscale color with an optional alpha
+		return Color.fromArray([g, g, g, a]);	// dojo/_base/Color
+	};
+
+	// mixin all CSS3 named colors not already in _base, along with SVG 1.0 variant spellings
+	lang.mixin(Color.named, {
+		"aliceblue":	[240,248,255],
+		"antiquewhite": [250,235,215],
+		"aquamarine":	[127,255,212],
+		"azure":	[240,255,255],
+		"beige":	[245,245,220],
+		"bisque":	[255,228,196],
+		"blanchedalmond":	[255,235,205],
+		"blueviolet":	[138,43,226],
+		"brown":	[165,42,42],
+		"burlywood":	[222,184,135],
+		"cadetblue":	[95,158,160],
+		"chartreuse":	[127,255,0],
+		"chocolate":	[210,105,30],
+		"coral":	[255,127,80],
+		"cornflowerblue":	[100,149,237],
+		"cornsilk": [255,248,220],
+		"crimson":	[220,20,60],
+		"cyan": [0,255,255],
+		"darkblue": [0,0,139],
+		"darkcyan": [0,139,139],
+		"darkgoldenrod":	[184,134,11],
+		"darkgray": [169,169,169],
+		"darkgreen":	[0,100,0],
+		"darkgrey": [169,169,169],
+		"darkkhaki":	[189,183,107],
+		"darkmagenta":	[139,0,139],
+		"darkolivegreen":	[85,107,47],
+		"darkorange":	[255,140,0],
+		"darkorchid":	[153,50,204],
+		"darkred":	[139,0,0],
+		"darksalmon":	[233,150,122],
+		"darkseagreen": [143,188,143],
+		"darkslateblue":	[72,61,139],
+		"darkslategray":	[47,79,79],
+		"darkslategrey":	[47,79,79],
+		"darkturquoise":	[0,206,209],
+		"darkviolet":	[148,0,211],
+		"deeppink": [255,20,147],
+		"deepskyblue":	[0,191,255],
+		"dimgray":	[105,105,105],
+		"dimgrey":	[105,105,105],
+		"dodgerblue":	[30,144,255],
+		"firebrick":	[178,34,34],
+		"floralwhite":	[255,250,240],
+		"forestgreen":	[34,139,34],
+		"gainsboro":	[220,220,220],
+		"ghostwhite":	[248,248,255],
+		"gold": [255,215,0],
+		"goldenrod":	[218,165,32],
+		"greenyellow":	[173,255,47],
+		"grey": [128,128,128],
+		"honeydew": [240,255,240],
+		"hotpink":	[255,105,180],
+		"indianred":	[205,92,92],
+		"indigo":	[75,0,130],
+		"ivory":	[255,255,240],
+		"khaki":	[240,230,140],
+		"lavender": [230,230,250],
+		"lavenderblush":	[255,240,245],
+		"lawngreen":	[124,252,0],
+		"lemonchiffon": [255,250,205],
+		"lightblue":	[173,216,230],
+		"lightcoral":	[240,128,128],
+		"lightcyan":	[224,255,255],
+		"lightgoldenrodyellow": [250,250,210],
+		"lightgray":	[211,211,211],
+		"lightgreen":	[144,238,144],
+		"lightgrey":	[211,211,211],
+		"lightpink":	[255,182,193],
+		"lightsalmon":	[255,160,122],
+		"lightseagreen":	[32,178,170],
+		"lightskyblue": [135,206,250],
+		"lightslategray":	[119,136,153],
+		"lightslategrey":	[119,136,153],
+		"lightsteelblue":	[176,196,222],
+		"lightyellow":	[255,255,224],
+		"limegreen":	[50,205,50],
+		"linen":	[250,240,230],
+		"magenta":	[255,0,255],
+		"mediumaquamarine": [102,205,170],
+		"mediumblue":	[0,0,205],
+		"mediumorchid": [186,85,211],
+		"mediumpurple": [147,112,219],
+		"mediumseagreen":	[60,179,113],
+		"mediumslateblue":	[123,104,238],
+		"mediumspringgreen":	[0,250,154],
+		"mediumturquoise":	[72,209,204],
+		"mediumvioletred":	[199,21,133],
+		"midnightblue": [25,25,112],
+		"mintcream":	[245,255,250],
+		"mistyrose":	[255,228,225],
+		"moccasin": [255,228,181],
+		"navajowhite":	[255,222,173],
+		"oldlace":	[253,245,230],
+		"olivedrab":	[107,142,35],
+		"orange":	[255,165,0],
+		"orangered":	[255,69,0],
+		"orchid":	[218,112,214],
+		"palegoldenrod":	[238,232,170],
+		"palegreen":	[152,251,152],
+		"paleturquoise":	[175,238,238],
+		"palevioletred":	[219,112,147],
+		"papayawhip":	[255,239,213],
+		"peachpuff":	[255,218,185],
+		"peru": [205,133,63],
+		"pink": [255,192,203],
+		"plum": [221,160,221],
+		"powderblue":	[176,224,230],
+		"rosybrown":	[188,143,143],
+		"royalblue":	[65,105,225],
+		"saddlebrown":	[139,69,19],
+		"salmon":	[250,128,114],
+		"sandybrown":	[244,164,96],
+		"seagreen": [46,139,87],
+		"seashell": [255,245,238],
+		"sienna":	[160,82,45],
+		"skyblue":	[135,206,235],
+		"slateblue":	[106,90,205],
+		"slategray":	[112,128,144],
+		"slategrey":	[112,128,144],
+		"snow": [255,250,250],
+		"springgreen":	[0,255,127],
+		"steelblue":	[70,130,180],
+		"tan":	[210,180,140],
+		"thistle":	[216,191,216],
+		"tomato":	[255,99,71],
+		"turquoise":	[64,224,208],
+		"violet":	[238,130,238],
+		"wheat":	[245,222,179],
+		"whitesmoke":	[245,245,245],
+		"yellowgreen":	[154,205,50]
+	});
+
+	return Color;	// TODO: return ColorExt, not Color
+});
+
+},
 'dijit/ColorPalette':function(){
 define([
 	"require", // require.toUrl
@@ -65580,7 +66645,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		query: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		facetFields: TranscriptomicsExperimentGridContainer.prototype.facetFields,
 		containerActions: TranscriptomicsExperimentGridContainer.prototype.containerActions,
 		apiServer: window.App.dataAPI,
@@ -65848,7 +66913,7 @@ define([
 				true
 			]
 		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
+/*		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -65870,6 +66935,7 @@ define([
 				false
 			]
 		]),
+*/
 		gridCtor: Grid
 
 	});
@@ -65880,10 +66946,10 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest"
+	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -65897,10 +66963,10 @@ define([
 		primaryKey: "eid",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			eid: {label: "Experiment ID", field: "eid",hidden:true},
 			title: {label: "Title", field: "title", hidden: false},
-			comparisons: {label: "Comparisons", field: "comparisions",  hidden: false},
-			samples: {label: "Samples", field: "samples", hidden: false},
+			samples: {label: "Comparisons", field: "samples", hidden: false},
 			genes:{label: "Genes", field: "genes",hidden: false},
 			pubmed:{label: "PubMed", field: "pmid",hidden: false},
 			linkout:{label: "Link Out", field: "",hidden: false},
@@ -66070,10 +67136,10 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsComparisonJsonRest"
+	"./PageGrid", "./formatter","../store/TranscriptomicsComparisonJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -66087,6 +67153,7 @@ define([
 		primaryKey: "pid",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			pid: {label: "Sample ID", field: "pid",hidden:true},
 			eid: {label: "Experiment ID", field: "eid",hidden:true},
 			title: {label: "Title", field: "expname", hidden: false},
@@ -66241,6 +67308,7 @@ define([
 		facetFields: ["public","genome_status","reference_genome","antimicrobial_resistance","antimicrobial_resistance_evidence","isolation_country","host_name","disease","collection_date"],
 		getFilterPanel: function(opts){ return; },
 		dataModel: "genome",
+		enableAnchorButton: true,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -66253,37 +67321,19 @@ define([
 						orient: ["below"]
 					});
 				},
-				true
-			],
-			[
-				"AnchorCurrentFilters",
-				"fa icon-anchor fa-2x",
-				{label:"ANCHOR",multiple: false,validTypes:["*"],tooltip: "Anchor the active filter set to the current context.", tooltipDialog:downloadTT}, 
-				function(selection){	
-					var q = this.query;
-					 0 && console.log("Anchor: ", this.state)
-					if (this.state && this.state.hashParams && this.state.hashParams.filter){
-
-						// q = "and(" + q + "," + this.filter + ")";
-						//  0 && console.log("New Anchor Query:",q)
-						on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: this.state.hashParams.filter})
-					}else{
-						 0 && console.log("No Filters to set new anchor");
-					}
-
-				},
-				true
-			],
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					 0 && console.log("Toggle Filters");
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
+			// ,[
+			// 	"ToggleFilters",
+			// 	"fa icon-filter fa-2x",
+			// 	{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle the visibility of the available filters"}, 
+			// 	function(selection){	
+			// 		 0 && console.log("Toggle the Filters Panel");
+			// 		on.emit(this.domNode,"ToggleFilters",{});
+			// 	},
+			// 	true
+			// ]
 		])
 	});
 });
@@ -66626,7 +67676,27 @@ define([
 				label: 'Additional Metadata',
 				field: 'additional_metadata',
 				hidden: true
+			},
+			date_inserted: {
+				label: 'Index Date',
+				field: 'date_inserted',
+				hidden: true,
+				formatter: formatter.dateOnly
+			},
+
+			date_modified: {
+				label: 'Last Index Date',
+				field: 'date_modified',
+				hidden: false,
+				formatter: formatter.dateOnly
 			}
+
+		},
+		defaultSortProperty: "genome_name",
+		constructor: function(){
+			this.queryOptions={
+				sort: [{attribute: this.defaultSortProperty, descending: false}]
+			};
 		},
 		startup: function() {
 			var _self = this
@@ -66741,7 +67811,7 @@ define([
 	return declare([GridContainer], {
 		containerType: "sequence_data",
 		facetFields: ["sequence_type","topology"],
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -66777,10 +67847,10 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SequenceJsonRest"
+	"./PageGrid", "./formatter","../store/SequenceJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store, selector) {
 
 		var store = new Store({});
 
@@ -66794,6 +67864,7 @@ define([
 		primaryKey: "sequence_id",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			sequence_id: {label: "Sequence ID", field: "sequence_id", hidden: true},
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: false},
@@ -66871,6 +67942,112 @@ define([
         });
 });
 
+
+},
+'p3/util/QueryToEnglish':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"rql/parser"
+], function(
+	declare,lang,
+	RQLParser
+){
+
+
+    var parseQuery = function(filter){
+    	try {
+    		var _parsed = RQLParser.parse(filter)
+    	}catch(err){
+    		 0 && console.log("Unable To Parse Query: ", filter);
+    		return;
+    	}
+    	
+		var _self=this;
+
+		var parsed = {
+			parsed: _parsed,
+			selected: [],
+			byCategory: {},
+			keywords: []
+		}
+
+		function walk(term){
+			//  0 && console.log("Walk: ", term.name, " Args: ", term.args);
+			switch(term.name){
+				case "and":
+				case "or":
+					term.args.forEach(function(t){
+						walk(t);
+					})
+					break;
+				case "eq":
+					var f = decodeURIComponent(term.args[0]);
+					var v = decodeURIComponent(term.args[1]);
+					parsed.selected.push({field:f, value: v});
+					if (!parsed.byCategory[f]){
+						parsed.byCategory[f]=[v];
+					}else{
+						parsed.byCategory[f].push(v);
+					}
+					break;
+				case "keyword":
+					parsed.keywords.push(term.args[0]);
+					break;
+				default:
+					//  0 && console.log("Skipping Unused term: ", term.name, term.args);
+			}
+		}
+
+		walk(_parsed);
+
+		return parsed;
+
+    }
+
+    function valueWrap(val){
+    	val = decodeURIComponent(val);
+    	return '<span class="queryValue">' + val + "</span>";
+    }
+
+	return function(query){
+		var parsed = parseQuery(query);
+		var out=[];
+
+		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
+			var cout = ['<span class="queryField">'+cat + '</span> is']
+			var C = parsed.byCategory[cat];
+			if (C.length==1){
+				cout.push(valueWrap(C[0]));
+			}else if (C.length==2){
+				var vals = C.map(valueWrap).join('  <span class="queryOperator"> OR </span> ');
+				cout.push(vals)
+			}else{
+				var vals= C.map(valueWrap).slice(0,C.length-1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length-1]);
+				cout.push(vals);
+			}
+			return cout.join(' ');
+		}).join(' <span class="queryOperator"> AND </span> ')
+
+		if (catsEnglish){ out.push(" where " + catsEnglish)}
+
+		var keywords = parsed.keywords.map(valueWrap);
+		if (keywords.length<1){
+
+		}else if (keywords.length==1){
+			out.push("that match the keyword "  + keywords[0] )
+		}else if (keywords.length==2){
+			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
+		}else{
+			out.push("that match all of the keywords " + keywords.slice(0,keywords.length-1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length-1])
+		}
+
+		 0 && console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
+
+		return out.join(" ");
+		 0 && console.log("parsed query: ", parsed);
+	}
+
+});
 
 },
 'p3/widget/app/Annotation':function(){
@@ -68982,7 +70159,7 @@ return number;
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"Everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genome\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_feature\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"specialty_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"workspace\">Workspaces</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"Everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
@@ -68994,16 +70171,18 @@ return number;
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
 'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
+'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n",
+'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
-'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <div class=\"section left half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>\n        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n            Loading Genome Summary...\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n\n        <div data-dojo-attach-point=\"gfDataNode\">\n            Loading Genomic Feature Summary....\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n\n        <div data-dojo-attach-point=\"pfDataNode\">\n            Loading Protein Feature Summary...\n        </div>\n    </div>\n\n    <div class=\"section right half\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n\n        <div style=\"padding:7px\" data-dojo-attach-point=\"specialtyGeneSummaryNode\">\n            Loading Specialty Gene Summary...\n        </div>\n    </div>\n</div>\n",
-'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"font-size:14px;margin-top:-3px;margin-bottom:-1px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
+'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <table style=\"margin:2px;\">\n        <tbody>\n            <tr>\n                <td style=\"width:35%;padding:4px;vertical-align:top;\">\n                    <div class=\"section\">\n                       <!-- <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>-->\n                        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                            Loading Genome Summary...\n                        </div>\n                    </div>\n                </td>\n                <td style=\"width:40%;padding:4px;vertical-align:top;\">\n  \n                    <div class=\"section\" >\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                        <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                          <div data-dojo-attach-point=\"pfSummaryWidgetD\" style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                          <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n                </td>\n                <td style=\"width:25%;padding:4px;vertical-align:top;\">\n                    <div class=\"section \">\n                     <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                      <div  style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n</div>\n",
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",

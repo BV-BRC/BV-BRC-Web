@@ -35,7 +35,7 @@ define("p3/widget/FeatureGridContainer", [
 		containerType: "feature_data",
 		facetFields: ["annotation","feature_type"],
 		filter: "",
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
@@ -53,16 +53,8 @@ define("p3/widget/FeatureGridContainer", [
 						orient: ["below"]
 					});
 				},
-				true
-			],
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
 		])
 	});

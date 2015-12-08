@@ -6,7 +6,7 @@ define("p3/widget/viewer/_GenomeList", [
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer","../../util/PathJoin"
+	"../SequenceGridContainer","../../util/PathJoin","../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -14,12 +14,12 @@ define("p3/widget/viewer/_GenomeList", [
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer,PathJoin){
+			SequenceGridContainer,PathJoin,QueryToEnglish){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
-		maxGenomesPerList: 5000,
+		maxGenomesPerList: 10000,
 		totalGenomes: 0,
-		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the FILTERS ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) the to reduce the results to a manageble set (5000 Genomes or below).<br> When you are satisfied, click ANCHOR ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click APPLY FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -91,9 +91,12 @@ define("p3/widget/viewer/_GenomeList", [
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + "</div>");
+
+			var content = QueryToEnglish(newVal);
+			console.log("English Content: ", content)
+			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -114,7 +117,6 @@ define("p3/widget/viewer/_GenomeList", [
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-				case "pathways":
 					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
@@ -165,7 +167,7 @@ define("p3/widget/viewer/_GenomeList", [
 
 			this.overview = this.createOverviewPanel(this.state);
 			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Genome List Query:  "});
+			this.queryNode = domConstruct.create("span", {});
 
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
@@ -231,13 +233,15 @@ define("p3/widget/viewer/_GenomeList", [
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
+				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal)
+				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
+					console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
 					child.set("disabled", false);
 				}
-			});
+			},this);
 
 			if(hasDisabled){
 				this.showWarning();
@@ -254,9 +258,10 @@ define("p3/widget/viewer/_GenomeList", [
 
 		showWarning: function(msg){
 			if(!this.warningPanel){
+				var c = this.warningContent.replace("{{maxGenomesPerList}}",this.maxGenomesPerList)
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
 					region: "top",
 					layoutPriority: 3
 				});
@@ -275,7 +280,7 @@ define("p3/widget/viewer/_GenomeList", [
 					parts.push(q)
 				}
 			}
-			if(evt.filter){
+			if(evt.filter && evt.filter!="false"){
 				parts.push(evt.filter)
 			}
 
@@ -289,13 +294,20 @@ define("p3/widget/viewer/_GenomeList", [
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q);
+			console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
-			if(this.hashParams && this.hashParams.view_tab){
-				hp = {view_tab: this.hashParams.view_tab}
+
+			if(this.state.hashParams && this.state.hashParams.view_tab){
+				hp = {view_tab: this.state.hashParams.view_tab}
 			}else{
 				hp = {}
 			}
+
+
+
+			hp.filter="false"
+
+			console.log("HP: ",JSON.stringify(hp))
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");

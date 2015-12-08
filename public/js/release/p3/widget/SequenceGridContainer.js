@@ -33,7 +33,7 @@ define("p3/widget/SequenceGridContainer", [
 	return declare([GridContainer], {
 		containerType: "sequence_data",
 		facetFields: ["sequence_type","topology"],
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[

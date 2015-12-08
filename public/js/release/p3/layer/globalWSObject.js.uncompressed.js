@@ -16953,6 +16953,7 @@ define([
         },
 
         _userWorkspacesSetter: function(val){
+            Topic.publish("/userWorkspaces", val);
             this.userWorkspaces = val;
         },
 

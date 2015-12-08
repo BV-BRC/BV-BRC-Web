@@ -293,6 +293,8 @@ th.dgrid-cell.wsItemType {
 	color: #fff;
 	margin: 0px;
 	text-align:center;
+	white-space: normal;
+	overflow: hidden;
 }
 
 .BrowserHeader .ActionButtonText {

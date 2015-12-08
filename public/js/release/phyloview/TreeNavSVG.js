@@ -1,6 +1,31 @@
-// wrapped by build app
-define("phyloview/TreeNavSVG", ["dojo","dijit","dojox"], function(dojo,dijit,dojox){
-window.d3Tree = {
+
+define("phyloview/TreeNavSVG", [
+	"dojo/_base/declare", "dijit/_WidgetBase",
+	"dojo/dom-construct","dojo/_base/lang", "dojo/request","dojo/dom-style", "./PhyloTree" 
+],function(
+	declare,WidgetBase,
+	domConstruct,lang,request,domStyle,PhyloParse
+){
+
+    return declare([WidgetBase], {
+    options: null,
+    totalNodes : 0,
+    maxLabelLength : 0,
+    maxNodeDistanceToRoot : 0,
+    maxNodeDepth : 0,
+    leafCount : 0,
+    heightPerLeaf :  null,
+    topMargin : 20,
+    colorSpecies : null,
+    colorGenus : null,
+    tipLinkPrefix : "http://www.google.com/search?q:",
+    tipLinkSuffix : "",
+    fontWidthForMargin : null,
+    containerName: null,
+    tipToColors  : null,
+    treeData : null,
+    tree : null,
+    svgContainer : null, 
     visit: function(parent, visitFn, childrenFn)
     {
         if (!parent) return;
@@ -17,118 +42,108 @@ window.d3Tree = {
     },
     d3Tree: function(containerName, customOptions)
 {
+    this.options= {iNodeRadius: 3, tipNodeRadius: 3, fontSize: 12, phylogram:true, supportCutoff:100};
     // build the options object
-     var options = dojo.mixin({
-        iNodeRadius: 3, tipNodeRadius: 3, fontSize: 12, phylogram:true, supportCutoff:100,
-    }, customOptions);
+    this.options = dojo.mixin(this.options, customOptions);
+    this.heightPerLeaf = this.options.fontSize + 2;
+    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 9),
+    this.colorSpecies = customOptions.colorSpecies;
+    this.colorGenus = customOptions.colorGenus;
+    this.containerName=containerName;
 
     // Calculate total nodes, max label length
-    var totalNodes = 0;
-    var maxLabelLength = 0;
-    var maxNodeDistanceToRoot = 0;
-    var maxNodeDepth = 0;
-    var leafCount = 0;
-    var heightPerLeaf = options.fontSize + 2;
-    var topMargin = 20;
-    var colorSpecies = customOptions.colorSpecies;
-    var colorGenus = customOptions.colorGenus;
-    var tipLinkPrefix = "http://www.google.com/search?q=";
-    var tipLinkSuffix = "";
-    var fontWidthForMargin = Math.max(options.fontSize*2/3, 9);
-    var tipToColors;
-    var treeData;
-    var tree;
-    var svgContainer; 
 
-    console.log(options);
-    console.log(colorSpecies + ", " + colorGenus);
+    console.log(this.options);
+    console.log(this.colorSpecies + ", " + this.colorGenus);
     // size of the diagram
-    var canvasHeight = leafCount * heightPerLeaf + topMargin;
+    var canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
     var size = { width:dojo.position(dojo.query(containerName)[0]).w, height: canvasHeight};
     
-    this.setTree = function(treeString) { 
-               phyloTree = new PhyloTree.PhyloTree(treeString);
-        treeData = phyloTree.getJSONTree();
+    },
+    setTree : function(treeString) {
+        _self=this;
+        phylotree = new PhyloTree.PhyloTree(treeString);
+        this.treeData = phylotree.getJSONTree();
 
-        leafCount = phyloTree.getLeafCount();
-        maxNodeDepth = treeData.cx;
-        d3Tree.visit(treeData, function(d)
+        this.leafCount = phylotree.getLeafCount();
+        this.maxNodeDepth = this.treeData.cx;
+        this.visit(this.treeData, function(d)
         {
-            totalNodes++;
+            _self.totalNodes++;
             if(d.n) {
-                maxLabelLength = Math.max(d.n.length, maxLabelLength);
+                _self.maxLabelLength = Math.max(d.n.length, _self.maxLabelLength);
             }
             var toRoot = d.px ? d.px : 0;
-            maxNodeDistanceToRoot = Math.max(toRoot, maxNodeDistanceToRoot);
+            _self.maxNodeDistanceToRoot = Math.max(toRoot, _self.maxNodeDistanceToRoot);
         }, function(d)
         {
             return d.c && d.c.length > 0 ? d.c : null;
         });
-        canvasHeight = leafCount * heightPerLeaf + topMargin;
-        size = { width:dojo.position(dojo.query(containerName)[0]).w, height: canvasHeight};
+        canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
+        size = { width:dojo.position(dojo.query(this.containerName)[0]).w, height: canvasHeight};
 
-        tree = d3.layout.tree()
+        this.tree = d3.layout.tree()
             .sort(null)
-            .size([size.height, size.width - maxLabelLength*fontWidthForMargin])
+            .size([size.height, size.width - this.maxLabelLength*this.fontWidthForMargin])
             .children(function(d)
             {
                 return (!d.c || d.c.length === 0) ? null : d.c;
             });
 
-        tipToColors  = getTipColors(colorGenus, colorSpecies);
+        this.tipToColors  = this.getTipColors(this.colorGenus, this.colorSpecies);
 
     /*
         <svg>
             <g class="container" />
         </svg>
      */
-        svgContainer = d3.select(containerName)
+        this.svgContainer = d3.select(this.containerName)
         .html("")
         .append("svg:svg").attr("width", size.width).attr("height", size.height)
         .append("svg:g")
         .attr("class", "container")
-        .attr("transform", "translate(" + maxLabelLength + ",0)")
+        .attr("transform", "translate(" + this.maxLabelLength + ",0)")
         ;
 
-        init();
-        update();
-    }
+        this.init();
+        this.update();
+    },
 
-    this.getDataURL = function() {
+    getDataURL : function() {
         var svgs = d3.select("svg")
             .attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .node().parentNode.innerHTML;
         return svgs;
-    }
+    },
 
-    this.setPhylogram = function(p) {
-        options.phylogram = p;
-        update();
-    }
+    setPhylogram : function(p) {
+        this.options.phylogram = p;
+        this.update();
+    },
 
-    this.setSupportValueCutoff = function(sv) {
-        options.supportCutoff = sv;
-        update();
-    }
+    setSupportValueCutoff : function(sv) {
+        this.options.supportCutoff = sv;
+        this.update();
+    },
 
-    this.getSelectedItems = function() {
+    getSelectedItems : function() {
         var selected = new Array();
-            tree.nodes(treeData).forEach(function(d){
+            this.tree.nodes(this.treeData).forEach(function(d){
             if(d.selected && !d.c) {
                 selected.push(d);
             }
         });
         return selected;
-    }
+    },
 
-    function clearSelections() {
-        tree.nodes(treeData).forEach(function(d){
+    clearSelections : function() {
+        this.tree.nodes(this.treeData).forEach(function(d){
             d.selected = false;
         });
-    }
+    },
 
-    var startingBranch = function(d){
+    startingBranch : function(d){
         var source = d.source;;
         var target = d.target;
 
@@ -137,9 +152,9 @@ window.d3Tree = {
                + ",0," + target.x 
                + ",0," + target.x;
         return r;
-    };
+    },
 
-    var curvedBranch = function (d){
+    curvedBranch : function (d){
         var source = d.source;;
         var target = d.target;
         var r = "M" + source.y + "," + source.x
@@ -147,21 +162,23 @@ window.d3Tree = {
                + "," + source.y + "," + target.x 
                + "," + target.y + "," + target.x;
         return r;
-    };
+    },
 
-    var squareBranch = function (d){
-        var source = d.source;;
+    squareBranch : function (d){
+        var source = d.source;
         var target = d.target;
         var r = "M" + source.y + "," + source.x
                + "L" + source.y + "," + target.x 
                + "," + source.y + "," + target.x 
                + "," + target.y + "," + target.x;
         return r;
-    };
+    },
 
-    var branch = squareBranch;
+    branch : function(d){
+        return _self.squareBranch(d);
+    },
 
-    function getDescendants(d) {
+    getDescendants: function(d) {
         var descendants = new Array();
         if(d.c) {
             for(var i = d.c.length-1; i >=0; i--) {
@@ -171,26 +188,26 @@ window.d3Tree = {
             descendants.push(d);
         }
         return descendants;
-    }
+    },
 
-    function hover(d) {
+    hover: function(d) {
         d = d.target ? d.target : d;
-        d3Tree.visit(d, function(d){
+        _self.visit(d, function(d){
             d.hover = true;
         });
 
-        update();
-    }
+        _self.update();
+    },
 
-    function mouseout(d) {
+    mouseout: function (d) {
         d = d.target ? d.target : d;
-        d3Tree.visit(d, function(d){
+        _self.visit(d, function(d){
             d.hover = false;
         });
-        update();
-    }
+        _self.update();
+    },
 
-    function click(d) {
+    click: function(d) {
         if(!d.n) {
             //click was on a branch, not a node, so get the target node for the branch and
             //treat it as though that node was clicked
@@ -200,46 +217,47 @@ window.d3Tree = {
         var mouseEvent = d3.event;
         var keepSelections = mouseEvent.ctrlKey || mouseEvent.metaKey;
         if(!keepSelections) {
-            clearSelections();
+            _self.clearSelections();
         }
-        d3Tree.visit(d, function(d){
+        _self.visit(d, function(d){
             d.selected = toggleTo;
         });
-        update();
-    }
+        _self.update();
+    },
 
-    function update() {
+    update: function() {
+        _self=this;
        //console.log("update()");
-        var nodes = tree.nodes(treeData);
-        var links = tree.links(nodes);
-        var treeWidth = size.width - maxLabelLength*(fontWidthForMargin);
+        var nodes = this.tree.nodes(this.treeData);
+        var links = this.tree.links(nodes);
+        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
  
         //adjust y values (because x and y are reversed) for nodes based on the branch lengths
         for(var i = nodes.length-1; i >=0; i--) {
             var d = nodes[i];
             var toRoot = d.px ? d.px : 0;
             //console.log("toRoot: " + toRoot);
-            if(options.phylogram) {
-                d.y = treeWidth * toRoot / maxNodeDistanceToRoot; //for phylogram
+            if(this.options.phylogram) {
+                d.y = treeWidth * toRoot / this.maxNodeDistanceToRoot; //for phylogram
             } else {
-                d.y = treeWidth * (maxNodeDepth - d.cx) / maxNodeDepth; //for cladogram
+                d.y = treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth; //for cladogram
             }
-            d.x = d.py*heightPerLeaf + topMargin;
+            d.x = d.py*this.heightPerLeaf + this.topMargin;
         }
 
-    var nodeGroup = svgContainer.selectAll("g.node");
+    var nodeGroup = this.svgContainer.selectAll("g.node");
     nodeGroup.selectAll("text").remove();
     var anchors = nodeGroup.append("svg:text")
         .attr("width", function(d){
-            var r = d.n.length * options.fontSize + 10;
+            var r = d.n.length * _self.options.fontSize + 10;
             return r;
         })
-        .attr("height", heightPerLeaf*2)
+        .attr("height", _self.heightPerLeaf*2)
         .attr("x", function(d)
         {
-            var r = 4 * options.tipNodeRadius;
+            var r = 4 * _self.options.tipNodeRadius;
             if(d.c && d.c.length > 0) {
-                r = -4 * options.iNodeRadius;;
+                r = -4 * _self.options.iNodeRadius;;
             }
             r = 5;
             return r;
@@ -251,14 +269,14 @@ window.d3Tree = {
                 r= -2;
             }
             r = 0;
-            r = +(heightPerLeaf/4);
+            r = +(_self.heightPerLeaf/4);
             return r;
         })
         .append("svg:a")
         .attr("xlink:href", function(d){
             var r = "";
             if(!d.c || d.children.length == 0) {
-                r = tipLinkPrefix + d.n + tipLinkSuffix;
+                r = _self.tipLinkPrefix + d.n + _self.tipLinkSuffix;
             }
             return r;
         });
@@ -319,8 +337,8 @@ window.d3Tree = {
         .style("fill", function(d){
             var r = "";
             var colorKey = d.genus + " " + d.species;
-            if(tipToColors[colorKey]) {
-                r = tipToColors[colorKey][0];
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][0];
             }            
             return r;
         })
@@ -338,8 +356,8 @@ window.d3Tree = {
         .style("fill", function(d){
             var r = "";
             var colorKey = d.genus + " " + d.species;
-            if(tipToColors[colorKey]) {
-                r = tipToColors[colorKey][1];
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][1];
             }
             return r;
         })
@@ -361,10 +379,10 @@ window.d3Tree = {
             })
             ;
 
-        svgContainer.selectAll("path.link")
+        this.svgContainer.selectAll("path.link")
             .transition()
             .duration(1200)
-            .attr("d", branch)
+            .attr("d", _self.branch)
             .attr("class", function(d){
                 var r = "link";
                 if(d.target.selected) {
@@ -395,9 +413,9 @@ window.d3Tree = {
         })
         .attr("dx", function(d)
         {
-            var r = 4 * options.tipNodeRadius;
+            var r = 4 * _self.options.tipNodeRadius;
             if(d.c && d.c.length > 0) {
-                r = -4 * options.iNodeRadius;
+                r = -4 * _self.options.iNodeRadius;
             }
             return r;
         })
@@ -414,7 +432,7 @@ window.d3Tree = {
             var r = "";
             if(d.c && d.c.length > 0) {
                 r = "";
-                if(d.s && d.s < options.supportCutoff) {
+                if(d.s && d.s < _self.options.supportCutoff) {
                     r = d.s;
                 }
             }
@@ -427,32 +445,33 @@ window.d3Tree = {
                 nodes[i].prevSelected = nodes[i].selected; 
             }
         }
-    }
+    },
 
 
-    function init() {
+    init: function() {
+        _self=this;
         //console.log("init()");
-        var nodes = tree.nodes(treeData);
-        var links = tree.links(nodes);
+        var nodes = this.tree.nodes(this.treeData);
+        var links = this.tree.links(nodes);
 
-        var treeWidth = size.width - maxLabelLength*(fontWidthForMargin);
+        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
 
     //adjust y values (because x and y are reversed) for nodes based on the branch lengths
     for(var i = nodes.length-1; i >=0; i--) {
         var d = nodes[i];
         var toRoot = d.px ? d.px : 0;
-        if(options.phylogram) {
-            d.y = treeWidth * toRoot / maxNodeDistanceToRoot; //for phylogram
+        if(this.options.phylogram) {
+            d.y = treeWidth * toRoot / this.maxNodeDistanceToRoot; //for phylogram
         } else {
-            d.y = treeWidth * (maxNodeDepth - d.cx) / maxNodeDepth; //for cladogram
+            d.y = treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth; //for cladogram
             //console.log("cladogram d.cx: " + d.cx + " d.y: " + d.y);
         }
 
-        d.x = d.py*heightPerLeaf + topMargin;
+        d.x = d.py*this.heightPerLeaf + this.topMargin;
         //console.log("d.x: " + d.x + " d.y: " + d.y);
     }
 
-    var pathLinks = svgContainer.selectAll("path.link")
+    var pathLinks = this.svgContainer.selectAll("path.link")
         .data(links)
         .enter();
 
@@ -467,10 +486,10 @@ window.d3Tree = {
         .style("stroke-width", "10")
         .style("stroke", "white")
         .style("opacity", "0.1")
-        .on("click", click)
-        .on("mouseover", hover)
-        .on("mouseout", mouseout)
-        .attr("d", startingBranch)
+        .on("click", this.click)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
+        .attr("d", this.startingBranch)
         ;
 
     pathLinks.append("svg:path")
@@ -482,10 +501,10 @@ window.d3Tree = {
             return r;
         })
         .style("stroke-linejoin", "round")
-        .on("click", click)
-        .on("mouseover", hover)
-        .on("mouseout", mouseout)
-        .attr("d", startingBranch)
+        .on("click", this.click)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
+        .attr("d", this.startingBranch)
         ;
 
     /*
@@ -495,7 +514,7 @@ window.d3Tree = {
             <text />
         </g>
      */
-    var nodeGroup = svgContainer.selectAll("g.node")
+    var nodeGroup = this.svgContainer.selectAll("g.node")
         .data(nodes)
         .enter()
         .append("svg:g")
@@ -511,7 +530,7 @@ window.d3Tree = {
             //return "translate(" + d.y + "," + d.x + ")";
             return "translate(" + 0 + "," + d.x + ")";
         })
-        .on("click", click);
+        .on("click", this.click);
 
     nodeGroup.append("svg:circle")
         .attr("class", function(d)
@@ -527,27 +546,27 @@ window.d3Tree = {
         })
         .attr("r", function(d)
         {
-            var r = options.tipNodeRadius;
+            var r = _self.options.tipNodeRadius;
             if(d.c && d.c.length > 0) {
-                r = options.iNodeRadius;;
+                r = _self.options.iNodeRadius;;
             }
             return r;
-        })
-        .on("mouseover", hover)
-        .on("mouseout", mouseout)
+        },_self)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
         ;
 
     var anchors = nodeGroup.append("svg:text")
         .attr("width", function(d){
-            var r = d.n.length * options.fontSize + 10;
+            var r = d.n.length * _self.options.fontSize + 10;
             return r;
         })
-        .attr("height", heightPerLeaf*2)
+        .attr("height", this.heightPerLeaf*2)
         .attr("x", function(d)
         {
-            var r = 4 * options.tipNodeRadius;
+            var r = 4 * _self.options.tipNodeRadius;
             if(d.c && d.c.length > 0) {
-                r = -4 * options.iNodeRadius;;
+                r = -4 * _self.options.iNodeRadius;;
             }
             r = 5;
             return r;
@@ -559,14 +578,14 @@ window.d3Tree = {
                 r= -2;
             }
             r = 0;
-            r = +(heightPerLeaf/4);
+            r = +(_self.heightPerLeaf/4);
             return r;
         })
         .append("svg:a")
         .attr("xlink:href", function(d){
             var r = "";
             if(!d.c || d.c.length == 0) {
-                r = tipLinkPrefix + d.n + tipLinkSuffix + "'>";
+                r = _self.tipLinkPrefix + d.n + _self.tipLinkSuffix + "'>";
             }
             return r;
         });
@@ -611,8 +630,8 @@ window.d3Tree = {
         .style("fill", function(d){
             var r = "";
             var colorKey = d.genus + " " + d.species;
-            if(tipToColors[colorKey]) {
-                r = tipToColors[colorKey][0];
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][0];
             }            
             return r;
         })
@@ -630,8 +649,8 @@ window.d3Tree = {
         .style("fill", function(d){
             var r = "";
             var colorKey = d.genus + " " + d.species;
-            if(tipToColors[colorKey]) {
-                r = tipToColors[colorKey][1];
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][1];
             }
             return r;
         })
@@ -661,9 +680,9 @@ window.d3Tree = {
         })
         .attr("dx", function(d)
         {
-            var r = 4 * options.tipNodeRadius;
+            var r = 4 * _self.options.tipNodeRadius;
             if(d.c && d.c.length > 0) {
-                r = -4 * options.iNodeRadius;
+                r = -4 * _self.options.iNodeRadius;
             }
             return r;
         })
@@ -680,7 +699,7 @@ window.d3Tree = {
             var r = "";
             if(d.c && d.c.length > 0) {
                 r = "";
-                if(d.s && d.s < options.supportCutoff) {
+                if(d.s && d.s < _self.options.supportCutoff) {
                     r = d.s;
                 }
             }
@@ -688,11 +707,8 @@ window.d3Tree = {
         });
 
 
-}
-}
-}
-
-        function getRGBRainbow(n, offset) {
+    },
+    getRGBRainbow: function(n, offset) {
                 var r;
                 var rainbowLength;
                 var fullRainbow = new Array();
@@ -744,16 +760,16 @@ window.d3Tree = {
                 }
                 
                 return r;
-        }
+        },
 
-        function getGenusSpeciesSets(minToInclude) {
+        getGenusSpeciesSets: function(minToInclude) {
                 var genusSets = new Array();
                 var genusToSpecies = new Array();
                 var genusToSpeciesSeen = new Array();
                 var speciesSets = new Array();
                 var uniqueList = new Array();
                               
-                var tipList = phyloTree.getTipLabels();
+                var tipList = phylotree.getTipLabels();
                         //console.log("tips: " + tipList.length);
 	                for(var i = tipList.length-1; i >=0; i--) {
                         var genusIndex = 0;
@@ -811,16 +827,16 @@ window.d3Tree = {
                 }
                 
                 return [uniqueList, genusToSpecies];
-        }
+        },
                 
 
-        function getTipColors(colorGenus, colorSpecies) {
+        getTipColors: function(colorGenus, colorSpecies) {
                 var colorTips = colorGenus | colorSpecies;
-                var genusSets = getGenusSpeciesSets(2);
+                var genusSets = this.getGenusSpeciesSets(2);
                 var commonGenera = genusSets[0];
                 var genusToSpecies = genusSets[1];
                  
-                var rainbow = getRGBRainbow(commonGenera.length, 21);
+                var rainbow = this.getRGBRainbow(commonGenera.length, 21);
                 var speciesToColor = new Array();
                  
                 var length = Math.min(commonGenera.length, rainbow.length);
@@ -828,19 +844,19 @@ window.d3Tree = {
                 if(colorTips) {
                         for(var i = 0; i < length; i++ ) {
                                 var genusColor =
-                                        getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
+                                        this.getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
                                 var speciesInGenus = genusToSpecies[commonGenera[i]];
-                                var speciesRainbow = getRGBRainbow(speciesInGenus.length+1, 16);
+                                var speciesRainbow = this.getRGBRainbow(speciesInGenus.length+1, 16);
                                 var sLength = speciesInGenus.length;
                                 var sColorIndex = 0;
                                 for(var j = 0; j < sLength; j++) {
                                         var speciesColor =
-                                                getColorHex(speciesRainbow[sColorIndex][0],
+                                                this.getColorHex(speciesRainbow[sColorIndex][0],
                                                                 speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
                                         if(speciesColor == genusColor) {
                                                 sColorIndex++;
                                                 speciesColor =
-                                                        getColorHex(speciesRainbow[sColorIndex][0],
+                                                        this.getColorHex(speciesRainbow[sColorIndex][0],
                                                                         speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
                                         }
                                         sColorIndex++;
@@ -854,7 +870,7 @@ window.d3Tree = {
                 } else {   
                         for(var i = 0; i < length; i++ ) {
                                 var speciesInGenus = genusToSpecies[commonGenera[i]];
-                                var genusColor = getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
+                                var genusColor = this.getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
                                 var sLength = speciesInGenus.length;
                                 for(var j = 0; j < sLength; j++) {
                                         speciesToColor[speciesInGenus[j]] = genusColor;
@@ -863,7 +879,7 @@ window.d3Tree = {
 
                 }
 
-                var tipLabels = phyloTree.getTipLabels();
+                var tipLabels = phylotree.getTipLabels();
                 for(var i = tipLabels.length-1; i >= 0; i--) {
                         var fields = tipLabels[i].split("_");
                         if(fields.length > 1) {
@@ -875,12 +891,12 @@ window.d3Tree = {
                         }
                 }
              return speciesToColor;
-        }
+        },
 
         /**
          * Converts integer R, G, and B values to hex color strings.
          */
-        getColorHex = function(r, g, b) {
+        getColorHex : function(r, g, b) {
             var hexCodes = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D",
                         "E","F"];
                 //get values for r
@@ -902,6 +918,7 @@ window.d3Tree = {
                 return hex;
         }
                 
-
-
+    });
 });
+
+
