@@ -73,6 +73,16 @@
 	margin-top: 2px;
 }
 
+.P3Header .appLabel{
+	font-size: 1em;
+	color: orange;
+	font-weight: 600;
+	margin-left: 3px;
+	margin-bottom: -4px;
+}
+
+
+
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
 .topMenuButton {
 	background: inherit;
