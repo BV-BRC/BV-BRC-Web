@@ -1,7 +1,7 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
 	<div class="TopMenuBar">
 		<span style="float:left;margin-left:4px;font-weight:200;"><span style="font-weight:900;color:#76A72D;">PAT</span>HOSYSTEMS <span style="font-weight:900;color:#76A72D;">R</span>ESOURCE <span style="font-weight:900;color:#76A72D;">I</span>NTEGRATION <span style="font-weight:900;color:#76A72D;">C</span>ENTER</span>
-		<a class="TopMenuLink" href="/content/news">NEWS</a>  <a class="TopMenuLink" href="/content/workshops"> WORKSHOPS </a>  <a class="TopMenuLink" href="/content/about"> ABOUT </a>   <a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> <a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
+		<a class="TopMenuLink" href="/content/news">NEWS</a>  <a class="TopMenuLink" href="/content/workshops"> WORKSHOPS </a>  <a class="TopMenuLink" href="/content/about"> ABOUT </a>  <a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">ACCOUNT</a> <a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> <a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
 	</div>
 <!--	<div style="height:30px;background: #fff;color:#aaa;text-align:center;padding:20px;">
 		Place Holder for PATRIC Header
@@ -109,16 +109,16 @@
 										<div class="ShowWithAuth">
 										<div><i class="fa icon-caret-down fa-1x"></i>&nbsp;<a class="navigationLink" id="YourWorkspaceLink">Your Workspaces</a></div>
 										<div id="YourWorkspaces">
-<!--											<div style="padding-left:12px;"><a class="navigationLink" href="/workspace/">Home</a></div> -->
+
 										</div>
 										<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
 										<div id="SharedWithYouWorkspaces">
 										</div>
 										</div>
-										<div><a class="navigationLink" href="/workspace/">Public</a></div>
+										<div><a class="navigationLink" href="/workspace/public">Public</a></div>
 										<div id="PublicWorkspaces">
 										</div>
-										<div><a class="navigationLink" href="/workspace/">Published</a></div>
+										<div><a class="navigationLink" href="/workspace/published">Published</a></div>
 										<div id="PublishedWorkspaces">
 										</div>
 

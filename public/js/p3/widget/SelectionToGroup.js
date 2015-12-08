@@ -63,9 +63,9 @@ define([
 			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
 				console.log("set selection(): ", arguments);
 			}))
-//			if (!this.path) {
+			if (!this.path) {
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
-//			}
+			}
 			this.inherited(arguments);
 			this.groupNameBox.set('path', this.path);
 			this.workspaceObjectSelector.set('path', this.path);

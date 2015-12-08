@@ -25,6 +25,7 @@ var defaults =  {
 	workspaceServiceURL:"",
 	appServiceURL: "",
 	dataURL: "",
+	accountURL: "http://user.patric.local:3002/",
 
 	enableDevAuth: false,
 	devAuthorizationToken: "",
