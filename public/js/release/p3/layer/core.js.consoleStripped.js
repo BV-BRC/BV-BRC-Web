@@ -54123,9 +54123,11 @@ define([], function(){
       // 0 && console.log("JOIN PATH PARTS: ", arguments);
       // Split the inputs into a list of path commands.
       var parts = [];
-
+      var hasRoot=false;
+      var root;
       for (var i = 0, l = arguments.length; i < l; i++) {
         // 0 && console.log("arguments[i]",i, arguments[i]);
+
         if (arguments[i]) {
           if (typeof arguments[i] != 'string'){
             arguments[i]=arguments[i].toString();
@@ -54141,6 +54143,12 @@ define([], function(){
       }
       var out = parts.join('/');
       // 0 && console.log("OUT: ", out);
+
+      if (out.match("http[s]:\/\/")){
+        return out;
+      }else{
+        return "/" + out;
+      }
 
       return out;
   }

@@ -1,4 +1,4 @@
-Build started: Tue Dec 08 2015 17:10:04 GMT-0500 (EST)
+Build started: Tue Dec 08 2015 17:50:23 GMT-0500 (EST)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.664s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:13.572s)
-	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:14.325s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:14.752s)
-	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:19.842s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js (compile time:1.203s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js (compile time:10.963s)
+	/Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js (compile time:11.724s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:12.166s)
+	/Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js (compile time:17.52s)
 info(107) Package Version:
 	package: dojo; version: 1.11.0-pre
 	package: dijit; version: 1.11.0-pre
@@ -1348,9 +1348,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.664s)
+Done (compile time:1.203s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.664s)
+Done (compile time:1.203s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1365,9 +1365,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:13.572s)
+Done (compile time:10.963s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.664s)
+Done (compile time:1.203s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1382,7 +1382,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:13.572s)
+Done (compile time:10.963s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1505,9 +1505,9 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:14.325s)
+Done (compile time:11.724s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.664s)
+Done (compile time:1.203s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1522,7 +1522,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:13.572s)
+Done (compile time:10.963s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1645,7 +1645,7 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:14.325s)
+Done (compile time:11.724s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1772,9 +1772,9 @@ globalWSObject.js.uncompressed.js:17093: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:14.752s)
+Done (compile time:12.166s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.664s)
+Done (compile time:1.203s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -1789,7 +1789,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:13.572s)
+Done (compile time:10.963s)
 /Users/dmachi/work/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -1912,7 +1912,7 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:14.325s)
+Done (compile time:11.724s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2039,7 +2039,7 @@ globalWSObject.js.uncompressed.js:17093: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:14.752s)
+Done (compile time:12.166s)
 /Users/dmachi/work/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:587: WARNING - unreachable code
 	}else if( 0 ){
@@ -2153,32 +2153,36 @@ core.js.uncompressed.js:53931: WARNING - If this if/for/while really shouldnt ha
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a), t[i] = z);
 			                                                         ^
 
-core.js.uncompressed.js:56101: WARNING - unreachable code
+core.js.uncompressed.js:54153: WARNING - unreachable code
+      return out;
+      ^
+
+core.js.uncompressed.js:56109: WARNING - unreachable code
 				return;
 				^
 
-core.js.uncompressed.js:56648: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:56656: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if(hint == 'avatar'){
 					^
 
-core.js.uncompressed.js:58198: WARNING - unreachable code
+core.js.uncompressed.js:58206: WARNING - unreachable code
 				 0 && console.log("FILTER: ", out)
 				 ^
 
-core.js.uncompressed.js:59751: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:59759: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if (hint == 'avatar') {
 					^
 
-core.js.uncompressed.js:65374: WARNING - unreachable code
+core.js.uncompressed.js:65382: WARNING - unreachable code
 			return this.maxOuterRadius * trackFrac;
 			^
 
-core.js.uncompressed.js:68047: WARNING - unreachable code
+core.js.uncompressed.js:68055: WARNING - unreachable code
 		 0 && console.log("parsed query: ", parsed);
 		 ^
 
-0 error(s), 34 warning(s)
-Done (compile time:19.842s)
+0 error(s), 35 warning(s)
+Done (compile time:17.52s)
 
 
 Has Features Detected
@@ -3109,4 +3113,4 @@ Has Features Detected
 Process finished normally
 	errors: 0
 	warnings: 84
-	build time: 93.044 seconds
+	build time: 89.234 seconds

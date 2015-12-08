@@ -17,6 +17,7 @@ var defaults =  {
 		"pass":""
 	},
 
+	"appLabel": "dev",
 	"cookieKey": "JSESSIONID",
 	"cookieDomain": ".patric.local",
 
