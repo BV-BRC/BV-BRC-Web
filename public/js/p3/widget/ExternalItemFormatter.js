@@ -26,7 +26,7 @@ define([
 		"pubmed_data": function(item, options, shownode){
 			options = options || {};
 			var taxonName = item.taxon_name;
-			var eutilSeaarchURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
+			var eutilSeaarchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
 			console.log("taxon_name = " + taxonName);
 			var div = domConstruct.create("div");			
 			console.log("Create Display Pubmed");
@@ -45,10 +45,10 @@ define([
 				{
 					var pmids= pubmedList.esearchresult.idlist;
 					var retmax=5;
-					var eutilSummaryURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax+"&retmode=json";
+					var eutilSummaryURL =  window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax+"&retmode=json";
 					if (options.hideExtra == false)
 					{
-						eutilSummaryURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmode=json";				
+						eutilSummaryURL =  window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmode=json";				
 					}
 					xhr.get(eutilSummaryURL, {
 						headers: {
