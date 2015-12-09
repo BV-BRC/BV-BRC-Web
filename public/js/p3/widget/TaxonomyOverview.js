@@ -10,6 +10,8 @@ define([
 			ChartTooltip, domConstruct,PathJoin,GenomeFeatureSummary,DataItemFormatter,
 			SpecialtyGeneSummary,ExternalItemFormatter) {
 
+	var searchName = null;
+		
 	return declare([WidgetBase,Templated,_WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
 		disabled: false,
@@ -27,6 +29,8 @@ define([
 				this.set("taxonomy", state.taxonomy);
 			}
 
+			searchName = this.genome.taxon_name;
+			console.log("pubmed search term = ", searchName);
 		
 			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
@@ -45,14 +49,18 @@ define([
 		"createSummary": function(genome) {
 			domConstruct.empty(this.taxonomySummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data",{hideExtra:true}), this.taxonomySummaryNode,"first");
-			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data",{hideExtra:true}), this.pubmedSummaryNode,"first");
+			if (searchName != genome.taxon_name)
+			{
+				domConstruct.empty(this.pubmedSummaryNode);
+				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {hideExtra:true}, this.pubmedSummaryNode2), this.pubmedSummaryNode,"first");
+				this.pubmedSummaryNode2.style.display='block';
+			}
 		},
 
 		onShowMore: function(){
 			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.empty(this.pubmedSummaryNode2);
-			domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data",{hideExtra:false}), this.pubmedSummaryNode2,"first");
+		    domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data", {hideExtra:false}, this.pubmedSummaryNode2), this.pubmedSummaryNode,"first");
+			this.pubmedSummaryNode2.style.display='none';
 		},
 
 		startup: function(){
