@@ -1,13 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic",
+	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct",
 	"dijit/TooltipDialog", "dijit/Dialog",
-	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin"
+	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
 
 ], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic,
+			ContainerActionBar, popup, Topic, domConstruct,
 			TooltipDialog, Dialog,
-			lang, swfobject, request, PathJoin){
+			lang, swfobject, request, PathJoin, Button){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
@@ -166,9 +166,11 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				}
-			}).then(lang.hitch(this, function(response){
-				var feature = response[0];
-				this.dialog.set('content', JSON.stringify(feature));
+			}).then(lang.hitch(this, function(features){
+				this.dialog.set('content', this._buildPanelCellClicked(colID, rowID, familyId, genomeId, features));
+				var actionBar = this._buildPanelButtons(colID, rowID, features);
+				domConstruct.place(actionBar, this.dialog.containerNode, "last");
+
 				this.dialog.show();
 			}));
 
@@ -189,6 +191,91 @@ define([
 
 			this.dialog.set('content', text.join('<br/>'));
 			this.dialog.show();
+		},
+		_buildPanelCellClicked: function(colID, rowID, familyId, genomeId, features){
+			//console.log("_buildPanelCellClicked is called.", colID, rowID, familyId, genomeId);
+			var gfs = this.pfState.genomeFilterStatus;
+			var genomeName = gfs[genomeId].getGenomeName();
+			var index = gfs[genomeId].getIndex();
+			var description = '', memberCount = 0;
+
+			this.currentData.columns.forEach(function(col){
+				if(col.colID === colID){
+					//console.log("col", col);
+					description = col.colLabel;
+					memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
+				}
+			});
+
+			var text = [];
+			text.push('<b>Genome:</b> ' + genomeName);
+			text.push('<b>Product:</b> ' + description);
+			text.push('<b>Family ID:</b> ' + familyId);
+			text.push('<b>Members:</b> ' + memberCount);
+			features.forEach(function(feature){
+				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
+				if(feature.refseq_locus_tag != undefined){
+					featureLink += ", " + feature.refseq_locus_tag;
+				}
+				if(feature.alt_locus_tag != undefined){
+					featureLink += ", " + feature.alt_locus_tag;
+				}
+				text.push(featureLink);
+			});
+
+			return text.join("<br>");
+		},
+		_buildPanelButtons: function(colIDs, rowIDs, features){
+			var _self = this;
+			var actionBar = domConstruct.create("div", {
+				"class": "dijitDialogPaneActionBar"
+			});
+
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+			var downloadTT = new TooltipDialog({
+				content: dfc, onMouseLeave: function(){
+					_self.dialog.close(downloadTT);
+				}
+			});
+
+			var btnDownloadHeatmap = new Button({
+				label: 'Download Heatmap Data'
+			});
+			var btnDownloadProteins = new Button({
+				label: 'Download Proteins'
+			});
+			on(downloadTT.domNode, "click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = "";
+				var dataType = "genome_feature";
+				var currentQuery = "";//self.actionPanel.currentContainerWidget.get('query');
+				console.log("selection: ", selection);
+				console.log("DownloadQuery: ", dataType, currentQuery);
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+				_self.dialog.close(downloadTT);
+			});
+
+			var btnShowDetails = new Button({
+				label: 'Show Proteins'
+			});
+			var btnAddToWorkspace = new Button({
+				label: 'Add Proteins to Group'
+			});
+			var btnCancel = new Button({
+				label: 'Cancel',
+				onClick: function(){
+					_self.dialog.hide();
+				}
+			});
+
+			btnDownloadHeatmap.placeAt(actionBar);
+			btnDownloadProteins.placeAt(actionBar);
+			btnShowDetails.placeAt(actionBar);
+			btnAddToWorkspace.placeAt(actionBar);
+			btnCancel.placeAt(actionBar);
+
+			return actionBar;
 		},
 		_countMembers: function(colIDs, rowIDs){
 			var columns = this.currentData.columns;
