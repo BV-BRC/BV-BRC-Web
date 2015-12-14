@@ -546,11 +546,11 @@ define("p3/widget/WorkspaceBrowser", [
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/GenomeGroup");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/WSGenomeGroup");
 						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
 						break;
 					case "feature_group":
-						panelCtor = window.App.getConstructor("p3/widget/viewer/FeatureList");
+						panelCtor = window.App.getConstructor("p3/widget/viewer/WSFeatureList");
 						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
 						break;
 					case "model":

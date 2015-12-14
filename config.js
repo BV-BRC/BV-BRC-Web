@@ -17,6 +17,7 @@ var defaults =  {
 		"pass":""
 	},
 
+	"appLabel": "dev",
 	"cookieKey": "JSESSIONID",
 	"cookieDomain": ".patric.local",
 
@@ -25,6 +26,7 @@ var defaults =  {
 	workspaceServiceURL:"",
 	appServiceURL: "",
 	dataURL: "",
+	accountURL: "http://user.patric.local:3002/",
 
 	enableDevAuth: false,
 	devAuthorizationToken: "",

@@ -90,7 +90,6 @@ define("p3/widget/ActionBar", [
 					//console.log("Current ContainerType: ", this.currentContainerType);
 					//console.log("Current Container Widget: ", this.currentContainerWidget);
 					if (!validContainerTypes.some(function(t){
-						console.log("T: ", t, " Current Container Type: ", this.currentContainerType)
 						return ((t=="*") || (t==this.currentContainerType))
 					},this)){
 						return false;
@@ -140,7 +139,7 @@ define("p3/widget/ActionBar", [
 
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				//console.log("evt.target: ", evt.target);
+				console.log("evt.target: ", evt.target);
 				tooltip.close();
 				var target;
 				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
@@ -164,8 +163,9 @@ define("p3/widget/ActionBar", [
 	
 		},
 
-		addAction: function(name,classes,opts,fn,enabled){
+		addAction: function(name,classes,opts,fn,enabled,target){
 			// console.log("Add Action: ", name, classes, opts,enabled);
+			target = target || this.containerNode;
 			var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
 			var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
 
@@ -173,7 +173,7 @@ define("p3/widget/ActionBar", [
 				var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
 			}		
 
-			domConstruct.place(wrapper,this.containerNode,"last");
+			domConstruct.place(wrapper,target,"last");
 
 			this._actions[name]={
 				options: opts,

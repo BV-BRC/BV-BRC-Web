@@ -35,7 +35,7 @@
 @import url("./GenomeViewer.css");
 @import url("./p2.css");
 @import url("./JobsGrid.css");
-
+@import url("./SummaryWidget.css");
 
 /*@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");*/
 
@@ -444,3 +444,33 @@ div.overview {
 	top: 170px;
 	font-size: .6em;
 }
+
+.patric .GridContainer TH.dgrid-cell {
+	font-size: .95em;
+}
+
+.patric .GridContainer TD.dgrid-cell {
+	font-size: .85em;
+	white-space: nowrap;
+}
+
+.queryModel,
+.queryField,
+.queryValue {
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.queryModel {
+	color: #76a72d;
+}
+
+.queryField {
+	color: #34698e;
+}
+
+.queryValue {
+	color: #ffcb00;
+	text-transform: none;
+}
+

@@ -1,15 +1,21 @@
 define("p3/widget/FeatureGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store, selector) {
 
 
 	var store = new Store({});
 
 	return declare([Grid], {
+		constructor: function(){
+			this.queryOptions = {
+	                        sort: [{ attribute: "genome_name", descending: false},{ attribute: "strand", descending: false},{ attribute: "start", descending: false}]
+			}
+			console.log("this.queryOptions: ", this.queryOptions);
+		},
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
@@ -19,6 +25,7 @@ define("p3/widget/FeatureGrid", [
 		deselectOnRefresh: true,
 		store: store,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
@@ -36,8 +43,14 @@ define("p3/widget/FeatureGrid", [
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
+
+//		queryOptions: {
+//			sort: [{ attribute: "genome_name", descending: true }]
+//		},
+
 		startup: function() {
 			var _self = this;
+
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
@@ -75,6 +88,7 @@ define("p3/widget/FeatureGrid", [
 			});
 
 			this.inherited(arguments);
+
 			this.refresh();
 		}
 	});

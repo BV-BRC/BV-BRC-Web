@@ -10,10 +10,25 @@ define("p3/widget/ProteinFamiliesContainer", [
 			ContentPane, Topic, RadioButton, domConstruct,
 			TextArea, TextBox, Button){
 
+	// configurations for proteinFamilies components (grid, filter, heatmap)
+	var pfState = {
+		'familyType': 'figfam', // default
+		'heatmapAxis': '',
+		'genomeIds': [],
+		'genomeFilterStatus': {},
+		'clusterRowOrder': [],
+		'clusterColumnOrder': [],
+		'perfectFamMatch': 'A',
+		'min_member_count': null,
+		'max_member_count': null,
+		'min_genome_count': null,
+		'max_genome_count': null
+	};
+
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
@@ -99,7 +114,8 @@ define("p3/widget/ProteinFamiliesContainer", [
 
 			// genome list grid
 			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state
+				state: this.state,
+				pfState: pfState
 			});
 			filterPanel.addChild(this.filterPanelGrid);
 
@@ -110,7 +126,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			var ta_keyword = new TextArea({
 				style: "width:215px; min-height:75px"
 			});
-			var label_keyword = domConstruct.create("label", {innerHTML:"Filter by one or more keywords"});
+			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
 
@@ -184,7 +200,6 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
 			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
 
-
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 			var btn_submit = new Button({
 				label: "Filter"
@@ -212,7 +227,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 				title: "Heatmap",
 				content: "heatmap",
 				dataGridContainer: this.proteinFamiliesGrid,
-				filterGrid: this.filterPanelGrid
+				pfState: pfState
 			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));

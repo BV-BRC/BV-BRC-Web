@@ -8,7 +8,7 @@
 }
 .Phylogeny svg{
     background:#FFFFFF;
-    border: 1px dotted #222222;
+    /*border: 1px dotted #222222;*/
 }
 .Phylogeny g.node {
     font-family: Verdana, Helvetica;
@@ -41,7 +41,6 @@
 }
 
 .Phylogeny circle.tip-dot {
-    display:none;
 }
 
 .Phylogeny path.link.selected {

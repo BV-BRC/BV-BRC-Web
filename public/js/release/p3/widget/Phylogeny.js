@@ -1,8 +1,13 @@
 define("p3/widget/Phylogeny", [
 	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG",
 	"dijit/_WidgetBase", "dojo/request","dojo/dom-construct", "dojo/_base/lang",
-	"dojo/dom-geometry", "dojo/dom-style", "d3/d3","../util/PathJoin"
-], function(declare, PhyloTree, TreeNavSVG, WidgetBase, request,domConstruct,lang,domGeometry,domStyle, d3,PathJoin){
+	"dojo/dom-geometry", "dojo/dom-style", "d3/d3","../util/PathJoin",
+    "dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem"
+], function(declare, PhyloTree, TreeNavSVG,
+    WidgetBase, request,domConstruct,
+    lang,domGeometry,domStyle, d3, PathJoin,
+    DropDownButton, DropDownMenu, MenuItem
+    ){
 
 
 	return declare([WidgetBase],{
@@ -14,14 +19,22 @@ define("p3/widget/Phylogeny", [
         jsonTree: null,
         tree:null,
 		apiServer: window.App.dataAPI,
+        phylogram: false,
 
 		postCreate: function(){
 			this.containerNode = this.canvasNode = domConstruct.create("div",{id: this.id +"_canvas"}, this.domNode);
-            this.controlDiv = domConstruct.create("div",{id:"control_area"},this.containerNode);
-            this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},this.controlDiv);
-            this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},this.controlDiv);
-            this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},this.controlDiv);
-            this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},this.controlDiv);
+            var menuDiv = domConstruct.create("div",{},this.containerNode);
+            var typeMenuDom = domConstruct.create("div",{},menuDiv);
+            var typeMenu = new DropDownMenu({ style: "display: none;"});
+            typeMenu.addChild( new MenuItem({label: "phylogram", onClick:lang.hitch(this,function(){this.setTreeType("phylogram")})}));
+            typeMenu.addChild( new MenuItem({label: "cladogram", onClick:lang.hitch(this,function(){this.setTreeType("cladogram")})}));
+            typeMenu.startup();
+            this.typeButton = new DropDownButton({name:"typeButton", label:this.phylogram ? "phylogram" : "cladogram",dropDown:typeMenu},typeMenuDom);
+            this.typeButton.startup();
+            //this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
+            this.supportButton = domConstruct.create("input",{type:"button",value:"show support"},menuDiv);
+            this.groupButton = domConstruct.create("input",{type:"button",value:"create genome group"},menuDiv);
+            this.imageButton = domConstruct.create("input",{type:"button",value:"save image"},menuDiv);
             this.treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},this.containerNode);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("taxon_id", lang.hitch(this,"onSetTaxonId"))
@@ -65,12 +78,27 @@ define("p3/widget/Phylogeny", [
 				return;
 			}
 			if (!this.tree){
-	            this.tree = new d3Tree.d3Tree("#" + this.id + "tree-container", {phylogram:false, fontSize:10});
+	            this.tree = new TreeNavSVG();
+                this.tree.d3Tree("#" + this.id + "tree-container", {phylogram:this.phylogram, fontSize:10, colorGenus:true});
 	        }
 
             this.tree.setTree(this.newick);
         },
 
+        setTreeType:function(treeType){
+            if(this.phylogram && treeType == "cladogram"){
+                this.togglePhylo();
+            }
+            else if ((!this.phylogram) && treeType == "phylogram"){
+                this.togglePhylo();
+            }
+        },
+
+        togglePhylo:function(){
+            this.phylogram=!this.phylogram;
+            this.tree.setPhylogram(this.phylogram);
+            this.typeButton.set("label", this.phylogram ? "phylogram" : "cladogram");
+        },
 
 
         updateTree: function(){

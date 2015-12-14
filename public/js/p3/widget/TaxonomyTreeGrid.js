@@ -1,5 +1,5 @@
 define([
-	"dojo/_base/declare","dgrid/OnDemandGrid","dgrid/Tree","dojo/on","dgrid/Selection",
+	"dojo/_base/declare","dgrid/OnDemandGrid","dgrid/tree","dojo/on","dgrid/Selection",
 	"../store/TaxonomyJsonRest","dgrid/extensions/DijitRegistry","dojo/_base/lang"
 
 ],function(

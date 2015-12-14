@@ -1,0 +1,43 @@
+<div style="overflow: auto;">
+
+    <table style="margin:2px;">
+        <tbody>
+            <tr>
+                <td style="width:35%;padding:4px;vertical-align:top;">
+                    <div class="section">
+                       <!-- <h3 class="section-title normal-case close2x"><span class="wrap">Genome Summary</span></h3>-->
+                        <div style="padding:7px" data-dojo-attach-point="taxonomySummaryNode">
+                            Loading Genome Summary...
+                        </div>
+                    </div>
+                </td>
+                <td style="width:40%;padding:4px;vertical-align:top;">
+  
+                    <div class="section" >
+                        <h3 class="section-title normal-case close2x"><span class="wrap">Genomic Feature Summary</span></h3>
+                        <div data-dojo-attach-point="gfSummaryWidget" data-dojo-type="p3/widget/GenomeFeatureSummary" style="height:205px;margin:4px;">
+                        </div>
+                    </div>
+
+                    <div class="section ">
+                        <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
+                          <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary" style="height:205px;margin:4px;">
+                        </div>
+                    </div>
+
+                </td>
+                <td style="width:25%;padding:4px;vertical-align:top;">
+                    <div class="section ">
+                     <h3 class="section-title normal-case close2x"><span class="wrap">Recent PubMed Articles</span></h3>
+                        <div data-dojo-attach-point="pubmedSummaryNode" style="margin:4px;padding:8px;margin-radius:4px;">
+                          This feature will be returning soon.
+                        </div>
+                        <div data-dojo-attach-point="pubmedSummaryNode2" style="margin:4px;padding:8px;margin-radius:4px;">
+	     					<div>Show more <i data-dojo-attach-event="click:onShowMore" class="fa icon-plus-circle fa-lg"></i></div></br>
+                        </div>
+               </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

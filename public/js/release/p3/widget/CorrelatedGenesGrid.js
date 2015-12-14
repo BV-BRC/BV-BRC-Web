@@ -2,11 +2,11 @@ define("p3/widget/CorrelatedGenesGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/CorrelatedGenesMemoryStore", "dojo/request",
-	"dojo/aspect"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect){
+			aspect, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -18,6 +18,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},

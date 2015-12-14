@@ -1,33 +1,48 @@
 <div style="overflow: auto;">
 
-    <div class="section left half">
-        <h3 class="section-title normal-case close2x"><span class="wrap">Genome Summary</span></h3>
-        <div style="padding:7px" data-dojo-attach-point="genomeSummaryNode">
-            Loading Genome Summary...
-        </div>
-    </div>
+    <table style="margin:2px;">
+        <tbody>
+            <tr>
+                <td style="width:35%;padding:4px;vertical-align:top;">
+                    <div class="section">
+                       <!-- <h3 class="section-title normal-case close2x"><span class="wrap">Genome Summary</span></h3>-->
+                        <div style="padding:7px" data-dojo-attach-point="genomeSummaryNode">
+                            Loading Genome Summary...
+                        </div>
+                    </div>
+                </td>
+                <td style="width:40%;padding:4px;vertical-align:top;">
+  
+                    <div class="section" >
+                        <h3 class="section-title normal-case close2x"><span class="wrap">Genomic Feature Summary</span></h3>
+                        <div data-dojo-attach-point="gfSummaryWidget" data-dojo-type="p3/widget/GenomeFeatureSummary" style="height:205px;margin:4px;">
+                        </div>
+                    </div>
 
-    <div class="section right half">
-        <h3 class="section-title normal-case close2x"><span class="wrap">Genomic Feature Summary</span></h3>
 
-        <div data-dojo-attach-point="gfDataNode">
-            Loading Genomic Feature Summary....
-        </div>
-    </div>
+                    <div class="section ">
+                        <h3 class="section-title normal-case close2x"><span class="wrap">Protein Feature Summary</span></h3>
+                          <div data-dojo-attach-point="pfSummaryWidgetD" style="background:#FFF889;margin:4px;padding:8px;margin-radius:4px;">
+                          This feature will be returning soon.
+                        </div>
+                    </div>
 
-    <div class="section right half">
-        <h3 class="section-title normal-case close2x"><span class="wrap">Protein Feature Summary</span></h3>
+                    <div class="section ">
+                        <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
+                          <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary" style="height:205px;margin:4px;">
+                        </div>
+                    </div>
 
-        <div data-dojo-attach-point="pfDataNode">
-            Loading Protein Feature Summary...
-        </div>
-    </div>
-
-    <div class="section right half">
-        <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
-
-        <div style="padding:7px" data-dojo-attach-point="specialtyGeneSummaryNode">
-            Loading Specialty Gene Summary...
-        </div>
-    </div>
+                </td>
+                <td style="width:25%;padding:4px;vertical-align:top;">
+                    <div class="section ">
+                     <h3 class="section-title normal-case close2x"><span class="wrap">Recent PubMed Articles</span></h3>
+                      <div  style="background:#FFF889;margin:4px;padding:8px;margin-radius:4px;">
+                          This feature will be returning soon.
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>

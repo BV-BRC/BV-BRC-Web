@@ -53,7 +53,7 @@ define("p3/widget/viewer/Genome", [
 				case "phlyogeny":
 				case "proteinFamilies":
 				case "pathways":
-					activeTab.set("state", this.state);
+					activeTab.set("state",lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
 					break;
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
@@ -70,7 +70,7 @@ define("p3/widget/viewer/Genome", [
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		_setGenomeAttr: function(genome){
@@ -169,7 +169,7 @@ define("p3/widget/viewer/Genome", [
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
 				id: this.viewer.id + "_" + "specialtyGenes",
-				state: this.state
+				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
 			});
 			this.pathways = new PathwaysContainer({
 				apiServer: this.apiServiceUrl,
