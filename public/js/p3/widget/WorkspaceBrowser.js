@@ -5,7 +5,7 @@ define([
 	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
 	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
 	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request",
-	"./ContainerActionBar"
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid"
 
 ], function(
 	declare, BorderContainer, on,
@@ -13,7 +13,7 @@ define([
 	WorkspaceExplorerView,Topic,ItemDetailPanel,
 	ActionBar,Deferred,WorkspaceManager,lang,
 	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
-	popup,IDMappingTemplate,xhr,ContainerActionBar
+	popup,IDMappingTemplate,xhr,ContainerActionBar,GroupExplore,GenomeGrid
 ){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
@@ -454,6 +454,25 @@ define([
 				dlg.startup();
 				dlg.show();
 			},true);
+
+			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {label:"GCOMPARE",ignoreDataType:true,min:2,max:3,multiple: true, validTypes:["genome_group","feature_group","experiment_group"],tooltip: "Select two or three groups to compare"}, function(selection, containerWidget){
+				console.log("Compare groups", selection);
+				//console.log("containerWidget==", containerWidget);
+				//console.log("containerWidget. is?: ", containerWidget.domNode);
+				//var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: containerWidget.domNode});
+
+//                var dlg = new Dialog({title:"Group Comparison", minSize: 1000, style: "width: 1200px !important; height: 700px !important;",
+//                                     onHide: function() {dlg.destroy()}});
+                var dlg = new Dialog({title:"Group Comparison", style: "width: 1250px !important; height: 750px !important;", onHide: function() {dlg.destroy()}});
+				var bc = new BorderContainer({});
+				domConstruct.place(bc.domNode, dlg.containerNode);
+				var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: dlg.containerNode});
+				bc.addChild(stg);
+//				stg.startup();
+				dlg.startup();
+				dlg.show();
+			},
+			false);
 
 
 //			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
