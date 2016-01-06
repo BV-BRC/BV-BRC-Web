@@ -1,0 +1,146 @@
+#gse {
+	min-width: 1200px;
+	min-height: 700px;
+}
+#gse-venndiagram {
+	height: 600px;
+	width: 450px;
+	font-size: 10px;
+}
+
+#gse-venndiagram .venn_circle {
+	fill: #d2d2d2;
+	fill-opacity: 1;
+}
+
+#gse-venndiagram .venn_circle_stroke {
+	stroke: #34698e;
+	stroke-width: 2px;
+	fill-opacity: 0;
+}
+
+#gse-venndiagram .venn_circle_color1 {
+	fill: blue;
+	fill-opacity: 0.6;
+}
+
+#gse-venndiagram .venn_circle_color2 {
+	fill: yellow;
+	fill-opacity: 0.6;
+}
+
+#gse-venndiagram .venn_circle_color3 {
+	fill: lime;
+	fill-opacity: 0.6;
+}
+
+#gse-venndiagram .venn_circle_stroke_color {
+	stroke: black;
+	stroke-width: 1px;
+	fill-opacity: 0;
+}
+
+#gse-venndiagram .venn_region {
+	fill-opacity: 0;
+}
+
+#gse-venndiagram .venn_region.active {
+	fill: #DBE8EE;
+	fill-opacity: 1;
+}
+
+#gse-venndiagram .venn_panel {
+	border: 1px solid #dbe3e5;
+}
+
+#gse-members {
+	position: absolute;
+	margin-left: 470px;
+	width: 730px;
+	height: 700px;
+	overflow: auto;
+}
+
+
+#gse-members-grid {
+	height: 610px;
+	border: none;
+}
+
+#gse-members-grid .dgrid-autoheight {
+	height: 600px;
+}
+
+
+#gse-members-grid .field-patric_id { width: 150px; }
+#gse-members-grid .field-refseq_locus_tag { width: 150px; }
+#gse-members-grid .field-genome_name { width: 200px; }
+#gse-members-grid .field-gene { width: 70px; }
+#gse-members-grid .field-title { width: 200px; }
+
+#gse-members-grid .dgrid-cell {
+	word-wrap: break-word;
+	white-space: normal;
+}
+
+/*
+#gse-members-grid .dgrid-cell {
+	padding: 3px;
+	text-align: left;
+	overflow: hidden;
+	vertical-align: top;
+	border: 1px solid #ddd;
+	border-top-style: none;
+	box-sizing: border-box;
+	word-wrap: break-word;
+	white-space: normal;
+}
+
+#gse-members-grid .dgrid-scroller {
+	overflow-x: auto;
+	overflow-y: scroll;
+	position: absolute;
+	top: 0px;
+	margin-top: 25px; // this will be adjusted programmatically to fit below the header
+	bottom: 0px;
+	width: 100%;
+}			
+
+#gse-members-grid .dgrid-row-table {
+	border-collapse: collapse;
+	border: none;
+	table-layout: fixed;
+	empty-cells: show;
+	width: 100%;
+	height: 100%;
+}
+
+#gse-members-tbl th {
+	border: 1px solid #dbe3e5;
+	font-weight: bold;
+	padding: 5px;
+}
+
+#gse-members-tbl .tr, td {
+	border: 1px solid #dbe3e5;
+	padding: 5px;
+}
+
+#gse-members-tbl tbody tr:nth-child(odd) {
+	background-color: #e5ecf9;
+}
+
+#gse-members-tbl table.tablesorter thead tr .header {
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+
+#gse-members-tbl table.tablesorter thead tr .headerSortUp {
+	background-image: url(/patric/images/arrow-slate-e-up.png);
+}
+
+#gse-members-tbl table.tablesorter thead tr .headerSortDown {
+	background-image: url(/patric/images/arrow-slate-e-down.png);
+}
+*/
