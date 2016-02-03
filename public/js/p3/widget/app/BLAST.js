@@ -56,7 +56,7 @@ define([
 				q.subject_genome.push(item.genomeRecord.genome_id);
 			});
 
-			xhr.post("http://larch.mcs.anl.gov:7133/search", {
+			xhr.post("https://p3.theseed.org/services/similarity_service_rest/search", {
 				headers: {
 					"Access-Control-Allow-Origin": "*",
 					"Content-Type": "application/x-www-form-urlencoded"
@@ -111,6 +111,43 @@ define([
 
 		},
 
+		/*formatJSONResult: function(json){
+			console.log(json);
+			var root = json[0][0].report.results.search;
+			var hits = root.hits;
+			var query_id = root.query_id;
+			var metadata = json[1];
+			var identical = json[2] || {};
+
+			var entries = [];
+			hits.forEach(function(hit, index){
+				//console.log(hit);
+				var target_id = hit.description[0].id;
+				entries.push({
+					"qseqid": query_id,
+					"sseqid": target_id,
+					"pident": parseInt(Number(hit.hsps[0].identity / hit.len * 10000))/100,
+					"length": hit.len,
+					"qstart": hit.hsps[0].query_from,
+					"qend": hit.hsps[0].query_to,
+					"sstart": hit.hsps[0].hit_from,
+					"send": hit.hsps[0].hit_to,
+					"evalue": hit.hsps[0].evalue,
+					"bitscore": Math.round(hit.hsps[0].bit_score),
+					"genome_id": metadata[target_id].genome_id,
+					"genome_name": metadata[target_id].genome_name,
+					"function": metadata[target_id].function,
+					"detail": {
+						"match_count": metadata[target_id].match_count || 0,
+						"matches": identical[target_id] || [],
+						"qseq": hit.hsps[0].qseq,
+						"hseq": hit.hsps[0].hseq,
+						"midline": hit.hsps[0].midline
+					}
+				});
+			});
+			return entries;
+		},*/
 		parseTabularOutput: function(output){
 			var lines = output.split('\n');
 			var entries = [];

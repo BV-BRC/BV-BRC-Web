@@ -7,16 +7,13 @@
 
     <div style="width:500px;margin:auto;">
 
-        <label for="program">Program: </label>
-        <select id="program" style="width:442px"
-                data-dojo-type="dijit/form/Select"
-                data-dojo-attach-point="program">
-            <option value="blastn">blastn</option>
-            <option selected="true" value="blastp">blastp</option>
-            <option value="blastx">blastx</option>
-            <option value="tblastn">tblastn</option>
-            <option value="tblastx">tblastx</option>
-        </select>
+        <label for="sequence">Sequence: </label>
+        <div id="sequence" style="width:100%;height:500px;vertical-align:top"
+             data-dojo-attach-point="sequence"
+             data-dojo-type="dijit/form/Textarea"
+             data-dojo-props="rows:10"
+             data-dojo-attach-event="onChange:onChangeSequence"></div>
+
         <hr>
 <!--
 
@@ -46,20 +43,16 @@
         </table>
         <hr>
 
-        <label for="sequence">Sequence: </label>
-        <div id="sequence" style="width:100%;height:500px;vertical-align:top"
-             data-dojo-attach-point="sequence"
-             data-dojo-type="dijit/form/Textarea"
-             data-dojo-props="rows:10"
-             data-dojo-attach-event="onChange:onChangeSequence"><!--&gt;fig|83333.1.peg.4
-MKLYNLKDHNEQVSFAQAVTQGLGKNQGLFFPHDLPEFSLTEIDEMLKLDFVTRSAKILS
-AFIGDEIPQEILEERVRAAFAFPAPVANVESDVGCLELFHGPTLAFKDFGGRFMAQMLTH
-IAGDKPVTILTATSGDTGAAVAHAFYGLPNVKVVILYPRGKISPLQEKLFCTLGGNIETV
-AIDGDFDACQALVKQAFDDEELKVALGLNSANSINISRLLAQICYYFEAVAQLPQETRNQ
-LVVSVPSGNFGDLTAGLLAKSLGLPVKRFIAATNVNDTVPRFLHDGQWSPKATQATLSNA
-MDVSQPNNWPRVEELFRRKIWQLKELGYAAVDDETTQQTMRELKELGYTSEPHAAVAYRA
-LRDQLNPGEYGLFLGTAHPAKFKESVEAILGETLDLPKELAERADLPLLSHNLPADFAAL
-RKLMMNHQ--></div>
+        <label for="program">Program: </label>
+        <select id="program" style="width:442px"
+                data-dojo-type="dijit/form/Select"
+                data-dojo-attach-point="program">
+            <option value="blastn">blastn</option>
+            <option selected="true" value="blastp">blastp</option>
+            <option value="blastx">blastx</option>
+            <option value="tblastn">tblastn</option>
+            <option value="tblastx">tblastx</option>
+        </select>
 
         <hr>
 
@@ -81,7 +74,7 @@ RKLMMNHQ--></div>
         <div data-dojo-type="dijit/form/Button"
              data-dojo-attach-point="mapButton"
              data-dojo-attach-event="onClick:submit"
-             data-dojo-props="disabled:true">
+             data-dojo-props="disabled:false">
             Search
         </div>
         <hr>
