@@ -453,3 +453,24 @@ div.overview {
 	font-size: .85em;
 	white-space: nowrap;
 }
+
+.queryModel,
+.queryField,
+.queryValue {
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.queryModel {
+	color: #76a72d;
+}
+
+.queryField {
+	color: #34698e;
+}
+
+.queryValue {
+	color: #ffcb00;
+	text-transform: none;
+}
+

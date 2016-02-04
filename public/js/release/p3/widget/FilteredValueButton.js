@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"font-size:14px;margin-top:-3px;margin-bottom:-1px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>"}});
+'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>"}});
 define("p3/widget/FilteredValueButton", [
 	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred","dijit/_Templated",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
@@ -17,7 +17,7 @@ define("p3/widget/FilteredValueButton", [
 		selected: null,
 
 		_setSelectedAttr: function(selected){
-			console.log("FFV _setSelected: ", selected);
+			// console.log("FFV _setSelected: ", selected);
 			
 			var content = [];
 			selected = selected.map(function(s,idx){ 
@@ -29,6 +29,9 @@ define("p3/widget/FilteredValueButton", [
 					content.push(co.join(""));
 					return s
 			},this)
+			this._set("selected", selected);
+
+			if (!this._started){ this._set("selected", selected); return; }
 
 			if (content.length==1){
 				this.selectedNode.innerHTML=content[0];
@@ -41,15 +44,17 @@ define("p3/widget/FilteredValueButton", [
 	
 		},
 		clearAll: function(){
-			console.log("Clear Selected")
+			// console.log("Clear Selected")
 			this.innerHTML="";
-			console.log("clear Category: ", this.category);
+			// console.log("clear Category: ", this.category);
 			on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, selected: [], bubbles: true, cancelable: true})
 			// this._set("selected",[])
 		},
 		startup: function(){
+			if (this._started){ return; }
 			this.inherited(arguments);
-			console.log("FilteredValueButton Startup()", this.selected);
+			// console.log("FilteredValueButton Startup()", this.selected);
+			this.set('selected', this.selected);
 		},
 		postCreate: function(){
 			this.inherited(arguments);

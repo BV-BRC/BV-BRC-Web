@@ -136,15 +136,16 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 			// summary:
 			//		Assigns a new query (and optionally queryOptions) to the list,
 			//		and tells it to refresh.
-			
+		
+			console.log("DGRID _setQuery queryOptions: ", queryOptions)	
 			var sort = queryOptions && queryOptions.sort;
-			
 			this.query = query !== undefined ? query : this.query;
 			this.queryOptions = queryOptions || this.queryOptions;
 			
 			// If we have new sort criteria, pass them through sort
 			// (which will update _sort and call refresh in itself).
 			// Otherwise, just refresh.
+			console.log("Sort: ", sort);
 			sort ? this.set("sort", sort) : this.refresh();
 		},
 		setStore: function(store, query, queryOptions){

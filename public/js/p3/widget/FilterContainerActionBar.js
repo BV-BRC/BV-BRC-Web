@@ -81,10 +81,10 @@ define([
 
 	return declare([ContainerActionBar], {
 		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
-		style: "height: 48px; margin:0px;padding:0px; overflow: hidden;",
+		style: "height: 52px; margin:0px;padding:0px; overflow: hidden;",
 		minimized: true,
-		minSize: 48,
-		absoluteMinSize: 48,
+		minSize: 52,
+		absoluteMinSize: 52,
 		query: "",
 		state: null,
 		filter:"",
@@ -93,6 +93,7 @@ define([
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
 		state: null,
+		enableAnchorButton: false,
 		constructor: function(){
 			this._ffWidgets={};
 			this._ffValueButtons={};
@@ -185,7 +186,7 @@ define([
 						// console.log("Create ffValueButton: ", cat, parsedFilter.byCategory[cat]);
 						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: parsedFilter.byCategory[cat]});
 						// console.log("ffv: ", ffv, " smallContentNode: ", this.smallContentNode);
-						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+						domConstruct.place(ffv.domNode,this.centerButtons, "last")
 						ffv.startup();
 					}else{
 						// console.log("Found ffValueButton. Set Selected");
@@ -204,16 +205,71 @@ define([
 
 
 		},
+
+		setButtonText: function(action,text){
+			console.log("setButtonText: ", action, text)
+			var textNode = this._actions[action].textNode
+			console.log("textNode: ", textNode);
+			textNode.innerHTML = text;
+		},
 		postCreate: function(){
-			// this.inherited(arguments);
+			this.inherited(arguments);
 			// domConstruct.destroy(this.pathContainer);
 			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
-			this.inherited(arguments);
 			domConstruct.destroy(this.pathContainer);
+			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView", style:{margin: "2px"}},this.domNode)
+			var table = this.smallContentNode = domConstruct.create("table", {style: {"border-collapse": "collapse", margin: "0px","padding":"0px", background: "#fff"}}, this.smallContentNode);
 
-			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView"}, this.domNode);	
+			var tr = domConstruct.create("tr",{},table);
+			this.leftButtons = domConstruct.create("td",{style: {"width":"1px", "text-align": "left", padding: "4px","white-space":"nowrap", background: "#fff"}}, tr);
+			this.containerNode = this.actionButtonContainer = this.centerButtons = domConstruct.create("td",{style: {"border": "0px", "border-left": "2px solid #aaa", "text-align": "left", padding: "4px", background: "#fff"}}, tr);
+			this.rightButtons = domConstruct.create("td",{style: {"text-align": "right", padding: "4px", background: "#fff",width: "1px","white-space":"nowrap"}}, tr);
+			// var str = domConstruct.create("tr",{},table);
+			// var std = domConstruct.create("td",{"colspan": 3,style: {padding: "0px",margin:"0px"}},str);
+			// var tfb1 = domConstruct.create("div",{style: {"text-align":"center"}},std);
+			// var tfb = domConstruct.create("div", {style: {display: "inline-block","border":"1px solid #aaa", width: "100px", "font-size":".75em","margin": "auto"},innerHTML: "SHOW FILTERS"}, tfb1)
+
+
+
 			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);		
-			domConstruct.place(this.containerNode, this.smallContentNode, "first");
+			// domConstruct.place(this.containerNode, this.smallContentNode, "first");
+			var _self=this;
+			var setAnchor=function(){
+				var q = _self.query;
+				console.log("Anchor: ", this.state)
+				if (_self.state && _self.state.hashParams && _self.state.hashParams.filter){
+
+				       // q = "and(" + q + "," + this.filter + ")";
+				       // console.log("New Anchor Query:",q)
+				       on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: _self.state.hashParams.filter})
+				}else{
+				       console.log("No Filters to set new anchor");
+				}
+			}
+
+
+			function toggleFilters(){
+					console.log("Toggle the Filters Panel",_self.domNode);
+					on.emit(_self.currentContainerWidget.domNode,"ToggleFilters",{});
+			}
+
+			this.addAction("ToggleFilters","fa icon-filter fa-1x",{style: {"font-size": ".5em"},label: "SHOW FILTERS",validType: ["*"], tooltip: "Toggle the filter display"},toggleFilters,true,this.rightButtons);
+			
+			this.watch("minimized", lang.hitch(this,function(attr,oldVal,minimized){
+				console.log("FilterContainerActionBar minimized: ", minimized)
+				if (this.minimized){
+					this.setButtonText("ToggleFilters","SHOW FILTERS")
+				}else{
+					this.setButtonText("ToggleFilters","HIDE FILTERS")
+				}
+			}));
+
+
+
+			if (this.enableAnchorButton){
+				this.addAction("AnchorCurrentFilters","fa icon-anchor fa-1x",{style: {"font-size": ".5em"},label: "APPLY FITLERS",validType: ["*"], tooltip: "Anchor the active filter to update the current context."},setAnchor,true,this.rightButtons);
+			}
+
 
 			this.fullViewNode = domConstruct.create("div", {"class": "FullFilterView", style: {"white-space": "nowrap","vertical-align": "top", margin:"0px", "margin-top":"5px",background: "#333","padding": "0px", "overflow-y": "hidden", "overflow-x": "auto"}}, this.domNode)
 			this.fullViewContentNode = domConstruct.create("div", {style: {}},this.fullViewNode)
@@ -233,7 +289,7 @@ define([
   				}
 			})
 
-			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.smallContentNode)
+			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.centerButtons)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
 			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
 			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
@@ -461,7 +517,7 @@ define([
 				Object.keys(byCat).forEach(function(cat){
 					if (!this._ffValueButtons[cat]){
 						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: byCat[cat]});
-						domConstruct.place(ffv.domNode,this.smallContentNode, "last")
+						domConstruct.place(ffv.domNode,this.centerButtons, "last")
 					}else{
 						this._ffValueButtons[cat].set('selected', byCat[cat])
 					}
@@ -588,6 +644,10 @@ define([
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
 			this.onSetState('state', "", this.state);
+
+			if (this.currentContainerWidget){
+				this.currentContainerWidget.resize();
+			}
 		},
 		resize: function(changeSize, resultSize){
 			        var node = this.domNode;
@@ -624,9 +684,9 @@ define([
 			        }
 
 			        if (mb.h<=Math.max(this.minSize, this.absoluteMinSize)){
-			        	this.minimized=true;
+			        	this.set("minimized",true);
 			        }else{
-			        	this.minimized=false;
+			        	this.set("minimized",false);
 			        }
 
 			        // Compute and save the size of my border box and content box
@@ -650,6 +710,35 @@ define([
 			        	this._ffWidgets[name].resize({h: this._contentBox.h-4});	        	
 			        },this);
 
+			},
+			addAction: function(name,classes,opts,fn,enabled,target){
+				console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+				if (target && typeof target=='string'){
+					if (target=="left"){
+						target = this.leftButtons;
+					}else if (target=="right"){
+						target = this.rightButtons;
+					}
+				}
+
+				// console.log("Add Action: ", name, classes, opts,enabled);
+				target = target || this.leftButtons;
+				var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
+				var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
+
+				if (opts && opts.label) {
+					var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
+				}		
+
+				domConstruct.place(wrapper,target,"last");
+
+				this._actions[name]={
+					options: opts,
+					action: fn,
+					button: wrapper,
+					textNode: t
+				};
+					
 			}
 
 	});

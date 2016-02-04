@@ -8,16 +8,41 @@ define([
 			Topic, query, ContentPane,IDMappingTemplate,
 			Dialog,popup,TooltipDialog){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function() {
 			popup.close(viewFASTATT);
 		}
 	});
 
-	var downloadTT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(downloadTT);
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+		var idType;
+
+		var ids = sel.map(function(d,idx){
+			if (!idType){
+				if (d['feature_id']){
+					idType="feature_id";
+				}else if (d['patric_id']) {
+					idType="patric_id"
+				}else if (d['alt_locus_tag']){
+					idType="alt_locus_tag";
+				}
+				console.log("SET ID TYPE TO: ", idType)
+			}
+
+			return d[idType];
+		});
+
+
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+	})
+	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
+	var downloadSelectionTT = new TooltipDialog({
+		content: dstContent, onMouseLeave: function(){
+			popup.close(downloadSelectionTT);
 		}
 	});
 
@@ -50,7 +75,7 @@ define([
 
 
 	return declare([BorderContainer], {
-		class: "GridContainer",
+		"class": "GridContainer",
 		gutters: false,
 		gridCtor: null,
 		query: "",
@@ -66,6 +91,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 		queryOptions: null,
 		columns:null,
+		enableAnchorButton: false,
 
 		_setColumnsAttr: function(columns){
 			if (this.grid){ 
@@ -153,8 +179,8 @@ define([
 
 		},
 		_setQueryAttr: function(query){
-			//console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
-			//console.log("    Query: ", query, "this.query: ", this.query)
+			console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			console.log("    Query: ", query, "this.query: ", this.query)
 			// if(query == this.query){
 				//console.log("  Not Skipping Query Update (unchanged)");
 				// return;
@@ -320,7 +346,7 @@ define([
 				"ViewGenomeBrowser",
 				"MultiButton fa icon-genome_browser fa-2x",
 				{					
-					label: "BROWSER",
+					label: "BRWSR",
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
@@ -336,7 +362,7 @@ define([
 				"ViewGenomeBrowserSeq",
 				"MultiButton fa icon-genome_browser fa-2x",
 				{					
-					label: "BROWSER",
+					label: "BRWSR",
 					validTypes:["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
@@ -361,6 +387,9 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data","feature_data","spgene_data","pathway_data"]
 				},
 				function(selection){
+					console.log("view FASTA")
+					viewFASTATT.selection = selection;
+					console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -386,7 +415,7 @@ define([
 			],[
 				"idmappingFeatures",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
+				{label:"ID MAP",ignoreDataType:true,min:1, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
 					validContainerTypes: ["feature_data","spgene_data"]
 				},
 				function(selection){
@@ -432,7 +461,7 @@ define([
 			],[			
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
-				{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
+				{label:"PTHWY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
 				}, 
 				function(selection){
@@ -445,9 +474,9 @@ define([
 
 			],[
 				"AddGroup", 
-				"fa icon-folder-open2 fa-2x", 
+				"fa icon-object-group fa-2x", 
 				{
-					label:"ADD GROUP",
+					label:"GROUP",
 					ignoreDataType:true,
 					multiple: true, 
 					validTypes:["*"],
@@ -457,7 +486,21 @@ define([
 				function(selection, containerWidget){
 					console.log("Add Items to Group", selection);
 					var dlg = new Dialog({title:"Copy Selection to Group"});
-					var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+					var type;
+
+					if (!containerWidget){ console.log("Container Widget not setup for addGroup"); return; }
+
+					if (containerWidget.containerType=="genome_data"){
+						type="genome_group"
+					}else if (containerWidget.containerType=="feature_data"){
+						type="feature_group";
+					}
+
+					if (!type){
+						console.error("Missing type for AddGroup")
+						return;
+					}
+					var stg = new SelectionToGroup({selection: selection, type: type,path: containerWidget.get("path")});
 					on(dlg.domNode, "dialogAction", function(evt){
 						dlg.hide();
 						setTimeout(function(){
@@ -471,20 +514,21 @@ define([
 				},
 				false
 			],[
-				"DownloadTable",
+				"DownloadSelection",
 				"fa fa-download fa-2x",
 				{
-					label:"DOWNLOAD",
+					label:"DWNLD",
 					multiple: true,
 					validTypes:["*"],
-					tooltip: "Download Table", 
-					tooltipDialog: downloadTT, 
+					tooltip: "Download Selection", 
+					tooltipDialog: downloadSelectionTT, 
 					validContainerTypes:["genome_data","sequence_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
 				}, 
 				function(selection){	
+					this.selectionActionBar._actions.DownloadSelection.selection = selection;
 					popup.open({
-						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
-						around: this.containerActionBar._actions.DownloadTable.button,
+						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.DownloadSelection.button,
 						orient: ["below"]
 					});
 				},
@@ -497,7 +541,7 @@ define([
 					multiple: false,
 					validTypes:["*"],
 					tooltip: "View Selected Taxonomy", 
-					tooltipDialog: downloadTT, 
+					tooltipDialog: downloadSelectionTT, 
 					validContainerTypes:["taxonomy_data"]
 				}, 
 				function(selection){	
@@ -509,11 +553,10 @@ define([
 				"ViewTaxonGenomes",
 				"fa icon-genome fa fa-2x",
 				{
-					label:"GENOMES",
+					label:"VIEW",
 					multiple: false,
 					validTypes:["*"],
 					tooltip: "View Genome List", 
-					tooltipDialog: downloadTT, 
 					validContainerTypes:["taxonomy_data"]
 				}, 
 				function(selection){	
@@ -529,7 +572,6 @@ define([
 					multiple: false,
 					validTypes:["*"],
 					tooltip: "View Genome List", 
-					tooltipDialog: downloadTT, 
 					validContainerTypes:["taxonomy_data"]
 				}, 
 				function(selection){	
@@ -575,7 +617,9 @@ define([
 					"className": "BrowserHeader",
 					dataModel: this.dataModel,
 					facetFields: this.facetFields,
-					state: this.state
+					state: this.state,
+					enableAnchorButton: this.enableAnchorButton,
+					currentContainerWidget: this
 				});
 
 				// console.log("gridcontainer startup()", this.state)
@@ -658,6 +702,7 @@ define([
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.itemDetailPanel);
+			
 
 			this.setupActions();
 			this.listen();
@@ -697,7 +742,7 @@ define([
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				// console.log("toggleFilters");
+				console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -706,15 +751,15 @@ define([
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
-						this.filterPanel.minimized = false;
+						this.filterPanel.set("minimized",false);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize + 150
 						});
 					}
 					else{
-						this.filterPanel.minimized = false;
+						this.filterPanel.set("minimized",true);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize
 						});
@@ -727,12 +772,12 @@ define([
 		setupActions: function(){
 			if(this.containerActionBar){
 				this.containerActions.forEach(function(a){
-					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
 				}, this);
 			}
 
 			this.selectionActions.forEach(function(a){
-				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
 			}, this);
 
 		},

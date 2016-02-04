@@ -1,10 +1,10 @@
 define("p3/widget/TranscriptomicsComparisonGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsComparisonJsonRest"
+	"./PageGrid", "./formatter","../store/TranscriptomicsComparisonJsonRest","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store) {
+			Grid, formatter, Store,selector) {
 
 		var store = new Store({});
 
@@ -18,6 +18,7 @@ define("p3/widget/TranscriptomicsComparisonGrid", [
 		primaryKey: "pid",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			pid: {label: "Sample ID", field: "pid",hidden:true},
 			eid: {label: "Experiment ID", field: "eid",hidden:true},
 			title: {label: "Title", field: "expname", hidden: false},

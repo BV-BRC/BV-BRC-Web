@@ -30,6 +30,7 @@ define([
 		facetFields: ["public","genome_status","reference_genome","antimicrobial_resistance","antimicrobial_resistance_evidence","isolation_country","host_name","disease","collection_date"],
 		getFilterPanel: function(opts){ return; },
 		dataModel: "genome",
+		enableAnchorButton: true,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -42,37 +43,19 @@ define([
 						orient: ["below"]
 					});
 				},
-				true
-			],
-			[
-				"AnchorCurrentFilters",
-				"fa icon-anchor fa-2x",
-				{label:"ANCHOR",multiple: false,validTypes:["*"],tooltip: "Anchor the active filter set to the current context.", tooltipDialog:downloadTT}, 
-				function(selection){	
-					var q = this.query;
-					console.log("Anchor: ", this.state)
-					if (this.state && this.state.hashParams && this.state.hashParams.filter){
-
-						// q = "and(" + q + "," + this.filter + ")";
-						// console.log("New Anchor Query:",q)
-						on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: this.state.hashParams.filter})
-					}else{
-						console.log("No Filters to set new anchor");
-					}
-
-				},
-				true
-			],
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters"}, 
-				function(selection){	
-					console.log("Toggle the Filters Panel");
-					on.emit(this.domNode,"ToggleFilters",{});
-				},
-				true
+				true,
+				"left"
 			]
+			// ,[
+			// 	"ToggleFilters",
+			// 	"fa icon-filter fa-2x",
+			// 	{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle the visibility of the available filters"}, 
+			// 	function(selection){	
+			// 		console.log("Toggle the Filters Panel");
+			// 		on.emit(this.domNode,"ToggleFilters",{});
+			// 	},
+			// 	true
+			// ]
 		])
 	});
 });

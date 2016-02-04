@@ -1,4 +1,11 @@
-define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
+define("p3/widget/DataItemFormatter", [
+	"dojo/date/locale","dojo/dom-construct","dojo/dom-class",
+	"dijit/form/Button","../JobManager","dijit/TitlePane"
+], function(
+	locale,domConstruct,domClass,
+	Button,JobManager,TitlePane
+
+){
 
 	var formatters = {
 		"default": function(item, options){
@@ -16,6 +23,139 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 
 			return table;
 		},
+
+		"job_parameters": function(item,options){
+			function renderObject(obj,target, depth){
+				if (!depth){ depth=1 }
+				if (typeof obj == 'object') {
+					var props = Object.keys(obj);
+					props.forEach(function(p){
+						if (typeof obj[p] == 'object'){
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*5) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{},tr);
+							renderObject(obj[p],tbody,depth+1);
+						}else{
+							var tr = domConstruct.create("tr",{},tbody);
+							var tda = domConstruct.create("td",{style: {"padding-left": (depth*10) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
+							var tdb = domConstruct.create("td",{innerHTML: obj[p]},tr);
+						}
+					})
+				}
+			}
+		},
+		"completed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			console.log("Display Detail Complete")
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+		"failed_job": function(item, options){
+			options = options || {}
+			options.hideExtra=true;
+			var featureColumns = [{
+				name : 'App',
+				text : 'app'
+			},{
+				name : 'Job ID',
+				text : 'id'
+			},{
+				name: "Status",
+				text: "status"
+			},{
+				name : 'Submitted',
+				text : 'submit_time'
+			},{
+				name : 'Start',
+				text : 'start_time'
+			}, {
+				name : 'Completed',
+				text : 'completed_time'
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			},{
+				name : "_formatterType",
+				text: "_formatterType",
+				data_hide: true
+			},{
+				name : "Parameters",
+				text: "parameters",
+				data_hide: true
+			}];
+
+			var div = domConstruct.create("div");			
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+
+	
+			var tpDiv = domConstruct.create("div",{},div);
+			var dlg = new TitlePane({title: "Error Output",open: false},tpDiv);
+			dlg.watch("open", function(attr,oldVal,open){
+				if (!open){return;}
+				JobManager.queryTaskDetail(item.id,true,true).then(function(detail){
+					//console.log("JOB DETAIL: ", detail);
+					clearTimeout(timer);
+					if (detail.stderr) {
+						dlg.set("content","<pre>" + detail.stderr + "</pre>");
+					}else{
+						dlg.set("content","Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail,null,4) + "</pre>");
+					}
+				}, function(err){
+					dlg.set("content","Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+				});
+			})
+
+					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+
+			return div;
+		},
+
+
 
 		"feature_data": function(item, options){
 			options = options || {}
@@ -351,7 +491,8 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 			options = options || {}
 			var featureColumns = [{
 				name : 'Taxonomy ID',
-				text : 'taxon_id'
+				text : 'taxon_id',
+				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name : 'Taxon Name',
 				text : 'taxon_name'
@@ -363,21 +504,24 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 				text : 'other_names'
 			}, {
 				name : 'Lineage',
-				text : 'lineage_names'
+				text : 'lineage_names',
+				data_hide: true
 			}, {
 				name : 'Lineage Ranks',
-				text : 'lineage_ranks'
+				text : 'lineage_ranks',
+				data_hide: true
 			}, {
 				name : 'Lineage IDs',
-				text : 'lineage_ids'
+				text : 'lineage_ids',
+				data_hide: true
 			},{
 				name : 'Genetic Code',
 				text : 'genetic_code'
 			}];
 
 			var div = domConstruct.create("div");			
-			console.log("Createe Display Header")
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-git-pull-request fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			console.log("Create Display Header")
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			console.log("Display Detail Complete")
@@ -1120,7 +1264,7 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 
 						if (mini == false)
 						{						
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1135,7 +1279,7 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 						}
 						else if (value[j].mini == true)
 						{
-							if (value[j].link && item[column] != "-")
+							if (value[j].link && item[column] != "-" && item[column] != "0")
 							{
 								tr = domConstruct.create("tr",{},tbody);
 								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
@@ -1220,7 +1364,7 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 					
 					if (mini == false)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
@@ -1235,7 +1379,7 @@ define("p3/widget/DataItemFormatter", ["dojo/date/locale","dojo/dom-construct","
 					}
 					else if (column_data[i].mini == true)
 					{
-						if (column_data[i].link && item[column] != "-")
+						if (column_data[i].link && item[column] != "-" && item[column] != "0")
 						{
 							tr = domConstruct.create("tr",{},tbody);
 							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);

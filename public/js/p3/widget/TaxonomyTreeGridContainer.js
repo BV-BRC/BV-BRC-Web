@@ -36,6 +36,17 @@ define([
 		enableFilterPanel: false,
 		dataModel: "taxonomy",
 		containerType: "taxonomy_data",
+		onSetState: function(attr, oldState, state){
+			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			if(!state){
+				// console.log("!state in grid container; return;")
+				return;
+			}
+
+			if (state&&state.search){
+				this.set("query", state.search);
+			}
+		},
 		getFilterPanel: function(opts){
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([

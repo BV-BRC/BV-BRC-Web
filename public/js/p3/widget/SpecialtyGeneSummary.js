@@ -45,6 +45,7 @@ define([
 						type: "Columns",
 						markers: true,
 						gap: 5,
+						maxBarSize: 20,
 						labels: true,
 						labelStyle: "outside",
 						animate: { duration: 1000, easing: easing.linear} 
@@ -53,7 +54,7 @@ define([
 					this.chart.addAxis("x", {
 						majorLabels: true,
 						minorTicks: false,
-						minorLabels: true,
+						minorLabels: false,
 						microTicks: false,
 						labels: this._chartLabels
 

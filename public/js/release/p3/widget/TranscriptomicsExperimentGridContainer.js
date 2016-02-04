@@ -61,7 +61,7 @@ define("p3/widget/TranscriptomicsExperimentGridContainer", [
 				true
 			]
 		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
+/*		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -83,6 +83,7 @@ define("p3/widget/TranscriptomicsExperimentGridContainer", [
 				false
 			]
 		]),
+*/
 		gridCtor: Grid
 
 	});

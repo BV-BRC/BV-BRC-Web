@@ -27,12 +27,15 @@ define([
 
 			this.phylogeny = new Phylogeny({
 				title: "Phylogeny",
-				id: this.viewer.id + "_" + "phylogeny"
+				id: this.viewer.id + "_" + "phylogeny",
+				state: this.state
 			});
 
 			this.taxontree = new TaxonomyTreeGrid({
 				title: "Taxonomy",
-				id: this.viewer.id + "_" + "taxontree"
+				id: this.viewer.id + "_" + "taxontree",
+				state: this.state
+				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
 			});
 			this.viewer.addChild(this.phylogeny,1)
 			this.viewer.addChild(this.taxontree,2)
@@ -42,13 +45,17 @@ define([
 		},
 		
 		_setTaxon_idAttr: function(id){
+			console.log("*** SET TAXON ID ", id);
 			this.taxon_id = id;
 
 			var state = this.state || {};
 
 			state.taxon_id = id;
 
-
+			// if (id && this.taxontree){
+			// 	console.log("set taxontree query: ", "eq(taxon_id," + id + ")");
+			// 	this.taxontree.set('query',"eq(taxon_id," + id + ")")
+			// }
 
 			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
 				headers: {
@@ -70,7 +77,7 @@ define([
 			//prevent default action
 		},
 		onSetState: function(attr, oldVal, state){
-
+			console.log("Taxonomy onSetState")
 			if(!state){
 				throw Error("No State Set");
 				return;
@@ -110,7 +117,8 @@ define([
 			}
 			switch(active){
 				case "taxontree":
-					activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
+					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) 	+ ")"}));
 					break;
 				case "phylogeny":
 				case "genomes":

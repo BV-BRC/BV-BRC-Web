@@ -37,7 +37,7 @@ define([
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 5000,
+		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 
@@ -141,7 +141,7 @@ define([
 				enableFilterPanel: true,
 				queryOptions: {
 					sort: [{attribute: "ec_number"}]
-				},
+				}
 			});
 
 			this.genesGrid = new PathwaysGridContainer({
@@ -156,7 +156,7 @@ define([
 				enableFilterPanel: true,
 				queryOptions: {
 					sort: [{attribute: "gene"}]
-				},
+				}
 			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));

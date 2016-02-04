@@ -1,4 +1,4 @@
-define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all","dojo/store/Memory","dojo/Store/Observable","dojo/when"], 
+define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all","dojo/store/Memory","dojo/store/Observable","dojo/when"], 
 
 function(Deferred,Topic,xhr,All,MemoryStore,Observable,when){
 	//console.log("Start Job Manager");

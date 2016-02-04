@@ -2,9 +2,7 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog",
-	"dojo/_base/lang","dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog","dijit/popup","dojo/on"
-
+	"dojo/_base/lang"
 ], function(declare, GridContainer, on,
 			ProteinFamiliesGrid, popup, Topic,
 			TooltipDialog,
