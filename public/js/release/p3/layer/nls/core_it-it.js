@@ -7,9 +7,9 @@ define('p3/layer/nls/core_it-it',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Il valore immesso non è valido.","missingMessage":"Questo valore è obbligatorio.","rangeMessage":"Questo valore è fuori dall'intervallo consentito.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Il valore immesso non è valido.","missingMessage":"Questo valore è obbligatorio.","rangeMessage":"Questo valore è fuori dall'intervallo consentito.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"v","blueLabel":"b","hueLabel":"t","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Selettore tonalità","saturationPickerTitle":"Selettore saturazione","_localized":{}}
 ,

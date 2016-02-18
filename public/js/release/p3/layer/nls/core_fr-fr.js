@@ -7,9 +7,9 @@ define('p3/layer/nls/core_fr-fr',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"La valeur indiquée n'est pas correcte.","missingMessage":"Cette valeur est requise.","rangeMessage":"Cette valeur n'est pas comprise dans la plage autorisée.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} de ${total} résultats","gotoFirst":"Aller à la première page","gotoNext":"Aller à la page suivante","gotoPrev":"Aller à la page précédente","gotoLast":"Aller à la dernière page","gotoPage":"Aller à la page","jumpPage":"Aller à la page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"La valeur indiquée n'est pas correcte.","missingMessage":"Cette valeur est requise.","rangeMessage":"Cette valeur n'est pas comprise dans la plage autorisée.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"v","blueLabel":"b","hueLabel":"t","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Sélecteur de teinte","saturationPickerTitle":"Sélecteur de saturation","_localized":{}}
 ,

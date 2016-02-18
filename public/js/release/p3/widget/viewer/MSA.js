@@ -114,13 +114,16 @@ define("p3/widget/viewer/MSA", [
 		render: function(){
 			this.contentPane.set("content", "");
             var menuDiv = domConstruct.create("div",{},this.contentPane.containerNode);
-            var combineDiv = domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
-            var treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},combineDiv);
-            treeDiv.setAttribute("style", "padding-top:106px; width:35%; vertical-align:top; overflow-x:scroll; display:inline-block; border-right:1px solid grey;");
-            var msaDiv = domConstruct.create("div",{"style":{"width":"100%"}}, combineDiv);
+            var combineDiv = domConstruct.create("table",{"style":{"width":"100%"}},this.contentPane.containerNode);//domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
+            var combineRow = domConstruct.create("tr",{},combineDiv);
+            var cell1 = domConstruct.create("td",{"width":"30%"},combineRow);
+            var cell2 = domConstruct.create("td",{"width":"70%"},combineRow);
+            var treeDiv = domConstruct.create("div",{id:this.id + "tree-container"},cell1);
+            treeDiv.setAttribute("style", "padding-top:106px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;");
+            var msaDiv = domConstruct.create("div",{"style":{"width":"100%"}}, cell2);
             msaDiv.style.display="inline-block";
-            msaDiv.style.width="64%";
-            msaDiv.style.overflowX="scroll";
+            //msaDiv.style.width="64%";
+            //msaDiv.style.overflowX="scroll";
             msaDiv.style.overflowY="hidden";
             msaDiv.style.verticalAlign="bottom";
             msaDiv.style.paddingBottom="10px";
@@ -156,10 +159,10 @@ define("p3/widget/viewer/MSA", [
             };
             opts.zoomer = {
             menuFontsize: "12px",
-            //autoResize: false,
+            autoResize: true,
             labelNameLength: 150,
-            alignmentHeight: 4000,
-            alignmentWidth: msa_models.seqs[0].seq.length*15.1,
+            //alignmentHeight: 4000,
+            //alignmentWidth: msa_models.seqs[0].seq.length*15.1,
             residueFont: "12",
             rowHeight: 14.04
             };
@@ -313,7 +316,11 @@ define("p3/widget/viewer/MSA", [
             //var ctx = msaDiv2.getContext("2d");
             //ctx.fillStyle = "#FF0000";
             //ctx.fillRect(0,0,150,75);
-            m.el.parentElement.parentElement.insertBefore(menuOpts.el, combineDiv);
+            
+            
+            //m.el.parentElement.parentElement.parentElement.insertBefore(menuOpts.el, combineDiv);
+            
+            
             //m.el.parentElement.insertBefore(menuOpts.el, combineDiv);
             var initialHidden=0;
             //var treeDiv2=document.getElementsByClassName("tnt_groupDiv");
@@ -321,8 +328,8 @@ define("p3/widget/viewer/MSA", [
             //var msaDiv=document.getElementsByClassName("biojs_msa_stage");
             //var msaDiv=document.getElementById("msaDiv");
             msaDiv.style.display="inline-block";
-            msaDiv.style.width="64%";
-            msaDiv.style.overflowX="scroll";
+            //msaDiv.style.width="64%";
+            msaDiv.style.overflowX="hidden";
             msaDiv.style.overflowY="hidden";
             msaDiv.style.verticalAlign="bottom";
             msaDiv.style.paddingBottom="10px";

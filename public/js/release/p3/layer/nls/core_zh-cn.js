@@ -7,9 +7,9 @@ define('p3/layer/nls/core_zh-cn',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"输入的值无效。","missingMessage":"该值是必需的。","rangeMessage":"此值超出范围。","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} 共 ${total} 条结果","gotoFirst":"首页","gotoNext":"后一页","gotoPrev":"前一页","gotoLast":"末页","gotoPage":"到这页","jumpPage":"跳到页","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"输入的值无效。","missingMessage":"该值是必需的。","rangeMessage":"此值超出范围。","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"十六进制","huePickerTitle":"色彩选择器","saturationPickerTitle":"饱和度选择器","_localized":{}}
 ,

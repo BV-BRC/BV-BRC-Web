@@ -7,9 +7,9 @@ define('p3/layer/nls/core_el',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Η τιμή που καταχωρήσατε δεν είναι έγκυρη.","missingMessage":"Η τιμή αυτή πρέπει απαραίτητα να καθοριστεί.","rangeMessage":"Η τιμή αυτή δεν ανήκει στο εύρος έγκυρων τιμών.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Η τιμή που καταχωρήσατε δεν είναι έγκυρη.","missingMessage":"Η τιμή αυτή πρέπει απαραίτητα να καθοριστεί.","rangeMessage":"Η τιμή αυτή δεν ανήκει στο εύρος έγκυρων τιμών.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"κ","greenLabel":"π","blueLabel":"μ","hueLabel":"α","saturationLabel":"κ","valueLabel":"τ","degLabel":"°","hexLabel":"16-αδικό","huePickerTitle":"Επιλογή απόχρωσης","saturationPickerTitle":"Επιλογή κορεσμού","_localized":{}}
 ,

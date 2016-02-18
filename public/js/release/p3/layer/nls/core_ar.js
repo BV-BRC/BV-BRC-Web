@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ar',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"القيمة التي تم ادخالها غير صحيحة.","missingMessage":"يجب ادخال هذه القيمة.","rangeMessage":"هذه القيمة ليس بالمدى الصحيح.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} من ${total} نتائج","gotoFirst":"الصفحة الأولى","gotoNext":"التالي","gotoPrev":"السابق","gotoLast":"الصفحة الأخيرة","gotoPage":"صفحة","jumpPage":"إذهب لصفحة ","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"القيمة التي تم ادخالها غير صحيحة.","missingMessage":"يجب ادخال هذه القيمة.","rangeMessage":"هذه القيمة ليس بالمدى الصحيح.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"محدد تدرج اللون","saturationPickerTitle":"محدد درجة التشبع","_localized":{}}
 ,

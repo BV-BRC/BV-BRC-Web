@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ko-kr',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"입력된 값이 올바르지 않습니다.","missingMessage":"이 값은 필수입니다.","rangeMessage":"이 값은 범위를 벗어납니다.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"입력된 값이 올바르지 않습니다.","missingMessage":"이 값은 필수입니다.","rangeMessage":"이 값은 범위를 벗어납니다.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"R","greenLabel":"G","blueLabel":"B","hueLabel":"H","saturationLabel":"S","valueLabel":"V","degLabel":"°","hexLabel":"16진","huePickerTitle":"색상 선택자","saturationPickerTitle":"채도 선택자","_localized":{}}
 ,

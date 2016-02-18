@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ja-jp',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"入力した値は無効です。","missingMessage":"この値は必須です。","rangeMessage":"この値は範囲外です。","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"検索結果${total}件中${start}件から${end}件までを表示。","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"入力した値は無効です。","missingMessage":"この値は必須です。","rangeMessage":"この値は範囲外です。","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"R","greenLabel":"G","blueLabel":"B","hueLabel":"H","saturationLabel":"S","valueLabel":"V","degLabel":"°","hexLabel":"Hex","huePickerTitle":"色調セレクター","saturationPickerTitle":"彩度セレクター","_localized":{}}
 ,

@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ru',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Указано недопустимое значение.","missingMessage":"Это обязательное значение.","rangeMessage":"Это значение вне диапазона.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Указано недопустимое значение.","missingMessage":"Это обязательное значение.","rangeMessage":"Это значение вне диапазона.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"к","greenLabel":"з","blueLabel":"с","hueLabel":"о","saturationLabel":"н","valueLabel":"з","degLabel":"°","hexLabel":"шест","huePickerTitle":"Выбор оттенка","saturationPickerTitle":"Выбор насыщенности","_localized":{}}
 ,

@@ -7,9 +7,9 @@ define('p3/layer/nls/core_de',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Der eingegebene Wert ist ungültig. ","missingMessage":"Dieser Wert ist erforderlich.","rangeMessage":"Dieser Wert liegt außerhalb des gültigen Bereichs. ","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} von ${total} Ergebnissen","gotoFirst":"Gehe zu erster Seite","gotoNext":"Gehe zu nächster Seite","gotoPrev":"Gehe zu vorheriger Seite","gotoLast":"Gehe zu letzter Seite","gotoPage":"Gehe zu Seite","jumpPage":"Springe zu Seite","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Der eingegebene Wert ist ungültig. ","missingMessage":"Dieser Wert ist erforderlich.","rangeMessage":"Dieser Wert liegt außerhalb des gültigen Bereichs. ","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Farbtonauswahl","saturationPickerTitle":"Sättigungsauswahl","_localized":{}}
 ,

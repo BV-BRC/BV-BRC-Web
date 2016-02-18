@@ -7,9 +7,9 @@ define('p3/layer/nls/core_pt-br',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"O valor inserido não é válido.","missingMessage":"Este valor é necessário.","rangeMessage":"Este valor está fora do intervalo. ","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} de ${total} resultados","gotoFirst":"Primeira página","gotoNext":"Próxima página","gotoPrev":"Página anterior","gotoLast":"Última página","gotoPage":"Ir para página","jumpPage":"Pular para página","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"O valor inserido não é válido.","missingMessage":"Este valor é necessário.","rangeMessage":"Este valor está fora do intervalo. ","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Seletor de Matiz","saturationPickerTitle":"Seletor de Saturação","_localized":{}}
 ,

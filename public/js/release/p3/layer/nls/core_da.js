@@ -7,9 +7,9 @@ define('p3/layer/nls/core_da',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Den angivne værdi er ugyldig.","missingMessage":"Værdien er påkrævet.","rangeMessage":"Værdien er uden for intervallet.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Den angivne værdi er ugyldig.","missingMessage":"Værdien er påkrævet.","rangeMessage":"Værdien er uden for intervallet.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"n","saturationLabel":"m","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Vælg nuance","saturationPickerTitle":"Vælg mætning","_localized":{}}
 ,

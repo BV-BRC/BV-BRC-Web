@@ -7,9 +7,9 @@ define('p3/layer/nls/core_es-es',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Mostrar o esconder columnas","popupLabel":"Mostrar o esconder columnas","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"El valor especificado no es válido.","missingMessage":"Este valor es necesario.","rangeMessage":"Este valor está fuera del intervalo.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} de ${total} resultados","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"El valor especificado no es válido.","missingMessage":"Este valor es necesario.","rangeMessage":"Este valor está fuera del intervalo.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"v","blueLabel":"a","hueLabel":"m","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Selector de tono","saturationPickerTitle":"Selector de saturación","_localized":{}}
 ,

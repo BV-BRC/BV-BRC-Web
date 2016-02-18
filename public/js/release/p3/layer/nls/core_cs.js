@@ -7,9 +7,9 @@ define('p3/layer/nls/core_cs',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Zadaná hodnota není platná.","missingMessage":"Tato hodnota je vyžadována.","rangeMessage":"Tato hodnota je mimo rozsah.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Zadaná hodnota není platná.","missingMessage":"Tato hodnota je vyžadována.","rangeMessage":"Tato hodnota je mimo rozsah.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"č","greenLabel":"z","blueLabel":"m","hueLabel":"o","saturationLabel":"n","valueLabel":"j","degLabel":"°","hexLabel":"hex","huePickerTitle":"Selektor odstínu","saturationPickerTitle":"Selektor sytosti","_localized":{}}
 ,

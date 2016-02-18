@@ -7,9 +7,9 @@ define('p3/layer/nls/core_th',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"ค่าที่ป้อนไม่ถูกต้อง","missingMessage":"จำเป็นต้องมีค่านี้","rangeMessage":"ค่านี้เกินช่วง","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} ของ ${total} ผลลัพธ์","gotoFirst":"ไปหน้าแรก","gotoNext":"ไปหน้าถัดไป","gotoPrev":"ไปหน้าก่อน","gotoLast":"ไปหน้าสุดท้าย","gotoPage":"ไปหน้า","jumpPage":"กระโดดไปหน้า","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"ค่าที่ป้อนไม่ถูกต้อง","missingMessage":"จำเป็นต้องมีค่านี้","rangeMessage":"ค่านี้เกินช่วง","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"ก.","blueLabel":"b","hueLabel":"ชม.","saturationLabel":"วิ.","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"ตัวเลือกสี","saturationPickerTitle":"ตัวเลือกความอิ่มของสี","_localized":{}}
 ,

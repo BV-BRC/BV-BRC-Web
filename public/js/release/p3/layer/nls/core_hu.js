@@ -7,9 +7,9 @@ define('p3/layer/nls/core_hu',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"A megadott érték érvénytelen.","missingMessage":"Meg kell adni egy értéket.","rangeMessage":"Az érték kívül van a megengedett tartományon.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"A megadott érték érvénytelen.","missingMessage":"Meg kell adni egy értéket.","rangeMessage":"Az érték kívül van a megengedett tartományon.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Árnyalat kiválasztó","saturationPickerTitle":"Telítettség kiválasztó","_localized":{}}
 ,

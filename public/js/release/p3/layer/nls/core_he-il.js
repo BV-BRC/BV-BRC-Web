@@ -7,9 +7,9 @@ define('p3/layer/nls/core_he-il',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"הערך שצוין אינו חוקי.","missingMessage":"זהו ערך דרוש.","rangeMessage":"הערך מחוץ לטווח.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"הערך שצוין אינו חוקי.","missingMessage":"זהו ערך דרוש.","rangeMessage":"הערך מחוץ לטווח.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"א","greenLabel":"י","blueLabel":"כ","hueLabel":"ג","saturationLabel":"ר","valueLabel":"ע","degLabel":"°","hexLabel":"הקס","huePickerTitle":"בורר גוון","saturationPickerTitle":"בורר רוויה","_localized":{}}
 ,

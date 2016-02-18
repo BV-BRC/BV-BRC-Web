@@ -7,9 +7,9 @@ define('p3/layer/nls/core_ROOT',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{"es":1,"ro":1,"sl":1}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"The value entered is not valid.","missingMessage":"This value is required.","rangeMessage":"This value is out of range.","_localized":{"ar":1,"az":1,"bg":1,"ca":1,"cs":1,"da":1,"de":1,"el":1,"es":1,"fi":1,"fr":1,"he":1,"hr":1,"hu":1,"id":1,"it":1,"ja":1,"kk":1,"ko":1,"nb":1,"nl":1,"pl":1,"pt":1,"pt-pt":1,"ro":1,"ru":1,"sk":1,"sl":1,"sv":1,"th":1,"tr":1,"uk":1,"zh":1,"zh-tw":1}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{"ar":1,"de":1,"es":1,"fr":1,"ja":1,"pt":1,"ro":1,"sk":1,"sl":1,"th":1,"zh-cn":1,"zh-hk":1}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"The value entered is not valid.","missingMessage":"This value is required.","rangeMessage":"This value is out of range.","_localized":{"ar":1,"az":1,"bg":1,"ca":1,"cs":1,"da":1,"de":1,"el":1,"es":1,"fi":1,"fr":1,"he":1,"hr":1,"hu":1,"id":1,"it":1,"ja":1,"kk":1,"ko":1,"nb":1,"nl":1,"pl":1,"pt":1,"pt-pt":1,"ro":1,"ru":1,"sk":1,"sl":1,"sv":1,"th":1,"tr":1,"uk":1,"zh":1,"zh-tw":1}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Hue Selector","saturationPickerTitle":"Saturation Selector","_localized":{"ar":1,"az":1,"bg":1,"ca":1,"cs":1,"da":1,"de":1,"el":1,"es":1,"fi":1,"fr":1,"he":1,"hr":1,"hu":1,"id":1,"it":1,"ja":1,"kk":1,"ko":1,"nb":1,"nl":1,"pl":1,"pt":1,"pt-pt":1,"ro":1,"ru":1,"sk":1,"sl":1,"sv":1,"th":1,"tr":1,"uk":1,"zh":1,"zh-tw":1}}
 ,

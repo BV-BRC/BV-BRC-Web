@@ -1,4 +1,4 @@
-define([], function(){
+define("p3/widget/Venn", [], function(){
 window.GroupCompare = {
   GroupCompare: function(config) {
     // var panelHeight = 400;

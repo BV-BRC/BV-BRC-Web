@@ -7,9 +7,9 @@ define('p3/layer/nls/core_nl-nl',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"De opgegeven waarde is ongeldig.","missingMessage":"Deze waarde is verplicht.","rangeMessage":"Deze waarde is niet toegestaan.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"De opgegeven waarde is ongeldig.","missingMessage":"Deze waarde is verplicht.","rangeMessage":"Deze waarde is niet toegestaan.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"t","saturationLabel":"i","valueLabel":"h","degLabel":"°","hexLabel":"hex","huePickerTitle":"Tint selecteren","saturationPickerTitle":"Intensiteit selecteren","_localized":{}}
 ,

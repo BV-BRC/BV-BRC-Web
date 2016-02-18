@@ -7,9 +7,9 @@ define('p3/layer/nls/core_tr',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Girilen değer geçersiz.","missingMessage":"Bu değer gerekli.","rangeMessage":"Bu değer aralık dışında.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Girilen değer geçersiz.","missingMessage":"Bu değer gerekli.","rangeMessage":"Bu değer aralık dışında.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"k","greenLabel":"y","blueLabel":"m","hueLabel":"t","saturationLabel":"d","valueLabel":"d","degLabel":"°","hexLabel":"onaltılı","huePickerTitle":"Ton Seçici","saturationPickerTitle":"Doygunluk Seçici","_localized":{}}
 ,

@@ -7,9 +7,9 @@ define('p3/layer/nls/core_sl',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Pokaži ali skrij stolpce","popupLabel":"Pokaži ali skrij stolpce","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Vnesena vrednost ni veljavna.","missingMessage":"Ta vrednost je zahtevana.","rangeMessage":"Ta vrednost je izven območja.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} od ${total} rezultatov","gotoFirst":"Pojdi na prvo stran","gotoNext":"Pojdi na naslednjo stran","gotoPrev":"Pojdi na prejšnjo stran","gotoLast":"Pojdi na zadnjo stran","gotoPage":"Pojdi na stran","jumpPage":"Skoči na stran","rowsPerPage":"Število vrstic na stran","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Vnesena vrednost ni veljavna.","missingMessage":"Ta vrednost je zahtevana.","rangeMessage":"Ta vrednost je izven območja.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Izbirnik odtenka","saturationPickerTitle":"Izbirnik nasičenosti","_localized":{}}
 ,

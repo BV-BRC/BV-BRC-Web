@@ -7,9 +7,9 @@ define('p3/layer/nls/core_fi-fi',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Annettu arvo ei kelpaa.","missingMessage":"Tämä arvo on pakollinen.","rangeMessage":"Tämä arvo on sallitun alueen ulkopuolella.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Annettu arvo ei kelpaa.","missingMessage":"Tämä arvo on pakollinen.","rangeMessage":"Tämä arvo on sallitun alueen ulkopuolella.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Sävyn valitsin","saturationPickerTitle":"Kylläisyyden valitsin","_localized":{}}
 ,

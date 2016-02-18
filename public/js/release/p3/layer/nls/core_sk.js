@@ -7,9 +7,9 @@ define('p3/layer/nls/core_sk',{
 ,
 'dgrid/extensions/nls/columnHider':{"popupTriggerLabel":"Show or hide columns","popupLabel":"Show or hide columns","_localized":{}}
 ,
-'dijit/form/nls/validate':{"invalidMessage":"Zadaná hodnota nie je platná.","missingMessage":"Táto hodnota je povinná.","rangeMessage":"Táto hodnota je mimo rozsah.","_localized":{}}
-,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} z ${total} výsledkov","gotoFirst":"Prvá stránka","gotoNext":"Nasledovná stránka","gotoPrev":"Predchádzajúca stránka","gotoLast":"Posledná stránka","gotoPage":"Na stránku","jumpPage":"Na stránku","rowsPerPage":"Number of rows per page","_localized":{}}
+,
+'dijit/form/nls/validate':{"invalidMessage":"Zadaná hodnota nie je platná.","missingMessage":"Táto hodnota je povinná.","rangeMessage":"Táto hodnota je mimo rozsah.","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Výber odtieňa","saturationPickerTitle":"Výber sýtosti","_localized":{}}
 ,
