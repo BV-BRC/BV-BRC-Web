@@ -579,9 +579,9 @@ define([
 			var div = domConstruct.create("div",{id: "gse"}, this.containerNode);
 			
             var color_type1 = domConstruct.create("input",{type:"radio", name: "color_type", id:"default", value : "true", checked: 'Y', style: "margin: 5px"}, div);
-            var color_label1 = domConstruct.create("label",{for: "default", innerHTML: "default"}, div);
+            var color_label1 = domConstruct.create("label",{"for": "default", innerHTML: "default"}, div);
             var color_type2 = domConstruct.create("input",{type:"radio", name: "color_type", id:"alter_color", value : "false", style: "margin: 5px"}, div);
-            var color_label1 = domConstruct.create("label",{for: "default", innerHTML: "alternative color"}, div);
+            var color_label1 = domConstruct.create("label",{"for": "default", innerHTML: "alternative color"}, div);
 
 			color_type1.addEventListener("click", function() {
   				colorChoice('Y');
