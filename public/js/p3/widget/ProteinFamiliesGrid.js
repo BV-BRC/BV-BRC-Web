@@ -25,8 +25,8 @@ define([
 			description: {label: 'Description', field: 'description'},
 			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
-			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
-			aa_length_std: {label: 'Std', field: 'aa_length_std'}
+			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
+			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric }
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);
