@@ -315,6 +315,7 @@ define([
 				});
 				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
 				// refer http://jsfiddle.net/a856P/51/ for further implementation
+				popup.close(downloadHM);
 			});
 			on(btnDownloadHeatmap.domNode, "click", function(){
 				popup.open({
