@@ -1,28 +1,26 @@
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/dom-construct",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/AdvancedSearch.html","./Button","dijit/registry","dojo/_base/lang",
-	"dojo/dom","dojo/topic","dijit/form/TextBox","dojo/keys","dijit/_FocusMixin","dijit/focus"
-], function(
-	declare, WidgetBase, on,domConstruct,
-	domClass,Templated,WidgetsInTemplate,
-	template,Button,Registry,lang,
-	dom,Topic,TextBox,keys,FocusMixin,focusUtil
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate,FocusMixin], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/AdvancedSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
+	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus"
+], function(declare, WidgetBase, on, domConstruct,
+			domClass, Templated, WidgetsInTemplate,
+			template, Button, Registry, lang,
+			dom, Topic, TextBox, keys, FocusMixin, focusUtil){
+	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
 		constructor: function(){
 		},
 		"baseClass": "AdvancedSearch",
-		"disabled":false,
+		"disabled": false,
 		"value": "",
 		_setValueAttr: function(q){
-			this.query=q;	
+			this.query = q;
 			this.searchInput.set("value", q);
 		},
 
 		onKeypress: function(evt){
-			if (evt.charOrCode==keys.ENTER) {
+			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
 				var searchFilter = this.searchFilter.get('value');
 				console.log("Do Search: ", searchFilter, query);

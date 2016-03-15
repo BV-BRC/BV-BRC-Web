@@ -5,17 +5,16 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "../Phylogeny","../../util/PathJoin","../DataItemFormatter",
-	"../TaxonomyTreeGridContainer","../TaxonomyOverview"
+	"../TranscriptomicsContainer", "../Phylogeny", "../../util/PathJoin", "../DataItemFormatter",
+	"../TaxonomyTreeGridContainer", "../TaxonomyOverview"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, Phylogeny, PathJoin,DataItemFormatter,
-			TaxonomyTreeGrid,TaxonomyOverview
-){
+			TranscriptomicsContainer, Phylogeny, PathJoin, DataItemFormatter,
+			TaxonomyTreeGrid, TaxonomyOverview){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -37,13 +36,13 @@ define([
 				state: this.state
 				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
 			});
-			this.viewer.addChild(this.phylogeny,1)
-			this.viewer.addChild(this.taxontree,2)
+			this.viewer.addChild(this.phylogeny, 1);
+			this.viewer.addChild(this.taxontree, 2);
 			domConstruct.empty(this.queryNode);
 
 			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
 		},
-		
+
 		_setTaxon_idAttr: function(id){
 			console.log("*** SET TAXON ID ", id);
 			this.taxon_id = id;
@@ -57,7 +56,7 @@ define([
 			// 	this.taxontree.set('query',"eq(taxon_id," + id + ")")
 			// }
 
-			xhr.get(PathJoin(this.apiServiceUrl,"taxonomy", id), {
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", id), {
 				headers: {
 					accept: "application/json"
 				},
@@ -71,7 +70,7 @@ define([
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.overview.set('taxonomy',  taxonomy);
+			this.overview.set('taxonomy', taxonomy);
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -109,20 +108,18 @@ define([
 
 			var activeTab = this[active];
 
-
-
-			if (!activeTab){
+			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
-					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) 	+ ")"}));
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")"}));
 					break;
 				case "phylogeny":
 				case "genomes":
-					console.log("setting ",active," state: ", this.state);
+					console.log("setting ", active, " state: ", this.state);
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
@@ -130,11 +127,11 @@ define([
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
 					break;
 				default:
 					var activeQueryState;
-					if (this.state && this.state.genome_ids){
+					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
@@ -142,7 +139,7 @@ define([
 
 					}
 
-					if (activeQueryState){
+					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);

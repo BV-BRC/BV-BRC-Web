@@ -1,46 +1,49 @@
-define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic","./WorkspaceManager"],function(xhr,declare,lang,Deferred,Topic,WorkspaceManager){
+define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
+	"dojo/_base/Deferred", "dojo/topic", "./WorkspaceManager"
+], function(xhr, declare, lang,
+			Deferred, Topic, WorkspaceManager){
 
 	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
 	var UploadManager = (declare([], {
 		constructor: function(){
-			this.activeCount=0;
-			this.completeCount=0;
-			this.completedUploads=[]
-			this.errorCount=0;
-			this.inProgress={};
+			this.activeCount = 0;
+			this.completeCount = 0;
+			this.completedUploads = [];
+			this.errorCount = 0;
+			this.inProgress = {};
 
-			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
-				if (this.listenUnload){
-					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads ."; 
+			window.addEventListener("beforeunload", lang.hitch(this, function(event){
+				if(this.listenUnload){
+					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads .";
 					(event || window.event).returnValue = msg;
 					return msg;
 				}
-				return;		
+				return;
 			}));
-			
+
 		},
 		token: null,
 		upload: function(files, token){
-			if (token) {
-				this.token=token;
+			if(token){
+				this.token = token;
 				this.headers = {
 					Authorization: "OAuth " + token
 				}
 			}
-			var _self=this;
-			if (files instanceof Array){
+			var _self = this;
+			if(files instanceof Array){
 				files.forEach(function(obj){
-					_self._uploadFile(obj.file, obj.url,obj.uploadDirectory);
+					_self._uploadFile(obj.file, obj.url, obj.uploadDirectory);
 				});
-			}else if (files && files.file){
+			}else if(files && files.file){
 				_self._uploadFile(files.file, files.url, files.uploadDirectory);
 			}
 
-			Topic.publish("/refreshWorkspace",{});
+			Topic.publish("/refreshWorkspace", {});
 		},
 		getUploadSummary: function(){
 			var def = new Deferred();
-			var _self=this;
+			var _self = this;
 			var summary = {
 				inProgress: _self.activeCount,
 				complete: _self.completeCount,
@@ -49,59 +52,65 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 				activeFiles: this.inProgress,
 				progress: 0
 			}
-			var totalSize=0;
-			var loadedSize=0;
+			var totalSize = 0;
+			var loadedSize = 0;
 
 			Object.keys(this.inProgress).forEach(function(fname){
-				totalSize+=this.inProgress[fname].total;
-				loadedSize+=this.inProgress[fname].loaded;
-			},this)
+				totalSize += this.inProgress[fname].total;
+				loadedSize += this.inProgress[fname].loaded;
+			}, this)
 
-			if (totalSize>0) {
-				summary.progress = parseInt((loadedSize/totalSize)*100);
+			if(totalSize > 0){
+				summary.progress = parseInt((loadedSize / totalSize) * 100);
 			}else{
-				summary.progress=0;
+				summary.progress = 0;
 			}
 			console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
 
-			var msg ={
-				type: "UploadStatSummary", 
-				summary:summary
+			var msg = {
+				type: "UploadStatSummary",
+				summary: summary
 			};
 
 			console.log("Summary message: ", msg)
 			def.resolve(msg);
-                        return def.promise;
+			return def.promise;
 		},
-
 
 		listenUnload: false,
 		unloadPageListener: function(){
-			this.listenUnload=false;
+			this.listenUnload = false;
 		},
 
 		loadPageListener: function(){
-			this.listenUnload=true;
-		},	
+			this.listenUnload = true;
+		},
 
-		_uploadFile: function(file, url, workspacePath) {	
+		_uploadFile: function(file, url, workspacePath){
 			var def = new Deferred();
 			var fd = new FormData();
 			fd.append("upload", file);
-			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath:workspacePath}
-			var _self=this;	
+			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath: workspacePath}
+			var _self = this;
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
 				console.log("evt: ", evt);
-				console.log("progress: ", (evt.loaded / evt.total)*100);
+				console.log("progress: ", (evt.loaded / evt.total) * 100);
 				_self.inProgress[file.name].loaded = evt.loaded;
 				_self.inProgress[file.name].total = evt.total;
-				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url, workspacePath: workspacePath})
+				Topic.publish("/upload", {
+					type: "UploadProgress",
+					filename: file.name,
+					event: evt,
+					progress: parseInt((evt.loaded / evt.total) * 100),
+					url: url,
+					workspacePath: workspacePath
+				})
 			});
 
-			req.upload.addEventListener("load", lang.hitch(this,function(data){
+			req.upload.addEventListener("load", lang.hitch(this, function(data){
 				var p = workspacePath;
-				if (p.charAt(p.length-1)!="/") {
+				if(p.charAt(p.length - 1) != "/"){
 					p = p + "/";
 				}
 				p = p + file.name;
@@ -110,20 +119,25 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 					_self.completeCount++
 					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
 					Object.keys(_self.inProgress).some(function(key){
-						if (key == file.name){
+						if(key == file.name){
 							delete _self.inProgress[key];
 						}
 					})
-	
-					Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
-	
-					if (_self.activeCount < 1){
+
+					Topic.publish("/upload", {
+						type: "UploadComplete",
+						filename: file.name,
+						url: url,
+						workspacePath: workspacePath
+					})
+
+					if(_self.activeCount < 1){
 						_self.unloadPageListener();
 					}
 					def.resolve(data);
 				}));
 			}));
-	
+
 			req.upload.addEventListener("error", function(error){
 				console.log("Error Uploading File: ", error);
 				_self.activeCount--;
@@ -133,7 +147,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 
 			req.open("PUT", url, true);
 
-			for (var prop in this.headers){
+			for(var prop in this.headers){
 				console.log("Set Request Header: ", prop, this.headers[prop]);
 				req.setRequestHeader(prop, this.headers[prop]);
 			}
@@ -161,7 +175,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			*/
 		}
 
-	}))()
+	}))();
 
 	return UploadManager;
 });

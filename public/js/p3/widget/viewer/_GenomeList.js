@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer","../../util/PathJoin","../../util/QueryToEnglish"
+	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer,PathJoin,QueryToEnglish){
+			SequenceGridContainer, PathJoin, QueryToEnglish){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
@@ -33,7 +33,7 @@ define([
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl,"genome","?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
+			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
 			console.log("url: ", url);
 			xhr.get(url, {
@@ -66,26 +66,27 @@ define([
 
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-			
 
-			if (!state.genome_ids){
+			if(!state.genome_ids){
 				console.log("	NO Genome_IDS")
-				if (state.search == oldVal.search){
+				if(state.search == oldVal.search){
 					console.log("		Same Search")
 					console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-					this.set("state", lang.mixin({},state,{genome_ids: oldVal.genome_ids}))	
+					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
 					this.set("query", state.search);
 				}
-			}else if (state.search!=oldVal.search){
+			}else if(state.search != oldVal.search){
 				console.log("SET QUERY: ", state.search);
 				this.set("query", state.search);
 			}
-			
+
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if (active=="genomes"){ this.setActivePanelState() };
+			if(active == "genomes"){
+				this.setActivePanelState()
+			}
 
 			this.inherited(arguments);
 		},
@@ -93,7 +94,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			console.log("English Content: ", content)
+			console.log("English Content: ", content);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
@@ -106,9 +107,7 @@ define([
 
 			var activeTab = this[active];
 
-
-
-			if (!activeTab){
+			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
@@ -121,11 +120,11 @@ define([
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
 					break;
 				default:
 					var activeQueryState;
-					if (this.state && this.state.genome_ids){
+					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
@@ -133,7 +132,7 @@ define([
 
 					}
 
-					if (activeQueryState){
+					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);
@@ -233,7 +232,7 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal)
+				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
 				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
 					console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
@@ -241,7 +240,7 @@ define([
 				}else{
 					child.set("disabled", false);
 				}
-			},this);
+			}, this);
 
 			if(hasDisabled){
 				this.showWarning();
@@ -255,10 +254,9 @@ define([
 			}
 		},
 
-
 		showWarning: function(msg){
 			if(!this.warningPanel){
-				var c = this.warningContent.replace("{{maxGenomesPerList}}",this.maxGenomesPerList)
+				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
 					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
@@ -280,7 +278,7 @@ define([
 					parts.push(q)
 				}
 			}
-			if(evt.filter && evt.filter!="false"){
+			if(evt.filter && evt.filter != "false"){
 				parts.push(evt.filter)
 			}
 
@@ -303,11 +301,9 @@ define([
 				hp = {}
 			}
 
+			hp.filter = "false";
 
-
-			hp.filter="false"
-
-			console.log("HP: ",JSON.stringify(hp))
+			console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");

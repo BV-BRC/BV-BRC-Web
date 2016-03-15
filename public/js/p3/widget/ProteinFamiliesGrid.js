@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
-	"dojo/aspect","dgrid/selector"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
@@ -26,7 +26,7 @@ define([
 			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
-			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric }
+			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric}
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);

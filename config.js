@@ -1,6 +1,6 @@
 var nconf = require('nconf');
 
-var defaults =  {
+var defaults = {
 	"http_port": 3000,
 	"authorizationURL": "http://user.patric.local:3002/login",
 	"application_id": "patric3",
@@ -14,7 +14,7 @@ var defaults =  {
 		"port": 6379,
 		"prefix": "",
 		"db": 1,
-		"pass":""
+		"pass": ""
 	},
 
 	"appLabel": "dev",
@@ -23,7 +23,7 @@ var defaults =  {
 
 	"sessionTTL": 2628000000,
 
-	workspaceServiceURL:"",
+	workspaceServiceURL: "",
 	appServiceURL: "",
 	dataURL: "",
 	accountURL: "http://user.patric.local:3002/",
@@ -31,8 +31,8 @@ var defaults =  {
 	enableDevAuth: false,
 	devAuthorizationToken: "",
 	devUser: false,
-        enableDevTools: false
-}
+	enableDevTools: false
+};
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);
 

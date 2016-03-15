@@ -1,7 +1,7 @@
 {
-        "production": false,
-        "solr": {
-                "url":"http://dayhoff.vbi.vt.edu:8080/solr"
-        }
+	"production": false,
+	"solr": {
+		"url":"http://dayhoff.vbi.vt.edu:8080/solr"
+	}
 }
 

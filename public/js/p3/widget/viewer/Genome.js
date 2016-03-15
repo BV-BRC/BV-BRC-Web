@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser",
-	"../SequenceGridContainer","../../util/PathJoin"
+	"../SequenceGridContainer", "../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -14,14 +14,13 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
-			SequenceGridContainer,PathJoin
-){
+			SequenceGridContainer, PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "GenomeGroup",
 		"disabled": false,
 		"query": null,
 		containerType: "genome_group",
-		genome_id: "", 
+		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
@@ -33,7 +32,7 @@ define([
 			this.genome_id = id;
 			this.state.genome_ids = [id];
 
-			xhr.get(PathJoin(this.apiServiceUrl,"genome", id), {
+			xhr.get(PathJoin(this.apiServiceUrl, "genome", id), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -53,7 +52,7 @@ define([
 				case "phlyogeny":
 				case "proteinFamilies":
 				case "pathways":
-					activeTab.set("state",lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
 					break;
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
@@ -146,7 +145,6 @@ define([
 				id: this.viewer.id + "_" + "sequences",
 				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
 			});
-
 
 			this.features = new FeatureGridContainer({
 				title: "Features",
