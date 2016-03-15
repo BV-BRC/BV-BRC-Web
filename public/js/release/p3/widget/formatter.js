@@ -12,6 +12,10 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 		return locale.format(obj,format || {formatLength: "short"});
 	}
 
+	var decimalFormatter = function(number, decimal){
+		return Math.round(number * Math.pow(10,decimal)) / Math.pow(10,decimal);
+	};
+
       var findObjectByLabel = function(obj, label) {
 	if(obj.label === label) { return obj;}
 	for(var i in obj) {
@@ -59,6 +63,9 @@ define("p3/widget/formatter", ["dojo/date/locale","dojo/dom-construct","dojo/dom
 		},
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
+		},
+		twoDecimalNumeric: function(obj){
+			return decimalFormatter(obj, 2);
 		},
 		date: dateFormatter,
 		epochDate: dateFromEpoch,

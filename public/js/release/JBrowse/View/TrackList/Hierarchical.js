@@ -37,7 +37,7 @@ return declare(
     splitter: true,
     style: 'width: 25%',
 
-//	id: 'hierarchicalTrackPane',
+    id: 'hierarchicalTrackPane',
     baseClass: 'jbrowseHierarchicalTrackSelector',
 
     categoryFacet: 'category',

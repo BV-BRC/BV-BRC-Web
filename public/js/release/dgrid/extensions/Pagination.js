@@ -451,9 +451,7 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 			//		Loads the given page.  Note that page numbers start at 1.
 			var grid = this,
 				dfd = new Deferred();
-		
-			console.log("GOTO PAGE QueryOptions: ", grid.get('queryOptions'), this.queryOptions);
-	
+			
 			var result = this._trackError(function(){
 				var count = grid.rowsPerPage,
 					start = (page - 1) * count,
@@ -490,7 +488,6 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 				grid._isLoading = true;
 				
 				// Run new query and pass it into renderArray
-				console.log("GRID _STOREMIXIN QUERY: ", grid.query, " QUERY OPTIONS: ", options);
 				results = grid.store.query(grid.query, options);
 				
 				Deferred.when(grid.renderArray(results, null, options), function(rows){

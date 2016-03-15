@@ -31569,6 +31569,10 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		return locale.format(obj,format || {formatLength: "short"});
 	}
 
+	var decimalFormatter = function(number, decimal){
+		return Math.round(number * Math.pow(10,decimal)) / Math.pow(10,decimal);
+	};
+
       var findObjectByLabel = function(obj, label) {
 	if(obj.label === label) { return obj;}
 	for(var i in obj) {
@@ -31616,6 +31620,9 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		},
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
+		},
+		twoDecimalNumeric: function(obj){
+			return decimalFormatter(obj, 2);
 		},
 		date: dateFormatter,
 		epochDate: dateFromEpoch,
@@ -50111,9 +50118,7 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 			//		Loads the given page.  Note that page numbers start at 1.
 			var grid = this,
 				dfd = new Deferred();
-		
-			 0 && console.log("GOTO PAGE QueryOptions: ", grid.get('queryOptions'), this.queryOptions);
-	
+			
 			var result = this._trackError(function(){
 				var count = grid.rowsPerPage,
 					start = (page - 1) * count,
@@ -50150,7 +50155,6 @@ function(_StoreMixin, declare, arrayUtil, lang, Deferred, on, query, string, has
 				grid._isLoading = true;
 				
 				// Run new query and pass it into renderArray
-				 0 && console.log("GRID _STOREMIXIN QUERY: ", grid.query, " QUERY OPTIONS: ", options);
 				results = grid.store.query(grid.query, options);
 				
 				Deferred.when(grid.renderArray(results, null, options), function(rows){
@@ -50347,16 +50351,15 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 			// summary:
 			//		Assigns a new query (and optionally queryOptions) to the list,
 			//		and tells it to refresh.
-		
-			 0 && console.log("DGRID _setQuery queryOptions: ", queryOptions)	
+			
 			var sort = queryOptions && queryOptions.sort;
+			
 			this.query = query !== undefined ? query : this.query;
 			this.queryOptions = queryOptions || this.queryOptions;
 			
 			// If we have new sort criteria, pass them through sort
 			// (which will update _sort and call refresh in itself).
 			// Otherwise, just refresh.
-			 0 && console.log("Sort: ", sort);
 			sort ? this.set("sort", sort) : this.refresh();
 		},
 		setStore: function(store, query, queryOptions){
@@ -70920,8 +70923,8 @@ define([
 			description: {label: 'Description', field: 'description'},
 			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
-			aa_length_avg: {label: 'Mean', field: 'aa_length_mean'},
-			aa_length_std: {label: 'Std', field: 'aa_length_std'}
+			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
+			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric }
 		},
 		constructor: function(options){
 			// 0 && console.log("ProteinFamiliesGrid Ctor: ", options);
@@ -71302,8 +71305,6 @@ return declare([List, _StoreMixin], {
 
 		// Establish query options, mixing in our own.
 		// (The getter returns a delegated object, so simply using mixin is safe.)
-		 0 && console.log("QueryOptions: ", this.get("queryOptions"));
-
 		options = lang.mixin(this.get("queryOptions"), options, 
 			{ start: 0, count: this.minRowsPerPage },
 			"level" in query ? { queryLevel: query.level } : null);
@@ -71410,9 +71411,7 @@ return declare([List, _StoreMixin], {
 			dfd = this._refreshDeferred = new Deferred();
 			
 			// renderQuery calls _trackError internally
-
 			results = self.renderQuery(function(queryOptions){
-				 0 && console.log("QueryOptions: ", queryOptions)
 				return self.store.query(self.query, queryOptions);
 			});
 			if(typeof results === "undefined"){
@@ -71613,7 +71612,6 @@ return declare([List, _StoreMixin], {
 				
 				count = Math.ceil(count);
 				offset = Math.min(Math.floor(offset), preload.count - count);
-				 0 && console.log("grid.get queryOPtions: ", grid.get("queryOptions"));
 				var options = lang.mixin(grid.get("queryOptions"), preload.options);
 				preload.count -= count;
 				var beforeNode = preloadNode,
@@ -72961,13 +72959,6 @@ define([
 			TooltipDialog, Dialog,
 			lang, swfobject, request, PathJoin, Button){
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-	var downloadTT = new TooltipDialog({
-		content: dfc, onMouseLeave: function(){
-			popup.close(downloadTT);
-		}
-	});
-
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
@@ -73104,12 +73095,13 @@ define([
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
 			// 0 && console.log("flashCellClicked is called ", colID, rowID);
-			var originalAxis = this._checkAxis(colID, rowID);
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
+			var originalAxis = this._getOriginalAxis(isTransposed, colID, rowID);
 
 			var familyId = originalAxis.columnIds;
 			var genomeId = originalAxis.rowIds;
 
-			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "))";
+			var query = "?and(eq(" + this.pfState.familyType + "_id," + familyId + "),eq(genome_id," + genomeId + "),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
 			request.get(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
@@ -73119,8 +73111,8 @@ define([
 					'Authorization': (window.App.authorizationToken || "")
 				}
 			}).then(lang.hitch(this, function(features){
-				this.dialog.set('content', this._buildPanelCellClicked(colID, rowID, familyId, genomeId, features));
-				var actionBar = this._buildPanelButtons(colID, rowID, features);
+				this.dialog.set('content', this._buildPanelCellClicked(isTransposed, familyId, genomeId, features));
+				var actionBar = this._buildPanelButtons(colID, rowID, familyId, genomeId, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
 
 				this.dialog.show();
@@ -73128,36 +73120,61 @@ define([
 
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
-			// TODO: implement this
 			// 0 && console.log("flashCellsSelected is called", colIDs, rowIDs);
-			var originalAxis = this._checkAxis(colIDs, rowIDs);
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed') ? true : false;
+			var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
-			var membersCount = this._countMembers(colIDs, rowIDs);
 
-			var text = [];
-			text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
-			text.push('<b>Family Selected:</b> ' + familyIds.length);
-			text.push('<b>Members:</b> ' + membersCount);
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
-			this.dialog.set('content', text.join('<br/>'));
-			this.dialog.show();
+			request.post(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || '')
+				},
+				data: query
+			}).then(lang.hitch(this, function(features){
+				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, familyIds, genomeIds, features));
+				var actionBar = this._buildPanelButtons(colIDs, rowIDs, familyIds, genomeIds, features);
+				domConstruct.place(actionBar, this.dialog.containerNode, "last");
+
+				this.dialog.show();
+			}));
 		},
-		_buildPanelCellClicked: function(colID, rowID, familyId, genomeId, features){
-			// 0 && console.log("_buildPanelCellClicked is called.", colID, rowID, familyId, genomeId);
+		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
+			 0 && console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
+			// 0 && console.log(gfs, gfs[genomeId]);
 			var genomeName = gfs[genomeId].getGenomeName();
-			var index = gfs[genomeId].getIndex();
-			var description = '', memberCount = 0;
+			var description = '', memberCount = 0, index = 0;
 
-			this.currentData.columns.forEach(function(col){
-				if(col.colID === colID){
-					// 0 && console.log("col", col);
-					description = col.colLabel;
-					memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
-				}
-			});
+			if(isTransposed){
+				// rows: families, columns: genomes
+				this.currentData.rows.forEach(function(row, idx){
+					if(row.rowID === familyId){
+						description = row.rowLabel;
+						index = idx;
+					}
+				});
+				this.currentData.columns.forEach(function(col){
+					if(col.colID === genomeId){
+						memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
+					}
+				})
+			}else{
+				index = gfs[genomeId].getIndex();
+				this.currentData.columns.forEach(function(col){
+					if(col.colID === familyId){
+						description = col.colLabel;
+						memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
+					}
+				});
+			}
 
 			var text = [];
 			text.push('<b>Genome:</b> ' + genomeName);
@@ -73166,10 +73183,10 @@ define([
 			text.push('<b>Members:</b> ' + memberCount);
 			features.forEach(function(feature){
 				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
-				if(feature.refseq_locus_tag != undefined){
+				if(feature.refseq_locus_tag !== undefined){
 					featureLink += ", " + feature.refseq_locus_tag;
 				}
-				if(feature.alt_locus_tag != undefined){
+				if(feature.alt_locus_tag !== undefined){
 					featureLink += ", " + feature.alt_locus_tag;
 				}
 				text.push(featureLink);
@@ -73177,35 +73194,107 @@ define([
 
 			return text.join("<br>");
 		},
-		_buildPanelButtons: function(colIDs, rowIDs, features){
+		_buildPanelCellsSelected: function(isTransposed, familyIds, genomeIds, features){
+
+			//var membersCount = this._countMembers(colIDs, rowIDs);
+
+			var text = [];
+			text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
+			text.push('<b>Family Selected:</b> ' + familyIds.length);
+			text.push('<b>Members:</b> ' + features.length);
+
+			return text.join("<br>");
+		},
+		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
 			var actionBar = domConstruct.create("div", {
 				"class": "dijitDialogPaneActionBar"
 			});
 
 			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-			var downloadTT = new TooltipDialog({
-				content: dfc, onMouseLeave: function(){
-					_self.dialog.close(downloadTT);
+			var downloadHM = new TooltipDialog({
+				content: dfc,
+				onMouseLeave: function(){
+					popup.close(downloadHM);
+				}
+			});
+			var downloadPT = new TooltipDialog({
+				content: dfc,
+				onMouseLeave: function(){
+					popup.close(downloadPT);
 				}
 			});
 
 			var btnDownloadHeatmap = new Button({
 				label: 'Download Heatmap Data'
 			});
+			on(downloadHM.domNode, "click", function(e){
+				if(e.target.attributes.rel === undefined)return;
+				var rel = e.target.attributes.rel.value;
+				var DELEMITER;
+				if(rel === 'text/csv'){
+					DELEMITER = ',';
+				}else{
+					DELEMITER = '\t';
+				}
+
+				var colIndexes = [];
+				_self.currentData.columns.forEach(function(col, idx){
+					if(colIDs.indexOf(col.colID) > -1){
+						colIndexes[colIDs.indexOf(col.colID)] = idx;
+					}
+				});
+
+				var header = _self.currentData.rowLabel + "/" + _self.currentData.colLabel;
+				colIndexes.forEach(function(colIdx){
+					header += DELEMITER + _self.currentData.columns[colIdx].colLabel;
+				});
+
+				var data = [];
+				_self.currentData.rows.forEach(function(row, idx){
+					if(rowIDs.indexOf(row.rowID) > -1){
+						var r = [];
+						r.push(row.rowLabel);
+						colIndexes.forEach(function(colIdx){
+							var val = parseInt(_self.currentData.columns[colIdx].distribution.charAt(idx * 2)
+								+ _self.currentData.columns[colIdx].distribution.charAt(idx * 2 + 1), 16);
+							r.push(val);
+						});
+						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
+					}
+				});
+				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
+				// refer http://jsfiddle.net/a856P/51/ for further implementation
+				popup.close(downloadHM);
+			});
+			on(btnDownloadHeatmap.domNode, "click", function(){
+				popup.open({
+					popup: downloadHM,
+					around: btnDownloadHeatmap.domNode,
+					orient: ["below"]
+				});
+			});
+
 			var btnDownloadProteins = new Button({
 				label: 'Download Proteins'
 			});
-			on(downloadTT.domNode, "click", function(evt){
-				var rel = evt.target.attributes.rel.value;
-				 0 && console.log("REL: ", rel);
-				var selection = "";
-				var dataType = "genome_feature";
-				var currentQuery = "";//self.actionPanel.currentContainerWidget.get('query');
-				 0 && console.log("selection: ", selection);
-				 0 && console.log("DownloadQuery: ", dataType, currentQuery);
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-				_self.dialog.close(downloadTT);
+			on(downloadPT.domNode, "click", function(e){
+				if(e.target.attributes.rel === undefined)return;
+				var rel = e.target.attributes.rel.value;
+				var currentQuery = "?in(feature_id,(" + features.map(function(f){
+						return f.feature_id;
+					}).join(",") + "))";
+
+				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+				popup.close(downloadPT);
+			});
+
+			on(btnDownloadProteins.domNode, "click", function(){
+				popup.open({
+					popup: downloadPT,
+					around: btnDownloadProteins.domNode,
+					orient: ["below"]
+				});
 			});
 
 			var btnShowDetails = new Button({
@@ -73229,40 +73318,41 @@ define([
 
 			return actionBar;
 		},
-		_countMembers: function(colIDs, rowIDs){
-			var columns = this.currentData.columns;
-			var rows = this.currentData.rows;
-
-			var rowPositions = [];
-			var count = 0;
-
-			// 0 && console.log(columns, rows);
-			rows.forEach(function(row){
-				rowIDs.forEach(function(rowID){
-					if(rowID === row.rowID){
-						rowPositions.push(row.order * 2);
-					}
-				})
-			});
-			// 0 && console.log(rowPositions);
-
-			columns.forEach(function(col){
-				colIDs.forEach(function(colID){
-					if(colID === col.colID){
-						rowPositions.forEach(function(pos){
-							// 0 && console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
-							count += parseInt(col.distribution.substr(pos, 2), 16);
-						});
-					}
-				});
-			});
-
-			return count;
-		},
-		_checkAxis: function(columnIds, rowIds){
+		//_countMembers: function(colIDs, rowIDs){
+		//	var columns = this.currentData.columns;
+		//	var rows = this.currentData.rows;
+		//
+		//	var rowPositions = [];
+		//	var count = 0;
+		//
+		//	// 0 && console.log(columns, rows);
+		//	rows.forEach(function(row){
+		//		rowIDs.forEach(function(rowID){
+		//			if(rowID === row.rowID){
+		//				rowPositions.push(row.order * 2);
+		//			}
+		//		})
+		//	});
+		//	// 0 && console.log(rowPositions);
+		//
+		//	columns.forEach(function(col){
+		//		colIDs.forEach(function(colID){
+		//			if(colID === col.colID){
+		//				rowPositions.forEach(function(pos){
+		//					// 0 && console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
+		//					count += parseInt(col.distribution.substr(pos, 2), 16);
+		//				});
+		//			}
+		//		});
+		//	});
+		//
+		//	return count;
+		//},
+		_getOriginalAxis: function(isTransposed, columnIds, rowIds){
 			var originalAxis = {};
+			// 0 && console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
 
-			if(this.pfState.heatmapAxis === "Transposed"){
+			if(isTransposed){
 				originalAxis.columnIds = rowIds;
 				originalAxis.rowIds = columnIds;
 			}else{
@@ -73319,8 +73409,14 @@ define([
 
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
+		},
+		cluster: function(){
+			// read data // FigFamSorter.js#prepareDataForCluster
+			// send to server // FigFamSorter.js#submitCluster
+			// run command // FIGfam.java#doCLustering
+			// read result and send back
+			// update this.currentData
 		}
-
 	});
 });
 
