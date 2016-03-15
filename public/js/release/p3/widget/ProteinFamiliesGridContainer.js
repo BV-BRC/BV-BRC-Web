@@ -44,7 +44,9 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		},
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			console.log("PathwaysGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				console.log("   call set state on this.grid: ", this.grid);

@@ -4,12 +4,12 @@ define("p3/widget/FeatureOverview", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin){
+			ChartTooltip, domConstruct, PathJoin){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -98,7 +98,7 @@ define("p3/widget/FeatureOverview", [
 		getSummaryData: function(){
 			// getting uniprot mapping
 			if(this.feature.gi != null){
-				xhr.get(PathJoin(this.apiServiceUrl,"id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
+				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
 					handleAs: "json",
 					headers: {"accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){

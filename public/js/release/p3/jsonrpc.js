@@ -1,6 +1,7 @@
-define("p3/jsonrpc", ["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
-	var idx=1;
-	return function(url,token){
+define("p3/jsonrpc", ["dojo/request", "dojo/_base/Deferred"
+], function(xhr, defer){
+	var idx = 1;
+	return function(url, token){
 
 		return function(method, params, options){
 			var def = new defer();
@@ -13,23 +14,24 @@ define("p3/jsonrpc", ["dojo/request","dojo/_base/Deferred"], function(xhr,defer)
 					"X-Requested-With": false
 				},
 				handleAs: "json",
-				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
-			}),function(response){
+				data: JSON.stringify({id: idx++, method: method, params: params, jsonrpc: "2.0"})
+			}), function(response){
 				// console.log("JSON RPC RESPONSE: ", response);
-				if (response.error){
+				if(response.error){
 					return def.reject(response.error);
 				}
 
-				if (response.result) { def.resolve(response.result); return; }
+				if(response.result){
+					def.resolve(response.result);
+					return;
+				}
 			}, function(err){
 				var message = err.response.data.error.message;
-				var message = message.split("\n\n\n")[0]
-				def.reject(message||err.message);
+				var message = message.split("\n\n\n")[0];
+				def.reject(message || err.message);
 			});
 
 			return def.promise;
 		}
-
 	}
-
-})
+});

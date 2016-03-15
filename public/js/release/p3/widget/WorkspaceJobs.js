@@ -1,13 +1,11 @@
 define("p3/widget/WorkspaceJobs", [
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class"
-], function(
-	declare, WidgetBase, on,
-	domClass
-){
+], function(declare, WidgetBase, on,
+			domClass){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceJobs",
-		"disabled":false,
+		"disabled": false,
 		postCreate: function(){
 			this.domNode.innerHTML = "WorkspaceJobs";
 		}

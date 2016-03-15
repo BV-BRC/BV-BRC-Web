@@ -1,41 +1,40 @@
-define("p3/panels", [],function(){
-	
+define("p3/panels", [], function(){
+
 	return {
-            CreateWorkspace: {
-                title: "Create Workspace",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/CreateWorkspace",
-                dataParam: "userId",
-                params: {}
-            },
-            CreateFolder: {
-                title: "Create Folder",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/CreateFolder",
-                dataParam: "path",
-                params: {}
-            },
-            Upload: {
-                title: "Upload",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/Uploader",
-                dataParam: "path",
-                params: {multiple:true}
-            
-            },
-            UploadReplace: {
-                title: "Overwrite File",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/Uploader",
-                params: {overwrite:true}
-            },
+		CreateWorkspace: {
+			title: "Create Workspace",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/CreateWorkspace",
+			dataParam: "userId",
+			params: {}
+		},
+		CreateFolder: {
+			title: "Create Folder",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/CreateFolder",
+			dataParam: "path",
+			params: {}
+		},
+		Upload: {
+			title: "Upload",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/Uploader",
+			dataParam: "path",
+			params: {multiple: true}
 
-    	    GenomeGroupViewer: {
-                title: "Genome Group",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/viewer/GenomeList",
-                params: {}
-            }
+		},
+		UploadReplace: {
+			title: "Overwrite File",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/Uploader",
+			params: {overwrite: true}
+		},
+
+		GenomeGroupViewer: {
+			title: "Genome Group",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/viewer/GenomeList",
+			params: {}
+		}
 	}
-
-})
+});

@@ -1,29 +1,25 @@
 require({cache:{
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n"}});
 define("p3/widget/WorkspaceObjectSelector", [
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
-	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
-	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
-	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic",
-	"dijit/registry","dgrid/editor","./formatter"
+	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
+	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
+	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
+	"dijit/registry", "dgrid/editor", "./formatter"
 
-], function(
-	declare, WidgetBase, on,lang,
-	domClass,Templated,WidgetsInTemplate,
-	Template,Dialog,HasDropDown,ContentPane,TextBox,
-	Grid,domConstr,WorkspaceManager,Memory,
-	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox,Topic,
-	registry,editor,formatter
-){
+], function(declare, WidgetBase, on, lang,
+			domClass, Templated, WidgetsInTemplate,
+			Template, Dialog, HasDropDown, ContentPane, TextBox,
+			Grid, domConstr, WorkspaceManager, Memory,
+			Uploader, BorderContainer, domAttr,
+			Button, Deferred, CheckBox, Topic,
+			registry, editor, formatter){
 
-
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "WorkspaceObjectSelector",
-		"disabled":false,
 		templateString: Template,
 		workspace: "",
 		selection: "",
@@ -32,12 +28,11 @@ define("p3/widget/WorkspaceObjectSelector", [
 		disabled: false,
 		required: false,
 		showUnspecified: false,
-		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
 		reset: function(){
-			this.searchBox.set('value','');
+			this.searchBox.set('value', '');
 		},
 		_setPlaceHolderAttr: function(val){
 			if(this.searchBox){
@@ -46,62 +41,64 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 		_setShowUnspecifiedAttr: function(val){
 			this.showUnspecified = val;
-			if (val) {
-				if(!(this.type.indexOf("unspecified")>=0)){
+			if(val){
+				if(!(this.type.indexOf("unspecified") >= 0)){
 					this.type.push("unspecified");
 				}
 			}else{
 				this.type = this.type.filter(function(t){
-					return (t!="unspecified");
+					return (t != "unspecified");
 				});
 			}
-			if (this.grid) { this.grid.set('types', this.type);}
+			if(this.grid){
+				this.grid.set('types', this.type);
+			}
 		},
 
 		_setDisabledAttr: function(val){
-			this.disabled=val;
-			if (val) {
-				domClass.add(this.domNode,"disabled");
+			this.disabled = val;
+			if(val){
+				domClass.add(this.domNode, "disabled");
 			}else{
-				domClass.remove(this.domNode,"disabled");
+				domClass.remove(this.domNode, "disabled");
 			}
 
-			if (this.searchBox){
-				this.searchBox.set("disabled",val);
+			if(this.searchBox){
+				this.searchBox.set("disabled", val);
 			}
 		},
 		_setRequiredAttr: function(val){
-			this.required=val;
-			if (this.searchBox){
-				this.searchBox.set("required",val);
+			this.required = val;
+			if(this.searchBox){
+				this.searchBox.set("required", val);
 			}
 		},
-	
+
 		_setPathAttr: function(val){
 			console.log("_setPathAttr: ", val);
-			this.path=val;
-			if (this.grid) {
+			this.path = val;
+			if(this.grid){
 				console.log("set Grid Path: ", val);
 				this.grid.set('path', val);
 			}
-			if (this.uploader){
+			if(this.uploader){
 				this.uploader.set('path', val);
 			}
 
-			if (this.currentPathNode){
+			if(this.currentPathNode){
 				this.currentPathNode.innerHTML = "Folder: " + val;
 			}
-		},		
+		},
 		_setTypeAttr: function(type){
-			if (!(type instanceof Array)){
+			if(!(type instanceof Array)){
 				type = [type];
 			}
 			this.type = type;
 		},
-		_setValueAttr: function(value,refresh){
+		_setValueAttr: function(value, refresh){
 			this.value = value;
-			if (this._started) {
-				if (refresh) {
+			if(this._started){
+				if(refresh){
 					this.refreshWorkspaceItems()
 				}else{
 					this.searchBox.set('value', value);
@@ -114,36 +111,36 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 
 		_setSelectionAttr: function(val){
-			this.selection=val;
+			this.selection = val;
 			console.log("this.selection: ", this.selection);
-			if (!val) {
-				this.selValNode.innerHTML="None.";
+			if(!val){
+				this.selValNode.innerHTML = "None.";
 				this.okButton.set('disabled', true);
 			}else{
-				this.selValNode.innerHTML=val.name;
+				this.selValNode.innerHTML = val.name;
 				this.okButton.set('disabled', false);
 			}
 		},
 
 		postMixinProperties: function(){
-			if (!this.value && this.workspace){
-				this.value=this.workspace;
+			if(!this.value && this.workspace){
+				this.value = this.workspace;
 			}
 			this.inherited(arguments);
 		},
 
 		createSelectedPane: function(){
-			var wrap= domConstr.create("div",{});
-			this.currentPathNode = domConstr.create("div",{innerHTML: "Folder: "+this.path},wrap);
-			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
-			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
+			var wrap = domConstr.create("div", {});
+			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
+			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
+			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
 //			domConstr.place(this.selValNode, sel, "last");
 			var buttonContainer = domConstr.create("div", {
-				style: {"font-size":".85em",display: "inline-block","float":"right","text-align":"right"}, 
+				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
 				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
-			},wrap);
-			
-			return wrap;	
+			}, wrap);
+
+			return wrap;
 		},
 		focus: function(){
 			// summary:
@@ -158,125 +155,140 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 
 		openChooser: function(){
-			if (this.disabled) { return; }
-			if (!this.dialog){
-				var _self=this;
-				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
-				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
-				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
-				this.dialog.backpaneTitleBar.innerHTML="Upload files to Workspace";
-				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
+			if(this.disabled){
+				return;
+			}
+			if(!this.dialog){
+				var _self = this;
+				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
+				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});
+				var backBC = new BorderContainer({
+					style: {
+						width: "500px",
+						height: "400px",
+						"margin": "0",
+						padding: "0px"
+					}
+				});
+				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
 
-				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
-				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
+				var selectionPane = new ContentPane({
+					region: "top",
+					content: this.createSelectedPane(),
+					style: "border:0px;"
+				});
+				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
 				var span = domConstr.create("span", {style: {"float": 'left'}});
-				domConstr.place(span, buttonsPane.containerNode,"first");
-				this.showUnspecifiedWidget = 	new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+				domConstr.place(span, buttonsPane.containerNode, "first");
+				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
 				this.showUnspecifiedWidget.on("change", function(val){
 					console.log("changed showUnspecifiedwidget: ", val);
 					_self.set("showUnspecified", val);
 				});
-				domConstr.place(this.showUnspecifiedWidget.domNode, span,"first");
-				domConstr.create("span",{innerHTML: "Show files with an unspecified type"}, span);
+				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
+				domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
 				var cancelButton = new Button({label: "Cancel"});
 				cancelButton.on('click', function(){
 					_self.dialog.hide();
 				});
-				var okButton= this.okButton = new Button({label: "OK"});
+				var okButton = this.okButton = new Button({label: "OK"});
 
 				okButton.on("click", function(evt){
-					if (_self.selection){
+					if(_self.selection){
 						_self.set("value", _self.selection.path);
 					}
 					_self.dialog.hide();
 				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode,"last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"last");
-				
+				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+
 				on(selectionPane.domNode, "i:click", function(evt){
 					console.log("Click: ", evt);
-					var rel = domAttr.get(evt.target,"rel");	
+					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "upload":
 							_self.dialog.flip();
 							break;
 						case "createFolder":
 							console.log("Create Folder", _self.grid.row(0));
-							var element=_self.grid.row(0).element;
+							var element = _self.grid.row(0).element;
 							console.log("element: ", element);
-							_self.grid.addNewFolder({id:"untitled"});
-					
+							_self.grid.addNewFolder({id: "untitled"});
+
 							break;
 					}
 				});
-				var _self=this;
+				var _self = this;
 				var grid = this.grid = new Grid({
 					region: "center",
-					path: this.path, 
-					selectionMode:"single",
-					deselectOnRefresh:true, 
-					types: this.type?(["folder"].concat(this.type)):false,
+					path: this.path,
+					selectionMode: "single",
+					deselectOnRefresh: true,
+					types: this.type ? (["folder"].concat(this.type)) : false,
 					columns: {
-		                                "type": {
+						"type": {
 							label: "",
-							get: function(item) {
-		                                                if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
-									return item.type +"_"+(item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
-		                                                }
-                		                                return item.type;
-                               			         },
-		                                        className: "wsItemType",
+							get: function(item){
+								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
+									return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+								}
+								return item.type;
+							},
+							className: "wsItemType",
 							formatter: formatter.wsItemType,
 							unhidable: true
-		                                },
+						},
 						"name": editor({
-		                                        label: "Name",
-               			                         field: "name",
-                               			         className: "wsItemName",
-		                                        canEdit: function(obj,val){
-		                                                return obj.id=='untitled';
-		                                        },
-		                                        autoSave: true,
-		                                        editOn: "click",
-		                                        editor: TextBox,
-		                                        editorArgs: {placeHolder: "Untitled Folder", trim: true}
-		                                }),
-			                        creation_time: {
-                        		                label: "Created",
-		                                        field: "creation_time",
-		                                        className: "wsItemCreationTime",
-		                                        formatter: formatter.date
-		                                }
+							label: "Name",
+							field: "name",
+							className: "wsItemName",
+							canEdit: function(obj, val){
+								return obj.id == 'untitled';
+							},
+							autoSave: true,
+							editOn: "click",
+							editor: TextBox,
+							editorArgs: {placeHolder: "Untitled Folder", trim: true}
+						}),
+						creation_time: {
+							label: "Created",
+							field: "creation_time",
+							className: "wsItemCreationTime",
+							formatter: formatter.date
+						}
 					}
 				});
 				_self.grid.on("dgrid-datachange", function(evt){
 					var name = evt.value;
-					if (!name) { return; }
-					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name),function(){
+					if(!name){
+						return;
+					}
+					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
 						_self.grid.refreshWorkspace();
 						_self.refreshWorkspaceItems();
 					});
 				});
 				grid.allowSelect = function(row){
-					if (row.data.type && (_self.type.indexOf(row.data.type)>=0)){
-						return true;	
+					if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
+						return true;
 					}
 					return false;
-				}
+				};
 
 				grid.on("ItemDblClick", function(evt){
-					if (evt.item && evt.item.type=="folder" || evt.item.type=="parentfolder"){		
+					if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
 						_self.set('path', evt.item_path);
 					}else{
-						if (_self.selection) {
+						if(_self.selection){
 							_self.set('value', _self.selection.path);
 							_self.dialog.hide()
 						}
 					}
 					console.log("ItemDblClick for chooser: ", evt);
-				//	var row = evt.rows[0];
-				//	var data = row.data;
-				//	console.log("selected: ", data);
+					//	var row = evt.rows[0];
+					//	var data = row.data;
+					//	console.log("selected: ", data);
 				});
 
 				grid.on("select", function(evt){
@@ -288,31 +300,41 @@ define("p3/widget/WorkspaceObjectSelector", [
 					_self.set('selection', "");
 				});
 
-				frontBC.addChild(selectionPane);	
-				frontBC.addChild(grid);	
-				frontBC.addChild(buttonsPane);	
+				frontBC.addChild(selectionPane);
+				frontBC.addChild(grid);
+				frontBC.addChild(buttonsPane);
 				frontBC.startup();
-				var backhead= new ContentPane({region:"top", content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>' });
+				var backhead = new ContentPane({
+					region: "top",
+					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
+				});
 				on(backhead.domNode, "span:click", function(evt){
-                                        console.log("Click: ", evt);
-                                        var rel = domAttr.get(evt.target,"rel");
-                                        switch(rel){
-                                                case "flip":
-                                                        _self.dialog.flip();
-                                                        break;
-                                        }
-                                });	
-				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Select File"});
+					console.log("Click: ", evt);
+					var rel = domAttr.get(evt.target, "rel");
+					switch(rel){
+						case "flip":
+							_self.dialog.flip();
+							break;
+					}
+				});
+				var uploader = this.uploader = new Uploader({
+					path: _self.path,
+					region: "center",
+					multiple: false,
+					types: this.type,
+					pathLabel: "Upload file to: ",
+					buttonLabel: "Select File"
+				});
 
-				on(uploader.domNode,"dialogAction", function(evt){
-					console.log("Uploader Dialog Action: ",evt);
-					if (evt.files && evt.files[0] && evt.action=="close") {
+				on(uploader.domNode, "dialogAction", function(evt){
+					console.log("Uploader Dialog Action: ", evt);
+					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
-						_self.set("selection",file);
-						_self.set('value',file.path,true);	
+						_self.set("selection", file);
+						_self.set('value', file.path, true);
 						_self.dialog.hide();
 					}else{
-						_self.dialog.flip()		
+						_self.dialog.flip()
 					}
 				});
 
@@ -321,7 +343,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
-				var _self=this;
+				var _self = this;
 
 			}
 			this.dialog.flip("front");
@@ -329,33 +351,38 @@ define("p3/widget/WorkspaceObjectSelector", [
 		},
 
 		refreshWorkspaceItems: function(){
-			if (this._refreshing) { return; }
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type,true).then(lang.hitch(this,function(items){
+			if(this._refreshing){
+				return;
+			}
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
 				console.log("Ws Objects: ", items);
-				var store= new Memory({data: items,idProperty:"path"});
+				var store = new Memory({data: items, idProperty: "path"});
 				console.log('store: ', store);
-				
+
 				console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store",store);
-				if (this.value) {	
+				this.searchBox.set("store", store);
+				if(this.value){
 					this.searchBox.set('value', this.value);
-				}	
+				}
 			}));
 		},
 		onSearchChange: function(value){
-			this.set("value", value);	
+			this.set("value", value);
 			this.onChange(value);
 			this.validate(true);
 		},
-		onChange: function(){},
+		onChange: function(){
+		},
 		startup: function(){
-			if (this._started){return;}
+			if(this._started){
+				return;
+			}
 			console.log("call getObjectsByType(); ", this.type);
 			this.inherited(arguments);
 
-			var _self=this;
-			if (!this.path) {
+			var _self = this;
+			if(!this.path){
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
 					console.log("CURRENT PATH: ", path);
 					_self.set('path', path);
@@ -364,36 +391,34 @@ define("p3/widget/WorkspaceObjectSelector", [
 			}else{
 				this.refreshWorkspaceItems();
 			}
-			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
+			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
-            this.searchBox.labelFunc=this.labelFunc;
+			this.searchBox.labelFunc = this.labelFunc;
 		},
 
-        labelFunc: function(item, store){
-            var label="<div style='font-size:1em; border-bottom:1px solid grey;'>"+"/";
-            var pathParts=item.path.split('/');
-            var workspace=pathParts[2];
-            var labelParts=[workspace];
-            if(pathParts.length-2 > 3){
-                labelParts.push("...");
-            }
-            if(pathParts.length-2 > 2){
-                var parentFolder=pathParts[pathParts.length-2];
-                parentFolder=parentFolder.replace(/^\./,"");
-                labelParts.push(parentFolder);
-            }
-            if(pathParts.length-1 >2){
-                var objName=pathParts[pathParts.length-1];
-                labelParts.push(objName);
-            }
-            labelParts[labelParts.length-1]="</br>"+"<span style='font-size:1.05em; font-weight:bold;'>"+labelParts[labelParts.length-1]+"</span></div>";
-            label+=labelParts.join("/");
-            return label;
-        },
-
-        
+		labelFunc: function(item, store){
+			var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + "/";
+			var pathParts = item.path.split('/');
+			var workspace = pathParts[2];
+			var labelParts = [workspace];
+			if(pathParts.length - 2 > 3){
+				labelParts.push("...");
+			}
+			if(pathParts.length - 2 > 2){
+				var parentFolder = pathParts[pathParts.length - 2];
+				parentFolder = parentFolder.replace(/^\./, "");
+				labelParts.push(parentFolder);
+			}
+			if(pathParts.length - 1 > 2){
+				var objName = pathParts[pathParts.length - 1];
+				labelParts.push(objName);
+			}
+			labelParts[labelParts.length - 1] = "</br>" + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + "</span></div>";
+			label += labelParts.join("/");
+			return label;
+		},
 
 		validate: function(/*Boolean*/ isFocused){
 			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)

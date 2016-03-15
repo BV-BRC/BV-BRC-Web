@@ -1,48 +1,47 @@
 define("p3/widget/PathwaysGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/PathwayJsonRest","dojo/aspect",
+	"./PageGrid", "./formatter", "../store/PathwayJsonRest", "dojo/aspect",
 	"dojo/_base/Deferred"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store,aspect,
-			Deferred
-) {
+			Grid, formatter, Store, aspect,
+			Deferred){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		constructor: function(){
-			this.queryOptions={sort: [{attribute:"pathway_id"}]};
+			this.queryOptions = {sort: [{attribute: "pathway_id"}]};
 		},
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
 		store: store,
-        dataModel: "pathway",
-        primaryKey: "id",
-        selectionModel: "extended",
-        deselectOnRefresh: true,
-        columns: {
-                pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-                pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-                pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-                gene: {label: 'Gene', field: 'gene'},
-                product: {label: 'Product', field: 'product'},
-                ecnum: {label: 'EC Number', field: 'ec_number',hidden:false},
-                genome_count: {label: 'Uniq Genomes Count', field: 'genome_count'},
-                gene_count: {label: 'Uniq Genes Count', field: 'gene_count'},
-                genome_ec: {label: 'Uniq EC Count', field: 'genome_ec'},
-                ec_cons: {label: 'EC Conseveration', field: 'ec_cons'},
-                gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}     
-        },
-		_setTotalRows: function(rows) {
+		dataModel: "pathway",
+		primaryKey: "id",
+		selectionModel: "extended",
+		deselectOnRefresh: true,
+		columns: {
+			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+			gene: {label: 'Gene', field: 'gene'},
+			product: {label: 'Product', field: 'product'},
+			ecnum: {label: 'EC Number', field: 'ec_number', hidden: false},
+			genome_count: {label: 'Uniq Genomes Count', field: 'genome_count'},
+			gene_count: {label: 'Uniq Genes Count', field: 'gene_count'},
+			genome_ec: {label: 'Uniq EC Count', field: 'genome_ec'},
+			ec_cons: {label: 'EC Conseveration', field: 'ec_cons'},
+			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+		},
+		_setTotalRows: function(rows){
 			this.totalRows = rows;
 			console.log("Total Rows: ", rows);
-			if (this.controlButton) {
+			if(this.controlButton){
 				console.log("this.controlButton: ", this.controlButton);
-				if (!this._originalTitle) {
+				if(!this._originalTitle){
 					this._originalTitle = this.controlButton.get('label');
 				}
 				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
@@ -51,18 +50,16 @@ define("p3/widget/PathwaysGrid", [
 			}
 		},
 
-		startup: function() {
+		startup: function(){
 			var _self = this;
 
-			var _self = this;
-
-			aspect.before(_self, 'renderArray', function(results) {
-				Deferred.when(results.total || results.length, function(x) {
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total || results.length, function(x){
 					_self.set("totalRows", x);
 				});
 			});
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -74,7 +71,7 @@ define("p3/widget/PathwaysGrid", [
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -85,7 +82,7 @@ define("p3/widget/PathwaysGrid", [
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,

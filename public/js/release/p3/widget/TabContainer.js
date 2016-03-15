@@ -1,13 +1,11 @@
 define("p3/widget/TabContainer", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/layout/TabContainer",
 	"./TabController", "dojo/when", "dojo/topic", "dijit/registry"
-], function(
-	declare, WidgetBase, TabContainer,
-	TabController, when, topic, registry
-) {
+], function(declare, WidgetBase, TabContainer,
+			TabController, when, topic, registry){
 	return declare([TabContainer], {
 		controllerWidget: TabController,
-		selectChild: function(page, animate) {
+		selectChild: function(page, animate){
 			// summary:
 			//              Show the given widget (which must be one of my children)
 			// page:
@@ -17,8 +15,8 @@ define("p3/widget/TabContainer", [
 
 			page = registry.byId(page);
 
-			if (this.selectedChildWidget != page) {
-				if (this.selectedChildWidget) {
+			if(this.selectedChildWidget != page){
+				if(this.selectedChildWidget){
 					this.selectedChildWidget.set('visible', false);
 				}
 				// Deselect old page and select new one
@@ -27,7 +25,7 @@ define("p3/widget/TabContainer", [
 				this._set("selectedChildWidget", page);
 				topic.publish(this.id + "-selectChild", page); // publish
 
-				if (this.persist) {
+				if(this.persist){
 					cookie(this.id + "_selectedChild", this.selectedChildWidget.id);
 				}
 			}
@@ -38,4 +36,4 @@ define("p3/widget/TabContainer", [
 
 		}
 	});
-})
+});

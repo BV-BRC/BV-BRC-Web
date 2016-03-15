@@ -1,7 +1,7 @@
 define("p3/widget/PathwaysMemoryGridContainer", [
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog","./FilterContainerActionBar",
+	"dijit/TooltipDialog", "./FilterContainerActionBar",
 	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
@@ -60,69 +60,71 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 		},
 
 		_setStoreAttr: function(store){
-			if ( this.grid ) {
+			if(this.grid){
 				this.grid.store = store;
 			}
 			this._set('store', store);
 		},
 
 		createFilterPanel: function(){
-				// console.log("Create Container ActionBar with currentContainerWidget: ", this)
-				var _self=this;
-				this.containerActionBar = this.filterPanel = new ContainerActionBar({
-					region: "top",
-					layoutPriority: 7,
-					splitter: true,
-					"className": "BrowserHeader",
-					dataModel: this.dataModel,
-					facetFields: this.facetFields,
-					state: this.state,
-					currentContainerWidget: this,
-					_setQueryAttr: function(query){
-						// console.log("_setQueryAttr: ", query)
-						var p = _self.typeMap[_self.type];
-						query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
-						console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
-						this._set("query", query)
-						this.getFacets(query).then(lang.hitch(this, function(facets){
-							// console.log("_setQuery got facets: ", facets)
-							if (!facets) { console.log("No Facets Returned"); return; }
+			// console.log("Create Container ActionBar with currentContainerWidget: ", this)
+			var _self = this;
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: this.state,
+				currentContainerWidget: this,
+				_setQueryAttr: function(query){
+					// console.log("_setQueryAttr: ", query)
+					var p = _self.typeMap[_self.type];
+					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
+					console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+					this._set("query", query)
+					this.getFacets(query).then(lang.hitch(this, function(facets){
+						// console.log("_setQuery got facets: ", facets)
+						if(!facets){
+							console.log("No Facets Returned");
+							return;
+						}
 
-							Object.keys(facets).forEach(function(cat){
-								 // console.log("Facet Category: ", cat);
-								if (this._ffWidgets[cat]){
-									// console.log("this.state: ", this.state);
-									var selected = this.state.selected;
-									 // console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
-									this._ffWidgets[cat].set('data', facets[cat], selected);
-								}else{
-									 // console.log("Missing ffWidget for : ", cat);
-								}
-							},this);
+						Object.keys(facets).forEach(function(cat){
+							// console.log("Facet Category: ", cat);
+							if(this._ffWidgets[cat]){
+								// console.log("this.state: ", this.state);
+								var selected = this.state.selected;
+								// console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+								this._ffWidgets[cat].set('data', facets[cat], selected);
+							}else{
+								// console.log("Missing ffWidget for : ", cat);
+							}
+						}, this);
 
-						}));
+					}));
 
-					}
-				});
+				}
+			});
 
-				// console.log("gridcontainer startup()", this.state)
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
-					// console.log("FILTER PANEL SET FILTER", arguments)
-					// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
-					// console.log("setFilter Watch() callback", newVal);
-					if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
-						// console.log("Emit UpdateHash: ", newVal);
-						on.emit(this.domNode, "UpdateHash", {
-							bubbles: true,
-							cancelable: true,
-							hashProperty: "filter",
-							value: newVal,
-							oldValue: oldVal
-						})
-					}
-				}));
+			// console.log("gridcontainer startup()", this.state)
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
+				// console.log("FILTER PANEL SET FILTER", arguments)
+				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
+				// console.log("setFilter Watch() callback", newVal);
+				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+					// console.log("Emit UpdateHash: ", newVal);
+					on.emit(this.domNode, "UpdateHash", {
+						bubbles: true,
+						cancelable: true,
+						hashProperty: "filter",
+						value: newVal,
+						oldValue: oldVal
+					})
+				}
+			}));
 		},
-
 
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -149,7 +151,9 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);

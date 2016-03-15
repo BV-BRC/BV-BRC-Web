@@ -3,8 +3,8 @@ var profile = (function(){
 
 		copyOnly = function(filename, mid){
 			var list = {
-				"dojo/dojo.profile":1,
-				"dojo/package.json":1
+				"dojo/dojo.profile": 1,
+				"dojo/package.json": 1
 			};
 			return (mid in list) ||
 				/^dojo\/_base\/config\w+$/.test(mid) ||
@@ -14,9 +14,9 @@ var profile = (function(){
 		};
 
 	return {
-		resourceTags:{
+		resourceTags: {
 			test: function(filename, mid){
-				return testResourceRe.test(mid) || mid=="dojo/tests" || mid=="dojo/robot" || mid=="dojo/robotx";
+				return testResourceRe.test(mid) || mid == "dojo/tests" || mid == "dojo/robot" || mid == "dojo/robotx";
 			},
 
 			copyOnly: function(filename, mid){

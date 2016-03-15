@@ -2,48 +2,49 @@ require({cache:{
 'p3/app/p3app':function(){
 define([
 	"dojo/_base/declare",
-	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr","dojo/dom-construct",
-	"dijit/registry","dojo/request","dojo/_base/lang",
+	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct",
+	"dijit/registry", "dojo/request", "dojo/_base/lang",
 	"dojo/_base/Deferred",
-	"dojo/store/JsonRest","dojox/widget/Toaster",
-	"dojo/ready","./app","../router",
-	"dojo/window","../widget/Drawer","dijit/layout/ContentPane",
-	"../jsonrpc", "../panels","../WorkspaceManager","dojo/keys",
+	"dojo/store/JsonRest", "dojox/widget/Toaster",
+	"dojo/ready", "./app", "../router",
+	"dojo/window", "../widget/Drawer", "dijit/layout/ContentPane",
+	"../jsonrpc", "../panels", "../WorkspaceManager", "dojo/keys",
 	"dijit/Dialog"
-],function(
-	declare,
-	Topic,on,dom,domClass,domAttr,domConstruct,
-	Registry,xhr,lang,
-	Deferred,
-	JsonRest,Toaster,
-	Ready,App,
-	Router,Window,
-	Drawer,ContentPane,
-	RPC, Panels, WorkspaceManager,Keys,
-	Dialog
-) {
+], function(declare,
+			Topic, on, dom, domClass, domAttr, domConstruct,
+			Registry, xhr, lang,
+			Deferred,
+			JsonRest, Toaster,
+			Ready, App,
+			Router, Window,
+			Drawer, ContentPane,
+			RPC, Panels, WorkspaceManager, Keys,
+			Dialog){
 	return declare([App], {
 		panels: Panels,
 		activeWorkspace: null,
 		activeWorkspacePath: "/",
 		startup: function(){
-			var _self=this;
+			var _self = this;
 
-			on(document.body,"keypress", function(evt){
+			on(document.body, "keypress", function(evt){
 				var charOrCode = evt.charCode || evt.keyCode;
 				// console.log("keypress: ", charOrCode, evt.ctrlKey, evt.shiftKey);
-			
-				if ((charOrCode==4) && evt.ctrlKey && evt.shiftKey){
-					if (!this._devDlg) {
-						this._devDlg = new Dialog({title: "Debugging Panel", content:'<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'});
+
+				if((charOrCode == 4) && evt.ctrlKey && evt.shiftKey){
+					if(!this._devDlg){
+						this._devDlg = new Dialog({
+							title: "Debugging Panel",
+							content: '<div data-dojo-type="p3/widget/DeveloperPanel" style="width:250px;height:450px"></div>'
+						});
 					}
 					// console.log("Dialog: ", this._devDlg);
-					if (this._devDlg.open){
+					if(this._devDlg.open){
 						this._devDlg.hide();
 					}else{
 						this._devDlg.show();
 					}
-				}	
+				}
 			});
 
 			/*
@@ -60,124 +61,118 @@ define([
 				_self.navigate(newState);
 			});
 			*/
-	
+
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Workspace URL Callback", params.newPath);
-				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				var newState = {href: params.newPath};
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-				var path = params.params[0] || "/"
-				newState.widgetClass="p3/widget/JobManager";
-				newState.value=path;
-				newState.set= "path";
-				newState.requireAuth=true;
+
+				var path = params.params[0] || "/";
+				newState.widgetClass = "p3/widget/JobManager";
+				newState.value = path;
+				newState.set = "path";
+				newState.requireAuth = true;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
 			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
 				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-				var path = params.params[0] || "/"
-				newState.widgetClass="p3/widget/AdvancedSearch";
-				newState.value=path;
-				newState.set= "path";
-				newState.requireAuth=true;
+
+				var path = params.params[0] || "/";
+				newState.widgetClass = "p3/widget/AdvancedSearch";
+				newState.value = path;
+				newState.set = "path";
+				newState.requireAuth = true;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
-
-
 			Router.register("\/uploads(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-				var path = params.params[0] || "/"
-				newState.widgetClass="p3/widget/UploadManager";
-				newState.value=path;
-				newState.set= "path";
-				newState.requireAuth=true;
+
+				var path = params.params[0] || "/";
+				newState.widgetClass = "p3/widget/UploadManager";
+				newState.value = path;
+				newState.set = "path";
+				newState.requireAuth = true;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
-
 
 			Router.register("\/content(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Upload URL Callback", params.newPath);
 				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-				var path = params.params[0] || "/"
-				newState.widgetClass="dijit/layout/ContentPane";
-				newState.value="http://localhost:3001/content" + path;
-				newState.set= "href";
-				newState.requireAuth=false;
+
+				var path = params.params[0] || "/";
+				newState.widgetClass = "dijit/layout/ContentPane";
+				newState.value = "http://localhost:3001/content" + path;
+				newState.set = "href";
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
-
-
 
 			Router.register("\/workspace(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-				var path = params.params[0] || ("/"  + _self.user.id + "/home/");
+
+				var path = params.params[0] || ("/" + _self.user.id + "/home/");
 				var parts = path.split("/");
-				if (parts.length<3){
-					path =  ("/"  + _self.user.id + "/home/");
+				if(parts.length < 3){
+					path = ("/" + _self.user.id + "/home/");
 				}
-				newState.widgetClass="p3/widget/WorkspaceManager";
-				newState.value=path;
-				newState.set= "path";
-				newState.requireAuth=true;
+				newState.widgetClass = "p3/widget/WorkspaceManager";
+				newState.value = path;
+				newState.set = "path";
+				newState.requireAuth = true;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
-			function getState(params,path){
+			function getState(params, path){
 				var parser = document.createElement("a");
 				parser.href = path;
-				var newState = {}
+				var newState = {};
 
-
-				newState.href=path;
+				newState.href = path;
 				newState.prev = params.oldPath;
 
-				if (parser.search){
-					newState.search = (parser.search.charAt(0)=="?")?parser.search.substr(1):parser.search
+				if(parser.search){
+					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
 				}else{
-					newState.search="";
+					newState.search = "";
 				}
 				newState.hash = parser.hash;
 				newState.pathname = parser.pathname
 
-				if (newState.hash){
-					newState.hash = (newState.hash.charAt(0)=="#")?newState.hash.substr(1):newState.hash;
+				if(newState.hash){
+					newState.hash = (newState.hash.charAt(0) == "#") ? newState.hash.substr(1) : newState.hash;
 					// console.log("PARSE HASH: ", newState.hash)
-					newState.hashParams=newState.hashParams||{};
+					newState.hashParams = newState.hashParams || {};
 
-					var hps = newState.hash.split("&")
+					var hps = newState.hash.split("&");
 					hps.forEach(function(t){
-						var tup = t.split("=")
-						if (tup[0] && tup[1]){
-							newState.hashParams[tup[0]]=tup[1];
+						var tup = t.split("=");
+						if(tup[0] && tup[1]){
+							newState.hashParams[tup[0]] = tup[1];
 						}
-					})
+					});
 					// console.log("newState.hashParams: ", newState.hashParams)
 				}
 				return newState;
@@ -185,71 +180,71 @@ define([
 
 			Router.register("\/view(\/.*)", function(params, path){
 				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
-				var newState = getState(params,path);
+				var newState = getState(params, path);
 
 				var parts = newState.pathname.split("/")
 				parts.shift();
 				var type = parts.shift();
-	
-				newState.widgetClass="p3/widget/viewer/" + type;
+
+				newState.widgetClass = "p3/widget/viewer/" + type;
 				console.log("'/view/' New Navigation State: ", newState);
 				_self.navigate(newState);
 			});
 
-
 			Router.register("\/app(\/.*)", function(params, path){
 				// console.log("view URL Callback", arguments);
-				
+
 				var parts = path.split("/")
 				parts.shift();
 				var type = parts.shift();
-				if (parts.length>0){
+				if(parts.length > 0){
 					viewerParams = parts.join("/");
 				}else{
-					viewerParams="";
+					viewerParams = "";
 				}
 				// console.log("Parts:", parts, type, viewerParams)
 
-				var newState = {href: params.newPath}
-				for (var prop in params.state){
-					newState[prop]=params.state[prop]
+				var newState = {href: params.newPath};
+				for(var prop in params.state){
+					newState[prop] = params.state[prop]
 				}
-		
-			
+
 				// console.log("Parts:", parts, type, path)
-				newState.widgetClass="p3/widget/app/" + type;
-				newState.value=viewerParams;
-				newState.set= "params";
-				newState.requireAuth=true;
+				newState.widgetClass = "p3/widget/app/" + type;
+				newState.value = viewerParams;
+				newState.set = "params";
+				newState.requireAuth = true;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
-			if (!this.api) { this.api={}}
+			if(!this.api){
+				this.api = {}
+			}
 
-			if (this.workspaceAPI && this.user){
-				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user?this.user.id:"");				
+			if(this.workspaceAPI && this.user){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user ? this.user.id : "");
 				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
 			}
 
-			if (this.serviceAPI && this.user){
+			if(this.serviceAPI && this.user){
 				// console.log("Setup API Service @ ", this.serviceAPI);
 				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
 			}
 
-			if (this.dataAPI){
-				if (this.dataAPI.charAt(-1)!="/"){
+			if(this.dataAPI){
+				if(this.dataAPI.charAt(-1) != "/"){
 					this.dataAPI = this.dataAPI + "/";
 				}
-				this.api.data = RPC(this.dataAPI,this.authorizationToken);
+				this.api.data = RPC(this.dataAPI, this.authorizationToken);
 			}
-/*
+			/*
 			Topic.subscribe("/ActiveWorkspace", function(as){
 				console.log("SET App.activeWorkspace",as)
 				_self.activeWorkspace=as.workspace;
 				_self.activeWorkspacePath=as.path;
 			});
-*/	
+			*/
 			// console.log("go()")
 			// setTimeout(function(){
 			// 	Router.go("/workspace/dmachi/foo/bar");
@@ -266,12 +261,10 @@ define([
 			// 	Topic.publish("/overlay/right", {action: "set", panel: ContentPane});
 			// }, 1000);
 
-
-			if (this.user && this.user.id){
-				domAttr.set("YourWorkspaceLink",'href','/workspace/' + this.user.id  )
+			if(this.user && this.user.id){
+				domAttr.set("YourWorkspaceLink", 'href', '/workspace/' + this.user.id)
 			}
 			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
-
 
 			this.inherited(arguments);
 		},
@@ -280,28 +273,32 @@ define([
 			console.log("updateUserWorkspaceList: ", data);
 			domConstruct.empty("YourWorkspaces");
 			data.forEach(function(ws){
-				var d = domConstruct.create("div", {style: {"padding-left":"12px"}}, dom.byId("YourWorkspaces"))
-				domConstruct.create("a", {'class':'navigationLink', href: "/workspace" + ws.path, innerHTML: ws.name}, d);
+				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, dom.byId("YourWorkspaces"));
+				domConstruct.create("a", {
+					'class': 'navigationLink',
+					href: "/workspace" + ws.path,
+					innerHTML: ws.name
+				}, d);
 			})
 		},
 
 		search_all_header: function(){
 			var node = dom.byId("global_search_keyword");
 			var keywords = node.value;
-			if (!keywords || keywords=="*") {
+			if(!keywords || keywords == "*"){
 				console.log("No Search Keywords Provided");
 				return;
 			}
-			
+
 			console.log("Keywords: ", keywords);
-			xhr.post("/portal/portal/patric/GenomicFeature/GenomicFeatureWindow?action=b&cacheability=PAGE",{
+			xhr.post("/portal/portal/patric/GenomicFeature/GenomicFeatureWindow?action=b&cacheability=PAGE", {
 				data: {
 					sraction: "save_params",
 					keyword: encodeURIComponent(keywords)
 				}
 			}).then(function(results){
 				document.location = "/portal/portal/patric/GlobalSearch?cType=taxon&cId=131567&dm=&pk=" + results;
-			});		
+			});
 		}
 
 	});
@@ -4837,81 +4834,81 @@ define(["./_base/lang", "./sniff", "./_base/window", "./dom", "./dom-geometry", 
 },
 'p3/app/app':function(){
 define([
-	"dojo/_base/declare","dojo/parser",
-	"dojo/topic","dojo/on","dojo/dom","dojo/dom-class","dojo/dom-attr",
-	"dijit/registry","dojo/request","dijit/layout/ContentPane",
+	"dojo/_base/declare", "dojo/parser",
+	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr",
+	"dijit/registry", "dojo/request", "dijit/layout/ContentPane",
 	"dojo/_base/Deferred",
-	"dojo/ready","dojo/parser","rql/query","dojo/_base/lang",
-	"p3/router","dijit/Dialog","dojo/dom-construct"
-],function(
-	declare,parser,
-	Topic,on,dom,domClass,domAttr,
-	Registry,xhr,ContentPane,
-	Deferred,
-	Ready,Parser,rql,lang,
-	Router,Dialog,domConstruct
-) {
+	"dojo/ready", "dojo/parser", "rql/query", "dojo/_base/lang",
+	"p3/router", "dijit/Dialog", "dojo/dom-construct"
+], function(declare, parser,
+			Topic, on, dom, domClass, domAttr,
+			Registry, xhr, ContentPane,
+			Deferred,
+			Ready, Parser, rql, lang,
+			Router, Dialog, domConstruct){
 	return declare(null, {
 		panels: {},
 		constructor: function(opts){
-			if (opts){	
-				for (prop in opts) {
-					this[prop]=opts[prop]
+			if(opts){
+				for(prop in opts){
+					this[prop] = opts[prop]
 				}
 			}
 
-			var _self=this;
-			this._containers={};
+			var _self = this;
+			this._containers = {};
 			// console.log("Launching Application...");
 
 			/* these two on()s enable the p2 header mouse overs */
 			on(document.body, ".has-sub:mouseover", function(evt){
-			// console.log("has sub");
-			        var target = evt.target;
-			        while(!domClass.contains(target,"has-sub") && target.parentNode){
-			                target = target.parentNode
-			        }
-			        domClass.add(target, "hover");
+				// console.log("has sub");
+				var target = evt.target;
+				while(!domClass.contains(target, "has-sub") && target.parentNode){
+					target = target.parentNode
+				}
+				domClass.add(target, "hover");
 			});
 			on(document.body, ".has-sub:mouseout", function(evt){
-			        var target = evt.target;
-			        while(!domClass.contains(target,"has-sub") && target.parentNode){
-			                target = target.parentNode
-			        }
-			        domClass.remove(target, "hover");
+				var target = evt.target;
+				while(!domClass.contains(target, "has-sub") && target.parentNode){
+					target = target.parentNode
+				}
+				domClass.remove(target, "hover");
 			});
 
-			on(window,"message", function(evt){
+			on(window, "message", function(evt){
 				var msg = evt.data;
 				// console.log("window.message: ", msg);
-				if (!msg || !msg.type) { return; }
+				if(!msg || !msg.type){
+					return;
+				}
 
 				switch(msg.type){
 					case "AuthenticationSuccess":
-						if (_self.loginWindow){
+						if(_self.loginWindow){
 							_self.loginWindow.close();
-						}		
+						}
 						window.location.reload();
 						break;
 //						self.accessToken = msg.accessToken;
 //						self.user = msg.userProfile;	
 //						domClass.add(document.body, "Authenticated");
 //						break;
-				}					
+				}
 
 				Topic.publish("/" + msg.type, msg);
 			});
 
-			Ready(this,function(){
+			Ready(this, function(){
 				// console.log("Instantiate App Widgets");
-				Parser.parse().then(function() {
+				Parser.parse().then(function(){
 					// console.log("ApplicationContainer: ", _self.getApplicationContainer());
 					_self.startup();
 				});
-			});	
+			});
 		},
-		startup: function() {	
-			var _self=this;
+		startup: function(){
+			var _self = this;
 			Router.startup();
 			this.listen();
 		},
@@ -4923,78 +4920,78 @@ define([
 				// console.log("DialogButton Click", evt);
 				evt.preventDefault();
 				evt.stopPropagation();
-				var params={};
+				var params = {};
 
 				var rel = evt.target.attributes.rel.value;
 				var parts = rel.split(":");
 				var type = parts[0];
-				params=parts[1];
-				var w = _self.loadPanel(type,params);
-		                Deferred.when(w, function(w){
-               			     if (!_self.dialog) {
-		                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
-               			     }else{
-		                            _self.dialog.set('title', w.title);
-               			     }
-		                    _self.dialog.set('content', '');
-       			             domConstruct.place(w.domNode, _self.dialog.containerNode);
-		                    _self.dialog.show();
-               			     w.startup();
-		                });
+				params = parts[1];
+				var w = _self.loadPanel(type, params);
+				Deferred.when(w, function(w){
+					if(!_self.dialog){
+						_self.dialog = new Dialog({parseOnLoad: false, title: w.title});
+					}else{
+						_self.dialog.set('title', w.title);
+					}
+					_self.dialog.set('content', '');
+					domConstruct.place(w.domNode, _self.dialog.containerNode);
+					_self.dialog.show();
+					w.startup();
+				});
 
 				// console.log("Open Dialog", type);
-			})
+			});
 
 			on(document, "dialogAction", function(evt){
 				// console.log("dialogAction", evt)
-				 if (_self.dialog && evt.action=="close"){
-					 _self.dialog.hide();
-				 }
+				if(_self.dialog && evt.action == "close"){
+					_self.dialog.hide();
+				}
 
 			});
-
 
 			Topic.subscribe("/openDialog", function(msg){
 				// console.log("OpenDialog: ", msg);
 				var type = msg.type
-				var params=msg.params||{};
-				var w = _self.loadPanel(type,params);
-		                Deferred.when(w, function(w){
-               			     if (!_self.dialog) {
-		                            _self.dialog = new Dialog({parseOnLoad:false,title: w.title});
-               			     }else{
-		                            _self.dialog.set('title', w.title);
-               			     }
-		                    _self.dialog.set('content', '');
-       			             domConstruct.place(w.domNode, _self.dialog.containerNode);
-		                    _self.dialog.show();
-               			     w.startup();
-		                });
+				var params = msg.params || {};
+				var w = _self.loadPanel(type, params);
+				Deferred.when(w, function(w){
+					if(!_self.dialog){
+						_self.dialog = new Dialog({parseOnLoad: false, title: w.title});
+					}else{
+						_self.dialog.set('title', w.title);
+					}
+					_self.dialog.set('content', '');
+					domConstruct.place(w.domNode, _self.dialog.containerNode);
+					_self.dialog.show();
+					w.startup();
+				});
 
 				// console.log("Open Dialog", type);
 			});
 
-			Topic.subscribe("/navigate",function(msg){
-					Router.go(msg.href);
-			})
+			Topic.subscribe("/navigate", function(msg){
+				Router.go(msg.href);
+			});
 
 			var showAuthDlg = function(evt){
 				// console.log("Login Link Click", evt);
-				if (evt) {
+				if(evt){
 					evt.preventDefault();
 					evt.stopPropagation();
 					// console.log("Target", evt.target.href);
 					// console.log("Create Dialog()", evt.target.href);
 				}
-				var dlg = new Dialog({title: "Login", content: '<iframe style="width:400px;height:300px;" src="/login"></iframe>'});
+				var dlg = new Dialog({
+					title: "Login",
+					content: '<iframe style="width:400px;height:300px;" src="/login"></iframe>'
+				});
 				dlg.show();
 				// console.log("end loginLink Lcik");
 			};
 
-
 			on(document, "A.loginLink:click", showAuthDlg);
 			Topic.subscribe("/login", showAuthDlg);
-
 
 			on(document, ".navigationLink:click", function(evt){
 				// console.log("NavigationLink Click", evt);
@@ -5003,56 +5000,56 @@ define([
 				// console.log("APP Link Target: ", evt.target.pathname, evt.target.href, evt.target);
 				var parts = evt.target.href.split(evt.target.pathname);
 				// console.log("navigationLink:click - " + evt.target.pathname + (parts[1]||"") )
-				Router.go(evt.target.pathname + (parts[1]||""));
+				Router.go(evt.target.pathname + (parts[1] || ""));
 			})
 		},
-        loadPanel: function(id,params,callback){
-                var def = new Deferred();
-                // console.log("Load Panel", id, params);
-                var p = this.panels[id];
-                if (!p.params){
-                        p.params={};
-                }
+		loadPanel: function(id, params, callback){
+			var def = new Deferred();
+			// console.log("Load Panel", id, params);
+			var p = this.panels[id];
+			if(!p.params){
+				p.params = {};
+			}
 
-                p.params.title =p.params.title || p.title;
-                p.params.closable =true ;
-                if (p.ctor && typeof p.ctor=="function"){
-                        var w = new p.ctor(p.params);
-                        def.resolve(w);
-                }else if (p.ctor && typeof p.ctor=="string"){
-                        var reqs=[];
-                        if (window.App && window.App.production&&p.layer){
-                                reqs.push(p.layer);
-                        }
+			p.params.title = p.params.title || p.title;
+			p.params.closable = true;
+			if(p.ctor && typeof p.ctor == "function"){
+				var w = new p.ctor(p.params);
+				def.resolve(w);
+			}else if(p.ctor && typeof p.ctor == "string"){
+				var reqs = [];
+				if(window.App && window.App.production && p.layer){
+					reqs.push(p.layer);
+				}
 
-                        reqs.push(p.ctor);
-                        require(reqs, function(){
-                                var prop;
-                                var ctor = arguments[arguments.length-1];
-                                var w = new ctor(p.params);
-                                if(params && p.dataParam){
-                                        w.set(p.dataParam,params);
-                                }else if (typeof params == "object") {
-                                        for (prop in params){
-                                                w.set(prop, params[prop]);
-                                        }
-                                }
-                                if (p.wrap) {
-                                        var cp = new ContentPane({title: p.params.title || p.title, closable:true});
-                                        cp.containerNode.appendChild(w.domNode);
-                                        w.startup();
-                                        def.resolve(cp);
-                                }else{
-                                        def.resolve(w);
-                                }
-                        });
-                }
-                return def.promise;
-        },
+				reqs.push(p.ctor);
+				require(reqs, function(){
+					var prop;
+					var ctor = arguments[arguments.length - 1];
+					var w = new ctor(p.params);
+					if(params && p.dataParam){
+						w.set(p.dataParam, params);
+					}else if(typeof params == "object"){
+						for(prop in params){
+							w.set(prop, params[prop]);
+						}
+					}
+					if(p.wrap){
+						var cp = new ContentPane({title: p.params.title || p.title, closable: true});
+						cp.containerNode.appendChild(w.domNode);
+						w.startup();
+						def.resolve(cp);
+					}else{
+						def.resolve(w);
+					}
+				});
+			}
+			return def.promise;
+		},
 		applicationContainer: null,
 
 		getApplicationContainer: function(){
-			if (this.applicationContainer){
+			if(this.applicationContainer){
 				// console.log("Already existing AppContainer");
 				return this.applicationContainer;
 			}
@@ -5065,9 +5062,12 @@ define([
 			// console.log("AppContainer: ", ac);
 			var ch = ac.getChildren().filter(function(child){
 				// console.log("Child Region: ", child.region, child);
-				return child.region=="center";
+				return child.region == "center";
 			});
-			if (!ch || ch.length<1){ console.warn("Unable to find current container"); return false; }
+			if(!ch || ch.length < 1){
+				console.warn("Unable to find current container");
+				return false;
+			}
 
 			return ch[0];
 		},
@@ -5081,8 +5081,8 @@ define([
 		},
 
 		_doNavigation: function(newNavState){
-			var _self=this;
-			if (!newNavState){
+			var _self = this;
+			if(!newNavState){
 				return;
 			}
 
@@ -5095,104 +5095,110 @@ define([
 			// 	return;
 			// }
 
-			if (newNavState.widgetClass) {
+			if(newNavState.widgetClass){
 				ctor = this.getConstructor(newNavState.widgetClass)
-			}else {
-				ctor=ContentPane;
+			}else{
+				ctor = ContentPane;
 			}
 
 			// console.log("Ctor: ", ctor);
 
-			if (newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
-				var cur = _self.getCurrentContainer();	
-				if (cur) { appContainer.removeChild(cur,true); }
+			if(newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
+				var cur = _self.getCurrentContainer();
+				if(cur){
+					appContainer.removeChild(cur, true);
+				}
 
-				var lp = ContentPane({region: "center", content: '<div style="text-align: center;width:100%;"><h3>PATRIC Login</h3><p>This service requires authentication.  Please login or <a href="https://user.patricbrc.org/register/" target="_top">register as a new user.</a></p> <iframe style="width:400px;height:300px;display:inline-block;" src="/login"></iframe></div>'});
+				var lp = ContentPane({
+					region: "center",
+					content: '<div style="text-align: center;width:100%;"><h3>PATRIC Login</h3><p>This service requires authentication.  Please login or <a href="https://user.patricbrc.org/register/" target="_top">register as a new user.</a></p> <iframe style="width:400px;height:300px;display:inline-block;" src="/login"></iframe></div>'
+				});
 				appContainer.addChild(lp);
 				return;
 			}
 
-			Deferred.when(ctor, function(ctor) {		
-				if (!ctor){
+			Deferred.when(ctor, function(ctor){
+				if(!ctor){
 					console.error("Unable to load CTOR");
 					return;
 				}
-				var acceptType = newNavState.widgetClass?"application/json":"text/html";
+				var acceptType = newNavState.widgetClass ? "application/json" : "text/html";
 				var instance;
-				var cur = _self.getCurrentContainer();	
-				if (cur instanceof ctor) {
-					instance = cur; 
+				var cur = _self.getCurrentContainer();
+				if(cur instanceof ctor){
+					instance = cur;
 					console.log("newNavState: ", newNavState);
 
 					instance.set('state', newNavState);
 
-					if (newNavState.set){
+					if(newNavState.set){
 						instance.set(newNavState.set, newNavState.value);
 					}
-					if (instance.resize){
+					if(instance.resize){
 						instance.resize();
 					}
 					// if ((instance instanceof ContentPane) && !newNavState.content) {
-					
+
 					// 	var dest =  (newNavState.href || window.location.pathname || "/") + "?http_templateStyle=" + (newNavState.templateStyle?newNavState.templateStyle:"embedded")
 					// 	instance.set('href', dest);
 					// }else if (newNavState){
 					// 	instance.set("state", newNavState);
 					// }
-				
+
 					// if (instance.resize){
 					// 	 instance.resize(); 
 					// }
 					return;
 				}
 
-				var opts = {region: "center", apiServer: _self.apiServer, state: newNavState} 
-				if (newNavState.set){
-					opts[newNavState.set]=newNavState.value;
+				var opts = {region: "center", apiServer: _self.apiServer, state: newNavState}
+				if(newNavState.set){
+					opts[newNavState.set] = newNavState.value;
 				}
 				// console.log("New Instance Opts: ", opts);
 				instance = new ctor(opts);
 				// console.log("new instance: ", instance);
-				if (cur){ 
-					appContainer.removeChild(cur,true);
+				if(cur){
+					appContainer.removeChild(cur, true);
 				}
 
 				// console.log("Add Instance: ", instance);
-				appContainer.addChild(instance);	
+				appContainer.addChild(instance);
 			});
 		},
 
-		getNavigationContent: function(href,acceptType){
+		getNavigationContent: function(href, acceptType){
 			href = this.apiServer + href;
 			var headers = {
 				"Accept": acceptType,
-				'X-Requested-With':null
+				'X-Requested-With': null
 			}
 
 			// console.log("getNavigationContent: ", href, acceptType);
 			return xhr.get(href, {
 				headers: headers,
-				handleAs:  (acceptType=="application/json")?"json":"",
-				query: (acceptType=="text/html")?{"http_templateStyle":"embedded"}:"",
+				handleAs: (acceptType == "application/json") ? "json" : "",
+				query: (acceptType == "text/html") ? {"http_templateStyle": "embedded"} : "",
 				withCredentials: true
-			})/*.then(function(res){
-				if (acceptType == "text/html") {
-					
-				}		
-				var cp = new ContentPane({content: "<div class='wideLayer'>"+res+"</div>", region: "center"});
-				_self._containers[href]=cp;
-				if (_self._currentContainer){
-					ac.removeChild(_self._currentContainer,true)
-				}
+			});
+			/*.then(function(res){
+							if (acceptType == "text/html") {
 
-				ac.addChild(cp);
-				_self._currentContainer = cp;
-			});*/
+							}
+							var cp = new ContentPane({content: "<div class='wideLayer'>"+res+"</div>", region: "center"});
+							_self._containers[href]=cp;
+							if (_self._currentContainer){
+								ac.removeChild(_self._currentContainer,true)
+							}
+
+							ac.addChild(cp);
+							_self._currentContainer = cp;
+						});*/
 		},
 		navigate: function(msg){
 			// console.log("Navigate to ", msg);
-			if (!msg.href) {
-				if (msg.id) {
+			if(!msg.href){
+				if(msg.id){
 					msg.href = msg.id;
 				}
 			}
@@ -10677,64 +10683,70 @@ function each(array, callback){
 
 },
 'p3/router':function(){
-define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router){
-
-
-
+define(["dojo/_base/declare", "dojo/router/RouterBase"
+], function(declare, Router){
 	var trim;
 	if(String.prototype.trim){
-	        trim = function(str){ return str.trim(); };
+		trim = function(str){
+			return str.trim();
+		};
 	}else{
-	        trim = function(str){ return str.replace(/^\s\s*/, '').replace(/\s\s*$/, ''); };
+		trim = function(str){
+			return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+		};
 	}
 
 	// Firing of routes on the route object is always the same,
 	// no clean way to expose this on the prototype since it's for the
 	// internal router objects.
 	function fireRoute(params, currentPath, newPath, state){
-	        var queue, isStopped, isPrevented, eventObj, callbackArgs, i, l;
+		var queue, isStopped, isPrevented, eventObj, callbackArgs, i, l;
 
-	        queue = this.callbackQueue;
-	        isStopped = false;
-	        isPrevented = false;
-	        eventObj = {
-	                stopImmediatePropagation: function(){ isStopped = true; },
-	                preventDefault: function(){ isPrevented = true; },
-	                oldPath: currentPath,
-	                newPath: newPath,
-	                params: params,
-	                state: state
-	        };
+		queue = this.callbackQueue;
+		isStopped = false;
+		isPrevented = false;
+		eventObj = {
+			stopImmediatePropagation: function(){
+				isStopped = true;
+			},
+			preventDefault: function(){
+				isPrevented = true;
+			},
+			oldPath: currentPath,
+			newPath: newPath,
+			params: params,
+			state: state
+		};
 
-	        callbackArgs = [eventObj];
+		callbackArgs = [eventObj];
 
-	        if(params instanceof Array){
-	                callbackArgs = callbackArgs.concat(params);
-	        }else{
-	                for(var key in params){
-	                        callbackArgs.push(params[key]);
-	                }
-	        }
+		if(params instanceof Array){
+			callbackArgs = callbackArgs.concat(params);
+		}else{
+			for(var key in params){
+				callbackArgs.push(params[key]);
+			}
+		}
 
-	        for(i=0, l=queue.length; i<l; ++i){
-	                if(!isStopped){
-	                        queue[i].apply(null, callbackArgs);
-	                }
-	        }
+		for(i = 0, l = queue.length; i < l; ++i){
+			if(!isStopped){
+				queue[i].apply(null, callbackArgs);
+			}
+		}
 
-	        return !isPrevented;
+		return !isPrevented;
 	}
 
-	return declare([Router],{
+	return declare([Router], {
 
 		go: function(href, state){
 			console.log("go(" + href + ")", state)
 			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
-			if (href!=this._currentPath){
+			if(href != this._currentPath){
 				// console.log("pushState")
-				window.history.pushState(state || {},"route", href);
-				this._handlePathChange(href, state||{})
-			}else if (state){
+				window.history.pushState(state || {}, "route", href);
+				this._handlePathChange(href, state || {})
+			}else if(state){
 				window.history.replaceState(state || {});
 			}
 		},
@@ -10744,88 +10756,91 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 			window.history.replaceState(state);
 		},
 
-	    _registerRoute: function(/*String|RegExp*/route, /*Function*/callback, /*Boolean?*/isBefore){
-                var index, exists, routeObj, callbackQueue, removed,
-                        self = this, routes = this._routes,
-                        routeIndex = this._routeIndex;
+		_registerRoute: function(/*String|RegExp*/route, /*Function*/callback, /*Boolean?*/isBefore){
+			var index, exists, routeObj, callbackQueue, removed,
+				self = this, routes = this._routes,
+				routeIndex = this._routeIndex;
 
-                // Try to fetch the route if it already exists.
-                // This works thanks to stringifying of regex
-                index = this._routeIndex[route];
-                exists = typeof index !== "undefined";
-                if(exists){
-                        routeObj = routes[index];
-                }
+			// Try to fetch the route if it already exists.
+			// This works thanks to stringifying of regex
+			index = this._routeIndex[route];
+			exists = typeof index !== "undefined";
+			if(exists){
+				routeObj = routes[index];
+			}
 
-                // If we didn't get one, make a default start point
-                if(!routeObj){
-                        routeObj = {
-                                route: route,
-                                callbackQueue: [],
-                                fire: fireRoute
-                        };
-                }
+			// If we didn't get one, make a default start point
+			if(!routeObj){
+				routeObj = {
+					route: route,
+					callbackQueue: [],
+					fire: fireRoute
+				};
+			}
 
-                callbackQueue = routeObj.callbackQueue;
+			callbackQueue = routeObj.callbackQueue;
 
-                if(typeof route == "string"){
-                        routeObj.parameterNames = this._getParameterNames(route);
-                        routeObj.route = this._convertRouteToRegExp(route);
-                }
+			if(typeof route == "string"){
+				routeObj.parameterNames = this._getParameterNames(route);
+				routeObj.route = this._convertRouteToRegExp(route);
+			}
 
-                if(isBefore){
-                        callbackQueue.unshift(callback);
-                }else{
-                        callbackQueue.push(callback);
-                }
+			if(isBefore){
+				callbackQueue.unshift(callback);
+			}else{
+				callbackQueue.push(callback);
+			}
 
-                if(!exists){
-                        index = routes.length;
-                        routeIndex[route] = index;
-                        routes.push(routeObj);
-                }
+			if(!exists){
+				index = routes.length;
+				routeIndex[route] = index;
+				routes.push(routeObj);
+			}
 
-                // Useful in a moment to keep from re-removing routes
-                removed = false;
+			// Useful in a moment to keep from re-removing routes
+			removed = false;
 
-                return { // Object
-                        remove: function(){
-                                var i, l;
+			return { // Object
+				remove: function(){
+					var i, l;
 
-                                if(removed){ return; }
+					if(removed){
+						return;
+					}
 
-                                for(i=0, l=callbackQueue.length; i<l; ++i){
-                                        if(callbackQueue[i] === callback){
-                                                callbackQueue.splice(i, 1);
-                                        }
-                                }
+					for(i = 0, l = callbackQueue.length; i < l; ++i){
+						if(callbackQueue[i] === callback){
+							callbackQueue.splice(i, 1);
+						}
+					}
 
+					if(callbackQueue.length === 0){
+						routes.splice(index, 1);
+						self._indexRoutes();
+					}
 
-                                if(callbackQueue.length === 0){
-                                        routes.splice(index, 1);
-                                        self._indexRoutes();
-                                }
-
-                                removed = true;
-                        },
-                        register: function(callback, isBefore){
-                                return self.register(route, callback, isBefore);
-                        }
-                };
-	    },
+					removed = true;
+				},
+				register: function(callback, isBefore){
+					return self.register(route, callback, isBefore);
+				}
+			};
+		},
 
 		_handlePathChange: function(newPath, state){
 			// console.log("Handle Path Change", arguments)
-		 	var i, j, li, lj, routeObj, result,
-	                allowChange, parameterNames, params,
-			routes = this._routes,
-			currentPath = this._currentPath;
+			var i, j, li, lj, routeObj, result,
+				allowChange, parameterNames, params,
+				routes = this._routes,
+				currentPath = this._currentPath;
 
-			if(!this._started){ return allowChange; }
+			if(!this._started){
+				return allowChange;
+			}
 
 			allowChange = true;
 
-			for(i=0, li=routes.length; i<li; ++i){
+			for(i = 0, li = routes.length; i < li; ++i){
 				routeObj = routes[i];
 				// console.log("Checking Route: ", routeObj.route);
 				result = routeObj.route.exec(newPath);
@@ -10835,8 +10850,8 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 						parameterNames = routeObj.parameterNames;
 						params = {};
 
-						for(j=0, lj=parameterNames.length; j<lj; ++j){
-							params[parameterNames[j]] = result[j+1];
+						for(j = 0, lj = parameterNames.length; j < lj; ++j){
+							params[parameterNames[j]] = result[j + 1];
 						}
 					}else{
 						params = result.slice(1);
@@ -10854,9 +10869,11 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 		},
 
 		startup: function(){
-			if (this._started){ return; }
-			this._started=true;
-			var _self=this;
+			if(this._started){
+				return;
+			}
+			this._started = true;
+			var _self = this;
 
 			this.currentState = window.history.state
 
@@ -10865,12 +10882,12 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"],function(declare,Router)
 				_self._handlePathChange(location.pathname + location.search + location.hash, evt.state)
 			}
 
-			if (!this._currentPath){
+			if(!this._currentPath){
 				// console.log("No Current Path",location)
 				this.go(location.pathname + location.search + location.hash)
 			}else{
 				// console.log("Call handlePathChange", location.pathname)
-				this._handlePathChange(location.pathname + location.search + location.hash,this.currentState||{})
+				this._handlePathChange(location.pathname + location.search + location.hash, this.currentState || {})
 			}
 		}
 	})();
@@ -13924,15 +13941,13 @@ define([
 },
 'p3/widget/Drawer':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/_WidgetsInTemplateMixin",
-	"dijit/_TemplatedMixin","dojo/topic","dojo/dom-construct"
-],function(
-	declare, WidgetBase, on,
-	domClass,WiT,
-	Templated,Topic,domConstruct
-){
-	return declare([WidgetBase,Templated], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_WidgetsInTemplateMixin",
+	"dijit/_TemplatedMixin", "dojo/topic", "dojo/dom-construct"
+], function(declare, WidgetBase, on,
+			domClass, WiT,
+			Templated, Topic, domConstruct){
+	return declare([WidgetBase, Templated], {
 		templateString: "<div><div data-dojo-attach-event='click:toggle' class='handle' data-dojo-attach-point='handle'><div>${title}</div></div><div data-dojo-attach-point='panelContainer' class='PanelContainer'></div></div>",
 		baseClass: "Drawer",
 		"class": "LeftDrawer",
@@ -13943,63 +13958,65 @@ define([
 			console.log("POSTCREATE");
 			this.inherited(arguments);
 
-			if (!this.title && this.handleContent){
-				this.handle.innerHTML=this.handleContent;
+			if(!this.title && this.handleContent){
+				this.handle.innerHTML = this.handleContent;
 			}
 
-			domClass.add(this.domNode,"dijitHidden");
-			var _self=this;
+			domClass.add(this.domNode, "dijitHidden");
+			var _self = this;
 			Topic.subscribe(this.topic, function(msg){
 				console.log("DrawerMessage: ", msg)
-				if (msg.action && msg.action=="hide") {
+				if(msg.action && msg.action == "hide"){
 					domClass.add(_self.domNode, "dijitHidden");
 					return;
 				}
 
-				if (msg.action && msg.action=="set" && msg.panel) {
-					
-					if (msg.open && domClass.contains(_self.domNode,"Closed")){
-							domClass.remove(_self.domNode,"Closed")
+				if(msg.action && msg.action == "set" && msg.panel){
+
+					if(msg.open && domClass.contains(_self.domNode, "Closed")){
+						domClass.remove(_self.domNode, "Closed")
 					}else{
-							domClass.add(_self.domNode,"Closed")
+						domClass.add(_self.domNode, "Closed")
 					}
 
 					domClass.remove(_self.domNode, "dijitHidden");
-					
-	//				if (_self.panel && (_self.panel === msg.panel)) {
-	//					console.log("existing Panel in place");
-	//				}else{
-						_self.set('panel', msg.panel);
-	//				}
+
+					//if (_self.panel && (_self.panel === msg.panel)) {
+					//	console.log("existing Panel in place");
+					//}else{
+					_self.set('panel', msg.panel);
+					//}
 
 					return;
 				}
-	
+
 			});
 		},
 		toggle: function(){
-			domClass.toggle(this.domNode,"Closed");
-			if (!domClass.contains(this.domNode, "Closed")){
+			domClass.toggle(this.domNode, "Closed");
+			if(!domClass.contains(this.domNode, "Closed")){
 				console.log("Startup CurrentPanel");
 				this.panel.startup();
 				this.panel.resize();
 			}
-	
+
 		},
 
 		panel: null,
 		_setPanelAttr: function(Panel){
 			console.log("Setup Drawer Panel: ", Panel, typeof Panel);
-			if (this.panel === Panel) { return; }
-			if (typeof Panel=="function"){
+			if(this.panel === Panel){
+				return;
+			}
+			if(typeof Panel == "function"){
 				this.panel = new Panel({"class": "PanelContent", content: "Loading Panel Content"});
 				domConstruct.place(this.panel.domNode, this.panelContainer, "only");
 			}else{
 				this.panel = Panel;
-				domConstruct.place(Panel.domNode,this.panelContainer,"only")
+				domConstruct.place(Panel.domNode, this.panelContainer, "only")
 			}
 
-			if (!domClass.contains(this.domNode,"Closed")) {
+			if(!domClass.contains(this.domNode, "Closed")){
 				console.log("Startup on Startup CurrentPanel");
 				this.panel.startup();
 				this.panel.resize();
@@ -14123,9 +14140,10 @@ define([
 
 },
 'p3/jsonrpc':function(){
-define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
-	var idx=1;
-	return function(url,token){
+define(["dojo/request", "dojo/_base/Deferred"
+], function(xhr, defer){
+	var idx = 1;
+	return function(url, token){
 
 		return function(method, params, options){
 			var def = new defer();
@@ -14138,644 +14156,689 @@ define(["dojo/request","dojo/_base/Deferred"], function(xhr,defer){
 					"X-Requested-With": false
 				},
 				handleAs: "json",
-				data: JSON.stringify({id:idx++, method:method, params:params, jsonrpc: "2.0"})
-			}),function(response){
+				data: JSON.stringify({id: idx++, method: method, params: params, jsonrpc: "2.0"})
+			}), function(response){
 				// console.log("JSON RPC RESPONSE: ", response);
-				if (response.error){
+				if(response.error){
 					return def.reject(response.error);
 				}
 
-				if (response.result) { def.resolve(response.result); return; }
+				if(response.result){
+					def.resolve(response.result);
+					return;
+				}
 			}, function(err){
 				var message = err.response.data.error.message;
-				var message = message.split("\n\n\n")[0]
-				def.reject(message||err.message);
+				var message = message.split("\n\n\n")[0];
+				def.reject(message || err.message);
 			});
 
 			return def.promise;
 		}
-
 	}
-
-})
+});
 
 },
 'p3/panels':function(){
-define([],function(){
-	
+define([], function(){
+
 	return {
-            CreateWorkspace: {
-                title: "Create Workspace",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/CreateWorkspace",
-                dataParam: "userId",
-                params: {}
-            },
-            CreateFolder: {
-                title: "Create Folder",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/CreateFolder",
-                dataParam: "path",
-                params: {}
-            },
-            Upload: {
-                title: "Upload",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/Uploader",
-                dataParam: "path",
-                params: {multiple:true}
-            
-            },
-            UploadReplace: {
-                title: "Overwrite File",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/Uploader",
-                params: {overwrite:true}
-            },
+		CreateWorkspace: {
+			title: "Create Workspace",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/CreateWorkspace",
+			dataParam: "userId",
+			params: {}
+		},
+		CreateFolder: {
+			title: "Create Folder",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/CreateFolder",
+			dataParam: "path",
+			params: {}
+		},
+		Upload: {
+			title: "Upload",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/Uploader",
+			dataParam: "path",
+			params: {multiple: true}
 
-    	    GenomeGroupViewer: {
-                title: "Genome Group",
-                layer: "p3/layer/panels",
-                ctor: "p3/widget/viewer/GenomeList",
-                params: {}
-            }
+		},
+		UploadReplace: {
+			title: "Overwrite File",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/Uploader",
+			params: {overwrite: true}
+		},
+
+		GenomeGroupViewer: {
+			title: "Genome Group",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/viewer/GenomeList",
+			params: {}
+		}
 	}
-
-})
+});
 
 },
 'p3/WorkspaceManager':function(){
 define([
-    "dojo/request", "dojo/_base/declare","dojo/_base/lang",
-    "dojo/_base/Deferred","dojo/topic","./jsonrpc", "dojo/Stateful",
-    "dojo/promise/all"
-],function(
-    xhr,declare,lang,
-    Deferred,Topic,RPC,Stateful,
-    All
-){
+	"dojo/request", "dojo/_base/declare", "dojo/_base/lang",
+	"dojo/_base/Deferred", "dojo/topic", "./jsonrpc", "dojo/Stateful",
+	"dojo/promise/all"
+], function(xhr, declare, lang,
+			Deferred, Topic, RPC, Stateful,
+			All){
 
-    var WorkspaceManager = (declare([Stateful], {
-        userWorkspaces: null,
-        currentWorkspace: null,
-        currentPath: null,
-        token: "",
-        apiUrl: "",
-        userId: "",
-        downloadTypes:["contigs","reads","unspecified","diffexp_experiment","diffexp_mapping","diffexp_sample","diffexp_expression","diffexp_input_data"],
+	var WorkspaceManager = (declare([Stateful], {
+		userWorkspaces: null,
+		currentWorkspace: null,
+		currentPath: null,
+		token: "",
+		apiUrl: "",
+		userId: "",
+		downloadTypes: ["contigs", "reads", "unspecified", "diffexp_experiment", "diffexp_mapping", "diffexp_sample", "diffexp_expression", "diffexp_input_data"],
 
-        getDefaultFolder: function(type){
-            switch(type) {
-                case "genome_group":
-                    return "/" + [this.userId,"home","Genome Groups"].join("/");
-                case "feature_group":
-                    return "/" + [this.userId,"home","Feature Groups"].join("/");
-                case "experiment_folder":
-                    return "/" + [this.userId,"home","Experiments"].join("/");
+		getDefaultFolder: function(type){
+			switch(type){
+				case "genome_group":
+					return "/" + [this.userId, "home", "Genome Groups"].join("/");
+				case "feature_group":
+					return "/" + [this.userId, "home", "Feature Groups"].join("/");
+				case "experiment_folder":
+					return "/" + [this.userId, "home", "Experiments"].join("/");
 
-                default:
-                    return "/" + [this.userId,"home"].join("/");
-            }
-        },
-        _userWorkspacesGetter: function(){
-            if (this.userWorkspaces && this.userWorkspaces.length>0){
-                return this.userWorkspaces;
-            }
+				default:
+					return "/" + [this.userId, "home"].join("/");
+			}
+		},
+		_userWorkspacesGetter: function(){
+			if(this.userWorkspaces && this.userWorkspaces.length > 0){
+				return this.userWorkspaces;
+			}
 
-            var p = "/" + this.userId + "/";
-            this.userWorkspaces =Deferred.when(this.api("Workspace.ls", [{
-                paths: [p],
-                includeSubDirs: false,
-                Recursive: false
-            }]), lang.hitch(this, function(results) {
-                    var res;
-                    if (!results[0] || !results[0][p]) {
-                        res = []
-                    }else{
-                        res = results[0][p].map(function(r) {
-                            return {
-                                id: r[4],
-                                path: r[2] + r[0],
-                                name: r[0],
-                                type: r[1],
-                                creation_time: r[3],
-                                link_reference: r[11],
-                                owner_id: r[5],
-                                size: r[6],
-                                userMeta: r[7],
-                                autoMeta: r[8],
-                                user_permission: r[9],
-                                global_permission: r[10]
-                            }
-                        })
-                    }
-
-
-                    if (res.length>0){
-                        this.set("userWorkspaces", res);
-                        Topic.publish("/refreshWorkspace",{});
-                        return res;
-                    }
-
-
-                    return Deferred.when(this.createWorkspace("home"), lang.hitch(this,function(hws){
-                        this.userWorkspaces=[hws];
-                        return [hws];
-                    }, function(err){
-                        console.log("Error Creating User's home workspace: ", err);
-//                      console.error("Unable to create user's 'home' workspace: ", err);
-                        return [];
-                    }));
-            }));
-            return this.userWorkspaces;
-        },
-
-        create: function(obj, createUploadNode,overwrite){
-            var _self=this;
-            console.log("WorkspaceManager.create(): ", obj);
-            if (obj.path.charAt(obj.path.length-1)!="/") {
-                obj.path = obj.path + "/";
-            }
-            console.log("Workspace.create: ", obj.path, obj.path+obj.name, "Overwrite: ", overwrite);
-            return Deferred.when(this.api("Workspace.create",[{objects:[[(obj.path+obj.name),(obj.type||"unspecified"),obj.userMeta||{},(obj.content||"")]],createUploadNodes:createUploadNode,overwrite:overwrite}]), function(results){
-                                        var res;
-                    console.log("Create Results: ", results);
-                                        if (!results[0][0] || !results[0][0]) {
-                                                throw new Error("Error Creating Object");
-                                        }else{
-                                                var r = results[0][0];
-                                                var out = {
-                                                        id: r[4],
-                                                        path: r[2] + r[0],
-                                                        name: r[0],
-                                                        type: r[1],
-                                                        creation_time: r[3],
-                                                        link_reference: r[11],
-                                                        owner_id: r[5],
-                                                        size: r[6],
-                                                        userMeta: r[7],
-                                                        autoMeta: r[8],
-                                                        user_permission: r[9],
-                                                        global_permission: r[10]
-                                                }
-                                        Topic.publish("/refreshWorkspace",{});
-                                                return out;
-                                        }
-            });
-        },
-
-        updateObject: function(meta, data){
-            return this.create({
-                path: meta.path,
-                type: meta.type,
-                name: meta.name,
-                meta: meta.userMeta||{},
-                content: JSON.stringify(data)
-            },false,true);
-        },
-
-        addToGroup: function(groupPath, idType, ids){
-            var _self=this;
-            return Deferred.when(this.getObject(groupPath), function(res){
-                if (typeof res.data == "string") {
-                    res.data = JSON.parse(res.data);
-                }
-                if (res && res.data && res.data.id_list){
-                    if (res.data.id_list[idType]){
-                        var existing={}
-                        res.data.id_list[idType].forEach(function(id){
-                            existing[id]=true;
-                        });
-
-                        ids=ids.filter(function(id){
-                            return !existing[id];
-                        });
-
-                        res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
-                    }else{
-                        res.data.id_list[idType] = ids;
-                    }
-                    return Deferred.when(_self.updateObject(res.metadata,res.data),function(r){
-                        Topic.publish("/Notification", {message: ids.length + " items added to group " + groupPath, type: "message"});
-                        return r;
-                    });
-                }
-                Topic.publish("/Notification", {message: "Unable to add Items to group.  Invalid group structure",type: "error", duration:0});
-                return new Error("Unable to append to group.  Group structure incomplete");
-            });
-        },
-
-        removeFromGroup: function(groupPath, idType, ids){
-            var _self=this;
-            return Deferred.when(this.getObject(groupPath), function(res){
-                if (typeof res.data == "string") {
-                    res.data = JSON.parse(res.data);
-                }
-                console.log("Data: ",res.data);
-                if (res && res.data && res.data.id_list && res.data.id_list[idType]){
-                    console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
-                    res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
-                        return !(ids.indexOf(id)>=0);
-                    });
-                    console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
-                    return Deferred.when(_self.updateObject(res.metadata,res.data), function(r){
-                        console.log("Publish remove from group notification message");
-                        Topic.publish("/Notification", {message: ids.length + " Item removed from group " + groupPath, type: "message", duration:0});
-                        return r;
-                    });
-
-                }
-
-                Topic.publish("/Notification", {message: "Unable to remove items from group.  Invalid group structure",type: "error", duration:0});
-                return new Error("Unable to remove from group.  Group structure incomplete");
-            });
-        },
-
-        createGroup: function(name, type, path, idType, ids){
-            var group = {
-                name: name,
-                id_list: {}
-            }
-            group.id_list[idType] = ids;
-
-            console.log("Creating Group: ", group);
-            return this.create({
-                path: path,
-                name: name,
-                type: type,
-                userMeta: {},
-                content: group
-            })
-
-        },
-
-        createFolder: function(paths){
-            if (!paths){
-                throw new Error("Invalid Path(s) to delete");
-            }
-            if (!(paths instanceof Array)){
-                paths = [paths];
-            }
-            var objs = paths.map(function(p){ return [p,"Directory"] })
-            return Deferred.when(this.api("Workspace.create",[{objects:objs}]),lang.hitch(this,function(results){
-                    var res;
-
-                    if (!results[0][0] || !results[0][0]) {
-                        Topic.publish("/Notification", {message: "Error Creating Folder", type: "error", duration: 0});
-                        throw new Error("Error Creating Folder");
-                    }else{
-                        var r = results[0][0];
-                        var out = {
-                            id: r[4],
-                            path: r[2] + r[0],
-                            name: r[0],
-                            type: r[1],
-                            creation_time: r[3],
-                            link_reference: r[11],
-                            owner_id: r[5],
-                            size: r[6],
-                            userMeta: r[7],
-                            autoMeta: r[8],
-                            user_permission: r[9],
-                            global_permission: r[10]
-                        }
-
-                        Topic.publish("/refreshWorkspace",{});
-                        Topic.publish("/Notification", {message: "Folder Created", type: "message"});
-                        return out;
-                    }
-            }));
-        },
-        updateMetadata: function(path, userMeta, type){
-            var data = [path, userMeta||{}, type||undefined];
-            return Deferred.when(this.api("Workspace.update_metadata", [{objects:[data]}]), function(){
-                Topic.publish("/refreshWorkspace",{});
-            });
-        },
-
-        updateAutoMetadata: function(paths){
-            if (!(paths instanceof Array)){
-                paths = [paths];
-            }
-            return Deferred.when(this.api("Workspace.update_auto_meta", [{objects:paths}]), function(){
-                Topic.publish("/refreshWorkspace",{});
-            });
-        },
-        deleteFolder: function(paths, force){
-            if (!paths){
-                throw new Error("Invalid Path(s) to delete");
-            }
-            if (!(paths instanceof Array)){
-                paths = [paths];
-            }
-            if (paths.indexOf("home")>=0){
-                throw new Error("Cannot delete your 'home' Workspace");
-            }
-            return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,deleteDirectories: true,force:force }]), function(results){
-                Topic.publish("/refreshWorkspace",{});
-                Topic.publish("/Notification", {message:"Folder Removed", type: "message"});
-            });
-        },
-
-        deleteObject: function(paths, deleteFolders, force){
-            if (!paths){
-                throw new Error("Invalid Path(s) to delete");
-            }
-            if (!(paths instanceof Array)){
-                paths = [paths];
-            }
-            if (paths.indexOf("home")>=0){
-                throw new Error("Cannot delete your 'home' Workspace");
-            }
-
-            return Deferred.when(window.App.api.workspace("Workspace.delete",[{objects: paths,force:force, deleteDirectories: deleteFolders }]), function(results){
-                Topic.publish("/Notification", {message: paths.length + " objects removed", type: "message"});
-                Topic.publish("/refreshWorkspace",{});
-            });
-        },
-
-
-        createWorkspace: function(name){
-            //console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
-            return Deferred.when(this.createFolder("/" + this.userId + "/"+name+"/"), lang.hitch(this,function(workspace){
-                if (name=="home"){
-                    return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path+"/Feature Groups", workspace.path+"/Experiments", workspace.path+"/Experiment Groups"]),function(){
-                        Topic.publish("/Notification", {message: "New workspace '" + name + "' created", type: "message"});
-                        return workspace
-                    })
-                }
-            }));
-        },
-
-        getObjectsByType: function(types, showHidden){
-            types= (types instanceof Array)?types:[types];
-            console.log("Get ObjectsByType: ", types);
-
-            return Deferred.when(this.get("currentWorkspace"), lang.hitch(this,function(current){
-                //console.log("current: ", current, current.path);
-                var path = current.path;
-                return Deferred.when(this.api("Workspace.ls",[{
-                    paths: [current.path],
-                    excludeDirectories: false,
-                    excludeObjects: false,
-                    query: {type: types},
-                    recursive: true
-                }]), function(results){
-                    //console.log("getObjectsByType Results: ", results);
-                    if (!results[0] || !results[0][path]) {
-                        return [];
-                    }
-                    var res = results[0][path];
-
-                    //console.log("array res", res);
-
-                    res = res.map(function(r) {
-                        //console.log("r: ", r);
-                        return {
-                            id: r[4],
-                            path: r[2] + r[0],
-                            name: r[0],
-                            type: r[1],
-                            creation_time: r[3],
-                            link_reference: r[11],
-                            owner_id: r[5],
-                            size: r[6],
-                            userMeta: r[7],
-                            autoMeta: r[8],
-                            user_permission: r[9],
-                            global_permission: r[10]
-                        }
-                    }).filter(function(r){
-                        if (r.type=="folder") {
-                            if (r.path.split("/").some(function(p){
-                                return p.charAt(0)==".";
-                            })) { return false; }
-                        }
-                        return (types.indexOf(r.type)>=0);
-                    })/*.filter(function(r){
-                        if (!showHidden && r.name.charAt(0)=="."){ return false };
-                        return true;
-                    })*/
-
-                    //console.log("Final getObjectsByType()", res)
-                    return res;
-                })
-            }));
-        },
-        getDownloadUrls: function(paths) {
-            var paths = paths instanceof Array ? paths : [paths];
-            return Deferred.when(this.api("Workspace.get_download_url", [{objects: paths}]), function(urls){
-                       return urls[0];
-                   });
-        },
-
-        downloadFile: function(path){
-            return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
-                console.log("download Urls: ", urls);
-                window.open(urls[0],"Download");
-            });
-        },
-
-        getObject: function(path,metadataOnly){
-            if (!path){
-                throw new Error("Invalid Path(s) to delete");
-            }
-            path = decodeURIComponent(path);
-            console.log('getObjects: ', path, "metadata_only:", metadataOnly)
-            return Deferred.when(this.api("Workspace.get",[{objects: [path], metadata_only:metadataOnly}]), function(results){
-                if (!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]) {
-                    throw new Error("Object not found: ");
-                }
-                console.log("results[0]", results[0])
-                var meta = {
-                    name: results[0][0][0][0],
-                    type: results[0][0][0][1],
-                    path: results[0][0][0][2],
-                    creation_time: results[0][0][0][3],
-                    id: results[0][0][0][4],
-                    owner_id: results[0][0][0][5],
-                    size: results[0][0][0][6],
-                    userMeta: results[0][0][0][7],
-                    autoMeta: results[0][0][0][8],
-                    user_permissions: results[0][0][0][9],
-                    global_permission: results[0][0][0][10],
-                    link_reference: results[0][0][0][11]
-                }
-                if (metadataOnly) { return meta; }
-
-                var res = {
-                    metadata: meta,
-                    data: results[0][0][1]
-                }
-                console.log("getObjects() res", res);
-                return res;
-            });
-
-        },
-
-
-        getObjects: function(paths,metadataOnly){
-            if (!paths){
-                throw new Error("Invalid Path(s) to delete");
-            }
-            if (!(paths instanceof Array)){
-                paths = [paths];
-            }
-            paths = paths.map(function(p){ return decodeURIComponent(p); })
-            return Deferred.when(this.api("Workspace.get",[{objects: paths, metadata_only:metadataOnly}]), function(results){
-                console.log("results[0]", results[0])
-                var objs = results[0];
-		var fin=[];
-                var defs = objs.map(function(obj) {
-                    console.log("obj: ", obj);
-                    var meta = {
-                        name: obj[0][0],
-                        type: obj[0][1],
-                        path: obj[0][2],
-                        creation_time: obj[0][3],
-                        id: obj[0][4],
-                        owner_id: obj[0][5],
-                        size: obj[0][6],
-                        userMeta: obj[0][7],
-                        autoMeta: obj[0][8],
-                        user_permissions: obj[0][9],
-                        global_permission: obj[0][10],
-                        link_reference: obj[0][11]
-                    }
-                    if (metadataOnly) { fin.push(meta);return true }
-
-
-		    if (!meta.link_reference){
-	                    var res = {
-				metadata: meta,
-				data: obj[1]
-		            }
-			   fin.push(res);
-                           return true;
-                    }else{
-			
- 			  var d = xhr.get(meta.link_reference + "?download", {
-				headers: {
-					Authorization: "OAuth " + window.App.authorizationToken,	
-				        "X-Requested-With": null
+			var p = "/" + this.userId + "/";
+			this.userWorkspaces = Deferred.when(this.api("Workspace.ls", [{
+				paths: [p],
+				includeSubDirs: false,
+				Recursive: false
+			}]), lang.hitch(this, function(results){
+				var res;
+				if(!results[0] || !results[0][p]){
+					res = []
+				}else{
+					res = results[0][p].map(function(r){
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					})
 				}
-			  });
 
-			  return Deferred.when(d,function(data){
-				fin.push({
-	  			    metadata: meta,
-				    data: data
+				if(res.length > 0){
+					this.set("userWorkspaces", res);
+					Topic.publish("/refreshWorkspace", {});
+					return res;
+				}
+
+				return Deferred.when(this.createWorkspace("home"), lang.hitch(this, function(hws){
+					this.userWorkspaces = [hws];
+					return [hws];
+				}, function(err){
+					console.log("Error Creating User's home workspace: ", err);
+					// console.error("Unable to create user's 'home' workspace: ", err);
+					return [];
+				}));
+			}));
+			return this.userWorkspaces;
+		},
+
+		create: function(obj, createUploadNode, overwrite){
+			var _self = this;
+			console.log("WorkspaceManager.create(): ", obj);
+			if(obj.path.charAt(obj.path.length - 1) != "/"){
+				obj.path = obj.path + "/";
+			}
+			console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
+			return Deferred.when(this.api("Workspace.create", [{
+				objects: [[(obj.path + obj.name), (obj.type || "unspecified"), obj.userMeta || {}, (obj.content || "")]],
+				createUploadNodes: createUploadNode,
+				overwrite: overwrite
+			}]), function(results){
+				var res;
+				console.log("Create Results: ", results);
+				if(!results[0][0] || !results[0][0]){
+					throw new Error("Error Creating Object");
+				}else{
+					var r = results[0][0];
+					var out = {
+						id: r[4],
+						path: r[2] + r[0],
+						name: r[0],
+						type: r[1],
+						creation_time: r[3],
+						link_reference: r[11],
+						owner_id: r[5],
+						size: r[6],
+						userMeta: r[7],
+						autoMeta: r[8],
+						user_permission: r[9],
+						global_permission: r[10]
+					};
+					Topic.publish("/refreshWorkspace", {});
+					return out;
+				}
+			});
+		},
+
+		updateObject: function(meta, data){
+			return this.create({
+				path: meta.path,
+				type: meta.type,
+				name: meta.name,
+				meta: meta.userMeta || {},
+				content: JSON.stringify(data)
+			}, false, true);
+		},
+
+		addToGroup: function(groupPath, idType, ids){
+			var _self = this;
+			return Deferred.when(this.getObject(groupPath), function(res){
+				if(typeof res.data == "string"){
+					res.data = JSON.parse(res.data);
+				}
+				if(res && res.data && res.data.id_list){
+					if(res.data.id_list[idType]){
+						var existing = {}
+						res.data.id_list[idType].forEach(function(id){
+							existing[id] = true;
+						});
+
+						ids = ids.filter(function(id){
+							return !existing[id];
+						});
+
+						res.data.id_list[idType] = res.data.id_list[idType].concat(ids);
+					}else{
+						res.data.id_list[idType] = ids;
+					}
+					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
+						Topic.publish("/Notification", {
+							message: ids.length + " items added to group " + groupPath,
+							type: "message"
+						});
+						return r;
+					});
+				}
+				Topic.publish("/Notification", {
+					message: "Unable to add Items to group.  Invalid group structure",
+					type: "error",
+					duration: 0
 				});
-				return true;
-			  }, function(err){
-				console.log("Error Retrieving data object from shock :", err, meta.link_reference);
-			  });  
-		    }	
-                });
+				return new Error("Unable to append to group.  Group structure incomplete");
+			});
+		},
 
-		return Deferred.when(All(defs), function(){
-			return fin;
-		});
-            });
+		removeFromGroup: function(groupPath, idType, ids){
+			var _self = this;
+			return Deferred.when(this.getObject(groupPath), function(res){
+				if(typeof res.data == "string"){
+					res.data = JSON.parse(res.data);
+				}
+				console.log("Data: ", res.data);
+				if(res && res.data && res.data.id_list && res.data.id_list[idType]){
+					console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
+						return !(ids.indexOf(id) >= 0);
+					});
+					console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
+						console.log("Publish remove from group notification message");
+						Topic.publish("/Notification", {
+							message: ids.length + " Item removed from group " + groupPath,
+							type: "message",
+							duration: 0
+						});
+						return r;
+					});
 
-        },
+				}
 
-        getFolderContents: function(path,showHidden,recursive) {
-            return Deferred.when(this.api("Workspace.ls", [{
-                    paths: [path],
-                    includeSubDirs: false,
-                    recursive: recursive ? true : false
-                }]), function(results) {
-                    //console.log("path: ", path);
+				Topic.publish("/Notification", {
+					message: "Unable to remove items from group.  Invalid group structure",
+					type: "error",
+					duration: 0
+				});
+				return new Error("Unable to remove from group.  Group structure incomplete");
+			});
+		},
 
-                    if (!results[0] || !results[0][path]) {
-                        return [];
-                    }
-                    var res = results[0][path];
+		createGroup: function(name, type, path, idType, ids){
+			var group = {
+				name: name,
+				id_list: {}
+			}
+			group.id_list[idType] = ids;
 
-                    //console.log("array res", res);
+			console.log("Creating Group: ", group);
+			return this.create({
+				path: path,
+				name: name,
+				type: type,
+				userMeta: {},
+				content: group
+			})
 
-                    res = res.map(function(r) {
-                        return {
-                            id: r[4],
-                            path: r[2] + r[0],
-                            name: r[0],
-                            type: r[1],
-                            creation_time: r[3],
-                            link_reference: r[11],
-                            owner_id: r[5],
-                            size: r[6],
-                            userMeta: r[7],
-                            autoMeta: r[8],
-                            user_permission: r[9],
-                            global_permission: r[10]
-                        }
-                    }).filter(function(r){
-                        if (!showHidden && r.name.charAt(0)=="."){ return false };
-                        return true;
-                    })
-                    //console.log("Final getFolderContents()", res)
-                    return res;
-                },
+		},
 
-                function(err) {
-                    //console.log("Error Loading Workspace:", err);
-                    _self.showError(err);
-                })
-        },
+		createFolder: function(paths){
+			if(!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			var objs = paths.map(function(p){
+				return [p, "Directory"]
+			})
+			return Deferred.when(this.api("Workspace.create", [{objects: objs}]), lang.hitch(this, function(results){
+				var res;
 
-        _userWorkspacesSetter: function(val){
-            Topic.publish("/userWorkspaces", val);
-            this.userWorkspaces = val;
-        },
+				if(!results[0][0] || !results[0][0]){
+					Topic.publish("/Notification", {message: "Error Creating Folder", type: "error", duration: 0});
+					throw new Error("Error Creating Folder");
+				}else{
+					var r = results[0][0];
+					var out = {
+						id: r[4],
+						path: r[2] + r[0],
+						name: r[0],
+						type: r[1],
+						creation_time: r[3],
+						link_reference: r[11],
+						owner_id: r[5],
+						size: r[6],
+						userMeta: r[7],
+						autoMeta: r[8],
+						user_permission: r[9],
+						global_permission: r[10]
+					}
 
-        _currentWorkspaceGetter: function(){
-            if (!this.currentWorkspace) {
-                this.currentWorkspace = Deferred.when(this.get('userWorkspaces'),lang.hitch(this,function(cws){
-                    if (!cws || cws.length<1){
-                        throw Error("No User Workspaces found when attempting to get the Current Workspace for user.");
-                    }
-                    this.currentWorkspace=cws[0];
-                    return cws[0];
-                }))
-            }
-            return this.currentWorkspace;
-        },
-        _currentWorkspaceSetter: function(val){
-            this.currentWorkspace = val;
-        },
+					Topic.publish("/refreshWorkspace", {});
+					Topic.publish("/Notification", {message: "Folder Created", type: "message"});
+					return out;
+				}
+			}));
+		},
+		updateMetadata: function(path, userMeta, type){
+			var data = [path, userMeta || {}, type || undefined];
+			return Deferred.when(this.api("Workspace.update_metadata", [{objects: [data]}]), function(){
+				Topic.publish("/refreshWorkspace", {});
+			});
+		},
 
-        _currentPathGetter: function(){
-            if (!this.currentPath){
-                this.currentPath = Deferred.when(this.get('currentWorkspace'),lang.hitch(this,function(cws){
-                    this.currentPath=cws.path;
-                    return cws.path;
-                }))
+		updateAutoMetadata: function(paths){
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			return Deferred.when(this.api("Workspace.update_auto_meta", [{objects: paths}]), function(){
+				Topic.publish("/refreshWorkspace", {});
+			});
+		},
+		deleteFolder: function(paths, force){
+			if(!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			if(paths.indexOf("home") >= 0){
+				throw new Error("Cannot delete your 'home' Workspace");
+			}
+			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
+				objects: paths,
+				deleteDirectories: true,
+				force: force
+			}]), function(results){
+				Topic.publish("/refreshWorkspace", {});
+				Topic.publish("/Notification", {message: "Folder Removed", type: "message"});
+			});
+		},
 
-            }
+		deleteObject: function(paths, deleteFolders, force){
+			if(!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			if(paths.indexOf("home") >= 0){
+				throw new Error("Cannot delete your 'home' Workspace");
+			}
 
-            return this.currentPath;
-        },
-        _currentPathSetter: function(val){
-            this.currentPath = val;
-        },
+			return Deferred.when(window.App.api.workspace("Workspace.delete", [{
+				objects: paths,
+				force: force,
+				deleteDirectories: deleteFolders
+			}]), function(results){
+				Topic.publish("/Notification", {message: paths.length + " objects removed", type: "message"});
+				Topic.publish("/refreshWorkspace", {});
+			});
+		},
 
-        init: function(apiUrl, token, userId){
-            if (!apiUrl || !token || !userId){
-                console.log("Unable to initialize workspace manager. Args: ", arguments);
-                return;
-            }
+		createWorkspace: function(name){
+			//console.log("Create workspace ", name, "userId", this.userId); //' for user ', this.userId, " PATH:", "/"+this.userId+"/");
+			return Deferred.when(this.createFolder("/" + this.userId + "/" + name + "/"), lang.hitch(this, function(workspace){
+				if(name == "home"){
+					return Deferred.when(this.createFolder([workspace.path + "/Genome Groups", workspace.path + "/Feature Groups", workspace.path + "/Experiments", workspace.path + "/Experiment Groups"]), function(){
+						Topic.publish("/Notification", {
+							message: "New workspace '" + name + "' created",
+							type: "message"
+						});
+						return workspace
+					})
+				}
+			}));
+		},
 
-            this.token = token;
-            this.apiUrl = apiUrl
-            this.api = RPC(apiUrl, token);
-            this.userId = userId;
-            Deferred.when(this.get("currentPath"), function(cwsp){ console.log("Current Workspace Path: ", cwsp) });
+		getObjectsByType: function(types, showHidden){
+			types = (types instanceof Array) ? types : [types];
+			console.log("Get ObjectsByType: ", types);
 
-        }
-    }))()
+			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
+				//console.log("current: ", current, current.path);
+				var path = current.path;
+				return Deferred.when(this.api("Workspace.ls", [{
+					paths: [current.path],
+					excludeDirectories: false,
+					excludeObjects: false,
+					query: {type: types},
+					recursive: true
+				}]), function(results){
+					//console.log("getObjectsByType Results: ", results);
+					if(!results[0] || !results[0][path]){
+						return [];
+					}
+					var res = results[0][path];
 
-    return WorkspaceManager;
+					//console.log("array res", res);
+
+					res = res.map(function(r){
+						//console.log("r: ", r);
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					}).filter(function(r){
+						if(r.type == "folder"){
+							if(r.path.split("/").some(function(p){
+									return p.charAt(0) == ".";
+								})){
+								return false;
+							}
+						}
+						return (types.indexOf(r.type) >= 0);
+					});
+					/*.filter(function(r){
+						if (!showHidden && r.name.charAt(0)=="."){ return false };
+						return true;
+					})*/
+
+					//console.log("Final getObjectsByType()", res)
+					return res;
+				})
+			}));
+		},
+		getDownloadUrls: function(paths){
+			var paths = paths instanceof Array ? paths : [paths];
+			return Deferred.when(this.api("Workspace.get_download_url", [{objects: paths}]), function(urls){
+				return urls[0];
+			});
+		},
+
+		downloadFile: function(path){
+			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
+				console.log("download Urls: ", urls);
+				window.open(urls[0], "Download");
+			});
+		},
+
+		getObject: function(path, metadataOnly){
+			if(!path){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			path = decodeURIComponent(path);
+			console.log('getObjects: ', path, "metadata_only:", metadataOnly);
+			return Deferred.when(this.api("Workspace.get", [{
+				objects: [path],
+				metadata_only: metadataOnly
+			}]), function(results){
+				if(!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]){
+					throw new Error("Object not found: ");
+				}
+				console.log("results[0]", results[0]);
+				var meta = {
+					name: results[0][0][0][0],
+					type: results[0][0][0][1],
+					path: results[0][0][0][2],
+					creation_time: results[0][0][0][3],
+					id: results[0][0][0][4],
+					owner_id: results[0][0][0][5],
+					size: results[0][0][0][6],
+					userMeta: results[0][0][0][7],
+					autoMeta: results[0][0][0][8],
+					user_permissions: results[0][0][0][9],
+					global_permission: results[0][0][0][10],
+					link_reference: results[0][0][0][11]
+				};
+				if(metadataOnly){
+					return meta;
+				}
+
+				var res = {
+					metadata: meta,
+					data: results[0][0][1]
+				};
+				console.log("getObjects() res", res);
+				return res;
+			});
+
+		},
+
+		getObjects: function(paths, metadataOnly){
+			if(!paths){
+				throw new Error("Invalid Path(s) to delete");
+			}
+			if(!(paths instanceof Array)){
+				paths = [paths];
+			}
+			paths = paths.map(function(p){
+				return decodeURIComponent(p);
+			});
+			return Deferred.when(this.api("Workspace.get", [{
+				objects: paths,
+				metadata_only: metadataOnly
+			}]), function(results){
+				console.log("results[0]", results[0]);
+				var objs = results[0];
+				var fin = [];
+				var defs = objs.map(function(obj){
+					console.log("obj: ", obj);
+					var meta = {
+						name: obj[0][0],
+						type: obj[0][1],
+						path: obj[0][2],
+						creation_time: obj[0][3],
+						id: obj[0][4],
+						owner_id: obj[0][5],
+						size: obj[0][6],
+						userMeta: obj[0][7],
+						autoMeta: obj[0][8],
+						user_permissions: obj[0][9],
+						global_permission: obj[0][10],
+						link_reference: obj[0][11]
+					};
+					if(metadataOnly){
+						fin.push(meta);
+						return true
+					}
+
+					if(!meta.link_reference){
+						var res = {
+							metadata: meta,
+							data: obj[1]
+						};
+						fin.push(res);
+						return true;
+					}else{
+
+						var d = xhr.get(meta.link_reference + "?download", {
+							headers: {
+								Authorization: "OAuth " + window.App.authorizationToken,
+								"X-Requested-With": null
+							}
+						});
+
+						return Deferred.when(d, function(data){
+							fin.push({
+								metadata: meta,
+								data: data
+							});
+							return true;
+						}, function(err){
+							console.log("Error Retrieving data object from shock :", err, meta.link_reference);
+						});
+					}
+				});
+
+				return Deferred.when(All(defs), function(){
+					return fin;
+				});
+			});
+
+		},
+
+		getFolderContents: function(path, showHidden, recursive){
+			return Deferred.when(this.api("Workspace.ls", [{
+					paths: [path],
+					includeSubDirs: false,
+					recursive: recursive ? true : false
+				}]), function(results){
+					//console.log("path: ", path);
+
+					if(!results[0] || !results[0][path]){
+						return [];
+					}
+					var res = results[0][path];
+
+					//console.log("array res", res);
+
+					res = res.map(function(r){
+						return {
+							id: r[4],
+							path: r[2] + r[0],
+							name: r[0],
+							type: r[1],
+							creation_time: r[3],
+							link_reference: r[11],
+							owner_id: r[5],
+							size: r[6],
+							userMeta: r[7],
+							autoMeta: r[8],
+							user_permission: r[9],
+							global_permission: r[10]
+						}
+					}).filter(function(r){
+						if(!showHidden && r.name.charAt(0) == "."){
+							return false
+						}
+						return true;
+					});
+					//console.log("Final getFolderContents()", res)
+					return res;
+				},
+
+				function(err){
+					//console.log("Error Loading Workspace:", err);
+					_self.showError(err);
+				})
+		},
+
+		_userWorkspacesSetter: function(val){
+			Topic.publish("/userWorkspaces", val);
+			this.userWorkspaces = val;
+		},
+
+		_currentWorkspaceGetter: function(){
+			if(!this.currentWorkspace){
+				this.currentWorkspace = Deferred.when(this.get('userWorkspaces'), lang.hitch(this, function(cws){
+					if(!cws || cws.length < 1){
+						throw Error("No User Workspaces found when attempting to get the Current Workspace for user.");
+					}
+					this.currentWorkspace = cws[0];
+					return cws[0];
+				}))
+			}
+			return this.currentWorkspace;
+		},
+		_currentWorkspaceSetter: function(val){
+			this.currentWorkspace = val;
+		},
+
+		_currentPathGetter: function(){
+			if(!this.currentPath){
+				this.currentPath = Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function(cws){
+					this.currentPath = cws.path;
+					return cws.path;
+				}))
+
+			}
+
+			return this.currentPath;
+		},
+		_currentPathSetter: function(val){
+			this.currentPath = val;
+		},
+
+		init: function(apiUrl, token, userId){
+			if(!apiUrl || !token || !userId){
+				console.log("Unable to initialize workspace manager. Args: ", arguments);
+				return;
+			}
+
+			this.token = token;
+			this.apiUrl = apiUrl
+			this.api = RPC(apiUrl, token);
+			this.userId = userId;
+			Deferred.when(this.get("currentPath"), function(cwsp){
+				console.log("Current Workspace Path: ", cwsp)
+			});
+
+		}
+	}))();
+
+	return WorkspaceManager;
 });
 
 
@@ -22436,42 +22499,42 @@ define([
 },
 'p3/widget/GlobalSearch':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/dom-construct",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/GlobalSearch.html","./Button","dijit/registry","dojo/_base/lang",
-	"dojo/dom","dojo/topic","dijit/form/TextBox","dojo/keys","dijit/_FocusMixin","dijit/focus"
-], function(
-	declare, WidgetBase, on,domConstruct,
-	domClass,Templated,WidgetsInTemplate,
-	template,Button,Registry,lang,
-	dom,Topic,TextBox,keys,FocusMixin,focusUtil
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate,FocusMixin], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/GlobalSearch.html", "./Button", "dijit/registry", "dojo/_base/lang",
+	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus"
+], function(declare, WidgetBase, on, domConstruct,
+			domClass, Templated, WidgetsInTemplate,
+			template, Button, Registry, lang,
+			dom, Topic, TextBox, keys, FocusMixin, focusUtil){
+	return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
 		templateString: template,
 		constructor: function(){
 		},
 		"baseClass": "GlobalSearch",
-		"disabled":false,
+		"disabled": false,
 		"value": "",
 		_setValueAttr: function(q){
-			this.query=q;	
+			this.query = q;
 			this.searchInput.set("value", q);
 		},
 
 		onKeypress: function(evt){
-			if (evt.charOrCode==keys.ENTER) {
+			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
 				var searchFilter = this.searchFilter.get('value');
-				if (!query){
+				if(!query){
 					return;
 				}
 
-                               var parts = query.split(" ");
-				if (parts){
-					q = parts.map(function(w){ return "keyword(" + encodeURIComponent(w) + ")"} )
-					console.log(" Mapped: ", q, "Num Parts: ", parts.length)
+				var parts = query.split(" ");
+				if(parts){
+					q = parts.map(function(w){
+						return "keyword(" + encodeURIComponent(w) + ")"
+					});
+					console.log(" Mapped: ", q, "Num Parts: ", parts.length);
 
-					if (parts.length>1){
+					if(parts.length > 1){
 						q = "and(" + q.join(",") + ")";
 					}else{
 						q = q[0]
@@ -22481,30 +22544,30 @@ define([
 					switch(searchFilter){
 						case "amr":
 							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
-							clear=true;	
-							break;	
+							clear = true;
+							break;
 
 						case "pathways":
 							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
-							clear=true;	
-							break;	
+							clear = true;
+							break;
 						case "sp_genes":
 							Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
-							clear=true;	
-							break;	
+							clear = true;
+							break;
 						case "genome_features":
 							Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
-							clear=true;	
+							clear = true;
 							break;
 						case "genomes":
 							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
-							clear=true;	
-							break;	
-						default: 
+							clear = true;
+							break;
+						default:
 							console.log("Do Search: ", searchFilter, query);
 					}
 
-					if (clear) {
+					if(clear){
 						this.searchInput.set("value", '');
 					}
 
@@ -22532,49 +22595,47 @@ define([
 },
 'p3/widget/Button':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dojo/_base/event"
-], function(
-	declare, WidgetBase, on,
-	domClass,Event
-){
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dojo/_base/event"
+], function(declare, WidgetBase, on,
+			domClass, Event){
 	return declare([WidgetBase], {
 		"baseClass": "MultiButton",
-		"disabled":false,
+		"disabled": false,
 		"toggleButton": false,
 		"toggled": false,
 		_setDisabledAttr: function(val){
 			val = !!val;
-			this.disabled=val;
-			if (this.domNode) {
-				if (val){
-					domClass.add(this.domNode,"disabled");
+			this.disabled = val;
+			if(this.domNode){
+				if(val){
+					domClass.add(this.domNode, "disabled");
 				}else{
-					domClass.remove(this.domNode,"disabled");
+					domClass.remove(this.domNode, "disabled");
 				}
 			}
 		},
-	
+
 		buildRendering: function(){
 			this.inherited(arguments);
-			if (this.text) {
-				this.domNode.innerHTML=this.text;
+			if(this.text){
+				this.domNode.innerHTML = this.text;
 			}
-		},	
+		},
 
 		text: "",
 
 		postCreate: function(){
-			if (this.disabled){
-				domClass.add(this.domNode,"disabled");
+			if(this.disabled){
+				domClass.add(this.domNode, "disabled");
 			}else{
-				domClass.remove(this.domNode,"disabled");
+				domClass.remove(this.domNode, "disabled");
 			}
 
 			var _self = this;
 			on(this.domNode, "mousedown", function(evt){
 				console.log("_self.disabled: ", _self.disabled);
-				if (_self.disabled) { 
+				if(_self.disabled){
 					console.log("evt: ", evt);
 					Event.stop(evt);
 					return;
@@ -22584,32 +22645,32 @@ define([
 				var signal = on(window, "mouseup", function(){
 					domClass.remove(_self.domNode, "depressed");
 					signal.remove();
-				}); 
-			});	
+				});
+			});
 
-			if (this.toggleButton) {
+			if(this.toggleButton){
 				on(this.domNode, "click", function(evt){
 					console.log("_self.disabled: ", _self.disabled);
-					if (_self.disabled) {
+					if(_self.disabled){
 						Event.stop(evt);
 						return;
 					}
 					_self.toggle();
 				});
 			}else{
-                                on(this.domNode, "click", function(evt){
-				console.log("_self.disabled: ", _self.disabled);
-					if (_self.disabled) {
+				on(this.domNode, "click", function(evt){
+					console.log("_self.disabled: ", _self.disabled);
+					if(_self.disabled){
 						console.log("evt: ", evt);
 						Event.stop(evt);
 						return;
 					}
-                                });
+				});
 			}
 		},
 
 		toggle: function(){
-			if (this.toggled){
+			if(this.toggled){
 				this.set("toggled", false);
 			}else{
 				this.set("toggled", true);
@@ -22617,9 +22678,9 @@ define([
 		},
 
 		_setToggledAttr: function(val){
-			this.toggled=val;		
-		//	console.log(this.id, "toggle button: ", val);
-			if (val){
+			this.toggled = val;
+			//	console.log(this.id, "toggle button: ", val);
+			if(val){
 				domClass.add(this.domNode, "toggled");
 			}else{
 				domClass.remove(this.domNode, "toggled");
@@ -23457,44 +23518,44 @@ define([
 },
 'p3/widget/WorkspaceManager':function(){
 define([
-	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
-	"dojo/dom-class","dojo/request","dojo/_base/lang",
-	"dojo/dom-construct","./Button","dojo/dnd/Target","dojo/topic",
-	"dojo/aspect","dijit/Dialog","dijit/registry","./WorkspaceGroupButton",
-	"dijit/layout/ContentPane","./ActionTabContainer",
-	"./WorkspaceBrowser","./WorkspaceGroups","./WorkspaceJobs",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/dom-class", "dojo/request", "dojo/_base/lang",
+	"dojo/dom-construct", "./Button", "dojo/dnd/Target", "dojo/topic",
+	"dojo/aspect", "dijit/Dialog", "dijit/registry", "./WorkspaceGroupButton",
+	"dijit/layout/ContentPane", "./ActionTabContainer",
+	"./WorkspaceBrowser", "./WorkspaceGroups", "./WorkspaceJobs",
 	"./WorkspaceGlobalController", "./WorkspaceController",
 	"./WorkspaceItemDetail"
-], function(
-	declare, BorderContainer, on,
-	domClass,xhr,lang,
-	domConstruct,Button,Target,Topic,
-	aspect,Dialog,Registry,WorkspaceGroupButton,
-	ContentPane,TabContainer,
-	WorkspaceBrowser,WorkspaceGroups,WorkspaceJobs,
-	WorkspaceGlobalController,WorkspaceController,
-	WorkspaceItemDetail
-){
+], function(declare, BorderContainer, on,
+			domClass, xhr, lang,
+			domConstruct, Button, Target, Topic,
+			aspect, Dialog, Registry, WorkspaceGroupButton,
+			ContentPane, TabContainer,
+			WorkspaceBrowser, WorkspaceGroups, WorkspaceJobs,
+			WorkspaceGlobalController, WorkspaceController,
+			WorkspaceItemDetail){
 	return declare([BorderContainer], {
 		"workspaceServer": "",
 		"currentWorkspace": "",
-		gutters:false,
+		gutters: false,
 		liveSplitters: true,
 		style: "margin:-1px;padding:0px;",
 		path: "/",
 		startup: function(){
-			if (this._started){ return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			this.workspaceBrowser = new WorkspaceBrowser({title: "Explorer", path: this.path, region: "center"});
 			this.addChild(this.workspaceBrowser);
 		},
 		_setPathAttr: function(val){
 			this.path = val;
-			if (this._started){
+			if(this._started){
 				this.workspaceBrowser.set("path", val)
 			}
 		}
-	
+
 	});
 });
 
@@ -23517,25 +23578,25 @@ define([ "../_base/declare", "../dom-class", "./Source" ], function(declare, dom
 },
 'p3/widget/WorkspaceGroupButton':function(){
 define([
-	"dojo/_base/declare","./Button","dojo/on",
-	"dojo/dom-class","dojo/_base/event","dojo/topic"
-], function(
-	declare, Button, on,
-	domClass,Event,Topic
-){
+	"dojo/_base/declare", "./Button", "dojo/on",
+	"dojo/dom-class", "dojo/_base/event", "dojo/topic"
+], function(declare, Button, on,
+			domClass, Event, Topic){
 	return declare([Button], {
-		"disabled":false,
-		"class":"GroupButton",
+		"disabled": false,
+		"class": "GroupButton",
 		"toggleButton": false,
 		"toggled": false,
-		data:null,
+		data: null,
 		"postCreate": function(){
 			this.inherited(arguments);
-			var _self=this;
+			var _self = this;
 			this.on("click", function(){
-				var state = (window.history && window.history.state)?window.history.state:{}
+				var state = (window.history && window.history.state) ? window.history.state : {};
 				console.log("state: ", state);
-				state.filter =  "in(genome_info_id,(" + _self.data.map(function(d){ return d }) + "))";
+				state.filter = "in(genome_info_id,(" + _self.data.map(function(d){
+						return d
+					}) + "))";
 				Topic.publish("/navigate", state);
 			});
 		}
@@ -23544,7 +23605,8 @@ define([
 
 },
 'p3/widget/ActionTabContainer':function(){
-define(["dojo/_base/declare","dijit/layout/TabContainer","./ActionTabController"], function(declare,TabContainer,ActionTabController){
+define(["dojo/_base/declare", "dijit/layout/TabContainer", "./ActionTabController"
+], function(declare, TabContainer, ActionTabController){
 	var ATC = declare([ActionTabController], {
 		templateString: "<div role='tablist' data-dojo-attach-event='onkeydown'><span data-dojo-attach-point='containerNode'></span><div data-dojo-attach-point='menuNode' class='actionMenuNode' style='display:inline-block;width:75px;float:right;vertical-align:middle;'>Icon Here</div><div class='FacetHeaderBox' style='height:0px' data-dojo-attach-point='headerBox'></div></div></div>"
 	});
@@ -26842,7 +26904,7 @@ define([
 },
 'p3/widget/ActionTabController':function(){
 define(["dojo/_base/declare", "dijit/layout/StackController",
-	"dojo/dom-construct","dojo/text!dijit/layout/templates/_TabButton.html",
+	"dojo/dom-construct", "dojo/text!dijit/layout/templates/_TabButton.html",
 	"dojo/dom", // dom.setSelectable
 	"dojo/dom-attr", // domAttr.attr
 	"dojo/dom-class", // domClass.toggle
@@ -26851,16 +26913,23 @@ define(["dojo/_base/declare", "dijit/layout/StackController",
 	"dojo/_base/lang",
 	"dijit/registry",
 	"dojo/on",
-	"dijit/form/TextBox" ,
+	"dijit/form/TextBox",
 	"dijit/_WidgetsInTemplateMixin",
 	"dijit/form/RadioButton"
 
-
-],function(
-	declare,StackController,
-	domConstruct,template,dom,domAttr,domClass,has,i18n,lang,registry,on,
-	TextBox,WidgetsInTemplate,RadioButton
-){
+], function(declare, StackController,
+			domConstruct, template,
+			dom,
+			domAttr,
+			domClass,
+			has,
+			i18n,
+			lang,
+			registry,
+			on,
+			TextBox,
+			WidgetsInTemplate,
+			RadioButton){
 
 	var TabButton = declare([StackController.StackButton], {
 		// summary:
@@ -26951,8 +27020,7 @@ define(["dojo/_base/declare", "dijit/layout/StackController",
 		}
 	});
 
-
-	return declare([StackController,WidgetsInTemplate], {
+	return declare([StackController, WidgetsInTemplate], {
 		templateString: "<div role='tablist' data-dojo-attach-event='onkeydown'><span data-dojo-attach-point='containerNode'></span><div data-dojo-attach-point='menuNode' class='actionMenuNode' style='display:inline-block;width:75px;float:right;vertical-align:middle;'>Icon Here</div><div class='FacetHeaderBox' data-dojo-attach-point='headerBox' style='font-size:.75em;padding:4px;'><div><label>Assigment Mode: </label><input type='radio' id='docAssign' data-dojo-type='dijit/form/RadioButton' name='assignmentMode' value='document'/> <label for='docAssign'>Document</label><input type='radio' id='famAssign' data-dojo-type='dijit/form/RadioButton' name='assignmentMode' checked='true' value='Family'/><label for='famAssign'>Family</label></div></div></div></div>",
 		buttonWidget: TabButton,
 
@@ -26962,23 +27030,30 @@ define(["dojo/_base/declare", "dijit/layout/StackController",
 
 		startup: function(){
 			console.log("FacetTabContainer Startup");
-			if (this._started){return;}
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			var self = this;
 			on(this.menuNode, "click", function(evt){
-				if (domClass.contains(evt.target,"headerBoxToggler")) {
-					domClass.toggle(self.headerBox,"ToggleOpen");
-					on.emit(self.domNode,"ToggleHeader", {bubbles: true, open:domClass.contains(self.headerBox,"ToggleOpen")}); 
-				}		
+				if(domClass.contains(evt.target, "headerBoxToggler")){
+					domClass.toggle(self.headerBox, "ToggleOpen");
+					on.emit(self.domNode, "ToggleHeader", {
+						bubbles: true,
+						open: domClass.contains(self.headerBox, "ToggleOpen")
+					});
+				}
 			});
 		},
 
 		onSelectChild: function(/*dijit/_WidgetBase*/ page){
 			console.log("onSelectChild: ", page);
-			if (!page) {return; }
+			if(!page){
+				return;
+			}
 
 			console.log("onSelectChild() page.filtered: ", page.filtered, page.filterKey);
-			if (page.filtered){
+			if(page.filtered){
 				domClass.add(this.domNode, "filtered");
 			}else{
 				domClass.remove(this.domNode, "filtered");
@@ -26986,20 +27061,22 @@ define(["dojo/_base/declare", "dijit/layout/StackController",
 
 			this.inherited(arguments);
 
-			if (page.getMenuButtons){
-				console.log("page: ", page);	
+			if(page.getMenuButtons){
+				console.log("page: ", page);
 				this.renderButtons(page.getMenuButtons());
 			}else{
 				this.renderButtons();
-			}	
+			}
 		},
 		renderButtons: function(buttons){
 			console.log("render buttons: ", buttons);
-			this.menuNode.innerHTML="";
-			if (!buttons) {return;}
+			this.menuNode.innerHTML = "";
+			if(!buttons){
+				return;
+			}
 			buttons.forEach(function(button){
 				domConstruct.place(button, this.menuNode);
-			},this);
+			}, this);
 		}
 
 	});
@@ -27008,196 +27085,243 @@ define(["dojo/_base/declare", "dijit/layout/StackController",
 },
 'p3/widget/WorkspaceBrowser':function(){
 define([
-	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
-	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"./WorkspaceExplorerView","dojo/topic","./ItemDetailPanel",
-	"./ActionBar","dojo/_base/Deferred","../WorkspaceManager","dojo/_base/lang",
-	"./Confirmation","./SelectionToGroup","dijit/Dialog","dijit/TooltipDialog",
-	"dijit/popup","dojo/text!./templates/IDMapping.html","dojo/request",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"./WorkspaceExplorerView", "dojo/topic", "./ItemDetailPanel",
+	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
+	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
+	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
 	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid"
 
-], function(
-	declare, BorderContainer, on,
-	domClass,ContentPane,domConstruct,
-	WorkspaceExplorerView,Topic,ItemDetailPanel,
-	ActionBar,Deferred,WorkspaceManager,lang,
-	Confirmation,SelectionToGroup,Dialog,TooltipDialog,
-	popup,IDMappingTemplate,xhr,ContainerActionBar,GroupExplore,GenomeGrid
-){
+], function(declare, BorderContainer, on,
+			domClass, ContentPane, domConstruct,
+			WorkspaceExplorerView, Topic, ItemDetailPanel,
+			ActionBar, Deferred, WorkspaceManager, lang,
+			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
+			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
-		"disabled":false,
+		"disabled": false,
 		"path": "/",
 		gutters: false,
-		navigableTypes: ["parentfolder","folder","genome_group","feature_group","job_result","experiment_group","experiment","unspecified","contigs","reads","model"],
+		navigableTypes: ["parentfolder", "folder", "genome_group", "feature_group", "job_result", "experiment_group", "experiment", "unspecified", "contigs", "reads", "model"],
 		design: "sidebar",
 		splitter: false,
 		startup: function(){
-			if (this._started) {return;}
+			if(this._started){
+				return;
+			}
 			console.log("this.design: ", this.design);
-			this.actionPanel = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:48px;text-align:center;"});
-			this.browserHeader = new ContainerActionBar({region: "top", className: "BrowserHeader", path: this.path, layoutPriority:3});
-			var self=this;
+			this.actionPanel = new ActionBar({
+				splitter: false,
+				region: "right",
+				layoutPriority: 2,
+				style: "width:48px;text-align:center;"
+			});
+			this.browserHeader = new ContainerActionBar({
+				region: "top",
+				className: "BrowserHeader",
+				path: this.path,
+				layoutPriority: 3
+			});
+			var self = this;
 
-			this.actionPanel.addAction("ToggleItemDetail","fa fa-info-circle fa-2x", {label:"DETAIL",persistent:true,validTypes:["*"], tooltip: "Toggle Selection Detail"}, function(selection){
+			this.actionPanel.addAction("ToggleItemDetail", "fa fa-info-circle fa-2x", {
+				label: "DETAIL",
+				persistent: true,
+				validTypes: ["*"],
+				tooltip: "Toggle Selection Detail"
+			}, function(selection){
 				console.log("Edit Item Action", selection);
-			//	this.itemDetailPanel.set("selection", selection);
+				//	this.itemDetailPanel.set("selection", selection);
 
-			//	self.itemDetailPanel.set("item",selection[0]);				
-				if (self.getChildren().some(function(child){
-					return child===self.itemDetailPanel
-				})){
+				//	self.itemDetailPanel.set("item",selection[0]);
+				if(self.getChildren().some(function(child){
+						return child === self.itemDetailPanel
+					})){
 					self.removeChild(self.itemDetailPanel);
 				}else{
 					self.addChild(self.itemDetailPanel);
 				}
-				
+
 			}, true);
 
-
-			this.actionPanel.addAction("ViewGenomeItem","MultiButton fa fa-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
-				validTypes:["*"],
+				validTypes: ["*"],
 				validContainerTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "View Genome"
-			},function(selection){
+			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewFeatureGroupItem","MultiButton fa fa-eye fa-2x", {
-				validTypes:["*"],
+			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa fa-eye fa-2x", {
+				validTypes: ["*"],
 				label: "VIEW",
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Feature"
-			},function(selection){
+			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Feature/" + sel.feature_id
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeFromFeature","MultiButton fa icon-genome fa-2x", {
-				validTypes:["*"],
+			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-genome fa-2x", {
+				validTypes: ["*"],
 				label: "GENOME",
 				validContainerTypes: ["feature_group"],
 				multiple: false,
 				tooltip: "View Genome"
-			},function(selection){
+			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewCDSFeatures","MultiButton fa icon-genome-features-cds fa-2x", {
-				validTypes:["*"],
+			this.actionPanel.addAction("ViewCDSFeatures", "MultiButton fa icon-genome-features-cds fa-2x", {
+				validTypes: ["*"],
 				label: "CDS",
 				validContainerTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "View CDS Features"
-			},function(selection){
+			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
+				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeBrowser","MultiButton fa icon-genome_browser fa-2x", {
-				validTypes:["*"],
+			this.actionPanel.addAction("ViewGenomeBrowser", "MultiButton fa icon-genome_browser fa-2x", {
+				validTypes: ["*"],
 				label: "BROWSER",
 				validContainerTypes: ["genome_group"],
 				multiple: false,
 				tooltip: "Open Genome Browser"
-			},function(selection){
+			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
-				window.location = "/view/Genome/"+ sel.genome_id + "#view_tab=browser";
+				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=browser";
 			}, true);
 
-
-			this.actionPanel.addAction("DownloadItem","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:WorkspaceManager.downloadTypes, tooltip: "Download"}, function(selection){
+			this.actionPanel.addAction("DownloadItem", "fa fa-download fa-2x", {
+				label: "DOWNLOAD",
+				multiple: false,
+				validTypes: WorkspaceManager.downloadTypes,
+				tooltip: "Download"
+			}, function(selection){
 				console.log("Download Item Action", selection);
 				WorkspaceManager.downloadFile(selection[0].path);
 			}, true);
 
-			
 			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-			var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+			var downloadTT = new TooltipDialog({
+				content: dfc, onMouseLeave: function(){
+					popup.close(downloadTT);
+				}
+			})
 
 			on(downloadTT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
-				var selection = self.actionPanel.get('selection')
-				var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+				var selection = self.actionPanel.get('selection');
+				var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 				console.log("selection: ", selection);
-				console.log("DownloadQuery: ", dataType, currentQuery );
+				console.log("DownloadQuery: ", dataType, currentQuery);
 				console.log("Download link: ", "/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
 
-			this.browserHeader.addAction("DownloadTable","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Table", tooltipDialog:downloadTT}, function(selection){
+			this.browserHeader.addAction("DownloadTable", "fa fa-download fa-2x", {
+				label: "DOWNLOAD",
+				multiple: false,
+				validTypes: ["genome_group", "feature_group"],
+				tooltip: "Download Table",
+				tooltipDialog: downloadTT
+			}, function(selection){
 				console.log("Download Table", selection);
 				popup.open({
 					popup: this._actions.DownloadTable.options.tooltipDialog,
 					around: this._actions.DownloadTable.button,
 					orient: ["below"]
 				});
-	
+
 			}, true);
 
-			var downloadTTSelect=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTTSelect); }})
+			var downloadTTSelect = new TooltipDialog({
+				content: dfc, onMouseLeave: function(){
+					popup.close(downloadTTSelect);
+				}
+			})
 
 			on(downloadTTSelect.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection');
-				var dataType=(selection[0].type=="genome_group")?"genome":"genome_feature";
+				var dataType = (selection[0].type == "genome_group") ? "genome" : "genome_feature";
 				var currentQuery = self.getQuery(selection[0]);
 				console.log("selection: ", selection);
-				console.log("DownloadQuery: ", dataType, currentQuery );
-				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");		
+				console.log("DownloadQuery: ", dataType, currentQuery);
+				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
-			this.actionPanel.addAction("SelectDownloadTable","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["genome_group","feature_group"], tooltip: "Download Selection", tooltipDialog:downloadTTSelect}, function(selection){
+			this.actionPanel.addAction("SelectDownloadTable", "fa fa-download fa-2x", {
+				label: "DOWNLOAD",
+				multiple: false,
+				validTypes: ["genome_group", "feature_group"],
+				tooltip: "Download Selection",
+				tooltipDialog: downloadTTSelect
+			}, function(selection){
 				console.log("Download Table", selection);
-				if(selection.length==1){
+				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadTable.options.tooltipDialog,
 						around: this._actions.SelectDownloadTable.button,
 						orient: ["below"]
 					});
 				}
-	
-			}, true);
-			
-			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>'
-			var downloadTTSelectFile = new TooltipDialog({content: dtsfc, onMouseLeave: function(){ popup.close(downloadTTSelect); }})
 
-			this.browserHeader.addAction("SelectDownloadSeqComparison","fa fa-download fa-2x",{label:"DOWNLOAD",multiple: false,validTypes:["GenomeComparison"], tooltip: "Download Results", tooltipDialog:downloadTTSelectFile}, lang.hitch(this.browserHeader,function(selection){
+			}, true);
+
+			var dtsfc = '<div>Download Job Results:</div><div class="wsActionTooltip" rel="circos.svg">SVG Image</div><div class="wsActionTooltip" rel="genome_comparison.txt">Genome Comparison Table</div>'
+			var downloadTTSelectFile = new TooltipDialog({
+				content: dtsfc, onMouseLeave: function(){
+					popup.close(downloadTTSelect);
+				}
+			})
+
+			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa fa-download fa-2x", {
+				label: "DOWNLOAD",
+				multiple: false,
+				validTypes: ["GenomeComparison"],
+				tooltip: "Download Results",
+				tooltipDialog: downloadTTSelectFile
+			}, lang.hitch(this.browserHeader, function(selection){
 				console.log("Download Table", selection);
 				console.log("this._actions: ", this._actions);
-				this._actions.SelectDownloadSeqComparison.selection=selection[0];
-				if(selection.length==1){
+				this._actions.SelectDownloadSeqComparison.selection = selection[0];
+				if(selection.length == 1){
 					popup.open({
 						popup: this._actions.SelectDownloadSeqComparison.options.tooltipDialog,
 						around: this._actions.SelectDownloadSeqComparison.button,
 						orient: ["below"]
 					});
 				}
-	
+
 			}), true);
 
-			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader,function(evt){
+			on(downloadTTSelectFile.domNode, "div:click", lang.hitch(this.browserHeader, function(evt){
 				var rel = evt.target.attributes.rel.value;
 //				console.log("REL: ", rel);
 //				console.log("SELECTION: ", this._actions.SelectDownloadSeqComparison.selection);
 				var outputFiles = this._actions.SelectDownloadSeqComparison.selection.autoMeta.output_files;
 				outputFiles.some(function(t){
 					var fname = t[0];
-					if (fname.indexOf(rel)>=0){
+					if(fname.indexOf(rel) >= 0){
 						console.log("DOWNLOAD: ", fname);
 						WorkspaceManager.downloadFile(fname);
 						return true;
@@ -27207,56 +27331,82 @@ define([
 				popup.close(downloadTTSelectFile);
 			}));
 
-			this.browserHeader.addAction("ViewAnnotatedGenome","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome"}, function(selection){
+			this.browserHeader.addAction("ViewAnnotatedGenome", "fa fa-eye fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["GenomeAnnotation"],
+				tooltip: "View Annotated Genome"
+			}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				var url= "/view/Genome/" + gid;
-				window.location=url;
+				var url = "/view/Genome/" + gid;
+				window.location = url;
 
 			}, true);
 
-			this.browserHeader.addAction("ViewModel","fa fa-eye fa-2x",{label:"VIEW", multiple: false,validTypes:["model"], tooltip: "View Model @ Modelseed"}, function(selection){
+			this.browserHeader.addAction("ViewModel", "fa fa-eye fa-2x", {
+				label: "VIEW",
+				multiple: false,
+				validTypes: ["model"],
+				tooltip: "View Model @ Modelseed"
+			}, function(selection){
 				console.log("View Model: ", selection[0]);
 				var path = self.actionPanel.currentContainerWidget.getModelPath();
-				var url= "http://modelseed.theseed.org/#/model" + path + "?login=patric";
+				var url = "http://modelseed.theseed.org/#/model" + path + "?login=patric";
 				//window.location=url;
-				window.open(url,"_blank");
+				window.open(url, "_blank");
 			}, true);
 
-
-
-			this.browserHeader.addAction("ViewAnnotatedGenomeCDS","fa icon-genome-features-cds fa-2x",{label:"CDS", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View CDS for Annotated Genome"}, function(selection){
+			this.browserHeader.addAction("ViewAnnotatedGenomeCDS", "fa icon-genome-features-cds fa-2x", {
+				label: "CDS",
+				multiple: false,
+				validTypes: ["GenomeAnnotation"],
+				tooltip: "View CDS for Annotated Genome"
+			}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/"+gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))";
+				window.location = "/view/Genome/" + gid + "#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))";
 
 			}, true);
 
-			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser","fa icon-genome_browser fa-2x",{label:"BROWSER", multiple: false,validTypes:["GenomeAnnotation"], tooltip: "View Annotated Genome in Genome Browser"}, function(selection){
+			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome_browser fa-2x", {
+				label: "BROWSER",
+				multiple: false,
+				validTypes: ["GenomeAnnotation"],
+				tooltip: "View Annotated Genome in Genome Browser"
+			}, function(selection){
 				console.log("View Genome Annotation: ", selection[0]);
 				var gid = self.actionPanel.currentContainerWidget.getGenomeId();
-				window.location = "/view/Genome/"+gid+"#view_tab=browser"; 
+				window.location = "/view/Genome/" + gid + "#view_tab=browser";
 
 			}, true);
 
-
-
-
-			this.browserHeader.addAction("Upload","fa fa-upload fa-2x",{label:"UPLOAD", multiple: true,validTypes:["folder"], tooltip: "Upload to Folder"}, function(selection){
-				console.log("UPLOAD TO: ", selection[0].path + selection[0].name); 
-				Topic.publish("/openDialog",{type:"Upload",params:selection[0].path + selection[0].name });
+			this.browserHeader.addAction("Upload", "fa fa-upload fa-2x", {
+				label: "UPLOAD",
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Upload to Folder"
+			}, function(selection){
+				console.log("UPLOAD TO: ", selection[0].path + selection[0].name);
+				Topic.publish("/openDialog", {type: "Upload", params: selection[0].path + selection[0].name});
 			}, true);
 
-			this.browserHeader.addAction("Create Folder","fa icon-folder-plus fa-2x",{label: "ADD FOLDER",multiple: true,validTypes:["folder"], tooltip: "Create Folder"}, function(selection){
+			this.browserHeader.addAction("Create Folder", "fa icon-folder-plus fa-2x", {
+				label: "ADD FOLDER",
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Create Folder"
+			}, function(selection){
 				console.log("CREATE FOLDER", selection[0].path);
-				Topic.publish("/openDialog",{type:"CreateFolder",params:selection[0].path + selection[0].name});
+				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
 
-
-
-			
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
-			var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
+			var viewFASTATT = new TooltipDialog({
+				content: vfc, onMouseLeave: function(){
+					popup.close(viewFASTATT);
+				}
+			})
 
 			on(viewFASTATT.domNode, "div:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
@@ -27265,37 +27415,60 @@ define([
 				console.log("selection: ", selection);
 				popup.close(viewFASTATT);
 
-				var ids = selection.map(function(d){ return d['feature_id']; });
-				var frm = domConstruct.create("form", {style: {display: "none"},method: "POST", action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta", target: "fastaDisplay"}, this.domNode);
-				domConstruct.create("input", {name: "fastaaction", value: "display"},frm);
-				domConstruct.create("input", {name: "fastascope", value: "Selected"},frm);
-				domConstruct.create("input", {name: "fastatype", value: rel},frm);
-				domConstruct.create("input", {name: "fids", value: ids},frm);
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
+				var frm = domConstruct.create("form", {
+					style: {display: "none"},
+					method: "POST",
+					action: "/portal/portal/patric/FeatureTable/FeatureTableWindow?action=b&cacheability=PAGE&mode=fasta",
+					target: "fastaDisplay"
+				}, this.domNode);
+				domConstruct.create("input", {name: "fastaaction", value: "display"}, frm);
+				domConstruct.create("input", {name: "fastascope", value: "Selected"}, frm);
+				domConstruct.create("input", {name: "fastatype", value: rel}, frm);
+				domConstruct.create("input", {name: "fids", value: ids}, frm);
 
-				window.open("","fastaDisplay","width=920,height=400,scrollbars,resizable")
-				
+				window.open("", "fastaDisplay", "width=920,height=400,scrollbars,resizable")
+
 				frm.submit();
 			});
 
-			this.actionPanel.addAction("ViewFASTA","fa icon-fasta fa-2x",{label: "FASTA",ignoreDataType:true, multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "View FASTA Data",tooltipDialog:viewFASTATT}, function(selection){
+			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
+				label: "FASTA",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["feature_group"],
+				tooltip: "View FASTA Data",
+				tooltipDialog: viewFASTATT
+			}, function(selection){
 				popup.open({
 					popup: this._actions.ViewFASTA.options.tooltipDialog,
 					around: this._actions.ViewFASTA.button,
 					orient: ["below"]
 				});
 				console.log("popup viewFASTA", selection);
-	
+
 			}, true);
 
-			this.actionPanel.addAction("MultipleSeqAlignment","fa icon-alignment fa-2x",{label:"MSA",ignoreDataType:true,multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Multiple Sequence Alignment"}, function(selection){
+			this.actionPanel.addAction("MultipleSeqAlignment", "fa icon-alignment fa-2x", {
+				label: "MSA",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["feature_group"],
+				tooltip: "Multiple Sequence Alignment"
+			}, function(selection){
 				var selection = self.actionPanel.get('selection')
-				var ids = selection.map(function(d){ return d['feature_id']; });
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
 
-
-				xhr.post("/portal/portal/patric/FIGfam/FIGfamWindow?action=b&cacheability=PAGE",{
+				xhr.post("/portal/portal/patric/FIGfam/FIGfamWindow?action=b&cacheability=PAGE", {
 					data: {
 						featureIds: ids.join(","),
-						callType: 'toAligner'	
+						callType: 'toAligner'
 					}
 				}).then(function(results){
 					document.location = "/portal/portal/patric/MSA?cType=&cId=&pk=" + results;
@@ -27303,14 +27476,20 @@ define([
 
 			}, true);
 
-			var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+			var idMappingTTDialog = new TooltipDialog({
+				content: IDMappingTemplate, onMouseLeave: function(){
+					popup.close(idMappingTTDialog);
+				}
+			})
 
 			on(idMappingTTDialog.domNode, "TD:click", function(evt){
 				var rel = evt.target.attributes.rel.value;
 				console.log("REL: ", rel);
 				var selection = self.actionPanel.get('selection')
 				console.log("selection: ", selection);
-				var ids = selection.map(function(d){ return d['feature_id']; });
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
 
 				xhr.post("/portal/portal/patric/IDMapping/IDMappingWindow?action=b&cacheability=PAGE", {
 					data: {
@@ -27318,8 +27497,8 @@ define([
 						from: "feature_id",
 						fromGroup: "PATRIC",
 						to: rel,
-						toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
-						sraction: 'save_params'	
+						toGroup: (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other",
+						sraction: 'save_params'
 					}
 				}).then(function(results){
 					document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
@@ -27327,7 +27506,15 @@ define([
 				popup.close(idMappingTTDialog);
 			});
 
-			this.actionPanel.addAction("idmapping","fa icon-exchange fa-2x",{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog },function(selection){
+			this.actionPanel.addAction("idmapping", "fa icon-exchange fa-2x", {
+				label: "ID MAP",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["feature_group"],
+				tooltip: "ID Mapping",
+				tooltipDialog: idMappingTTDialog
+			}, function(selection){
 
 				console.log("TTDlg: ", this._actions.idmapping.options.tooltipDialog);
 				console.log("this: ", this);
@@ -27339,16 +27526,24 @@ define([
 				console.log("popup idmapping", selection);
 			}, true);
 
-			this.actionPanel.addAction("Pathway Summary","fa icon-git-pull-request fa-2x",{label:"PATHWAY",ignoreDataType:true,multiple: true,validTypes:["*"],validContainerTypes: ["feature_group"], tooltip: "Pathway Summary"}, function(selection){
+			this.actionPanel.addAction("Pathway Summary", "fa icon-git-pull-request fa-2x", {
+				label: "PATHWAY",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["feature_group"],
+				tooltip: "Pathway Summary"
+			}, function(selection){
 
 				var selection = self.actionPanel.get('selection')
-				var ids = selection.map(function(d){ return d['feature_id']; });
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
 
-
-				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE",{
+				xhr.post("/portal/portal/patric/TranscriptomicsEnrichment/TranscriptomicsEnrichmentWindow?action=b&cacheability=PAGE", {
 					data: {
 						feature_id: ids.join(","),
-						callType: 'saveParams'	
+						callType: 'saveParams'
 					}
 				}).then(function(results){
 					document.location = "/portal/portal/patric/TranscriptomicsEnrichment?cType=taxon&cId=131567&pk=" + results;
@@ -27356,55 +27551,62 @@ define([
 
 			}, true);
 
-
-
-			this.actionPanel.addAction("ExperimentGeneList","fa icon-list-unordered fa-2x",{label: "GENES", multiple: true, validTypes:["DifferentialExpression"], 
-				tooltip: "View Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList", "fa icon-list-unordered fa-2x", {
+				label: "GENES", multiple: true, validTypes: ["DifferentialExpression"],
+				tooltip: "View Gene List"
+			}, function(selection){
 				console.log("View Gene List", selection);
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){return s.path;})
+				window.location = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){
+						return s.path;
+					})
 			}, true);
 
-			this.actionPanel.addAction("ExperimentGeneList3","fa icon-list-unordered fa-2x",{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["experiment"], tooltip: "View Experiment Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList3", "fa icon-list-unordered fa-2x", {
+				label: "GENES",
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["experiment"],
+				tooltip: "View Experiment Gene List"
+			}, function(selection){
 				console.log("this.currentContainerType: ", this.currentContainerType, this);
 				console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
-				window.location =  "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + expPath + "&wsSampleId=" + selection.map(function(s){return s.pid;})
+				window.location = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + expPath + "&wsSampleId=" + selection.map(function(s){
+						return s.pid;
+					})
 			}, true);
 
-
-
-			this.actionPanel.addAction("ExperimentGeneList2","fa icon-list-unordered fa-2x",{multiple: true, validContainerTypes:["experiment_group"],validTypes:["*"], tooltip: "View Experiment Group Gene List"}, function(selection){
+			this.actionPanel.addAction("ExperimentGeneList2", "fa icon-list-unordered fa-2x", {
+				multiple: true,
+				validContainerTypes: ["experiment_group"],
+				validTypes: ["*"],
+				tooltip: "View Experiment Group Gene List"
+			}, function(selection){
 				console.log("View Gene List2", selection);
 				var expids = []
 				var wsExps = []
 				selection.forEach(function(s){
-					if (s.path) {
+					if(s.path){
 						wsExps.push(s.path);
-					}else if (s.expid){
+					}else if(s.expid){
 						expids.push(s.expid);
 					}
-					
+
 				});
 				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
-				if (expids && expids.length>0){
-					url = url + "&expId=" + expids.join(",")+"&sampleId=";
+				if(expids && expids.length > 0){
+					url = url + "&expId=" + expids.join(",") + "&sampleId=";
 				}else{
 					url = url + "&expId=&sampleId=";
 				}
-				if (wsExps && wsExps.length>0){
+				if(wsExps && wsExps.length > 0){
 					url = url + "&wsExperimentId=" + wsExps.join(",") + "&wsSampleId=";
 				}else{
 					url = url + "&wsExperimentId=&wsSampleId=";
 				}
 
-
-
-				
-				window.location =  url;
+				window.location = url;
 			}, true);
-
-	
-	
 
 			/*
 			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
@@ -27413,28 +27615,35 @@ define([
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {label:"REMOVE",ignoreDataType:true,multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Remove Selection from Group"}, function(selection){
+			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {
+				label: "REMOVE",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["genome_group", "feature_group"],
+				tooltip: "Remove Selection from Group"
+			}, function(selection){
 				console.log("Remove Items from Group", selection);
 				console.log("currentContainerWidget: ", this.currentContainerWidget);
-					
+
 				var type = selection[0].document_type;
-				var idType = (this.currentContainerWidget.containerType=="genome_group")?"genome_id":"feature_id";
-				var type = (idType=="genome_id")?"genome":"genome feature";
+				var idType = (this.currentContainerWidget.containerType == "genome_group") ? "genome_id" : "feature_id";
+				var type = (idType == "genome_id") ? "genome" : "genome feature";
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
 					return s[idType];
 				});
-	
-				var conf = "Are you sure you want to remove " + objs.length + " " + type + 
-					   ((objs.length>1)?"s":"") +
-					   " from this group?"
-				var _self=this;	
+
+				var conf = "Are you sure you want to remove " + objs.length + " " + type +
+					((objs.length > 1) ? "s" : "") +
+					" from this group?"
+				var _self = this;
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path')) ;
-						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'),idType, objs), function(){
-							if (_self.currentContainerWidget && _self.currentContainerWidget.refresh){
+						console.log("remove items from group, ", objs, _self.currentContainerWidget.get('path'));
+						Deferred.when(WorkspaceManager.removeFromGroup(_self.currentContainerWidget.get('path'), idType, objs), function(){
+							if(_self.currentContainerWidget && _self.currentContainerWidget.refresh){
 								_self.currentContainerWidget.refresh();
 							}else{
 								console.log("No current container Widget or no refresh() on it");
@@ -27444,122 +27653,168 @@ define([
 				})
 				dlg.startup()
 				dlg.show();
-	
-			},true);
 
-			var _self=this;
-			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {label:"SPLIT",ignoreDataType:true,multiple: true, validTypes:["*"],validContainerTypes:["genome_group","feature_group"],tooltip: "Copy selection to a new or existing group"}, function(selection, containerWidget){
+			}, true);
+
+			var _self = this;
+			this.actionPanel.addAction("SplitItems", "fa icon-split fa-2x", {
+				label: "SPLIT",
+				ignoreDataType: true,
+				multiple: true,
+				validTypes: ["*"],
+				validContainerTypes: ["genome_group", "feature_group"],
+				tooltip: "Copy selection to a new or existing group"
+			}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
-				var dlg = new Dialog({title:"Copy Selection to Group"});
-				var stg = new SelectionToGroup({selection: selection, type: containerWidget.containerType,path: containerWidget.get("path")});
+				var dlg = new Dialog({title: "Copy Selection to Group"});
+				var stg = new SelectionToGroup({
+					selection: selection,
+					type: containerWidget.containerType,
+					path: containerWidget.get("path")
+				});
 				on(dlg.domNode, "dialogAction", function(evt){
 					dlg.hide();
 					setTimeout(function(){
 						dlg.destroy();
-					},2000);
+					}, 2000);
 				});
-				domConstruct.place(stg.domNode, dlg.containerNode,"first");
+				domConstruct.place(stg.domNode, dlg.containerNode, "first");
 				stg.startup();
 				dlg.startup();
 				dlg.show();
-			},true);
+			}, true);
 
-			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {label:"GCOMPARE",ignoreDataType:true,min:2,max:3,multiple: true, validTypes:["genome_group","feature_group","experiment_group"],tooltip: "Select two or three groups to compare"}, function(selection, containerWidget){
-				console.log("Compare groups", selection);
-				//console.log("containerWidget==", containerWidget);
-				//console.log("containerWidget. is?: ", containerWidget.domNode);
-				//var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: containerWidget.domNode});
+			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {
+					label: "GCOMPARE",
+					ignoreDataType: true,
+					min: 2,
+					max: 3,
+					multiple: true,
+					validTypes: ["genome_group", "feature_group", "experiment_group"],
+					tooltip: "Select two or three groups to compare"
+				}, function(selection, containerWidget){
+					console.log("Compare groups", selection);
+					//console.log("containerWidget==", containerWidget);
+					//console.log("containerWidget. is?: ", containerWidget.domNode);
+					//var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: containerWidget.domNode});
 
 //                var dlg = new Dialog({title:"Group Comparison", minSize: 1000, style: "width: 1200px !important; height: 700px !important;",
 //                                     onHide: function() {dlg.destroy()}});
-                var dlg = new Dialog({title:"Group Comparison", style: "width: 1250px !important; height: 750px !important;", onHide: function() {dlg.destroy()}});
-				var bc = new BorderContainer({});
-				domConstruct.place(bc.domNode, dlg.containerNode);
-				var stg = new GroupExplore({selection: selection, type: containerWidget.containerType, path: containerWidget.get("path"), containerNode: dlg.containerNode});
-				bc.addChild(stg);
+					var dlg = new Dialog({
+						title: "Group Comparison",
+						style: "width: 1250px !important; height: 750px !important;",
+						onHide: function(){
+							dlg.destroy()
+						}
+					});
+					var bc = new BorderContainer({});
+					domConstruct.place(bc.domNode, dlg.containerNode);
+					var stg = new GroupExplore({
+						selection: selection,
+						type: containerWidget.containerType,
+						path: containerWidget.get("path"),
+						containerNode: dlg.containerNode
+					});
+					bc.addChild(stg);
 //				stg.startup();
-				dlg.startup();
-				dlg.show();
-			},
-			false);
-
+					dlg.startup();
+					dlg.show();
+				},
+				false);
 
 //			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
 //				console.log("Remove Items from Group", selection);
 //			},true);
 
-
-			this.actionPanel.addAction("DeleteItem","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:true,multiple: true,validTypes:["genome_group","feature_group","experiment_group","job_result","unspecified","contigs","reads","diffexp_input_data","diffexp_input_metadata","DifferentialExpression","GenomeAssembly","GenomeAnnotation","RNASeq"], tooltip: "Delete Selection"}, function(selection){
+			this.actionPanel.addAction("DeleteItem", "fa fa-trash fa-2x", {
+				label: "DELETE",
+				allowMultiTypes: true,
+				multiple: true,
+				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq"],
+				tooltip: "Delete Selection"
+			}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
-					return s.path||s.data.path;
+					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
-					   ((objs.length>1)?" these objects":" this object") +
-					   " from your workspace?"
-	
+					((objs.length > 1) ? " these objects" : " this object") +
+					" from your workspace?"
+
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs,true, false);
+						WorkspaceManager.deleteObject(objs, true, false);
 					}
 				})
 				dlg.startup()
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("DeleteFolder","fa fa-trash fa-2x",{label:"DELETE",allowMultiTypes:false,multiple: true,validTypes:["folder"],tooltip: "Delete Folder"}, function(selection){
+			this.actionPanel.addAction("DeleteFolder", "fa fa-trash fa-2x", {
+				label: "DELETE",
+				allowMultiTypes: false,
+				multiple: true,
+				validTypes: ["folder"],
+				tooltip: "Delete Folder"
+			}, function(selection){
 				var objs = selection.map(function(s){
 					console.log('s: ', s, s.data);
-					return s.path||s.data.path;
+					return s.path || s.data.path;
 				});
 				var conf = "Are you sure you want to delete" +
-					   ((objs.length>1)?" these folders":" this folder") +
-					   " and its contents from your workspace?"
-	
+					((objs.length > 1) ? " these folders" : " this folder") +
+					" and its contents from your workspace?"
+
 				var dlg = new Confirmation({
 					content: conf,
 					onConfirm: function(evt){
-						WorkspaceManager.deleteObject(objs,true, true);
+						WorkspaceManager.deleteObject(objs, true, true);
 					}
 				})
 				dlg.startup()
 				dlg.show();
-	
+
 			}, true);
 
-
-
-
-			this.itemDetailPanel = new ItemDetailPanel({region: "right", style: "width:300px", splitter: true, layoutPriority:1})
+			this.itemDetailPanel = new ItemDetailPanel({
+				region: "right",
+				style: "width:300px",
+				splitter: true,
+				layoutPriority: 1
+			})
 			this.itemDetailPanel.startup();
 			this.addChild(this.actionPanel);
 			this.addChild(this.itemDetailPanel);
 			this.addChild(this.browserHeader);
 
-			var self=this;
+			var self = this;
 			this.inherited(arguments);
 
 		},
 		_setPathAttr: function(val){
 			console.log("WorkspaceBrowser setPath()", val)
 			this.path = decodeURIComponent(val);
-			var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
+			var parts = this.path.split("/").filter(function(x){
+				return x != "";
+			}).map(function(c){
+				return decodeURIComponent(c)
+			});
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
 			console.log("Workspace: ", workspace, parts[1], val)
-			if (!window.App.user || !window.App.user.id){
+			if(!window.App.user || !window.App.user.id){
 				Topic.publish("/login");
 				return;
 			}
-			if (!parts[1]){
+			if(!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
-				obj = WorkspaceManager.getObject(val,true)
+				obj = WorkspaceManager.getObject(val, true)
 			}
-			Deferred.when(obj, lang.hitch(this,function(obj){
+			Deferred.when(obj, lang.hitch(this, function(obj){
 
-				if (this.browserHeader) {
+				if(this.browserHeader){
 					console.log("Set BrowserHeader selection: ", [obj]);
 					this.browserHeader.set("selection", [obj]);
 
@@ -27567,17 +27822,17 @@ define([
 				var panelCtor;
 				var params = {path: this.path, region: "center"}
 				console.log("Browse to Type: ", obj.type, obj);
-				switch(obj.type) {
-					case "folder": 
+				switch(obj.type){
+					case "folder":
 						panelCtor = WorkspaceExplorerView;
 						break;
 					case "genome_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/WSGenomeGroup");
-						params.query="?&in(genome_id,GenomeGroup("+encodeURIComponent(this.path).replace("(","%28").replace(")","%29")+"))";
+						params.query = "?&in(genome_id,GenomeGroup(" + encodeURIComponent(this.path).replace("(", "%28").replace(")", "%29") + "))";
 						break;
 					case "feature_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/WSFeatureList");
-						params.query="?&in(feature_id,FeatureGroup("+encodeURIComponent(this.path)+"))";
+						params.query = "?&in(feature_id,FeatureGroup(" + encodeURIComponent(this.path) + "))";
 						break;
 					case "model":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/Model");
@@ -27586,24 +27841,24 @@ define([
 					case "job_result":
 						var d = "p3/widget/viewer/JobResult"
 						console.log("job_result object: ", obj);
-						if (obj && obj.autoMeta && obj.autoMeta.app){
+						if(obj && obj.autoMeta && obj.autoMeta.app){
 							var id = obj.autoMeta.app.id || obj.autoMeta.app
 							switch(id){
 								case "DifferentialExpression":
 									console.log("Using Experiement Viewer");
 									d = "p3/widget/viewer/Experiment"
 									break;
-								case "GenomeComparison": 
+								case "GenomeComparison":
 									console.log("SeqComparison Viewer");
 									d = "p3/widget/viewer/SeqComparison"
 									break;
-								case "GenomeAnnotation": 
+								case "GenomeAnnotation":
 									console.log("GenomeAnnotation Viewer");
 									d = "p3/widget/viewer/GenomeAnnotation"
 									break;
 
 							}
-						}			
+						}
 						console.log("LOAD VIEWER: ", d, params);
 						panelCtor = window.App.getConstructor(d);
 						params.data = obj;
@@ -27611,126 +27866,130 @@ define([
 						break;
 					case "experiment_group":
 						panelCtor = window.App.getConstructor("p3/widget/viewer/ExperimentGroup");
-						params.data= obj;
+						params.data = obj;
 						break;
 					default:
 						panelCtor = window.App.getConstructor("p3/widget/viewer/File");
 						params.file = {metadata: obj};
 						console.log("FileViewer Ctor params: ", params);
-				}	
+				}
 
 				console.log("params.query: ", params.query);
-				Deferred.when(panelCtor, lang.hitch(this,function(Panel){
+				Deferred.when(panelCtor, lang.hitch(this, function(Panel){
 					console.log("ActivePanel instanceof Panel: ", this.activePanel instanceof Panel);
-					if (!this.activePanel || !(this.activePanel instanceof Panel)){
-						if (this.activePanel) { 
+					if(!this.activePanel || !(this.activePanel instanceof Panel)){
+						if(this.activePanel){
 							this.removeChild(this.activePanel);
-						 }
+						}
 						console.log("Creeate New Active Panel");
 						var newPanel = new Panel(params);
 						var hideTimer;
 						this.actionPanel.set("currentContainerWidget", newPanel);
 						this.itemDetailPanel.set("containerWidget", newPanel);
 
-						if (newPanel.on) {
-						newPanel.on("select", lang.hitch(this,function(evt){
-							console.log("Selected: ", evt);
-							var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
-								console.log("rownum: ", rownum);
-								console.log("Row: ", evt.grid.row(rownum).data);
-								return evt.grid.row(rownum).data;
-							}));
-							console.log("selection: ", sel);
-							console.log("this.activePanel: ", newPanel);
-							if (hideTimer) {
-								clearTimeout(hideTimer);
-							}
-							if (sel.length>0){
-								this.addChild(this.actionPanel);
-							}
-							this.actionPanel.set("selection", sel);
-							this.itemDetailPanel.set('selection', sel);
-							
-							/*
-							if (sel.length==1) {
-								if (this.getChildren().some(function(child){
-									return (child===this.actionPanel)
-								},this)) {
-									this.itemDetailPanel.set("item",sel[0]);	
-								}
-							}else if (sel.length>1) {
-
-							}else {
-								this.removeChild(this.actionPanel);
-							}
-							*/
-						}));	
-
-						newPanel.on("deselect", lang.hitch(this,function(evt){
-
-							if (!evt.selected) { 
-								this.actionPanel.set("selection", []); 
-								this.itemDetailPanel.set("selection", []);
-							}else{
-								var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
+						if(newPanel.on){
+							newPanel.on("select", lang.hitch(this, function(evt){
+								console.log("Selected: ", evt);
+								var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 									console.log("rownum: ", rownum);
 									console.log("Row: ", evt.grid.row(rownum).data);
 									return evt.grid.row(rownum).data;
 								}));
-							}
-							console.log("selection: ", sel);
-							this.actionPanel.set("selection", sel);
-							this.itemDetailPanel.set('selection', sel);
-						/*	if (!sel || sel.length<1){
-								hideTimer = setTimeout(lang.hitch(this,function(){
-									this.removeChild(this.actionPanel);
-									this.removeChild(this.itemDetailPanel);
-								}),500);	
-							}
-						*/
-						}));
+								console.log("selection: ", sel);
+								console.log("this.activePanel: ", newPanel);
+								if(hideTimer){
+									clearTimeout(hideTimer);
+								}
+								if(sel.length > 0){
+									this.addChild(this.actionPanel);
+								}
+								this.actionPanel.set("selection", sel);
+								this.itemDetailPanel.set('selection', sel);
 
-						newPanel.on("ItemDblClick", lang.hitch(this,function(evt){
-							console.log("ItemDblClick: ", evt);
-							if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type)>=0)){
-								Topic.publish("/navigate", {href:"/workspace" + evt.item_path })
-								this.actionPanel.set("selection", []);
-								this.itemDetailPanel.set("selection", []);
-								console.log("SHOW LOADING STATUS SOMEHOW");	
-								newPanel.clearSelection();
 								/*
-								hideTimer = setTimeout(lang.hitch(this,function(){
+								if (sel.length==1) {
+									if (this.getChildren().some(function(child){
+										return (child===this.actionPanel)
+									},this)) {
+										this.itemDetailPanel.set("item",sel[0]);
+									}
+								}else if (sel.length>1) {
+
+								}else {
 									this.removeChild(this.actionPanel);
-									this.removeChild(this.itemDetailPanel);
-								}),500);	
+								}
 								*/
-							}else{
-								console.log("non-navigable type, todo: show info panel when dblclick");
-							}
-	
-						}));
+							}));
+
+							newPanel.on("deselect", lang.hitch(this, function(evt){
+
+								if(!evt.selected){
+									this.actionPanel.set("selection", []);
+									this.itemDetailPanel.set("selection", []);
+								}else{
+									var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+										console.log("rownum: ", rownum);
+										console.log("Row: ", evt.grid.row(rownum).data);
+										return evt.grid.row(rownum).data;
+									}));
+								}
+								console.log("selection: ", sel);
+								this.actionPanel.set("selection", sel);
+								this.itemDetailPanel.set('selection', sel);
+								/*	if (!sel || sel.length<1){
+										hideTimer = setTimeout(lang.hitch(this,function(){
+											this.removeChild(this.actionPanel);
+											this.removeChild(this.itemDetailPanel);
+										}),500);
+									}
+								*/
+							}));
+
+							newPanel.on("ItemDblClick", lang.hitch(this, function(evt){
+								console.log("ItemDblClick: ", evt);
+								if(evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)){
+									Topic.publish("/navigate", {href: "/workspace" + evt.item_path})
+									this.actionPanel.set("selection", []);
+									this.itemDetailPanel.set("selection", []);
+									console.log("SHOW LOADING STATUS SOMEHOW");
+									newPanel.clearSelection();
+									/*
+									hideTimer = setTimeout(lang.hitch(this,function(){
+										this.removeChild(this.actionPanel);
+										this.removeChild(this.itemDetailPanel);
+									}),500);
+									*/
+								}else{
+									console.log("non-navigable type, todo: show info panel when dblclick");
+								}
+
+							}));
 						}
-	
+
 						this.addChild(newPanel);
 						this.activePanel = newPanel;
 					}else{
 						this.activePanel.set('path', this.path);
-						if (this.activePanel.clearSelection){
+						if(this.activePanel.clearSelection){
 							this.activePanel.clearSelection();
 						}
-					//	this.removeChild(this.actionPanel);
-					//	this.removeChild(this.itemDetailPanel);
+						//	this.removeChild(this.actionPanel);
+						//	this.removeChild(this.itemDetailPanel);
 					}
 
-					var parts = this.path.split("/").filter(function(x){ return x!=""; }).map(function(c){ return decodeURIComponent(c) });
+					var parts = this.path.split("/").filter(function(x){
+						return x != "";
+					}).map(function(c){
+						return decodeURIComponent(c)
+					});
 					var workspace = parts[0] + "/" + parts[1];
-					console.log("Publish to ActiveWorkspace:",workspace,val)
-					WorkspaceManager.set("currentPath",val);
+					console.log("Publish to ActiveWorkspace:", workspace, val)
+					WorkspaceManager.set("currentPath", val);
 //					Topic.publish("/ActiveWorkspace",{workspace: workspace, path:val});
 
 					console.log("Set Browser Header Path: ", this.path);
 					this.browserHeader.set("path", this.path)
-/*
+					/*
 					if (this._started){
 						var len = parts.length;
 						var out = [];
@@ -27751,45 +28010,45 @@ define([
 						out.push("<span style='float:right;'>");
 						out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
 						out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
-						out.push("</span>");	
+						out.push("</span>");
 
 						this.browserHeader.set("content", out.join(""));
 					}
-*/
+					*/
 				}));
 
 			}));
 		},
 
 		getQuery: function(obj){
-			var query ="";
-			switch(obj.type) {
+			var query = "";
+			switch(obj.type){
 				case "genome_group":
-					query="?&in(genome_id,GenomeGroup("+encodeURIComponent(obj.path).replace("(","%28").replace(")","%29")+"))";
+					query = "?&in(genome_id,GenomeGroup(" + encodeURIComponent(obj.path).replace("(", "%28").replace(")", "%29") + "))";
 					break;
 				case "feature_group":
-					query="?&in(feature_id,FeatureGroup("+encodeURIComponent(obj.path)+"))";
+					query = "?&in(feature_id,FeatureGroup(" + encodeURIComponent(obj.path) + "))";
 					break;
 			}
 			return query;
 		},
 
 		refresh: function(){
-			if (this.activePanel instanceof WorkspaceExplorerView){
+			if(this.activePanel instanceof WorkspaceExplorerView){
 				this.explorer.refreshWorkspace()
 			}
 		},
 		getMenuButtons: function(){
 			// console.log("Get Menu Buttons");
-	  //       if (this.buttons) { return this.buttons; }
-	  //       this.buttons = [];
-	  //       var b = domConstruct.create("div", {innerHTML:"Add Folder", 'class':'facetMenuIcon plusIcon',title:"Add Document Comment"});
-	  //       on(b, "click", function(){
-	  //               Topic.publish("/dialog/show","AddComment");
-	  //       });
-	  //       this.buttons.push(b);
-	  		this.buttons=[];
-	        return this.buttons;
+			//       if (this.buttons) { return this.buttons; }
+			//       this.buttons = [];
+			//       var b = domConstruct.create("div", {innerHTML:"Add Folder", 'class':'facetMenuIcon plusIcon',title:"Add Document Comment"});
+			//       on(b, "click", function(){
+			//               Topic.publish("/dialog/show","AddComment");
+			//       });
+			//       this.buttons.push(b);
+			this.buttons = [];
+			return this.buttons;
 
 		}
 	});
@@ -27800,69 +28059,69 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dojo/dom-construct", "./WorkspaceGrid",
-	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
-	"dojo/topic",'../WorkspaceManager'
-], function(
-	declare, WidgetBase, on,
-	domClass, domConstr, WorkspaceGrid,
-	Deferred, domGeometry,JobManager,
-	Topic,WorkspaceManager
-) {
+	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
+	"dojo/topic", '../WorkspaceManager'
+], function(declare, WidgetBase, on,
+			domClass, domConstr, WorkspaceGrid,
+			Deferred, domGeometry, JobManager,
+			Topic, WorkspaceManager){
 	return declare([WorkspaceGrid], {
 		"disabled": false,
 		path: "/",
 		types: null,
 		containerType: "folder",
 		_setTypes: function(val){
-			if (!(val instanceof Array)){
-				this.types=[val];
+			if(!(val instanceof Array)){
+				this.types = [val];
 			}else{
-				this.types=val;
+				this.types = val;
 			}
 			this.refreshWorkspace();
 		},
 		queryOptions: {
 			sort: [{attribute: "name", descending: false}]
 		},
-		listWorkspaceContents: function(ws) {
+		listWorkspaceContents: function(ws){
 			var _self = this;
-			if (ws[ws.length - 1] == "/") {
+			if(ws[ws.length - 1] == "/"){
 				ws = ws.substr(0, ws.length - 1)
 			}
-			if (!ws) { ws = "/" }
+			if(!ws){
+				ws = "/"
+			}
 
-			return Deferred.when(WorkspaceManager.getFolderContents(ws,window.App&&window.App.showHiddenFiles),function(res){ 
-				if (_self.types){
+			return Deferred.when(WorkspaceManager.getFolderContents(ws, window.App && window.App.showHiddenFiles), function(res){
+				if(_self.types){
 					res = res.filter(function(r){
-						return (r && r.type && (_self.types.indexOf(r.type)>=0))
+						return (r && r.type && (_self.types.indexOf(r.type) >= 0))
 					})
-						
+
 				}
 				console.log("self.sort: ", _self.sort, _self.queryOptions);
 				var sort = _self.get('sort');
-				if (!sort || sort.length==0) {
+				if(!sort || sort.length == 0){
 					sort = _self.queryOptions.sort;
 				}
 
 				console.log('sort: ', sort);
-			
-				res.sort(function(a,b) { 
-					var s= sort[0];
-					if (s.descending) {
-						return (a[s.attribute] > b[s.attribute])?1:-1
-					}else {
-						return (a[s.attribute] > b[s.attribute])?1:-1
+
+				res.sort(function(a, b){
+					var s = sort[0];
+					if(s.descending){
+						return (a[s.attribute] > b[s.attribute]) ? 1 : -1
+					}else{
+						return (a[s.attribute] > b[s.attribute]) ? 1 : -1
 					}
-				 });
+				});
 
 				return res;
-			}, function(err) {
+			}, function(err){
 				console.log("Error Loading Workspace:", err);
 				_self.showError(err);
 			})
 		},
 
-		showError: function(err) {
+		showError: function(err){
 			var n = domConstr.create("div", {
 				style: {
 					position: "relative",
@@ -27879,11 +28138,12 @@ define([
 				},
 				innerHTML: err
 			}, this.domNode);
-	
 		},
 
 		allowSelect: function(row){
-			if (row.data && row.data.type && row.data.type=="parentfolder") { return false; }
+			if(row.data && row.data.type && row.data.type == "parentfolder"){
+				return false;
+			}
 
 			return true;
 		},
@@ -27891,14 +28151,14 @@ define([
 		addNewFolder: function(item){
 			var items = this._items;
 			var list = [item].concat(items);
-			this.render(this.path,list);
-			this._items = items;	
+			this.render(this.path, list);
+			this._items = items;
 //			console.log("Cell: ", this.cell("untitled","name"));
 //			var row = this.row(0);
 			var cell = this.cell(0, "name");
 			this.edit(cell);
 		},
-		render: function(val, items) {
+		render: function(val, items){
 			this.refresh();
 			this._items = items;
 			this.renderArray(items);
@@ -27906,24 +28166,26 @@ define([
 		},
 
 		refreshWorkspace: function(){
-			var _self=this;
-			this.listWorkspaceContents(this.path).then(function(contents) {
+			var _self = this;
+			this.listWorkspaceContents(this.path).then(function(contents){
 				console.log("listWSContents: ", contents);
-				var parts = _self.path.split("/").filter(function(x){ return !!x});
+				var parts = _self.path.split("/").filter(function(x){
+					return !!x
+				});
 				console.log("Path Parts: ", parts);
-				if (parts.length>1){
+				if(parts.length > 1){
 					parts.pop();
 					var parentPath = "/" + parts.join("/");
 					console.log("parentPath: ", parentPath);
 
-					var p= {
+					var p = {
 						name: "Parent Folder",
 						path: parentPath,
 						type: "parentfolder",
 						id: parentPath,
 						owner_id: "@"
 					};
-					console.log("p: ",p);
+					console.log("p: ", p);
 					contents.unshift(p);
 				}
 
@@ -27931,11 +28193,10 @@ define([
 				_self.render(_self.path, contents);
 			})
 
-
 		},
 
-		startup: function() {
-			if (this._started) {
+		startup: function(){
+			if(this._started){
 				return;
 			}
 			this.inherited(arguments);
@@ -27951,8 +28212,6 @@ define([
 				_self.refreshWorkspace();
 			});
 
-
-
 			Topic.subscribe("/Jobs", function(msg){
 				// if (msg.type=="JobStatus") {
 				// 	console.log("JobStatus MSG: ", msg.job);
@@ -27962,11 +28221,11 @@ define([
 			});
 		},
 
-		_setPath: function(val) {
+		_setPath: function(val){
 			this.path = val;
 			var _self = this;
 			console.log("WorkspaceExplorerView setPath", val)
-			if (this._started) {
+			if(this._started){
 				this.refreshWorkspace();
 			}
 		},
@@ -27980,290 +28239,287 @@ define([
 },
 'p3/widget/WorkspaceGrid':function(){
 define([
-		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
-		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
-		"dojo/topic","dgrid/editor","dijit/Menu","dijit/MenuItem","../WorkspaceManager", "dojo/on","dijit/form/TextBox"
+	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
+	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
+	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang",
+	"dojo/topic", "dgrid/editor", "dijit/Menu", "dijit/MenuItem", "../WorkspaceManager", "dojo/on", "dijit/form/TextBox"
 
-	],
-	function(
-		declare, Grid, Store, DijitRegistry,
-		Keyboard, Selection, formatter, ColumnResizer,
-		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,Topic,editor,Menu,MenuItem,WorkspaceManager,on,TextBox
-	) {
-		return declare([Grid, ColumnHider,Selection, Keyboard, ColumnResizer, DijitRegistry], {
-			columns: {
-				"type": {
-					label: "",
-					get: function(item) { 
-						if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
-							return item.type +"_"+(item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
-						}
-						return item.type; 
-					},
-					className: "wsItemType",
-					formatter: formatter.wsItemType,
-					unhidable: true
-				},
-				"name": editor({
-					label: "Name",
-					field: "name",
-					className: "wsItemName",
-					canEdit: function(obj,val){
-						return obj.id=='untitled';
-					},
-					autoSave: true,
-					editOn: "click",
-					editor: TextBox,
-					editorArgs: {placeHolder: "Untitled Folder", trim: true}
-				}),
-				size: {
-					label: "Size",
-					field: "size",
-					get: function(item) { return item; },
-					className: "wsItemSize",
-					hidden: false,
-					formatter: formatter.objectOrFileSize
-				},
-	
-				owner_id: {
-					label: "Owner",
-					field: "owner_id",
-					className: "wsItemOwnerId",
-					formatter: formatter.baseUsername,
-					hidden: false
-				},
-				creation_time: {
-					label: "Created",
-					field: "creation_time",
-					className: "wsItemCreationTime",
-					formatter: formatter.date
-				}/*,
-	
-				userMeta: {
-					label: "User Metadata",
-					field: "userMeta",
-					hidden: true
-				},
-				autoMeta: {
-					label: "Metadata",
-					field: "autoMeta",
-					hidden: true
-				}*/
-			},
-			constructor: function() {
-				this.dndParams.creator = lang.hitch(this, function(item, hint) {
-					console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
-					var avatar = dojo.create("div", {
-						innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
-					});
-					avatar.data = item;
-					if (hint == 'avatar') {
-						// create your avatar if you want
+],
+function(declare, Grid, Store, DijitRegistry,
+		 Keyboard, Selection, formatter, ColumnResizer,
+		 ColumnHider, DnD, DnDSource,
+		 Deferred, aspect, lang, Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox){
+	return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
+		columns: {
+			"type": {
+				label: "",
+				get: function(item){
+					if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
+						return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
 					}
-
-					return {
-						node: avatar,
-						data: item,
-						type: this.dndDataType
-					}
-				})
-
+					return item.type;
+				},
+				className: "wsItemType",
+				formatter: formatter.wsItemType,
+				unhidable: true
 			},
-			store: null,
-			selectionMode: "extended",
-			allowTextSelection: false,
-			deselectOnRefresh: false,
-			minRowsPerPage: 50,
-			bufferRows: 100,
-			maxRowsPerPage: 1000,
-			pagingDelay: 250,
-			//		pagingMethod: "throttleDelayed",
-			farOffRemoval: 2000,
-			keepScrollPosition: true,
-			rowHeight: 24,
-			loadingMessage: "Loading...",
-			dndDataType: "genome",
-			dndParams: {
-				accept: "none",
-				selfAccept: false,
-				copyOnly: true
+			"name": editor({
+				label: "Name",
+				field: "name",
+				className: "wsItemName",
+				canEdit: function(obj, val){
+					return obj.id == 'untitled';
+				},
+				autoSave: true,
+				editOn: "click",
+				editor: TextBox,
+				editorArgs: {placeHolder: "Untitled Folder", trim: true}
+			}),
+			size: {
+				label: "Size",
+				field: "size",
+				get: function(item){
+					return item;
+				},
+				className: "wsItemSize",
+				hidden: false,
+				formatter: formatter.objectOrFileSize
 			},
 
-			/*
-                _setApiServer: function(server){
-                        console.log("_setapiServerAttr: ", server);
-                        this.apiServer = server;
-                        this.set('store', this.createStore(this.dataModel), this.buildQuery());
-                },
+			owner_id: {
+				label: "Owner",
+				field: "owner_id",
+				className: "wsItemOwnerId",
+				formatter: formatter.baseUsername,
+				hidden: false
+			},
+			creation_time: {
+				label: "Created",
+				field: "creation_time",
+				className: "wsItemCreationTime",
+				formatter: formatter.date
+			}/*,
+
+			userMeta: {
+				label: "User Metadata",
+				field: "userMeta",
+				hidden: true
+			},
+			autoMeta: {
+				label: "Metadata",
+				field: "autoMeta",
+				hidden: true
+			}*/
+		},
+		constructor: function(){
+			this.dndParams.creator = lang.hitch(this, function(item, hint){
+				console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
+				var avatar = dojo.create("div", {
+					innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
+				});
+				avatar.data = item;
+				if(hint == 'avatar'){
+					// create your avatar if you want
+				}
+
+				return {
+					node: avatar,
+					data: item,
+					type: this.dndDataType
+				}
+			})
+
+		},
+		store: null,
+		selectionMode: "extended",
+		allowTextSelection: false,
+		deselectOnRefresh: false,
+		minRowsPerPage: 50,
+		bufferRows: 100,
+		maxRowsPerPage: 1000,
+		pagingDelay: 250,
+		//		pagingMethod: "throttleDelayed",
+		farOffRemoval: 2000,
+		keepScrollPosition: true,
+		rowHeight: 24,
+		loadingMessage: "Loading...",
+		dndDataType: "genome",
+		dndParams: {
+			accept: "none",
+			selfAccept: false,
+			copyOnly: true
+		},
+
+		/*
+			_setApiServer: function(server){
+					console.log("_setapiServerAttr: ", server);
+					this.apiServer = server;
+					this.set('store', this.createStore(this.dataModel), this.buildQuery());
+			},
 		*/
 
-			_setTotalRows: function(rows) {
-				this.totalRows = rows;
-				console.log("Total Rows: ", rows);
-				if (this.controlButton) {
-					console.log("this.controlButton: ", this.controlButton);
-					if (!this._originalTitle) {
-						this._originalTitle = this.controlButton.get('label');
-					}
-					this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-
-					console.log(this.controlButton);
+		_setTotalRows: function(rows){
+			this.totalRows = rows;
+			console.log("Total Rows: ", rows);
+			if(this.controlButton){
+				console.log("this.controlButton: ", this.controlButton);
+				if(!this._originalTitle){
+					this._originalTitle = this.controlButton.get('label');
 				}
-			},
+				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
 
-			startup: function() {
-				if (this._started) {
-					return;
-				}
-				var _self = this;
-				aspect.before(_self, 'renderArray', function(results) {
-					Deferred.when(results.total, function(x) {
-						_self.set("totalRows", x);
-					});
+				console.log(this.controlButton);
+			}
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			var _self = this;
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				console.log("ItemDblClick (row): ", row.data.path);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				console.log('after emit');
+				//if (row.data.type == "folder"){
+				//	Topic.publish("/select", []);
+
+				//	Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+				//	_selection={};
+				//}
+			});
+
+			this.on(".dgrid-content .dgrid-cell.wsItemType:click", function(evt){
+				var row = _self.row(evt);
+				evt.preventDefault();
+				evt.stopPropagation();
+				console.log("ItemDblClick (icon): ", row.data.path);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
 				});
 
+			});
+			//_selection={};
+			//Topic.publish("/select", []);
 
-				this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
-				    var row = _self.row(evt);
-					console.log("ItemDblClick (row): ", row.data.path);
-					on.emit(_self.domNode, "ItemDblClick", {
-						item_path: row.data.path,
-						item: row.data,
-						bubbles: true,
-						cancelable: true
-					});	
-					console.log('after emit');
-				    //if (row.data.type == "folder"){
-		//				Topic.publish("/select", []);
-
-		//				Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-		//				_selection={};
-					//}
-				});
-
-
-				this.on(".dgrid-content .dgrid-cell.wsItemType:click", function(evt){
-				    	var row = _self.row(evt);
-					evt.preventDefault();
-					evt.stopPropagation();
-					console.log("ItemDblClick (icon): ", row.data.path);
-					on.emit(_self.domNode, "ItemDblClick", {
-						item_path: row.data.path,
-						item: row.data,
-						bubbles: true,
-						cancelable: true
-					});	
-
-				});
-				//_selection={};
-				//Topic.publish("/select", []);
-
-				this.on("dgrid-select", function(evt) {
-					console.log('dgrid-select: ', evt);
-					setTimeout(function(){
-						var newEvt = {
-							rows: evt.rows,
-							selected: evt.grid.selection,
-							grid: _self,
-							bubbles: true,
-							cancelable: true
-						}	
-						on.emit(_self.domNode, "select", newEvt);
-					},250);
-					//console.log("dgrid-select");
-					//var rows = event.rows;
-					//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-					//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-					//Topic.publish("/select", sel);
-				});
-				this.on("dgrid-deselect", function(evt) {
-					console.log("dgrid-select");
+			this.on("dgrid-select", function(evt){
+				console.log('dgrid-select: ', evt);
+				setTimeout(function(){
 					var newEvt = {
 						rows: evt.rows,
 						selected: evt.grid.selection,
 						grid: _self,
 						bubbles: true,
 						cancelable: true
-					}	
-					on.emit(_self.domNode, "deselect", newEvt);
-					return;
+					}
+					on.emit(_self.domNode, "select", newEvt);
+				}, 250);
+				//console.log("dgrid-select");
+				//var rows = event.rows;
+				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+				//Topic.publish("/select", sel);
+			});
+			this.on("dgrid-deselect", function(evt){
+				console.log("dgrid-select");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				}
+				on.emit(_self.domNode, "deselect", newEvt);
+				return;
 //					var rows = evt.rows;
 //					Object.keys(rows).forEach(function(key){ delete _selection[rows[key].data.id] });
 //					var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 //					Topic.publish("/select", sel);
-				});
-				/*
-				var activeItem;
-				this.on(".dgrid-content:contextmenu", function(evt){
-					var row=_self.row(evt);
-					activeItem = row;
-					console.log("activeItem: ", row.data);
-				});
-				
-				var menu = new Menu({
-					  // Hook menu at domNode level since it stops propagation, and would
-					  // block any contextmenu events delegated from the domNode otherwise
-					  targetNodeIds: [this.domNode]
-				});
+			});
+			/*
+			var activeItem;
+			this.on(".dgrid-content:contextmenu", function(evt){
+				var row=_self.row(evt);
+				activeItem = row;
+				console.log("activeItem: ", row.data);
+			});
 
-				menu.addChild(new MenuItem({
-					label: "Delete Object",
-					onClick: function() {
-						if (activeItem) {
-							console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
-							if (activeItem.data.type=="folder"){
-								WorkspaceManager.deleteFolder([activeItem.data.path]);
-							}else{
-								WorkspaceManager.deleteObject([activeItem.data.path],true);
-							}
-							
+			var menu = new Menu({
+				  // Hook menu at domNode level since it stops propagation, and would
+				  // block any contextmenu events delegated from the domNode otherwise
+				  targetNodeIds: [this.domNode]
+			});
+
+			menu.addChild(new MenuItem({
+				label: "Delete Object",
+				onClick: function() {
+					if (activeItem) {
+						console.log("Delete Object: ", activeItem.data.id, activeItem.data.path);
+						if (activeItem.data.type=="folder"){
+							WorkspaceManager.deleteFolder([activeItem.data.path]);
+						}else{
+							WorkspaceManager.deleteObject([activeItem.data.path],true);
 						}
+
 					}
-				}));
-				*/
+				}
+			}));
+			*/
 
-				this.inherited(arguments);
-				this._started = true;
+			this.inherited(arguments);
+			this._started = true;
 
+		},
+		_setActiveFilter: function(filter){
+			console.log("Set Active Filter: ", filter, "started:", this._started);
+			this.activeFilter = filter;
+			this.set("query", this.buildQuery());
+		},
 
-			},
-			_setActiveFilter: function(filter) {
-				console.log("Set Active Filter: ", filter, "started:", this._started);
-				this.activeFilter = filter;
-				this.set("query", this.buildQuery());
-			},
+		buildQuery: function(table, extra){
+			var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
+			console.log("Feature Grid Query:", q);
+			return q;
+		},
+		createStore: function(dataModel){
+			console.log("Create Store for ", dataModel, " at ", this.apiServer);
+			var store = new Store({
+				target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
+				idProperty: "rownum",
+				headers: {
+					"accept": "application/json",
+					"content-type": "application/json",
+					'X-Requested-With': null,
+					"Authorization": (window.App.authorizationToken || "")
+				}
+			});
+			console.log("store: ", store);
+			return store;
+		},
 
-			buildQuery: function(table, extra) {
-				var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
-				console.log("Feature Grid Query:", q);
-				return q;
-			},
-			createStore: function(dataModel) {
-				console.log("Create Store for ", dataModel, " at ", this.apiServer);
-				var store = new Store({
-					target: (this.apiServer ? (this.apiServer) : "") + "/" + dataModel + "/",
-					idProperty: "rownum",
-					headers: {
-						"accept": "application/json",
-						"content-type": "application/json",
-						'X-Requested-With': null,
-						"Authorization": (window.App.authorizationToken||"")
-					}
-				});
-				console.log("store: ", store);
-				return store;
-			},
-
-			getFilterPanel: function() {
-				console.log("getFilterPanel()");
-				return FilterPanel;
-			}
-
-		});
+		getFilterPanel: function(){
+			console.log("getFilterPanel()");
+			return FilterPanel;
+		}
 
 	});
+
+});
 
 },
 'dgrid/Grid':function(){
@@ -31555,71 +31811,81 @@ return declare(null, {
 
 },
 'p3/widget/formatter':function(){
-define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(locale,domConstruct,domClass){
+define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(locale, domConstruct, domClass){
 
-	var dateFormatter =  function(obj,format){
-		if (!obj || obj=="0001-01-01T00:00:00Z") { return "" }
-		if (typeof obj == "string") {
+	var dateFormatter = function(obj, format){
+		if(!obj || obj == "0001-01-01T00:00:00Z"){
+			return ""
+		}
+		if(typeof obj == "string"){
 			obj = new Date(Date.parse(obj));
-		}else if (typeof obj == "number") {
+		}else if(typeof obj == "number"){
 			obj = new Date(obj);
 		}
-		if (!obj || !obj.getMonth){ return " " }
-	
-		return locale.format(obj,format || {formatLength: "short"});
-	}
+		if(!obj || !obj.getMonth){
+			return " "
+		}
 
-	var decimalFormatter = function(number, decimal){
-		return Math.round(number * Math.pow(10,decimal)) / Math.pow(10,decimal);
+		return locale.format(obj, format || {formatLength: "short"});
 	};
 
-      var findObjectByLabel = function(obj, label) {
-	if(obj.label === label) { return obj;}
-	for(var i in obj) {
-          if(obj.hasOwnProperty(i)){
-            var foundLabel = findObjectByLabel(obj[i], label);
-            if(foundLabel) { return foundLabel; }
-          }
-        }
-        return null;
-      } 
+	var decimalFormatter = function(number, decimal){
+		return Math.round(number * Math.pow(10, decimal)) / Math.pow(10, decimal);
+	};
+
+	var findObjectByLabel = function(obj, label){
+		if(obj.label === label){
+			return obj;
+		}
+		for(var i in obj){
+			if(obj.hasOwnProperty(i)){
+				var foundLabel = findObjectByLabel(obj[i], label);
+				if(foundLabel){
+					return foundLabel;
+				}
+			}
+		}
+		return null;
+	};
 
 	var dateFromEpoch = function(obj, format){
-		obj=new Date(new Date().setTime(obj*1000));
-		if (!obj || !obj.getMonth){ return " " }
-		return locale.format(obj,format || {formatLength: "short"});
-	}
+		obj = new Date(new Date().setTime(obj * 1000));
+		if(!obj || !obj.getMonth){
+			return " "
+		}
+		return locale.format(obj, format || {formatLength: "short"});
+	};
 
 	var formatters = {
-		linkGenome: function(value, row) {
+		linkGenome: function(value, row){
 			return '<a href="/portal/portal/patric/Genome?cType=genome&cId=' + row.genome_id + '">' + value + '</a>';
 		},
-		linkGenomePATRICCDS: function(value, row) {
-			if (value == 0 || value == '') {
+		linkGenomePATRICCDS: function(value, row){
+			if(value == 0 || value == ''){
 				return value;
 			}
-			else {
+			else{
 				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=PATRIC&filtertype=">' + value + '</a>';
 			}
 		},
-		linkGenomeBRC1CDS: function(value, row) {
-			if (value == 0 || value == '') {
+		linkGenomeBRC1CDS: function(value, row){
+			if(value == 0 || value == ''){
 				return value;
 			}
-			else {
+			else{
 				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=BRC1&filtertype=">' + value + '</a>';
 			}
 		},
-		linkGenomeRefSeqCDS: function(value, row) {
-			if (value == 0 || value == '') {
+		linkGenomeRefSeqCDS: function(value, row){
+			if(value == 0 || value == ''){
 				return value;
 			}
-			else {
+			else{
 				return '<a href="/portal/portal/patric/FeatureTable?cType=genome&cId=' + row.genome_id + '&featuretype=CDS&annotation=RefSeq&filtertype=">' + value + '</a>';
 			}
 		},
 		dateOnly: function(obj){
-			return dateFormatter(obj, {selector: "date", formatLength: "short"});	
+			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
 		twoDecimalNumeric: function(obj){
 			return decimalFormatter(obj, 2);
@@ -31628,21 +31894,23 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		epochDate: dateFromEpoch,
 		runTime: function(obj){
 			var hours = Math.floor(obj / 3600);
-			var minutes=Math.floor((obj-hours*3600)/60);
-			var seconds=obj-minutes*60;
-			var run_time= hours ? hours.toString()+"h" : "";
-			run_time+= minutes ? minutes.toString()+"m" : "";
-			run_time+= seconds ? seconds.toFixed(0).toString()+"s" : "";
+			var minutes = Math.floor((obj - hours * 3600) / 60);
+			var seconds = obj - minutes * 60;
+			var run_time = hours ? hours.toString() + "h" : "";
+			run_time += minutes ? minutes.toString() + "m" : "";
+			run_time += seconds ? seconds.toFixed(0).toString() + "s" : "";
 			return run_time;
 		},
 
 		objectOrFileSize: function(obj){
-			if (obj.type=="folder") { return "" }
+			if(obj.type == "folder"){
+				return ""
+			}
 			console.log("Has UserMeta: ", obj.userMeta);
-		
-			if (obj.autoMeta&& obj.autoMeta["item_count"]){
-				out = obj.autoMeta.item_count ;
-				switch (obj.type) {
+
+			if(obj.autoMeta && obj.autoMeta["item_count"]){
+				out = obj.autoMeta.item_count;
+				switch(obj.type){
 					case "genome_group":
 						out = out + " genomes";
 						break;
@@ -31659,22 +31927,24 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 		},
 
-		humanFileSize: function(bytes, si) {
-			if (!bytes && bytes !==0) { return "" }
+		humanFileSize: function(bytes, si){
+			if(!bytes && bytes !== 0){
+				return ""
+			}
 			var thresh = si ? 1000 : 1024;
 			if(bytes < thresh) return bytes + ' B';
-			var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+			var units = si ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 			var u = -1;
-			do {
+			do{
 				bytes /= thresh;
 				++u;
-			} while(bytes >= thresh);
-			return bytes.toFixed(1)+' '+units[u];
+			}while(bytes >= thresh);
+			return bytes.toFixed(1) + ' ' + units[u];
 		},
 
 		multiDate: function(fields){
 			return function(obj){
-				var out=[];
+				var out = [];
 				fields.forEach(function(f){
 					out.push("<div>" + dateFormatter(obj[f]) + "</div>");
 				});
@@ -31683,23 +31953,25 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 		},
 
 		lineage: function(val){
-			var out=[];
-			if (val && val instanceof Array){
+			var out = [];
+			if(val && val instanceof Array){
 				out = val.reverse().map(function(t){
 					return '/ <a href="/taxonomy/' + t.NCBI_TAX_ID + '" rel="cid/widget/TaxonomyViewer">' + t.NAME + "</a>&nbsp;"
 				});
 				return out.join('');
-			} 
-			return val;	
+			}
+			return val;
 		},
 		baseUsername: function(val){
-			if (!val) { return "" }
+			if(!val){
+				return ""
+			}
 			var parts = val.split("@");
 			return parts[0];
 		},
 		status: function(val){
 			return val;
-			switch (val) {
+			switch(val){
 				case "completed":
 					return '<i class="fa fa-check fa-1x" title="Folder" />'
 				case "queued":
@@ -31707,7 +31979,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 		},
 		status_alias: function(val){
-			switch (val){
+			switch(val){
 				case "deleted":
 					return 'failed'
 				default:
@@ -31715,7 +31987,7 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 		},
 		status_indicator: function(val){
-			switch (val) {
+			switch(val){
 				case "in-progress":
 					return '<div><i class="fa icon-circle fa-1x" style="color:green" title="Running" /></div>'
 				case "deleted":
@@ -31729,76 +32001,88 @@ define(["dojo/date/locale","dojo/dom-construct","dojo/dom-class"],function(local
 			}
 		},
 		wsItemType: function(val){
-			switch (val) {
+			switch(val){
 				case "parentfolder":
-					return '<i class="fa fa-level-up fa-1x" title="Folder" />'
+					return '<i class="fa fa-level-up fa-1x" title="Folder" />';
 				case "folder":
-					return '<i class="fa fa-folder fa-1x" title="Folder" />'
+					return '<i class="fa fa-folder fa-1x" title="Folder" />';
 				case "contigs":
-					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
+					return '<i class="fa icon-contigs fa-1x" title="Contigs" />';
 				case "fasta":
-					return '<i class="fa icon-fasta fa-1x" title="Contigs" />'
+					return '<i class="fa icon-fasta fa-1x" title="Contigs" />';
 				case "feature_group":
-					return '<i class="icon-genome-features " title="Contigs" />'
+					return '<i class="icon-genome-features " title="Contigs" />';
 				case "genome_group":
 					return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
 				case "job_result_DifferentialExpression":
-					return '<i class="fa icon-lab fa-1x" title="DiffExp" />'
+					return '<i class="fa icon-lab fa-1x" title="DiffExp" />';
 				case "job_result_GenomeAnnotation":
-					return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />'
+					return '<i class="fa icon-flag-checkered fa-1x" title="Annotation" />';
 				case "job_result_GenomeAssembly":
-					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
+					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
 				case "job_result_RNASeq":
-					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />'
-				default: 
+					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
+				default:
 					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		appLabel: function(appName){
-			if (appName == "GenomeComparison") {
-				return "Proteome Comparison"	
+			if(appName == "GenomeComparison"){
+				return "Proteome Comparison"
 			}
 			return appName;
 		},
-		autoLabel: function(ws_location,autoData){
-			_autoLabels={};
-                        if (ws_location=="itemDetail"){
-				_app_label=null;
-				if (autoData.hasOwnProperty("app") && autoData["app"].hasOwnProperty("id")){
-					_app_label=autoData["app"]["id"];
+		autoLabel: function(ws_location, autoData){
+			_autoLabels = {};
+			if(ws_location == "itemDetail"){
+				_app_label = null;
+				if(autoData.hasOwnProperty("app") && autoData["app"].hasOwnProperty("id")){
+					_app_label = autoData["app"]["id"];
 				}
-				if ( _app_label=="GenomeAnnotation"){
-                                	_autoLabels= {"app_label":{"label":"Genome Annotation"},"scientific_name":{"label":"Organism"},"domain":{"label":"Domain"},"num_features":{"label":"Feature count"},"genome_id":{"label":"Annotation ID"}};
+				if(_app_label == "GenomeAnnotation"){
+					_autoLabels = {
+						"app_label": {"label": "Genome Annotation"},
+						"scientific_name": {"label": "Organism"},
+						"domain": {"label": "Domain"},
+						"num_features": {"label": "Feature count"},
+						"genome_id": {"label": "Annotation ID"}
+					};
 				}
-				if (_app_label=="GenomeAssembly"){
-					_autoLabels= {"app_label":{"label":"Genome Assembly"}};
+				if(_app_label == "GenomeAssembly"){
+					_autoLabels = {"app_label": {"label": "Genome Assembly"}};
 				}
 				Object.keys(_autoLabels).forEach(function(key){
-					var curValue=null;//findObjectByLabel(autoData,key);
-					if (curValue){
-						_autoLabels[key]["value"]=curValue;
+					var curValue = null;//findObjectByLabel(autoData,key);
+					if(curValue){
+						_autoLabels[key]["value"] = curValue;
 					}
-				},this);
+				}, this);
 			}
-			if (ws_location == "fileView"){
-				_autoLabels={"name":{"label":"Filename"},"type":{"label":"Type"},"creation_time":{"label":"Created", "format":this.date},"owner_id":{"label":"Owner"},"path":{"label":"Path"},"size":{"label":"File Size","format":this.humanFileSize}};
+			if(ws_location == "fileView"){
+				_autoLabels = {
+					"name": {"label": "Filename"},
+					"type": {"label": "Type"},
+					"creation_time": {"label": "Created", "format": this.date},
+					"owner_id": {"label": "Owner"},
+					"path": {"label": "Path"},
+					"size": {"label": "File Size", "format": this.humanFileSize}
+				};
 				Object.keys(autoData).forEach(function(key){
-					if (_autoLabels.hasOwnProperty(key)){
-						if (_autoLabels[key].hasOwnProperty("format")){
-							_autoLabels[key]["value"]=_autoLabels[key]["format"](autoData[key]);
+					if(_autoLabels.hasOwnProperty(key)){
+						if(_autoLabels[key].hasOwnProperty("format")){
+							_autoLabels[key]["value"] = _autoLabels[key]["format"](autoData[key]);
 						}
-						else {
-							_autoLabels[key]["value"]=autoData[key];
+						else{
+							_autoLabels[key]["value"] = autoData[key];
 						}
 					}
 				});
 			}
-					
-		
+
 			return _autoLabels;
 		}
 
-	}
+	};
 
 	return formatters;
 });
@@ -34718,106 +35002,108 @@ return function(column, editor, editOn){
 
 },
 'p3/JobManager':function(){
-define(["dojo/_base/Deferred","dojo/topic","dojo/request/xhr", "dojo/promise/all","dojo/store/Memory","dojo/store/Observable","dojo/when"], 
-
-function(Deferred,Topic,xhr,All,MemoryStore,Observable,when){
+define(["dojo/_base/Deferred", "dojo/topic", "dojo/request/xhr",
+	"dojo/promise/all", "dojo/store/Memory", "dojo/store/Observable", "dojo/when"
+],
+function(Deferred, Topic, xhr,
+		 All, MemoryStore, Observable, when){
 	//console.log("Start Job Manager");
-	var Jobs = {}
+	var Jobs = {};
 	var ready = new Deferred();
-	var firstRun=true;
+	var firstRun = true;
 
-	var _DataStore = new Observable(new MemoryStore({data:[]}));
+	var _DataStore = new Observable(new MemoryStore({data: []}));
 
-	function PollJobs() {
-		if (window.App && window.App.api && window.App.api.service) {
-			Deferred.when(window.App.api.service("AppService.enumerate_tasks",[0,1000]), function(tasks){
+	function PollJobs(){
+		if(window.App && window.App.api && window.App.api.service){
+			Deferred.when(window.App.api.service("AppService.enumerate_tasks", [0, 1000]), function(tasks){
 //				//console.log("tasks: ", tasks);
 				tasks[0].forEach(function(task){
-					when(_DataStore.get(task.id),function(oldTask){
-						if (!oldTask){
+					when(_DataStore.get(task.id), function(oldTask){
+						if(!oldTask){
 							_DataStore.put(task);
-						}else if (oldTask.status != task.status){
+						}else if(oldTask.status != task.status){
 							_DataStore.put(task);
 						}
 					}, function(err){
 						console.log("ERROR RETRIEVING TASK ", err)
-					})
-	
+					});
+
 					_DataStore.put(task);
 				});
 
 				Deferred.when(getJobSummary(), function(msg){
 					Topic.publish("/Jobs", msg);
-				});	
-	
-				if (firstRun){
-					ready.resolve(true);	
-					firstRun=false;	
+				});
+
+				if(firstRun){
+					ready.resolve(true);
+					firstRun = false;
 				}
 				setTimeout(function(){
 					PollJobs();
-				},15000)
+				}, 15000)
 			});
 		}else{
 			setTimeout(function(){
 				PollJobs();
-			},1000);
+			}, 1000);
 		}
 	}
-	
+
 	PollJobs();
 
 	function getJobSummary(){
-			//console.log("getJobSummary() from api_service");
-			var def = new Deferred();
-			var summary = {total: 0}
-			when(ready, function(){
-				when(_DataStore.query({}),function(Jobs){
-				 	Jobs.forEach(function(job){
-						summary.total++;
-						if (!summary[job.status]){
-							summary[job.status]=1;
-						}else{
-							summary[job.status]++;
-						}
-					});
-					def.resolve({type: "JobStatusSummary",summary: summary});
-				}, function(err){
-					console.log("Error Generating Job Summary", err)
-				})
-			});
+		//console.log("getJobSummary() from api_service");
+		var def = new Deferred();
+		var summary = {total: 0};
+		when(ready, function(){
+			when(_DataStore.query({}), function(Jobs){
+				Jobs.forEach(function(job){
+					summary.total++;
+					if(!summary[job.status]){
+						summary[job.status] = 1;
+					}else{
+						summary[job.status]++;
+					}
+				});
+				def.resolve({type: "JobStatusSummary", summary: summary});
+			}, function(err){
+				console.log("Error Generating Job Summary", err)
+			})
+		});
 
-			return def.promise;
-		}
+		return def.promise;
+	}
 
 	return {
-		queryTaskDetail: function(id,stdout,stderr){
-			return Deferred.when(window.App.api.service("AppService.query_task_details",[id]), function(detail){
+		queryTaskDetail: function(id, stdout, stderr){
+			return Deferred.when(window.App.api.service("AppService.query_task_details", [id]), function(detail){
 				detail = detail[0];
 				var defs = [];
-				if (detail.stderr_url && stderr){
+				if(detail.stderr_url && stderr){
 					defs.push(Deferred.when(xhr.get(detail.stderr_url, {
 						headers: {
 							"Authorization": "Oauth " + window.App.authorizationToken,
-                       			                "X-Requested-With": false
+							"X-Requested-With": false
 						}
 					}), function(txt){
 						detail.stderr = txt;
-					
-					}));		
+
+					}));
 				}
-				if (detail.stdout_url && stdout){
+				if(detail.stdout_url && stdout){
 					defs.push(Deferred.when(xhr.get(detail.stdout_url, {
 						headers: {
 							"Authorization": "Oauth " + window.App.authorizationToken,
-                       			                "X-Requested-With": false
+							"X-Requested-With": false
 						}
 					}), function(txt){
 						detail.stdout = txt;
-					
-					}));		
+
+					}));
 				}
-				if (defs.length<1) {
+				if(defs.length < 1){
 					return detail;
 				}else{
 					return Deferred.when(All(defs), function(){
@@ -34827,17 +35113,17 @@ function(Deferred,Topic,xhr,All,MemoryStore,Observable,when){
 			});
 		},
 		getShockNode: function(url){
-			return xhr.get(url+"?download", {
+			return xhr.get(url + "?download", {
 				headers: {
 					"Authorization": "Oauth " + window.App.authorizationToken,
-                                        "X-Requested-With": false
+					"X-Requested-With": false
 				}
 			});
 		},
 		getJobSummary: getJobSummary,
 		getJobs: function(){
 			return Deferred.when(ready, function(){
-			//console.log('getJobs()', Jobs);
+				//console.log('getJobs()', Jobs);
 				return Object.keys(Jobs).map(function(id){
 					return Jobs[id];
 				});
@@ -34848,8 +35134,7 @@ function(Deferred,Topic,xhr,All,MemoryStore,Observable,when){
 			return _DataStore;
 		}
 	}
-
-})
+});
 
 },
 'dojo/store/Memory':function(){
@@ -35331,20 +35616,24 @@ return Observable;
 },
 'p3/widget/ItemDetailPanel':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/ItemDetailPanel.html","dojo/_base/lang","./formatter","dojo/dom-style",
-	"../WorkspaceManager","dojo/dom-construct","dojo/query","./DataItemFormatter"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,lang,formatter,domStyle,
-	WorkspaceManager,domConstruct,query,DataItemFormatter
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+	"dojo/text!./templates/ItemDetailPanel.html", "dojo/_base/lang", "./formatter", "dojo/dom-style",
+	"../WorkspaceManager", "dojo/dom-construct", "dojo/query", "./DataItemFormatter"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, lang, formatter, domStyle,
+			WorkspaceManager, domConstruct, query, DataItemFormatter){
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "ItemDetailPanel",
-		"disabled":false,
-		"changeableTypes":{unspecified:{label:"unspecified",value:"unspecified"},contigs:{label:"contigs",value:"contigs"},reads:{label:"reads",value:"reads"},diffexp_input_data:{label:"diffexp_input_data",value:"diffexp_input_data"},diffexp_input_metadata:{label:"diffexp_input_metadata",value:"diffexp_input_metadata"}},
+		"disabled": false,
+		"changeableTypes": {
+			unspecified: {label: "unspecified", value: "unspecified"},
+			contigs: {label: "contigs", value: "contigs"},
+			reads: {label: "reads", value: "reads"},
+			diffexp_input_data: {label: "diffexp_input_data", value: "diffexp_input_data"},
+			diffexp_input_metadata: {label: "diffexp_input_metadata", value: "diffexp_input_metadata"}
+		},
 		templateString: Template,
 		selection: null,
 		item: null,
@@ -35359,40 +35648,40 @@ define([
 			this._set("containerWidget", val);
 		},
 		startup: function(){
-			var _self=this;
+			var _self = this;
 			//if (this._started) { return; }
 			var currentIcon;
 
-			this.watch("containerWidget", lang.hitch(this, function(prop,oldVal,containerWidget){
-			
+			this.watch("containerWidget", lang.hitch(this, function(prop, oldVal, containerWidget){
+
 				console.log("set containerWidget", containerWidget);
 
-				if (oldVal && oldVal.containerType){
+				if(oldVal && oldVal.containerType){
 					domClass.remove(this.domNode, oldVal.containerType);
 				}
 
 				this.containerWidget = containerWidget;
-				if (this.containerWidget && this.containerWidget.containerType){
+				if(this.containerWidget && this.containerWidget.containerType){
 					domClass.add(this.domNode, this.containerWidget.containerType);
 				}
 
 			}));
 
-			this.watch("selection", lang.hitch(this,function(prop,oldVal,selection){
+			this.watch("selection", lang.hitch(this, function(prop, oldVal, selection){
 				console.log("ItemDetailPanel set selection: ", selection);
 
-				if (!selection || selection.length<1){
+				if(!selection || selection.length < 1){
 					console.log("no selection set");
 					domClass.add(this.domNode, "noSelection");
 					domClass.remove(this.domNode, "multipleSelection");
 					domClass.remove(this.domNode, "singleSelection");
-				}else if (selection && selection.length==1){
+				}else if(selection && selection.length == 1){
 					console.log("single selection set");
 					domClass.remove(this.domNode, "noSelection");
 					domClass.remove(this.domNode, "multipleSelection");
 					domClass.add(this.domNode, "singleSelection");
 					this.set("item", selection[0]);
-				}else if (selection && selection.length>1){
+				}else if(selection && selection.length > 1){
 					console.log("multiple Selection set");
 					domClass.remove(this.domNode, "noSelection");
 					domClass.add(this.domNode, "multipleSelection");
@@ -35401,61 +35690,60 @@ define([
 				}
 			}));
 
-			this.watch("item", lang.hitch(this,function(prop,oldVal,item){
+			this.watch("item", lang.hitch(this, function(prop, oldVal, item){
 				console.log("ItemDetailPanel Set(): ", arguments);
-				domClass.remove(_self.typeIcon,currentIcon)
+				domClass.remove(_self.typeIcon, currentIcon)
 				console.log("Container Widget: ", this.containerWidget);
-				if (item.type) {
+				if(item.type){
 					domClass.add(this.domNode, "workspaceItem");
 					domClass.remove(this.domNode, "dataItem");
-				
 
 					var t = item.document_type || item.type;
 					switch(t){
-						case "folder": 
-							domClass.add(_self.typeIcon,"fa fa-folder fa-2x")
-							currentIcon="fa fa-folder fa-2x";
+						case "folder":
+							domClass.add(_self.typeIcon, "fa fa-folder fa-2x")
+							currentIcon = "fa fa-folder fa-2x";
 							break;
 						//case "contigs": 
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
 						//	currentIcon="fa fa-folder fa-3x";
 						//	break;
-						case "contigs": 
-							domClass.add(_self.typeIcon,"fa icon-contigs fa-2x")
-							currentIcon="fa fa-contigs fa-2x";
+						case "contigs":
+							domClass.add(_self.typeIcon, "fa icon-contigs fa-2x")
+							currentIcon = "fa fa-contigs fa-2x";
 							break;
-						case "fasta": 
-							domClass.add(_self.typeIcon,"fa icon-fasta fa-2x")
-							currentIcon="fa icon-fasta fa-2x";
+						case "fasta":
+							domClass.add(_self.typeIcon, "fa icon-fasta fa-2x")
+							currentIcon = "fa icon-fasta fa-2x";
 							break;
-						case "genome_group": 
-							domClass.add(_self.typeIcon,"fa icon-genome_group fa-2x")
-							currentIcon="fa icon-genome_group fa-2x";
+						case "genome_group":
+							domClass.add(_self.typeIcon, "fa icon-genome_group fa-2x")
+							currentIcon = "fa icon-genome_group fa-2x";
 							break;
 						case "job_result":
 							domClass.add(_self.typeIcon, "fa fa-flag-checkered fa-2x")
-							currentIcon="fa icon-flag-checkered fa-2x";
+							currentIcon = "fa icon-flag-checkered fa-2x";
 							break;
-						case "feature_group": 
-							domClass.add(_self.typeIcon,"fa icon-genome-features fa-2x")
-							currentIcon="fa icon-genome-features fa-2x";
+						case "feature_group":
+							domClass.add(_self.typeIcon, "fa icon-genome-features fa-2x")
+							currentIcon = "fa icon-genome-features fa-2x";
 							break;
-		
-						default: 
-							domClass.add(_self.typeIcon,"fa fa-file fa-2x")
-							currentIcon="fa fa-file fa-2x";
+
+						default:
+							domClass.add(_self.typeIcon, "fa fa-file fa-2x")
+							currentIcon = "fa fa-file fa-2x";
 							break;
-					} 
-					
+					}
+
 					//silence all special help divs
-					var specialHelp=query(".specialHelp");
+					var specialHelp = query(".specialHelp");
 					specialHelp.forEach(function(item){
 						dojo.style(item, 'display', 'none');
-					});	
+					});
 					Object.keys(item).forEach(function(key){
-       		                		var val = item[key];
+						var val = item[key];
 						if(key == "creation_time"){
-							val=formatter.date(val);
+							val = formatter.date(val);
 						}
 						if(key == "name"){
 							if(val == "Feature Groups"){
@@ -35471,62 +35759,64 @@ define([
 								dojo.style(this.experimentGroupHelp, 'display', 'inline-block');
 							}
 						}
-						if (key == "type"){
-							_self[key + "Node"].set('value',val);
-							_self[key + "Node"].set('displayedValue',val);
+						if(key == "type"){
+							_self[key + "Node"].set('value', val);
+							_self[key + "Node"].set('displayedValue', val);
 							_self[key + "Node"].cancel();
-							if (this.changeableTypes.hasOwnProperty(val)){
-								_self[key + "Node"].set('disabled',false);
-								domStyle.set(_self[key + "Node"].domNode,"text-decoration","underline");
-								var type_options=[];
+							if(this.changeableTypes.hasOwnProperty(val)){
+								_self[key + "Node"].set('disabled', false);
+								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "underline");
+								var type_options = [];
 								Object.keys(this.changeableTypes).forEach(function(change_type){
 									type_options.push(this.changeableTypes[change_type]);
 								}, this);
-								_self[key + "Node"].editorParams.options=type_options;
+								_self[key + "Node"].editorParams.options = type_options;
 							}
 							else{
-								_self[key + "Node"].set('disabled',true);
-								domStyle.set(_self[key + "Node"].domNode,"text-decoration","none");
+								_self[key + "Node"].set('disabled', true);
+								domStyle.set(_self[key + "Node"].domNode, "text-decoration", "none");
 							}
-						}	
-						else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
-							_self[this.property_aliases[key] + "Node"].innerHTML=val;	
-						}else if (this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
-							_self[this.property_aliases[key] + "Widget"].set("value",val);
-						}else if (_self[key + "Node"]){
-							_self[key+"Node"].innerHTML=val;
-						}else if (_self[key +"Widget"]){
-							_self[key+"Widget"].set("value",val);
-						}else if (key == "autoMeta"){
-							var curAuto = formatter.autoLabel("itemDetail", item.autoMeta);
-							subRecord=[];
-							Object.keys(curAuto).forEach(function(prop){
-								if (!curAuto[prop] || prop=="inspection_started") { return; }
-								if (curAuto[prop].hasOwnProperty("label") && curAuto[prop].hasOwnProperty("value")){
-									subRecord.push('<div class="ItemDetailAttribute">'+curAuto[prop]["label"]+': <span class="ItemDetailAttributeValue">'+curAutoLabel[prop]["value"]+'</span></div></br>');
-								}
-								else if (curAuto[prop].hasOwnProperty("label")){
-									subRecord.push('<div class="ItemDetailAttribute">'+curAuto[prop]["label"]+'</div></br>');
-								}
-							},this);
-							_self["autoMeta"].innerHTML=subRecord.join("\n");
-						//	Object.keys(val).forEach(function(aprop){
-						//	},this);
 						}
-					},this);
-				} else if (this.containerWidget && this.containerWidget.containerType){
+						else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Node"]){
+							_self[this.property_aliases[key] + "Node"].innerHTML = val;
+						}else if(this.property_aliases[key] && _self[this.property_aliases[key] + "Widget"]){
+							_self[this.property_aliases[key] + "Widget"].set("value", val);
+						}else if(_self[key + "Node"]){
+							_self[key + "Node"].innerHTML = val;
+						}else if(_self[key + "Widget"]){
+							_self[key + "Widget"].set("value", val);
+						}else if(key == "autoMeta"){
+							var curAuto = formatter.autoLabel("itemDetail", item.autoMeta);
+							subRecord = [];
+							Object.keys(curAuto).forEach(function(prop){
+								if(!curAuto[prop] || prop == "inspection_started"){
+									return;
+								}
+								if(curAuto[prop].hasOwnProperty("label") && curAuto[prop].hasOwnProperty("value")){
+									subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop]["label"] + ': <span class="ItemDetailAttributeValue">' + curAutoLabel[prop]["value"] + '</span></div></br>');
+								}
+								else if(curAuto[prop].hasOwnProperty("label")){
+									subRecord.push('<div class="ItemDetailAttribute">' + curAuto[prop]["label"] + '</div></br>');
+								}
+							}, this);
+							_self["autoMeta"].innerHTML = subRecord.join("\n");
+							//	Object.keys(val).forEach(function(aprop){
+							//	},this);
+						}
+					}, this);
+				}else if(this.containerWidget && this.containerWidget.containerType){
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
 
-					var node = DataItemFormatter(item,this.containerWidget.containerType)
+					var node = DataItemFormatter(item, this.containerWidget.containerType)
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
-				} else if (item && item._formatterType) {
+				}else if(item && item._formatterType){
 
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
 
-					var node = DataItemFormatter(item,item._formatterType)
+					var node = DataItemFormatter(item, item._formatterType)
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
 
@@ -35535,17 +35825,17 @@ define([
 					domClass.remove(this.domNode, "workspaceItem");
 					domClass.add(this.domNode, "dataItem");
 
-					var node = DataItemFormatter(item,"default")
+					var node = DataItemFormatter(item, "default")
 					domConstruct.empty(this.itemBody);
 					domConstruct.place(node, this.itemBody, "first");
 				}
-			}))
+			}));
 			this.inherited(arguments);
 		},
 
 		saveType: function(val){
 			console.log("onSaveType: ", val, this.item);
-			WorkspaceManager.updateMetadata(this.item.path,false,val);		
+			WorkspaceManager.updateMetadata(this.item.path, false, val);
 		}
 	});
 });
@@ -35553,13 +35843,10 @@ define([
 },
 'p3/widget/DataItemFormatter':function(){
 define([
-	"dojo/date/locale","dojo/dom-construct","dojo/dom-class",
-	"dijit/form/Button","../JobManager","dijit/TitlePane"
-], function(
-	locale,domConstruct,domClass,
-	Button,JobManager,TitlePane
-
-){
+	"dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
+	"dijit/form/Button", "../JobManager", "dijit/TitlePane"
+], function(locale, domConstruct, domClass,
+			Button, JobManager, TitlePane){
 
 	var formatters = {
 		"default": function(item, options){
@@ -35567,32 +35854,42 @@ define([
 			options = options || {}
 
 			var table = domConstruct.create("table");
-			var tbody = domConstruct.create("tbody",{},table);
-			
+			var tbody = domConstruct.create("tbody", {}, table);
+
 			Object.keys(item).sort().forEach(function(key){
-				var tr = domConstruct.create("tr",{},tbody)
-				var tda = domConstruct.create("td",{innerHTML: key}, tr);
-				var tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-			},this);		
+				var tr = domConstruct.create("tr", {}, tbody)
+				var tda = domConstruct.create("td", {innerHTML: key}, tr);
+				var tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+			}, this);
 
 			return table;
 		},
 
-		"job_parameters": function(item,options){
-			function renderObject(obj,target, depth){
-				if (!depth){ depth=1 }
-				if (typeof obj == 'object') {
+		"job_parameters": function(item, options){
+			function renderObject(obj, target, depth){
+				if(!depth){
+					depth = 1
+				}
+				if(typeof obj == 'object'){
 					var props = Object.keys(obj);
 					props.forEach(function(p){
-						if (typeof obj[p] == 'object'){
-							var tr = domConstruct.create("tr",{},tbody);
-							var tda = domConstruct.create("td",{style: {"padding-left": (depth*5) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
-							var tdb = domConstruct.create("td",{},tr);
-							renderObject(obj[p],tbody,depth+1);
+						if(typeof obj[p] == 'object'){
+							var tr = domConstruct.create("tr", {}, tbody);
+							var tda = domConstruct.create("td", {
+								style: {"padding-left": (depth * 5) + "px"},
+								innerHTML: p,
+								nowrap: "nowrap"
+							}, tr);
+							var tdb = domConstruct.create("td", {}, tr);
+							renderObject(obj[p], tbody, depth + 1);
 						}else{
-							var tr = domConstruct.create("tr",{},tbody);
-							var tda = domConstruct.create("td",{style: {"padding-left": (depth*10) + "px"},innerHTML: p, nowrap: "nowrap" }, tr);
-							var tdb = domConstruct.create("td",{innerHTML: obj[p]},tr);
+							var tr = domConstruct.create("tr", {}, tbody);
+							var tda = domConstruct.create("td", {
+								style: {"padding-left": (depth * 10) + "px"},
+								innerHTML: p,
+								nowrap: "nowrap"
+							}, tr);
+							var tdb = domConstruct.create("td", {innerHTML: obj[p]}, tr);
 						}
 					})
 				}
@@ -35600,116 +35897,115 @@ define([
 		},
 		"completed_job": function(item, options){
 			options = options || {}
-			options.hideExtra=true;
+			options.hideExtra = true;
 			var featureColumns = [{
-				name : 'App',
-				text : 'app'
-			},{
-				name : 'Job ID',
-				text : 'id'
-			},{
+				name: 'App',
+				text: 'app'
+			}, {
+				name: 'Job ID',
+				text: 'id'
+			}, {
 				name: "Status",
 				text: "status"
-			},{
-				name : 'Submitted',
-				text : 'submit_time'
-			},{
-				name : 'Start',
-				text : 'start_time'
 			}, {
-				name : 'Completed',
-				text : 'completed_time'
-			},{
-				name : "Parameters",
+				name: 'Submitted',
+				text: 'submit_time'
+			}, {
+				name: 'Start',
+				text: 'start_time'
+			}, {
+				name: 'Completed',
+				text: 'completed_time'
+			}, {
+				name: "Parameters",
 				text: "parameters",
 				data_hide: true
-			},{
-				name : "_formatterType",
+			}, {
+				name: "_formatterType",
 				text: "_formatterType",
 				data_hide: true
-			},{
-				name : "Parameters",
+			}, {
+				name: "Parameters",
 				text: "parameters",
 				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
+			var div = domConstruct.create("div");
 			console.log("Create Display Header")
 			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			console.log("Display Detail Complete")
 
-					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
 			return div;
 		},
 
 		"failed_job": function(item, options){
 			options = options || {}
-			options.hideExtra=true;
+			options.hideExtra = true;
 			var featureColumns = [{
-				name : 'App',
-				text : 'app'
-			},{
-				name : 'Job ID',
-				text : 'id'
-			},{
+				name: 'App',
+				text: 'app'
+			}, {
+				name: 'Job ID',
+				text: 'id'
+			}, {
 				name: "Status",
 				text: "status"
-			},{
-				name : 'Submitted',
-				text : 'submit_time'
-			},{
-				name : 'Start',
-				text : 'start_time'
 			}, {
-				name : 'Completed',
-				text : 'completed_time'
-			},{
-				name : "Parameters",
+				name: 'Submitted',
+				text: 'submit_time'
+			}, {
+				name: 'Start',
+				text: 'start_time'
+			}, {
+				name: 'Completed',
+				text: 'completed_time'
+			}, {
+				name: "Parameters",
 				text: "parameters",
 				data_hide: true
-			},{
-				name : "_formatterType",
+			}, {
+				name: "_formatterType",
 				text: "_formatterType",
 				data_hide: true
-			},{
-				name : "Parameters",
+			}, {
+				name: "Parameters",
 				text: "parameters",
 				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
+			var div = domConstruct.create("div");
 			console.log("Create Display Header")
 			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 
-	
-			var tpDiv = domConstruct.create("div",{},div);
-			var dlg = new TitlePane({title: "Error Output",open: false},tpDiv);
-			dlg.watch("open", function(attr,oldVal,open){
-				if (!open){return;}
-				JobManager.queryTaskDetail(item.id,true,true).then(function(detail){
+			var tpDiv = domConstruct.create("div", {}, div);
+			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
+			dlg.watch("open", function(attr, oldVal, open){
+				if(!open){
+					return;
+				}
+				JobManager.queryTaskDetail(item.id, true, true).then(function(detail){
 					//console.log("JOB DETAIL: ", detail);
 					clearTimeout(timer);
-					if (detail.stderr) {
-						dlg.set("content","<pre>" + detail.stderr + "</pre>");
+					if(detail.stderr){
+						dlg.set("content", "<pre>" + detail.stderr + "</pre>");
 					}else{
-						dlg.set("content","Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail,null,4) + "</pre>");
+						dlg.set("content", "Unable to retreive additional details about this task at this task.<br><pre>" + JSON.stringify(detail, null, 4) + "</pre>");
 					}
 				}, function(err){
-					dlg.set("content","Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
+					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
 				});
 			})
 
-					// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
 			return div;
 		},
-
-
 
 		"feature_data": function(item, options){
 			options = options || {}
@@ -35718,184 +36014,181 @@ define([
 			//return domConstruct.create("div", {innerHTML: "hello"});
 
 			var featureColumns = [{
-				name : 'Genome Name',
-				text : 'genome_name'
+				name: 'Genome Name',
+				text: 'genome_name'
 			}, {
-				name : 'Annotation',
-				text : 'annotation'
+				name: 'Annotation',
+				text: 'annotation'
 			}, {
-				name : 'Feature Type',
-				text : 'feature_type'
+				name: 'Feature Type',
+				text: 'feature_type'
 			}, {
-				name : 'PATRIC ID',
-				text : 'patric_id',
-				mini :	true
+				name: 'PATRIC ID',
+				text: 'patric_id',
+				mini: true
 			}, {
-				name : 'RefSeq Locus Tag',
-				text : 'refseq_locus_tag',
-				link : 'http://www.ncbi.nlm.nih.gov/gene/?term=',
-				mini :	true
+				name: 'RefSeq Locus Tag',
+				text: 'refseq_locus_tag',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				mini: true
 			}, {
-				name : 'Alt Locus Tag',
-				text : 'alt_locus_tag'
+				name: 'Alt Locus Tag',
+				text: 'alt_locus_tag'
 			}, {
-				name : 'Gene Symbol',
-				text : 'gene',
-				mini :	true
+				name: 'Gene Symbol',
+				text: 'gene',
+				mini: true
 			}, {
-				name : 'Product',
-				text : 'product',
-				mini :	true
+				name: 'Product',
+				text: 'product',
+				mini: true
 			}, {
-				name : 'NA Length',
-				text : 'na_length'
+				name: 'NA Length',
+				text: 'na_length'
 			}, {
-				name : 'AA Length',
-				text : 'aa_length'
+				name: 'AA Length',
+				text: 'aa_length'
 			}, {
-				name : 'Start',
-				text : 'start'
+				name: 'Start',
+				text: 'start'
 			}, {
-				name : 'End',
-				text : 'end'
+				name: 'End',
+				text: 'end'
 			}, {
-				name : 'Strand',
-				text : 'strand'
+				name: 'Strand',
+				text: 'strand'
 			}, {
-				name : 'Figfam ID',
-				text : 'figfam_id'
+				name: 'Figfam ID',
+				text: 'figfam_id'
 			}, {
-				name : 'plfam ID',
-				text : 'plfam_id'
+				name: 'plfam ID',
+				text: 'plfam_id'
 			}, {
-				name : 'pgfam ID',
-				text : 'pgfam_id'
+				name: 'pgfam ID',
+				text: 'pgfam_id'
 			}, {
-				name : 'EC',
-				text : 'ec'
+				name: 'EC',
+				text: 'ec'
 			}, {
-				name : 'Pathway',
-				text : 'pathway'
+				name: 'Pathway',
+				text: 'pathway'
 			}, {
-				name : 'GO',
-				text : 'go'
+				name: 'GO',
+				text: 'go'
 			}, {
-				name : 'Location',
-				text : 'location',
-				mini :	true
+				name: 'Location',
+				text: 'location',
+				mini: true
 			}, {
-				name : 'Segments',
-				text : 'segments'
+				name: 'Segments',
+				text: 'segments'
 			}, {
-				name : 'Feature ID',
-				text : 'feature_id'
+				name: 'Feature ID',
+				text: 'feature_id'
 			}, {
-				name : 'Protein ID',
-				text : 'protein_id',
-				link : 'http://www.ncbi.nlm.nih.gov/protein/'
+				name: 'Protein ID',
+				text: 'protein_id',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
 			}, {
-				name : 'Gene ID',
-				text : 'gene_id',
-				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
+				name: 'Gene ID',
+				text: 'gene_id',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
-				name : 'gi',
-				text : 'gi',
-				link : 'http://www.ncbi.nlm.nih.gov/protein/'
+				name: 'gi',
+				text: 'gi',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
 			}, {
-				name : 'Pos Group',
-				text : 'pos_group',
+				name: 'Pos Group',
+				text: 'pos_group',
 				data_hide: true
 			}, {
-				name : 'NA Sequence',
-				text : 'na_sequence',
+				name: 'NA Sequence',
+				text: 'na_sequence',
 				data_hide: true
 			}, {
-				name : 'AA Sequence',
-				text : 'aa_sequence',
+				name: 'AA Sequence',
+				text: 'aa_sequence',
 				data_hide: true
 			}, {
-				name : 'aa_sequence_md5',
-				text : 'aa_sequence_md5',
+				name: 'aa_sequence_md5',
+				text: 'aa_sequence_md5',
 				data_hide: true
 			}, {
-				name : 'Uniprotkb Accession',
-				text : 'uniprotkb_accession'
+				name: 'Uniprotkb Accession',
+				text: 'uniprotkb_accession'
 			}, {
-				name : 'P2 Feature ID',
-				text : 'p2_feature_id',
+				name: 'P2 Feature ID',
+				text: 'p2_feature_id',
 				data_hide: true
 			}, {
-				name : 'Annotation Sort',
-				text : 'annotation_sort',
+				name: 'Annotation Sort',
+				text: 'annotation_sort',
 				data_hide: true
 			}, {
-				name : 'Genome ID',
-				text : 'genome_id',
-				data_hide: true
-			}, {			
-				name : 'Taxon ID',
-				text : 'taxon_id',
-				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name : 'Sequence ID',
-				text : 'sequence_id',
+				name: 'Genome ID',
+				text: 'genome_id',
 				data_hide: true
 			}, {
-				name : 'Accession',
-				text : 'accession',
+				name: 'Taxon ID',
+				text: 'taxon_id',
+				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+			}, {
+				name: 'Sequence ID',
+				text: 'sequence_id',
 				data_hide: true
 			}, {
-				name : 'text',
-				text : 'text',
+				name: 'Accession',
+				text: 'accession',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : '_version_',
+				name: 'text',
+				text: 'text',
 				data_hide: true
 			}, {
-				name : 'Date Inserted',
-				text : 'date_inserted'
-			}, {
-				name : 'Date Modified',
-				text : 'date_modified'
-			}, {
-				name : 'Public',
-				text : 'public'
-			}, {
-				name : 'Owner',
-				text : 'owner'
-			}, {
-				name : 'User Read',
-				text : 'user_read'
-			}, {
-				name : 'User Write',
-				text : 'user_write'
-			}, {
-				name : 'Document Type',
-				text : 'document_type',
+				name: 'Version',
+				text: '_version_',
 				data_hide: true
 			}, {
-				name : 'Document ID',
-				text : 'document_id',
-				data_hide: true			
+				name: 'Date Inserted',
+				text: 'date_inserted'
+			}, {
+				name: 'Date Modified',
+				text: 'date_modified'
+			}, {
+				name: 'Public',
+				text: 'public'
+			}, {
+				name: 'Owner',
+				text: 'owner'
+			}, {
+				name: 'User Read',
+				text: 'user_read'
+			}, {
+				name: 'User Write',
+				text: 'user_write'
+			}, {
+				name: 'Document Type',
+				text: 'document_type',
+				data_hide: true
+			}, {
+				name: 'Document ID',
+				text: 'document_id',
+				data_hide: true
 			}];
 
 			var feature_name = "";
-			if (item.patric_id)
-			{
+			if(item.patric_id){
 				feature_name = item.patric_id;
 			}
-			else if (item.refseq_locus_tag)
-			{
-				feature_name = item.refseq_locus_tag;			
+			else if(item.refseq_locus_tag){
+				feature_name = item.refseq_locus_tag;
 			}
-			else
-			{
-				feature_name = item.alt_locus_tag;						
+			else{
+				feature_name = item.alt_locus_tag;
 			}
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/"+item.feature_id, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -35909,133 +36202,130 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'Genome Name',
-				text : 'genome_name'
+				name: 'Genome Name',
+				text: 'genome_name'
 			}, {
-				name : 'PATRIC ID',
-				text : 'patric_id'
+				name: 'PATRIC ID',
+				text: 'patric_id'
 			}, {
-				name : 'RefSeq Locus Tag',
-				text : 'refseq_locus_tag',
-				link : 'http://www.ncbi.nlm.nih.gov/gene/?term='
+				name: 'RefSeq Locus Tag',
+				text: 'refseq_locus_tag',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
 			}, {
-				name : 'Alt Locus Tag',
-				text : 'alt_locus_tag'
+				name: 'Alt Locus Tag',
+				text: 'alt_locus_tag'
 			}, {
-				name : 'Gene',
-				text : 'gene'
+				name: 'Gene',
+				text: 'gene'
 			}, {
-				name : 'Product',
-				text : 'product'
+				name: 'Product',
+				text: 'product'
 			}, {
-				name : 'Property',
-				text : 'property'
+				name: 'Property',
+				text: 'property'
 			}, {
-				name : 'Source',
-				text : 'source'
+				name: 'Source',
+				text: 'source'
 			}, {
-				name : 'Property Source',
-				text : 'property_source',
+				name: 'Property Source',
+				text: 'property_source',
 				data_hide: true
 			}, {
-				name : 'Source ID',
-				text : 'source_id'
+				name: 'Source ID',
+				text: 'source_id'
 			}, {
-				name : 'Organism',
-				text : 'organism'
+				name: 'Organism',
+				text: 'organism'
 			}, {
-				name : 'Function',
-				text : 'function'
+				name: 'Function',
+				text: 'function'
 			}, {
-				name : 'Classification',
-				text : 'classification'
+				name: 'Classification',
+				text: 'classification'
 			}, {
-				name : 'Assertion',
-				text : 'assertion'
+				name: 'Assertion',
+				text: 'assertion'
 			}, {
-				name : 'Evidence',
-				text : 'evidence'
+				name: 'Evidence',
+				text: 'evidence'
 			}, {
-				name : 'PubMed',
-				text : 'pmid',
-				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
 			}, {
-				name : 'BLASP Query Coverage',
-				text : 'query_coverage'
+				name: 'BLASP Query Coverage',
+				text: 'query_coverage'
 			}, {
-				name : 'BLASP Subject Coverage',
-				text : 'subject_coverage'
+				name: 'BLASP Subject Coverage',
+				text: 'subject_coverage'
 			}, {
-				name : 'BLASP Identity',
-				text : 'identity'
+				name: 'BLASP Identity',
+				text: 'identity'
 			}, {
-				name : 'BLASP E-Value',
-				text : 'e_value'
+				name: 'BLASP E-Value',
+				text: 'e_value'
 			}, {
-				name : 'Same Species',
-				text : 'same_species'
+				name: 'Same Species',
+				text: 'same_species'
 			}, {
-				name : 'Same Genus',
-				text : 'same_genus'
+				name: 'Same Genus',
+				text: 'same_genus'
 			}, {
-				name : 'Same Genome',
-				text : 'same_genome'
+				name: 'Same Genome',
+				text: 'same_genome'
 			}, {
-				name : 'Feature ID',
-				text : 'feature_id',
+				name: 'Feature ID',
+				text: 'feature_id',
 				data_hide: true
 			}, {
-				name : 'Genome ID',
-				text : 'genome_id',
-				data_hide: true
-			}, {			
-				name : 'Taxon ID',
-				text : 'taxon_id',
-				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name : 'text',
-				text : 'text',
+				name: 'Genome ID',
+				text: 'genome_id',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : '_version_',
+				name: 'Taxon ID',
+				text: 'taxon_id',
+				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+			}, {
+				name: 'text',
+				text: 'text',
 				data_hide: true
 			}, {
-				name : 'Date Inserted',
-				text : 'date_inserted'
+				name: 'Version',
+				text: '_version_',
+				data_hide: true
 			}, {
-				name : 'Date Modified',
-				text : 'date_modified'
+				name: 'Date Inserted',
+				text: 'date_inserted'
 			}, {
-				name : 'Public',
-				text : 'public'
+				name: 'Date Modified',
+				text: 'date_modified'
 			}, {
-				name : 'Owner',
-				text : 'owner'
+				name: 'Public',
+				text: 'public'
 			}, {
-				name : 'User Read',
-				text : 'user_read'
+				name: 'Owner',
+				text: 'owner'
 			}, {
-				name : 'User Write',
-				text : 'user_write'
+				name: 'User Read',
+				text: 'user_read'
+			}, {
+				name: 'User Write',
+				text: 'user_write'
 			}];
 
 			var feature_name = "";
-			if (item.patric_id)
-			{
+			if(item.patric_id){
 				feature_name = item.patric_id;
 			}
-			else if (item.refseq_locus_tag)
-			{
-				feature_name = item.refseq_locus_tag;			
+			else if(item.refseq_locus_tag){
+				feature_name = item.refseq_locus_tag;
 			}
-			else
-			{
-				feature_name = item.alt_locus_tag;						
+			else{
+				feature_name = item.alt_locus_tag;
 			}
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/"+item.feature_id, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -36044,42 +36334,42 @@ define([
 		"taxonomy_data": function(item, options){
 			options = options || {}
 			var featureColumns = [{
-				name : 'Taxonomy ID',
-				text : 'taxon_id',
-				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+				name: 'Taxonomy ID',
+				text: 'taxon_id',
+				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
-				name : 'Taxon Name',
-				text : 'taxon_name'
+				name: 'Taxon Name',
+				text: 'taxon_name'
 			}, {
-				name : 'Taxon Rank',
-				text : 'taxon_rank'
+				name: 'Taxon Rank',
+				text: 'taxon_rank'
 			}, {
-				name : 'Other Names',
-				text : 'other_names'
+				name: 'Other Names',
+				text: 'other_names'
 			}, {
-				name : 'Lineage',
-				text : 'lineage_names',
+				name: 'Lineage',
+				text: 'lineage_names',
 				data_hide: true
 			}, {
-				name : 'Lineage Ranks',
-				text : 'lineage_ranks',
+				name: 'Lineage Ranks',
+				text: 'lineage_ranks',
 				data_hide: true
 			}, {
-				name : 'Lineage IDs',
-				text : 'lineage_ids',
+				name: 'Lineage IDs',
+				text: 'lineage_ids',
 				data_hide: true
-			},{
-				name : 'Genetic Code',
-				text : 'genetic_code'
+			}, {
+				name: 'Genetic Code',
+				text: 'genetic_code'
 			}];
 
-			var div = domConstruct.create("div");			
+			var div = domConstruct.create("div");
 			console.log("Create Display Header")
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/"+item.taxon_id, options);
+			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
 			console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			console.log("Display Detail Complete")
-			
+
 			return div;
 		},
 
@@ -36091,44 +36381,44 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'Pathway ID',
-				text : 'pathway_id'
+				name: 'Pathway ID',
+				text: 'pathway_id'
 			}, {
-				name : 'Pathway Name',
-				text : 'pathway_name'
+				name: 'Pathway Name',
+				text: 'pathway_name'
 			}, {
-				name : 'Pathway Class',
-				text : 'pathway_class'
+				name: 'Pathway Class',
+				text: 'pathway_class'
 			}, {
-				name : 'Annotation',
-				text : 'annotation'
+				name: 'Annotation',
+				text: 'annotation'
 			}, {
-				name : 'Unique Genome Count',
-				text : 'genome_count'
+				name: 'Unique Genome Count',
+				text: 'genome_count'
 			}, {
-				name : 'Unique Gene Count',
-				text : 'gene_count'
+				name: 'Unique Gene Count',
+				text: 'gene_count'
 			}, {
-				name : 'Unique EC Count',
-				text : 'ec_count'
+				name: 'Unique EC Count',
+				text: 'ec_count'
 			}, {
-				name : 'EC Conservation',
-				text : 'ec_cons'
+				name: 'EC Conservation',
+				text: 'ec_cons'
 			}, {
-				name : 'Gene Conservation',
-				text : 'gene_cons'
+				name: 'Gene Conservation',
+				text: 'gene_cons'
 			}, {
-				name : 'Count',
-				text : 'count',
+				name: 'Count',
+				text: 'count',
 				data_hide: true
 			}, {
-				name : 'Genome EC',
-				text : 'genome_ec',
+				name: 'Genome EC',
+				text: 'genome_ec',
 				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/"+item.pathway_id, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/" + item.pathway_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -36142,41 +36432,41 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'ID',
-				text : 'family_id'
+				name: 'ID',
+				text: 'family_id'
 			}, {
-				name : 'Proteins',
-				text : 'feature_count'
+				name: 'Proteins',
+				text: 'feature_count'
 			}, {
-				name : 'Genomes',
-				text : 'genome_count'
+				name: 'Genomes',
+				text: 'genome_count'
 			}, {
-				name : 'Description',
-				text : 'description'
+				name: 'Description',
+				text: 'description'
 			}, {
-				name : 'Min AA Length',
-				text : 'aa_length_min'
+				name: 'Min AA Length',
+				text: 'aa_length_min'
 			}, {
-				name : 'Max AA Length',
-				text : 'aa_length_max'
+				name: 'Max AA Length',
+				text: 'aa_length_max'
 			}, {
-				name : 'Mean',
-				text : 'aa_length_mean'
+				name: 'Mean',
+				text: 'aa_length_mean'
 			}, {
-				name : 'Std',
-				text : 'aa_length_std'
+				name: 'Std',
+				text: 'aa_length_std'
 			}, {
-				name : 'Count',
-				text : 'count',
+				name: 'Count',
+				text: 'count',
 				data_hide: true
 			}, {
-				name : 'Genomes',
-				text : 'genomes',
+				name: 'Genomes',
+				text: 'genomes',
 				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/"+item.family_id, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/" + item.family_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -36190,87 +36480,87 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'Genome Name',
-				text : 'genome_name',
-				mini :	true
+				name: 'Genome Name',
+				text: 'genome_name',
+				mini: true
 			}, {
-				name : 'Genome ID',
-				text : 'genome_id'
+				name: 'Genome ID',
+				text: 'genome_id'
 			}, {
-				name : 'Accession',
-				text : 'accession'
+				name: 'Accession',
+				text: 'accession'
 			}, {
-				name : 'Sequence ID',
-				text : 'sequence_id',
-				link : 'http://www.ncbi.nlm.nih.gov/nuccore/',
-				mini :	true
+				name: 'Sequence ID',
+				text: 'sequence_id',
+				link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+				mini: true
 			}, {
-				name : 'Length',
-				text : 'length',
-				mini :	true
+				name: 'Length',
+				text: 'length',
+				mini: true
 			}, {
-				name : 'GC Content',
-				text : 'gc_content',
-				mini :	true
+				name: 'GC Content',
+				text: 'gc_content',
+				mini: true
 			}, {
-				name : 'Sequence Type',
-				text : 'sequence_type'
+				name: 'Sequence Type',
+				text: 'sequence_type'
 			}, {
-				name : 'Topology',
-				text : 'topology'
+				name: 'Topology',
+				text: 'topology'
 			}, {
-				name : 'Description',
-				text : 'description'
+				name: 'Description',
+				text: 'description'
 			}, {
-				name : 'Chromosome',
-				text : 'chromosome'
+				name: 'Chromosome',
+				text: 'chromosome'
 			}, {
-				name : 'Plasmid',
-				text : 'plasmid'
+				name: 'Plasmid',
+				text: 'plasmid'
 			}, {
-				name : 'GI',
-				text : 'gi',
-				link : 'http://www.ncbi.nlm.nih.gov/nuccore/'
+				name: 'GI',
+				text: 'gi',
+				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
 			}, {
-				name : 'Taxon ID',
-				text : 'taxon_id',
-				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+				name: 'Taxon ID',
+				text: 'taxon_id',
+				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
-				name : 'text',
-				text : 'text',
+				name: 'text',
+				text: 'text',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : '_version_',
+				name: 'Version',
+				text: '_version_',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : 'version'
+				name: 'Version',
+				text: 'version'
 			}, {
-				name : 'Release Date',
-				text : 'release_date'
+				name: 'Release Date',
+				text: 'release_date'
 			}, {
-				name : 'Date Inserted',
-				text : 'date_inserted'
+				name: 'Date Inserted',
+				text: 'date_inserted'
 			}, {
-				name : 'Date Modified',
-				text : 'date_modified'
+				name: 'Date Modified',
+				text: 'date_modified'
 			}, {
-				name : 'Public',
-				text : 'public'
+				name: 'Public',
+				text: 'public'
 			}, {
-				name : 'Owner',
-				text : 'owner'
+				name: 'Owner',
+				text: 'owner'
 			}, {
-				name : 'User Read',
-				text : 'user_read'
+				name: 'User Read',
+				text: 'user_read'
 			}, {
-				name : 'User Write',
-				text : 'user_write'
+				name: 'User Write',
+				text: 'user_write'
 			}];
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/"+item.genome_id, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/" + item.genome_id, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -36284,91 +36574,91 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'Experiment ID',
-				text : 'eid'
+				name: 'Experiment ID',
+				text: 'eid'
 			}, {
-				name : 'EXPID',
-				text : 'expid',
+				name: 'EXPID',
+				text: 'expid',
 				data_hide: true
 			}, {
-				name : 'Title',
-				text : 'title'
+				name: 'Title',
+				text: 'title'
 			}, {
-				name : 'Comparisons',
-				text : 'samples'
+				name: 'Comparisons',
+				text: 'samples'
 			}, {
-				name : 'Genes',
-				text : 'genes'
+				name: 'Genes',
+				text: 'genes'
 			}, {
-				name : 'PubMed',
-				text : 'pmid',
-				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
 			}, {
-				name : 'Link Out',
-				text : 'accession',
-				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+				name: 'Link Out',
+				text: 'accession',
+				link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
 			}, {
-				name : 'Organism',
-				text : 'organism'
+				name: 'Organism',
+				text: 'organism'
 			}, {
-				name : 'Strain',
-				text : 'strain'
+				name: 'Strain',
+				text: 'strain'
 			}, {
-				name : 'Gene Modification',
-				text : 'mutant'
+				name: 'Gene Modification',
+				text: 'mutant'
 			}, {
-				name : 'Experimental Condition',
-				text : 'condition'
+				name: 'Experimental Condition',
+				text: 'condition'
 			}, {
-				name : 'Time Series',
-				text : 'timeseries'
+				name: 'Time Series',
+				text: 'timeseries'
 			}, {
-				name : 'Platforms',
-				text : 'platforms'
+				name: 'Platforms',
+				text: 'platforms'
 			}, {
-				name : 'Genome IDs',
-				text : 'genome_ids'
+				name: 'Genome IDs',
+				text: 'genome_ids'
 			}, {
-				name : 'Release Date',
-				text : 'release_date'
+				name: 'Release Date',
+				text: 'release_date'
 			}, {
-				name : 'Author',
-				text : 'author'
+				name: 'Author',
+				text: 'author'
 			}, {
-				name : 'PI',
-				text : 'pi'
+				name: 'PI',
+				text: 'pi'
 			}, {
-				name : 'Institution',
-				text : 'institution'
+				name: 'Institution',
+				text: 'institution'
 			}, {
-				name : 'Description',
-				text : 'description'
+				name: 'Description',
+				text: 'description'
 			}, {
-				name : 'text',
-				text : 'text',
+				name: 'text',
+				text: 'text',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : '_version_',
+				name: 'Version',
+				text: '_version_',
 				data_hide: true
 			}, {
-				name : 'Date Inserted',
-				text : 'date_inserted'
+				name: 'Date Inserted',
+				text: 'date_inserted'
 			}, {
-				name : 'Date Modified',
-				text : 'date_modified'
+				name: 'Date Modified',
+				text: 'date_modified'
 			}, {
-				name : 'Document Type',
-				text : 'document_type',
+				name: 'Document Type',
+				text: 'document_type',
 				data_hide: true
 			}, {
-				name : 'Document ID',
-				text : 'document_id',
-				data_hide: true			
+				name: 'Document ID',
+				text: 'document_id',
+				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/"+item.eid, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
@@ -36382,104 +36672,104 @@ define([
 
 			var featureColumns = {};
 			featureColumns = [{
-				name : 'Sample ID',
-				text : 'pid'
+				name: 'Sample ID',
+				text: 'pid'
 			}, {
-				name : 'Experiment ID',
-				text : 'eid'
+				name: 'Experiment ID',
+				text: 'eid'
 			}, {
-				name : 'EXPID',
-				text : 'expid',
+				name: 'EXPID',
+				text: 'expid',
 				data_hide: true
 			}, {
-				name : 'Title',
-				text : 'expname'
+				name: 'Title',
+				text: 'expname'
 			}, {
-				name : 'Samples',
-				text : 'samples'
+				name: 'Samples',
+				text: 'samples'
 			}, {
-				name : 'Genes',
-				text : 'genes'
+				name: 'Genes',
+				text: 'genes'
 			}, {
-				name : 'Significant Genes (Log Ratio)',
-				text : 'sig_log_ratio'
+				name: 'Significant Genes (Log Ratio)',
+				text: 'sig_log_ratio'
 			}, {
-				name : 'Significant Genes (Z Score)',
-				text : 'sig_z_score'
+				name: 'Significant Genes (Z Score)',
+				text: 'sig_z_score'
 			}, {
-				name : 'PubMed',
-				text : 'pmid',
-				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'								
+				name: 'PubMed',
+				text: 'pmid',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
 			}, {
-				name : 'Link Out',
-				text : 'accession',
-				link : 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+				name: 'Link Out',
+				text: 'accession',
+				link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
 			}, {
-				name : 'Organism',
-				text : 'organism'
+				name: 'Organism',
+				text: 'organism'
 			}, {
-				name : 'Strain',
-				text : 'strain'
+				name: 'Strain',
+				text: 'strain'
 			}, {
-				name : 'Gene Modification',
-				text : 'mutant'
+				name: 'Gene Modification',
+				text: 'mutant'
 			}, {
-				name : 'Experimental Condition',
-				text : 'condition'
+				name: 'Experimental Condition',
+				text: 'condition'
 			}, {
-				name : 'Time Point',
-				text : 'timepoint'
+				name: 'Time Point',
+				text: 'timepoint'
 			}, {
-				name : 'Channels',
-				text : 'channels'
+				name: 'Channels',
+				text: 'channels'
 			}, {
-				name : 'Platform',
-				text : 'platform'
+				name: 'Platform',
+				text: 'platform'
 			}, {
-				name : 'Genome IDs',
-				text : 'genome_ids'
+				name: 'Genome IDs',
+				text: 'genome_ids'
 			}, {
-				name : 'Release Date',
-				text : 'release_date'
+				name: 'Release Date',
+				text: 'release_date'
 			}, {
-				name : 'Exp Mean',
-				text : 'expmean',
+				name: 'Exp Mean',
+				text: 'expmean',
 				data_hide: true
 			}, {
-				name : 'Exp Stddev',
-				text : 'expstddev',
+				name: 'Exp Stddev',
+				text: 'expstddev',
 				data_hide: true
 			}, {
-				name : 'text',
-				text : 'text',
+				name: 'text',
+				text: 'text',
 				data_hide: true
 			}, {
-				name : 'Version',
-				text : '_version_',
+				name: 'Version',
+				text: '_version_',
 				data_hide: true
 			}, {
-				name : 'Date Inserted',
-				text : 'date_inserted'
+				name: 'Date Inserted',
+				text: 'date_inserted'
 			}, {
-				name : 'Date Modified',
-				text : 'date_modified'
+				name: 'Date Modified',
+				text: 'date_modified'
 			}, {
-				name : 'Document Type',
-				text : 'document_type',
+				name: 'Document Type',
+				text: 'document_type',
 				data_hide: true
 			}, {
-				name : 'Document ID',
-				text : 'document_id',
-				data_hide: true			
+				name: 'Document ID',
+				text: 'document_id',
+				data_hide: true
 			}];
 
-			var div = domConstruct.create("div");			
-			var tbody = displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/"+item.pid, options);
+			var div = domConstruct.create("div");
+			var tbody = displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
 			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
-		
+
 		"genome_data": function(item, options){
 			// do some other type formatting here and return it
 			//console.log("Running genome_data formatter");
@@ -36489,520 +36779,500 @@ define([
 			var metadataGenomeSummaryID = ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
 			var metadataGenomeSummaryValue = {};
 			metadataGenomeSummaryValue['Organism Info'] = [{
-				name : 'Genome ID',
-				text : 'genome_id',
-				mini :	true
+				name: 'Genome ID',
+				text: 'genome_id',
+				mini: true
 			}, {
-				name : 'Genome Name',
-				text : 'genome_name',
-				mini :	true
+				name: 'Genome Name',
+				text: 'genome_name',
+				mini: true
 			}, {
-				name : 'NCBI Taxon ID',
-				text : 'taxon_id',
-				link : 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='								
+				name: 'NCBI Taxon ID',
+				text: 'taxon_id',
+				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
-				name : 'Genome Status',
-				text : 'genome_status',
-				mini :	true
+				name: 'Genome Status',
+				text: 'genome_status',
+				mini: true
 			}, {
-				name : 'Organism Name',
-				text : 'organism_name'
+				name: 'Organism Name',
+				text: 'organism_name'
 			}, {
-				name : 'Strain',
-				text : 'strain'
+				name: 'Strain',
+				text: 'strain'
 			}, {
-				name : 'Serovar',
-				text : 'serovar'
+				name: 'Serovar',
+				text: 'serovar'
 			}, {
-				name : 'Biovar',
-				text : 'biovar'
+				name: 'Biovar',
+				text: 'biovar'
 			}, {
-				name : 'Pathovar',
-				text : 'pathovar'
+				name: 'Pathovar',
+				text: 'pathovar'
 			}, {
-				name : 'MLST',
-				text : 'mlst'
+				name: 'MLST',
+				text: 'mlst'
 			}, {
-				name : 'Other Typing',
-				text : 'other_typing'
+				name: 'Other Typing',
+				text: 'other_typing'
 			}, {
-				name : 'Culture Collection',
-				text : 'culture_collection'
+				name: 'Culture Collection',
+				text: 'culture_collection'
 			}, {
-				name : 'Type Strain',
-				text : 'type_strain'
+				name: 'Type Strain',
+				text: 'type_strain'
 			}, {
-				name : 'Antimicrobial Resistance',
-				text : 'antimicrobial_resistance'
+				name: 'Antimicrobial Resistance',
+				text: 'antimicrobial_resistance'
 			}, {
-				name : 'Antimicrobial Resistance Evidence',
-				text : 'antimicrobial_resistance_evidence'
+				name: 'Antimicrobial Resistance Evidence',
+				text: 'antimicrobial_resistance_evidence'
 			}];
-			
+
 			metadataGenomeSummaryValue['Project Info'] = [{
-				name : 'Sequencing Center',
-				text : 'sequencing_centers'
+				name: 'Sequencing Center',
+				text: 'sequencing_centers'
 			}, {
-				name : 'Completion Date',
-				text : 'completion_date'
+				name: 'Completion Date',
+				text: 'completion_date'
 			}, {
-				name : 'Publication',
-				text : 'publication',
-				link : 'http://www.ncbi.nlm.nih.gov/pubmed/'				
+				name: 'Publication',
+				text: 'publication',
+				link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
 			}, {
-				name : 'BioProject Accession',
-				text : 'bioproject_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
-				mini :	true
+				name: 'BioProject Accession',
+				text: 'bioproject_accession',
+				link: 'http://www.ncbi.nlm.nih.gov/bioproject/?term=',
+				mini: true
 			}, {
-				name : 'BioSample Accession',
-				text : 'biosample_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/biosample/',
-				mini :	true
+				name: 'BioSample Accession',
+				text: 'biosample_accession',
+				link: 'http://www.ncbi.nlm.nih.gov/biosample/',
+				mini: true
 			}, {
-				name : 'Assembly Accession',
-				text : 'assembly_accession',
-				link : 'http://www.ncbi.nlm.nih.gov/assembly/'
+				name: 'Assembly Accession',
+				text: 'assembly_accession',
+				link: 'http://www.ncbi.nlm.nih.gov/assembly/'
 			}, {
-				name : 'GenBank Accessions',
-				text : 'genbank_accessions',
-				link : 'http://www.ncbi.nlm.nih.gov/nuccore/'
+				name: 'GenBank Accessions',
+				text: 'genbank_accessions',
+				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
 			}, {
-				name : 'RefSeq Accessions',
-				text : 'refseq_accessions',
-				link : 'http://www.ncbi.nlm.nih.gov/nuccore/'
+				name: 'RefSeq Accessions',
+				text: 'refseq_accessions',
+				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
 			}];
 
 			metadataGenomeSummaryValue['Sequence Info'] = [{
-				name : 'Sequencing Status',
-				text : 'sequencing_status'
+				name: 'Sequencing Status',
+				text: 'sequencing_status'
 			}, {
-				name : 'Sequencing Platform',
-				text : 'sequencing_platform'
+				name: 'Sequencing Platform',
+				text: 'sequencing_platform'
 			}, {
-				name : 'Sequencing Depth',
-				text : 'sequencing_depth'
+				name: 'Sequencing Depth',
+				text: 'sequencing_depth'
 			}, {
-				name : 'Assembly Method',
-				text : 'assembly_method'
+				name: 'Assembly Method',
+				text: 'assembly_method'
 			}, {
-				name : 'Chromosomes',
-				text : 'chromosomes'
+				name: 'Chromosomes',
+				text: 'chromosomes'
 			}, {
-				name : 'Plasmids',
-				text : 'plasmids'
+				name: 'Plasmids',
+				text: 'plasmids'
 			}, {
-				name : 'Contigs',
-				text : 'contigs'
+				name: 'Contigs',
+				text: 'contigs'
 			}, {
-				name : 'Sequences',
-				text : 'sequences'
+				name: 'Sequences',
+				text: 'sequences'
 			}, {
-				name : 'Genome Length',
-				text : 'genome_length'
+				name: 'Genome Length',
+				text: 'genome_length'
 			}, {
-				name : 'GC Content',
-				text : 'gc_content'
+				name: 'GC Content',
+				text: 'gc_content'
 			}, {
-				name : 'PATRIC CDS',
-				text : 'patric_cds'
+				name: 'PATRIC CDS',
+				text: 'patric_cds'
 			}, {
-				name : 'RefSeq CDS',
-				text : 'refseq_cds'
+				name: 'RefSeq CDS',
+				text: 'refseq_cds'
 			}];
 
 			metadataGenomeSummaryValue['Isolate Info'] = [{
-				name : 'Isolation Site',
-				text : 'isolation_site'
+				name: 'Isolation Site',
+				text: 'isolation_site'
 			}, {
-				name : 'Isolation Source',
-				text : 'isolation_source'
+				name: 'Isolation Source',
+				text: 'isolation_source'
 			}, {
-				name : 'Isolation Comments',
-				text : 'isolation_comments'
+				name: 'Isolation Comments',
+				text: 'isolation_comments'
 			}, {
-				name : 'Collection Date',
-				text : 'collection_date'
+				name: 'Collection Date',
+				text: 'collection_date'
 			}, {
-				name : 'Isolation Country',
-				text : 'isolation_country'
+				name: 'Isolation Country',
+				text: 'isolation_country'
 			}, {
-				name : 'Geographic Location',
-				text : 'geographic_location'
+				name: 'Geographic Location',
+				text: 'geographic_location'
 			}, {
-				name : 'Latitude',
-				text : 'latitude'
+				name: 'Latitude',
+				text: 'latitude'
 			}, {
-				name : 'Longitude',
-				text : 'longitude'
+				name: 'Longitude',
+				text: 'longitude'
 			}, {
-				name : 'Altitude',
-				text : 'altitude'
+				name: 'Altitude',
+				text: 'altitude'
 			}, {
-				name : 'Depth',
-				text : 'depth'
+				name: 'Depth',
+				text: 'depth'
 			}, {
-				name : 'Other Environmental',
-				text : 'other_environmental'
+				name: 'Other Environmental',
+				text: 'other_environmental'
 			}];
 
 			metadataGenomeSummaryValue['Host Info'] = [{
-				name : 'Host Name',
-				text : 'host_name'
+				name: 'Host Name',
+				text: 'host_name'
 			}, {
-				name : 'Host Gender',
-				text : 'host_gender'
+				name: 'Host Gender',
+				text: 'host_gender'
 			}, {
-				name : 'Host Age',
-				text : 'host_age'
+				name: 'Host Age',
+				text: 'host_age'
 			}, {
-				name : 'Host Health',
-				text : 'host_health'
+				name: 'Host Health',
+				text: 'host_health'
 			}, {
-				name : 'Body Sample Site',
-				text : 'body_sample_site'
+				name: 'Body Sample Site',
+				text: 'body_sample_site'
 			}, {
-				name : 'Body Sample Subsite',
-				text : 'body_sample_subsite'
+				name: 'Body Sample Subsite',
+				text: 'body_sample_subsite'
 			}, {
-				name : 'Other Clinical',
-				text : 'other_clinical'
+				name: 'Other Clinical',
+				text: 'other_clinical'
 			}];
-			
+
 			metadataGenomeSummaryValue['Phenotype Info'] = [{
-				name : 'Gram Stain',
-				text : 'gram_stain'
+				name: 'Gram Stain',
+				text: 'gram_stain'
 			}, {
-				name : 'Cell Shape',
-				text : 'cell_shape'
+				name: 'Cell Shape',
+				text: 'cell_shape'
 			}, {
-				name : 'Motility',
-				text : 'motility'
+				name: 'Motility',
+				text: 'motility'
 			}, {
-				name : 'Sporulation',
-				text : 'sporulation'
+				name: 'Sporulation',
+				text: 'sporulation'
 			}, {
-				name : 'Temperature Range',
-				text : 'temperature_range'
+				name: 'Temperature Range',
+				text: 'temperature_range'
 			}, {
-				name : 'Optimal Temperature',
-				text : 'optimal_temperature'
+				name: 'Optimal Temperature',
+				text: 'optimal_temperature'
 			}, {
-				name : 'Salinity',
-				text : 'salinity'
+				name: 'Salinity',
+				text: 'salinity'
 			}, {
-				name : 'Oxygen Requirement',
-				text : 'oxygen_requirement'
+				name: 'Oxygen Requirement',
+				text: 'oxygen_requirement'
 			}, {
-				name : 'Habitat',
-				text : 'habitat'
+				name: 'Habitat',
+				text: 'habitat'
 			}, {
-				name : 'Disease',
-				text : 'disease'
+				name: 'Disease',
+				text: 'disease'
 			}];
 
 			metadataGenomeSummaryValue['Others'] = [{
-				name : 'Comments',
-				text : 'comments'
+				name: 'Comments',
+				text: 'comments'
 			}, {
-				name : 'Additional Metadata',
-				text : 'additional_metadata'
+				name: 'Additional Metadata',
+				text: 'additional_metadata'
 			}];
-	
+
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/"+item.genome_id, options);
+			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
 
 			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + item.chromosomes + ", Plasmids: " + item.plasmids + ", Contigs: " + item.contigs;
-			var tr = domConstruct.create("tr", {},tbody);
-			var tda = domConstruct.create("td", {innerHTML: "Summary:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
+			var tr = domConstruct.create("tr", {}, tbody);
+			var tda = domConstruct.create("td", {
+				innerHTML: "Summary:",
+				style: "font-weight: bold",
+				nowrap: "nowrap"
+			}, tr);
 			var tdb = domConstruct.create("td", {innerHTML: summary}, tr);
 
 			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody, options);
 
 			return div;
 
-		}	
+		}
 	}
 
-	function displayHeader(div, item_name, icon_name, url, options) {
-			var linkTitle = false;
-			if (options)
-			{
-				if (options.linkTitle == true)
-				{
-					linkTitle = true;
-				}
+	function displayHeader(div, item_name, icon_name, url, options){
+		var linkTitle = false;
+		if(options){
+			if(options.linkTitle == true){
+				linkTitle = true;
 			}
-			//console.log("url=" + url + ", linkTitle=" + linkTitle);
-	
-			var hdr_div = domConstruct.create("div", {}, div);
+		}
+		//console.log("url=" + url + ", linkTitle=" + linkTitle);
 
-			var hdr_table = domConstruct.create("table", {} , div);
-			var hdr_tbody = domConstruct.create("tbody",{}, hdr_table);
-			var hdr_th = domConstruct.create("tr",{},hdr_tbody);
-			var hdr_tda = domConstruct.create("td",{}, hdr_th);
-			var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
-			var hdr_tdb; 
-			
-			if (linkTitle == true)
-			{
-				hdr_tdb = domConstruct.create("td",{innerHTML: "<a href='" + url + "'>" + item_name + "</a>", style: "font-weight: bold"}, hdr_th);
-			}
-			else
-			{
-				hdr_tdb= domConstruct.create("td",{innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
-			}
+		var hdr_div = domConstruct.create("div", {}, div);
 
-			var dtl_div = domConstruct.create("div", {}, div);
-			var table = domConstruct.create("table", {} , dtl_div);
-			var tbody = domConstruct.create("tbody",{},table);
+		var hdr_table = domConstruct.create("table", {}, div);
+		var hdr_tbody = domConstruct.create("tbody", {}, hdr_table);
+		var hdr_th = domConstruct.create("tr", {}, hdr_tbody);
+		var hdr_tda = domConstruct.create("td", {}, hdr_th);
+		var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
+		var hdr_tdb;
 
-			var	tr = domConstruct.create("tr", {},tbody);
-			var	tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-			var	tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-			
-			return tbody;		
+		if(linkTitle == true){
+			hdr_tdb = domConstruct.create("td", {
+				innerHTML: "<a href='" + url + "'>" + item_name + "</a>",
+				style: "font-weight: bold"
+			}, hdr_th);
+		}
+		else{
+			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+		}
+
+		var dtl_div = domConstruct.create("div", {}, div);
+		var table = domConstruct.create("table", {}, dtl_div);
+		var tbody = domConstruct.create("tbody", {}, table);
+
+		var tr = domConstruct.create("tr", {}, tbody);
+		var tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+		var tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+
+		return tbody;
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options) {	
-			var diaplayColumns = {};
-			var tr;
-			var tda;
-			var tdb;
+	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options){
+		var diaplayColumns = {};
+		var tr;
+		var tda;
+		var tdb;
 
-			var mini = false;
-			var hideExtra = false;
-			
-			if (options)
-			{
-				if (options.mini == true)
-				{
-					mini = true;
-				}
-				if (options.hideExtra == true)
-				{
-					hideExtra = true;
-				}
+		var mini = false;
+		var hideExtra = false;
+
+		if(options){
+			if(options.mini == true){
+				mini = true;
 			}
-			
-			for(var i=0; i< meta_data_section.length; i++)
-			{
-				if (mini == false)
-				{
-					tr = domConstruct.create("tr", {},tbody);
-					tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-					tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+			if(options.hideExtra == true){
+				hideExtra = true;
+			}
+		}
 
-					tr = domConstruct.create("tr", {},tbody);
-					tda = domConstruct.create("td", {innerHTML: meta_data_section[i]+":", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-					tdb = domConstruct.create("td", {innerHTML: ""}, tr);
-				}				
+		for(var i = 0; i < meta_data_section.length; i++){
+			if(mini == false){
+				tr = domConstruct.create("tr", {}, tbody);
+				tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+				tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 
-				var value = meta_data[meta_data_section[i]];
-
-				for(var j=0; j<value.length; j++) {
-					var column = value[j].text;
-					//console.log("column=", column);
-					//console.log("item[column]=", item[column]);
-					
-					if (column)
-					{
-						diaplayColumns[column] = 1;
-					}
-										
-					if (column && (item[column] || item[column] == "0"))
-					{
-						//console.log("column=", column);
-						//console.log("item[column]=", item[column]);
-						//console.log("value[j].name=", value[j].name);
-
-						if (mini == false)
-						{						
-							if (value[j].link && item[column] != "-" && item[column] != "0")
-							{
-								tr = domConstruct.create("tr",{},tbody);
-								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
-							}
-							else
-							{
-								tr = domConstruct.create("tr",{},tbody);
-								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
-							}
-						}
-						else if (value[j].mini == true)
-						{
-							if (value[j].link && item[column] != "-" && item[column] != "0")
-							{
-								tr = domConstruct.create("tr",{},tbody);
-								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-								tdb = domConstruct.create("td",{innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
-							}
-							else
-							{
-								tr = domConstruct.create("tr",{},tbody);
-								tda = domConstruct.create("td",{innerHTML: value[j].name, nowrap: "nowrap" }, tr);
-								tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
-							}						
-						}
-					}
-				}
-				
+				tr = domConstruct.create("tr", {}, tbody);
+				tda = domConstruct.create("td", {
+					innerHTML: meta_data_section[i] + ":",
+					style: "font-weight: bold",
+					nowrap: "nowrap"
+				}, tr);
+				tdb = domConstruct.create("td", {innerHTML: ""}, tr);
 			}
 
-			console.log("diaplayColumns[column]=", diaplayColumns);
+			var value = meta_data[meta_data_section[i]];
 
-			var additional = 0;
-			
-			if (hideExtra == false && mini == false)
-			{	 
-			
-				Object.keys(item).sort().forEach(function(key){
-					if (diaplayColumns[key] != 1 && item[key])
-					{
-						if (additional ==0)
-						{
-							tr = domConstruct.create("tr", {},tbody);
-							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-					
-							tr = domConstruct.create("tr", {},tbody);
-							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold", nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
-						}
-						additional ++;
-						tr = domConstruct.create("tr",{},tbody)
-						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
-					}
-				},this);
-			}
-	}	
+			for(var j = 0; j < value.length; j++){
+				var column = value[j].text;
+				//console.log("column=", column);
+				//console.log("item[column]=", item[column]);
 
-
-	function displayDetail(item, column_data, tbody, options) {	
-			var diaplayColumns = {};
-			var tr;
-			var tda;
-			var tdb;
-			var mini = false;
-			var hideExtra = false;
-			
-			if (options)
-			{
-				if (options.mini == true)
-				{
-					mini = true;
-				}
-				if (options.hideExtra == true)
-				{
-					hideExtra = true;
-				}
-			}
-
-			for(var i=0; i<column_data.length; i++) {
-				var column = column_data[i].text;
-				//console.log("column_data.length=" + column_data.length + " column=", column);
-				//console.log("item[column]=", item.column);
-			
-				if (column) 
-				{
+				if(column){
 					diaplayColumns[column] = 1;
-				}		
-				
-				if (column && (item[column] || item[column] == "0") && !column_data[i].data_hide)
-				{
+				}
+
+				if(column && (item[column] || item[column] == "0")){
 					//console.log("column=", column);
 					//console.log("item[column]=", item[column]);
-					
-					if (mini == false)
-					{
-						if (column_data[i].link && item[column] != "-" && item[column] != "0")
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+					//console.log("value[j].name=", value[j].name);
+
+					if(mini == false){
+						if(value[j].link && item[column] != "-" && item[column] != "0"){
+							tr = domConstruct.create("tr", {}, tbody);
+							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
-						else
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						else{
+							tr = domConstruct.create("tr", {}, tbody);
+							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
 						}
 					}
-					else if (column_data[i].mini == true)
-					{
-						if (column_data[i].link && item[column] != "-" && item[column] != "0")
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+					else if(value[j].mini == true){
+						if(value[j].link && item[column] != "-" && item[column] != "0"){
+							tr = domConstruct.create("tr", {}, tbody);
+							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
-						else
-						{
-							tr = domConstruct.create("tr",{},tbody);
-							tda = domConstruct.create("td",{innerHTML: column_data[i].name, nowrap: "nowrap" }, tr);
-							tdb = domConstruct.create("td",{innerHTML: item[column]}, tr);						
+						else{
+							tr = domConstruct.create("tr", {}, tbody);
+							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
 						}
 					}
 				}
-				
-			}	
-			
-			var additional = 0;
-			console.log("diaplayColumns=", diaplayColumns);
-			
-			if (hideExtra == false && mini == false)
-			{	 
-				Object.keys(item).sort().forEach(function(key){
-					if (diaplayColumns[key] != 1 && item[key])
-					{
-						if (additional ==0)
-						{
-							tr = domConstruct.create("tr", {},tbody);
-							tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-					
-							tr = domConstruct.create("tr", {},tbody);
-							tda = domConstruct.create("td", {innerHTML: "Additional Info:", style: "font-weight: bold"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: ""}, tr);					
-						}
-						additional ++;
-						tr = domConstruct.create("tr",{},tbody)
-						tda = domConstruct.create("td",{innerHTML: key, nowrap: "nowrap" }, tr);
-						tdb = domConstruct.create("td",{innerHTML: item[key]}, tr);
+			}
+
+		}
+
+		console.log("diaplayColumns[column]=", diaplayColumns);
+
+		var additional = 0;
+
+		if(hideExtra == false && mini == false){
+
+			Object.keys(item).sort().forEach(function(key){
+				if(diaplayColumns[key] != 1 && item[key]){
+					if(additional == 0){
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {
+							innerHTML: "Additional Info:",
+							style: "font-weight: bold",
+							nowrap: "nowrap"
+						}, tr);
+						tdb = domConstruct.create("td", {innerHTML: ""}, tr);
 					}
-				},this);
-			}												
+					additional++;
+					tr = domConstruct.create("tr", {}, tbody)
+					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
+					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+				}
+			}, this);
+		}
 	}
-	
-	return function(item, type, options) {
+
+	function displayDetail(item, column_data, tbody, options){
+		var diaplayColumns = {};
+		var tr;
+		var tda;
+		var tdb;
+		var mini = false;
+		var hideExtra = false;
+
+		if(options){
+			if(options.mini == true){
+				mini = true;
+			}
+			if(options.hideExtra == true){
+				hideExtra = true;
+			}
+		}
+
+		for(var i = 0; i < column_data.length; i++){
+			var column = column_data[i].text;
+			//console.log("column_data.length=" + column_data.length + " column=", column);
+			//console.log("item[column]=", item.column);
+
+			if(column){
+				diaplayColumns[column] = 1;
+			}
+
+			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
+				//console.log("column=", column);
+				//console.log("item[column]=", item[column]);
+
+				if(mini == false){
+					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+					}
+					else{
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+					}
+				}
+				else if(column_data[i].mini == true){
+					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+					}
+					else{
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+					}
+				}
+			}
+
+		}
+
+		var additional = 0;
+		console.log("diaplayColumns=", diaplayColumns);
+
+		if(hideExtra == false && mini == false){
+			Object.keys(item).sort().forEach(function(key){
+				if(diaplayColumns[key] != 1 && item[key]){
+					if(additional == 0){
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+
+						tr = domConstruct.create("tr", {}, tbody);
+						tda = domConstruct.create("td", {
+							innerHTML: "Additional Info:",
+							style: "font-weight: bold"
+						}, tr);
+						tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+					}
+					additional++;
+					tr = domConstruct.create("tr", {}, tbody)
+					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
+					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+				}
+			}, this);
+		}
+	}
+
+	return function(item, type, options){
 		console.log("Format Data: ", type, item);
 		var new_type = type;
 		var out;
-		if (type == "genome_group")
-		{
-			new_type = "genome_data";		
+		if(type == "genome_group"){
+			new_type = "genome_data";
 		}
-		else if (type == "feature_group")
-		{
-			new_type = "feature_data";				
+		else if(type == "feature_group"){
+			new_type = "feature_data";
 		}
-		else if (type == "experiment")
-		{
-			new_type = "transcriptomics_sample_data";				
+		else if(type == "experiment"){
+			new_type = "transcriptomics_sample_data";
 		}
 		/*
 		else if (type == "experiment_group")
 		{
-			new_type = "transcriptomics_experiment_data";				
+			new_type = "transcriptomics_experiment_data";
 		}
 		*/
-		if (new_type && formatters[new_type]) {
-			out = formatters[new_type](item,options)
+		if(new_type && formatters[new_type]){
+			out = formatters[new_type](item, options)
 		}else{
-			out = formatters["default"](item,options);
+			out = formatters["default"](item, options);
 		}
 
 		console.log("output: ", out);
@@ -37308,18 +37578,16 @@ define([
 },
 'p3/widget/ActionBar':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","./Button","dojo/dom-construct",
-	"dijit/Tooltip","dojo/dom"
-], function(
-	declare, WidgetBase, on,
-	domClass,Button,domConstruct,
-	Tooltip,dom
-){
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "./Button", "dojo/dom-construct",
+	"dijit/Tooltip", "dojo/dom"
+], function(declare, WidgetBase, on,
+			domClass, Button, domConstruct,
+			Tooltip, dom){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
 		constructor: function(){
-			this._actions={}
+			this._actions = {}
 		},
 		selection: null,
 		currentContainerType: null,
@@ -37327,9 +37595,11 @@ define([
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
 			console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
-			
-			if (widget.currentContainer === this.currentContainerWidget) { return; }
-			this.currentContainerType=widget.containerType;
+
+			if(widget.currentContainer === this.currentContainerWidget){
+				return;
+			}
+			this.currentContainerType = widget.containerType;
 			this.currentContainerWidget = widget;
 			console.log("CurrentContainerType: ", this.currentContainerType)
 			this.set("selection", []);
@@ -37340,158 +37610,155 @@ define([
 
 //			return;
 			var valid;
-			var selectionTypes = {}
+			var selectionTypes = {};
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
-				if (type=="job_result") {
-					if (s.autoMeta && s.autoMeta.app) {
-						if (typeof s.autoMeta.app=="string") {
+				if(type == "job_result"){
+					if(s.autoMeta && s.autoMeta.app){
+						if(typeof s.autoMeta.app == "string"){
 							type = s.autoMeta.app
-						}else if (s.autoMeta.app.id){
-							type=s.autoMeta.app.id;
+						}else if(s.autoMeta.app.id){
+							type = s.autoMeta.app.id;
 						}
 					}
 				}
 				//console.log("Type: ", type);
-				selectionTypes[type]=true;
+				selectionTypes[type] = true;
 			});
 			//console.log("selectionTypes: ", selectionTypes);
-	
-			if (sel.length>1) {
-				var multiTypedSelection = (Object.keys(selectionTypes).length>1)?true:false;
+
+			if(sel.length > 1){
+				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
 //				console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
-						return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) )||this._actions[an].options.persistent)
-				},this);	
-			
+					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
+				}, this);
 
 				//console.log("multiselect valid: ", valid)
-			}else if (sel.length==1){
+			}else if(sel.length == 1){
 				valid = Object.keys(this._actions)
 			}else{
-				valid=Object.keys(this._actions).filter(function(an){
+				valid = Object.keys(this._actions).filter(function(an){
 					return this._actions[an] && this._actions[an].options && this._actions[an].options.persistent;
-				},this);
+				}, this);
 			}
 
-			var types = Object.keys(selectionTypes)
+			var types = Object.keys(selectionTypes);
 			//console.log("Filtering for Types: ", types);
 			valid = valid.filter(function(an){
 				var act = this._actions[an];
-				var validTypes = act.options.validTypes||[];
+				var validTypes = act.options.validTypes || [];
 				//console.log("validTypes for action : ",an, validTypes);
 
-				if (act.options.min && (sel.length < act.options.min )){
+				if(act.options.min && (sel.length < act.options.min )){
 					return false;
 				}
 
-				if (act.options.max && (sel.length > act.options.max )){
+				if(act.options.max && (sel.length > act.options.max )){
 					return false;
 				}
-
 
 				var validContainerTypes = act.options.validContainerTypes || null;
 
-				if (validContainerTypes){
+				if(validContainerTypes){
 					//console.log("checkValidContainerTypes", validContainerTypes);
 					//console.log("Current ContainerType: ", this.currentContainerType);
 					//console.log("Current Container Widget: ", this.currentContainerWidget);
-					if (!validContainerTypes.some(function(t){
-						return ((t=="*") || (t==this.currentContainerType))
-					},this)){
+					if(!validContainerTypes.some(function(t){
+							return ((t == "*") || (t == this.currentContainerType))
+						}, this)){
 						return false;
-					};		
+					}
 				}
-	
+
 				return validTypes.some(function(t){
-					return ((t=="*") || (types.indexOf(t)>=0));
-				});		
-			},this);
+					return ((t == "*") || (types.indexOf(t) >= 0));
+				});
+			}, this);
 
 			//console.log("ValidTypes: ", valid);
 			Object.keys(this._actions).forEach(function(an){
 				var act = this._actions[an];
-				if (valid.indexOf(an)>=0){
+				if(valid.indexOf(an) >= 0){
 					domClass.remove(act.button, "dijitHidden");
 				}else{
-					domClass.add(act.button,"dijitHidden");
+					domClass.add(act.button, "dijitHidden");
 				}
-			},this);
+			}, this);
 
 		},
 
 		postCreate: function(){
 			this.inherited(arguments);
-			var _self=this;
-			this.containerNode=this.domNode;
-			dom.setSelectable(this.domNode, false)
+			var _self = this;
+			this.containerNode = this.domNode;
+			dom.setSelectable(this.domNode, false);
 
-            var tooltip = new Tooltip({
-                    connectId: this.domNode,
-                    selector: ".ActionButtonWrapper",
-                    getContent: function(matched){
-                            //console.log("Matched: ", matched);
-                            var rel = matched.attributes.rel.value;
-                            //console.log("REL: ", rel);
-                            if (_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
-                                    //console.log("_self._actions[rel]:", rel, _self._actions[rel]);
-                                    return _self._actions[rel].options.tooltip
-                            }else if (matched.attributes.title && matched.attributes.title.value){
-                                    return  matched.attributes.title.value;
-                            }
-                            return false;
-                    },
-                    position: ["above"]
-            });
-
+			var tooltip = new Tooltip({
+				connectId: this.domNode,
+				selector: ".ActionButtonWrapper",
+				getContent: function(matched){
+					//console.log("Matched: ", matched);
+					var rel = matched.attributes.rel.value;
+					//console.log("REL: ", rel);
+					if(_self._actions[rel] && _self._actions[rel].options && _self._actions[rel].options.tooltip){
+						//console.log("_self._actions[rel]:", rel, _self._actions[rel]);
+						return _self._actions[rel].options.tooltip
+					}else if(matched.attributes.title && matched.attributes.title.value){
+						return matched.attributes.title.value;
+					}
+					return false;
+				},
+				position: ["above"]
+			});
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
 				console.log("evt.target: ", evt.target);
 				tooltip.close();
 				var target;
-				if (evt && evt.target && evt.target.attributes && evt.target.attributes.rel) {
+				if(evt && evt.target && evt.target.attributes && evt.target.attributes.rel){
 					target = evt.target;
 				}else{
 					target = evt.target.parentNode;
 				}
 				//console.log("target: ", target);
-				if (target && target.attributes && target.attributes.rel) {	
+				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
-					if (_self._actions[rel]) {
-						_self._actions[rel].action.apply(_self,[_self.selection, _self.currentContainerWidget]);
+					if(_self._actions[rel]){
+						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget]);
 					}
 				}
-			});	
+			});
 
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
 //				//console.log("mouseover evt: ", evt.target);
 //			});	
 
-	
 		},
 
-		addAction: function(name,classes,opts,fn,enabled,target){
+		addAction: function(name, classes, opts, fn, enabled, target){
 			// console.log("Add Action: ", name, classes, opts,enabled);
 			target = target || this.containerNode;
-			var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
-			var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
+			var wrapper = domConstruct.create("div", {
+				"class": (enabled ? "" : "dijitHidden ") + "ActionButtonWrapper",
+				rel: name
+			});
+			var b = domConstruct.create("div", {'className': "ActionButton " + classes}, wrapper);
 
-			if (opts && opts.label) {
-				var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
-			}		
+			if(opts && opts.label){
+				var t = domConstruct.create("div", {innerHTML: opts.label, "class": "ActionButtonText"}, wrapper);
+			}
 
-			domConstruct.place(wrapper,target,"last");
+			domConstruct.place(wrapper, target, "last");
 
-			this._actions[name]={
+			this._actions[name] = {
 				options: opts,
 				action: fn,
-				button: wrapper 
+				button: wrapper
 			};
-				
 		}
-		
 	});
 });
 
@@ -38111,16 +38378,13 @@ define([
 },
 'p3/widget/Confirmation':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/_base/lang",
-	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/Confirmation.html",
-	"dijit/form/Button","dijit/Dialog","dojo/dom-construct"
-], function(
-	declare,WidgetBase,lang,
-	Templated,WidgetsInTemplate,template,
-	Button,Dialog,domConstr
-){
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/_base/lang",
+	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/text!./templates/Confirmation.html",
+	"dijit/form/Button", "dijit/Dialog", "dojo/dom-construct"
+], function(declare, WidgetBase, lang,
+			Templated, WidgetsInTemplate, template,
+			Button, Dialog, domConstr){
 
-	
 	return declare([Dialog], {
 		title: "Confirm Action",
 		content: "Are you sure?",
@@ -38131,30 +38395,32 @@ define([
 			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
 			domConstr.place(buttonContainer, this.containerNode, "last");
 
-			this.cancelButton = new Button({label: this.cancelLabel,onClick:lang.hitch(this,"_onCancel")});
-			domConstr.place(this.cancelButton.domNode,buttonContainer,"last");
-			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this,"_onSubmit")});
-			domConstr.place(this.okButton.domNode,buttonContainer,"last");
+			this.cancelButton = new Button({label: this.cancelLabel, onClick: lang.hitch(this, "_onCancel")});
+			domConstr.place(this.cancelButton.domNode, buttonContainer, "last");
+			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this, "_onSubmit")});
+			domConstr.place(this.okButton.domNode, buttonContainer, "last");
 		},
 
-		onCancel: function(){},
-		onConfirm: function(){},
+		onCancel: function(){
+		},
+		onConfirm: function(){
+		},
 		_onCancel: function(){
 			this.onCancel();
 			this.hide();
-			var _self=this;
+			var _self = this;
 			setTimeout(function(){
 				_self.destroy();
-			},2000);
+			}, 2000);
 		},
 		_onSubmit: function(){
 			this.onConfirm();
 			this.hide();
-			var _self=this;
+			var _self = this;
 			setTimeout(function(){
 				_self.destroy();
-			},2000);
-	
+			}, 2000);
+
 		},
 		startup: function(){
 			this.inherited(arguments);
@@ -38167,71 +38433,73 @@ define([
 },
 'p3/widget/SelectionToGroup':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/SelectionToGroup.html","dojo/_base/lang","../WorkspaceManager"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,lang,WorkspaceManager
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang", "../WorkspaceManager"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, lang, WorkspaceManager){
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
-		"disabled":false,
+		"disabled": false,
 		templateString: Template,
 		selection: null,
-		path:null,
+		path: null,
 		type: "genome_group",
 		_setTypeAttr: function(t){
-			this.type=t;
-			if (this.workspaceObjectSelector) {
+			this.type = t;
+			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("type", [t]);
 			}
 		},
 
 		_setPathAttr: function(path){
 			this.path = path;
-			if (this.groupNameBox) {
+			if(this.groupNameBox){
 				this.groupNameBox.set('path', this.path);
 			}
 
-			if (this.workspaceObjectSelector){
+			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 		},
 		onChangeTarget: function(target){
 			console.log("onChangeTarget ");
-			if (!this._started) { return; }
+			if(!this._started){
+				return;
+			}
 			var targetType = this.targetType.get('value');
 			var val;
-			console.log("Target Type: ", targetType);	
-			if (targetType=="existing"){
+			console.log("Target Type: ", targetType);
+			if(targetType == "existing"){
 				domClass.remove(this.workspaceObjectSelector.domNode, "dijitHidden");
 				domClass.add(this.groupNameBox.domNode, "dijitHidden");
-				val =this.workspaceObjectSelector.get('value');
-					
+				val = this.workspaceObjectSelector.get('value');
+
 			}else{
 				domClass.add(this.workspaceObjectSelector.domNode, "dijitHidden");
 				domClass.remove(this.groupNameBox.domNode, "dijitHidden");
-				
-				val = this.groupNameBox.isValid()?this.groupNameBox.get('value'):false;
-			}	
+
+				val = this.groupNameBox.isValid() ? this.groupNameBox.get('value') : false;
+			}
 			console.log("Target Val: ", val);
 			this.value = val;
-			if (val) {
+			if(val){
 				this.copyButton.set('disabled', false);
 			}else{
 				this.copyButton.set('disabled', true);
 			}
 		},
 		startup: function(){
-			var _self=this;
-			if (this._started) { return; }
+			var _self = this;
+			if(this._started){
+				return;
+			}
 			var currentIcon;
-			this.watch("selection", lang.hitch(this,function(prop,oldVal,item){
+			this.watch("selection", lang.hitch(this, function(prop, oldVal, item){
 				console.log("set selection(): ", arguments);
-			}))
-			if (!this.path) {
+			}));
+			if(!this.path){
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
 			}
 			this.inherited(arguments);
@@ -38241,23 +38509,26 @@ define([
 		},
 
 		onCancel: function(evt){
-                        console.log("Cancel/Close Dialog", evt)
-                        on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
-                },
+			console.log("Cancel/Close Dialog", evt)
+			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
+		},
 		onCopy: function(evt){
-			console.log("Copy Selection: ", this.selection, " to ", this.value); 	
-			var idType = (this.type=="genome_group")?"genome_id":"feature_id"
+			console.log("Copy Selection: ", this.selection, " to ", this.value);
+			var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
 			var def;
-			if (this.targetType.get("value")=="existing"){
-				def = WorkspaceManager.addToGroup(this.value, idType,  this.selection.map(function(o){ return o[idType]; }));
+			if(this.targetType.get("value") == "existing"){
+				def = WorkspaceManager.addToGroup(this.value, idType, this.selection.map(function(o){
+					return o[idType];
+				}));
 			}else{
-				def = WorkspaceManager.createGroup(this.value,this.type,this.path,idType, this.selection.map(function(o){ return o[idType]; }));
+				def = WorkspaceManager.createGroup(this.value, this.type, this.path, idType, this.selection.map(function(o){
+					return o[idType];
+				}));
 			}
-			def.then(lang.hitch(this,function(){
-	                        on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+			def.then(lang.hitch(this, function(){
+				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 			}));
 		}
-
 
 	});
 });
@@ -38265,54 +38536,57 @@ define([
 },
 'p3/widget/ContainerActionBar':function(){
 define([
-	"dojo/_base/declare","./ActionBar",
+	"dojo/_base/declare", "./ActionBar",
 	"dojo/dom-construct"
-], function(
-	declare,ActionBar,
-	domConstruct
-){
-	return declare([ActionBar], {	
+], function(declare, ActionBar,
+			domConstruct){
+	return declare([ActionBar], {
 		path: null,
 		"class": "WSContainerActionBar",
 		_setPathAttr: function(p){
-			this.path=p;
-			if (this._started){
-				this.pathContainer.innerHTML=this.generatePathLinks(p);
+			this.path = p;
+			if(this._started){
+				this.pathContainer.innerHTML = this.generatePathLinks(p);
 			}
 		},
 
 		postCreate: function(){
 			this.inherited(arguments);
-			this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
-			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);		
+			this.pathContainer = domConstruct.create("div", {
+				style: {
+					display: "inline-block",
+					"padding-top": "8px"
+				}
+			}, this.domNode);
+			this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.domNode);
 		},
 
-		generatePathLinks: function(path) {
+		generatePathLinks: function(path){
 			var parts = path.split("/");
-			if (parts[0]=="") { parts.shift(); }
+			if(parts[0] == ""){
+				parts.shift();
+			}
 			var len = parts.length;
-			var out = [];
-
 			var out = ["<span class='wsBreadCrumb'>"];
 			var bp = ["workspace"];
 			console.log("parts: ", parts);
-			parts.forEach(function(p,idx){
-				if (idx == (parts.length-1)){
+			parts.forEach(function(p, idx){
+				if(idx == (parts.length - 1)){
 					out.push(p + "&nbsp;");
 					return;
 				}
 				out.push("<a class='navigationLink' href='");
 				bp.push(p);
-				out.push("/"+ bp.join("/") );
-				out.push("'>" + ((idx==0)?p.replace("@patricbrc.org",""):p)  + "</a>&nbsp;/&nbsp;");
-			})
+				out.push("/" + bp.join("/"));
+				out.push("'>" + ((idx == 0) ? p.replace("@patricbrc.org", "") : p) + "</a>&nbsp;/&nbsp;");
+			});
 			//out.push("<span>" + parts.join("/") + "</span>");
 			return out.join("");
 		},
 
 		startup: function(){
-			if (this.path){
-				this.pathContainer.innerHTML=this.generatePathLinks(this.path);
+			if(this.path){
+				this.pathContainer.innerHTML = this.generatePathLinks(this.path);
 			}
 
 			this.inherited(arguments);
@@ -38326,15 +38600,14 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-    "dojo/_base/Deferred",
-	"dojo/request", "dojo/_base/lang","dojo/when","../WorkspaceManager", 
-	"d3/d3", "./Venn", "dgrid/Grid",  "dgrid/extensions/ColumnResizer"
+	"dojo/_base/Deferred",
+	"dojo/request", "dojo/_base/lang", "dojo/when", "../WorkspaceManager",
+	"d3/d3", "./Venn", "dgrid/Grid", "dgrid/extensions/ColumnResizer"
 ], function(declare, WidgetBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			fDeferred,
-			xhr, lang,when,WorkspaceManager, 
-			d3, Venn, Grid, ColumnResizer
-){
+			xhr, lang, when, WorkspaceManager,
+			d3, Venn, Grid, ColumnResizer){
 
 	var groupCompare = null;
 	var myHash = null;
@@ -38345,496 +38618,489 @@ define([
 	var regionGroupName = null;
 	var groups = [];
 	var myPath = null;
-	var id_array=[];
+	var id_array = [];
 
+	var selectionListener = function(){
+		var selected = groupCompare.getSelectedMembers();
+		var regions = groupCompare.getSelectedRegions();
 
-	var selectionListener = function() {
-	  var selected = groupCompare.getSelectedMembers();
-	  var regions = groupCompare.getSelectedRegions();
+		if(regions.length == 0){
+			d3.selectAll("#gse-members-tbl").remove();
+			regionName = "";
+			regionGroupName = "";
+		}else if(selected){
+			ids = "";
+			id_array = [];
 
-	  if (regions.length == 0) {
-		d3.selectAll("#gse-members-tbl").remove();
-		regionName = "";
-		regionGroupName = "";
-	  } else if (selected) {
-		ids = "";
-		id_array=[];
+			d3.selectAll("#gse-members-tbl").remove();
+			regionName = createRegionName(regions);
+			regionGroupName = regionName.replace(/\) - \(/g, "| not |").replace(/\) U \(/g, "| or |").replace(/\) \+ \(/g, "| and |").replace(/\(/g, "|").replace(/\)/g, "|");
 
-		d3.selectAll("#gse-members-tbl").remove();
-		regionName = createRegionName(regions);
-		regionGroupName = regionName.replace(/\) - \(/g, "| not |").replace(/\) U \(/g, "| or |").replace(/\) \+ \(/g, "| and |").replace(/\(/g, "|").replace(/\)/g, "|");
+			var memberArea = d3.select("#gse-members");
+			var memberTable = memberArea.append("div").attr("id", "gse-members-tbl").attr("style", "overflow-y:scroll");
+			memberTable.append("div").text("Region: " + regionGroupName).attr("style", "font-weight: bold");
+			var memberGrid = memberTable.append("div").attr("id", "gse-members-grid");
 
-		var memberArea = d3.select("#gse-members");
-		var memberTable = memberArea.append("div").attr("id", "gse-members-tbl").attr("style", "overflow-y:scroll");
-		memberTable.append("div").text("Region: " + regionGroupName).attr("style", "font-weight: bold");
-		var memberGrid = memberTable.append("div").attr("id", "gse-members-grid");
+			console.log("in selectionListener, selected", selected);
+			console.log("in selectionListener, region", regions);
 
-		console.log("in selectionListener, selected", selected);
-		console.log("in selectionListener, region", regions);
-		
-		if (selected.length > 0) { 
-			var dataArray = [];
-			var url = "";			
-			for (var i = 0, ilen = selected.length; i < ilen; ++i) {
-			  id_array.push(selected[i]);
-			  if (i == 0) {
-				ids = selected[i];
-			  } else {
-				ids += "," + selected[i];
-			  }
-			}
-		
-			console.log("in selectionListener, id_array", id_array);
-		
-			if (myType === 'genome_group') {
-				// genome name, status, country, host, disease, collection date, completion date			
-				url = window.App.dataServiceURL + "/genome/";
-				var q = "in(genome_id,(" + ids + "))&select(genome_id,genome_name,genome_status,isolation_country,host_name,disease,collection_date,complete_date)&sort(+genome_name)&limit(25000)";
-				console.log("url: ", url);
-				//url = window.App.dataServiceURL + "/genome/?limit(25000)&http_accept=application/json&select(genome_id,genome_name,genome_status,isolation_country,host_name,disease,collection_date,complete_date)&in(genome_id,(" +
-				//	ids + "))&sort(+genome_name)";
-				//console.log("url: ", url);
-				xhr.post(url,{
-					data: q,
-					headers:  {
-						"accept": "application/solr+json",
-						"content-type": "application/rqlquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': (window.App.authorizationToken || "")
-					},
-					handleAs: "json"
-				}).then(function(res){
-					console.log(" URL: ", url);
-					console.log("Get GenomeList genomes: ", res);
-					dataArray = res.response.docs;
+			if(selected.length > 0){
+				var dataArray = [];
+				var url = "";
+				for(var i = 0, ilen = selected.length; i < ilen; ++i){
+					id_array.push(selected[i]);
+					if(i == 0){
+						ids = selected[i];
+					}else{
+						ids += "," + selected[i];
+					}
+				}
 
-					var grid = new Grid({
-						columns: {
-							genome_name: 'Genome Name',
-							genome_status: 'Status',
-							isolation_country: 'Isolation Country',
-							host_name: 'Host Name',
-							disease: 'disease',
-							collection_date: 'Collection Date',
-							complete_date: 'Complete Date'
-						}
-					}, 'gse-members-grid');
-					grid.renderArray(dataArray);
-					grid.resize();
-				}, function(err){
-					console.log("Error Retreiving Genomes: ", err)
-				});
-		  	}
-			else if (myType === 'feature_group') {
-				url = window.App.dataServiceURL + "/genome_feature/";
-				var q= "in(feature_id,(" + ids + "))&select(genome_name,patric_id,refseq_locus_tag,alt_locus_tag,gene,product)&sort(+patric_id)&limit(25000)";
+				console.log("in selectionListener, id_array", id_array);
 
-				xhr.post(url,{
-					data: q,
-					headers:  {
-						"accept": "application/solr+json",
-						"content-type": "application/rqlquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': (window.App.authorizationToken || "")
-					},
-					handleAs: "json"
-				}).then(function(res){
-					console.log(" URL: ", url);
-					console.log("Get feature list: ", res);
-					dataArray = res.response.docs;
+				if(myType === 'genome_group'){
+					// genome name, status, country, host, disease, collection date, completion date
+					url = window.App.dataServiceURL + "/genome/";
+					var q = "in(genome_id,(" + ids + "))&select(genome_id,genome_name,genome_status,isolation_country,host_name,disease,collection_date,complete_date)&sort(+genome_name)&limit(25000)";
+					console.log("url: ", url);
+					//url = window.App.dataServiceURL + "/genome/?limit(25000)&http_accept=application/json&select(genome_id,genome_name,genome_status,isolation_country,host_name,disease,collection_date,complete_date)&in(genome_id,(" +
+					//	ids + "))&sort(+genome_name)";
+					//console.log("url: ", url);
+					xhr.post(url, {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+					}).then(function(res){
+						console.log(" URL: ", url);
+						console.log("Get GenomeList genomes: ", res);
+						dataArray = res.response.docs;
 
-					var grid = new Grid({
+						var grid = new Grid({
+							columns: {
+								genome_name: 'Genome Name',
+								genome_status: 'Status',
+								isolation_country: 'Isolation Country',
+								host_name: 'Host Name',
+								disease: 'disease',
+								collection_date: 'Collection Date',
+								complete_date: 'Complete Date'
+							}
+						}, 'gse-members-grid');
+						grid.renderArray(dataArray);
+						grid.resize();
+					}, function(err){
+						console.log("Error Retreiving Genomes: ", err)
+					});
+				}
+				else if(myType === 'feature_group'){
+					url = window.App.dataServiceURL + "/genome_feature/";
+					var q = "in(feature_id,(" + ids + "))&select(genome_name,patric_id,refseq_locus_tag,alt_locus_tag,gene,product)&sort(+patric_id)&limit(25000)";
+
+					xhr.post(url, {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+					}).then(function(res){
+						console.log(" URL: ", url);
+						console.log("Get feature list: ", res);
+						dataArray = res.response.docs;
+
+						var grid = new Grid({
 //					    className: 'dgrid-autoheight',
-						columns: {
-							genome_name: 'Genome Name',
-							patric_id: 'PATRIC ID',
-							refseq_locus_tag: 'Refseq Locus Tag',
-							gene: 'Gene',
-							product: 'Product'
-						}
-					}, 'gse-members-grid');
-					grid.renderArray(dataArray);
+							columns: {
+								genome_name: 'Genome Name',
+								patric_id: 'PATRIC ID',
+								refseq_locus_tag: 'Refseq Locus Tag',
+								gene: 'Gene',
+								product: 'Product'
+							}
+						}, 'gse-members-grid');
+						grid.renderArray(dataArray);
 //					grid.resize();
-				}, function(err){
-					console.log("Error Retreiving Genomes: ", err)
-				});
-		  	}
-			else if (myType === 'experiment_group') {
-				url = window.App.dataServiceURL + "/transcriptomics_experiment/";
-				var q = "in(expid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
-				console.log("url: ", url);
-				xhr.post(url,{
-					data: q,
-					headers:  {
-						"accept": "application/solr+json",
-						"content-type": "application/rqlquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': (window.App.authorizationToken || "")
-					},
-					handleAs: "json"
-				}).then(function(res){
-					console.log(" URL: ", url);
-					console.log("Get experiment list: ", res);
-					dataArray = res.response.docs;
+					}, function(err){
+						console.log("Error Retreiving Genomes: ", err)
+					});
+				}
+				else if(myType === 'experiment_group'){
+					url = window.App.dataServiceURL + "/transcriptomics_experiment/";
+					var q = "in(expid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
+					console.log("url: ", url);
+					xhr.post(url, {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+					}).then(function(res){
+						console.log(" URL: ", url);
+						console.log("Get experiment list: ", res);
+						dataArray = res.response.docs;
 
-					var grid = new Grid({
-						columns: {
-							title: 'Title',
-							organism: 'Organism',
-							strain: 'Strain',
-							mutant: 'Mutant',
-							timeseries: 'Time Series',
-							condition: 'Condition'
-						}
-					}, 'gse-members-grid');
-					grid.renderArray(dataArray);
-					grid.resize();
-				}, function(err){
-					console.log("Error Retreiving Genomes: ", err)
-				});
-		  	}
-		}	
-	  }
+						var grid = new Grid({
+							columns: {
+								title: 'Title',
+								organism: 'Organism',
+								strain: 'Strain',
+								mutant: 'Mutant',
+								timeseries: 'Time Series',
+								condition: 'Condition'
+							}
+						}, 'gse-members-grid');
+						grid.renderArray(dataArray);
+						grid.resize();
+					}, function(err){
+						console.log("Error Retreiving Genomes: ", err)
+					});
+				}
+			}
+		}
 	};
-	
 
-	function createRegionName(selectedRegions) {
-	  var max_mask = 0;
-	  var mask_array = [];
-	  var name_array = [];
-	  regionName = "";
-	  if (groups.length == 2) {
-		max_mask = 3;
-	  } else if (groups.length == 3) {
-		max_mask = 7;
-	  }
-
-	  for (var i = 0, ilen = max_mask; i < ilen; ++i) {
-		mask_array[i] = 0;
-		name_array[i] = "";
-	  }
-
-	  for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
-		if (i == 0) {
-		  regionName = selectedRegions[i].region_name;
-		} else {
-		  regionName = "(" + regionName + ") U (" + selectedRegions[i].region_name + ")";
+	function createRegionName(selectedRegions){
+		var max_mask = 0;
+		var mask_array = [];
+		var name_array = [];
+		regionName = "";
+		if(groups.length == 2){
+			max_mask = 3;
+		}else if(groups.length == 3){
+			max_mask = 7;
 		}
-		mask_array[selectedRegions[i].region_mask - 1] = 1;
-		name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
-		// console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
-	  }
 
-	  if (max_mask == 3) {
-		if (mask_array[0] && mask_array[1] && mask_array[2]) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ")";
-		} else if (mask_array[0] && mask_array[2]) {
-		  regionName = groups[0].name;
-		} else if (mask_array[1] && mask_array[2]) {
-		  regionName = groups[1].name;
+		for(var i = 0, ilen = max_mask; i < ilen; ++i){
+			mask_array[i] = 0;
+			name_array[i] = "";
 		}
-	  } else if (max_mask == 7) {
-		var center_name = "(" + groups[0].name + ") + (" + groups[1].name + ") + (" + groups[2].name + ")";
-		if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[2].name + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[1].name + ") U (" + groups[2].name + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[2].name + ") U (" + name_array[0] + ") U (" + name_array[1] + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[2].name + ") U (" + name_array[0] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[2].name + ") U (" + name_array[1] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[2].name + ") U (" + name_array[2] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = groups[2].name;
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[1].name + ") U (" + name_array[0] + ") U (" + name_array[3] + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[1].name + ") U (" + name_array[0] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[1].name + ") U (" + name_array[3] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[1].name + ") U (" + name_array[4] + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]) {
-		  regionName = groups[1].name;
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + name_array[1] + ") U (" + name_array[3] + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + name_array[1] + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + name_array[3] + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]) {
-		  regionName = "(" + groups[0].name + ") U (" + name_array[5] + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]) {
-		  regionName = groups[0].name;
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
-				&& mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") - (" + groups[2].name + ")";
-		} else if (mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
-				&& mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[2].name + ") - (" + groups[1].name + ")";
-		} else if (mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
-				&& mask_array[6] == 0) {
-		  regionName = "(" + groups[1].name + ") U (" + groups[2].name + ") - (" + groups[0].name + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
-				  + groups[0].name + ") + (" + groups[1].name + ") - (" + groups[2].name + ")" + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
-				  + groups[1].name + ") + (" + groups[2].name + ") - (" + groups[0].name + ")" + ")";
-		} else if (mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0) {
-		  regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
-				  + groups[0].name + ") + (" + groups[2].name + ") - (" + groups[1].name + ")" + ")";
+
+		for(var i = 0, ilen = selectedRegions.length; i < ilen; ++i){
+			if(i == 0){
+				regionName = selectedRegions[i].region_name;
+			}else{
+				regionName = "(" + regionName + ") U (" + selectedRegions[i].region_name + ")";
+			}
+			mask_array[selectedRegions[i].region_mask - 1] = 1;
+			name_array[selectedRegions[i].region_mask - 1] = selectedRegions[i].region_name;
+			// console.log("i=" + i + " region_mask=" + selectedRegions[i].region_mask + " name=" +selectedRegions[i].region_name);
 		}
-	  }
-	  return regionName;
+
+		if(max_mask == 3){
+			if(mask_array[0] && mask_array[1] && mask_array[2]){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ")";
+			}else if(mask_array[0] && mask_array[2]){
+				regionName = groups[0].name;
+			}else if(mask_array[1] && mask_array[2]){
+				regionName = groups[1].name;
+			}
+		}else if(max_mask == 7){
+			var center_name = "(" + groups[0].name + ") + (" + groups[1].name + ") + (" + groups[2].name + ")";
+			if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + groups[2].name + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[1].name + ") U (" + groups[2].name + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[2].name + ") U (" + name_array[0] + ") U (" + name_array[1] + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[2].name + ") U (" + name_array[0] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[2].name + ") U (" + name_array[1] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[2].name + ") U (" + name_array[2] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = groups[2].name;
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[1].name + ") U (" + name_array[0] + ") U (" + name_array[3] + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[1].name + ") U (" + name_array[0] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[1].name + ") U (" + name_array[3] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[1].name + ") U (" + name_array[4] + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] && mask_array[6]){
+				regionName = groups[1].name;
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + name_array[1] + ") U (" + name_array[3] + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + name_array[1] + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + name_array[3] + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] && mask_array[6]){
+				regionName = "(" + groups[0].name + ") U (" + name_array[5] + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] && mask_array[3] == 0 && mask_array[4] && mask_array[5] == 0 && mask_array[6]){
+				regionName = groups[0].name;
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] == 0 && mask_array[4] == 0 && mask_array[5] == 0
+				&& mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") - (" + groups[2].name + ")";
+			}else if(mask_array[0] && mask_array[1] == 0 && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] == 0
+				&& mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[2].name + ") - (" + groups[1].name + ")";
+			}else if(mask_array[0] == 0 && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] == 0 && mask_array[5]
+				&& mask_array[6] == 0){
+				regionName = "(" + groups[1].name + ") U (" + groups[2].name + ") - (" + groups[0].name + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] == 0 && mask_array[3] && mask_array[4] && mask_array[5] && mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
+					+ groups[0].name + ") + (" + groups[1].name + ") - (" + groups[2].name + ")" + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] && mask_array[5] == 0 && mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
+					+ groups[1].name + ") + (" + groups[2].name + ") - (" + groups[0].name + ")" + ")";
+			}else if(mask_array[0] && mask_array[1] && mask_array[2] && mask_array[3] && mask_array[4] == 0 && mask_array[5] && mask_array[6] == 0){
+				regionName = "(" + groups[0].name + ") U (" + groups[1].name + ") U (" + groups[2].name + ") - (" + center_name + ") - (" + "("
+					+ groups[0].name + ") + (" + groups[2].name + ") - (" + groups[1].name + ")" + ")";
+			}
+		}
+		return regionName;
 	}
 
-	
-	function createGroup() {
-	  if (regionGroupName && ids.length > 0) {
-	  	 var idType = "genome_id";
-	  	 if (myType == "genome_group") {
-	  	 	idType = "genome_id";
-	  	 }
-	  	 else if (myType == "feature_group") {
-	  	 	idType = "feature_id";
-	  	 }
-	  	 else if (myType == "experiment_group") {
-	  	 	idType = "eid";
-	  	 }
-	 	console.log("clicked create group" + myURL + "create " + myType);
-	 	console.log("idType=",idType);
-	 	console.log("ids=",id_array);
-	 	console.log("myPath=",myPath);
-		WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
-		document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + "/" + regionGroupName + "' target=_blank>" + "here" + "</a> to view.</b>";
-		//alert("Please refresh the workspace folder to view.");
-	  } else if (regionGroupName) {
-	  	document.getElementById('create_msg').innerHTML = "<b>Please select the regions which have members.</b>";
-		//alert("Please select the regions which have members.");
-	  } else {
-	  	document.getElementById('create_msg').innerHTML = "<b>Please select one or more regions from the diagram.</b>";
-		//alert("Please select a region or multiple regions from the diagram.");
-	  }
-	}
-	
-	function populateGroupTable() {
-	  groups = groupCompare.getGroups();
-  
-	  var groupArea = d3.select("#gse-groups");
-	  var groupTable = groupArea.append("table");
-	  var thead = groupTable.append("thead");
-	  thead.append("th").attr("width", "130px").text("Group Name");
-	  thead.append("th").text("Members");
-	  var tbody = groupTable.append("tbody");
-	  for (var i = 0, ilen = groups.length; i < ilen; ++i) {
-		var tr = tbody.append("tr");
-		tr.append("td").text(groups[i].name);
-		tr.append("td").text(groups[i].members.length);
-	  } 
-	}
-
-	function colorChoice(default_color) {
-	  //var groups = groupCompare.getGroups();
-	  var g0 = d3.select("#g0_circle");
-	  var g1 = d3.select("#g1_circle");
-	  var g2 = d3.select("#g2_circle");
-	  var g0_s = d3.select("#g0_stroke");
-	  var g1_s = d3.select("#g1_stroke");
-	  var g2_s = d3.select("#g2_stroke");
-		
-	  console.log("default_color", default_color);
-	  if (default_color === 'N') {
-		g0.classed("venn_circle", false);
-		g0.classed("venn_circle_color1", true);
-		g0_s.classed("venn_circle_stroke", false);
-		g0_s.classed("venn_circle_stroke_color", true);
-
-		g1.classed("venn_circle", false);
-		g1.classed("venn_circle_color2", true);
-		g1_s.classed("venn_circle_stroke", false);
-		g1_s.classed("venn_circle_stroke_color", true);
-
-		if (groups.length > 2) {
-		  g2.classed("venn_circle", false);
-		  g2.classed("venn_circle_color3", true);
-		  g2_s.classed("venn_circle_stroke", false);
-		  g2_s.classed("venn_circle_stroke_color", true);
+	function createGroup(){
+		if(regionGroupName && ids.length > 0){
+			var idType = "genome_id";
+			if(myType == "genome_group"){
+				idType = "genome_id";
+			}
+			else if(myType == "feature_group"){
+				idType = "feature_id";
+			}
+			else if(myType == "experiment_group"){
+				idType = "eid";
+			}
+			console.log("clicked create group" + myURL + "create " + myType);
+			console.log("idType=", idType);
+			console.log("ids=", id_array);
+			console.log("myPath=", myPath);
+			WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
+			document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + "/" + regionGroupName + "' target=_blank>" + "here" + "</a> to view.</b>";
+			//alert("Please refresh the workspace folder to view.");
+		}else if(regionGroupName){
+			document.getElementById('create_msg').innerHTML = "<b>Please select the regions which have members.</b>";
+			//alert("Please select the regions which have members.");
+		}else{
+			document.getElementById('create_msg').innerHTML = "<b>Please select one or more regions from the diagram.</b>";
+			//alert("Please select a region or multiple regions from the diagram.");
 		}
-	  } else {
-		g0.classed("venn_circle_color1", false);
-		g0.classed("venn_circle", true);
-		g0_s.classed("venn_circle_stroke_color", false);
-		g0_s.classed("venn_circle_stroke", true);
+	}
 
-		g1.classed("venn_circle_color2", false);
-		g1.classed("venn_circle", true);
-		g1_s.classed("venn_circle_stroke_color", false);
-		g1_s.classed("venn_circle_stroke", true);
+	function populateGroupTable(){
+		groups = groupCompare.getGroups();
 
-		if (groups.length > 2) {
-		  g2.classed("venn_circle_color3", false);
-		  g2.classed("venn_circle", true);
-		  g2_s.classed("venn_circle_stroke_color", false);
-		  g2_s.classed("venn_circle_stroke", true);
+		var groupArea = d3.select("#gse-groups");
+		var groupTable = groupArea.append("table");
+		var thead = groupTable.append("thead");
+		thead.append("th").attr("width", "130px").text("Group Name");
+		thead.append("th").text("Members");
+		var tbody = groupTable.append("tbody");
+		for(var i = 0, ilen = groups.length; i < ilen; ++i){
+			var tr = tbody.append("tr");
+			tr.append("td").text(groups[i].name);
+			tr.append("td").text(groups[i].members.length);
 		}
-	  }
 	}
 
-	function replaceSVGClass(svghtml) {
-	  var venn_circle = 'class="venn_circle"';
-	  var venn_circle_color1 = 'class="venn_circle_color1"';
-	  var venn_circle_color2 = 'class="venn_circle_color2"';
-	  var venn_circle_color3 = 'class="venn_circle_color3"';
-	  var venn_region = 'class="venn_region"';
-	  var venn_region_active = 'class="venn_region active"';
-	  var venn_circle_stroke = 'class="venn_circle_stroke"';
-	  var venn_circle_stroke_color = 'class="venn_circle_stroke_color"';
-	  var region_label = 'class="region_label"';
-	  var circle_label = 'class="circle_label"';
-	  var venn_circle_replace = 'style="fill: #D2D2D2; fill-opacity: 1;"';
-	  var venn_circle_color1_replace = 'style="fill: blue; fill-opacity: 0\.6;"';
-	  var venn_circle_color2_replace = 'style="fill: yellow; fill-opacity: 0\.6;"';
-	  var venn_circle_color3_replace = 'style="fill: green; fill-opacity: 0\.6;"';
-	  var venn_region_replace = 'style="fill-opacity: 0;"';
-	  var venn_region_active_replace = 'style="fill: #DBE8EE; fill-opacity: 1;"';
-	  var venn_circle_stroke_replace = 'style="stroke: #34698E; stroke-width:2px; fill-opacity: 0;"';
-	  var venn_circle_stroke_color_replace = 'style="stroke: black; stroke-width:1px; fill-opacity: 0;"';
-	  var region_label_replace = 'style="fill: black; font-size: 10px;"';
-	  var circle_label_replace = 'style="fill: black; font-size: 10px;"';
-	  var replace_circle = svghtml
-		.replace(new RegExp(venn_circle, 'g'), venn_circle_replace)
-		.replace(new RegExp(venn_circle_color1, 'g'), venn_circle_color1_replace)
-		.replace(new RegExp(venn_circle_color2, 'g'), venn_circle_color2_replace)
-		.replace(new RegExp(venn_circle_color3, 'g'), venn_circle_color3_replace);
+	function colorChoice(default_color){
+		//var groups = groupCompare.getGroups();
+		var g0 = d3.select("#g0_circle");
+		var g1 = d3.select("#g1_circle");
+		var g2 = d3.select("#g2_circle");
+		var g0_s = d3.select("#g0_stroke");
+		var g1_s = d3.select("#g1_stroke");
+		var g2_s = d3.select("#g2_stroke");
 
-	  var replace_region = replace_circle
-		.replace(new RegExp(venn_region, 'g'), venn_region_replace)
-		.replace(new RegExp(venn_region_active, 'g'), venn_region_active_replace)
-		.replace(new RegExp(venn_circle_stroke, 'g'), venn_circle_stroke_replace)
-		.replace(new RegExp(venn_circle_stroke_color, 'g'), venn_circle_stroke_color_replace);
+		console.log("default_color", default_color);
+		if(default_color === 'N'){
+			g0.classed("venn_circle", false);
+			g0.classed("venn_circle_color1", true);
+			g0_s.classed("venn_circle_stroke", false);
+			g0_s.classed("venn_circle_stroke_color", true);
 
-	  var replace_svghtml = replace_region
-		.replace(new RegExp(region_label, 'g'), region_label_replace)
-		.replace(new RegExp(circle_label, 'g'), circle_label_replace);
+			g1.classed("venn_circle", false);
+			g1.classed("venn_circle_color2", true);
+			g1_s.classed("venn_circle_stroke", false);
+			g1_s.classed("venn_circle_stroke_color", true);
 
-	  // console.log(replace_svghtml);
-	  return replace_svghtml;
+			if(groups.length > 2){
+				g2.classed("venn_circle", false);
+				g2.classed("venn_circle_color3", true);
+				g2_s.classed("venn_circle_stroke", false);
+				g2_s.classed("venn_circle_stroke_color", true);
+			}
+		}else{
+			g0.classed("venn_circle_color1", false);
+			g0.classed("venn_circle", true);
+			g0_s.classed("venn_circle_stroke_color", false);
+			g0_s.classed("venn_circle_stroke", true);
+
+			g1.classed("venn_circle_color2", false);
+			g1.classed("venn_circle", true);
+			g1_s.classed("venn_circle_stroke_color", false);
+			g1_s.classed("venn_circle_stroke", true);
+
+			if(groups.length > 2){
+				g2.classed("venn_circle_color3", false);
+				g2.classed("venn_circle", true);
+				g2_s.classed("venn_circle_stroke_color", false);
+				g2_s.classed("venn_circle_stroke", true);
+			}
+		}
 	}
-	
-	
-	function init_g(group_data,groupType) {
-        groupCompare = null;
-        myHash = null;
-        myURL = null;
-        myType = null;
-        ids = "";
-        regionName = null;
-        regionGroupName = null;
-        groups = [];
-        id_array=[];
 
-        myType = groupType;
-        myHash = new Array();
-       
+	function replaceSVGClass(svghtml){
+		var venn_circle = 'class="venn_circle"';
+		var venn_circle_color1 = 'class="venn_circle_color1"';
+		var venn_circle_color2 = 'class="venn_circle_color2"';
+		var venn_circle_color3 = 'class="venn_circle_color3"';
+		var venn_region = 'class="venn_region"';
+		var venn_region_active = 'class="venn_region active"';
+		var venn_circle_stroke = 'class="venn_circle_stroke"';
+		var venn_circle_stroke_color = 'class="venn_circle_stroke_color"';
+		var region_label = 'class="region_label"';
+		var circle_label = 'class="circle_label"';
+		var venn_circle_replace = 'style="fill: #D2D2D2; fill-opacity: 1;"';
+		var venn_circle_color1_replace = 'style="fill: blue; fill-opacity: 0\.6;"';
+		var venn_circle_color2_replace = 'style="fill: yellow; fill-opacity: 0\.6;"';
+		var venn_circle_color3_replace = 'style="fill: green; fill-opacity: 0\.6;"';
+		var venn_region_replace = 'style="fill-opacity: 0;"';
+		var venn_region_active_replace = 'style="fill: #DBE8EE; fill-opacity: 1;"';
+		var venn_circle_stroke_replace = 'style="stroke: #34698E; stroke-width:2px; fill-opacity: 0;"';
+		var venn_circle_stroke_color_replace = 'style="stroke: black; stroke-width:1px; fill-opacity: 0;"';
+		var region_label_replace = 'style="fill: black; font-size: 10px;"';
+		var circle_label_replace = 'style="fill: black; font-size: 10px;"';
+		var replace_circle = svghtml
+			.replace(new RegExp(venn_circle, 'g'), venn_circle_replace)
+			.replace(new RegExp(venn_circle_color1, 'g'), venn_circle_color1_replace)
+			.replace(new RegExp(venn_circle_color2, 'g'), venn_circle_color2_replace)
+			.replace(new RegExp(venn_circle_color3, 'g'), venn_circle_color3_replace);
+
+		var replace_region = replace_circle
+			.replace(new RegExp(venn_region, 'g'), venn_region_replace)
+			.replace(new RegExp(venn_region_active, 'g'), venn_region_active_replace)
+			.replace(new RegExp(venn_circle_stroke, 'g'), venn_circle_stroke_replace)
+			.replace(new RegExp(venn_circle_stroke_color, 'g'), venn_circle_stroke_color_replace);
+
+		var replace_svghtml = replace_region
+			.replace(new RegExp(region_label, 'g'), region_label_replace)
+			.replace(new RegExp(circle_label, 'g'), circle_label_replace);
+
+		// console.log(replace_svghtml);
+		return replace_svghtml;
+	}
+
+	function init_g(group_data, groupType){
+		groupCompare = null;
+		myHash = null;
+		myURL = null;
+		myType = null;
+		ids = "";
+		regionName = null;
+		regionGroupName = null;
+		groups = [];
+		id_array = [];
+
+		myType = groupType;
+		myHash = new Array();
+
 		var gcConfig = {
-		vennPanel: "gse-venndiagram",
-		groups: []
+			vennPanel: "gse-venndiagram",
+			groups: []
 		};
 		groupCompare = new window.GroupCompare.GroupCompare(gcConfig);
 		groupCompare.addSelectionListener(selectionListener);
 		console.log(" groupCompare ", groupCompare);
 		console.log(" group_data ", group_data);
 		console.log(" group type ", groupType);
-		for (var i = 0; i < group_data.length; i++) {
-		  var group = {};
-		  console.log("current group data", group_data[i].data);
-		  group_data[i].data = JSON.parse(group_data[i].data);
-		  group.name = group_data[i].data.name;
-		  if (groupType == "genome_group")
-		  {
-			  group.members = group_data[i].data.id_list.genome_id;	  
-		  }
-		  else if (groupType == "feature_group")
-		  {
-			  group.members = group_data[i].data.id_list.feature_id;	  		  
-		  }
-		  else
-		  {
-			if (group_data[i].data.id_list.eid) {
-			  group.members = group_data[i].data.id_list.eid;
-			} 
-			/*	  
-			else if (group_data[i].data.id_list.ws_item_path) {
-			  group.members = group_data[i].data.id_list.ws_item_path;
+		for(var i = 0; i < group_data.length; i++){
+			var group = {};
+			console.log("current group data", group_data[i].data);
+			group_data[i].data = JSON.parse(group_data[i].data);
+			group.name = group_data[i].data.name;
+			if(groupType == "genome_group"){
+				group.members = group_data[i].data.id_list.genome_id;
 			}
-			*/	  
-		  }
-		  console.log("current group ", group);
-		  groups.push(group);
-		  groupCompare.addGroup(group);
-		  console.log("current group after add ", group);
+			else if(groupType == "feature_group"){
+				group.members = group_data[i].data.id_list.feature_id;
+			}
+			else{
+				if(group_data[i].data.id_list.eid){
+					group.members = group_data[i].data.id_list.eid;
+				}
+				/*
+				else if (group_data[i].data.id_list.ws_item_path) {
+				  group.members = group_data[i].data.id_list.ws_item_path;
+				}
+				*/
+			}
+			console.log("current group ", group);
+			groups.push(group);
+			groupCompare.addGroup(group);
+			console.log("current group after add ", group);
 		}
 		console.log(" groups ", groups);
 		groupsLoaded(groups.length);
 	}
 
-	function groupsLoaded(length) {
-	  if (length == 1 || length > 3) {
-		alert("Please select two or three groups to compare");
-	  } else if (length == 2) {
-		groupCompare.createDisplayTwo();
-		populateGroupTable();
-	  } else {
-		groupCompare.createDisplay();
-		populateGroupTable();
-	  }
+	function groupsLoaded(length){
+		if(length == 1 || length > 3){
+			alert("Please select two or three groups to compare");
+		}else if(length == 2){
+			groupCompare.createDisplayTwo();
+			populateGroupTable();
+		}else{
+			groupCompare.createDisplay();
+			populateGroupTable();
+		}
 	}
 
-	function saveSVG() {
-	  var html = d3.select("svg").attr("version", 1.1).attr("xmlns", "http://www.w3.org/2000/svg").node();
-	  // need to declare namespace, set xmlns:xlink using setAttribute;
-	  // .attr("xmlns:xlink", "http://www.w3.org/1999/xlink") does not work
-	  html.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+	function saveSVG(){
+		var html = d3.select("svg").attr("version", 1.1).attr("xmlns", "http://www.w3.org/2000/svg").node();
+		// need to declare namespace, set xmlns:xlink using setAttribute;
+		// .attr("xmlns:xlink", "http://www.w3.org/1999/xlink") does not work
+		html.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
-	  var innerhtml = replaceSVGClass(html.parentNode.innerHTML);
+		var innerhtml = replaceSVGClass(html.parentNode.innerHTML);
 
-	  var imgsrc = 'data:image/svg+xml;base64,' + btoa(innerhtml);
-	  var a = document.createElement("a"); // required for Firefox, optional for Chrome
-	  document.body.appendChild(a); // TODO: why add this before setting attributes of a tag?
-	  a.download = "venndiagram.svg";
-	  a.href = imgsrc;
-	  a.target = "_self"; // required for Firefox, optional for Chrome
-	  a.click();
+		var imgsrc = 'data:image/svg+xml;base64,' + btoa(innerhtml);
+		var a = document.createElement("a"); // required for Firefox, optional for Chrome
+		document.body.appendChild(a); // TODO: why add this before setting attributes of a tag?
+		a.download = "venndiagram.svg";
+		a.href = imgsrc;
+		a.target = "_self"; // required for Firefox, optional for Chrome
+		a.click();
 	}
 
-	return declare([WidgetBase],{
+	return declare([WidgetBase], {
 		"baseClass": "GroupExplore",
 		"disabled": false,
 		"query": null,
 		"loading": false,
 		data: null,
-        dataMap: {},
+		dataMap: {},
 		apiServiceUrl: window.App.dataAPI,
 		selection: null,
-		path:null,
+		path: null,
 		type: "folder",
 		groupType: "genome_group",
 		containerWidget: null,
 		containerNode: null,
-				
+
 		_setTypeAttr: function(t){
-			this.type=t;
-			if (this.workspaceObjectSelector) {
+			this.type = t;
+			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("type", [t]);
 			}
 			console.log("type(): ", t);
@@ -38844,11 +39110,11 @@ define([
 		_setPathAttr: function(path){
 			this.path = path;
 			myPath = path;
-			if (this.groupNameBox) {
+			if(this.groupNameBox){
 				this.groupNameBox.set('path', this.path);
 			}
 
-			if (this.workspaceObjectSelector){
+			if(this.workspaceObjectSelector){
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 			console.log("path(): ", path);
@@ -38856,10 +39122,10 @@ define([
 
 		_setSelectionAttr: function(selection){
 			this.selection = selection;
-			this.groupType = selection[0].type; 
+			this.groupType = selection[0].type;
 			console.log("selection(): ", selection);
 		},
-		
+
 		_setContainerNodeAttr: function(containerNode){
 			this.containerNode = containerNode;
 			console.log("containerNode(): ", containerNode);
@@ -38867,73 +39133,98 @@ define([
 
 		_setContainerWidgetAttr: function(val){
 			console.log("Set Container Widget: ", val);
-			this.containerWidget=val;
+			this.containerWidget = val;
 		},
 
 		onSetLoading: function(attr, oldVal, loading){
-			if (loading){
+			if(loading){
 				this.contentPane.set("content", "<div>This is group explore</div>");
 			}
 		},
-		
+
 		postCreate: function(){
 			console.log("in postCreate selection: ", this.selection);
 			console.log("in postCreate Container Widget: ", this.containerWidget);
-			var i=0;
+			var i = 0;
 			var paths = [];
-			for (i=0; i<this.selection.length; i++)
-			{
+			for(i = 0; i < this.selection.length; i++){
 				paths.push(this.selection[i].path);
 			}
 			console.log("paths: ", paths);
-			WorkspaceManager.getObjects(paths,false).then(lang.hitch(this, function(objs){
+			WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function(objs){
 				this._resultObjects = objs;
 				console.log("got objects: ", objs);
 				init_g(objs, this.groupType);
 
 			}));
-									
+
 			domConstruct.empty(this.containerNode);
-				var path = "/js/p3/resources/gse.css";
-				var link = domConstruct.create("link", {
-      			"rel": "stylesheet",
-   			    "type": "text/css",
-                "href": path
-				   }, this.containerNode, "last");
+			var path = "/js/p3/resources/gse.css";
+			var link = domConstruct.create("link", {
+				"rel": "stylesheet",
+				"type": "text/css",
+				"href": path
+			}, this.containerNode, "last");
 
-			var div = domConstruct.create("div",{id: "gse"}, this.containerNode);
-			
-            var color_type1 = domConstruct.create("input",{type:"radio", name: "color_type", id:"default", value : "true", checked: 'Y', style: "margin: 5px"}, div);
-            var color_label1 = domConstruct.create("label",{"for": "default", innerHTML: "default"}, div);
-            var color_type2 = domConstruct.create("input",{type:"radio", name: "color_type", id:"alter_color", value : "false", style: "margin: 5px"}, div);
-            var color_label1 = domConstruct.create("label",{"for": "default", innerHTML: "alternative color"}, div);
+			var div = domConstruct.create("div", {id: "gse"}, this.containerNode);
 
-			color_type1.addEventListener("click", function() {
-  				colorChoice('Y');
+			var color_type1 = domConstruct.create("input", {
+				type: "radio",
+				name: "color_type",
+				id: "default",
+				value: "true",
+				checked: 'Y',
+				style: "margin: 5px"
+			}, div);
+			var color_label1 = domConstruct.create("label", {"for": "default", innerHTML: "default"}, div);
+			var color_type2 = domConstruct.create("input", {
+				type: "radio",
+				name: "color_type",
+				id: "alter_color",
+				value: "false",
+				style: "margin: 5px"
+			}, div);
+			var color_label1 = domConstruct.create("label", {"for": "default", innerHTML: "alternative color"}, div);
+
+			color_type1.addEventListener("click", function(){
+				colorChoice('Y');
 			});
 
-			color_type2.addEventListener("click", function() {
-  				colorChoice('N');
+			color_type2.addEventListener("click", function(){
+				colorChoice('N');
 			});
 
-			var save_btn = domConstruct.create("input", {type: "button", value: "Save SVG", style: "margin: 10px"}, div);
-			save_btn.addEventListener("click", function() {
-  				console.log("save SVG");  
-  				saveSVG();
-			});
-			
-			var create_btn = domConstruct.create("input", {type: "button", value: "Create group from selected region(s)", style: "margin: 10px"}, div);
-			create_btn.addEventListener("click", function() {
-  				createGroup();
+			var save_btn = domConstruct.create("input", {
+				type: "button",
+				value: "Save SVG",
+				style: "margin: 10px"
+			}, div);
+			save_btn.addEventListener("click", function(){
+				console.log("save SVG");
+				saveSVG();
 			});
 
-			var div2 = domConstruct.create("div",{id: "gse-members"}, div);
-			var div1 = domConstruct.create("div",{id: "create_msg", innerHTML: "Please select one or more regions to view members."}, div);
-			var div3 = domConstruct.create("div",{id: "gse-venndiagram"}, div);
-       },
-			
+			var create_btn = domConstruct.create("input", {
+				type: "button",
+				value: "Create group from selected region(s)",
+				style: "margin: 10px"
+			}, div);
+			create_btn.addEventListener("click", function(){
+				createGroup();
+			});
+
+			var div2 = domConstruct.create("div", {id: "gse-members"}, div);
+			var div1 = domConstruct.create("div", {
+				id: "create_msg",
+				innerHTML: "Please select one or more regions to view members."
+			}, div);
+			var div3 = domConstruct.create("div", {id: "gse-venndiagram"}, div);
+		},
+
 		startup: function(){
-            if (this._started) { return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 		}
 
@@ -48447,701 +48738,702 @@ define([
 }();
 },
 'p3/widget/Venn':function(){
-define([], function(){
-window.GroupCompare = {
-  GroupCompare: function(config) {
-    // var panelHeight = 400;
-    // var panelWidth = 500;
-    // var altitudeFactor = 0.866; //0.5*sqrt(3) - to get height of equilateral triangle
-    var radius = 100;
-    var radiusSquared = radius * radius; // to make distance calculations faster, squaring radius once instead of doing lots of sqrt()
-    var memberHash = new Array();
-    var regions = []; // maps from region bit mask to a Region Object, which includes the groups and members represented by that region.
-    var vennPanelId = config.vennPanel;
-    // var displayCountsByDefault = config.displayCountsByDefault;
-    var selectedMembers = [];
-    var selectedRegions = [];
-    var listeners = [];
-    var groups = [];
-    var svg = null;
-
-    if (config.groups) {
-      for (var i = 0, ilen = config.groups.length; i < ilen; ++i) {
-        this.addGroup(config.groups[i]);
-      }
-    }
-
-    this.addGroup = function(group) {
-      if (group.members && group.name) {
-        group.index = groups.length;
-        groups.push(group);
-        groups[group.name] = group;
-        for (var i = 0, ilen = group.members.length; i < ilen; ++i) {
-          if (!memberHash[group.members[i]]) {
-            memberHash[group.members[i]] = 0;
-          }
-          memberHash[group.members[i]] |= 1 << group.index;
-        }
-      }
-      console.log("in Venn.js, addGroup, groups=", groups);
-    };
-
-    // Creates a bit mask, with set bits for the indices of included groups
-    createMask = function(includeGroups) {
-      var mask = 0;
-      if (includeGroups) {
-        for (var i = 0, ilen = includeGroups.length; i < ilen; ++i) {
-          if (includeGroups[i].index || typeof includeGroups[i].index != 'undefined') {
-            // if the groups are passed in
-            mask |= 1 << includeGroups[i].index;
-          } else {
-            // if the names of the groups are passed in
-            mask |= 1 << groups[includeGroups[i]].index;
-          }
-        }
-      }
-      // console.log("printing mask: ");
-      // console.log(mask);
-      // console.log("end createMask, includeGroup:");
-      // console.log(includeGroups);
-      return mask;
-    };
-
-    // returns an array of members for the region represented by the mask
-    getMatchingMembers = function(mask) {
-      var r = [];
-      console.log("In getMatchedMembers, mask="+mask);
-      console.log(regions[mask]);
-
-      if (regions[mask] && regions[mask].members) {
-        // members for this region have already been calculated and cached
-        // console.log("using cached result for members of region");
-        r = regions[mask].members;
-      } else {
-        r = [];
-        for (var k in memberHash) {
-          if (memberHash[k] == mask) {
-            r.push(k);
-          }
-        }
-        // cache result for future use
-        if (!regions[mask]) {
-          regions[mask] = {};
-        }
-        regions[mask].members = r;
-      }
-      console.log("End getMatchedMembers, mask="+mask);
-      console.log(regions[mask]);
-      console.log("member Ids and Masks:");
-      console.log(memberHash);
-      console.log(r);
-      return r;
-    };
-
-    arraysEqual = function(a, b) {
-      var r = ((a.length == b.length));
-      for (var i = 0, ilen = a.length; r && i < ilen; ++i) {
-        r = a[i] == b[i];
-      }
-      return r;
-    };
-
-    this.createDisplayTwo = function() {
-      var vennPanel = d3.select("#" + vennPanelId);
-      vennPanel.classed("venn_panel", true);
-      console.log("vennPanel:", vennPanel);
-      console.log("vennPanel height: " + vennPanel.style("height"));
-
-      svg = vennPanel.append("svg")
-      // viewBox doesn't work for downloading PNG in Firefox
-      .attr("viewBox", "0 0 400 400").attr("preserveAspectRatio", "xMinYMin meet");
-      var vennCenterX = 200;
-      var vennCenterY = 200;
-
-      // center points and radii for two circles.
-      groups[0].x = vennCenterX - radius / 2;
-      groups[0].y = vennCenterY;
-      groups[1].x = vennCenterX + radius / 2;
-      groups[1].y = vennCenterY;
-
-      // points for number labels
-      groups[0].labelX = groups[0].x - radius / 2;
-      groups[0].labelY = groups[0].y;
-      groups[1].labelX = groups[1].x + radius / 2;
-      groups[1].labelY = groups[1].y;
-
-      var region_name;
-      var defs = svg.append("svg:defs");
-      // console.log("defs:", defs);
-
-      defs.append("svg:circle").attr("id", "g0").attr("cx", "" + groups[0].x).attr("cy", "" + groups[0].y).attr("r", "" + radius);
-      defs.append("svg:circle").attr("id", "g1").attr("cx", "" + groups[1].x).attr("cy", "" + groups[1].y).attr("r", "" + radius);
-
-      // A clipPath is needed to get the center region: the intersection of two circles.
-      // The other regions are all done with masks.
-      // It would probably be better to do it with more clipPaths and fewer masks, because clipPath
-      // is apparently more efficient than mask, but masks are getting it done.
-      defs.append("clipPath").attr("id", "c0p1").append("use").attr("xlink:href", "#g1");
-
-      // define masks.
-      // Anything under a 'white' area of a mask is opaque/visible.
-      // Anything under a 'black' area of a mask is transparent/hidden.
-
-      // mask for 0+1
-      defs.append("mask").attr("id", "m0p1").append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
-
-      // mask for 0-1
-      var m0m1 = defs.append("mask").attr("id", "m0m1");
-      m0m1.append("svg:use").attr("xlink:href", "#g0").style("fill", "white");
-      m0m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
-
-      // mask for 1-0
-      region_name = "(" + groups[1].name + ") - (" + groups[0].name + ")";
-      var m1m0 = defs.append("mask").attr("id", "m1m0");
-      m1m0.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
-      m1m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
-
-      // draw circles
-      svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
-      svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
-
-      // region for 0-1
-      region_name = "(" + groups[0].name + ") - (" + groups[1].name + ")";
-      var region = svg.append("use").attr("id", "r0m1").attr("xlink:href", "#g0").attr("mask", "url(#m0m1)").attr("name", region_name).classed(
-              "venn_region", "true").classed("active", false);
-      var regionBitMask = createMask([groups[0]]);
-      var members = getMatchingMembers(regionBitMask);
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0]]
-      };
-      // console.log(regions);
-
-      // region for 1-0
-      region_name = "(" + groups[1].name + ") - (" + groups[0].name + ")";
-      region = svg.append("use").attr("id", "r1m0").attr("xlink:href", "#g1").attr("mask", "url(#m1m0)").attr("name", region_name).classed(
-              "venn_region", "true").classed("active", false);
-      regionBitMask = createMask([groups[1]]);
-      members = getMatchingMembers(regionBitMask);
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[1]]
-      };
-      console.log(regions);
-
-      // region for 0+1
-      region_name = "(" + groups[0].name + ") + (" + groups[1].name + ")";
-      region = svg.append("use").attr("id", "r0p1").attr("xlink:href", "#g0").attr("clip-path", "url(#c0p1)").attr("mask", "url(#m0p1)").attr("name",
-              region_name).classed("venn_region", "true").classed("active", false);
-
-      regionBitMask = createMask([groups[0], groups[1]]);
-      members = getMatchingMembers(regionBitMask);
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0], groups[1]]
-      };
-      regions[0] = undefined;
-
-      // console.log("after createMask and match group, show regions");
-      // console.log(regions);
-
-      // draw circle stroke
-      svg.append("use").attr("id", "g0_stroke").attr("xlink:href", "#g0").classed("venn_circle_stroke", "true");
-
-      svg.append("use").attr("id", "g1_stroke").attr("xlink:href", "#g1").classed("venn_circle_stroke", "true");
-
-      // add region labels for counts
-      for (var i = 0; i < 4; ++i) {
-        svg.append("svg:text").attr("class", "region_label");
-      }
-      var regionLabels = d3.selectAll(".region_label");
-      regionLabels.data(regions);
-
-      regionLabels.text(function(d) {
-        var r = "";
-        if (d) {
-          r = d.members.length;
-        }
-        return r;
-      }).attr("x", function(d) {
-        var r = -100;
-        if (d) {
-          if (d.groups.length == 1) {
-            r = d.groups[0].labelX;
-          } else if (d.groups.length == 2) {
-            r = (d.groups[0].labelX + d.groups[1].labelX) / 2;
-          } else if (d.groups.length == 3) {
-            r = vennCenterX;
-          }
-        }
-        return r;
-      }).attr("y", function(d) {
-        var r = -100;
-        if (d) {
-          if (d.groups.length == 1) {
-            r = d.groups[0].labelY;
-          } else if (d.groups.length == 2) {
-            r = (d.groups[0].labelY + d.groups[1].labelY) / 2;
-          } else if (d.groups.length == 3) {
-            r = vennCenterY;
-          }
-        }
-        return r;
-      }).call(d3.behavior.drag().on("drag", dragLabel)).on("click", function() {
-        vennClicked();
-      });
-
-      // console.log("regionBitMask=" + regionBitMask);
-
-      // add circle labels for group names
-      svg.append("svg:text").attr("class", "circle_label").text(groups[0].name + " (" + groups[0].members.length + ")").attr("x", groups[0].x).attr("y", groups[0].y - radius);
-      svg.append("svg:text").attr("class", "circle_label").text(groups[1].name + " (" + groups[1].members.length + ")").attr("x", groups[1].x).attr("y", groups[1].y + radius);
-
-      // adjust x coord of circle labels
-      var circleLabels = d3.selectAll(".circle_label");
-      circleLabels.data(groups);
-      circleLabels.attr("x", function(d) {
-        var r = d.x;
-        // the bottom right circle text is already placed correctly
-        if (r == vennCenterX) {
-          // it's the top circle - center the text
-          r -= (this.getBBox().width / 2);
-        } else if (r < vennCenterX) {
-          // it's the bottom left circle - put text to the left
-          r -= this.getBBox().width;
-        }
-        return r;
-      }).attr("y", function(d) {
-        var r = d.y;
-        var bumper = 5;
-        if (r < vennCenterY) {
-          // top circle - move the label up above the circle
-          r -= radius + bumper;
-        } else {
-          // one of the lower circles. drop the label down below the circles
-          r += radius + this.getBBox().height + bumper;
-        }
-        return r;
-      }).call(d3.behavior.drag().on("drag", dragLabel));
-
-      svg.on("click", function() {
-        vennClicked();
-      });
-    };
-
-    // Display for 3 groups
-    this.createDisplay = function() {
-      var vennPanel = d3.select("#" + vennPanelId);
-      vennPanel.classed("venn_panel", true);
-      // console.log("vennPanel:", vennPanel);
-      // console.log("vennPanel height: " + vennPanel.style("height"));
-
-      var altitude = radius * 0.866; // height of the equilateral triangle formed by the three center points. sqrt(3)/2 ~= 0.866
-      svg = vennPanel.append("svg").attr("viewBox", "0 0 400 400").attr("preserveAspectRatio", "xMinYMin meet");
-      var vennCenterX = 200;
-      var vennCenterY = 200;
-
-      // center points and radii for the three triangles - hard coding for three for now.
-      groups[0].x = vennCenterX;
-      groups[0].y = vennCenterY - radius / 2;
-      groups[1].x = vennCenterX - radius / 2;
-      groups[1].y = vennCenterY + altitude / 2;
-      groups[2].x = vennCenterX + radius / 2;
-      groups[2].y = vennCenterY + altitude / 2;
-
-      // points for number labels
-      groups[0].labelX = groups[0].x;
-      groups[0].labelY = groups[0].y - radius / 2;
-      groups[1].labelX = groups[1].x - radius / 2;
-      groups[1].labelY = groups[1].y + radius / 2;
-      groups[2].labelX = groups[2].x + radius / 2;
-      groups[2].labelY = groups[2].y + radius / 2;
-
-      var defs = svg.append("svg:defs");
-      // console.log("defs:", defs);
-
-      defs.append("svg:circle").attr("id", "g0").attr("cx", "" + groups[0].x).attr("cy", "" + groups[0].y).attr("r", "" + radius);
-      defs.append("svg:circle").attr("id", "g1").attr("cx", "" + groups[1].x).attr("cy", "" + groups[1].y).attr("r", "" + radius);
-      defs.append("svg:circle").attr("id", "g2").attr("cx", "" + groups[2].x).attr("cy", "" + groups[2].y).attr("r", "" + radius);
-
-      // A clipPath is needed to get the center region: the intersection of all three circles.
-      // The other regions are all done with masks.
-      // It would probably be better to do it with more clipPaths and fewer masks, because clipPath
-      // is apparently more efficient than mask, but masks are getting it done.
-      defs.append("clipPath").attr("id", "c0p1p2").append("use").attr("xlink:href", "#g1");
-
-      // define masks.
-      // Anything under a 'white' area of a mask is opaque/visible.
-      // Anything under a 'black' area of a mask is transparent/hidden.
-
-      // mask for 0+1+2
-      defs.append("mask").attr("id", "m0p1p2").append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
-
-      // mask for 0-1-2
-      var m0m1m2 = defs.append("mask").attr("id", "m0m1m2");
-
-      m0m1m2.append("svg:use").attr("xlink:href", "#g0").style("fill", "white");
-      m0m1m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
-      m0m1m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
-
-      // mask for 1-0-2
-      var m1m0m2 = defs.append("mask").attr("id", "m1m0m2");
-
-      m1m0m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
-      m1m0m2.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
-      m1m0m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
-
-      // mask for 2-0-1
-      var m2m0m1 = defs.append("mask").attr("id", "m2m0m1");
-      m2m0m1.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
-      m2m0m1.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
-      m2m0m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
-
-      // mask for 0+1-2
-      var m0p1m2 = defs.append("mask").attr("id", "m0p1m2");
-      m0p1m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
-      m0p1m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
-
-      // mask for 0+2-1
-      var m0p2m1 = defs.append("mask").attr("id", "m0p2m1");
-      m0p2m1.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
-      m0p2m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
-
-      // mask for 1+2-0
-      var m1p2m0 = defs.append("mask").attr("id", "m1p2m0");
-      m1p2m0.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
-      m1p2m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
-
-      // draw circles
-      svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
-      svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
-      svg.append("use").attr("id", "g2_circle").attr("xlink:href", "#g2").classed("venn_circle", "true");
-
-      // svg.append("svg:text").attr("class","circle_label");
-      /*
-       * var region = svg.append("use") .attr("id", "blank") .attr("xlink:href", "#g0") .style("display", "none") .classed("venn_region", "true")
-       * .classed("active", false) ;
-       */
-
-      // region for 0-1-2
-      var region = svg.append("use").attr("id", "r0m1m2").attr("xlink:href", "#g0").attr("mask", "url(#m0m1m2)").classed("venn_region", "true")
-              .classed("active", false);
-      var regionBitMask = createMask([groups[0]]);
-      var members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[0].name + ") - (" + groups[1].name + ") - (" + groups[2].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0]]
-      };
-      // console.log(regions);
-
-      // region for 1-0-2
-      region = svg.append("use").attr("id", "r1m0m2").attr("xlink:href", "#g1").attr("mask", "url(#m1m0m2)").classed("venn_region", "true").classed(
-              "active", false);
-      regionBitMask = createMask([groups[1]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[1].name + ") - (" + groups[0].name + ") - (" + groups[2].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[1]]
-      };
-      // console.log(regions);
-
-      // region for 2-0-1
-      region = svg.append("use").attr("id", "r2m0m1").attr("xlink:href", "#g2").attr("mask", "url(#m2m0m1)").classed("venn_region", "true").classed(
-              "active", false);
-      regionBitMask = createMask([groups[2]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[2].name + ") - (" + groups[0].name + ") - (" + groups[1].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[2]]
-      };
-      // console.log(regions);
-
-      // region for 0+1-2
-      region = svg.append("use").attr("id", "r0p1m2").attr("xlink:href", "#g0").attr("mask", "url(#m0p1m2)").classed("venn_region", "true").classed(
-              "active", false);
-      regionBitMask = createMask([groups[0], groups[1]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[0].name + ") + (" + groups[1].name + ") - (" + groups[2].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0], groups[1]]
-      };
-      // console.log(regions);
-
-      // region for 0+2-1
-      region = svg.append("use").attr("id", "r0p2m1").attr("xlink:href", "#g0").attr("mask", "url(#m0p2m1)").classed("venn_region", "true").classed(
-              "active", false);
-      regionBitMask = createMask([groups[0], groups[2]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[0].name + ") + (" + groups[2].name + ") - (" + groups[1].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0], groups[2]]
-      };
-      // console.log(regions);
-
-      // region for 1+2-0
-      region = svg.append("use").attr("id", "r1p2m0").attr("xlink:href", "#g1").attr("mask", "url(#m1p2m0)").classed("venn_region", "true").classed(
-              "active", false);
-      regionBitMask = createMask([groups[1], groups[2]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[1].name + ") + (" + groups[2].name + ") - (" + groups[0].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[1], groups[2]]
-      };
-      // console.log(regions);
-
-      // region for 0+1+2
-      region = svg.append("use").attr("id", "r0p1p2").attr("xlink:href", "#g0").attr("clip-path", "url(#c0p1p2)").attr("mask", "url(#m0p1p2)")
-              .classed("venn_region", "true").classed("active", false);
-
-      regionBitMask = createMask([groups[0], groups[1], groups[2]]);
-      members = getMatchingMembers(regionBitMask);
-      region_name = "(" + groups[0].name + ") + (" + groups[1].name + ") + (" + groups[2].name + ")";
-      regions[regionBitMask] = {
-        "region": region,
-        "region_name": region_name,
-        "region_mask": regionBitMask,
-        "members": members,
-        "groups": [groups[0], groups[1], groups[2]]
-      };
-      regions[0] = undefined;
-
-      // draw circle stroke
-      svg.append("use").attr("id", "g0_stroke").attr("xlink:href", "#g0").classed("venn_circle_stroke", "true");
-      svg.append("use").attr("id", "g1_stroke").attr("xlink:href", "#g1").classed("venn_circle_stroke", "true");
-      svg.append("use").attr("id", "g2_stroke").attr("xlink:href", "#g2").classed("venn_circle_stroke", "true");
-
-      // add region labels for counts
-      for (var i = 0; i < 8; ++i) {
-        svg.append("svg:text").attr("class", "region_label");
-      }
-      var regionLabels = d3.selectAll(".region_label");
-      regionLabels.data(regions);
-
-      regionLabels.text(function(d) {
-        var r = "";
-        if (d) {
-          r = d.members.length;
-        }
-        return r;
-      }).attr("x", function(d) {
-        var r = -100;
-        if (d) {
-          if (d.groups.length == 1) {
-            r = d.groups[0].labelX;
-          } else if (d.groups.length == 2) {
-            r = (d.groups[0].labelX + d.groups[1].labelX) / 2;
-          } else if (d.groups.length == 3) {
-            r = vennCenterX;
-          }
-        }
-        return r;
-      }).attr("y", function(d) {
-        var r = -100;
-        if (d) {
-          if (d.groups.length == 1) {
-            r = d.groups[0].labelY;
-          } else if (d.groups.length == 2) {
-            r = (d.groups[0].labelY + d.groups[1].labelY) / 2;
-          } else if (d.groups.length == 3) {
-            r = vennCenterY;
-          }
-        }
-        return r;
-      }).call(d3.behavior.drag().on("drag", dragLabel)).on("click", function() {
-        vennClicked();
-      });
-
-      // add circle labels for group names
-      svg.append("svg:text").attr("class", "circle_label").text(groups[0].name + " (" + groups[0].members.length + ")").attr("x", groups[0].x).attr("y", groups[0].y - radius);
-      svg.append("svg:text").attr("class", "circle_label").text(groups[1].name + " (" + groups[1].members.length + ")").attr("x", groups[1].x).attr("y", groups[1].y + radius);
-      svg.append("svg:text").attr("class", "circle_label").text(groups[2].name + " (" + groups[2].members.length + ")").attr("x", groups[2].x).attr("y", groups[2].y + radius);
-
-      // adjust x coord of circle labels
-      var circleLabels = d3.selectAll(".circle_label");
-      circleLabels.data(groups);
-      circleLabels.attr("x", function(d) {
-        var r = d.x;
-        // the bottom right circle text is already placed correctly
-        if (r == vennCenterX) {
-          // it's the top circle - center the text
-          r -= (this.getBBox().width / 2);
-        } else if (r < vennCenterX) {
-          // it's the bottom left circle - put text to the left
-          r -= this.getBBox().width;
-        }
-        return r;
-      }).attr("y", function(d) {
-        var r = d.y;
-        var bumper = 5;
-        if (r < vennCenterY) {
-          // top circle - move the label up above the circle
-          r -= radius + bumper;
-        } else {
-          // one of the lower circles. drop the label down below the circles
-          r += radius + this.getBBox().height + bumper;
-        }
-        return r;
-      }).call(d3.behavior.drag().on("drag", dragLabel));
-
-      svg.on("click", function() {
-        vennClicked();
-      });
-    };
-
-    dragLabel = function() {
-      this.parentNode.appendChild(this);
-      var dragTarget = d3.select(this);
-      dragTarget.attr("x", function() {
-        return d3.event.dx + parseInt(dragTarget.attr("x"));
-      }).attr("y", function() {
-        return d3.event.dy + parseInt(dragTarget.attr("y"));
-      });
-
-    };
-
-    vennClicked = function() {
-      // console.log(d3.event);
-      var clickX = d3.event.clientX;
-      var clickY = d3.event.clientY;
-      var modKeyPressed = d3.event.ctrlKey | d3.event.metaKey;
-
-      var screenPoint = svg[0][0].createSVGPoint();
-      screenPoint.x = clickX;
-      screenPoint.y = clickY;
-      var ctm = svg[0][0].getScreenCTM();
-      var svgPoint = screenPoint.matrixTransform(ctm.inverse());
-      clickX = svgPoint.x;
-      clickY = svgPoint.y;
-
-      // check each group to see if the point is within the circle for the group
-      var matchingGroups = [];
-      for (var i = 0, ilen = groups.length; i < ilen; ++i) {
-        var xdiff = Math.abs(groups[i].x - clickX);
-        var ydiff = Math.abs(groups[i].y - clickY);
-        if (xdiff * xdiff + ydiff * ydiff < radiusSquared) {
-          matchingGroups.push(groups[i]);
-        }
-      }
-
-      if (matchingGroups.length == 0) {
-        // click was not within a circle - deselect everything
-        deselectAllRegions();
-        // fireChangeEvent();
-      } else {
-        // click was in a at least one circle
-        // console.log("matchingGroups: " + matchingGroups.length);
-        var mask = createMask(matchingGroups);
-        // console.log("mask: " + mask);
-        var clickedRegion = regions[mask];
-        // console.log("clickedRegion:");
-        // console.log(clickedRegion);
-        if (modKeyPressed) {
-          // if modifier key was pressed, keep all current selection, except toggle the selection state of the clicked region
-          var clickedRegionWasSelected = clickedRegion.region.classed("active");
-          // console.log("clickedRegionWasSelected: " + clickedRegionWasSelected);
-          clickedRegion.region.classed("active", !clickedRegionWasSelected);
-        } else {
-          // if modifier key was not pressed, deselect everything, then select the clicked region
-          deselectAllRegions();
-          clickedRegion.region.classed("active", true);
-        }
-
-        if (clickedRegion.region.classed("active")) {
-          // console.log("clicked region is selected now");
-          selectedRegions.push(clickedRegion);
-          // console.log(selectedRegions);
-        } else {
-          selectedRegions.splice(selectedRegions.indexOf(clickedRegion), 1);
-        }
-      }
-
-      // reset selectedMembers
-      selectedMembers = [];
-      for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
-        selectedMembers.push.apply(selectedMembers, selectedRegions[i].members);
-        // console.log("Reset selected members");
-        // console.log(selectedMembers);
-      }
-      fireChangeEvent();
-    };
-
-    deselectAllRegions = function() {
-      // de-select any currently selected regions
-      for (var i = 0, ilen = selectedRegions.length; i < ilen; ++i) {
-        var inactiveRegion = selectedRegions[i];
-        inactiveRegion.region.classed("active", false);
-      }
-      selectedRegions = [];
-      selectedMembers = [];
-    };
-
-    this.getSelectedMembers = function() {
-      return selectedMembers;
-    };
-
-    this.getSelectedRegions = function() {
-      return selectedRegions;
-    };
-
-    this.getGroups = function() {
-      return groups;
-    };
-
-    this.addSelectionListener = function(listener) {
-      if (listener) {
-        listeners.push(listener);
-      }
-    };
-
-    this.removeSelectionListener = function(listener) {
-      var index = listeners.indexOf(listener);
-      if (index >= 0) {
-        listeners.splice(index, 1);
-      }
-    };
-
-    fireChangeEvent = function() {
-      for (var i = 0, ilen = listeners.length; i < ilen; ++i) {
-        listeners[i]();
-      }
-    };
-  }
-};
-
-return window.GroupCompare
+define([
+], function(){
+	window.GroupCompare = {
+		GroupCompare: function(config){
+			// var panelHeight = 400;
+			// var panelWidth = 500;
+			// var altitudeFactor = 0.866; //0.5*sqrt(3) - to get height of equilateral triangle
+			var radius = 100;
+			var radiusSquared = radius * radius; // to make distance calculations faster, squaring radius once instead of doing lots of sqrt()
+			var memberHash = [];
+			var regions = []; // maps from region bit mask to a Region Object, which includes the groups and members represented by that region.
+			var vennPanelId = config.vennPanel;
+			// var displayCountsByDefault = config.displayCountsByDefault;
+			var selectedMembers = [];
+			var selectedRegions = [];
+			var listeners = [];
+			var groups = [];
+			var svg = null;
+
+			if(config.groups){
+				for(var i = 0, ilen = config.groups.length; i < ilen; ++i){
+					this.addGroup(config.groups[i]);
+				}
+			}
+
+			this.addGroup = function(group){
+				if(group.members && group.name){
+					group.index = groups.length;
+					groups.push(group);
+					groups[group.name] = group;
+					for(var i = 0, ilen = group.members.length; i < ilen; ++i){
+						if(!memberHash[group.members[i]]){
+							memberHash[group.members[i]] = 0;
+						}
+						memberHash[group.members[i]] |= 1 << group.index;
+					}
+				}
+				console.log("in Venn.js, addGroup, groups=", groups);
+			};
+
+			// Creates a bit mask, with set bits for the indices of included groups
+			createMask = function(includeGroups){
+				var mask = 0;
+				if(includeGroups){
+					for(var i = 0, ilen = includeGroups.length; i < ilen; ++i){
+						if(includeGroups[i].index || typeof includeGroups[i].index != 'undefined'){
+							// if the groups are passed in
+							mask |= 1 << includeGroups[i].index;
+						}else{
+							// if the names of the groups are passed in
+							mask |= 1 << groups[includeGroups[i]].index;
+						}
+					}
+				}
+				// console.log("printing mask: ");
+				// console.log(mask);
+				// console.log("end createMask, includeGroup:");
+				// console.log(includeGroups);
+				return mask;
+			};
+
+			// returns an array of members for the region represented by the mask
+			getMatchingMembers = function(mask){
+				var r = [];
+				console.log("In getMatchedMembers, mask=" + mask);
+				console.log(regions[mask]);
+
+				if(regions[mask] && regions[mask].members){
+					// members for this region have already been calculated and cached
+					// console.log("using cached result for members of region");
+					r = regions[mask].members;
+				}else{
+					r = [];
+					for(var k in memberHash){
+						if(memberHash[k] == mask){
+							r.push(k);
+						}
+					}
+					// cache result for future use
+					if(!regions[mask]){
+						regions[mask] = {};
+					}
+					regions[mask].members = r;
+				}
+				console.log("End getMatchedMembers, mask=" + mask);
+				console.log(regions[mask]);
+				console.log("member Ids and Masks:");
+				console.log(memberHash);
+				console.log(r);
+				return r;
+			};
+
+			arraysEqual = function(a, b){
+				var r = ((a.length == b.length));
+				for(var i = 0, ilen = a.length; r && i < ilen; ++i){
+					r = a[i] == b[i];
+				}
+				return r;
+			};
+
+			this.createDisplayTwo = function(){
+				var vennPanel = d3.select("#" + vennPanelId);
+				vennPanel.classed("venn_panel", true);
+				console.log("vennPanel:", vennPanel);
+				console.log("vennPanel height: " + vennPanel.style("height"));
+
+				svg = vennPanel.append("svg")
+					// viewBox doesn't work for downloading PNG in Firefox
+					.attr("viewBox", "0 0 400 400").attr("preserveAspectRatio", "xMinYMin meet");
+				var vennCenterX = 200;
+				var vennCenterY = 200;
+
+				// center points and radii for two circles.
+				groups[0].x = vennCenterX - radius / 2;
+				groups[0].y = vennCenterY;
+				groups[1].x = vennCenterX + radius / 2;
+				groups[1].y = vennCenterY;
+
+				// points for number labels
+				groups[0].labelX = groups[0].x - radius / 2;
+				groups[0].labelY = groups[0].y;
+				groups[1].labelX = groups[1].x + radius / 2;
+				groups[1].labelY = groups[1].y;
+
+				var region_name;
+				var defs = svg.append("svg:defs");
+				// console.log("defs:", defs);
+
+				defs.append("svg:circle").attr("id", "g0").attr("cx", "" + groups[0].x).attr("cy", "" + groups[0].y).attr("r", "" + radius);
+				defs.append("svg:circle").attr("id", "g1").attr("cx", "" + groups[1].x).attr("cy", "" + groups[1].y).attr("r", "" + radius);
+
+				// A clipPath is needed to get the center region: the intersection of two circles.
+				// The other regions are all done with masks.
+				// It would probably be better to do it with more clipPaths and fewer masks, because clipPath
+				// is apparently more efficient than mask, but masks are getting it done.
+				defs.append("clipPath").attr("id", "c0p1").append("use").attr("xlink:href", "#g1");
+
+				// define masks.
+				// Anything under a 'white' area of a mask is opaque/visible.
+				// Anything under a 'black' area of a mask is transparent/hidden.
+
+				// mask for 0+1
+				defs.append("mask").attr("id", "m0p1").append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
+
+				// mask for 0-1
+				var m0m1 = defs.append("mask").attr("id", "m0m1");
+				m0m1.append("svg:use").attr("xlink:href", "#g0").style("fill", "white");
+				m0m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
+
+				// mask for 1-0
+				region_name = "(" + groups[1].name + ") - (" + groups[0].name + ")";
+				var m1m0 = defs.append("mask").attr("id", "m1m0");
+				m1m0.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
+				m1m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
+
+				// draw circles
+				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
+				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
+
+				// region for 0-1
+				region_name = "(" + groups[0].name + ") - (" + groups[1].name + ")";
+				var region = svg.append("use").attr("id", "r0m1").attr("xlink:href", "#g0").attr("mask", "url(#m0m1)").attr("name", region_name).classed(
+					"venn_region", "true").classed("active", false);
+				var regionBitMask = createMask([groups[0]]);
+				var members = getMatchingMembers(regionBitMask);
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0]]
+				};
+				// console.log(regions);
+
+				// region for 1-0
+				region_name = "(" + groups[1].name + ") - (" + groups[0].name + ")";
+				region = svg.append("use").attr("id", "r1m0").attr("xlink:href", "#g1").attr("mask", "url(#m1m0)").attr("name", region_name).classed(
+					"venn_region", "true").classed("active", false);
+				regionBitMask = createMask([groups[1]]);
+				members = getMatchingMembers(regionBitMask);
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[1]]
+				};
+				console.log(regions);
+
+				// region for 0+1
+				region_name = "(" + groups[0].name + ") + (" + groups[1].name + ")";
+				region = svg.append("use").attr("id", "r0p1").attr("xlink:href", "#g0").attr("clip-path", "url(#c0p1)").attr("mask", "url(#m0p1)").attr("name",
+					region_name).classed("venn_region", "true").classed("active", false);
+
+				regionBitMask = createMask([groups[0], groups[1]]);
+				members = getMatchingMembers(regionBitMask);
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0], groups[1]]
+				};
+				regions[0] = undefined;
+
+				// console.log("after createMask and match group, show regions");
+				// console.log(regions);
+
+				// draw circle stroke
+				svg.append("use").attr("id", "g0_stroke").attr("xlink:href", "#g0").classed("venn_circle_stroke", "true");
+
+				svg.append("use").attr("id", "g1_stroke").attr("xlink:href", "#g1").classed("venn_circle_stroke", "true");
+
+				// add region labels for counts
+				for(var i = 0; i < 4; ++i){
+					svg.append("svg:text").attr("class", "region_label");
+				}
+				var regionLabels = d3.selectAll(".region_label");
+				regionLabels.data(regions);
+
+				regionLabels.text(function(d){
+					var r = "";
+					if(d){
+						r = d.members.length;
+					}
+					return r;
+				}).attr("x", function(d){
+					var r = -100;
+					if(d){
+						if(d.groups.length == 1){
+							r = d.groups[0].labelX;
+						}else if(d.groups.length == 2){
+							r = (d.groups[0].labelX + d.groups[1].labelX) / 2;
+						}else if(d.groups.length == 3){
+							r = vennCenterX;
+						}
+					}
+					return r;
+				}).attr("y", function(d){
+					var r = -100;
+					if(d){
+						if(d.groups.length == 1){
+							r = d.groups[0].labelY;
+						}else if(d.groups.length == 2){
+							r = (d.groups[0].labelY + d.groups[1].labelY) / 2;
+						}else if(d.groups.length == 3){
+							r = vennCenterY;
+						}
+					}
+					return r;
+				}).call(d3.behavior.drag().on("drag", dragLabel)).on("click", function(){
+					vennClicked();
+				});
+
+				// console.log("regionBitMask=" + regionBitMask);
+
+				// add circle labels for group names
+				svg.append("svg:text").attr("class", "circle_label").text(groups[0].name + " (" + groups[0].members.length + ")").attr("x", groups[0].x).attr("y", groups[0].y - radius);
+				svg.append("svg:text").attr("class", "circle_label").text(groups[1].name + " (" + groups[1].members.length + ")").attr("x", groups[1].x).attr("y", groups[1].y + radius);
+
+				// adjust x coord of circle labels
+				var circleLabels = d3.selectAll(".circle_label");
+				circleLabels.data(groups);
+				circleLabels.attr("x", function(d){
+					var r = d.x;
+					// the bottom right circle text is already placed correctly
+					if(r == vennCenterX){
+						// it's the top circle - center the text
+						r -= (this.getBBox().width / 2);
+					}else if(r < vennCenterX){
+						// it's the bottom left circle - put text to the left
+						r -= this.getBBox().width;
+					}
+					return r;
+				}).attr("y", function(d){
+					var r = d.y;
+					var bumper = 5;
+					if(r < vennCenterY){
+						// top circle - move the label up above the circle
+						r -= radius + bumper;
+					}else{
+						// one of the lower circles. drop the label down below the circles
+						r += radius + this.getBBox().height + bumper;
+					}
+					return r;
+				}).call(d3.behavior.drag().on("drag", dragLabel));
+
+				svg.on("click", function(){
+					vennClicked();
+				});
+			};
+
+			// Display for 3 groups
+			this.createDisplay = function(){
+				var vennPanel = d3.select("#" + vennPanelId);
+				vennPanel.classed("venn_panel", true);
+				// console.log("vennPanel:", vennPanel);
+				// console.log("vennPanel height: " + vennPanel.style("height"));
+
+				var altitude = radius * 0.866; // height of the equilateral triangle formed by the three center points. sqrt(3)/2 ~= 0.866
+				svg = vennPanel.append("svg").attr("viewBox", "0 0 400 400").attr("preserveAspectRatio", "xMinYMin meet");
+				var vennCenterX = 200;
+				var vennCenterY = 200;
+
+				// center points and radii for the three triangles - hard coding for three for now.
+				groups[0].x = vennCenterX;
+				groups[0].y = vennCenterY - radius / 2;
+				groups[1].x = vennCenterX - radius / 2;
+				groups[1].y = vennCenterY + altitude / 2;
+				groups[2].x = vennCenterX + radius / 2;
+				groups[2].y = vennCenterY + altitude / 2;
+
+				// points for number labels
+				groups[0].labelX = groups[0].x;
+				groups[0].labelY = groups[0].y - radius / 2;
+				groups[1].labelX = groups[1].x - radius / 2;
+				groups[1].labelY = groups[1].y + radius / 2;
+				groups[2].labelX = groups[2].x + radius / 2;
+				groups[2].labelY = groups[2].y + radius / 2;
+
+				var defs = svg.append("svg:defs");
+				// console.log("defs:", defs);
+
+				defs.append("svg:circle").attr("id", "g0").attr("cx", "" + groups[0].x).attr("cy", "" + groups[0].y).attr("r", "" + radius);
+				defs.append("svg:circle").attr("id", "g1").attr("cx", "" + groups[1].x).attr("cy", "" + groups[1].y).attr("r", "" + radius);
+				defs.append("svg:circle").attr("id", "g2").attr("cx", "" + groups[2].x).attr("cy", "" + groups[2].y).attr("r", "" + radius);
+
+				// A clipPath is needed to get the center region: the intersection of all three circles.
+				// The other regions are all done with masks.
+				// It would probably be better to do it with more clipPaths and fewer masks, because clipPath
+				// is apparently more efficient than mask, but masks are getting it done.
+				defs.append("clipPath").attr("id", "c0p1p2").append("use").attr("xlink:href", "#g1");
+
+				// define masks.
+				// Anything under a 'white' area of a mask is opaque/visible.
+				// Anything under a 'black' area of a mask is transparent/hidden.
+
+				// mask for 0+1+2
+				defs.append("mask").attr("id", "m0p1p2").append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
+
+				// mask for 0-1-2
+				var m0m1m2 = defs.append("mask").attr("id", "m0m1m2");
+
+				m0m1m2.append("svg:use").attr("xlink:href", "#g0").style("fill", "white");
+				m0m1m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
+				m0m1m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
+
+				// mask for 1-0-2
+				var m1m0m2 = defs.append("mask").attr("id", "m1m0m2");
+
+				m1m0m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
+				m1m0m2.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
+				m1m0m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
+
+				// mask for 2-0-1
+				var m2m0m1 = defs.append("mask").attr("id", "m2m0m1");
+				m2m0m1.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
+				m2m0m1.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
+				m2m0m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
+
+				// mask for 0+1-2
+				var m0p1m2 = defs.append("mask").attr("id", "m0p1m2");
+				m0p1m2.append("svg:use").attr("xlink:href", "#g1").style("fill", "white");
+				m0p1m2.append("svg:use").attr("xlink:href", "#g2").style("fill", "black");
+
+				// mask for 0+2-1
+				var m0p2m1 = defs.append("mask").attr("id", "m0p2m1");
+				m0p2m1.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
+				m0p2m1.append("svg:use").attr("xlink:href", "#g1").style("fill", "black");
+
+				// mask for 1+2-0
+				var m1p2m0 = defs.append("mask").attr("id", "m1p2m0");
+				m1p2m0.append("svg:use").attr("xlink:href", "#g2").style("fill", "white");
+				m1p2m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
+
+				// draw circles
+				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
+				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
+				svg.append("use").attr("id", "g2_circle").attr("xlink:href", "#g2").classed("venn_circle", "true");
+
+				// svg.append("svg:text").attr("class","circle_label");
+				/*
+				 * var region = svg.append("use") .attr("id", "blank") .attr("xlink:href", "#g0") .style("display", "none") .classed("venn_region", "true")
+				 * .classed("active", false) ;
+				 */
+
+				// region for 0-1-2
+				var region = svg.append("use").attr("id", "r0m1m2").attr("xlink:href", "#g0").attr("mask", "url(#m0m1m2)").classed("venn_region", "true")
+					.classed("active", false);
+				var regionBitMask = createMask([groups[0]]);
+				var members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[0].name + ") - (" + groups[1].name + ") - (" + groups[2].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0]]
+				};
+				// console.log(regions);
+
+				// region for 1-0-2
+				region = svg.append("use").attr("id", "r1m0m2").attr("xlink:href", "#g1").attr("mask", "url(#m1m0m2)").classed("venn_region", "true").classed(
+					"active", false);
+				regionBitMask = createMask([groups[1]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[1].name + ") - (" + groups[0].name + ") - (" + groups[2].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[1]]
+				};
+				// console.log(regions);
+
+				// region for 2-0-1
+				region = svg.append("use").attr("id", "r2m0m1").attr("xlink:href", "#g2").attr("mask", "url(#m2m0m1)").classed("venn_region", "true").classed(
+					"active", false);
+				regionBitMask = createMask([groups[2]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[2].name + ") - (" + groups[0].name + ") - (" + groups[1].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[2]]
+				};
+				// console.log(regions);
+
+				// region for 0+1-2
+				region = svg.append("use").attr("id", "r0p1m2").attr("xlink:href", "#g0").attr("mask", "url(#m0p1m2)").classed("venn_region", "true").classed(
+					"active", false);
+				regionBitMask = createMask([groups[0], groups[1]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[0].name + ") + (" + groups[1].name + ") - (" + groups[2].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0], groups[1]]
+				};
+				// console.log(regions);
+
+				// region for 0+2-1
+				region = svg.append("use").attr("id", "r0p2m1").attr("xlink:href", "#g0").attr("mask", "url(#m0p2m1)").classed("venn_region", "true").classed(
+					"active", false);
+				regionBitMask = createMask([groups[0], groups[2]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[0].name + ") + (" + groups[2].name + ") - (" + groups[1].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0], groups[2]]
+				};
+				// console.log(regions);
+
+				// region for 1+2-0
+				region = svg.append("use").attr("id", "r1p2m0").attr("xlink:href", "#g1").attr("mask", "url(#m1p2m0)").classed("venn_region", "true").classed(
+					"active", false);
+				regionBitMask = createMask([groups[1], groups[2]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[1].name + ") + (" + groups[2].name + ") - (" + groups[0].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[1], groups[2]]
+				};
+				// console.log(regions);
+
+				// region for 0+1+2
+				region = svg.append("use").attr("id", "r0p1p2").attr("xlink:href", "#g0").attr("clip-path", "url(#c0p1p2)").attr("mask", "url(#m0p1p2)")
+					.classed("venn_region", "true").classed("active", false);
+
+				regionBitMask = createMask([groups[0], groups[1], groups[2]]);
+				members = getMatchingMembers(regionBitMask);
+				region_name = "(" + groups[0].name + ") + (" + groups[1].name + ") + (" + groups[2].name + ")";
+				regions[regionBitMask] = {
+					"region": region,
+					"region_name": region_name,
+					"region_mask": regionBitMask,
+					"members": members,
+					"groups": [groups[0], groups[1], groups[2]]
+				};
+				regions[0] = undefined;
+
+				// draw circle stroke
+				svg.append("use").attr("id", "g0_stroke").attr("xlink:href", "#g0").classed("venn_circle_stroke", "true");
+				svg.append("use").attr("id", "g1_stroke").attr("xlink:href", "#g1").classed("venn_circle_stroke", "true");
+				svg.append("use").attr("id", "g2_stroke").attr("xlink:href", "#g2").classed("venn_circle_stroke", "true");
+
+				// add region labels for counts
+				for(var i = 0; i < 8; ++i){
+					svg.append("svg:text").attr("class", "region_label");
+				}
+				var regionLabels = d3.selectAll(".region_label");
+				regionLabels.data(regions);
+
+				regionLabels.text(function(d){
+					var r = "";
+					if(d){
+						r = d.members.length;
+					}
+					return r;
+				}).attr("x", function(d){
+					var r = -100;
+					if(d){
+						if(d.groups.length == 1){
+							r = d.groups[0].labelX;
+						}else if(d.groups.length == 2){
+							r = (d.groups[0].labelX + d.groups[1].labelX) / 2;
+						}else if(d.groups.length == 3){
+							r = vennCenterX;
+						}
+					}
+					return r;
+				}).attr("y", function(d){
+					var r = -100;
+					if(d){
+						if(d.groups.length == 1){
+							r = d.groups[0].labelY;
+						}else if(d.groups.length == 2){
+							r = (d.groups[0].labelY + d.groups[1].labelY) / 2;
+						}else if(d.groups.length == 3){
+							r = vennCenterY;
+						}
+					}
+					return r;
+				}).call(d3.behavior.drag().on("drag", dragLabel)).on("click", function(){
+					vennClicked();
+				});
+
+				// add circle labels for group names
+				svg.append("svg:text").attr("class", "circle_label").text(groups[0].name + " (" + groups[0].members.length + ")").attr("x", groups[0].x).attr("y", groups[0].y - radius);
+				svg.append("svg:text").attr("class", "circle_label").text(groups[1].name + " (" + groups[1].members.length + ")").attr("x", groups[1].x).attr("y", groups[1].y + radius);
+				svg.append("svg:text").attr("class", "circle_label").text(groups[2].name + " (" + groups[2].members.length + ")").attr("x", groups[2].x).attr("y", groups[2].y + radius);
+
+				// adjust x coord of circle labels
+				var circleLabels = d3.selectAll(".circle_label");
+				circleLabels.data(groups);
+				circleLabels.attr("x", function(d){
+					var r = d.x;
+					// the bottom right circle text is already placed correctly
+					if(r == vennCenterX){
+						// it's the top circle - center the text
+						r -= (this.getBBox().width / 2);
+					}else if(r < vennCenterX){
+						// it's the bottom left circle - put text to the left
+						r -= this.getBBox().width;
+					}
+					return r;
+				}).attr("y", function(d){
+					var r = d.y;
+					var bumper = 5;
+					if(r < vennCenterY){
+						// top circle - move the label up above the circle
+						r -= radius + bumper;
+					}else{
+						// one of the lower circles. drop the label down below the circles
+						r += radius + this.getBBox().height + bumper;
+					}
+					return r;
+				}).call(d3.behavior.drag().on("drag", dragLabel));
+
+				svg.on("click", function(){
+					vennClicked();
+				});
+			};
+
+			dragLabel = function(){
+				this.parentNode.appendChild(this);
+				var dragTarget = d3.select(this);
+				dragTarget.attr("x", function(){
+					return d3.event.dx + parseInt(dragTarget.attr("x"));
+				}).attr("y", function(){
+					return d3.event.dy + parseInt(dragTarget.attr("y"));
+				});
+
+			};
+
+			vennClicked = function(){
+				// console.log(d3.event);
+				var clickX = d3.event.clientX;
+				var clickY = d3.event.clientY;
+				var modKeyPressed = d3.event.ctrlKey | d3.event.metaKey;
+
+				var screenPoint = svg[0][0].createSVGPoint();
+				screenPoint.x = clickX;
+				screenPoint.y = clickY;
+				var ctm = svg[0][0].getScreenCTM();
+				var svgPoint = screenPoint.matrixTransform(ctm.inverse());
+				clickX = svgPoint.x;
+				clickY = svgPoint.y;
+
+				// check each group to see if the point is within the circle for the group
+				var matchingGroups = [];
+				for(var i = 0, ilen = groups.length; i < ilen; ++i){
+					var xdiff = Math.abs(groups[i].x - clickX);
+					var ydiff = Math.abs(groups[i].y - clickY);
+					if(xdiff * xdiff + ydiff * ydiff < radiusSquared){
+						matchingGroups.push(groups[i]);
+					}
+				}
+
+				if(matchingGroups.length == 0){
+					// click was not within a circle - deselect everything
+					deselectAllRegions();
+					// fireChangeEvent();
+				}else{
+					// click was in a at least one circle
+					// console.log("matchingGroups: " + matchingGroups.length);
+					var mask = createMask(matchingGroups);
+					// console.log("mask: " + mask);
+					var clickedRegion = regions[mask];
+					// console.log("clickedRegion:");
+					// console.log(clickedRegion);
+					if(modKeyPressed){
+						// if modifier key was pressed, keep all current selection, except toggle the selection state of the clicked region
+						var clickedRegionWasSelected = clickedRegion.region.classed("active");
+						// console.log("clickedRegionWasSelected: " + clickedRegionWasSelected);
+						clickedRegion.region.classed("active", !clickedRegionWasSelected);
+					}else{
+						// if modifier key was not pressed, deselect everything, then select the clicked region
+						deselectAllRegions();
+						clickedRegion.region.classed("active", true);
+					}
+
+					if(clickedRegion.region.classed("active")){
+						// console.log("clicked region is selected now");
+						selectedRegions.push(clickedRegion);
+						// console.log(selectedRegions);
+					}else{
+						selectedRegions.splice(selectedRegions.indexOf(clickedRegion), 1);
+					}
+				}
+
+				// reset selectedMembers
+				selectedMembers = [];
+				for(var i = 0, ilen = selectedRegions.length; i < ilen; ++i){
+					selectedMembers.push.apply(selectedMembers, selectedRegions[i].members);
+					// console.log("Reset selected members");
+					// console.log(selectedMembers);
+				}
+				fireChangeEvent();
+			};
+
+			deselectAllRegions = function(){
+				// de-select any currently selected regions
+				for(var i = 0, ilen = selectedRegions.length; i < ilen; ++i){
+					var inactiveRegion = selectedRegions[i];
+					inactiveRegion.region.classed("active", false);
+				}
+				selectedRegions = [];
+				selectedMembers = [];
+			};
+
+			this.getSelectedMembers = function(){
+				return selectedMembers;
+			};
+
+			this.getSelectedRegions = function(){
+				return selectedRegions;
+			};
+
+			this.getGroups = function(){
+				return groups;
+			};
+
+			this.addSelectionListener = function(listener){
+				if(listener){
+					listeners.push(listener);
+				}
+			};
+
+			this.removeSelectionListener = function(listener){
+				var index = listeners.indexOf(listener);
+				if(index >= 0){
+					listeners.splice(index, 1);
+				}
+			};
+
+			fireChangeEvent = function(){
+				for(var i = 0, ilen = listeners.length; i < ilen; ++i){
+					listeners[i]();
+				}
+			};
+		}
+	};
+
+	return window.GroupCompare
 });
 
 },
@@ -49149,12 +49441,10 @@ return window.GroupCompare
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeJsonRest","dgrid/selector"
-], function(
-	declare, BorderContainer, on,
-	domClass, ContentPane, domConstruct,
-	Grid, formatter, Store, selector
-) {
+	"./PageGrid", "./formatter", "../store/GenomeJsonRest", "dgrid/selector"
+], function(declare, BorderContainer, on,
+			domClass, ContentPane, domConstruct,
+			Grid, formatter, Store, selector){
 
 	var store = new Store({});
 	return declare([Grid], {
@@ -49500,16 +49790,16 @@ define([
 		},
 		defaultSortProperty: "genome_name",
 		constructor: function(){
-			this.queryOptions={
+			this.queryOptions = {
 				sort: [{attribute: this.defaultSortProperty, descending: false}]
 			};
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this
 			// if (this.defaultSortProperty) {
 			// 	this.set("sort", this.defaultSortProperty);
 			// }
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -49529,7 +49819,7 @@ define([
 			//_selection={};
 			//Topic.publish("/select", []);
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -49537,7 +49827,7 @@ define([
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "select", newEvt);
 				//console.log("dgrid-select");
 				//var rows = evt.rows;
@@ -49545,7 +49835,7 @@ define([
 				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 				//Topic.publish("/select", sel);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -49553,7 +49843,7 @@ define([
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "deselect", newEvt);
 				return;
 			});
@@ -49565,105 +49855,107 @@ define([
 },
 'p3/widget/PageGrid':function(){
 define([
-		"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
-		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"],
-	function(declare, Grid, Store, DijitRegistry, Pagination,
-			 Keyboard, Selection, formatter, ColumnResizer,
-			 ColumnHider, DnD, DnDSource,
-			 Deferred, aspect, lang,PathJoin) {
-		return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
-			constructor: function() {
-				this.dndParams.creator = lang.hitch(this, function(item, hint) {
-					//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
-					var avatar = dojo.create("div", {innerHTML: item.organism_name || item.ncbi_taxon_id || item.id});
-					avatar.data = item;
-					if(hint == 'avatar'){
-						// create your avatar if you want
-					}
-					return {node: avatar, data: item, type: this.dndDataType}
-				})
-			},
-			store: null,
-			selectionMode: "extended",
-			allowTextSelection: false,
-			allowSelectAll: true,
-			deselectOnRefresh: false,
-			rowsPerPage: 200,
-			minRowsPerPage: 25,
-			bufferRows: 100,
-			maxRowsPerPage: 200,
-			pagingDelay: 250,
+	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
+	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
+	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin"],
+function(declare, Grid, Store, DijitRegistry, Pagination,
+		 Keyboard, Selection, formatter, ColumnResizer,
+		 ColumnHider, DnD, DnDSource,
+		 Deferred, aspect, lang, PathJoin){
+	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
+		constructor: function(){
+			this.dndParams.creator = lang.hitch(this, function(item, hint){
+				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
+				var avatar = dojo.create("div", {innerHTML: item.organism_name || item.ncbi_taxon_id || item.id});
+				avatar.data = item;
+				if(hint == 'avatar'){
+					// create your avatar if you want
+				}
+				return {node: avatar, data: item, type: this.dndDataType}
+			})
+		},
+		store: null,
+		selectionMode: "extended",
+		allowTextSelection: false,
+		allowSelectAll: true,
+		deselectOnRefresh: false,
+		rowsPerPage: 200,
+		minRowsPerPage: 25,
+		bufferRows: 100,
+		maxRowsPerPage: 200,
+		pagingDelay: 250,
 //		pagingMethod: "throttleDelayed",
-			farOffRemoval: 2000,
-			keepScrollPosition: true,
-			rowHeight: 24,
-			loadingMessage: "Loading...",
-			primaryKey: "id",
-			dndDataType: "genome",
-			dndParams: {
-				accept: "none",
-				selfAccept: false,
-				copyOnly: true
-			},
-			_setApiServer: function(server, token) {
-				//console.log("_setapiServerAttr: ", server);
-				this.apiServer = server;
-				var t = token || this.apiToken || "";
-				this.set('store', this.createStore(this.dataModel, this.primaryKey, t), this.buildQuery());
-			},
+		farOffRemoval: 2000,
+		keepScrollPosition: true,
+		rowHeight: 24,
+		loadingMessage: "Loading...",
+		primaryKey: "id",
+		dndDataType: "genome",
+		dndParams: {
+			accept: "none",
+			selfAccept: false,
+			copyOnly: true
+		},
+		_setApiServer: function(server, token){
+			//console.log("_setapiServerAttr: ", server);
+			this.apiServer = server;
+			var t = token || this.apiToken || "";
+			this.set('store', this.createStore(this.dataModel, this.primaryKey, t), this.buildQuery());
+		},
 
-			apiToken: "",
-			_setTotalRows: function(rows) {
-				// console.log("this.id:", this.id, "_setTotalRows()");
-				if (rows){
-					this.totalRows = rows;
-					// console.log("Total Rows: ", rows);
-					if(this.controlButton){
-						//console.log("this.controlButton: ", this.controlButton);
-						if(!this._originalTitle){
-							this._originalTitle = this.controlButton.get('label');
-						}
-						this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-						//console.log(this.controlButton);
+		apiToken: "",
+		_setTotalRows: function(rows){
+			// console.log("this.id:", this.id, "_setTotalRows()");
+			if(rows){
+				this.totalRows = rows;
+				// console.log("Total Rows: ", rows);
+				if(this.controlButton){
+					//console.log("this.controlButton: ", this.controlButton);
+					if(!this._originalTitle){
+						this._originalTitle = this.controlButton.get('label');
 					}
+					this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
+					//console.log(this.controlButton);
 				}
-			},
-
-			startup: function() {
-				if(this._started){
-					return;
-				}
-				var _self = this;
-				aspect.before(_self, 'renderArray', function(results) {
-					Deferred.when(results.total, function(x) {
-						_self.set("totalRows", x);
-					});
-				});
-
-				if(!this.store && this.dataModel){
-					this.store = this.createStore(this.dataModel, this.primaryKey);
-				}
-				this.inherited(arguments);
-				this._started = true;
-
-			},
-	
-			createStore: function(dataModel, pk, token) {
-				// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
-				var store = new Store({
-					target: PathJoin((this.apiServer ? (this.apiServer) : ""),dataModel) + "/", idProperty: pk, headers: {
-						"accept": "application/json",
-						"content-type": "application/json",
-						'X-Requested-With': null,
-						'Authorization': token ? token : (window.App.authorizationToken || "")
-					}
-				});
-				//console.log("store: ", store);
-				return store;
 			}
-		});
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			var _self = this;
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			if(!this.store && this.dataModel){
+				this.store = this.createStore(this.dataModel, this.primaryKey);
+			}
+			this.inherited(arguments);
+			this._started = true;
+
+		},
+
+		createStore: function(dataModel, pk, token){
+			// console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
+			var store = new Store({
+				target: PathJoin((this.apiServer ? (this.apiServer) : ""), dataModel) + "/",
+				idProperty: pk,
+				headers: {
+					"accept": "application/json",
+					"content-type": "application/json",
+					'X-Requested-With': null,
+					'Authorization': token ? token : (window.App.authorizationToken || "")
+				}
+			});
+			//console.log("store: ", store);
+			return store;
+		}
 	});
+});
 
 },
 'dgrid/extensions/Pagination':function(){
@@ -50602,56 +50894,54 @@ function(kernel, declare, lang, Deferred, listen, aspect, put){
 'p3/util/PathJoin':function(){
 define([], function(){
 
-  return function(/* path segments */) {
-      //console.log("JOIN PATH PARTS: ", arguments);
-      // Split the inputs into a list of path commands.
-      var parts = [];
-      var hasRoot=false;
-      var root;
-      for (var i = 0, l = arguments.length; i < l; i++) {
-        //console.log("arguments[i]",i, arguments[i]);
+	return function(/* path segments */){
+		//console.log("JOIN PATH PARTS: ", arguments);
+		// Split the inputs into a list of path commands.
+		var parts = [];
+		var hasRoot = false;
+		var root;
+		for(var i = 0, l = arguments.length; i < l; i++){
+			//console.log("arguments[i]",i, arguments[i]);
 
-        if (arguments[i]) {
-          if (typeof arguments[i] != 'string'){
-            arguments[i]=arguments[i].toString();
-          }
-          if (arguments[i].charAt(0) == "/"){
-            arguments[i] = arguments[i].substr(1);
-          }
-          if (arguments[i].charAt(arguments[i].length-1) == "/"){
-            arguments[i] = arguments[i].substr(0,arguments[i].length-1);
-          }
-          parts.push(arguments[i]);
-        }
-      }
-      var out = parts.join('/');
-      //console.log("OUT: ", out);
+			if(arguments[i]){
+				if(typeof arguments[i] != 'string'){
+					arguments[i] = arguments[i].toString();
+				}
+				if(arguments[i].charAt(0) == "/"){
+					arguments[i] = arguments[i].substr(1);
+				}
+				if(arguments[i].charAt(arguments[i].length - 1) == "/"){
+					arguments[i] = arguments[i].substr(0, arguments[i].length - 1);
+				}
+				parts.push(arguments[i]);
+			}
+		}
+		var out = parts.join('/');
+		//console.log("OUT: ", out);
 
-      if (out.match("http[s]:\/\/")){
-        return out;
-      }else{
-        return "/" + out;
-      }
+		if(out.match("http[s]:\/\/")){
+			return out;
+		}else{
+			return "/" + out;
+		}
 
-      return out;
-  }
+		return out;
+	}
 });
 
 },
 'p3/store/GenomeJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	autoFacet: false,
-	        idProperty: "genome_id",
-        	facetFields: ["feature_type", "annotation"],
-        	dataModel: "genome"
-        });
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		autoFacet: false,
+		idProperty: "genome_id",
+		facetFields: ["feature_type", "annotation"],
+		dataModel: "genome"
+	});
 });
 
 
@@ -50665,49 +50955,46 @@ define([
 	"dojo/_base/xhr", "dojo/json",
 	"dojo/Evented"
 
-], function(
-	declare,
-	Store,
-	QueryResults,
-	when, lang,
-	xhr, json,
-	Evented
-) {
+], function(declare,
+			Store,
+			QueryResults,
+			when, lang,
+			xhr, json,
+			Evented){
 	return declare([Store, Evented], {
 		headers: null,
-		constructor: function(options) {
+		constructor: function(options){
 			// console.log("P3JsonRest Options", options);
 			var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-			if (baseUrl.charAt(-1)!=="/"){
+			if(baseUrl.charAt(-1) !== "/"){
 				baseUrl = baseUrl + "/";
 			}
 
 			this.target = baseUrl + this.dataModel + "/";
 			this.init();
-           //  this.headers = {
-           //      "accept": "application/json",
-           //    //  "//content-type": "application/json",
-           //      "content-type": "application/rqlquery+x-www-form-urlencoded",
-           //      'X-Requested-With': null,
-           //      'Authorization': (window.App.authorizationToken || "")
-           // }
+			//  this.headers = {
+			//      "accept": "application/json",
+			//      "content-type": "application/rqlquery+x-www-form-urlencoded",
+			//      'X-Requested-With': null,
+			//      'Authorization': (window.App.authorizationToken || "")
+			// }
 		},
 		init: function(){
-				this.headers={
-		            "accept": "application/json",
-		          //  "//content-type": "application/json",
-		            "content-type": "application/rqlquery+x-www-form-urlencoded",
-		            'X-Requested-With': null,
-		            'Authorization': (window.App.authorizationToken || "")
-				}
+			this.headers = {
+				"accept": "application/json",
+				//  "//content-type": "application/json",
+				"content-type": "application/rqlquery+x-www-form-urlencoded",
+				'X-Requested-With': null,
+				'Authorization': (window.App.authorizationToken || "")
+			}
 		},
 		autoFacet: false,
 		dataModel: "",
 		target: "",
 		idProperty: "id",
 
-		query: function(query, options) {
-			 // console.log("p3JsonRest Query: ",typeof query, options);
+		query: function(query, options){
+			// console.log("p3JsonRest Query: ",typeof query, options);
 			// summary:
 			//      Queries the store for objects. This will trigger a GET request to the server, with the
 			//      query added as a query string.
@@ -50723,22 +51010,22 @@ define([
 			}, this.headers, options.headers);
 			// console.log("Store Req Headers: ", headers, "this.headers: ",this.headers, " opts.headers: ", options.headers, this);
 			var hasQuestionMark = this.target.indexOf("?") > -1;
-			if (query && typeof query == "object") {
+			if(query && typeof query == "object"){
 				query = xhr.objectToQuery(query);
 				query = query ? (hasQuestionMark ? "&" : "?") + query : "";
 			}
-            query = query || "";
+			query = query || "";
 
-//            console.log("p3JsonRest Query: ", query)
-			if (options.start >= 0 || options.count >= 0) {
+			// console.log("p3JsonRest Query: ", query)
+			if(options.start >= 0 || options.count >= 0){
 				headers["X-Range"] = "items=" + (options.start || '0') + '-' +
 					(("count" in options && options.count != Infinity) ?
 						(options.count + (options.start || 0) - 1) : '');
-				if (this.rangeParam) {
+				if(this.rangeParam){
 					query += (query || hasQuestionMark ? "&" : "?") + this.rangeParam + "=" + headers["X-Range"];
 					hasQuestionMark = true;
 				}
-				else {
+				else{
 					headers.Range = headers["X-Range"];
 				}
 				// var l = [];
@@ -50750,41 +51037,41 @@ define([
 				// }
 				//query = query + "&limit(" + l.join(",") + ")";
 			}
-			if (options && options.sort) {
+			if(options && options.sort){
 				var sortParam = this.sortParam;
 				query += (query || hasQuestionMark ? "&" : "?") + (sortParam ? sortParam + '=' : "sort(");
-				for (var i = 0; i < options.sort.length; i++) {
+				for(var i = 0; i < options.sort.length; i++){
 					var sort = options.sort[i];
 					query += (i > 0 ? "," : "") + (sort.descending ? this.descendingPrefix : this.ascendingPrefix) + encodeURIComponent(sort.attribute);
 				}
-				if (!sortParam) {
+				if(!sortParam){
 					query += ")";
 				}
 			}
 			// console.log("P3JsonRest Query: ", query)
-            // this is the GET version
+			// this is the GET version
 			// var results = xhr("GET", {
 			//     url: this.target + (query || ""),
 			//     handleAs: "json",
 			//     headers: headers
 			// });
 
-            // this is the POST version
+			// this is the POST version
 			query = (query && (typeof query == 'string') && (query.charAt(0) == "?")) ? query.substr(1) : query;
 			//console.log("DO POST: ", query)
 			var results = dojo.rawXhrPost({
-                url: this.target,
+				url: this.target,
 				postData: query || "",
 				handleAs: "json",
 				headers: headers
-			},true);
+			}, true);
 
-			results.total = results.then(function(res) {
-                //console.log("Arguments: ", arguments)
+			results.total = results.then(function(res){
+				//console.log("Arguments: ", arguments)
 
-                // if (res && res.response) { return res.response.numFound; }
+				// if (res && res.response) { return res.response.numFound; }
 				var range = results.ioArgs.xhr.getResponseHeader("Content-Range");
-				if (!range) {
+				if(!range){
 					// At least Chrome drops the Content-Range header from cached replies.
 					range = results.ioArgs.xhr.getResponseHeader("X-Content-Range");
 				}
@@ -51003,15 +51290,13 @@ function(kernel, arrayUtil, on, aspect, has, put){
 },
 'p3/widget/WorkspaceGroups':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class"
-], function(
-	declare, WidgetBase, on,
-	domClass
-){
+], function(declare, WidgetBase, on,
+			domClass){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceGroups",
-		"disabled":false,
+		"disabled": false,
 		postCreate: function(){
 			this.domNode.innerHTML = "WorkspaceGroups";
 		}
@@ -51021,15 +51306,13 @@ define([
 },
 'p3/widget/WorkspaceJobs':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class"
-], function(
-	declare, WidgetBase, on,
-	domClass
-){
+], function(declare, WidgetBase, on,
+			domClass){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceJobs",
-		"disabled":false,
+		"disabled": false,
 		postCreate: function(){
 			this.domNode.innerHTML = "WorkspaceJobs";
 		}
@@ -51039,17 +51322,15 @@ define([
 },
 'p3/widget/WorkspaceGlobalController':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceGlobalController.html"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template){
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "WorkspaceGlobalController",
-		"disabled":false,
+		"disabled": false,
 		templateString: Template,
 		path: "",
 		postCreate: function(){
@@ -51060,8 +51341,8 @@ define([
 		},
 
 		setPathAttr: function(val){
-			this.path=val;
-			if (this._started){
+			this.path = val;
+			if(this._started){
 				console.log("Set Workspace Global Current Path")
 			}
 		}
@@ -51072,21 +51353,19 @@ define([
 },
 'p3/widget/WorkspaceController':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dojo/topic","dojo/_base/lang",
-	"dojo/dom-construct","../JobManager","../UploadManager",
-	"./UploadStatus","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-        "dojo/text!./templates/WorkspaceController.html"
-], function(
-	declare, WidgetBase, on,
-	domClass,Topic,lang,
-	domConstr,JobManager,UploadManager,
-	UploadStatus,TemplatedMixin,WidgetsInTemplate,
-	Template
-){
-	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dojo/topic", "dojo/_base/lang",
+	"dojo/dom-construct", "../JobManager", "../UploadManager",
+	"./UploadStatus", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/WorkspaceController.html"
+], function(declare, WidgetBase, on,
+			domClass, Topic, lang,
+			domConstr, JobManager, UploadManager,
+			UploadStatus, TemplatedMixin, WidgetsInTemplate,
+			Template){
+	return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
 		"baseClass": "WorkspaceController",
-		"disabled":false,
+		"disabled": false,
 		templateString: Template
 
 	});
@@ -51094,49 +51373,52 @@ define([
 
 },
 'p3/UploadManager':function(){
-define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Deferred","dojo/topic","./WorkspaceManager"],function(xhr,declare,lang,Deferred,Topic,WorkspaceManager){
+define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
+	"dojo/_base/Deferred", "dojo/topic", "./WorkspaceManager"
+], function(xhr, declare, lang,
+			Deferred, Topic, WorkspaceManager){
 
 	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
 	var UploadManager = (declare([], {
 		constructor: function(){
-			this.activeCount=0;
-			this.completeCount=0;
-			this.completedUploads=[]
-			this.errorCount=0;
-			this.inProgress={};
+			this.activeCount = 0;
+			this.completeCount = 0;
+			this.completedUploads = [];
+			this.errorCount = 0;
+			this.inProgress = {};
 
-			window.addEventListener("beforeunload", lang.hitch(this,function( event ) {
-				if (this.listenUnload){
-					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads ."; 
+			window.addEventListener("beforeunload", lang.hitch(this, function(event){
+				if(this.listenUnload){
+					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads .";
 					(event || window.event).returnValue = msg;
 					return msg;
 				}
-				return;		
+				return;
 			}));
-			
+
 		},
 		token: null,
 		upload: function(files, token){
-			if (token) {
-				this.token=token;
+			if(token){
+				this.token = token;
 				this.headers = {
 					Authorization: "OAuth " + token
 				}
 			}
-			var _self=this;
-			if (files instanceof Array){
+			var _self = this;
+			if(files instanceof Array){
 				files.forEach(function(obj){
-					_self._uploadFile(obj.file, obj.url,obj.uploadDirectory);
+					_self._uploadFile(obj.file, obj.url, obj.uploadDirectory);
 				});
-			}else if (files && files.file){
+			}else if(files && files.file){
 				_self._uploadFile(files.file, files.url, files.uploadDirectory);
 			}
 
-			Topic.publish("/refreshWorkspace",{});
+			Topic.publish("/refreshWorkspace", {});
 		},
 		getUploadSummary: function(){
 			var def = new Deferred();
-			var _self=this;
+			var _self = this;
 			var summary = {
 				inProgress: _self.activeCount,
 				complete: _self.completeCount,
@@ -51145,59 +51427,65 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 				activeFiles: this.inProgress,
 				progress: 0
 			}
-			var totalSize=0;
-			var loadedSize=0;
+			var totalSize = 0;
+			var loadedSize = 0;
 
 			Object.keys(this.inProgress).forEach(function(fname){
-				totalSize+=this.inProgress[fname].total;
-				loadedSize+=this.inProgress[fname].loaded;
-			},this)
+				totalSize += this.inProgress[fname].total;
+				loadedSize += this.inProgress[fname].loaded;
+			}, this)
 
-			if (totalSize>0) {
-				summary.progress = parseInt((loadedSize/totalSize)*100);
+			if(totalSize > 0){
+				summary.progress = parseInt((loadedSize / totalSize) * 100);
 			}else{
-				summary.progress=0;
+				summary.progress = 0;
 			}
 			console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
 
-			var msg ={
-				type: "UploadStatSummary", 
-				summary:summary
+			var msg = {
+				type: "UploadStatSummary",
+				summary: summary
 			};
 
 			console.log("Summary message: ", msg)
 			def.resolve(msg);
-                        return def.promise;
+			return def.promise;
 		},
-
 
 		listenUnload: false,
 		unloadPageListener: function(){
-			this.listenUnload=false;
+			this.listenUnload = false;
 		},
 
 		loadPageListener: function(){
-			this.listenUnload=true;
-		},	
+			this.listenUnload = true;
+		},
 
-		_uploadFile: function(file, url, workspacePath) {	
+		_uploadFile: function(file, url, workspacePath){
 			var def = new Deferred();
 			var fd = new FormData();
 			fd.append("upload", file);
-			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath:workspacePath}
-			var _self=this;	
+			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath: workspacePath}
+			var _self = this;
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
 				console.log("evt: ", evt);
-				console.log("progress: ", (evt.loaded / evt.total)*100);
+				console.log("progress: ", (evt.loaded / evt.total) * 100);
 				_self.inProgress[file.name].loaded = evt.loaded;
 				_self.inProgress[file.name].total = evt.total;
-				Topic.publish("/upload", {type: "UploadProgress", filename: file.name, event: evt, progress: parseInt((evt.loaded/evt.total)*100), url:url, workspacePath: workspacePath})
+				Topic.publish("/upload", {
+					type: "UploadProgress",
+					filename: file.name,
+					event: evt,
+					progress: parseInt((evt.loaded / evt.total) * 100),
+					url: url,
+					workspacePath: workspacePath
+				})
 			});
 
-			req.upload.addEventListener("load", lang.hitch(this,function(data){
+			req.upload.addEventListener("load", lang.hitch(this, function(data){
 				var p = workspacePath;
-				if (p.charAt(p.length-1)!="/") {
+				if(p.charAt(p.length - 1) != "/"){
 					p = p + "/";
 				}
 				p = p + file.name;
@@ -51206,20 +51494,25 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 					_self.completeCount++
 					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
 					Object.keys(_self.inProgress).some(function(key){
-						if (key == file.name){
+						if(key == file.name){
 							delete _self.inProgress[key];
 						}
 					})
-	
-					Topic.publish("/upload", {type: "UploadComplete", filename: file.name, url: url, workspacePath: workspacePath})
-	
-					if (_self.activeCount < 1){
+
+					Topic.publish("/upload", {
+						type: "UploadComplete",
+						filename: file.name,
+						url: url,
+						workspacePath: workspacePath
+					})
+
+					if(_self.activeCount < 1){
 						_self.unloadPageListener();
 					}
 					def.resolve(data);
 				}));
 			}));
-	
+
 			req.upload.addEventListener("error", function(error){
 				console.log("Error Uploading File: ", error);
 				_self.activeCount--;
@@ -51229,7 +51522,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 
 			req.open("PUT", url, true);
 
-			for (var prop in this.headers){
+			for(var prop in this.headers){
 				console.log("Set Request Header: ", prop, this.headers[prop]);
 				req.setRequestHeader(prop, this.headers[prop]);
 			}
@@ -51257,7 +51550,7 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 			*/
 		}
 
-	}))()
+	}))();
 
 	return UploadManager;
 });
@@ -51266,29 +51559,30 @@ define(["dojo/request", "dojo/_base/declare","dojo/_base/lang", "dojo/_base/Defe
 },
 'p3/widget/UploadStatus':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dojo/topic","dojo/_base/lang",
-	"dojo/dom-construct","../JobManager","../UploadManager",
-	"dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-        "dojo/text!./templates/UploadStatus.html",
-	"dijit/_HasDropDown","dijit/layout/ContentPane",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dojo/topic", "dojo/_base/lang",
+	"dojo/dom-construct", "../JobManager", "../UploadManager",
+	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/UploadStatus.html",
+	"dijit/_HasDropDown", "dijit/layout/ContentPane",
 	"dijit/Tooltip"
-], function(
-	declare, WidgetBase, on,
-	domClass,Topic,lang,
-	domConstr,JobManager,UploadManager,
-	TemplatedMixin,WidgetsInTemplate,template,
-	HasDropDown,ContentPane,Tooltip
-){
+], function(declare, WidgetBase, on,
+			domClass, Topic, lang,
+			domConstr, JobManager, UploadManager,
+			TemplatedMixin, WidgetsInTemplate, template,
+			HasDropDown, ContentPane, Tooltip){
 
-	var UploadSummaryPanel = new ContentPane({content: "<div style='border:2px solid #34698e;padding:2px;margin:0px;'>No Active Uploads</div>", style:"padding:0px;background:#fff;"});
-	return declare([WidgetBase,TemplatedMixin,HasDropDown], {
+	var UploadSummaryPanel = new ContentPane({
+		content: "<div style='border:2px solid #34698e;padding:2px;margin:0px;'>No Active Uploads</div>",
+		style: "padding:0px;background:#fff;"
+	});
+	return declare([WidgetBase, TemplatedMixin, HasDropDown], {
 		"baseClass": "WorkspaceController",
-		"disabled":false,
+		"disabled": false,
 		templateString: template,
 		dropDown: UploadSummaryPanel,
 		constructor: function(){
-			this._uploads={
+			this._uploads = {
 				inProgress: 0,
 				complete: 0,
 				progress: 0,
@@ -51297,8 +51591,8 @@ define([
 		},
 		startup: function(){
 			this.inherited(arguments);
-			Topic.subscribe("/upload", lang.hitch(this,"onUploadMessage"))
-			UploadManager.getUploadSummary().then(lang.hitch(this,"onUploadMessage"));
+			Topic.subscribe("/upload", lang.hitch(this, "onUploadMessage"))
+			UploadManager.getUploadSummary().then(lang.hitch(this, "onUploadMessage"));
 			this.tooltip = new Tooltip({
 				connectId: [this.uploadStatusCount],
 				label: " Completed &middot; In progress &middot; % Complete",
@@ -51307,45 +51601,44 @@ define([
 		},
 		onUploadMessage: function(msg){
 			// console.log("UPLOADMMANAGER MESSAGE: ", msg);
-			if (msg && msg.type=="UploadStatSummary"){
+			if(msg && msg.type == "UploadStatSummary"){
 				// console.log("UploadStatSummary: ", msg.summary);
-				this._uploads.inProgress=msg.summary.inProgress;
+				this._uploads.inProgress = msg.summary.inProgress;
 				this._uploads.complete = msg.summary.complete;
 				this._uploads.progress = msg.summary.progress;
 				msg.summary.completedFiles.forEach(function(f){
-					this._uploads.files[f]={}
-				},this);
+					this._uploads.files[f] = {}
+				}, this);
 				this.completedUploadCountNode.innerHTML = this._uploads.complete;
 				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
 				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
 
-				if (this._uploads.inProgress <1){
-					domClass.add(this.uploadingProgress,"dijitHidden");
+				if(this._uploads.inProgress < 1){
+					domClass.add(this.uploadingProgress, "dijitHidden");
 				}
 				return;
 
 			}
 
-			if (msg && msg.type == "UploadStart"){
+			if(msg && msg.type == "UploadStart"){
 				this._uploads.inProgress++;
-				this._uploads.files[msg.filename] = {progress:0}
+				this._uploads.files[msg.filename] = {progress: 0}
 				this.completedUploadCountNode.innerHTML = this._uploads.complete;
 				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
 				this.uploadingProgress.innerHTML = this._uploads.progress + "%"
 				return;
 			}
 
-
-			if (msg && msg.type == "UploadProgress"){
+			if(msg && msg.type == "UploadProgress"){
 				// console.log("UploadProgress msg: ", msg);
-				if (this._uploads.files[msg.filename]){
+				if(this._uploads.files[msg.filename]){
 					this._uploads.files[msg.filename] = msg;
 				}
 
-				var content=["<div style='border:2px solid #34698e;padding:2px;margin:0px;'><table><tbody>"];
+				var content = ["<div style='border:2px solid #34698e;padding:2px;margin:0px;'><table><tbody>"];
 				Object.keys(this._uploads.files).forEach(function(key){
-					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">"+key+"</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");	
-				},this);
+					content.push("<tr><td><a class=\"navigationLink\" href=\"/workspace" + this._uploads.files[key].workspacePath + "\">" + key + "</a></td><td>" + this._uploads.files[key].progress + "%</td></tr>");
+				}, this);
 				content.push("</tbody></table></div>");
 				// console.log("Panel Content: ", content.join(""));
 				UploadSummaryPanel.set('content', content.join(""));
@@ -51358,25 +51651,23 @@ define([
 					this._uploads.progress = stats.progress;
 					// console.log("this._uploads.progress: ", this._uploads.progress, this._uploads);
 					this.uploadingProgress.innerHTML = this._uploads.progress + "%";
-					if (this._uploads.inProgress>0){
-						domClass.remove(this.uploadingProgress,"dijitHidden");
+					if(this._uploads.inProgress > 0){
+						domClass.remove(this.uploadingProgress, "dijitHidden");
 					}
-					
-					
+
 				}));
 				return;
 			}
 
-			if (msg && msg.type == "UploadComplete"){
+			if(msg && msg.type == "UploadComplete"){
 				this._uploads.inProgress--;
 				this._uploads.complete++
 				this.completedUploadCountNode.innerHTML = this._uploads.complete;
 				this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
-	
-				if (this._uploads.inProgress<1){
-					domClass.add(this.uploadingProgress, "dijitHidden");			
-				}
 
+				if(this._uploads.inProgress < 1){
+					domClass.add(this.uploadingProgress, "dijitHidden");
+				}
 
 //				if (this._uploadButtons[msg.filename]){
 //					domClass.add(this._uploadButtons[msg.filename],"UploadComplete");
@@ -51388,7 +51679,7 @@ define([
 //				}
 				return;
 			}
-	
+
 		}
 	});
 });
@@ -51396,15 +51687,13 @@ define([
 },
 'p3/widget/WorkspaceItemDetail':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/form/Select"
-], function(
-	declare, WidgetBase, on,
-	domClass,Select
-){
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/form/Select"
+], function(declare, WidgetBase, on,
+			domClass, Select){
 	return declare([WidgetBase], {
 		"baseClass": "WorkspaceItemDetail",
-		"disabled":false,
+		"disabled": false,
 		postCreate: function(){
 			this.domNode.innerHTML = "WorkspaceItemDetail";
 		}
@@ -52732,9 +53021,9 @@ return sorter;
 },
 'p3/widget/viewer/GenomeList':function(){
 define([
-        "dojo/_base/declare", "./_GenomeList"
-], function(declare, GenomeList) {
-        return declare([GenomeList], {});
+	"dojo/_base/declare", "./_GenomeList"
+], function(declare, GenomeList){
+	return declare([GenomeList], {});
 });
 
 },
@@ -52747,7 +53036,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer","../../util/PathJoin","../../util/QueryToEnglish"
+	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -52755,7 +53044,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer,PathJoin,QueryToEnglish){
+			SequenceGridContainer, PathJoin, QueryToEnglish){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
@@ -52774,7 +53063,7 @@ define([
 			var _self = this;
 			console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl,"genome","?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
+			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
 			console.log("url: ", url);
 			xhr.get(url, {
@@ -52807,26 +53096,27 @@ define([
 
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-			
 
-			if (!state.genome_ids){
+			if(!state.genome_ids){
 				console.log("	NO Genome_IDS")
-				if (state.search == oldVal.search){
+				if(state.search == oldVal.search){
 					console.log("		Same Search")
 					console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-					this.set("state", lang.mixin({},state,{genome_ids: oldVal.genome_ids}))	
+					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
 					this.set("query", state.search);
 				}
-			}else if (state.search!=oldVal.search){
+			}else if(state.search != oldVal.search){
 				console.log("SET QUERY: ", state.search);
 				this.set("query", state.search);
 			}
-			
+
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if (active=="genomes"){ this.setActivePanelState() };
+			if(active == "genomes"){
+				this.setActivePanelState()
+			}
 
 			this.inherited(arguments);
 		},
@@ -52834,7 +53124,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			console.log("English Content: ", content)
+			console.log("English Content: ", content);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
@@ -52847,9 +53137,7 @@ define([
 
 			var activeTab = this[active];
 
-
-
-			if (!activeTab){
+			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
@@ -52862,11 +53150,11 @@ define([
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids||[]).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
 					break;
 				default:
 					var activeQueryState;
-					if (this.state && this.state.genome_ids){
+					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
@@ -52874,7 +53162,7 @@ define([
 
 					}
 
-					if (activeQueryState){
+					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);
@@ -52974,7 +53262,7 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal)
+				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
 				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
 					console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
@@ -52982,7 +53270,7 @@ define([
 				}else{
 					child.set("disabled", false);
 				}
-			},this);
+			}, this);
 
 			if(hasDisabled){
 				this.showWarning();
@@ -52996,10 +53284,9 @@ define([
 			}
 		},
 
-
 		showWarning: function(msg){
 			if(!this.warningPanel){
-				var c = this.warningContent.replace("{{maxGenomesPerList}}",this.maxGenomesPerList)
+				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;",
 					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
@@ -53021,7 +53308,7 @@ define([
 					parts.push(q)
 				}
 			}
-			if(evt.filter && evt.filter!="false"){
+			if(evt.filter && evt.filter != "false"){
 				parts.push(evt.filter)
 			}
 
@@ -53044,11 +53331,9 @@ define([
 				hp = {}
 			}
 
+			hp.filter = "false";
 
-
-			hp.filter="false"
-
-			console.log("HP: ",JSON.stringify(hp))
+			console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
@@ -53067,57 +53352,58 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer" /*,"JBrowse/Browser"*/ , "../InteractionsContainer"
+	"../TranscriptomicsContainer" /*,"JBrowse/Browser"*/, "../InteractionsContainer"
 ], function(declare, ViewerBase, on, Topic,
-	domClass, ContentPane, domConstruct,
-	formatter, TabContainer, GenomeOverview,
-	xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
-	ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-	DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-	TranscriptomicsContainer /*, JBrowser*/ , InteractionsContainer) {
+			domClass, ContentPane, domConstruct,
+			formatter, TabContainer, GenomeOverview,
+			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
+			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
+			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
+			TranscriptomicsContainer /*, JBrowser*/, InteractionsContainer){
 	return declare([ViewerBase], {
 		"query": null,
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
-		onSetState: function(attr, oldState, state) {
+		onSetState: function(attr, oldState, state){
 			console.log("TabViewerBase onSetState()", state);
-			if (!state) {
+			if(!state){
 				return;
 			}
 
 			console.log("    Cal setActivePanelState");
 			this.setActivePanelState();
-			if (!state.hashParams){
-				if (oldState.hashParams && oldState.hashParams.view_tab){
+			if(!state.hashParams){
+				if(oldState.hashParams && oldState.hashParams.view_tab){
 					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
 				}else{
 					state.hashParams = {"view_tab": this.defaultTab}
 				}
 			}
-			console.log("    Check for Hash Params: ", state.hashParams)
-			if (state.hashParams){
-			    if (!state.hashParams.view_tab){
-			    	state.hashParams.view_tab=this.defaultTab;
-			    }
+			console.log("    Check for Hash Params: ", state.hashParams);
+			if(state.hashParams){
+				if(!state.hashParams.view_tab){
+					state.hashParams.view_tab = this.defaultTab;
+				}
 
-			    console.log("Looking for Active Tab: ", state.hashParams.view_tab)
+				console.log("Looking for Active Tab: ", state.hashParams.view_tab);
 
-				if (this[state.hashParams.view_tab]) {
+				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
 					console.log("Found View Tab")
 					vt.set("visible", true);
 					console.log("Select View Tab")
 					this.viewer.selectChild(vt);
-				}else {
+				}else{
 					console.log("No view-tab supplied in State Object");
 				}
 			}
 		},
 
-		setActivePanelState: function(){},
+		setActivePanelState: function(){
+		},
 
-		postCreate: function() {
+		postCreate: function(){
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({
 				content: "",
@@ -53136,32 +53422,32 @@ define([
 },
 'p3/widget/viewer/Base':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on","dojo/topic",
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dojo/dom-construct", "dojo/_base/lang"
-], function(declare, BorderContainer, on,Topic,
-			domClass, domConstruct, lang
-) {
+], function(declare, BorderContainer, on, Topic,
+			domClass, domConstruct, lang){
 	return declare([BorderContainer], {
 		"baseClass": "ViewerApp",
 		state: null,
 		paramsMap: null,
 		apiServiceUrl: window.App.dataAPI,
-	
+
 		// _setStateAttr: function(state) {
-		// 	console.log("State: ", state);			
+		// 	console.log("State: ", state);
 		// 	this.params = params;
 		// 	if (!this._started){ return; }
 		// 	this._set("params", params);
-			
+
 		// 	// if (this.paramsMap && typeof this.paramsMap=="string"){
 		// 	// 	console.log(this.id, " Set Params: ", params, " mapped to ", this.paramsMap, " Widget: ", this)
 		// 	// 	this.set(this.paramsMap, params);
 		// 	// }
 		// },
-	
-		refresh: function() {},
-		
-		postCreate: function() {
+
+		refresh: function(){
+		},
+
+		postCreate: function(){
 			this.inherited(arguments);
 			on(this.domNode, "UpdateHash", lang.hitch(this, "onUpdateHash"));
 
@@ -53185,43 +53471,46 @@ define([
 
 		onUpdateHash: function(evt){
 			console.log("OnUpdateHash: ", evt);
-			console.log("Current State: ", this.state, " hash params: ", this.state.hashParams)
-			if (!this.state){
+			console.log("Current State: ", this.state, " hash params: ", this.state.hashParams);
+			if(!this.state){
 				this.state = {}
 			}
-	
-			if (!this.state.hashParams){
-				this.state.hashParams={};
+
+			if(!this.state.hashParams){
+				this.state.hashParams = {};
 			}
 
-			if (evt.hashParams){
-				console.log("EVT.hashParams: ", evt.hashParams)
+			if(evt.hashParams){
+				console.log("EVT.hashParams: ", evt.hashParams);
 				this.state.hashParams = evt.hashParams;
-			}else if (evt.hashProperty == "view_tab"){
+			}else if(evt.hashProperty == "view_tab"){
 				this.state.hashParams = {
 					view_tab: evt.value
 				}
-			}	
-			if (evt.hashProperty){
-				this.state.hashParams[evt.hashProperty]=evt.value;
 			}
-			
-			l= window.location.pathname + window.location.search + "#" + Object.keys(this.state.hashParams).map(function(key){
-				if (key && this.state.hashParams[key]){
-					return key + "=" + this.state.hashParams[key]
-				}
-				return "";
-			},this).filter(function(x){ return !!x; }).join("&");
+			if(evt.hashProperty){
+				this.state.hashParams[evt.hashProperty] = evt.value;
+			}
+
+			l = window.location.pathname + window.location.search + "#" + Object.keys(this.state.hashParams).map(function(key){
+					if(key && this.state.hashParams[key]){
+						return key + "=" + this.state.hashParams[key]
+					}
+					return "";
+				}, this).filter(function(x){
+					return !!x;
+				}).join("&");
 			console.log("onUpdateHash. nav to: ", l);
 
-
-            Topic.publish("/navigate", {href: l});
+			Topic.publish("/navigate", {href: l});
 		},
 
-		startup: function() {
-			if(this._started){ return; }
+		startup: function(){
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
-			this.onSetState("state","",this.state);
+			this.onSetState("state", "", this.state);
 		}
 	});
 });
@@ -53231,13 +53520,11 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/layout/TabContainer",
 	"./TabController", "dojo/when", "dojo/topic", "dijit/registry"
-], function(
-	declare, WidgetBase, TabContainer,
-	TabController, when, topic, registry
-) {
+], function(declare, WidgetBase, TabContainer,
+			TabController, when, topic, registry){
 	return declare([TabContainer], {
 		controllerWidget: TabController,
-		selectChild: function(page, animate) {
+		selectChild: function(page, animate){
 			// summary:
 			//              Show the given widget (which must be one of my children)
 			// page:
@@ -53247,8 +53534,8 @@ define([
 
 			page = registry.byId(page);
 
-			if (this.selectedChildWidget != page) {
-				if (this.selectedChildWidget) {
+			if(this.selectedChildWidget != page){
+				if(this.selectedChildWidget){
 					this.selectedChildWidget.set('visible', false);
 				}
 				// Deselect old page and select new one
@@ -53257,7 +53544,7 @@ define([
 				this._set("selectedChildWidget", page);
 				topic.publish(this.id + "-selectChild", page); // publish
 
-				if (this.persist) {
+				if(this.persist){
 					cookie(this.id + "_selectedChild", this.selectedChildWidget.id);
 				}
 			}
@@ -53268,7 +53555,7 @@ define([
 
 		}
 	});
-})
+});
 },
 'p3/widget/TabController':function(){
 define([
@@ -53277,31 +53564,29 @@ define([
 	"dijit/registry",
 	"dojo/topic",
 	"dojo/on"
-], function(
-	declare, WidgetBase, TabController,
-	focus,
-	registry,
-	Topic,
-	on
-) {
+], function(declare, WidgetBase, TabController,
+			focus,
+			registry,
+			Topic,
+			on){
 	return declare([TabController], {
 		hashProperty: "view_tab",
-        constructor: function(){
-            this._prevState = {};
-        },
-		onSelectChild: function( /*dijit/_WidgetBase*/ page) {
+		constructor: function(){
+			this._prevState = {};
+		},
+		onSelectChild: function(/*dijit/_WidgetBase*/ page){
 			// summary:
 			//              Called when a page has been selected in the StackContainer, either by me or by another StackController
 			// tags:
 			//              private
 
-			if (!page) {
+			if(!page){
 				return;
 			}
 
 			// console.log("Select Page ID: ", page.id, page)
 
-			if (this._currentChild) {
+			if(this._currentChild){
 				var oldButton = this.pane2button(this._currentChild.id);
 				oldButton.set('checked', false);
 				oldButton.focusNode.setAttribute("tabIndex", "-1");
@@ -53309,7 +53594,7 @@ define([
 
 			var newButton = this.pane2button(page.id);
 			//   console.log("Button: ", newButton);
-			if (newButton) {
+			if(newButton){
 				newButton.set('checked', true);
 				newButton.focusNode.setAttribute("tabIndex", "0");
 			}
@@ -53317,42 +53602,41 @@ define([
 
 		},
 
-		onButtonClick: function( /*dijit/_WidgetBase*/ page) {
+		onButtonClick: function(/*dijit/_WidgetBase*/ page){
 			// summary:
 			//              Called whenever one of my child buttons is pressed in an attempt to select a page
 			// tags:
 			//              private
-            console.log("Button Click: ", page.id);
+			console.log("Button Click: ", page.id);
 
 			var button = this.pane2button(page.id);
 
 			// For TabContainer where the tabs are <span>, need to set focus explicitly when left/right arrow
 			focus.focus(button.focusNode);
 
-			if (this._currentChild && this._currentChild.id === page.id) {
+			if(this._currentChild && this._currentChild.id === page.id){
 				//In case the user clicked the checked button, keep it in the checked state because it remains to be the selected stack page.
 				button.set('checked', true);
-			}else if (this._currentChild){
-                console.log("_setPrevState[" + this._currentChild.id + "] ", this._currentChild.state);
-                this._prevState[this._currentChild.id] = {view_tab: this._currentChild.id.replace(this.containerId + "_","")};
-                if (this._currentChild.state && this._currentChild.state.hashParams){
-                    Object.keys(this._currentChild.state.hashParams).filter(function(x){
-                        console.log(" Filter Key: ", x);
-                        var preserve = ["view_tab", "filter"];
-                        console.log("  found: ", preserve.indexOf(x)>=0)
-                        return (preserve.indexOf(x)>=0)
-                    },this).forEach(function(x){
-                        console.log("Set ", x, " on ",this._prevState[this._currentChild.id]);
-                        this._prevState[this._currentChild.id][x] = this._currentChild.state.hashParams[x];
-                    },this)
-                }
-                console.log("Updated Prev State: ", this._prevState[this._currentChild.id]);
+			}else if(this._currentChild){
+				console.log("_setPrevState[" + this._currentChild.id + "] ", this._currentChild.state);
+				this._prevState[this._currentChild.id] = {view_tab: this._currentChild.id.replace(this.containerId + "_", "")};
+				if(this._currentChild.state && this._currentChild.state.hashParams){
+					Object.keys(this._currentChild.state.hashParams).filter(function(x){
+						console.log(" Filter Key: ", x);
+						var preserve = ["view_tab", "filter"];
+						console.log("  found: ", preserve.indexOf(x) >= 0)
+						return (preserve.indexOf(x) >= 0)
+					}, this).forEach(function(x){
+						console.log("Set ", x, " on ", this._prevState[this._currentChild.id]);
+						this._prevState[this._currentChild.id][x] = this._currentChild.state.hashParams[x];
+					}, this)
+				}
+				console.log("Updated Prev State: ", this._prevState[this._currentChild.id]);
 
-            }
+			}
 			var container = registry.byId(this.containerId);
 
-
-            var pageId = page.id.replace(this.containerId + "_", "")
+			var pageId = page.id.replace(this.containerId + "_", "")
 
 			console.log("Select Child - pageId: ", pageId, " page.id: ", page.id, " ContainerId: ", this.containerId, " Page State: ", page.state);
 
@@ -53364,13 +53648,13 @@ define([
 			// evt.hashProperty = this.hashProperty;
 			// evt.value = page.id.replace(this.containerId + "_", "");
 
-            console.log("Previous State: ", this._prevState, "page.id: ", page.id)
+			console.log("Previous State: ", this._prevState, "page.id: ", page.id)
 
-            if (this._prevState[page.id]){
-                evt.hashParams = this._prevState[page.id];
-            }else{
-                evt.hashParams = {view_tab: pageId}
-            }
+			if(this._prevState[page.id]){
+				evt.hashParams = this._prevState[page.id];
+			}else{
+				evt.hashParams = {view_tab: pageId}
+			}
 
 			on.emit(this.domNode, "UpdateHash", evt);
 			//          var location = window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_","");
@@ -53383,18 +53667,19 @@ define([
 },
 'p3/widget/GenomeOverview':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dijit/_WidgetsInTemplateMixin",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","./GenomeFeatureSummary","./DataItemFormatter","./SpecialtyGeneSummary"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter",
+	"./SpecialtyGeneSummary"
 
-], function(declare, WidgetBase, on,_WidgetsInTemplateMixin,
+], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin,GenomeFeatureSummary,DataItemFormatter,
-			SpecialtyGeneSummary) {
+			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
+			SpecialtyGeneSummary){
 
-	return declare([WidgetBase,Templated,_WidgetsInTemplateMixin], {
+	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
 		disabled: false,
 		templateString: Template,
@@ -53404,35 +53689,39 @@ define([
 
 		_setStateAttr: function(state){
 			this._set("state", state);
-			if (state.genome){
+			if(state.genome){
 				this.set("genome", state.genome);
 			}
 		},
 
-		"_setGenomeAttr": function(genome) {
+		"_setGenomeAttr": function(genome){
 			this.genome = genome;
 			this.createSummary(genome);
-		
+
 			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
-					if (this[w]){
-						this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
-					}
-			},this)
+				if(this[w]){
+					this[w].set('query', "eq(genome_id," + this.genome.genome_id + ")")
+				}
+			}, this)
 
 		},
 
-		"createSummary": function(genome) {
+		"createSummary": function(genome){
 			domConstruct.empty(this.genomeSummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "genome_data",{hideExtra:true}), this.genomeSummaryNode,"first");
+			domConstruct.place(DataItemFormatter(genome, "genome_data", {hideExtra: true}), this.genomeSummaryNode, "first");
 		},
 
 		startup: function(){
-			if (this._started){ return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 
-			if (this.genome) { this.set("genome", this.genome); }
+			if(this.genome){
+				this.set("genome", this.genome);
+			}
 		}
 	});
 });
@@ -66826,170 +67115,195 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin,easing) {
+			ChartTooltip, domConstruct, PathJoin, easing){
 	var LOG10 = Math.log(10);
 
 	return declare([SummaryWidget], {
-			dataModel: "genome_feature",
-			query: "",
-			baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
-			columns: [
-				{label: " ", field: "feature_type", renderCell: function(obj,val,node){ node.innerHTML= '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"}},
-				{label: "PATRIC", field: "PATRIC", renderCell: function(obj,val,node){ node.innerHTML=obj.PATRIC?('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>"):"0"}},
-				{label: "RefSeq", field: "RefSeq", renderCell: function(obj,val,node){ node.innerHTML= obj.RefSeq?('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>"):"0"}}
-			],
-			processData: function(data){
-				console.log("FACET PIVOTS: ",data.facet_counts.facet_pivot['annotation,feature_type'] )
+		dataModel: "genome_feature",
+		query: "",
+		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
+		columns: [
+			{
+				label: " ", field: "feature_type", renderCell: function(obj, val, node){
+				node.innerHTML = '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"
+			}
+			},
+			{
+				label: "PATRIC", field: "PATRIC", renderCell: function(obj, val, node){
+				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
+			}
+			},
+			{
+				label: "RefSeq", field: "RefSeq", renderCell: function(obj, val, node){
+				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
+			}
+			}
+		],
+		processData: function(data){
+			console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
 
-				if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']) {console.log("INVALID SUMMARY DATA", data); return; }
-				data = data.facet_counts.facet_pivot['annotation,feature_type']
-				var gfData = {}
-				this._chartLabels = []
-				var byFeature={}
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']){
+				console.log("INVALID SUMMARY DATA", data);
+				return;
+			}
+			data = data.facet_counts.facet_pivot['annotation,feature_type']
+			var gfData = {}
+			this._chartLabels = []
+			var byFeature = {}
 
-				var values={}
-				console.log("SummarY: ", data)
-		
-				data.forEach(function(summary){
-					summary.pivot.forEach(function(pv,idx){
-						values[pv.value]=true;
-						byFeature[pv.value]={feature_type: pv.value};
-					});
+			var values = {}
+			console.log("SummarY: ", data)
+
+			data.forEach(function(summary){
+				summary.pivot.forEach(function(pv, idx){
+					values[pv.value] = true;
+					byFeature[pv.value] = {feature_type: pv.value};
 				});
+			});
 
-				var values = Object.keys(values);
+			var values = Object.keys(values);
 
-				values.forEach(function(val,idx){
-					this._chartLabels.push({text: val, value: idx})
-				},this)
+			values.forEach(function(val, idx){
+				this._chartLabels.push({text: val, value: idx})
+			}, this)
 
-				data.forEach(function(summary){
-					if (!gfData[summary.value]){ gfData[summary.value]=[]}
+			data.forEach(function(summary){
+				if(!gfData[summary.value]){
+					gfData[summary.value] = []
+				}
 
-					values.forEach(function(val,idx){
-						if (!summary.pivot.some(function(pv){
-							if (pv.value==val){
-								gfData[summary.value].push({text: pv.value, x:idx, y: Math.log(pv.count)/LOG10,count:pv.count, annotation: summary.value})
-								byFeature[pv.value][summary.value]=pv.count
+				values.forEach(function(val, idx){
+					if(!summary.pivot.some(function(pv){
+							if(pv.value == val){
+								gfData[summary.value].push({
+									text: pv.value,
+									x: idx,
+									y: Math.log(pv.count) / LOG10,
+									count: pv.count,
+									annotation: summary.value
+								})
+								byFeature[pv.value][summary.value] = pv.count
 								return true;
 							}
 							return false;
 						})){
-							gfData[summary.value].push({text: val, y: 0, x: idx, annotation: summary.value});
-						}
-					})
+						gfData[summary.value].push({text: val, y: 0, x: idx, annotation: summary.value});
+					}
+				})
+			});
+
+			this._tableData = Object.keys(byFeature).map(function(f){
+				return byFeature[f];
+			})
+
+			this.set('data', gfData);
+		},
+
+		render_chart: function(){
+			console.log("RENDER CHART")
+			if(!this.chart){
+				this.chart = new Chart2D(this.chartNode);
+				this.chart.setTheme(Theme);
+
+				this.chart.addPlot("default", {
+					type: "ClusteredColumns",
+					markers: true,
+					gap: 3,
+					labels: true,
+					// minBarSize: 5,
+					labelStyle: "inside",
+					//labelOffset: 20,
+					labelFunc: function(o){
+						return o.annotation;
+					},
+					animate: {duration: 1000, easing: easing.linear}
 				});
 
-				this._tableData = Object.keys(byFeature).map(function(f){  return byFeature[f]; })
+				this.chart.addAxis("x", {
+					majorLabels: true,
+					minorTicks: true,
+					minorLabels: false,
+					microTicks: false,
+					labels: [this._chartLabels]
+				});
 
-				this.set('data', gfData);
-			},
+				this.chart.addAxis("y", {
+					title: "Feature Count",
+					vertical: true,
+					majorLabels: true,
+					minorTicks: true,
+					minorLabels: true,
+					microTicks: true,
+					natural: true,
+					includeZero: true,
+					labels: [
+						{value: 0, text: "1"},
+						{value: 1, text: "10"},
+						{value: 2, text: "100"},
+						{value: 3, text: "1000"},
+						{value: 4, text: "10^4"},
+						{value: 5, text: "10^5"},
+						{value: 6, text: "10^6"},
+						{value: 7, text: "10^7"},
+						{value: 8, text: "10^8"},
+						{value: 9, text: "10^9"}
+					]
 
-			render_chart: function(){
-				console.log("RENDER CHART")
-				if(!this.chart){
-					this.chart = new Chart2D(this.chartNode);
-					this.chart.setTheme(Theme);
+				});
+				// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
 
-					this.chart.addPlot("default", {
-						type: "ClusteredColumns",
-						markers: true,
-						gap: 3,
-						labels: true,
-						// minBarSize: 5,
-						labelStyle: "inside",
-						//labelOffset: 20,
-						labelFunc: function(o){
-							return o.annotation;
-						},
-						animate: { duration: 1000, easing: easing.linear} 
-					});
-					
-					this.chart.addAxis("x", {
-						majorLabels: true,
-						minorTicks: true,
-						minorLabels: false,
-						microTicks: false,
-						labels: [this._chartLabels]
-					});
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						console.log("O: ", o);
+						var d = o.run.data[o.index];
+						return d.annotation + " " + d.text + "s (" + d.count + ")"
+					}
+				});
 
-					this.chart.addAxis("y", {
-						title: "Feature Count",
-						vertical: true,
-						majorLabels: true,
-						minorTicks: true,
-						minorLabels: true,
-						microTicks: true,
-						natural: true,
-						includeZero: true,
-						labels: [
-							{value: 0, text: "1"},
-							{value: 1, text: "10"},
-							{value: 2, text: "100"},
-							{value: 3, text: "1000"},
-							{value: 4, text: "10^4"},
-							{value: 5, text: "10^5"},
-							{value: 6, text: "10^6"},
-							{value: 7, text: "10^7"},
-							{value: 8, text: "10^8"},
-							{value: 9, text: "10^9"}
-						]
+				console.log("Data to Render: ", this.data)
 
-					});
-					// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.addSeries(key, this.data[key]);
+				}));
 
-					new ChartTooltip(this.chart, "default", {
-						text: function(o){
-							console.log("O: ", o)
-							var d = o.run.data[o.index];
-							return d.annotation + " " + d.text + "s (" + d.count + ")"
-						}
-					});
+				console.log("Render GF DATA", this.chart);
+				this.chart.render();
+			}else{
 
-					console.log("Data to Render: ",this.data)
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.updateSeries(key, this.data[key]);
+				}));
+				this.chart.render();
 
-					Object.keys(this.data).forEach(lang.hitch(this,function(key){
-						this.chart.addSeries(key,this.data[key]);
-					}));
-
-					console.log("Render GF DATA", this.chart);
-					this.chart.render();
-				}else{
-
-					Object.keys(this.data).forEach(lang.hitch(this,function(key){
-						this.chart.updateSeries(key,this.data[key]);
-					}));
-					this.chart.render();
-
-				}
-			},
-
-			render_table: function(){
-				this.inherited(arguments);
-				console.log("RenderArray: ", this._tableData);
-				this.grid.refresh();
-				this.grid.renderArray(this._tableData);
 			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+			console.log("RenderArray: ", this._tableData);
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
 
 	})
 });
 },
 'p3/widget/SummaryWidget':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dojo/dom-geometry","dojo/dom-style",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dgrid/Grid"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid"
 
-], function(declare, WidgetBase, on,domGeometry,domStyle,
+], function(declare, WidgetBase, on, domGeometry, domStyle,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin,Grid) {
+			ChartTooltip, domConstruct, PathJoin, Grid){
 	return declare([WidgetBase, Templated], {
 		baseClass: "SummaryWidget",
 		templateString: Template,
@@ -67004,38 +67318,38 @@ define([
 			style: "border: 0px;"
 		},
 		showChart: function(){
-			console.log("showChart")
-			this.set('view',"chart")
+			console.log("showChart");
+			this.set('view', "chart")
 		},
 		showTable: function(){
 			console.log("showTable");
 			this.set("view", "table")
 		},
-		onSetView: function(attr,oldVal,view){
+		onSetView: function(attr, oldVal, view){
 			console.log("onSetView ", view)
-			if (oldVal){
-				domClass.remove(this.domNode,oldVal+"View")
+			if(oldVal){
+				domClass.remove(this.domNode, oldVal + "View")
 			}
-			domClass.add(this.domNode,view + "View")
+			domClass.add(this.domNode, view + "View")
 			this["render_" + this.view]();
 		},
 
 		headers: {
 			"accept": "application/solr+json",
 			"content-type": "application/rqlquery+x-www-form-urlencoded",
-            'X-Requested-With': null,
-            'Authorization': (window.App.authorizationToken || "")
+			'X-Requested-With': null,
+			'Authorization': (window.App.authorizationToken || "")
 		},
 
-		onSetQuery: function(attr,oldVal,query){
-			console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl,this.dataModel)+"/")
-			console.log("Do SummaryWidget Query: ", this.query + this.baseQuery)
-			return xhr.post(PathJoin(this.apiServiceUrl,this.dataModel)+"/",{
+		onSetQuery: function(attr, oldVal, query){
+			console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
+			console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
+			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
 				data: this.query + this.baseQuery
-			}).then(lang.hitch(this,"processData")) 
-			
+			}).then(lang.hitch(this, "processData"));
+
 			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
 			// 	handleAs: "json",
 			// 	headers: this.headers
@@ -67043,7 +67357,7 @@ define([
 
 		},
 
-		onSetData: function(attr,oldVal,data){
+		onSetData: function(attr, oldVal, data){
 			console.log("onSetData: ", data);
 			this["render_" + this.view]();
 		},
@@ -67057,70 +67371,69 @@ define([
 		},
 
 		render_table: function(){
-			console.log("Render Table")
-			if (!this.grid){
-				var opts = this.gridOptions || {}
+			console.log("Render Table");
+			if(!this.grid){
+				var opts = this.gridOptions || {};
 				opts.columns = this.columns;
-				this.grid = new Grid(opts,this.tableNode)
+				this.grid = new Grid(opts, this.tableNode);
 				this.grid.startup();
 			}
 		},
 
 		postCreate: function(){
-			this.inherited(arguments)
-			domClass.add(this.domNode, this.view + "View")
+			this.inherited(arguments);
+			domClass.add(this.domNode, this.view + "View");
 
-			this.watch("view", lang.hitch(this, "onSetView"))
-			this.watch("query", lang.hitch(this, "onSetQuery"))
-			this.watch("data", lang.hitch(this,"onSetData"))
+			this.watch("view", lang.hitch(this, "onSetView"));
+			this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("data", lang.hitch(this, "onSetData"));
 
-
-			if (this.query && this.dataModel){
-				this.onSetQuery("query",this.query,this.query);
+			if(this.query && this.dataModel){
+				this.onSetQuery("query", this.query, this.query);
 			}
 		},
 
 		resize: function(changeSize, resultSize){
-		    var node = this.domNode;
+			var node = this.domNode;
 
-		    // set margin box size, unless it wasn't specified, in which case use current size
-		    if(changeSize){
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
 
-		            domGeometry.setMarginBox(node, changeSize);
-		    }
+				domGeometry.setMarginBox(node, changeSize);
+			}
 
-		    // If either height or width wasn't specified by the user, then query node for it.
-		    // But note that setting the margin box and then immediately querying dimensions may return
-		    // inaccurate results, so try not to depend on it.
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
 
-		    var mb = resultSize || {};
-		    lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-		    if( !("h" in mb) || !("w" in mb) ){
-		            mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-		    }
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
 
-		    // Compute and save the size of my border box and content box
-		    // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-		    var cs = domStyle.getComputedStyle(node);
-		    var me = domGeometry.getMarginExtents(node, cs);
-		    var be = domGeometry.getBorderExtents(node, cs);
-		    var bb = (this._borderBox = {
-		            w: mb.w - (me.w + be.w),
-		            h: mb.h - (me.h + be.h)
-		    });
-		    var pe = domGeometry.getPadExtents(node, cs);
-		    this._contentBox = {
-		            l: domStyle.toPixelValue(node, cs.paddingLeft),
-		            t: domStyle.toPixelValue(node, cs.paddingTop),
-		            w: bb.w - pe.w,
-		            h: bb.h - pe.h
-		    };
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
 
-		    var actionBarMB = domGeometry.getMarginBox(this.actionButtonsNode);
+			var actionBarMB = domGeometry.getMarginBox(this.actionButtonsNode);
 
-			domGeometry.setMarginBox(this.chartNode,{h: this._contentBox.h - actionBarMB.h})
-  			domGeometry.setMarginBox(this.tableNode,{h: this._contentBox.h - actionBarMB.h})
-		    // this._browser.resize();
+			domGeometry.setMarginBox(this.chartNode, {h: this._contentBox.h - actionBarMB.h});
+			domGeometry.setMarginBox(this.tableNode, {h: this._contentBox.h - actionBarMB.h});
+			// this._browser.resize();
 		}
 	})
 });
@@ -67192,132 +67505,144 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct","../util/PathJoin","dojo/fx/easing"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct,PathJoin,easing) {
+			ChartTooltip, domConstruct, PathJoin, easing){
 	return declare([SummaryWidget], {
-			dataModel: "sp_gene",
-			query: "",
-			baseQuery: "&limit(1)&facet((field,source),(mincount,1))",
-			columns: [
-				{label: " ", field: "text", renderCell: function(obj,val,node){ node.innerHTML= ""}},
-				{label: "Source", field: "text"},
-				{label: "Genes", field: "y"}
-			],
-			processData: function(res){
-				this._chartLabels=[];
-				console.log("Data: ", res)
-				if (!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source) { console.log("INVALID SUMMARY DATA"); return; }
-				var d = res.facet_counts.facet_fields.source;
-				var data = []
-				var idx=0;
-				for (var i=0;i<d.length;i+=2){
-					data.push({text: d[i],x:idx, y: d[i+1]})
-					this._chartLabels.push({value: idx,text: d[i]})
-					idx++;
-				}
-
-				this._tableData = data;
-
-				this.set('data', data);
-			},
-
-			render_chart: function(){
-				console.log("RENDER CHART")
-				if(!this.chart){
-					this.chart = new Chart2D(this.chartNode);
-					this.chart.setTheme(Theme);
-
-					this.chart.addPlot("default", {
-						type: "Columns",
-						markers: true,
-						gap: 5,
-						maxBarSize: 20,
-						labels: true,
-						labelStyle: "outside",
-						animate: { duration: 1000, easing: easing.linear} 
-					});
-					
-					this.chart.addAxis("x", {
-						majorLabels: true,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false,
-						labels: this._chartLabels
-
-					});
-
-					this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Gene Count"});
-
-					new ChartTooltip(this.chart, "default", {
-						text: function(o){
-							console.log("O: ", o)
-							var d = o.run.data[o.index];
-							return d.text + " (" + d.y + ")"
-						}
-					});
-
-					this.chart.addSeries("source",this.data);
-
-					console.log("Render GF DATA", this.chart);
-					this.chart.render();
-				}else{
-
-					this.chart.updateSeries("source",this.data);
-					this.chart.render();
-				}
-			},
-
-			render_table: function(){
-				this.inherited(arguments);
-				console.log("RenderArray: ", this._tableData);
-				this.grid.refresh();
-				this.grid.renderArray(this._tableData);
+		dataModel: "sp_gene",
+		query: "",
+		baseQuery: "&limit(1)&facet((field,source),(mincount,1))",
+		columns: [
+			{
+				label: " ", field: "text", renderCell: function(obj, val, node){
+				node.innerHTML = ""
 			}
+			},
+			{label: "Source", field: "text"},
+			{label: "Genes", field: "y"}
+		],
+		processData: function(res){
+			this._chartLabels = [];
+			console.log("Data: ", res);
+			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
+				console.log("INVALID SUMMARY DATA");
+				return;
+			}
+			var d = res.facet_counts.facet_fields.source;
+			var data = []
+			var idx = 0;
+			for(var i = 0; i < d.length; i += 2){
+				data.push({text: d[i], x: idx, y: d[i + 1]});
+				this._chartLabels.push({value: idx, text: d[i]});
+				idx++;
+			}
+
+			this._tableData = data;
+
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+			console.log("RENDER CHART")
+			if(!this.chart){
+				this.chart = new Chart2D(this.chartNode);
+				this.chart.setTheme(Theme);
+
+				this.chart.addPlot("default", {
+					type: "Columns",
+					markers: true,
+					gap: 5,
+					maxBarSize: 20,
+					labels: true,
+					labelStyle: "outside",
+					animate: {duration: 1000, easing: easing.linear}
+				});
+
+				this.chart.addAxis("x", {
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: this._chartLabels
+
+				});
+
+				this.chart.addAxis("y", {vertical: true, majorTicketStep: 4, title: "Gene Count"});
+
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						console.log("O: ", o)
+						var d = o.run.data[o.index];
+						return d.text + " (" + d.y + ")"
+					}
+				});
+
+				this.chart.addSeries("source", this.data);
+
+				console.log("Render GF DATA", this.chart);
+				this.chart.render();
+			}else{
+
+				this.chart.updateSeries("source", this.data);
+				this.chart.render();
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+			console.log("RenderArray: ", this._tableData);
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
 
 	})
 });
 },
 'p3/widget/FeatureGridContainer':function(){
 define([
-	"dojo/_base/declare", "./GridContainer","dojo/on",
-	"./FeatureGrid","dijit/popup","dojo/topic",
-	"dijit/TooltipDialog","./FacetFilterPanel",
+	"dojo/_base/declare", "./GridContainer", "dojo/on",
+	"./FeatureGrid", "dijit/popup", "dojo/topic",
+	"dijit/TooltipDialog", "./FacetFilterPanel",
 	"dojo/_base/lang"
 
-], function(
-	declare, GridContainer,on,
-	FeatureGrid,popup,Topic,
-	TooltipDialog,FacetFilterPanel,
-	lang
-){
+], function(declare, GridContainer, on,
+			FeatureGrid, popup, Topic,
+			TooltipDialog, FacetFilterPanel,
+			lang){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
-	var viewFASTATT=  new TooltipDialog({content: vfc, onMouseLeave: function(){ popup.close(viewFASTATT); }})
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		// console.log("selection: ", selection);
 		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
-
-	return declare([GridContainer],{
+	return declare([GridContainer], {
 		gridCtor: FeatureGrid,
 		containerType: "feature_data",
-		facetFields: ["annotation","feature_type"],
+		facetFields: ["annotation", "feature_type"],
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
@@ -67329,8 +67654,14 @@ define([
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -67349,16 +67680,16 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
-	"dojo/topic", "dojo/query", "dijit/layout/ContentPane","dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog","dijit/popup","dijit/TooltipDialog"
+	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
-			Topic, query, ContentPane,IDMappingTemplate,
-			Dialog,popup,TooltipDialog){
+			Topic, query, ContentPane, IDMappingTemplate,
+			Dialog, popup, TooltipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
@@ -67369,14 +67700,14 @@ define([
 		delete viewFASTATT.selection;
 		var idType;
 
-		var ids = sel.map(function(d,idx){
-			if (!idType){
-				if (d['feature_id']){
-					idType="feature_id";
-				}else if (d['patric_id']) {
-					idType="patric_id"
-				}else if (d['alt_locus_tag']){
-					idType="alt_locus_tag";
+		var ids = sel.map(function(d, idx){
+			if(!idType){
+				if(d['feature_id']){
+					idType = "feature_id";
+				}else if(d['patric_id']){
+					idType = "patric_id"
+				}else if(d['alt_locus_tag']){
+					idType = "alt_locus_tag";
 				}
 				console.log("SET ID TYPE TO: ", idType)
 			}
@@ -67384,9 +67715,8 @@ define([
 			return d[idType];
 		});
 
-
 		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
-	})
+	});
 	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
 	var downloadSelectionTT = new TooltipDialog({
 		content: dstContent, onMouseLeave: function(){
@@ -67394,16 +67724,22 @@ define([
 		}
 	});
 
-	var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
+	var idMappingTTDialog = new TooltipDialog({
+		content: IDMappingTemplate, onMouseLeave: function(){
+			popup.close(idMappingTTDialog);
+		}
+	});
 
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
+		var selection = self.actionPanel.get('selection');
 		console.log("selection: ", selection);
-		var ids = selection.map(function(d){ return d['feature_id']; });
+		var ids = selection.map(function(d){
+			return d['feature_id'];
+		});
 
-		console.log("ID MAP ", ids)
+		console.log("ID MAP ", ids);
 		// xhr.post("/view/idmap, {
 		// 	data: {
 		// 		keyword: ids.join(","),
@@ -67418,9 +67754,6 @@ define([
 		// });
 		popup.close(idMappingTTDialog);
 	});
-
-
-
 
 	return declare([BorderContainer], {
 		"class": "GridContainer",
@@ -67438,18 +67771,20 @@ define([
 		store: null,
 		apiServer: window.App.dataServiceURL,
 		queryOptions: null,
-		columns:null,
+		columns: null,
 		enableAnchorButton: false,
 
 		_setColumnsAttr: function(columns){
-			if (this.grid){ 
+			if(this.grid){
 				this.grid.set('columns', columns)
 			}
-			this._set('columns', columns); 
+			this._set('columns', columns);
 		},
 
 		_getColumnsAttr: function(columns){
-			if (this.grid){ return this.grid.get('columns'); } 
+			if(this.grid){
+				return this.grid.get('columns');
+			}
 			return this.columns || {};
 		},
 
@@ -67480,7 +67815,7 @@ define([
 				q.push(state.search);
 			}
 
-			if (state.hashParams && state.hashParams.filter && state.hashParams.filter=="false"){
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
 				// filter set to false, no filtering
 
 			}else if(state.hashParams){
@@ -67488,29 +67823,29 @@ define([
 				if(state.hashParams.filter){
 					console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
-				}else if (!oldState && this.defaultFilter){
+				}else if(!oldState && this.defaultFilter){
 					console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', state);
 					return;
-				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
-					this.set('state',state);
+					this.set('state', state);
 					return;
-				}else if (this.defaultFilter){
+				}else if(this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', state);
 					return;
 				}else{
 					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
-					
+
 				}
 			}else{
-				state.hashParams={}
-				if (!oldState && this.defaultFilter){
+				state.hashParams = {}
+				if(!oldState && this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
-				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				this.set('state', state);
@@ -67527,11 +67862,11 @@ define([
 
 		},
 		_setQueryAttr: function(query){
-			console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
+			console.log(this.id, " GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter);
 			console.log("    Query: ", query, "this.query: ", this.query)
 			// if(query == this.query){
-				//console.log("  Not Skipping Query Update (unchanged)");
-				// return;
+			//console.log("  Not Skipping Query Update (unchanged)");
+			// return;
 			// }
 
 			this.query = query;
@@ -67592,12 +67927,12 @@ define([
 					}
 				},
 				true
-			],[
+			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Feature",
 					validContainerTypes: ["feature_data"]
@@ -67605,14 +67940,14 @@ define([
 				function(selection){
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-				}, 
-				false	
-			],[
+				},
+				false
+			], [
 				"ViewSpgeneItem",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Specialty Gene",
 					validContainerTypes: ["spgene_data"]
@@ -67622,14 +67957,14 @@ define([
 					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
 					console.log("View SP GENE: ", sel)
 					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
-				}, 
-				false	
-			],[			
+				},
+				false
+			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "GENOME",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Genome",
 					validContainerTypes: ["genome_data"]
@@ -67639,31 +67974,31 @@ define([
 					console.log("sel: ", sel)
 					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
+				},
 				false
-			],[			
+			], [
 				"ViewGenomeItem",
-				"MultiButton fa icon-genome fa-2x", 
+				"MultiButton fa icon-genome fa-2x",
 				{
 					label: "GENOME",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","sequence_data"]
+					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
 				},
 				function(selection){
 					var sel = selection[0];
 					console.log("sel: ", sel)
 					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
+				},
 				false
-			],[
+			], [
 				"ViewCDSFeatures",
 				"MultiButton fa icon-genome-features-cds fa-2x",
 				{
 					label: "CDS",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View CDS Features",
 					validContainerTypes: ["genome_data"]
@@ -67671,15 +68006,15 @@ define([
 				function(selection){
 					console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
 				},
 				false
-			],[
+			], [
 				"ViewCDSFeaturesSeq",
 				"MultiButton fa icon-genome-features-cds fa-2x",
 				{
 					label: "CDS",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View CDS Features",
 					validContainerTypes: ["sequence_data"]
@@ -67687,15 +68022,15 @@ define([
 				function(selection){
 					console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession,"+ sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
+					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession," + sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
 				},
 				false
-			],[	
+			], [
 				"ViewGenomeBrowser",
 				"MultiButton fa icon-genome_browser fa-2x",
-				{					
+				{
 					label: "BRWSR",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
 					validContainerTypes: ["genome_data"]
@@ -67703,15 +68038,15 @@ define([
 				function(selection){
 					console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
-				}, 
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+				},
 				false
-			],[	
+			], [
 				"ViewGenomeBrowserSeq",
 				"MultiButton fa icon-genome_browser fa-2x",
-				{					
+				{
 					label: "BRWSR",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
 					validContainerTypes: ["sequence_data"]
@@ -67719,10 +68054,10 @@ define([
 				function(selection){
 					console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
-				}, 
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+				},
 				false
-			],[						
+			], [
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -67732,7 +68067,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["genome_data", "sequence_data","feature_data","spgene_data","pathway_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "pathway_data"]
 				},
 				function(selection){
 					console.log("view FASTA")
@@ -67745,26 +68080,40 @@ define([
 					});
 				},
 				false
-			],[
+			], [
 				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
 				{
-					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
-				}, 
+					label: "MSA",
+					ignoreDataType: true,
+					min: 2,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+				},
 				function(selection){
 					console.log("MSA Selection: ", selection);
-					var ids = selection.map(function(d){ return d['feature_id']; });
+					var ids = selection.map(function(d){
+						return d['feature_id'];
+					});
 					console.log("OPEN MSA VIEWER");
 					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
 
 				},
 				false
-			],[
+			], [
 				"idmappingFeatures",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,min:1, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["feature_data","spgene_data"]
+				{
+					label: "ID MAP",
+					ignoreDataType: true,
+					min: 1,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "ID Mapping",
+					tooltipDialog: idMappingTTDialog,
+					validContainerTypes: ["feature_data", "spgene_data"]
 				},
 				function(selection){
 
@@ -67776,13 +68125,19 @@ define([
 						orient: ["below"]
 					});
 					console.log("popup idmapping", selection);
-				}, 
+				},
 				false
-			],[
+			], [
 				"idmapping",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["proteinfamily_data","pathway_data"]
+				{
+					label: "ID MAP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "ID Mapping",
+					tooltipDialog: idMappingTTDialog,
+					validContainerTypes: ["proteinfamily_data", "pathway_data"]
 				},
 				function(selection){
 
@@ -67794,85 +68149,99 @@ define([
 						orient: ["below"]
 					});
 					console.log("popup idmapping", selection);
-				}, 
+				},
 				false
-			],[
+			], [
 				"ExperimentGeneList",
 				"fa icon-list-unordered fa-2x",
-				{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"], tooltip: "View Experiment Gene List"}, 
+				{
+					label: "GENES",
+					multiple: true,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"],
+					tooltip: "View Experiment Gene List"
+				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.currentContainerType, this);
 					console.log("View Gene List", selection);
 					new Dialog({content: "IMPLEMENT ME!"}).show();
-				}, 
+				},
 				false
-			],[			
+			], [
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
-				{label:"PTHWY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
-				}, 
+				{
+					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+				},
 				function(selection){
 					new Dialog({content: "IMPLEMENT ME!"}).show();
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
-					
-				}, 
+
+				},
 				false
 
-			],[
-				"AddGroup", 
-				"fa icon-object-group fa-2x", 
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
 				{
-					label:"GROUP",
-					ignoreDataType:true,
-					multiple: true, 
-					validTypes:["*"],
-					tooltip: "Copy selection to a new or existing group", 
-					validContainerTypes:["genome_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["genome_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
 					console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title:"Copy Selection to Group"});
+					var dlg = new Dialog({title: "Copy Selection to Group"});
 					var type;
 
-					if (!containerWidget){ console.log("Container Widget not setup for addGroup"); return; }
-
-					if (containerWidget.containerType=="genome_data"){
-						type="genome_group"
-					}else if (containerWidget.containerType=="feature_data"){
-						type="feature_group";
+					if(!containerWidget){
+						console.log("Container Widget not setup for addGroup");
+						return;
 					}
 
-					if (!type){
+					if(containerWidget.containerType == "genome_data"){
+						type = "genome_group"
+					}else if(containerWidget.containerType == "feature_data"){
+						type = "feature_group";
+					}
+
+					if(!type){
 						console.error("Missing type for AddGroup")
 						return;
 					}
-					var stg = new SelectionToGroup({selection: selection, type: type,path: containerWidget.get("path")});
+					var stg = new SelectionToGroup({
+						selection: selection,
+						type: type,
+						path: containerWidget.get("path")
+					});
 					on(dlg.domNode, "dialogAction", function(evt){
 						dlg.hide();
 						setTimeout(function(){
 							dlg.destroy();
-						},2000);
+						}, 2000);
 					});
-					domConstruct.place(stg.domNode, dlg.containerNode,"first");
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
 					stg.startup();
 					dlg.startup();
-					dlg.show();						
+					dlg.show();
 				},
 				false
-			],[
+			], [
 				"DownloadSelection",
 				"fa fa-download fa-2x",
 				{
-					label:"DWNLD",
+					label: "DWNLD",
 					multiple: true,
-					validTypes:["*"],
-					tooltip: "Download Selection", 
-					tooltipDialog: downloadSelectionTT, 
-					validContainerTypes:["genome_data","sequence_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "Download Selection",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
+				},
+				function(selection){
 					this.selectionActionBar._actions.DownloadSelection.selection = selection;
 					popup.open({
 						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
@@ -67881,53 +68250,53 @@ define([
 					});
 				},
 				false
-			],[
+			], [
 				"ViewTaxon",
 				"fa icon-eye2 fa fa-2x",
 				{
-					label:"VIEW",
+					label: "VIEW",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Selected Taxonomy", 
-					tooltipDialog: downloadSelectionTT, 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Selected Taxonomy",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id})
 				},
 				false
-			],[
+			], [
 				"ViewTaxonGenomes",
 				"fa icon-genome fa fa-2x",
 				{
-					label:"VIEW",
+					label: "VIEW",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Genome List", 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Genome List",
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
 				},
 				false
-			],[
+			], [
 				"ViewTaxonGenomeFeatures",
 				"fa icon-genome-features-cds fa fa-2x",
 				{
-					label:"CDS",
+					label: "CDS",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Genome List", 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Genome List",
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
 				},
 				false
-			]							
+			]
 		],
 
 		buildQuery: function(){
@@ -67956,36 +68325,36 @@ define([
 		},
 
 		createFilterPanel: function(){
-				console.log("Create Container ActionBar with currentContainerWidget: ", this)
+			console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
-				this.containerActionBar = this.filterPanel = new ContainerActionBar({
-					region: "top",
-					layoutPriority: 7,
-					splitter: true,
-					"className": "BrowserHeader",
-					dataModel: this.dataModel,
-					facetFields: this.facetFields,
-					state: this.state,
-					enableAnchorButton: this.enableAnchorButton,
-					currentContainerWidget: this
-				});
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: this.state,
+				enableAnchorButton: this.enableAnchorButton,
+				currentContainerWidget: this
+			});
 
-				// console.log("gridcontainer startup()", this.state)
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
-					// console.log("FILTER PANEL SET FILTER", arguments)
-					// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
-					// console.log("setFilter Watch() callback", newVal);
-					if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
-						// console.log("Emit UpdateHash: ", newVal);
-						on.emit(this.domNode, "UpdateHash", {
-							bubbles: true,
-							cancelable: true,
-							hashProperty: "filter",
-							value: newVal,
-							oldValue: oldVal
-						})
-					}
-				}));
+			// console.log("gridcontainer startup()", this.state)
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
+				// console.log("FILTER PANEL SET FILTER", arguments)
+				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
+				// console.log("setFilter Watch() callback", newVal);
+				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+					// console.log("Emit UpdateHash: ", newVal);
+					on.emit(this.domNode, "UpdateHash", {
+						bubbles: true,
+						cancelable: true,
+						hashProperty: "filter",
+						value: newVal,
+						oldValue: oldVal
+					})
+				}
+			}));
 		},
 
 		onFirstView: function(){
@@ -68005,17 +68374,19 @@ define([
 				visible: true
 			}
 
-			if (this.columns){
+			if(this.columns){
 				o.columns = this.columns;
 			}
 
-			if (this.queryOptions){
+			if(this.queryOptions){
 				o.queryOptions = this.queryOptions;
 			}
 
 			console.log("GridContainer onFirstView create Grid: ", o)
 
-			if (this.store){ o.store = this.store }
+			if(this.store){
+				o.store = this.store
+			}
 			this.grid = new this.gridCtor(o);
 
 			if(this.enableFilterPanel){
@@ -68023,8 +68394,6 @@ define([
 
 				this.createFilterPanel();
 			}
-
-
 
 			this.selectionActionBar = new ActionBar({
 				region: "right",
@@ -68050,7 +68419,6 @@ define([
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.itemDetailPanel);
-			
 
 			this.setupActions();
 			this.listen();
@@ -68101,13 +68469,13 @@ define([
 				else if(this.filterPanel){
 					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
-						this.filterPanel.set("minimized",false);
+						this.filterPanel.set("minimized", false);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize + 150
 						});
 					}
 					else{
-						this.filterPanel.set("minimized",true);
+						this.filterPanel.set("minimized", true);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize
 						});
@@ -68120,20 +68488,26 @@ define([
 		setupActions: function(){
 			if(this.containerActionBar){
 				this.containerActions.forEach(function(a){
-					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
+					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 				}, this);
 			}
 
 			this.selectionActions.forEach(function(a){
-				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
 
 		},
 		startup: function(){
 			console.log("GridContainer Startup()  isVisible: ", this.visible);
-			if (this._started){ return; }
-			if (this.visible){ this.onFirstView() }
-			if (this.state){ this.set('state', this.state)}
+			if(this._started){
+				return;
+			}
+			if(this.visible){
+				this.onFirstView()
+			}
+			if(this.state){
+				this.set('state', this.state)
+			}
 			this.inherited(arguments)
 		}
 	});
@@ -68143,43 +68517,42 @@ define([
 'p3/widget/FilterContainerActionBar':function(){
 define([
 	"dojo/_base/declare", "./ContainerActionBar", "dojo/_base/lang",
-	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style","dojo/dom-class",
-	"dijit/form/TextBox","./FacetFilter","dojo/request","dojo/on",
-	"rql/parser","./FilteredValueButton","dojo/query","dojo/_base/Deferred",
-	"dijit/focus","../util/PathJoin"
-], function(
-	declare, ContainerActionBar,lang,
-	domConstruct,domGeometry, domStyle,domClass,
-	Textbox, FacetFilter,xhr,on,
-	RQLParser,FilteredValueButton,Query,Deferred,
-	focusUtil,PathJoin
-){
+	"dojo/dom-construct", "dojo/dom-geometry", "dojo/dom-style", "dojo/dom-class",
+	"dijit/form/TextBox", "./FacetFilter", "dojo/request", "dojo/on",
+	"rql/parser", "./FilteredValueButton", "dojo/query", "dojo/_base/Deferred",
+	"dijit/focus", "../util/PathJoin"
+], function(declare, ContainerActionBar, lang,
+			domConstruct, domGeometry, domStyle, domClass,
+			Textbox, FacetFilter, xhr, on,
+			RQLParser, FilteredValueButton, Query, Deferred,
+			focusUtil, PathJoin){
 
+	function parseFacetCounts(facets){
+		var out = {};
 
-    function parseFacetCounts(facets){
-    	var out = {};
+		Object.keys(facets).forEach(function(cat){
+			var data = facets[cat];
+			if(!out[cat]){
+				out[cat] = []
+			}
+			var i = 0;
+			while(i < data.length - 1){
+				out[cat].push({label: data[i], value: data[i], count: data[i + 1]})
+				i = i + 2;
+			}
+		});
+		return out;
+	}
 
-    	Object.keys(facets).forEach(function(cat){
-    		var data = facets[cat];
-    		if (!out[cat]) { out[cat]=[] }
-    		var i = 0;
-    		while(i<data.length-1) {
-    			out[cat].push({label: data[i],value: data[i], count: data[i+1]})
-    			i=i+2;
-    		}
-    	});
-    	return out;
-    }
+	function parseQuery(filter){
+		try{
+			var _parsed = RQLParser.parse(filter)
+		}catch(err){
+			console.log("Unable To Parse Query: ", filter);
+			return;
+		}
 
-    function parseQuery(filter){
-    	try {
-    		var _parsed = RQLParser.parse(filter)
-    	}catch(err){
-    		console.log("Unable To Parse Query: ", filter);
-    		return;
-    	}
-    	
-		var _self=this;
+		var _self = this;
 
 		var parsed = {
 			parsed: _parsed,
@@ -68200,9 +68573,9 @@ define([
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					parsed.selected.push({field:f, value: v});
-					if (!parsed.byCategory[f]){
-						parsed.byCategory[f]=[v];
+					parsed.selected.push({field: f, value: v});
+					if(!parsed.byCategory[f]){
+						parsed.byCategory[f] = [v];
 					}else{
 						parsed.byCategory[f].push(v);
 					}
@@ -68211,7 +68584,7 @@ define([
 					parsed.keywords.push(term.args[0]);
 					break;
 				default:
-					// console.log("Skipping Unused term: ", term.name, term.args);
+				// console.log("Skipping Unused term: ", term.name, term.args);
 			}
 		}
 
@@ -68219,8 +68592,7 @@ define([
 
 		return parsed;
 
-    }
-
+	}
 
 	return declare([ContainerActionBar], {
 		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
@@ -68230,18 +68602,18 @@ define([
 		absoluteMinSize: 52,
 		query: "",
 		state: null,
-		filter:"",
-		facetFields:null,
+		filter: "",
+		facetFields: null,
 		dataModel: "",
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
 		state: null,
 		enableAnchorButton: false,
 		constructor: function(){
-			this._ffWidgets={};
-			this._ffValueButtons={};
-			this._filter={};
-			this.minimized=true;
+			this._ffWidgets = {};
+			this._ffValueButtons = {};
+			this._filter = {};
+			this.minimized = true;
 		},
 		_setStateAttr: function(state){
 			// console.log("FilterContainerActionBar setStateAttr: ",state);
@@ -68250,30 +68622,30 @@ define([
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
-		onSetState: function(attr,oldVal, state){
-				// console.log("FilterContainerActionBar onSetState: ", state)
-				state.search = (state.search && (state.search.charAt(0)=="?"))?state.search.substr(1):(state.search||"");
-				// console.log("FilterContainerActionBar onSetState() ", state);
-				this._refresh();
+		onSetState: function(attr, oldVal, state){
+			// console.log("FilterContainerActionBar onSetState: ", state)
+			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
+			// console.log("FilterContainerActionBar onSetState() ", state);
+			this._refresh();
 		},
 
 		_refresh: function(){
 			// console.log("Refresh FilterContainerActionBar");
-			var parsedQuery={};
-			var parsedFilter={};
+			var parsedQuery = {};
+			var parsedFilter = {};
 			var state = this.get('state') || {};
 
 			// console.log("Refresh State: ", state);
 
-			if (state.search){
+			if(state.search){
 				// console.log("state.search: ", state.search)
 				parsedQuery = parseQuery(state.search);
 
 			}
 
-			if (state && state.hashParams && state.hashParams.filter){
+			if(state && state.hashParams && state.hashParams.filter){
 				// console.log("state.hashParams.filter: ", state.hashParams.filter);
-				if (state.hashParams.filter!="false"){
+				if(state.hashParams.filter != "false"){
 					parsedFilter = parseQuery(state.hashParams.filter)
 				}
 				this._set("filter", state.hashParams.filter);
@@ -68281,12 +68653,11 @@ define([
 			// console.log("Parsed Query: ", parsedQuery);
 			// console.log("Parsed Filter: ", parsedFilter);
 
-		
-			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length>0)?parsedFilter.keywords.join(" "):"");
-			on(this.keywordSearch.domNode, "keypress", lang.hitch(this,function(evt){
+			this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length > 0) ? parsedFilter.keywords.join(" ") : "");
+			on(this.keywordSearch.domNode, "keypress", lang.hitch(this, function(evt){
 				var code = evt.charCode || evt.keyCode;
 				// console.log("Keypress: ", code);
-				if (code == 13){
+				if(code == 13){
 					focusUtil.curNode && focusUtil.curNode.blur();
 				}
 			}));
@@ -68295,61 +68666,61 @@ define([
 
 			// console.log("parsedFilter.selected: ", parsedFilter.selected);
 
-
 			// for each of the facet widgets, get updated facet counts and update the content.
 			Object.keys(this._ffWidgets).forEach(function(category){
 				// console.log("Category: ", category)
-				this._updateFilteredCounts(category, parsedFilter?parsedFilter.byCategory:false,parsedFilter?parsedFilter.keywords:[])
-			},this)
+				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
+			}, this)
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
-			if (parsedFilter && parsedFilter.selected){
+			if(parsedFilter && parsedFilter.selected){
 				parsedFilter.selected.forEach(function(sel){
 					// console.log("_setSelected FilterContaienrActionBar: ", selected)
-					if (this._ffWidgets[sel.field]){
+					if(this._ffWidgets[sel.field]){
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
-						this._ffWidgets[sel.field].toggle(sel.value,true);	
+						this._ffWidgets[sel.field].toggle(sel.value, true);
 					}else{
 						// console.log("Selected: ", sel, "  Missing ffWidget: ", this._ffWidgets);
 						// this._ffWidgets[sel.field].toggle(sel.value,false);
 					}
-				},this)
+				}, this)
 			}else{
 				// console.log("DELETE _ffWidgets")
 				Object.keys(this._ffWidgets).forEach(function(cat){
 					this._ffWidgets[cat].clearSelection();
-				},this)
+				}, this)
 			}
 
 			// build/toggle the top level selected filter buttons
-			if (parsedFilter && parsedFilter.byCategory){
+			if(parsedFilter && parsedFilter.byCategory){
 				Object.keys(parsedFilter.byCategory).forEach(function(cat){
-					 // console.log("Looking for ffValueButton[" + cat + "]");
-					if (!this._ffValueButtons[cat]){
+					// console.log("Looking for ffValueButton[" + cat + "]");
+					if(!this._ffValueButtons[cat]){
 						// console.log("Create ffValueButton: ", cat, parsedFilter.byCategory[cat]);
-						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: parsedFilter.byCategory[cat]});
+						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({
+							category: cat,
+							selected: parsedFilter.byCategory[cat]
+						});
 						// console.log("ffv: ", ffv, " smallContentNode: ", this.smallContentNode);
-						domConstruct.place(ffv.domNode,this.centerButtons, "last")
+						domConstruct.place(ffv.domNode, this.centerButtons, "last")
 						ffv.startup();
 					}else{
 						// console.log("Found ffValueButton. Set Selected");
 						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
 					}
-				},this)
+				}, this)
 			}else{
 				// console.log("DELETE __ffValueButtons")
 				Object.keys(this._ffValueButtons).forEach(function(cat){
 					var b = this._ffValueButtons[cat];
 					b.destroy();
 					delete this._ffValueButtons[cat];
-				},this)
+				}, this)
 			}
-
-
 
 		},
 
-		setButtonText: function(action,text){
+		setButtonText: function(action, text){
 			console.log("setButtonText: ", action, text)
 			var textNode = this._actions[action].textNode
 			console.log("textNode: ", textNode);
@@ -68360,86 +68731,160 @@ define([
 			// domConstruct.destroy(this.pathContainer);
 			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
 			domConstruct.destroy(this.pathContainer);
-			this.smallContentNode = domConstruct.create("div", {"class": "minFilterView", style:{margin: "2px"}},this.domNode)
-			var table = this.smallContentNode = domConstruct.create("table", {style: {"border-collapse": "collapse", margin: "0px","padding":"0px", background: "#fff"}}, this.smallContentNode);
+			this.smallContentNode = domConstruct.create("div", {
+				"class": "minFilterView",
+				style: {margin: "2px"}
+			}, this.domNode)
+			var table = this.smallContentNode = domConstruct.create("table", {
+				style: {
+					"border-collapse": "collapse",
+					margin: "0px",
+					"padding": "0px",
+					background: "#fff"
+				}
+			}, this.smallContentNode);
 
-			var tr = domConstruct.create("tr",{},table);
-			this.leftButtons = domConstruct.create("td",{style: {"width":"1px", "text-align": "left", padding: "4px","white-space":"nowrap", background: "#fff"}}, tr);
-			this.containerNode = this.actionButtonContainer = this.centerButtons = domConstruct.create("td",{style: {"border": "0px", "border-left": "2px solid #aaa", "text-align": "left", padding: "4px", background: "#fff"}}, tr);
-			this.rightButtons = domConstruct.create("td",{style: {"text-align": "right", padding: "4px", background: "#fff",width: "1px","white-space":"nowrap"}}, tr);
+			var tr = domConstruct.create("tr", {}, table);
+			this.leftButtons = domConstruct.create("td", {
+				style: {
+					"width": "1px",
+					"text-align": "left",
+					padding: "4px",
+					"white-space": "nowrap",
+					background: "#fff"
+				}
+			}, tr);
+			this.containerNode = this.actionButtonContainer = this.centerButtons = domConstruct.create("td", {
+				style: {
+					"border": "0px",
+					"border-left": "2px solid #aaa",
+					"text-align": "left",
+					padding: "4px",
+					background: "#fff"
+				}
+			}, tr);
+			this.rightButtons = domConstruct.create("td", {
+				style: {
+					"text-align": "right",
+					padding: "4px",
+					background: "#fff",
+					width: "1px",
+					"white-space": "nowrap"
+				}
+			}, tr);
 			// var str = domConstruct.create("tr",{},table);
 			// var std = domConstruct.create("td",{"colspan": 3,style: {padding: "0px",margin:"0px"}},str);
 			// var tfb1 = domConstruct.create("div",{style: {"text-align":"center"}},std);
 			// var tfb = domConstruct.create("div", {style: {display: "inline-block","border":"1px solid #aaa", width: "100px", "font-size":".75em","margin": "auto"},innerHTML: "SHOW FILTERS"}, tfb1)
 
-
-
-			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);		
+			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);
 			// domConstruct.place(this.containerNode, this.smallContentNode, "first");
-			var _self=this;
-			var setAnchor=function(){
+			var _self = this;
+			var setAnchor = function(){
 				var q = _self.query;
 				console.log("Anchor: ", this.state)
-				if (_self.state && _self.state.hashParams && _self.state.hashParams.filter){
+				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
-				       // q = "and(" + q + "," + this.filter + ")";
-				       // console.log("New Anchor Query:",q)
-				       on.emit(this.domNode, "SetAnchor", { bubbles: true, cancelable: true, filter: _self.state.hashParams.filter})
+					// q = "and(" + q + "," + this.filter + ")";
+					// console.log("New Anchor Query:",q)
+					on.emit(this.domNode, "SetAnchor", {
+						bubbles: true,
+						cancelable: true,
+						filter: _self.state.hashParams.filter
+					})
 				}else{
-				       console.log("No Filters to set new anchor");
+					console.log("No Filters to set new anchor");
 				}
 			}
 
-
 			function toggleFilters(){
-					console.log("Toggle the Filters Panel",_self.domNode);
-					on.emit(_self.currentContainerWidget.domNode,"ToggleFilters",{});
+				console.log("Toggle the Filters Panel", _self.domNode);
+				on.emit(_self.currentContainerWidget.domNode, "ToggleFilters", {});
 			}
 
-			this.addAction("ToggleFilters","fa icon-filter fa-1x",{style: {"font-size": ".5em"},label: "SHOW FILTERS",validType: ["*"], tooltip: "Toggle the filter display"},toggleFilters,true,this.rightButtons);
-			
-			this.watch("minimized", lang.hitch(this,function(attr,oldVal,minimized){
+			this.addAction("ToggleFilters", "fa icon-filter fa-1x", {
+				style: {"font-size": ".5em"},
+				label: "SHOW FILTERS",
+				validType: ["*"],
+				tooltip: "Toggle the filter display"
+			}, toggleFilters, true, this.rightButtons);
+
+			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
 				console.log("FilterContainerActionBar minimized: ", minimized)
-				if (this.minimized){
-					this.setButtonText("ToggleFilters","SHOW FILTERS")
+				if(this.minimized){
+					this.setButtonText("ToggleFilters", "SHOW FILTERS")
 				}else{
-					this.setButtonText("ToggleFilters","HIDE FILTERS")
+					this.setButtonText("ToggleFilters", "HIDE FILTERS")
 				}
 			}));
 
-
-
-			if (this.enableAnchorButton){
-				this.addAction("AnchorCurrentFilters","fa icon-anchor fa-1x",{style: {"font-size": ".5em"},label: "APPLY FITLERS",validType: ["*"], tooltip: "Anchor the active filter to update the current context."},setAnchor,true,this.rightButtons);
+			if(this.enableAnchorButton){
+				this.addAction("AnchorCurrentFilters", "fa icon-anchor fa-1x", {
+					style: {"font-size": ".5em"},
+					label: "APPLY FITLERS",
+					validType: ["*"],
+					tooltip: "Anchor the active filter to update the current context."
+				}, setAnchor, true, this.rightButtons);
 			}
 
-
-			this.fullViewNode = domConstruct.create("div", {"class": "FullFilterView", style: {"white-space": "nowrap","vertical-align": "top", margin:"0px", "margin-top":"5px",background: "#333","padding": "0px", "overflow-y": "hidden", "overflow-x": "auto"}}, this.domNode)
-			this.fullViewContentNode = domConstruct.create("div", {style: {}},this.fullViewNode)
+			this.fullViewNode = domConstruct.create("div", {
+				"class": "FullFilterView",
+				style: {
+					"white-space": "nowrap",
+					"vertical-align": "top",
+					margin: "0px",
+					"margin-top": "5px",
+					background: "#333",
+					"padding": "0px",
+					"overflow-y": "hidden",
+					"overflow-x": "auto"
+				}
+			}, this.domNode)
+			this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
 				var maxX = this.scrollWidth - this.offsetWidth;
-  				var maxY = this.scrollHeight - this.offsetHeight;
+				var maxY = this.scrollHeight - this.offsetHeight;
 
-  				if (((this.scrollLeft + event.deltaX) < 0) || ((this.scrollLeft + event.deltaX) > maxX)){
+				if(((this.scrollLeft + event.deltaX) < 0) || ((this.scrollLeft + event.deltaX) > maxX)){
 					event.preventDefault();
 					// manually take care of the scroll
 					this.scrollLeft = Math.max(0, Math.min(maxX, this.scrollLeft + event.deltaX));
-					if (domClass.contains(event.target, "FacetValue")) { 
+					if(domClass.contains(event.target, "FacetValue")){
 						this.scrollTop = 0; //Math.max(0, Math.min(maxY, this.scrollTop + event.deltaY));
-					}	   				
-  				}
+					}
+				}
 			})
 
-			var keywordSearchBox = domConstruct.create("div", {style: { display: "inline-block", "vertical-align":"top", "margin-top": "4px", "margin-left":"2px"}}, this.centerButtons)
+			var keywordSearchBox = domConstruct.create("div", {
+				style: {
+					display: "inline-block",
+					"vertical-align": "top",
+					"margin-top": "4px",
+					"margin-left": "2px"
+				}
+			}, this.centerButtons)
 			var ktop = domConstruct.create("div", {}, keywordSearchBox)
-			var kbot = domConstruct.create("div", {style: {"vertical-align": "top", padding: "0px", "margin-top": "4px", "font-size": ".75em", "color":"#34698e", "text-align": "left"}}, keywordSearchBox)
-			var label = domConstruct.create("span", {style: {},innerHTML: "KEYWORDS", style: {}}, kbot);
-			var clear = domConstruct.create("i", {"class": "dijitHidden fa icon-x fa-1x",style: {"vertical-align": "bottom", "font-size":"14px","margin-left": "4px"},innerHTML: ""}, kbot)
+			var kbot = domConstruct.create("div", {
+				style: {
+					"vertical-align": "top",
+					padding: "0px",
+					"margin-top": "4px",
+					"font-size": ".75em",
+					"color": "#34698e",
+					"text-align": "left"
+				}
+			}, keywordSearchBox)
+			var label = domConstruct.create("span", {style: {}, innerHTML: "KEYWORDS", style: {}}, kbot);
+			var clear = domConstruct.create("i", {
+				"class": "dijitHidden fa icon-x fa-1x",
+				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},
+				innerHTML: ""
+			}, kbot)
 
-			on(clear,"click", lang.hitch(this,function(){
-				this.keywordSearch.set('value','');
+			on(clear, "click", lang.hitch(this, function(){
+				this.keywordSearch.set('value', '');
 			}))
 			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
 			this.keywordSearch = Textbox({style: "width: 300px;"})
@@ -68449,12 +68894,17 @@ define([
 				// console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
 				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
 				// console.log("WOULD EMIT: keywords : ", val);
-				if (val){
-					domClass.remove(clear,"dijitHidden");
+				if(val){
+					domClass.remove(clear, "dijitHidden");
 				}else{
-					domClass.add(clear,"dijitHidden");
+					domClass.add(clear, "dijitHidden");
 				}
-				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {bubbles:true, cancelable: true, category: "keywords", value: val});
+				on.emit(this.keywordSearch.domNode, "UpdateFilterCategory", {
+					bubbles: true,
+					cancelable: true,
+					category: "keywords",
+					value: val
+				});
 			}));
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
 			this.watch("state", lang.hitch(this, "onSetState"));
@@ -68464,92 +68914,96 @@ define([
 			// }))
 			// this.keywordSearch.startup();
 
+			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
 
-		 on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
+				// console.log("UpdateFilterCategory EVT: ", evt);
 
-			// console.log("UpdateFilterCategory EVT: ", evt);
-
-					if (evt.category == "keywords"){
-							if (evt.value && (evt.value.charAt(0)=='"')){
-								this._filterKeywords = [evt.value]
-							}else{
-								var val = evt.value.split(" ").map(function(x){ return x; })
-								this._filterKeywords = val;
-							}
+				if(evt.category == "keywords"){
+					if(evt.value && (evt.value.charAt(0) == '"')){
+						this._filterKeywords = [evt.value]
 					}else{
-						if (evt.filter){
-							this._filter[evt.category] = evt.filter;
-						}else{
-							delete this._filter[evt.category];
-							if (this._ffWidgets[evt.category]){
-								// console.log("toggle field: ", sel.value, " on ", sel.field);
-								this._ffWidgets[evt.category].clearSelection();
-								if (this._ffValueButtons[evt.category])	{
-									this._ffValueButtons[evt.category].destroy();
-									delete this._ffValueButtons[evt.category];
-								}
+						var val = evt.value.split(" ").map(function(x){
+							return x;
+						})
+						this._filterKeywords = val;
+					}
+				}else{
+					if(evt.filter){
+						this._filter[evt.category] = evt.filter;
+					}else{
+						delete this._filter[evt.category];
+						if(this._ffWidgets[evt.category]){
+							// console.log("toggle field: ", sel.value, " on ", sel.field);
+							this._ffWidgets[evt.category].clearSelection();
+							if(this._ffValueButtons[evt.category]){
+								this._ffValueButtons[evt.category].destroy();
+								delete this._ffValueButtons[evt.category];
 							}
 						}
 					}
+				}
 
-					var cats = Object.keys(this._filter).filter(function(cat){
-							return this._filter[cat].length>0
-					},this);
-					// console.log("Categories: ", cats);
+				var cats = Object.keys(this._filter).filter(function(cat){
+					return this._filter[cat].length > 0
+				}, this);
+				// console.log("Categories: ", cats);
 
+				// Object.keys(this._filter).forEach(function(key){
+				// 		if (this._filter[key] && (this._filter[key].length<1)){
+				// 			delete this._filter[key];
+				// 		}
+				// },this)
+				// console.log("this._filterKeywords: ", this._filterKeywords, typeof this._filterKeywords);
+				var fkws = []
+				if(this._filterKeywords){
+					this._filterKeywords.forEach(function(fk){
+						if(fk){
+							fkws.push('keyword(' + encodeURIComponent(fk) + ")")
+						}
+					}, this);
+				}
 
-					// Object.keys(this._filter).forEach(function(key){
-					// 		if (this._filter[key] && (this._filter[key].length<1)){
-					// 			delete this._filter[key];
-					// 		}
-					// },this)
-					// console.log("this._filterKeywords: ", this._filterKeywords, typeof this._filterKeywords);
-					var fkws = []
-					if (this._filterKeywords){
-						this._filterKeywords.forEach(function(fk){
-							if (fk){
-								fkws.push('keyword(' + encodeURIComponent(fk) + ")")
-							}
-						},this);
+				if(fkws.length < 1){
+					fkws = false;
+				}else if(fkws.length == 1){
+					fkws = fkws[0];
+				}else{
+					fkws = "and(" + fkws.join(",") + ")"
+				}
+
+				var filter = "";
+
+				if(cats.length < 1){
+					// console.log("UpdateFilterCategory Se+t Filter to empty. fkws: ", fkws)
+					if(fkws){
+						filter = fkws
 					}
-
-					if (fkws.length<1){
-						fkws=false;
-					}else if (fkws.length==1){
-						fkws = fkws[0];
+				}else if(cats.length == 1){
+					// console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]], fkws)
+					if(fkws){
+						// console.log("Build Filter with Keywords")
+						// console.log("Filter: ","and("+ this._filter[cats[0]] + "," + fkws + ")")
+						filter = "and(" + this._filter[cats[0]] + "," + fkws + ")"
 					}else{
-						fkws = "and(" + fkws.join(",") + ")"
+						filter = this._filter[cats[0]];
 					}
-
-					var filter = "";
-
-					if (cats.length < 1){
-						// console.log("UpdateFilterCategory Se+t Filter to empty. fkws: ", fkws)
-						if (fkws){
-							filter=fkws
-						}
-					}else if (cats.length==1){
-						// console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]], fkws)
-						if (fkws){
-							// console.log("Build Filter with Keywords")
-							// console.log("Filter: ","and("+ this._filter[cats[0]] + "," + fkws + ")")
-							filter="and("+ this._filter[cats[0]] + "," + fkws + ")"
-						}else{
-							filter=this._filter[cats[0]];
-						}
+				}else{
+					// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+					var inner = cats.map(function(c){
+						return this._filter[c]
+					}, this).join(",")
+					if(this._filterKeywords){
+						filter = "and(" + inner + "," + fkws + ")"
 					}else{
-						// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
-						var inner = cats.map(function(c){ return this._filter[c] },this).join(",") 
-						if (this._filterKeywords){
-							filter="and(" + inner + "," + fkws + ")"
-						}else{
-							filter="and(" + inner +")"  
-						}
+						filter = "and(" + inner + ")"
 					}
+				}
 
-					if (!filter){ filter = "false"}
-					// console.log("Set Filter: ", filter)
-					this.set("filter", filter);
+				if(!filter){
+					filter = "false"
+				}
+				// console.log("Set Filter: ", filter)
+				this.set("filter", filter);
 
 			}));
 
@@ -68557,44 +69011,50 @@ define([
 
 		_setFilterAttr: function(filter){
 			// console.log("FilterContainerActionBar setFilterAttr: ", filter, " Cur: ", this.filter);
-			this._set("filter",filter)
+			this._set("filter", filter)
 		},
-		
+
 		_updateFilteredCounts: function(category, selectionMap, keywords){
 			// console.log("_updateFilteredCounts for: ", category,selectionMap,"keywords: ", keywords, " Filter: ", (this.state && this.state.hashParams)?this.state.hashParams.filter:"None.", "query: ", this.query);
 			// console.log("\tcategory: ", category);
-			selectionMap=selectionMap||{};
+			selectionMap = selectionMap || {};
 			var cats = Object.keys(selectionMap);
 			// console.log("Selection Map Cats: ", cats);
 			var w = this._ffWidgets[category];
 
-			if (!w){ throw Error("No FacetFilter found for " + category); }
+			if(!w){
+				throw Error("No FacetFilter found for " + category);
+			}
 			var scats = cats.filter(function(c){
-				if (c != category) { return true; }
+				if(c != category){
+					return true;
+				}
 			})
 
 			// console.log("scats: ", scats)
 			var ffilter = [];
 
-			if (keywords){
-				keywords.forEach(function(k){ ffilter.push("keyword(" + encodeURIComponent(k) + ")") });
+			if(keywords){
+				keywords.forEach(function(k){
+					ffilter.push("keyword(" + encodeURIComponent(k) + ")")
+				});
 			}
 
 			scats.forEach(function(cat){
-				if (selectionMap[cat]){
-					if (selectionMap[cat].length==1){
-						ffilter.push("eq("+encodeURIComponent(cat) + "," + encodeURIComponent(selectionMap[cat][0]) + ")");
-					}else if (selectionMap[cat].length>1){
+				if(selectionMap[cat]){
+					if(selectionMap[cat].length == 1){
+						ffilter.push("eq(" + encodeURIComponent(cat) + "," + encodeURIComponent(selectionMap[cat][0]) + ")");
+					}else if(selectionMap[cat].length > 1){
 						ffilter.push("or(" + selectionMap[cat].map(function(c){
-							return "eq("+encodeURIComponent(cat) + "," + encodeURIComponent(c) + ")"
-						}).join(",") + ")")
+								return "eq(" + encodeURIComponent(cat) + "," + encodeURIComponent(c) + ")"
+							}).join(",") + ")")
 					}
 				}
-			},this);
+			}, this);
 			// console.log("ffilter: ", ffilter)
-			if (ffilter.length < 1 ){
+			if(ffilter.length < 1){
 				ffilter = "";
-			}else if (ffilter.length==1) {
+			}else if(ffilter.length == 1){
 				ffilter = ffilter[0]
 			}else{
 				ffilter = "and(" + ffilter.join(",") + ")";
@@ -68603,18 +69063,22 @@ define([
 			var q = []
 			// console.log("this.query: ", this.query);
 
-			if (this.query) { q.push((this.query && (this.query.charAt(0)=="?"))?this.query.substr(1):this.query ); }
-			if (ffilter) { q.push(ffilter); }
+			if(this.query){
+				q.push((this.query && (this.query.charAt(0) == "?")) ? this.query.substr(1) : this.query);
+			}
+			if(ffilter){
+				q.push(ffilter);
+			}
 
-			if (q.length==1){
+			if(q.length == 1){
 				q = q[0];
-			}else if (q.length>1){
+			}else if(q.length > 1){
 				q = "and(" + q.join(",") + ")";
 			}
 
 			console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
-				 // console.log("Facet Results: ",r);
+				// console.log("Facet Results: ",r);
 				w.set("data", r[category]);
 			}))
 			// console.log(" Facet Query: ", ffilter)
@@ -68628,24 +69092,24 @@ define([
 
 		_setSelectedAttr: function(selected){
 			// console.log("FilterContainerActionBar setSelected: ", selected)
-			if (!selected || (selected.length<1)){
+			if(!selected || (selected.length < 1)){
 				// console.log("Clear selected");
 				Object.keys(this._ffValueButtons).forEach(function(b){
 					this._ffValueButtons[b].destroy();
 					delete this._ffValueButtons[b];
-				},this);
+				}, this);
 				//clear selected facets;
 			}else{
 				var byCat = {};
 
 				selected.forEach(function(sel){
 					// console.log("_setSelected FilterContaienrActionBar: ", selected)
-					if (this._ffWidgets[sel.field]){
+					if(this._ffWidgets[sel.field]){
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
-						this._ffWidgets[sel.field].toggle(sel.value,true);	
+						this._ffWidgets[sel.field].toggle(sel.value, true);
 					}
-					if (!byCat[sel.field]){
-						byCat[sel.field]=[sel.value]
+					if(!byCat[sel.field]){
+						byCat[sel.field] = [sel.value]
 					}else{
 						byCat[sel.field].push(sel.value);
 					}
@@ -68655,16 +69119,19 @@ define([
 					// 	var ffv = this._ffValueButtons[sel.field + ":" + sel.value] = new FilteredValueButton({category: sel.field, value: sel.value});
 					// 	domConstruct.place(ffv.domNode,this.smallContentNode, "last")
 					// }
-				},this)
+				}, this)
 
 				Object.keys(byCat).forEach(function(cat){
-					if (!this._ffValueButtons[cat]){
-						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({category: cat, selected: byCat[cat]});
-						domConstruct.place(ffv.domNode,this.centerButtons, "last")
+					if(!this._ffValueButtons[cat]){
+						var ffv = this._ffValueButtons[cat] = new FilteredValueButton({
+							category: cat,
+							selected: byCat[cat]
+						});
+						domConstruct.place(ffv.domNode, this.centerButtons, "last")
 					}else{
 						this._ffValueButtons[cat].set('selected', byCat[cat])
 					}
-				},this)
+				}, this)
 
 				// var msel = selected.map(function(sel){
 				// 	return sel.field + ":" + sel.value;
@@ -68684,9 +69151,11 @@ define([
 		_setFacetFieldsAttr: function(fields){
 			this.facetFields = fields;
 			// console.log("Set Facet Fields: ", fields);
-			if (!this._started){return;}
+			if(!this._started){
+				return;
+			}
 
-			fields.sort().forEach(lang.hitch(this,function(f){
+			fields.sort().forEach(lang.hitch(this, function(f){
 				// console.log("Field: ",f)
 				this.addCategory(f);
 			}))
@@ -68694,15 +69163,17 @@ define([
 		addCategory: function(name, values){
 			// console.log("Add Category: ", name, values)
 			var cs = [];
-			if (this.selected){
+			if(this.selected){
 				cs = this.selected.filter(function(sel){
-					if (sel.field==name){ return true; }
+					if(sel.field == name){
+						return true;
+					}
 					return false;
-				},this);
+				}, this);
 			}
 
-			var f = this._ffWidgets[name] = new FacetFilter({category: name, data: values||undefined, selected: cs});
-			domConstruct.place(f.domNode, this.fullViewContentNode,"last")
+			var f = this._ffWidgets[name] = new FacetFilter({category: name, data: values || undefined, selected: cs});
+			domConstruct.place(f.domNode, this.fullViewContentNode, "last")
 		},
 
 		_setQueryAttr: function(query){
@@ -68710,19 +69181,22 @@ define([
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				// console.log("_setQuery got facets: ", facets)
-				if (!facets) { console.log("No Facets Returned"); return; }
+				if(!facets){
+					console.log("No Facets Returned");
+					return;
+				}
 
 				Object.keys(facets).forEach(function(cat){
 					// console.log("Facet Category: ", cat);
-					if (this._ffWidgets[cat]){
+					if(this._ffWidgets[cat]){
 						// console.log("this.state: ", this.state);
 						var selected = this.state.selected;
-						 // console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+						// console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
 						this._ffWidgets[cat].set('data', facets[cat], selected);
 					}else{
-						 // console.log("Missing ffWidget for : ", cat);
+						// console.log("Missing ffWidget for : ", cat);
 					}
-				},this);
+				}, this);
 
 			}));
 
@@ -68730,42 +69204,42 @@ define([
 
 		getFacets: function(query, facetFields){
 			// var d; d=new Deferred(); d.resolve({}); return d.promise;
-			
+
 			// console.log("getFacets: ", query, facetFields);
-			if (!this._facetReqIndex){
-				this._facetReqIndex=0;
+			if(!this._facetReqIndex){
+				this._facetReqIndex = 0;
 			}
-			var idx = this._facetReqIndex+=1;
+			var idx = this._facetReqIndex += 1;
 			var facetFields = facetFields || this.facetFields;
 
 			var f = "&facet(" + facetFields.map(function(field){
-				return "(field," + field + ")"
-			}).join(",") + ",(mincount,1))";
+					return "(field," + field + ")"
+				}).join(",") + ",(mincount,1))";
 			var q = query; // || "?keyword(*)"
 			// console.log(idx, " dataModel: ", this.dataModel)
 			// console.log(idx, " q: ", query);
 			// console.log(idx, " Facets: ", f);
 
 			//var url = this.apiServer + "/" + this.dataModel + "/" + q + "&limit(1)" + f;
-			var q = ((q && q.charAt &&  (q.charAt(0)=="?"))?q.substr(1):q) + "&limit(1)" + f;
-		 	// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
+			var q = ((q && q.charAt && (q.charAt(0) == "?")) ? q.substr(1) : q) + "&limit(1)" + f;
+			// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-		 	console.log("Facet Query: ", q)
-			var fr =  xhr(PathJoin(this.apiServer,this.dataModel)  + "/", {
+			console.log("Facet Query: ", q)
+			var fr = xhr(PathJoin(this.apiServer, this.dataModel) + "/", {
 				method: "POST",
 				handleAs: "json",
 				data: q,
 				"headers": {
 					"accept": "application/solr+json",
-	                "content-type": "application/rqlquery+x-www-form-urlencoded",
-    	            'X-Requested-With': null,
-        	        'Authorization': (window.App.authorizationToken || "")
-        	    }
+					"content-type": "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				}
 			})
 
 			return fr.then(lang.hitch(this, function(response, res){
 				// console.log("RESPONSE: ",response,  res, res.facet_counts)
-				if (res && res.facet_counts && res.facet_counts.facet_fields){
+				if(res && res.facet_counts && res.facet_counts.facet_fields){
 					// console.log("Have Facet Fields: ", res.facet_counts.facet_fields);
 					return parseFacetCounts(res.facet_counts.facet_fields)
 				}
@@ -68773,116 +69247,121 @@ define([
 				// console.log("Missing data for facet query: ", q)
 				throw("Missing Facet Data In Response");
 				return;
-				
+
 			}, function(err){
-				console.log("XHR Error with Facet Request  " + idx +  ". There was an error retreiving facets from: ", url);
+				console.log("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
 				return err;
 			}))
 		},
 		startup: function(){
-			if (this._started) { return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
-			this._started=true;
-			this.set("facetFields",this.facetFields);
+			this._started = true;
+			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
 			this.onSetState('state', "", this.state);
 
-			if (this.currentContainerWidget){
+			if(this.currentContainerWidget){
 				this.currentContainerWidget.resize();
 			}
 		},
 		resize: function(changeSize, resultSize){
-			        var node = this.domNode;
+			var node = this.domNode;
 
-			        // set margin box size, unless it wasn't specified, in which case use current size
-			        if(changeSize){
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
 
-			                domGeometry.setMarginBox(node, changeSize);
-			        }
-
-			        // If either height or width wasn't specified by the user, then query node for it.
-			        // But note that setting the margin box and then immediately querying dimensions may return
-			        // inaccurate results, so try not to depend on it.
-
-			        var mb = resultSize || {};
-			        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-			        if( !("h" in mb) || !("w" in mb) ){
-
-			                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-			        }
-
-			        if (this.smallContentNode){
-				        var headerMB = domGeometry.getMarginBox(this.smallContentNode);
-				        // console.log("Header MB: ", headerMB);
-				        this.minSize = Math.max(headerMB.h, this.absoluteMinSize);
-				     }else{
-				     	this.minSize = this.absoluteMinSize;
-				     }
-
-				     // console.log("THIS RESIZE: ", this);
-	     	        // console.log("mb.h: ", mb.h, " MinSize: ", this.minSize);
-			        if (mb.h && mb.h>this.minSize){
-			        	domGeometry.setMarginBox(this.fullViewNode, {w: mb.w, h: mb.h-this.minSize})
-			        }
-
-			        if (mb.h<=Math.max(this.minSize, this.absoluteMinSize)){
-			        	this.set("minimized",true);
-			        }else{
-			        	this.set("minimized",false);
-			        }
-
-			        // Compute and save the size of my border box and content box
-			        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-			        var cs = domStyle.getComputedStyle(node);
-			        var me = domGeometry.getMarginExtents(node, cs);
-			        var be = domGeometry.getBorderExtents(node, cs);
-			        var bb = (this._borderBox = {
-			                w: mb.w - (me.w + be.w),
-			                h: mb.h - (me.h + be.h)
-			        });
-			        var pe = domGeometry.getPadExtents(node, cs);
-			        this._contentBox = {
-			                l: domStyle.toPixelValue(node, cs.paddingLeft),
-			                t: domStyle.toPixelValue(node, cs.paddingTop),
-			                w: bb.w - pe.w,
-			                h: bb.h - pe.h
-			        };
-
-			        Object.keys(this._ffWidgets).forEach(function(name){
-			        	this._ffWidgets[name].resize({h: this._contentBox.h-4});	        	
-			        },this);
-
-			},
-			addAction: function(name,classes,opts,fn,enabled,target){
-				console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
-				if (target && typeof target=='string'){
-					if (target=="left"){
-						target = this.leftButtons;
-					}else if (target=="right"){
-						target = this.rightButtons;
-					}
-				}
-
-				// console.log("Add Action: ", name, classes, opts,enabled);
-				target = target || this.leftButtons;
-				var wrapper = domConstruct.create("div", {"class": (enabled?"":"dijitHidden ")+"ActionButtonWrapper",rel:name });
-				var b = domConstruct.create("div",{'className':"ActionButton " +classes},wrapper);
-
-				if (opts && opts.label) {
-					var t = domConstruct.create("div",{innerHTML: opts.label, "class":"ActionButtonText"},wrapper);
-				}		
-
-				domConstruct.place(wrapper,target,"last");
-
-				this._actions[name]={
-					options: opts,
-					action: fn,
-					button: wrapper,
-					textNode: t
-				};
-					
+				domGeometry.setMarginBox(node, changeSize);
 			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			if(this.smallContentNode){
+				var headerMB = domGeometry.getMarginBox(this.smallContentNode);
+				// console.log("Header MB: ", headerMB);
+				this.minSize = Math.max(headerMB.h, this.absoluteMinSize);
+			}else{
+				this.minSize = this.absoluteMinSize;
+			}
+
+			// console.log("THIS RESIZE: ", this);
+			// console.log("mb.h: ", mb.h, " MinSize: ", this.minSize);
+			if(mb.h && mb.h > this.minSize){
+				domGeometry.setMarginBox(this.fullViewNode, {w: mb.w, h: mb.h - this.minSize})
+			}
+
+			if(mb.h <= Math.max(this.minSize, this.absoluteMinSize)){
+				this.set("minimized", true);
+			}else{
+				this.set("minimized", false);
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+			Object.keys(this._ffWidgets).forEach(function(name){
+				this._ffWidgets[name].resize({h: this._contentBox.h - 4});
+			}, this);
+
+		},
+		addAction: function(name, classes, opts, fn, enabled, target){
+			console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+			if(target && typeof target == 'string'){
+				if(target == "left"){
+					target = this.leftButtons;
+				}else if(target == "right"){
+					target = this.rightButtons;
+				}
+			}
+
+			// console.log("Add Action: ", name, classes, opts,enabled);
+			target = target || this.leftButtons;
+			var wrapper = domConstruct.create("div", {
+				"class": (enabled ? "" : "dijitHidden ") + "ActionButtonWrapper",
+				rel: name
+			});
+			var b = domConstruct.create("div", {'className': "ActionButton " + classes}, wrapper);
+
+			if(opts && opts.label){
+				var t = domConstruct.create("div", {innerHTML: opts.label, "class": "ActionButtonText"}, wrapper);
+			}
+
+			domConstruct.place(wrapper, target, "last");
+
+			this._actions[name] = {
+				options: opts,
+				action: fn,
+				button: wrapper,
+				textNode: t
+			};
+
+		}
 
 	});
 });
@@ -68890,16 +69369,16 @@ define([
 },
 'p3/widget/FacetFilter':function(){
 define([
-	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred","dijit/_Templated",
+	"dojo/_base/declare", "dojo/on", "dojo/_base/Deferred", "dijit/_Templated",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
-	"dojo/_base/xhr", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
-	"dojo/dom-geometry", "dojo/dom-style","dojo/when"
-], function(declare, on, Deferred,Templated,
-			domClass, domConstruct,WidgetBase,
-			xhr, lang, domAttr,Query,
-			domGeometry,domStyle, when) {
+	"dojo/_base/xhr", "dojo/_base/lang", "dojo/dom-attr", "dojo/query",
+	"dojo/dom-geometry", "dojo/dom-style", "dojo/when"
+], function(declare, on, Deferred, Templated,
+			domClass, domConstruct, WidgetBase,
+			xhr, lang, domAttr, Query,
+			domGeometry, domStyle, when){
 
-	return declare([WidgetBase,Templated], {
+	return declare([WidgetBase, Templated], {
 		templateString: '<div class="${baseClass}"><div data-dojo-attach-point="categoryNode" class="facetCategory"></div><div style="" class="dataList" data-dojo-attach-point="containerNode"></div></div>',
 		baseClass: "FacetFilter",
 		category: "NAME",
@@ -68911,21 +69390,25 @@ define([
 		},
 
 		_setCategoryAttr: function(category){
-			var cat = category.replace("_"," ");
+			var cat = category.replace("_", " ");
 			this._set('category', category);
 
-			if (this._started && this.categoryNode){
+			if(this._started && this.categoryNode){
 				this.categoryNode.innerHTML = cat;
 			}
 		},
 
 		_setDataAttr: function(data, selected){
 
-			 // console.log("_setDataAttr", data, selected);
-			if  (selected){ this.selected = selected }
-			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected, "Type: ", typeof data);			
-			if (!data){return}
-			if (this.data && this.data instanceof Deferred){
+			// console.log("_setDataAttr", data, selected);
+			if(selected){
+				this.selected = selected
+			}
+			// console.log("_setData: ", data, "internal selected: ", this.selected, " Supplied Selection: ", selected, "Type: ", typeof data);
+			if(!data){
+				return
+			}
+			if(this.data && this.data instanceof Deferred){
 				var promise = this.data;
 			}
 
@@ -68933,7 +69416,7 @@ define([
 			domConstruct.empty(this.containerNode);
 
 			// console.log("_setDataAttr data.length: ", this.data.length)
-			if (data.length<1){
+			if(data.length < 1){
 				domClass.add(this.domNode, "dijitHidden");
 			}else{
 				domClass.remove(this.domNode, "dijitHidden");
@@ -68941,62 +69424,68 @@ define([
 
 			// console.log("selected: ", this.selected)
 
-			if (data.forEach){
+			if(data.forEach){
 
 				data.forEach(function(obj){
 					var name = decodeURIComponent(obj.label || obj.val);
 					// console.log("data obj: ", name, obj);
-					var l = name + ((typeof obj.count != 'undefined')?("&nbsp;(" + obj.count +")"):"");
+					var l = name + ((typeof obj.count != 'undefined') ? ("&nbsp;(" + obj.count + ")") : "");
 					var sel;
 
-					if (
-							this._selected[name] ||
-							(this.selected.indexOf(name) >= 0)
-						){
+					if(
+						this._selected[name] ||
+						(this.selected.indexOf(name) >= 0)
+					){
 						sel = "selected"
 					}else{
-						sel="";
+						sel = "";
 					}
 					// console.log("Obj: ", obj.label || obj.value, " Selected: ", sel);
 					//var sel = ((this.selected.indexOf(obj.label || obj.value) >= 0)||(this._selected[obj.label||obj.value]))?"selected":"";
-					var n= this["_value_" + name] = domConstruct.create("div", {rel:name, "class":"FacetValue "+sel, innerHTML: l});
+					var n = this["_value_" + name] = domConstruct.create("div", {
+						rel: name,
+						"class": "FacetValue " + sel,
+						innerHTML: l
+					});
 					// console.log("*** Created Value Reference: ", "_value_" + (obj.label || obj.value), n)
-					domConstruct.place(n,this.containerNode,sel?"first":"last")
-					this.containerNode.scrollTop=0;
-				},this);
-			// this._refreshFilter();
-			
-				if (promise){
+					domConstruct.place(n, this.containerNode, sel ? "first" : "last")
+					this.containerNode.scrollTop = 0;
+				}, this);
+				// this._refreshFilter();
+
+				if(promise){
 					promise.resolve(true);
 				}
 			}
 		},
 
-		toggle: function(name,value){
-			name = name.replace(/\"/g,"");
+		toggle: function(name, value){
+			name = name.replace(/\"/g, "");
 			// console.log("Toggle: ", name, value, " Data:", this.data);
-			when(this.data, lang.hitch(this,function(){
+			when(this.data, lang.hitch(this, function(){
 				var node = this["_value_" + name];
 				// console.log("Toggle Node: ", node, " Set to: ", value?"TRUE":"Opposite", domClass.contains(node, "Selected"));
-				if (node){
+				if(node){
 					// console.log("    Found Node")
-					if (typeof value == "undefined"){
+					if(typeof value == "undefined"){
 						var isSelected = domClass.contains(node, "selected");
 						// console.log("isSelected: ", isSelected);
 						domClass.toggle(node, "selected");
-						this._set("selected", this.selected.filter(function(i){ 
-							return (i!=name) || ((i==name) && !isSelected);
+						this._set("selected", this.selected.filter(function(i){
+							return (i != name) || ((i == name) && !isSelected);
 						}))
 					}else{
-						if (value){
+						if(value){
 							domClass.add(node, "selected")
-							if (this.selected.indexOf(name)<0){
+							if(this.selected.indexOf(name) < 0){
 								this.selected.push(name);
 								this._set("selected", this.selected);
 							}
 						}else{
 							domClass.remove(node, "selected");
-							this._set('selected', this.selected.filter(function(i){ return i!=name; }))
+							this._set('selected', this.selected.filter(function(i){
+								return i != name;
+							}))
 						}
 					}
 					// if (value==true){
@@ -69018,18 +69507,20 @@ define([
 					// }
 				}
 				// console.log(name, " this.selected: ", this.selected)
-				if (this.selected && this.selected.length>0){
+				if(this.selected && this.selected.length > 0){
 					domClass.add(this.categoryNode, "selected");
 				}else{
 					domClass.remove(this.categoryNode, "selected");
 				}
-			}))
+			}));
 			// this._refreshFilter();
 		},
 
 		startup: function(){
-			if (this._started) { return; }
-			this._started=true;
+			if(this._started){
+				return;
+			}
+			this._started = true;
 			this.inherited(arguments);
 
 			this._refreshFilter();
@@ -69037,25 +69528,27 @@ define([
 		_refreshFilter: function(){
 			// console.log("FacetFilter _refreshFilter()  started: ", this._started);
 			var selected = [];
-	
+
 			Query(".selected", this.containerNode).forEach(function(node){
 				// console.log(".selected Node: ", node)
-				selected.push(domAttr.get(node,"rel"));
+				selected.push(domAttr.get(node, "rel"));
 			})
 			// console.log("_refreshFilter selected() : ", selected);
 			var curFilter = this.filter;
 			// this.filter =  "in(" + this.category + ",(" + selected.join(",") + "))";
-			if (selected.length<1){
+			if(selected.length < 1){
 				this.filter = ""
-			}else if (selected.length==1){
+			}else if(selected.length == 1){
 				this.filter = "eq(" + this.category + "," + encodeURIComponent('"' + selected[0] + '"') + ")";
 			}else{
-				this.filter = "or(" + selected.map(function(s){ return "eq(" + this.category + ',' + encodeURIComponent('"' + s + '"') + ')'},this).join(",") + ")";
+				this.filter = "or(" + selected.map(function(s){
+						return "eq(" + this.category + ',' + encodeURIComponent('"' + s + '"') + ')'
+					}, this).join(",") + ")";
 			}
 
 			// console.log("_refreshFilter selected[]: ", selected)
 
-			if (selected.length > 0){
+			if(selected.length > 0){
 				domClass.add(this.categoryNode, "selected");
 			}else{
 				domClass.remove(this.categoryNode, "selected")
@@ -69065,15 +69558,21 @@ define([
 
 			// console.log("selected: ", selected)
 			// console.log("new filter: ", this.filter, " curFilter: ", curFilter);
-	
+
 			// if (this.filter != curFilter){
-				// console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
-				on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, filter: this.filter, selected: selected, bubbles: true, cancelable: true})
+			// console.log("Emit UpdateFilterCategory: ", this.category, " Filter: ", this.filter, " Selected: ", selected);
+			on.emit(this.domNode, "UpdateFilterCategory", {
+				category: this.category,
+				filter: this.filter,
+				selected: selected,
+				bubbles: true,
+				cancelable: true
+			});
 			// }
 		},
 
 		toggleItem: function(evt){
-			var rel = domAttr.get(evt.target, "rel")
+			var rel = domAttr.get(evt.target, "rel");
 			// console.log("onToggle: ", rel)
 			domClass.toggle(evt.target, "selected");
 			this._refreshFilter();
@@ -69087,56 +69586,56 @@ define([
 
 		postCreate: function(){
 			this.inherited(arguments);
-			on(this.domNode, ".FacetValue:click", lang.hitch(this,"toggleItem"))
-			if (this.categoryNode&&this.category){
+			on(this.domNode, ".FacetValue:click", lang.hitch(this, "toggleItem"))
+			if(this.categoryNode && this.category){
 				this.categoryNode.innerHTML = this.category;
 			}
-			if (!this.data){ this.data = new Deferred();}
+			if(!this.data){
+				this.data = new Deferred();
+			}
 
 		},
 
-
 		resize: function(changeSize, resultSize){
-	        var node = this.domNode;
+			var node = this.domNode;
 
-	        // set margin box size, unless it wasn't specified, in which case use current size
-	        if(changeSize){
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
 
-	                domGeometry.setMarginBox(node, changeSize);
-	        }
+				domGeometry.setMarginBox(node, changeSize);
+			}
 
-	        // If either height or width wasn't specified by the user, then query node for it.
-	        // But note that setting the margin box and then immediately querying dimensions may return
-	        // inaccurate results, so try not to depend on it.
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
 
-	        var mb = resultSize || {};
-	        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-	        if( !("h" in mb) || !("w" in mb) ){
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
 
-	                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-	        }
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
 
-	       
-	        // Compute and save the size of my border box and content box
-	        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-	        var cs = domStyle.getComputedStyle(node);
-	        var me = domGeometry.getMarginExtents(node, cs);
-	        var be = domGeometry.getBorderExtents(node, cs);
-	        var bb = (this._borderBox = {
-	                w: mb.w - (me.w + be.w),
-	                h: mb.h - (me.h + be.h)
-	        });
-	        var pe = domGeometry.getPadExtents(node, cs);
-	        this._contentBox = {
-	                l: domStyle.toPixelValue(node, cs.paddingLeft),
-	                t: domStyle.toPixelValue(node, cs.paddingTop),
-	                w: bb.w - pe.w,
-	                h: bb.h - pe.h
-	        };
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
 
-	        var hmb = domGeometry.getMarginBox(this.categoryNode);
-	     
-	     	domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h-50})
+			var hmb = domGeometry.getMarginBox(this.categoryNode);
+
+			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h - 50})
 
 		}
 	})
@@ -69144,16 +69643,16 @@ define([
 },
 'p3/widget/FilteredValueButton':function(){
 define([
-	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred","dijit/_Templated",
+	"dojo/_base/declare", "dojo/on", "dojo/_base/Deferred", "dijit/_Templated",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
-	"dojo/_base/xhr", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
-	"dojo/dom-geometry", "dojo/dom-style","dojo/when","dojo/text!./templates/FilterValueButton.html"
-], function(declare, on, Deferred,Templated,
-			domClass, domConstruct,WidgetBase,
-			xhr, lang, domAttr,Query,
-			domGeometry,domStyle, when, template) {
+	"dojo/_base/xhr", "dojo/_base/lang", "dojo/dom-attr", "dojo/query",
+	"dojo/dom-geometry", "dojo/dom-style", "dojo/when", "dojo/text!./templates/FilterValueButton.html"
+], function(declare, on, Deferred, Templated,
+			domClass, domConstruct, WidgetBase,
+			xhr, lang, domAttr, Query,
+			domGeometry, domStyle, when, template){
 
-	return declare([WidgetBase,Templated], {
+	return declare([WidgetBase, Templated], {
 		templateString: template,
 		baseClass: "FilteredValueButton",
 		category: "",
@@ -69161,40 +69660,50 @@ define([
 
 		_setSelectedAttr: function(selected){
 			// console.log("FFV _setSelected: ", selected);
-			
+
 			var content = [];
-			selected = selected.map(function(s,idx){ 
-					var s = s.replace(/\"/g,"") 
-					var co = []
-					co.push('<div class="ValueWrapper">');
-					co.push('<span class="ValueContent">' + s + "</span>")
-					co.push("</div>")					
-					content.push(co.join(""));
-					return s
-			},this)
+			selected = selected.map(function(s, idx){
+				var s = s.replace(/\"/g, "");
+				var co = [];
+				co.push('<div class="ValueWrapper">');
+				co.push('<span class="ValueContent">' + s + "</span>");
+				co.push("</div>");
+				content.push(co.join(""));
+				return s
+			}, this)
 			this._set("selected", selected);
 
-			if (!this._started){ this._set("selected", selected); return; }
+			if(!this._started){
+				this._set("selected", selected);
+				return;
+			}
 
-			if (content.length==1){
-				this.selectedNode.innerHTML=content[0];
-			}else if(content.length==2){
+			if(content.length == 1){
+				this.selectedNode.innerHTML = content[0];
+			}else if(content.length == 2){
 				this.selectedNode.innerHTML = content.join("&nbsp;or&nbsp;");
 			}else{
-				this.selectedNode.innerHTML=content.slice(0,-1).join(",&nbsp;") + "&nbsp;or&nbsp;" + content[content.length-1];
+				this.selectedNode.innerHTML = content.slice(0, -1).join(",&nbsp;") + "&nbsp;or&nbsp;" + content[content.length - 1];
 			}
 			this._set("selected", selected);
-	
+
 		},
 		clearAll: function(){
 			// console.log("Clear Selected")
-			this.innerHTML="";
+			this.innerHTML = "";
 			// console.log("clear Category: ", this.category);
-			on.emit(this.domNode,"UpdateFilterCategory", {category: this.category, selected: [], bubbles: true, cancelable: true})
+			on.emit(this.domNode, "UpdateFilterCategory", {
+				category: this.category,
+				selected: [],
+				bubbles: true,
+				cancelable: true
+			});
 			// this._set("selected",[])
 		},
 		startup: function(){
-			if (this._started){ return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			// console.log("FilteredValueButton Startup()", this.selected);
 			this.set('selected', this.selected);
@@ -69210,19 +69719,21 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store, selector) {
-
+			Grid, formatter, Store, selector){
 
 	var store = new Store({});
 
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-	                        sort: [{ attribute: "genome_name", descending: false},{ attribute: "strand", descending: false},{ attribute: "start", descending: false}]
-			}
+				sort: [{attribute: "genome_name", descending: false}, {
+					attribute: "strand",
+					descending: false
+				}, {attribute: "start", descending: false}]
+			};
 			console.log("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
@@ -69257,10 +69768,10 @@ define([
 //			sort: [{ attribute: "genome_name", descending: true }]
 //		},
 
-		startup: function() {
+		startup: function(){
 			var _self = this;
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -69272,7 +69783,7 @@ define([
 				//console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -69284,7 +69795,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -69306,372 +69817,400 @@ define([
 },
 'p3/store/GenomeFeatureJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	autoFacet: false,
-	        idProperty: "feature_id",
-        	facetFields: ["feature_type", "annotation"],
-        	dataModel: "genome_feature"
-        });
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		autoFacet: false,
+		idProperty: "feature_id",
+		facetFields: ["feature_type", "annotation"],
+		dataModel: "genome_feature"
+	});
 });
 
 
 },
 'p3/widget/FacetFilterPanel':function(){
 define([
-	"dojo/_base/declare", "dojo/on","dojo/_base/Deferred",
+	"dojo/_base/declare", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dojo/dom-construct", "dijit/_WidgetBase",
-	"dojo/request", "dojo/_base/lang", "dojo/dom-attr","dojo/query",
-	"dojo/dom-geometry", "dojo/dom-style","./FacetFilter","../util/PathJoin"
+	"dojo/request", "dojo/_base/lang", "dojo/dom-attr", "dojo/query",
+	"dojo/dom-geometry", "dojo/dom-style", "./FacetFilter", "../util/PathJoin"
 ], function(declare, on, Deferred,
-			domClass, domConstruct,WidgetBase,
-			xhr, lang, domAttr,Query,
-			domGeometry,domStyle,FacetFilter,PathJoin) {
+			domClass, domConstruct, WidgetBase,
+			xhr, lang, domAttr, Query,
+			domGeometry, domStyle, FacetFilter, PathJoin){
 
+	function parseFacetCounts(facets){
+		var out = {};
 
-    function parseFacetCounts(facets){
-    	var out = {};
-
-    	Object.keys(facets).forEach(function(cat){
-    		var data = facets[cat];
-    		if (!out[cat]) { out[cat]=[] }
-    		var i = 0;
-    		while(i<data.length-1) {
-    			out[cat].push({label: data[i],value: data[i], count: data[i+1]})
-    			i=i+2;
-    		}
-    	});
-    	return out;
-    }
+		Object.keys(facets).forEach(function(cat){
+			var data = facets[cat];
+			if(!out[cat]){
+				out[cat] = []
+			}
+			var i = 0;
+			while(i < data.length - 1){
+				out[cat].push({label: data[i], value: data[i], count: data[i + 1]})
+				i = i + 2;
+			}
+		});
+		return out;
+	}
 
 	return declare([WidgetBase], {
-			baseClass: "FacetFilterPanel",
-			filter: "",
-			query:"",
-			facetFields:null,
-			dataModel: "",
-			apiServer: window.App.dataAPI,
-			authorizationToken: window.App.authorizationToken,
-			constructor: function(){
-				this._ffWidgets={};
-			},
-			getFacets: function(query){
-				var f = "&facet(" + this.facetFields.map(function(field){
+		baseClass: "FacetFilterPanel",
+		filter: "",
+		query: "",
+		facetFields: null,
+		dataModel: "",
+		apiServer: window.App.dataAPI,
+		authorizationToken: window.App.authorizationToken,
+		constructor: function(){
+			this._ffWidgets = {};
+		},
+		getFacets: function(query){
+			var f = "&facet(" + this.facetFields.map(function(field){
 					return "(field," + field + ")"
 				}).join(",") + ",(mincount,1))";
-				var url = PathJoin(this.apiServer,this.dataModel, query + "&limit(1)" + f);
-				console.log("URL", url)
+			var url = PathJoin(this.apiServer, this.dataModel, query + "&limit(1)" + f);
+			console.log("URL", url);
 
-				return xhr.get(url, {
-					handleAs: "json",
-					"headers": {accept: "application/solr+json"}
-				}).then(function(response){
-					return parseFacetCounts(response.facet_counts.facet_fields)
-				})
-			},
+			return xhr.get(url, {
+				handleAs: "json",
+				"headers": {accept: "application/solr+json"}
+			}).then(function(response){
+				return parseFacetCounts(response.facet_counts.facet_fields)
+			})
+		},
 
-			_setQueryAttr: function(query){
-				console.log("Set FilterPanel Query", query)
-				this.query = query;
-				this.getFacets(query).then(lang.hitch(this, function(facets){
-					Object.keys(facets).forEach(function(cat){
-						if (this._ffWidgets[cat]){
-							this._ffWidgets[cat].set('data', facets[cat]);
-						}else{
-							console.log("Missing ffWidget for : ", cat);
-						}
-					},this);
-				}));
-			},
-
-			// _setFilterAttr: function(filter){
-			// 	console.log("Set FilterPanel Filter", filter);
-			// 	this.filter=filter;
-			// },
-
-			_setFacetFieldsAttr: function(fields){
-				this.facetFields = fields;
-				if (!this._started){return;}
-
-				fields.forEach(lang.hitch(this,function(f){
-					console.log("Field: ",f)
-					this.addCategory(f,[]);
-				}))
-			},
-
-			postCreate: function(){
-				this._filter={};
-
-				this.inherited(arguments);
-				this._table = domConstruct.create('table',{style:{width:"100%"}},this.domNode)
-				this.table = domConstruct.create('tbody',{},this._table)
-				this.leftColumn = domConstruct.create("td", {innerHTML: "", style: {"background": "#fff", "width":"20px"}},this.table);
-				this.centerColumn = domConstruct.create("td", {innerHTML: "",style: {"word-wrap":"nowrap","overflow-x":"auto",color: "#fff"}},this.table);
-				this.right = domConstruct.create("td", {innerHTML: "", style: {"background": "#fff","width":"20px"}},this.table);
-
-				on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
-						console.log("EVT: ", evt);
-						this._filter[evt.category] = evt.filter;
-						var cats = Object.keys(this._filter);
-						console.log("Categories: ", cats);
-
-						if (cats.length < 1){
-							console.log("UpdateFilterCategory Set Filter to empty")
-							this._set('filter', "");
-						}else if (cats.length==1){
-							console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]])
-							this._set("filter", this._filter[cats[0]]);
-						}else{
-							console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
-							this._set("filter", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")"  )
-						}
-
-				}));
-
-			},
-
-			addCategory: function(name, values){
-				console.log("Add Category: ", name, values)
-				var f = this._ffWidgets[name] = new FacetFilter({category: name, data: values, selected: []});
-				domConstruct.place(f.domNode, this.centerColumn,"last")
-			},
-
-			selectedToFilter: function(selected){
-				var f={}
-				selected.forEach(function(sel){
-					var parts = sel.split(":");
-					var field = parts[0];
-					var val = parts[1];
-					if (!f[field]){
-						f[field]=[val];
+		_setQueryAttr: function(query){
+			console.log("Set FilterPanel Query", query)
+			this.query = query;
+			this.getFacets(query).then(lang.hitch(this, function(facets){
+				Object.keys(facets).forEach(function(cat){
+					if(this._ffWidgets[cat]){
+						this._ffWidgets[cat].set('data', facets[cat]);
 					}else{
-						var exists = f[field].indexOf(val)
-						if (exists<0){
-							f[field].push(val);
-						}
+						console.log("Missing ffWidget for : ", cat);
 					}
-				},this)
-				console.log("F: ", f)
-				
-				var out=[];
-				var fields = Object.keys(f)
-			
-				fields.forEach(function(field){
-					var data = f[field];
-					if (data.length==1){
-						out.push("eq("+field +"," + data[0] + ")");
-					}else{
-						var ored=[];
-					
-						data.forEach(function(d){
-							ored.push("eq(" + field + "," + d + ")");
-						})
+				}, this);
+			}));
+		},
 
-						out.push("or(" + ored.join(",") + ")");
-					}
+		// _setFilterAttr: function(filter){
+		// 	console.log("Set FilterPanel Filter", filter);
+		// 	this.filter=filter;
+		// },
 
-				},this)
-
-
-				if (fields.length>1){
-					out = "and(" + out.join(",") + ")";
-				}else{
-					out = out.join("");
-				}
-				return out;
-				console.log("FILTER: ", out)
-			},
-			selected: null,
-			_setSelectedAttr: function(selected){
-				if (selected){
-					
-					console.log("set selected: ", selected);
-					this.selected = selected;
-					if (!this._started){ return; }
-					query("TD").forEach(function(node){
-						var rel = domAttr.get(node, "rel");
-						if (rel && this.selected && this.selected.indexOf(rel)>=0){
-							domClass.add(node, "FacetSelection");
-						}else{
-							domClass.remove(node, "FacetSelection")
-						}
-					},this)
-				}else{
-					query("TD").forEach(function(node){
-						domClass.remove(node,"FacetSelection");
-					},this)
-				}
-			},
-
-			clearFilters: function(){
-
-			},
-
-			toggleInFilter: function(field, value){
-				console.log("toggleInFilter: ", this._filter);
-				if (!this._filter[field]){
-					this._filter[field] = [value]
-				}else{
-					var exists = this._filter[field].indexOf(value)
-					
-					if (exists>-1){
-						this._filter[field] = this._filter[field].splice(exists,1);
-						if (this._filter[field] && (this._filter[field].length<1)){
-							delete this._filter[field];
-						}
-					}else{
-						this._filter[field].push(value);
-					}
-				}
-
-
-				var out=[];
-				var fields = Object.keys(this._filter)
-			
-				fields.forEach(function(field){
-					var data = this._filter[field];
-					if (data.length==1){
-						out.push("eq("+field +"," + data[0] + ")");
-					}else{
-						var ored=[];
-					
-						data.forEach(function(d){
-							ored.push("eq(" + field + "," + d + ")");
-						})
-
-						out.push("or(" + ored.join(",") + ")");
-					}
-
-				},this)
-
-
-				if (fields.length>1){
-					out = "and(" + out.join(",") + ")";
-				}else{
-					out = out.join("");
-				}
-
-				this._set("filter", out);
-			},
-
-			_setFacetsAttr: function(facets){
-				this.facets = facets;
-
-
-				if (!this._started){ return; }
-
-				domConstruct.empty(this.table);
-
-				Object.keys(this.facets).sort().forEach(function(category){
-					var catTR = domConstruct.create("tr",{}, this.table);
-
-					domConstruct.create("th", {style: {background: "inherit", "font-size": "1.3em", "padding-left": "4px","padding-top":"10px", color:"#fff","border-top": "0px", "border-bottom": "1px solid #efefef"}, innerHTML: category},catTR)
-
-					this.facets[category].forEach(function(facet){
-							var tr = domConstruct.create("tr", {}, this.table);
-							var label = facet.label;
-
-							if (typeof facet.count != 'undefined'){
-								label = label + " (" + facet.count + ")";
-							}
-
-							domConstruct.create("td",{style: {"padding-left": "10px"}, rel: encodeURIComponent(category) + ":" + encodeURIComponent(facet.value||facet.label), innerHTML: label},tr)
-					},this)
-
-				},this)
-			},
-
-			startup: function(){
-				if (this._started) { return; }
-				this.inherited(arguments);
-				this._started=true;
-				this.set("facetFields",this.facetFields);
-				//this.set("facets", this.facets);
-				//this.set("selected", this.selected);
-			},
-			resize: function(changeSize, resultSize){
-
-			        // summary:
-			        //              Call this to resize a widget, or after its size has changed.
-			        // description:
-			        //              ####Change size mode:
-			        //
-			        //              When changeSize is specified, changes the marginBox of this widget
-			        //              and forces it to re-layout its contents accordingly.
-			        //              changeSize may specify height, width, or both.
-			        //
-			        //              If resultSize is specified it indicates the size the widget will
-			        //              become after changeSize has been applied.
-			        //
-			        //              ####Notification mode:
-			        //
-			        //              When changeSize is null, indicates that the caller has already changed
-			        //              the size of the widget, or perhaps it changed because the browser
-			        //              window was resized.  Tells widget to re-layout its contents accordingly.
-			        //
-			        //              If resultSize is also specified it indicates the size the widget has
-			        //              become.
-			        //
-			        //              In either mode, this method also:
-			        //
-			        //              1. Sets this._borderBox and this._contentBox to the new size of
-			        //                      the widget.  Queries the current domNode size if necessary.
-			        //              2. Calls layout() to resize contents (and maybe adjust child widgets).
-			        // changeSize: Object?
-			        //              Sets the widget to this margin-box size and position.
-			        //              May include any/all of the following properties:
-			        //      |       {w: int, h: int, l: int, t: int}
-			        // resultSize: Object?
-			        //              The margin-box size of this widget after applying changeSize (if
-			        //              changeSize is specified).  If caller knows this size and
-			        //              passes it in, we don't need to query the browser to get the size.
-			        //      |       {w: int, h: int}
-
-			        var node = this.domNode;
-
-			        // set margin box size, unless it wasn't specified, in which case use current size
-			        if(changeSize){
-			                domGeometry.setMarginBox(node, changeSize);
-			        }
-
-			        // If either height or width wasn't specified by the user, then query node for it.
-			        // But note that setting the margin box and then immediately querying dimensions may return
-			        // inaccurate results, so try not to depend on it.
-			        var mb = resultSize || {};
-			        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-			        if( !("h" in mb) || !("w" in mb) ){
-			                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-			        }
-
-
-			        // Compute and save the size of my border box and content box
-			        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-			        var cs = domStyle.getComputedStyle(node);
-			        var me = domGeometry.getMarginExtents(node, cs);
-			        var be = domGeometry.getBorderExtents(node, cs);
-			        var bb = (this._borderBox = {
-			                w: mb.w - (me.w + be.w),
-			                h: mb.h - (me.h + be.h)
-			        });
-			        var pe = domGeometry.getPadExtents(node, cs);
-			        this._contentBox = {
-			                l: domStyle.toPixelValue(node, cs.paddingLeft),
-			                t: domStyle.toPixelValue(node, cs.paddingTop),
-			                w: bb.w - pe.w,
-			                h: bb.h - pe.h
-			        };
-
-			        Query(".FacetFilter",this.containerNode).forEach(function(n){
-			        	domGeometry.setMarginBox(n, {h: this._contentBox.h-4})
-			        },this)
-
-
+		_setFacetFieldsAttr: function(fields){
+			this.facetFields = fields;
+			if(!this._started){
+				return;
 			}
+
+			fields.forEach(lang.hitch(this, function(f){
+				console.log("Field: ", f)
+				this.addCategory(f, []);
+			}))
+		},
+
+		postCreate: function(){
+			this._filter = {};
+
+			this.inherited(arguments);
+			this._table = domConstruct.create('table', {style: {width: "100%"}}, this.domNode)
+			this.table = domConstruct.create('tbody', {}, this._table)
+			this.leftColumn = domConstruct.create("td", {
+				innerHTML: "",
+				style: {"background": "#fff", "width": "20px"}
+			}, this.table);
+			this.centerColumn = domConstruct.create("td", {
+				innerHTML: "",
+				style: {"word-wrap": "nowrap", "overflow-x": "auto", color: "#fff"}
+			}, this.table);
+			this.right = domConstruct.create("td", {
+				innerHTML: "",
+				style: {"background": "#fff", "width": "20px"}
+			}, this.table);
+
+			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
+				console.log("EVT: ", evt);
+				this._filter[evt.category] = evt.filter;
+				var cats = Object.keys(this._filter);
+				console.log("Categories: ", cats);
+
+				if(cats.length < 1){
+					console.log("UpdateFilterCategory Set Filter to empty")
+					this._set('filter', "");
+				}else if(cats.length == 1){
+					console.log("UpdateFilterCategory  set filter to ", this._filter[cats[0]])
+					this._set("filter", this._filter[cats[0]]);
+				}else{
+					console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){
+							return this._filter[c]
+						}, this).join(",") + ")")
+					this._set("filter", "and(" + cats.map(function(c){
+							return this._filter[c]
+						}, this).join(",") + ")")
+				}
+
+			}));
+
+		},
+
+		addCategory: function(name, values){
+			console.log("Add Category: ", name, values)
+			var f = this._ffWidgets[name] = new FacetFilter({category: name, data: values, selected: []});
+			domConstruct.place(f.domNode, this.centerColumn, "last")
+		},
+
+		selectedToFilter: function(selected){
+			var f = {}
+			selected.forEach(function(sel){
+				var parts = sel.split(":");
+				var field = parts[0];
+				var val = parts[1];
+				if(!f[field]){
+					f[field] = [val];
+				}else{
+					var exists = f[field].indexOf(val)
+					if(exists < 0){
+						f[field].push(val);
+					}
+				}
+			}, this)
+			console.log("F: ", f)
+
+			var out = [];
+			var fields = Object.keys(f)
+
+			fields.forEach(function(field){
+				var data = f[field];
+				if(data.length == 1){
+					out.push("eq(" + field + "," + data[0] + ")");
+				}else{
+					var ored = [];
+
+					data.forEach(function(d){
+						ored.push("eq(" + field + "," + d + ")");
+					})
+
+					out.push("or(" + ored.join(",") + ")");
+				}
+
+			}, this)
+
+			if(fields.length > 1){
+				out = "and(" + out.join(",") + ")";
+			}else{
+				out = out.join("");
+			}
+			return out;
+			console.log("FILTER: ", out)
+		},
+		selected: null,
+		_setSelectedAttr: function(selected){
+			if(selected){
+
+				console.log("set selected: ", selected);
+				this.selected = selected;
+				if(!this._started){
+					return;
+				}
+				query("TD").forEach(function(node){
+					var rel = domAttr.get(node, "rel");
+					if(rel && this.selected && this.selected.indexOf(rel) >= 0){
+						domClass.add(node, "FacetSelection");
+					}else{
+						domClass.remove(node, "FacetSelection")
+					}
+				}, this)
+			}else{
+				query("TD").forEach(function(node){
+					domClass.remove(node, "FacetSelection");
+				}, this)
+			}
+		},
+
+		clearFilters: function(){
+
+		},
+
+		toggleInFilter: function(field, value){
+			console.log("toggleInFilter: ", this._filter);
+			if(!this._filter[field]){
+				this._filter[field] = [value]
+			}else{
+				var exists = this._filter[field].indexOf(value)
+
+				if(exists > -1){
+					this._filter[field] = this._filter[field].splice(exists, 1);
+					if(this._filter[field] && (this._filter[field].length < 1)){
+						delete this._filter[field];
+					}
+				}else{
+					this._filter[field].push(value);
+				}
+			}
+
+			var out = [];
+			var fields = Object.keys(this._filter)
+
+			fields.forEach(function(field){
+				var data = this._filter[field];
+				if(data.length == 1){
+					out.push("eq(" + field + "," + data[0] + ")");
+				}else{
+					var ored = [];
+
+					data.forEach(function(d){
+						ored.push("eq(" + field + "," + d + ")");
+					})
+
+					out.push("or(" + ored.join(",") + ")");
+				}
+
+			}, this)
+
+			if(fields.length > 1){
+				out = "and(" + out.join(",") + ")";
+			}else{
+				out = out.join("");
+			}
+
+			this._set("filter", out);
+		},
+
+		_setFacetsAttr: function(facets){
+			this.facets = facets;
+
+			if(!this._started){
+				return;
+			}
+
+			domConstruct.empty(this.table);
+
+			Object.keys(this.facets).sort().forEach(function(category){
+				var catTR = domConstruct.create("tr", {}, this.table);
+
+				domConstruct.create("th", {
+					style: {
+						background: "inherit",
+						"font-size": "1.3em",
+						"padding-left": "4px",
+						"padding-top": "10px",
+						color: "#fff",
+						"border-top": "0px",
+						"border-bottom": "1px solid #efefef"
+					}, innerHTML: category
+				}, catTR)
+
+				this.facets[category].forEach(function(facet){
+					var tr = domConstruct.create("tr", {}, this.table);
+					var label = facet.label;
+
+					if(typeof facet.count != 'undefined'){
+						label = label + " (" + facet.count + ")";
+					}
+
+					domConstruct.create("td", {
+						style: {"padding-left": "10px"},
+						rel: encodeURIComponent(category) + ":" + encodeURIComponent(facet.value || facet.label),
+						innerHTML: label
+					}, tr)
+				}, this)
+
+			}, this)
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+			this._started = true;
+			this.set("facetFields", this.facetFields);
+			//this.set("facets", this.facets);
+			//this.set("selected", this.selected);
+		},
+		resize: function(changeSize, resultSize){
+
+			// summary:
+			//              Call this to resize a widget, or after its size has changed.
+			// description:
+			//              ####Change size mode:
+			//
+			//              When changeSize is specified, changes the marginBox of this widget
+			//              and forces it to re-layout its contents accordingly.
+			//              changeSize may specify height, width, or both.
+			//
+			//              If resultSize is specified it indicates the size the widget will
+			//              become after changeSize has been applied.
+			//
+			//              ####Notification mode:
+			//
+			//              When changeSize is null, indicates that the caller has already changed
+			//              the size of the widget, or perhaps it changed because the browser
+			//              window was resized.  Tells widget to re-layout its contents accordingly.
+			//
+			//              If resultSize is also specified it indicates the size the widget has
+			//              become.
+			//
+			//              In either mode, this method also:
+			//
+			//              1. Sets this._borderBox and this._contentBox to the new size of
+			//                      the widget.  Queries the current domNode size if necessary.
+			//              2. Calls layout() to resize contents (and maybe adjust child widgets).
+			// changeSize: Object?
+			//              Sets the widget to this margin-box size and position.
+			//              May include any/all of the following properties:
+			//      |       {w: int, h: int, l: int, t: int}
+			// resultSize: Object?
+			//              The margin-box size of this widget after applying changeSize (if
+			//              changeSize is specified).  If caller knows this size and
+			//              passes it in, we don't need to query the browser to get the size.
+			//      |       {w: int, h: int}
+
+			var node = this.domNode;
+
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+				domGeometry.setMarginBox(node, changeSize);
+			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+			Query(".FacetFilter", this.containerNode).forEach(function(n){
+				domGeometry.setMarginBox(n, {h: this._contentBox.h - 4})
+			}, this)
+
+		}
 	})
 });
 
@@ -69680,39 +70219,42 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
-	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on"
+	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dojo/_base/lang", "dojo/on"
 ], function(declare, GridContainer,
 			Grid, popup,
-			TooltipDialog,FacetFilterPanel,
-			lang,on) {
+			TooltipDialog, FacetFilterPanel,
+			lang, on){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		// console.log("selection: ", selection);
 		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
-
 	return declare([GridContainer], {
 		containerType: "spgene_data",
-		facetFields: ["property","source","evidence"],
+		facetFields: ["property", "source", "evidence"],
 		maxGenomeCount: 5000,
 		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
@@ -69721,17 +70263,29 @@ define([
 			[
 				"ToggleFilters",
 				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
+				{
+					label: "FILTERS",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Toggle Filters",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					on.emit(this.domNode, "ToggleFilters", {});
 				},
 				true
 			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -69751,12 +70305,12 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SpecialtyGeneJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/SpecialtyGeneJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store,selector) {
+			Grid, formatter, Store, selector){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		region: "center",
@@ -69782,9 +70336,9 @@ define([
 			identity: {label: "Identity", field: "identity", hidden: false},
 			evalue: {label: "E-value", field: "e_value", hidden: false}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -69796,7 +70350,7 @@ define([
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -69807,7 +70361,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -69827,17 +70381,15 @@ define([
 },
 'p3/store/SpecialtyGeneJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	dataModel: "sp_gene",
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		dataModel: "sp_gene",
 		idProperty: "feature_id",
-   	     	facetFields: []
-        });
+		facetFields: []
+	});
 });
 
 
@@ -69851,8 +70403,7 @@ define([
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore
-){
+			PathwayMemoryStore){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -69886,7 +70437,6 @@ define([
 		apiServer: window.App.dataServiceURL,
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 
-
 		postCreate: function(){
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
@@ -69895,23 +70445,25 @@ define([
 		onSetState: function(attr, oldVal, state){
 			// console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
-			if (!state) { return; };
+			if(!state){
+				return;
+			}
 
 			if(this.pathwaysGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.pathwayStore.set('state', state)
+				this.pathwayStore.set('state', state);
 				this.pathwaysGrid.set('state', state);
 			}
 
 			if(this.ecNumbersGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.ecNumberStore.set('state', state)
+				this.ecNumberStore.set('state', state);
 				this.ecNumbersGrid.set('state', state);
 			}
 
 			if(this.genesGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.geneStore.set('state', state)
+				this.geneStore.set('state', state);
 				this.genesGrid.set('state', state);
 			}
 
@@ -69927,7 +70479,7 @@ define([
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				
+
 				if(this.pathwaysGrid){
 					this.pathwaysGrid.set("visible", true)
 				}
@@ -69955,7 +70507,7 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			var pathwayStore = this.pathwayStore =  new PathwayMemoryStore({type: "pathway", state: this.state});
+			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({type: "pathway", state: this.state});
 			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber", state: this.state});
 			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes", state: this.state});
 
@@ -69966,7 +70518,7 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				queryOptions: {
 					sort: [{attribute: "pathway_id"}]
 				},
@@ -69980,8 +70532,13 @@ define([
 				state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
-				columns: lang.mixin({},this.pathwaysGrid.get('columns'),{ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				columns: lang.mixin({}, this.pathwaysGrid.get('columns'), {
+					ecnumber: {
+						label: 'EC Number',
+						field: 'ec_number'
+					}, annotation: {label: 'Annotation', field: 'annotation'}
+				}),
 				store: ecNumberStore,
 				enableFilterPanel: true,
 				queryOptions: {
@@ -69995,8 +70552,12 @@ define([
 				state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
-				columns: lang.mixin({},this.ecNumbersGrid.get('columns'),{gene: {label: 'Gene', field: 'gene'},ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				columns: lang.mixin({}, this.ecNumbersGrid.get('columns'), {
+					gene: {label: 'Gene', field: 'gene'},
+					ecnumber: {label: 'EC Number', field: 'ec_number'},
+					annotation: {label: 'Annotation', field: 'annotation'}
+				}),
 				store: geneStore,
 				enableFilterPanel: true,
 				queryOptions: {
@@ -70024,7 +70585,7 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog","./FilterContainerActionBar",
+	"dijit/TooltipDialog", "./FilterContainerActionBar",
 	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
@@ -70083,69 +70644,71 @@ define([
 		},
 
 		_setStoreAttr: function(store){
-			if ( this.grid ) {
+			if(this.grid){
 				this.grid.store = store;
 			}
 			this._set('store', store);
 		},
 
 		createFilterPanel: function(){
-				// console.log("Create Container ActionBar with currentContainerWidget: ", this)
-				var _self=this;
-				this.containerActionBar = this.filterPanel = new ContainerActionBar({
-					region: "top",
-					layoutPriority: 7,
-					splitter: true,
-					"className": "BrowserHeader",
-					dataModel: this.dataModel,
-					facetFields: this.facetFields,
-					state: this.state,
-					currentContainerWidget: this,
-					_setQueryAttr: function(query){
-						// console.log("_setQueryAttr: ", query)
-						var p = _self.typeMap[_self.type];
-						query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
-						console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
-						this._set("query", query)
-						this.getFacets(query).then(lang.hitch(this, function(facets){
-							// console.log("_setQuery got facets: ", facets)
-							if (!facets) { console.log("No Facets Returned"); return; }
+			// console.log("Create Container ActionBar with currentContainerWidget: ", this)
+			var _self = this;
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: this.state,
+				currentContainerWidget: this,
+				_setQueryAttr: function(query){
+					// console.log("_setQueryAttr: ", query)
+					var p = _self.typeMap[_self.type];
+					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
+					console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+					this._set("query", query)
+					this.getFacets(query).then(lang.hitch(this, function(facets){
+						// console.log("_setQuery got facets: ", facets)
+						if(!facets){
+							console.log("No Facets Returned");
+							return;
+						}
 
-							Object.keys(facets).forEach(function(cat){
-								 // console.log("Facet Category: ", cat);
-								if (this._ffWidgets[cat]){
-									// console.log("this.state: ", this.state);
-									var selected = this.state.selected;
-									 // console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
-									this._ffWidgets[cat].set('data', facets[cat], selected);
-								}else{
-									 // console.log("Missing ffWidget for : ", cat);
-								}
-							},this);
+						Object.keys(facets).forEach(function(cat){
+							// console.log("Facet Category: ", cat);
+							if(this._ffWidgets[cat]){
+								// console.log("this.state: ", this.state);
+								var selected = this.state.selected;
+								// console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
+								this._ffWidgets[cat].set('data', facets[cat], selected);
+							}else{
+								// console.log("Missing ffWidget for : ", cat);
+							}
+						}, this);
 
-						}));
+					}));
 
-					}
-				});
+				}
+			});
 
-				// console.log("gridcontainer startup()", this.state)
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
-					// console.log("FILTER PANEL SET FILTER", arguments)
-					// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
-					// console.log("setFilter Watch() callback", newVal);
-					if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
-						// console.log("Emit UpdateHash: ", newVal);
-						on.emit(this.domNode, "UpdateHash", {
-							bubbles: true,
-							cancelable: true,
-							hashProperty: "filter",
-							value: newVal,
-							oldValue: oldVal
-						})
-					}
-				}));
+			// console.log("gridcontainer startup()", this.state)
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
+				// console.log("FILTER PANEL SET FILTER", arguments)
+				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
+				// console.log("setFilter Watch() callback", newVal);
+				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+					// console.log("Emit UpdateHash: ", newVal);
+					on.emit(this.domNode, "UpdateHash", {
+						bubbles: true,
+						cancelable: true,
+						hashProperty: "filter",
+						value: newVal,
+						oldValue: oldVal
+					})
+				}
+			}));
 		},
-
 
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -70172,7 +70735,9 @@ define([
 
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
@@ -70193,11 +70758,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect","dgrid/selector"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect,selector){
+			aspect, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -70293,7 +70858,9 @@ define([
 			//console.log("CreateStore() token: ", token);
 			//console.log("CreateStore() state: ", state);
 			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
-			if (this.store) { return this.store }
+			if(this.store){
+				return this.store
+			}
 
 			return new Store({
 				token: token,
@@ -70321,9 +70888,7 @@ define([
 			QueryResults,
 			when, lang,
 			Deferred, Stateful,
-			PathJoin
-
-){
+			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		idProperty: "pathway_id",
@@ -70333,29 +70898,33 @@ define([
 		type: "pathway",
 		onSetState: function(attr, oldVal, state){
 			var ov, nv;
-			if (oldVal){ ov = oldVal.search + oldVal.filter};
-			if (state) { nv = state.search + state.filter };
+			if(oldVal){
+				ov = oldVal.search + oldVal.filter
+			}
+			if(state){
+				nv = state.search + state.filter
+			}
 
-			console.log("MEMORY STORE onSetState: ", state, oldVal)
+			console.log("MEMORY STORE onSetState: ", state, oldVal);
 			// if (ov!=nv){
-				console.log("clear memory store data")
-				this._loaded = false;
-				if (this._loadingDeferred){
-					console.log("Deleting _loadingDeferred", this._loadingDeferred);
-					delete this._loadingDeferred;
-				}
+			console.log("clear memory store data");
+			this._loaded = false;
+			if(this._loadingDeferred){
+				console.log("Deleting _loadingDeferred", this._loadingDeferred);
+				delete this._loadingDeferred;
+			}
 			// }
 		},
 		constructor: function(opts){
 			this.init(opts);
 		},
 		init: function(options){
-			options=options||{}
+			options = options || {};
 			console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
-			lang.mixin(this,options);
-			this.watch("state", lang.hitch(this, "onSetState"))
+			lang.mixin(this, options);
+			this.watch("state", lang.hitch(this, "onSetState"));
 			console.log("INIT COMPLETE: ", this)
 		},
 
@@ -70367,7 +70936,7 @@ define([
 			else{
 				var _self = this;
 				var results;
-				console.log("Beofre LOAD type: ", this.type)
+				console.log("Beofre LOAD type: ", this.type);
 				console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
 					console.log("Do actual Query Against loadData() data. QR: ", qr);
@@ -70396,26 +70965,65 @@ define([
 
 		queryTypes: {
 			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-				     "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "pathway_id",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")",
 
 			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-					  "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "ec_number",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")",
 			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-					"&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "gene",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")"
 		},
 		buildQuery: function(){
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					console.log("buildQuery SEARCH: ", this.state.search );
+					console.log("buildQuery SEARCH: ", this.state.search);
 
-					q.push((this.state.search.charAt(0)=="?")?this.state.search.substr(1):this.state.search);
-				}else if (this.state.genome_ids){
+					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
+				}else if(this.state.genome_ids){
 					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
 				}
 
 				if(this.state.hashParams && this.state.hashParams.filter){
-					if (this.state.hashParams.filter!="false"){
+					if(this.state.hashParams.filter != "false"){
 						q.push(this.state.hashParams.filter);
 					}
 				}
@@ -70433,8 +71041,8 @@ define([
 			}
 			q = q + this.queryTypes[this.type];
 
-			console.log("End Build Query: ", q)
-			return (q.charAt(0)=="?")?q.substr(1):q ;
+			console.log("End Build Query: ", q);
+			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
 		loadData: function(){
@@ -70460,7 +71068,6 @@ define([
 
 			}
 
-
 			// var lq;
 
 			// if(state && state.genome_ids){
@@ -70472,7 +71079,7 @@ define([
 
 			var _self = this;
 			console.log("Load Data: ", q);
-			this._loadingDeferred = when(request.post(PathJoin(this.apiServer,'pathway')+'/', {
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -70482,58 +71089,58 @@ define([
 				},
 				data: q
 
-			}), lang.hitch(this,function(response){
+			}), lang.hitch(this, function(response){
 
-				var docs=[]
+				var docs = [];
 				var props = {
 					"pathway": "pathway_id",
 					"ecnumber": "ec_number",
 					"genes": 'gene'
-				}
+				};
 				console.log("Pathway Base Query Response:", response);
 				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
-				if (response && response.grouped  && response.grouped[props[this.type]]){
+				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
 					var buckets = response.facets.stat.buckets;
-                	var map={};
-                	buckets.forEach(function(b){
-                		map[b["val"]]=b;
-                		delete b["val"];
-                	})
+					var map = {};
+					buckets.forEach(function(b){
+						map[b["val"]] = b;
+						delete b["val"];
+					});
 
-                	docs = ds.map(function(doc){
-                		var p = props[this.type];
-                		var pv = doc[p];
-                		// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
-                		lang.mixin(doc,map[pv]||{})
-                		if (doc.genome_ec && doc.genome_count){
-	                  		doc.ec_cons = (doc.genome_ec /doc.genome_count / doc.ec_count * 100).toFixed(2);
-	                  	}else{
-	                  		doc.ec_cons=0;
-	                  	}
-	                  	if (doc.gene_count && doc.genome_count){
-							doc.gene_cons =(doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+					docs = ds.map(function(doc){
+						var p = props[this.type];
+						var pv = doc[p];
+						// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
+						lang.mixin(doc, map[pv] || {});
+						if(doc.genome_ec && doc.genome_count){
+							doc.ec_cons = (doc.genome_ec / doc.genome_count / doc.ec_count * 100).toFixed(2);
 						}else{
-							doc.gene_cons=0;
+							doc.ec_cons = 0;
 						}
-                		return doc;
-                	},this)
+						if(doc.gene_count && doc.genome_count){
+							doc.gene_cons = (doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+						}else{
+							doc.gene_cons = 0;
+						}
+						return doc;
+					}, this);
 					console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
-					_self._loaded =true;
+					_self._loaded = true;
 					return true;
 
 				}else{
-					console.log("Unable to Process Response: ", response)
-					_self.setData([]),
-					_self._loaded=true;
+					console.log("Unable to Process Response: ", response);
+					_self.setData([]);
+					_self._loaded = true;
 					return false;
 				}
 			}), lang.hitch(this, function(err){
 				console.log("Error Loading Data: ", err);
-				_self.setData([]),
-				_self._loaded=true;
+				_self.setData([]);
+				_self._loaded = true;
 				return err;
 			}));
 			return this._loadingDeferred;
@@ -70835,7 +71442,9 @@ define([
 		},
 		_setStateAttr: function(state){
 			this.inherited(arguments);
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			console.log("PathwaysGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				console.log("   call set state on this.grid: ", this.grid);
@@ -70900,7 +71509,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
-	"dojo/aspect","dgrid/selector"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
@@ -70924,7 +71533,7 @@ define([
 			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
 			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
-			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric }
+			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric}
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);
@@ -71016,134 +71625,132 @@ define([
 },
 'p3/widget/Grid':function(){
 define([
-		"dojo/_base/declare", "dgrid/OnDemandGrid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
-		"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-		"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang","../util/PathJoin"
-
-	],
-	function(
-		declare, Grid, Store, DijitRegistry,
-		Keyboard, Selection, formatter, ColumnResizer,
-		ColumnHider, DnD, DnDSource,
-		Deferred, aspect, lang,PathJoin
-	) {
-		return declare([Grid, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
-			constructor: function() {
-				this.dndParams.creator = lang.hitch(this, function(item, hint) {
-					//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
-					var avatar = dojo.create("div", {
-						innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
-					});
-					avatar.data = item;
-					if (hint == 'avatar') {
-						// create your avatar if you want
-					}
-
-					return {
-						node: avatar,
-						data: item,
-						type: this.dndDataType
-					}
-				})
-
-			},
-			store: null,
-			selectionMode: "extended",
-			allowTextSelection: false,
-			allowSelectAll: true,
-			deselectOnRefresh: false,
-			minRowsPerPage: 50,
-			bufferRows: 100,
-			maxRowsPerPage: 1000,
-			pagingDelay: 250,
-			//		pagingMethod: "throttleDelayed",
-			farOffRemoval: 2000,
-			keepScrollPosition: true,
-			rowHeight: 24,
-			loadingMessage: "Loading...",
-			dndDataType: "genome",
-			dndParams: {
-				accept: "none",
-				selfAccept: false,
-				copyOnly: true
-			},
-			apiServer: window.App.dataServiceURL,
-
-			_setApiServer: function(server) {
-				console.log("_setApiServer ", server)
-				this.apiServer = server;
-				this.set('store', this.createStore(this.dataModel), this.buildQuery());
-			},
-
-			_setTotalRows: function(rows) {
-				this.totalRows = rows;
-				console.log("Total Rows: ", rows);
-				if (this.controlButton) {
-					console.log("this.controlButton: ", this.controlButton);
-					if (!this._originalTitle) {
-						this._originalTitle = this.controlButton.get('label');
-					}
-					this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-
-					console.log(this.controlButton);
-				}
-			},
-
-			startup: function() {
-				if (this._started) {
-					return;
-				}
-				var _self = this;
-
-				aspect.before(_self, 'renderArray', function(results) {
-					Deferred.when(results.total || results.length, function(x) {
-						_self.set("totalRows", x);
-					});
+	"dojo/_base/declare", "dgrid/OnDemandGrid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry",
+	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer",
+	"dgrid/extensions/ColumnHider", "dgrid/extensions/DnD", "dojo/dnd/Source",
+	"dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin"
+],
+function(declare, Grid, Store, DijitRegistry,
+		 Keyboard, Selection, formatter, ColumnResizer,
+		 ColumnHider, DnD, DnDSource,
+		 Deferred, aspect, lang, PathJoin){
+	return declare([Grid, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
+		constructor: function(){
+			this.dndParams.creator = lang.hitch(this, function(item, hint){
+				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
+				var avatar = dojo.create("div", {
+					innerHTML: item.organism_name || item.ncbi_taxon_id || item.id
 				});
-
-				if (!this.store && this.dataModel) {
-					this.store = this.createStore(this.dataModel);
+				avatar.data = item;
+				if(hint == 'avatar'){
+					// create your avatar if you want
 				}
-				this.inherited(arguments);
-				this._started = true;
 
-			},
-			_setActiveFilter: function(filter) {
-				console.log("Set Active Filter: ", filter, "started:", this._started);
-				this.activeFilter = filter;
-				this.set("query", this.buildQuery());
-			},
+				return {
+					node: avatar,
+					data: item,
+					type: this.dndDataType
+				}
+			})
 
-			buildQuery: function(table, extra) {
-				var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
-				return q;
-			},
+		},
+		store: null,
+		selectionMode: "extended",
+		allowTextSelection: false,
+		allowSelectAll: true,
+		deselectOnRefresh: false,
+		minRowsPerPage: 50,
+		bufferRows: 100,
+		maxRowsPerPage: 1000,
+		pagingDelay: 250,
+		//		pagingMethod: "throttleDelayed",
+		farOffRemoval: 2000,
+		keepScrollPosition: true,
+		rowHeight: 24,
+		loadingMessage: "Loading...",
+		dndDataType: "genome",
+		dndParams: {
+			accept: "none",
+			selfAccept: false,
+			copyOnly: true
+		},
+		apiServer: window.App.dataServiceURL,
 
-			createStore: function(dataModel) {
-				console.log("Create Store for ", dataModel, " at ", this.apiServer);
+		_setApiServer: function(server){
+			console.log("_setApiServer ", server)
+			this.apiServer = server;
+			this.set('store', this.createStore(this.dataModel), this.buildQuery());
+		},
 
-				var store = new Store({
-					target: PathJoin((this.apiServer ? (this.apiServer) : ""), dataModel) + "/",
-					idProperty: "rownum",
-					headers: {
-						"accept": "application/json",
-						"content-type": "application/json",
-						"Authorization": (window.App.authorizationToken || ""),
-						'X-Requested-With': null
-					}
-				});
-				console.log("store: ", store);
-				return store;
-			},
+		_setTotalRows: function(rows){
+			this.totalRows = rows;
+			console.log("Total Rows: ", rows);
+			if(this.controlButton){
+				console.log("this.controlButton: ", this.controlButton);
+				if(!this._originalTitle){
+					this._originalTitle = this.controlButton.get('label');
+				}
+				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
 
-			getFilterPanel: function() {
-				console.log("getFilterPanel()");
-				return FilterPanel;
+				console.log(this.controlButton);
 			}
+		},
 
-		});
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			var _self = this;
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total || results.length, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			if(!this.store && this.dataModel){
+				this.store = this.createStore(this.dataModel);
+			}
+			this.inherited(arguments);
+			this._started = true;
+
+		},
+		_setActiveFilter: function(filter){
+			console.log("Set Active Filter: ", filter, "started:", this._started);
+			this.activeFilter = filter;
+			this.set("query", this.buildQuery());
+		},
+
+		buildQuery: function(table, extra){
+			var q = "?" + (this.activeFilter ? ("in(gid,query(genomesummary,and(" + this.activeFilter + ",limit(Infinity),values(genome_info_id))))") : "") + (this.extra || "");
+			return q;
+		},
+
+		createStore: function(dataModel){
+			console.log("Create Store for ", dataModel, " at ", this.apiServer);
+
+			var store = new Store({
+				target: PathJoin((this.apiServer ? (this.apiServer) : ""), dataModel) + "/",
+				idProperty: "rownum",
+				headers: {
+					"accept": "application/json",
+					"content-type": "application/json",
+					"Authorization": (window.App.authorizationToken || ""),
+					'X-Requested-With': null
+				}
+			});
+			console.log("store: ", store);
+			return store;
+		},
+
+		getFilterPanel: function(){
+			console.log("getFilterPanel()");
+			return FilterPanel;
+		}
 
 	});
+
+});
 
 },
 'dgrid/OnDemandGrid':function(){
@@ -74540,31 +75147,43 @@ define([
 'p3/widget/DiseaseContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"dijit/layout/ContentPane"
-], function(
-	declare,BorderContainer,on,
-	ActionBar, ContainerActionBar,TabContainer,
-	ContentPane
-){
+], function(declare, BorderContainer, on,
+			ActionBar, ContainerActionBar, TabContainer,
+			ContentPane){
 
 	return declare([BorderContainer], {
 		gutters: false,
 		query: null,
 		_setQueryAttr: function(query){
 			this.query = query;
-			if (this.grid) {
+			if(this.grid){
 				this.grid.set("query", query);
 			}
 		},
 		startup: function(){
-			if (this._started) { return; }
-			this.containerActionBar = new ContainerActionBar({region: "top",splitter:false, "className": "BrowserHeader"});
-			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:2, style:"width:48px;text-align:center;",splitter:false});
-			this.tabContainer = new TabContainer({region:"center"});
-			this.summaries= new ContentPane({title: "Summary", content: "Disease Summaries"});
-			this.visualization= new ContentPane({title: "Disease-Pathogen Visualization", content: "Disease Pathogen Visualization"});
-			this.map= new ContentPane({title: "Disease Map", content: "Disease Map"});
+			if(this._started){
+				return;
+			}
+			this.containerActionBar = new ContainerActionBar({
+				region: "top",
+				splitter: false,
+				"className": "BrowserHeader"
+			});
+			this.selectionActionBar = new ActionBar({
+				region: "right",
+				layoutPriority: 2,
+				style: "width:48px;text-align:center;",
+				splitter: false
+			});
+			this.tabContainer = new TabContainer({region: "center"});
+			this.summaries = new ContentPane({title: "Summary", content: "Disease Summaries"});
+			this.visualization = new ContentPane({
+				title: "Disease-Pathogen Visualization",
+				content: "Disease Pathogen Visualization"
+			});
+			this.map = new ContentPane({title: "Disease Map", content: "Disease Map"});
 			this.tabContainer.addChild(this.summaries);
 			this.tabContainer.addChild(this.visualization);
 			this.tabContainer.addChild(this.map);
@@ -74584,29 +75203,25 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./PublicationGrid"
-], function(
-	declare, GridContainer,
-	PublicationGrid
-){
-	return declare([GridContainer],{
-		gridCtor: PublicationGrid 
+], function(declare, GridContainer,
+			PublicationGrid){
+	return declare([GridContainer], {
+		gridCtor: PublicationGrid
 	});
 });
 
 },
 'p3/widget/PublicationGrid':function(){
 define([
-	"dojo/_base/declare","dijit/layout/BorderContainer","dojo/on",
-	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"./PageGrid","./formatter"
-], function(
-	declare, BorderContainer, on,
-	domClass,ContentPane,domConstruct,
-	Grid,formatter
-){
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"./PageGrid", "./formatter"
+], function(declare, BorderContainer, on,
+			domClass, ContentPane, domConstruct,
+			Grid, formatter){
 	return declare([Grid], {
 		region: "center",
-		query: (this.query||""),
+		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
 		dataModel: "publications",
@@ -74616,57 +75231,57 @@ define([
 			publication: {label: "Publication", field: "publication", hidden: false}
 		},
 		startup: function(){
-				var _self = this
-                                this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
-                                    var row = _self.row(evt);
-                                    console.log("dblclick row:", row)
-                                        on.emit(_self.domNode, "ItemDblClick", {
-                                                item_path: row.data.path,
-                                                item: row.data,
-                                                bubbles: true,
-                                                cancelable: true
-                                        });
-                                        console.log('after emit');
-                                    //if (row.data.type == "folder"){
-                //                              Topic.publish("/select", []);
+			var _self = this;
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				console.log('after emit');
+				//if (row.data.type == "folder"){
+				//	Topic.publish("/select", []);
 
-                //                              Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-                //                              _selection={};
-                                        //}
-                                });
-                                //_selection={};
-                                //Topic.publish("/select", []);
+				//	Topic.publish("/navigate", {href:"/workspace" + row.data.path })
+				//	_selection={};
+				//}
+			});
+			//_selection={};
+			//Topic.publish("/select", []);
 
-                                this.on("dgrid-select", function(evt) {
-                                        console.log('dgrid-select: ', evt);
-                                        var newEvt = {
-                                                rows: evt.rows,
-                                                selected: evt.grid.selection,
-                                                grid: _self,
-                                                bubbles: true,
-                                                cancelable: true
-                                        }
-                                        on.emit(_self.domNode, "select", newEvt);
-                                        //console.log("dgrid-select");
-                                        //var rows = evt.rows;
-                                        //Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-                                        //var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-                                        //Topic.publish("/select", sel);
-                                });
-                                this.on("dgrid-deselect", function(evt) {
-                                        console.log("dgrid-select");
-                                        var newEvt = {
-                                                rows: evt.rows,
-                                                selected: evt.grid.selection,
-                                                grid: _self,
-                                                bubbles: true,
-                                                cancelable: true
-                                        }
-                                        on.emit(_self.domNode, "deselect", newEvt);
-                                        return;
-                                });
-				this.inherited(arguments);
-				this.refresh();
+			this.on("dgrid-select", function(evt){
+				console.log('dgrid-select: ', evt);
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "select", newEvt);
+				//console.log("dgrid-select");
+				//var rows = evt.rows;
+				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+				//Topic.publish("/select", sel);
+			});
+			this.on("dgrid-deselect", function(evt){
+				console.log("dgrid-select");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+				return;
+			});
+			this.inherited(arguments);
+			this.refresh();
 		}
 	});
 });
@@ -74675,14 +75290,13 @@ define([
 'p3/widget/CircularViewerContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
-	"./TrackController","circulus/Viewer","circulus/LineTrack",
-	"circulus/SectionTrack","dojo/_base/lang","dojo/request","./DataItemFormatter","../util/PathJoin"
-], function(
-	declare,BorderContainer,on,
-	ActionBar, ContainerActionBar,TabContainer,
-	TrackController,CirculusViewer,LineTrack,SectionTrack,lang,xhr,DataItemFormatter,PathJoin
-){
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
+	"./TrackController", "circulus/Viewer", "circulus/LineTrack",
+	"circulus/SectionTrack", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+], function(declare, BorderContainer, on,
+			ActionBar, ContainerActionBar, TabContainer,
+			TrackController, CirculusViewer, LineTrack,
+			SectionTrack, lang, xhr, DataItemFormatter, PathJoin){
 
 	return declare([BorderContainer], {
 		gutters: true,
@@ -74690,19 +75304,18 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 
-
 		_setQueryAttr: function(query){
 		},
 
-		onSetGenomeId: function(attr,oldVal,gid){
+		onSetGenomeId: function(attr, oldVal, gid){
 			this.getReferenceSequences(gid).then(lang.hitch(this, function(refseqs){
-				this.set("referenceSequences",refseqs)
+				this.set("referenceSequences", refseqs)
 			}))
 		},
 
 		getReferenceSequences: function(gid, includeSequences, refresh){
 
-			var query = "?eq(genome_id," + gid + ")&select(topology,gi,accession,length,sequence_id,gc_content,owner,sequence_type,taxon_id,public,genome_id,genome_name,date_inserted,date_modified" + (includeSequences?",sequence":"")+ ")&sort(+accession)&limit(1000)";
+			var query = "?eq(genome_id," + gid + ")&select(topology,gi,accession,length,sequence_id,gc_content,owner,sequence_type,taxon_id,public,genome_id,genome_name,date_inserted,date_modified" + (includeSequences ? ",sequence" : "") + ")&sort(+accession)&limit(1000)";
 
 			return xhr.get(PathJoin(this.apiServiceUrl, "genome_sequence", query), {
 				headers: {
@@ -74717,35 +75330,41 @@ define([
 					r.start = 0;
 					r.end = r.length;
 					return r;
-				}).sort(function(a,b){
+				}).sort(function(a, b){
 					return a.name > b.name;
 				})
 				return refseqs;
 			}));
 		},
 
-		addFeatureTrack: function(title, gid, filter, strand,fill,stroke,background){
-			var fields=["feature_id","feature_type","sequence_id","segments","gi","na_length","pos_group","strand","public","aa_length","patric_id","owner",
-						"location","protein_id","refseq_locus_tag","taxon_id","accession","end", "genome_name", "product","genome_id","annotation","start"]
+		addFeatureTrack: function(title, gid, filter, strand, fill, stroke, background){
+			var fields = ["feature_id", "feature_type", "sequence_id", "segments", "gi", "na_length", "pos_group", "strand", "public", "aa_length", "patric_id", "owner",
+				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"]
 
-			var query =  "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
-		
+			var query = "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
+
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
 				options: {
-					title: title, loadingText: "LOADING " + title.toUpperCase(), loading: true, trackWidth: 0.08,fill: fill, stroke: stroke, gap: 0, background: background,
+					title: title,
+					loadingText: "LOADING " + title.toUpperCase(),
+					loading: true,
+					trackWidth: 0.08,
+					fill: fill,
+					stroke: stroke,
+					gap: 0,
+					background: background,
 					formatPopupContent: function(item){
 						//return item.patric_id + " (" + item.feature_type + ")<br>Product: " + item.product + "<br>Location: " + item.location;
-						return DataItemFormatter(item,"feature_data", {mini: true, linkTitle: true})
+						return DataItemFormatter(item, "feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"feature_data", {hideExtra: true, linkTitle: true})
+						return DataItemFormatter(item, "feature_data", {hideExtra: true, linkTitle: true})
 					}
 				}
 			})
 
-
-			return xhr.get(PathJoin(this.apiServiceUrl,"genome_feature",query), {
+			return xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", query), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,
@@ -74754,9 +75373,12 @@ define([
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
 				refseqs = refseqs.filter(function(r){
-					if (strand === null){ return true};
-					if (strand){
-						return r.strand && r.strand=="+"
+					if(strand === null){
+						return true
+					}
+					;
+					if(strand){
+						return r.strand && r.strand == "+"
 					}else{
 						return r.strand != "+";
 					}
@@ -74764,7 +75386,7 @@ define([
 					r.name = r.accession;
 					r.length = r.end - r.start;
 					return r;
-				}).sort(function(a,b){
+				}).sort(function(a, b){
 					return a.name > b.name;
 				})
 
@@ -74774,56 +75396,82 @@ define([
 			}));
 		},
 
-
-		onSetReferenceSequences: function(attr,oldVal, refseqs){
+		onSetReferenceSequences: function(attr, oldVal, refseqs){
 			console.log("RefSeqs: ", refseqs);
-
 
 			this.viewer.addTrack({
 				type: SectionTrack,
-				options: {title: "Contigs/Chromosomes",trackWidth: 0.02,fill: "#000F7D", stroke: null, gap: .5, background: {fill: null, stroke: null},
+				options: {
+					title: "Contigs/Chromosomes",
+					trackWidth: 0.02,
+					fill: "#000F7D",
+					stroke: null,
+					gap: .5,
+					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
-						return DataItemFormatter(item,"sequence_data", {mini: true, linkTitle: true})
+						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item,"sequence_data", {hideExtra: true, linkTitle: true})
+						return DataItemFormatter(item, "sequence_data", {hideExtra: true, linkTitle: true})
 					}
 				},
 				data: refseqs
-			},"perimeter",true);
+			}, "perimeter", true);
 
-			this.addFeatureTrack("CDS - FWD",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, "#307D32", null)
-			this.addFeatureTrack("CDS - REV",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
+			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, "#307D32", null)
+			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
 
 			var fillFn = function(item){
 				switch(item.feature_type){
 					case "pseudogene":
-						return "#75DF6F"
+						return "#75DF6F";
 					case "tRNA":
-						return "#3F76DF"
+						return "#3F76DF";
 					case "rRNA":
-						return "#DFC63A"
+						return "#DFC63A";
 					default:
-						return "#21DFD7"
+						return "#21DFD7";
 				}
-			}
-			this.addFeatureTrack("Non-CDS Features",this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", false, fillFn,null, {fill: null,stroke: null})
+			};
+			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", false, fillFn, null, {
+				fill: null,
+				stroke: null
+			});
 			// this.addFeatureTrack("Pseudogenes",this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,pseudogene))", null, [77, 83, 233], null, {stroke: "", fill: "#eeeeee"})
 			// this.addFeatureTrack("tRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,tRNA))", null, [162, 0, 152], null, {stroke: ""})
 			// this.addFeatureTrack("rRNA", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,rRNA))", null, [243, 110, 0], null, {stroke: "",fill: "#eeeeee"})
 
-
-
 			var gcContentTrack = this.viewer.addTrack({
 				type: LineTrack,
-	
-				options: {title: "GC Content",loadingText: "LOADING GC CONTENT", visible: false, max: 1, min: 0,trackWidth: 0.18,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#EBD4F4", stroke: null}}
-			},"outer")
+
+				options: {
+					title: "GC Content",
+					loadingText: "LOADING GC CONTENT",
+					visible: false,
+					max: 1,
+					min: 0,
+					trackWidth: 0.18,
+					stroke: {width: .5, color: "black"},
+					gap: .35,
+					background: {fill: "#EBD4F4", stroke: null}
+				}
+			}, "outer");
 
 			var gcSkewTrack = this.viewer.addTrack({
 				type: LineTrack,
-				options: {title: "GC Skew",loadingText: "LOADING GC SKEW", visible: false, max: 1, min: -1, scoreProperty: "skew", trackWidth: 0.1,stroke: {width: .5,color: "black"}, gap: .35, background: {fill: "#F3CDA0", stroke: null}}
-			},"outer")
+				options: {
+					title: "GC Skew",
+					loadingText: "LOADING GC SKEW",
+					visible: false,
+					max: 1,
+					min: -1,
+					scoreProperty: "skew",
+					trackWidth: 0.1,
+					stroke: {width: .5, color: "black"},
+					gap: .35,
+					background: {fill: "#F3CDA0", stroke: null}
+				}
+			}, "outer");
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
@@ -74833,49 +75481,55 @@ define([
 			}))
 		},
 
-		getGCContent: function(data,windowSize){
-			windowSize = windowSize||400;
+		getGCContent: function(data, windowSize){
+			windowSize = windowSize || 400;
 
-			var gcData=[]
+			var gcData = [];
 
-			function calculateGC(accession, seq,ws){
+			function calculateGC(accession, seq, ws){
 				var cur = seq;
 				var slen = seq.length;
-				var gc=[];
-				var current=0;
-				for(current=0;current<seq.length;current+=ws){
-					var win = seq.substr(current,ws).toUpperCase();
+				var gc = [];
+				var current = 0;
+				for(current = 0; current < seq.length; current += ws){
+					var win = seq.substr(current, ws).toUpperCase();
 					var wl = win.length;
-					var G=0;
-					var C=0;
-					var gs = win.match(/G/g ||[]);
-					if (gs) {
+					var G = 0;
+					var C = 0;
+					var gs = win.match(/G/g || []);
+					if(gs){
 						G = gs.length;
 					}
-					
-					var cs = win.match(/C/g ||[]);
-					if (cs) {
+
+					var cs = win.match(/C/g || []);
+					if(cs){
 						C = cs.length;
 					}
 
-					var GC = G+C; // for skew, (G-C)/(G+C), G+C can't be 0
-					if (GC == 0){
+					var GC = G + C; // for skew, (G-C)/(G+C), G+C can't be 0
+					if(GC == 0){
 						GC = 1;
 					}
-					gcData.push({accession: accession, score: (G+C)/wl, skew: (G-C)/GC, start: current,end: current+wl});
+					gcData.push({
+						accession: accession,
+						score: (G + C) / wl,
+						skew: (G - C) / GC,
+						start: current,
+						end: current + wl
+					});
 				}
 				return gc;
 			}
 
 			data.forEach(function(contig){
-					calculateGC(contig.accession, contig.sequence,windowSize);
-			})
+				calculateGC(contig.accession, contig.sequence, windowSize);
+			});
 			return gcData
 		},
 
-		onSetState: function(attr,oldVal,state){
+		onSetState: function(attr, oldVal, state){
 			console.log("CircularViewerContainer onSetState", state);
-			if (state.genome_ids && state.genome_ids[0]){
+			if(state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
 			}
 		},
@@ -74883,35 +75537,35 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
-			this.watch("genome_id", lang.hitch(this,"onSetGenomeId"));
-			this.watch("referenceSequences",lang.hitch(this,"onSetReferenceSequences"));
+			this.watch("genome_id", lang.hitch(this, "onSetGenomeId"));
+			this.watch("referenceSequences", lang.hitch(this, "onSetReferenceSequences"));
 		},
 
 		visible: false,
-		_setVisibleAttr: function(visible) {
+		_setVisibleAttr: function(visible){
 			// console.log("GridContainer setVisible: ", visible)
 			this.visible = visible;
-			if (this.visible && !this._firstView) {
+			if(this.visible && !this._firstView){
 				// console.log("Trigger First View: ", this.id)
 				this.onFirstView();
-				this._firstView=true;
+				this._firstView = true;
 			}
 		},
 
 		onFirstView: function(){
-			console.log("onFirstView()")
-			if (this._firstView) {
+			console.log("onFirstView()");
+			if(this._firstView){
 				return;
 			}
-			if (!this.controlPanel){
-				this.controlPanel = new TrackController({region: "left",splitter:true, style:"width:250px;"});
+			if(!this.controlPanel){
+				this.controlPanel = new TrackController({region: "left", splitter: true, style: "width:250px;"});
 			}
 
-			if (!this.viewer){
+			if(!this.viewer){
 				this.viewer = new CirculusViewer({
 					region: "center",
 					centerRadius: 100
-			    });
+				});
 			}
 
 			this.addChild(this.controlPanel);
@@ -74924,114 +75578,129 @@ define([
 },
 'p3/widget/TrackController':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin","dojo/topic",
-	"dojo/dom-construct","dojo/_base/lang", "dojo/dom-geometry","dojo/dom-style","dojo/text!./templates/TrackController.html",
-    "./ColorPicker","dojo/on","dojo/dom-class",'dijit/Dialog',"dojo/dom","dojo/when"
-],function(
-	declare,WidgetBase,Templated,WidgetsInTemplate,Topic,
-	domConstruct,lang,domGeometry,domStyle,Template,ColorPicker,on,domClass,
-	Dialog,dom,when
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/topic",
+	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/text!./templates/TrackController.html",
+	"./ColorPicker", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when"
+], function(declare, WidgetBase, Templated, WidgetsInTemplate, Topic,
+			domConstruct, lang, domGeometry, domStyle, Template,
+			ColorPicker, on, domClass, Dialog, dom, when){
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
 		postCreate: function(){
 			this.inherited(arguments);
-			dom.setSelectable(this.domNode,false);
-			Topic.subscribe("/addTrack", lang.hitch(this,"onAddTrack"));
+			dom.setSelectable(this.domNode, false);
+			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
 		},
 
 		visibleIconClass: "icon-eye2",
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
-			console.log("saveSVG()")
-			if (this.viewer){
-				console.log("Call Export SVG")
-				var svg = this.viewer.exportSVG()
-				console.log("SVG BEGIN: ", svg.substr(0,50));
+			console.log("saveSVG()");
+			if(this.viewer){
+				console.log("Call Export SVG");
+				var svg = this.viewer.exportSVG();
+				console.log("SVG BEGIN: ", svg.substr(0, 50));
 				var encoded = window.btoa(svg);
-				console.log("Completed Encoding SVG.  Length: ", encoded.length)
-				var e=domConstruct.create("a", {download: "CircularGenome.svg",href: "data:image/svg+xml;base64,\n"+encoded, style: {margin: "4px", border: "1px solid #333",padding: "4px"}, innerHTML: "Save Image", alt: "ExportedCircularGenome.svg"})
+				console.log("Completed Encoding SVG.  Length: ", encoded.length);
+				var e = domConstruct.create("a", {
+					download: "CircularGenome.svg",
+					href: "data:image/svg+xml;base64,\n" + encoded,
+					style: {margin: "4px", border: "1px solid #333", padding: "4px"},
+					innerHTML: "Save Image",
+					alt: "ExportedCircularGenome.svg"
+				})
 				new Dialog({content: e}).show();
-				console.log("E: ", e)
+				console.log("E: ", e);
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
 		},
 		onAddTrack: function(event){
-			if (!this.viewer){
+			if(!this.viewer){
 				this.viewer = event.track.viewer;
 			}
-			console.log("addTrack Event: ", event)
-			var tr = domConstruct.create("tr",{},this.trackTable);
-			var color = domConstruct.create("td",{}, tr);
-				var fg,bg;
-				var foregroundIsStroke=false;
+			console.log("addTrack Event: ", event);
+			var tr = domConstruct.create("tr", {}, this.trackTable);
+			var color = domConstruct.create("td", {}, tr);
+			var fg, bg;
+			var foregroundIsStroke = false;
 
-				if (event.track){
-					if (event.track.fill){
-						fg=event.track.fill;
-					}else if (event.track.stroke){
-						fg = event.track.stroke.color || event.track.stroke;
-						foregroundIsStroke=true;
-					}else{
-						fg = null;
-					}
-
-					if (event.track.background){
-						bg = event.track.background.fill ||  null;
-					}else{
-						bg = null;
-					}
-
+			if(event.track){
+				if(event.track.fill){
+					fg = event.track.fill;
+				}else if(event.track.stroke){
+					fg = event.track.stroke.color || event.track.stroke;
+					foregroundIsStroke = true;
+				}else{
+					fg = null;
 				}
 
-				var colorPicker = new ColorPicker({
-					style: "margin:2px;",
-					enableBackgroundSelector: true,
-					enableForegroundSelector: !(typeof event.track.fill == 'function'),
-					foregroundColor: fg,
-					backgroundColor: bg
-				});
+				if(event.track.background){
+					bg = event.track.background.fill || null;
+				}else{
+					bg = null;
+				}
 
-				domConstruct.place(colorPicker.domNode, color);
+			}
 
-				colorPicker.watch("backgroundColor", function(attr,oldVal,color){
-					console.log("COLOR PICKER VALUE: ", color)
-					event.track.set('backgroundColor', color)
-				})
+			var colorPicker = new ColorPicker({
+				style: "margin:2px;",
+				enableBackgroundSelector: true,
+				enableForegroundSelector: !(typeof event.track.fill == 'function'),
+				foregroundColor: fg,
+				backgroundColor: bg
+			});
 
-				colorPicker.watch("foregroundColor", function(attr,oldVal,color){
-					event.track.set("foregroundColor", color)
-				})
-			
-			domConstruct.create("td", {innerHTML: event.track.title},tr)
-			var td = domConstruct.create('td', {style:{"word-wrap": "nowrap","text-align": "right", "font-size": ".85em"}},tr);
+			domConstruct.place(colorPicker.domNode, color);
 
-			if (!event.isReferenceTrack) {
-				var visibleButton = domConstruct.create("i", {'class': "fa " + (event.track.visible?this.visibleIconClass:this.hiddenIconClass) + " fa-2x", style: {margin: "2px"}}, td);
-				on(visibleButton,"click", lang.hitch(this,function(evt){
-					console.log("Click Visible")
-					if (domClass.contains(visibleButton,this.visibleIconClass)){
+			colorPicker.watch("backgroundColor", function(attr, oldVal, color){
+				console.log("COLOR PICKER VALUE: ", color)
+				event.track.set('backgroundColor', color)
+			});
+
+			colorPicker.watch("foregroundColor", function(attr, oldVal, color){
+				event.track.set("foregroundColor", color)
+			});
+
+			domConstruct.create("td", {innerHTML: event.track.title}, tr)
+			var td = domConstruct.create('td', {
+				style: {
+					"word-wrap": "nowrap",
+					"text-align": "right",
+					"font-size": ".85em"
+				}
+			}, tr);
+
+			if(!event.isReferenceTrack){
+				var visibleButton = domConstruct.create("i", {
+					'class': "fa " + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + " fa-2x",
+					style: {margin: "2px"}
+				}, td);
+				on(visibleButton, "click", lang.hitch(this, function(evt){
+					console.log("Click Visible");
+					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
-						domClass.remove(visibleButton,this.visibleIconClass);
-						domClass.add(visibleButton, this.hiddenIconClass)
-						event.track.set('visible',false)
+						domClass.remove(visibleButton, this.visibleIconClass);
+						domClass.add(visibleButton, this.hiddenIconClass);
+						event.track.set('visible', false)
 					}else{
-						domClass.remove(visibleButton, this.hiddenIconClass)
-						domClass.add(visibleButton,this.visibleIconClass);
-						event.track.set('visible',true)
+						domClass.remove(visibleButton, this.hiddenIconClass);
+						domClass.add(visibleButton, this.visibleIconClass);
+						event.track.set('visible', true)
 					}
 				}))
 			}
-
 
 			// var settingsButton = domConstruct.create("i", {'class': "fa icon-cog2 fa-2x", style: {margin: "2px"}}, td);
 			// on(settingsButton,"click", function(evt){
 			// 	new Dialog({content: "Track Settings not yet Implemented", title: "Track Settings"}).show();
 
 			// })
-			if (!event.isReferenceTrack) {
-				domConstruct.create("i", {'class': "fa icon-close fa-2x"+(event.isReferenceTrack?" disabled":""), style: {margin: "2px"}}, td);
+			if(!event.isReferenceTrack){
+				domConstruct.create("i", {
+					'class': "fa icon-close fa-2x" + (event.isReferenceTrack ? " disabled" : ""),
+					style: {margin: "2px"}
+				}, td);
 			}
 		}
 
@@ -75040,15 +75709,13 @@ define([
 },
 'p3/widget/ColorPicker':function(){
 define([
-	"dojo/_base/declare","dojox/widget/ColorPicker","dijit/_Widget","dojo/dom-style",
-	"dijit/popup", "dojo/on","dijit/ColorPalette","dojo/_base/lang","dojo/dom-construct",
+	"dojo/_base/declare", "dojox/widget/ColorPicker", "dijit/_Widget", "dojo/dom-style",
+	"dijit/popup", "dojo/on", "dijit/ColorPalette", "dojo/_base/lang", "dojo/dom-construct",
 	"dojo/dom-attr", "dijit/TooltipDialog"
-],function(
-	declare,ColorPicker,WidgetBase,domStyle,
-	Popup,on,ColorPalette,lang,domConstruct,
-	domAttr,TooltipDialog
-){
-	return declare([WidgetBase],{
+], function(declare, ColorPicker, WidgetBase, domStyle,
+			Popup, on, ColorPalette, lang, domConstruct,
+			domAttr, TooltipDialog){
+	return declare([WidgetBase], {
 		backgroundColor: "#ff0000",
 		foregroundColor: "#0000ff",
 		enableForegroundSelector: true,
@@ -75057,36 +75724,62 @@ define([
 		postCreate: function(){
 			this.inherited(arguments);
 			// domStyle.set(this.domNode,"postition", "absolute");
-			this.backgroundButton = domConstruct.create("div", {rel: "backgroundColor", 'class': "BackgroundSelector" + (this.enableBackgroundSelector?"":" dijitHidden"), style: {"border-radius":"3px", "border":"1px solid #333", "display": "inline-block", "float":"left", width: this.size+"px", height: this.size+"px", background: this.backgroundColor}},this.domNode)
-			this.foregroundButton = domConstruct.create("div", {rel: "foregroundColor", 'class': "ForegroundSelector" + (this.enableForegroundSelector?"":" dijitHidden"), style: {"border-radius":"3px", "border":"1px solid #333", display: "inline-block","margin":"0px", "margin-left": "-7px", "margin-top": "7px",width: this.size+"px", height: this.size+"px", background: this.foregroundColor}},this.domNode)
+			this.backgroundButton = domConstruct.create("div", {
+				rel: "backgroundColor",
+				'class': "BackgroundSelector" + (this.enableBackgroundSelector ? "" : " dijitHidden"),
+				style: {
+					"border-radius": "3px",
+					"border": "1px solid #333",
+					"display": "inline-block",
+					"float": "left",
+					width: this.size + "px",
+					height: this.size + "px",
+					background: this.backgroundColor
+				}
+			}, this.domNode)
+			this.foregroundButton = domConstruct.create("div", {
+				rel: "foregroundColor",
+				'class': "ForegroundSelector" + (this.enableForegroundSelector ? "" : " dijitHidden"),
+				style: {
+					"border-radius": "3px",
+					"border": "1px solid #333",
+					display: "inline-block",
+					"margin": "0px",
+					"margin-left": "-7px",
+					"margin-top": "7px",
+					width: this.size + "px",
+					height: this.size + "px",
+					background: this.foregroundColor
+				}
+			}, this.domNode);
 			// this.backgroundButton = domConstruct.create("div", {rel: "backgroundColor",  style: {"border-radius":"3px", "border":"1px solid #333", "display": "inline-block", "float":"left", width: this.size+"px", height: this.size+"px", background: this.backgroundColor}},this.domNode)
 			// this.foregroundButton = domConstruct.create("div", {rel: "foregroundColor",  style: {"border-radius":"3px", "border":"1px solid #333", display: "inline-block","margin":"0px", "margin-left": "-7px", "margin-top": "7px",width: this.size+"px", height: this.size+"px", background: this.foregroundColor}},this.domNode)
 
-			on(this.domNode,"click", lang.hitch(this, function(evt){
-				var _self=this;
+			on(this.domNode, "click", lang.hitch(this, function(evt){
+				var _self = this;
 				var cp = new ColorPalette({
-				    onChange: function(){
-			        	console.log("Changed: ");
-						var rel = domAttr.get(evt.target,"rel");
-						var val = cp.get('value')
-						console.log("set: ", rel, " to ", val)
-						_self.set(rel,val);
+					onChange: function(){
+						console.log("Changed: ");
+						var rel = domAttr.get(evt.target, "rel");
+						var val = cp.get('value');
+						console.log("set: ", rel, " to ", val);
+						_self.set(rel, val);
 						// Popup.close(_self._dropdown) 
-			        }	
+					}
 				});
 				var dd = new TooltipDialog({
 					content: cp,
-			        onMouseLeave: function(){
-			            Popup.close(_self._dropdown);
-			        }
-			    });
-		
-				this.watch("backgroundColor", lang.hitch(this,function(attr,oldVal,c){
-					domStyle.set(this.backgroundButton,"background", c);
-				}))
-				this.watch("foregroundColor", lang.hitch(this,function(attr,oldVal,c){
-					domStyle.set(this.foregroundButton,"background", c);
-				}))
+					onMouseLeave: function(){
+						Popup.close(_self._dropdown);
+					}
+				});
+
+				this.watch("backgroundColor", lang.hitch(this, function(attr, oldVal, c){
+					domStyle.set(this.backgroundButton, "background", c);
+				}));
+				this.watch("foregroundColor", lang.hitch(this, function(attr, oldVal, c){
+					domStyle.set(this.foregroundButton, "background", c);
+				}));
 				Popup.moveOffScreen(dd);
 				// if (this._dropdown.startup && !this._dropdown._started) { this._dropdown.startup() }
 
@@ -78099,15 +78792,13 @@ define([
 'p3/widget/TranscriptomicsContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./FilterContainerActionBar","dijit/layout/StackContainer", "dijit/layout/TabController",
-	"dijit/layout/ContentPane", "./TranscriptomicsExperimentGridContainer","dojo/topic","dojo/_base/lang",
-	"./TranscriptomicsComparisonGridContainer","dojo/request","../util/PathJoin"
-], function(
-	declare,BorderContainer,on,
-	ActionBar, FilterContainerActionBar,TabContainer,StackController,
-	ContentPane,TranscriptomicsExperimentGridContainer,Topic,lang,
-	TranscriptomicsComparisonGridContainer,xhr,PathJoin
-){
+	"./ActionBar", "./FilterContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"dijit/layout/ContentPane", "./TranscriptomicsExperimentGridContainer", "dojo/topic", "dojo/_base/lang",
+	"./TranscriptomicsComparisonGridContainer", "dojo/request", "../util/PathJoin"
+], function(declare, BorderContainer, on,
+			ActionBar, FilterContainerActionBar, TabContainer, StackController,
+			ContentPane, TranscriptomicsExperimentGridContainer, Topic, lang,
+			TranscriptomicsComparisonGridContainer, xhr, PathJoin){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -78125,31 +78816,32 @@ define([
 		// 	}
 		// },
 
-		onSetQuery: function(attr,oldVal, query){
-			query = query + "&select(eid)&limit(25000)"
-			query = (query && (query.charAt(0)=="?"))?query.substr(1):query
-			xhr.post(PathJoin(this.apiServer,"transcriptomics_experiment/?"),{
+		onSetQuery: function(attr, oldVal, query){
+			query = query + "&select(eid)&limit(25000)";
+			query = (query && (query.charAt(0) == "?")) ? query.substr(1) : query;
+			xhr.post(PathJoin(this.apiServer, "transcriptomics_experiment/?"), {
 				headers: {
 					"accept": "application/json",
-	              	"content-type": "application/json",
-	                "content-type": "application/rqlquery+x-www-form-urlencoded",
-	                'X-Requested-With': null,
-	                'Authorization': (window.App.authorizationToken || "")
-	            },
-	            postData: query,
-	            handleAs: "json"
+					"content-type": "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				postData: query,
+				handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
 				console.log("eids: ", eids);
-				eids = eids.map(function(x){return x.eid})
-				console.log("EIDS: ",eids);
-				this.set("eids",eids)
+				eids = eids.map(function(x){
+					return x.eid
+				});
+				console.log("EIDS: ", eids);
+				this.set("eids", eids)
 			}))
 
 		},
-		onSetEIDS: function(attr,oldVal, eids){
-			console.log("set eids: ", eids)
-			if (this.comparisonsGrid && eids && eids.length>0){
-				this.comparisonsGrid.set("state",lang.mixin({},this.state,{search: "&in(eid,(" + eids.join(",") + "))"}))
+		onSetEIDS: function(attr, oldVal, eids){
+			console.log("set eids: ", eids);
+			if(this.comparisonsGrid && eids && eids.length > 0){
+				this.comparisonsGrid.set("state", lang.mixin({}, this.state, {search: "&in(eid,(" + eids.join(",") + "))"}))
 			}
 		},
 		onSetState: function(attr, oldVal, state){
@@ -78157,7 +78849,7 @@ define([
 
 			var q = [];
 
-			if (state.search){
+			if(state.search){
 				q.push(state.search);
 			}
 
@@ -78167,11 +78859,10 @@ define([
 				}
 			}
 
-			if (this.filterPanel){
+			if(this.filterPanel){
 				console.log("SET FILTERPANEL STATE: ", state)
 				this.filterPanel.set("state", state);
 			}
-
 
 			this.set("query", q.join("&"));
 
@@ -78184,8 +78875,6 @@ define([
 			// 	this.experimentsGrid.set('state', state);
 			// }
 			// var query = q.join("&")
-
-
 
 			// if (state.genome_ids){
 			// 	if (!this.sequencesGrid){
@@ -78215,45 +78904,47 @@ define([
 			}
 		},
 		_setStateAttr: function(val){
-				console.log("GenomeContainer onSetStateAttr: ", val)
-				this._set("state", val?lang.mixin({},val):val);
-				console.log("After internal set")
+			console.log("GenomeContainer onSetStateAttr: ", val);
+			this._set("state", val ? lang.mixin({}, val) : val);
+			console.log("After internal set")
 		},
 
 		postCreate: function(){
 			console.log("GENOME CONTAINER POSTCREATE");
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
-			this.watch("query", lang.hitch(this,"onSetQuery"));
+			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("eids", lang.hitch(this, "onSetEIDS"));
 		},
 
 		startup: function(){
-			if (this._started) { return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			this.set("visible", this.visible);
 			this._started = true;
 		},
 
 		listen: function(){
-			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt) {
+			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
 				// console.log("toggleFilters");
-				if (!this.filterPanel && this.getFilterPanel) {
+				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel()
 					this.filterPanel.region = "top"
 					this.filterPanel.splitter = true;
 					this.layoutPriority = 2;
 					this.addChild(this.filterPanel);
 				}
-				else if (this.filterPanel) {
+				else if(this.filterPanel){
 					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
-					if (this.filterPanel.minimized) {
+					if(this.filterPanel.minimized){
 						this.filterPanel.minimized = false;
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize + 150
 						});
 					}
-					else {
+					else{
 						this.filterPanel.minimized = false;
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize
@@ -78263,11 +78954,11 @@ define([
 				}
 			}));
 
-			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal) {
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
 				// console.log("FILTER PANEL SET FILTER", arguments)
 				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
 				// console.log("setFilter Watch() callback", newVal);
-				if ((oldVal != newVal) && (newVal != this.state.hashParams.filter)) {
+				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
 					// console.log("Emit UpdateHash: ", newVal);
 					on.emit(this.domNode, "UpdateHash", {
 						bubbles: true,
@@ -78283,17 +78974,37 @@ define([
 		onFirstView: function(){
 			if(this._firstView){
 				return;
-			} 
+			}
 
-			this.tabContainer = new TabContainer({region:"center",id: this.id + "_TabContainer"});
-			this.filterPanel = new FilterContainerActionBar({region: "top", splitter:true,layoutPriority: 7, style: "height: 48px;", facetFields: this.facetFields, state: this.state,"className": "BrowserHeader",dataModel: "transcriptomics_experiment"})
+			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
+			this.filterPanel = new FilterContainerActionBar({
+				region: "top",
+				splitter: true,
+				layoutPriority: 7,
+				style: "height: 48px;",
+				facetFields: this.facetFields,
+				state: this.state,
+				"className": "BrowserHeader",
+				dataModel: "transcriptomics_experiment"
+			});
 
-			var tabController = new StackController({containerId: this.id + "_TabContainer", region: "top", "class": "TextTabButtons"})
-			this.experimentsGrid = new TranscriptomicsExperimentGridContainer({enableFilterPanel: false, title: "Experiments", state: this.state});
-			this.comparisonsGrid= new TranscriptomicsComparisonGridContainer({enableFilterPanel: false, title: "Comparisions"});
+			var tabController = new StackController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+			this.experimentsGrid = new TranscriptomicsExperimentGridContainer({
+				enableFilterPanel: false,
+				title: "Experiments",
+				state: this.state
+			});
+			this.comparisonsGrid = new TranscriptomicsComparisonGridContainer({
+				enableFilterPanel: false,
+				title: "Comparisions"
+			});
 			this.tabContainer.addChild(this.experimentsGrid);
 			this.tabContainer.addChild(this.comparisonsGrid);
-			
+
 			this.addChild(tabController);
 			this.addChild(this.filterPanel)
 			this.addChild(this.tabContainer);
@@ -78303,9 +79014,9 @@ define([
 
 			this._firstView = true;
 		},
-		setupActions: function() {
-			if (this.filterPanel) {
-				this.containerActions.forEach(function(a) {
+		setupActions: function(){
+			if(this.filterPanel){
+				this.containerActions.forEach(function(a){
 					this.filterPanel.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4]);
 				}, this);
 			}
@@ -78320,57 +79031,74 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./TranscriptomicsExperimentGrid", "dijit/popup",
-	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on"
+	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dojo/_base/lang", "dojo/on"
 ], function(declare, GridContainer,
 			Grid, popup,
-			TooltipDialog,FacetFilterPanel,
-			lang,on) {
+			TooltipDialog, FacetFilterPanel,
+			lang, on){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		// console.log("selection: ", selection);
 		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
 	return declare([GridContainer], {
 		containerType: "transcriptomics_experiment_data",
-		facetFields: ["organism","strain","mutant","condition","timeseries","release_date"],
+		facetFields: ["organism", "strain", "mutant", "condition", "timeseries", "release_date"],
 		maxGenomeCount: 5000,
 		dataModel: "transcriptomics_experiment",
-		getFilterPanel: function(opts){},
+		getFilterPanel: function(opts){
+		},
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"ToggleFilters",
 				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
+				{
+					label: "FILTERS",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Toggle Filters",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					on.emit(this.domNode, "ToggleFilters", {});
 				},
 				true
 			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -78380,29 +79108,29 @@ define([
 				true
 			]
 		]),
-/*		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection) {
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-		]),
-*/
+		/*		selectionActions: GridContainer.prototype.selectionActions.concat([
+					[
+						"ViewFASTA",
+						"fa icon-fasta fa-2x",
+						{
+							label: "FASTA",
+							ignoreDataType: true,
+							multiple: true,
+							validTypes: ["*"],
+							tooltip: "View FASTA Data",
+							tooltipDialog: viewFASTATT
+						},
+						function(selection) {
+							popup.open({
+								popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
+								around: this.selectionActionBar._actions.ViewFASTA.button,
+								orient: ["below"]
+							});
+						},
+						false
+					]
+				]),
+		*/
 		gridCtor: Grid
 
 	});
@@ -78413,12 +79141,12 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/TranscriptomicsExperimentJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store,selector) {
+			Grid, formatter, Store, selector){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		region: "center",
@@ -78431,25 +79159,25 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
-			eid: {label: "Experiment ID", field: "eid",hidden:true},
+			eid: {label: "Experiment ID", field: "eid", hidden: true},
 			title: {label: "Title", field: "title", hidden: false},
 			samples: {label: "Comparisons", field: "samples", hidden: false},
-			genes:{label: "Genes", field: "genes",hidden: false},
-			pubmed:{label: "PubMed", field: "pmid",hidden: false},
-			linkout:{label: "Link Out", field: "",hidden: false},
-			organism: {label: "Organism", field: "organism",hidden: false},
-			strain: {label: "Strain", field: "strain",hidden: false},
-			geneMod: {label: "Gene Modification", field: "mutant",hidden: false},
-			expCond: {label: "Experimental Condition", field: "condition",hidden: false},
-			timeSeries: {label: "Time Series", field: "timeseries",hidden: false},
-			releaseDate: {label: "Release Date", field: "release_date",hidden: false},
-			author: {label: "Author", field: "author",hidden: true},
-			pi: {label: "PI", field: "pi",hidden:true},
-			institution: {label: "Institution", field: "institution",hidden:true}	
+			genes: {label: "Genes", field: "genes", hidden: false},
+			pubmed: {label: "PubMed", field: "pmid", hidden: false},
+			linkout: {label: "Link Out", field: "", hidden: false},
+			organism: {label: "Organism", field: "organism", hidden: false},
+			strain: {label: "Strain", field: "strain", hidden: false},
+			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
+			expCond: {label: "Experimental Condition", field: "condition", hidden: false},
+			timeSeries: {label: "Time Series", field: "timeseries", hidden: false},
+			releaseDate: {label: "Release Date", field: "release_date", hidden: false},
+			author: {label: "Author", field: "author", hidden: true},
+			pi: {label: "PI", field: "pi", hidden: true},
+			institution: {label: "Institution", field: "institution", hidden: true}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -78461,7 +79189,7 @@ define([
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -78472,7 +79200,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -78492,17 +79220,15 @@ define([
 },
 'p3/store/TranscriptomicsExperimentJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	dataModel: "transcriptomics_experiment",
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		dataModel: "transcriptomics_experiment",
 		idProperty: "eid",
-   	     	facetFields: []
-        });
+		facetFields: []
+	});
 });
 
 
@@ -78511,32 +79237,36 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./TranscriptomicsComparisonGrid", "dijit/popup",
-	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on"
+	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dojo/_base/lang", "dojo/on"
 ], function(declare, GridContainer,
 			Grid, popup,
-			TooltipDialog,FacetFilterPanel,
-			lang,on) {
+			TooltipDialog, FacetFilterPanel,
+			lang, on){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		// console.log("selection: ", selection);
 		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
@@ -78545,23 +79275,36 @@ define([
 		facetFields: [],
 		maxGenomeCount: 5000,
 		dataModel: "transcriptomics_sample",
-		getFilterPanel: function(opts){},
+		getFilterPanel: function(opts){
+		},
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"ToggleFilters",
 				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
+				{
+					label: "FILTERS",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Toggle Filters",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					on.emit(this.domNode, "ToggleFilters", {});
 				},
 				true
 			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -78583,7 +79326,7 @@ define([
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT
 				},
-				function(selection) {
+				function(selection){
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -78603,12 +79346,12 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsComparisonJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/TranscriptomicsComparisonJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store,selector) {
+			Grid, formatter, Store, selector){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		region: "center",
@@ -78621,27 +79364,27 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
-			pid: {label: "Sample ID", field: "pid",hidden:true},
-			eid: {label: "Experiment ID", field: "eid",hidden:true},
+			pid: {label: "Sample ID", field: "pid", hidden: true},
+			eid: {label: "Experiment ID", field: "eid", hidden: true},
 			title: {label: "Title", field: "expname", hidden: false},
-			genes:{label: "Genes", field: "genes",hidden: false},
-			sigLogRation: {label: "Significant Genes (Log Ratio)",field: "sig_log_ratio",  hidden:false},
-			sigZScore: {label: "Significant Genes (Z Score)",field: "sig_z_score",  hidden:false},
-			pubmed:{label: "PubMed", field: "pmid",hidden: false},
-			linkout:{label: "Link Out", field: "",hidden: false},
-			organism: {label: "Organism", field: "organism",hidden: false},
-			strain: {label: "Strain", field: "strain",hidden: false},
-			geneMod: {label: "Gene Modification", field: "mutant",hidden: false},
-			expCond: {label: "Experimental Condition", field: "condition",hidden: false},
-			timepoint: {labels: "",field: "timepoint",  hidden:false},
-			releaseDate: {label: "Release Date", field: "release_date",hidden: false},
-			platform: {labels: "Platform",field: "platform",  hidden:true}
+			genes: {label: "Genes", field: "genes", hidden: false},
+			sigLogRation: {label: "Significant Genes (Log Ratio)", field: "sig_log_ratio", hidden: false},
+			sigZScore: {label: "Significant Genes (Z Score)", field: "sig_z_score", hidden: false},
+			pubmed: {label: "PubMed", field: "pmid", hidden: false},
+			linkout: {label: "Link Out", field: "", hidden: false},
+			organism: {label: "Organism", field: "organism", hidden: false},
+			strain: {label: "Strain", field: "strain", hidden: false},
+			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
+			expCond: {label: "Experimental Condition", field: "condition", hidden: false},
+			timepoint: {labels: "", field: "timepoint", hidden: false},
+			releaseDate: {label: "Release Date", field: "release_date", hidden: false},
+			platform: {labels: "Platform", field: "platform", hidden: true}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+				console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
@@ -78651,7 +79394,7 @@ define([
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -78662,7 +79405,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -78682,17 +79425,15 @@ define([
 },
 'p3/store/TranscriptomicsComparisonJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	dataModel: "transcriptomics_sample",
-			idProperty: "pid",
-   	     	facetFields: []
-        });
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		dataModel: "transcriptomics_sample",
+		idProperty: "pid",
+		facetFields: []
+	});
 });
 
 
@@ -78700,13 +79441,11 @@ define([
 'p3/widget/InteractionsContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
-	"./ActionBar","./ContainerActionBar","dijit/layout/TabContainer",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"dijit/layout/ContentPane"
-], function(
-	declare,BorderContainer,on,
-	ActionBar, ContainerActionBar,TabContainer,
-	ContentPane
-){
+], function(declare, BorderContainer, on,
+			ActionBar, ContainerActionBar, TabContainer,
+			ContentPane){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -78715,21 +79454,38 @@ define([
 		query: null,
 		_setQueryAttr: function(query){
 			this.query = query;
-			if (this.grid) {
+			if(this.grid){
 				this.grid.set("query", query);
 			}
 		},
 		startup: function(){
-			if (this._started) { return; }
-			this.containerActionBar = new ContainerActionBar({region: "top",splitter:false, "className": "BrowserHeader"});
-			this.selectionActionBar= new ActionBar({region: "right",layoutPriority:2, style:"width:48px;text-align:center;",splitter:false});
-			this.tabContainer = new TabContainer({region:"center"});
-			this.ppiPanel= new ContentPane({title: "Protein-Protein Interactions (PPI)", content: "PPI Graph"});
-			this.ttiPanel= new ContentPane({title: "Taxon-Taxon Interactions (TTI)", content: "TTI Graph"});
+			if(this._started){
+				return;
+			}
+			this.containerActionBar = new ContainerActionBar({
+				region: "top",
+				splitter: false,
+				"className": "BrowserHeader"
+			});
+			this.selectionActionBar = new ActionBar({
+				region: "right",
+				layoutPriority: 2,
+				style: "width:48px;text-align:center;",
+				splitter: false
+			});
+			this.tabContainer = new TabContainer({region: "center"});
+			this.ppiPanel = new ContentPane({title: "Protein-Protein Interactions (PPI)", content: "PPI Graph"});
+			this.ttiPanel = new ContentPane({title: "Taxon-Taxon Interactions (TTI)", content: "TTI Graph"});
 			this.tabContainer.addChild(this.ppiPanel);
 			this.tabContainer.addChild(this.ttiPanel);
 
-			this.interactionsGrid= new ContentPane({title: "Taxon-Taxon Interactions (TTI)", content: "Interactions Grid",region: "bottom", style: "height:150px",splitter:true});
+			this.interactionsGrid = new ContentPane({
+				title: "Taxon-Taxon Interactions (TTI)",
+				content: "Interactions Grid",
+				region: "bottom",
+				style: "height:150px",
+				splitter: true
+			});
 			this.addChild(this.containerActionBar);
 			this.addChild(this.tabContainer);
 			this.addChild(this.selectionActionBar);
@@ -78744,44 +79500,54 @@ define([
 },
 'p3/widget/GenomeGridContainer':function(){
 define([
-	"dojo/_base/declare", "./GridContainer","dojo/on",
-	"./GenomeGrid","dijit/popup","dojo/_base/lang",
-	"dijit/TooltipDialog","./FacetFilterPanel","dojo/topic"
+	"dojo/_base/declare", "./GridContainer", "dojo/on",
+	"./GenomeGrid", "dijit/popup", "dojo/_base/lang",
+	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic"
 
-], function(
-	declare, GridContainer,on,
-	GenomeGrid,popup,lang,
-	TooltipDialog,FacetFilterPanel,Topic
-){
+], function(declare, GridContainer, on,
+			GenomeGrid, popup, lang,
+			TooltipDialog, FacetFilterPanel, Topic){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		console.log("DownloadQuery: ", dataType, currentQuery);
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
-	return declare([GridContainer],{
+	return declare([GridContainer], {
 		gridCtor: GenomeGrid,
 		containerType: "genome_data",
-		facetFields: ["public","genome_status","reference_genome","antimicrobial_resistance","antimicrobial_resistance_evidence","isolation_country","host_name","disease","collection_date"],
-		getFilterPanel: function(opts){ return; },
+		facetFields: ["public", "genome_status", "reference_genome", "antimicrobial_resistance", "antimicrobial_resistance_evidence", "isolation_country", "host_name", "disease", "collection_date"],
+		getFilterPanel: function(opts){
+			return;
+		},
 		dataModel: "genome",
 		enableAnchorButton: true,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -78810,55 +79576,71 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SequenceGrid", "dijit/popup",
-	"dijit/TooltipDialog","./FacetFilterPanel",
-	"dojo/_base/lang","dojo/on"
+	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dojo/_base/lang", "dojo/on"
 ], function(declare, GridContainer,
 			Grid, popup,
-			TooltipDialog,FacetFilterPanel,
-			lang,on) {
+			TooltipDialog, FacetFilterPanel,
+			lang, on){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
-	var downloadTT=  new TooltipDialog({content: dfc, onMouseLeave: function(){ popup.close(downloadTT); }})
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
 		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType=(self.actionPanel.currentContainerWidget.containerType=="genome_group")?"genome":"genome_feature"
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
 		// console.log("selection: ", selection);
 		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");		
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
 
 	return declare([GridContainer], {
 		containerType: "sequence_data",
-		facetFields: ["sequence_type","topology"],
+		facetFields: ["sequence_type", "topology"],
 		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"ToggleFilters",
 				"fa icon-filter fa-2x",
-				{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle Filters", tooltipDialog:downloadTT}, 
-				function(selection){	
-					on.emit(this.domNode,"ToggleFilters",{});
+				{
+					label: "FILTERS",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Toggle Filters",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					on.emit(this.domNode, "ToggleFilters", {});
 				},
 				true
 			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
-				{label:"DOWNLOAD",multiple: false,validTypes:["*"],tooltip: "Download Table", tooltipDialog:downloadTT}, 
-				function(selection){	
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -78878,12 +79660,12 @@ define([
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/SequenceJsonRest", "dgrid/selector"
+	"./PageGrid", "./formatter", "../store/SequenceJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store, selector) {
+			Grid, formatter, Store, selector){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		region: "center",
@@ -78905,9 +79687,9 @@ define([
 			topology: {label: "Topology", field: "topology", hidden: false},
 			description: {label: "Description", field: "description", hidden: false}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -78919,7 +79701,7 @@ define([
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -78930,7 +79712,7 @@ define([
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -78950,27 +79732,25 @@ define([
 },
 'p3/store/SequenceJsonRest':function(){
 define([
-     "dojo/_base/declare",
-     "./P3JsonRest"
-], function(
-    declare,
-    Store
-){
-        return declare([Store], {
-        	dataModel: "genome_sequence",
+	"dojo/_base/declare",
+	"./P3JsonRest"
+], function(declare,
+			Store){
+	return declare([Store], {
+		dataModel: "genome_sequence",
 		idProperty: "sequence_id",
-   	     	facetFields: [],
-		defaultFieldList: ["owner","version","release_date","gc_content","taxon_id", "sequence_type", "sequence_id", "description",
-				   "accession", "length", "gi", "public", "genome_name", "genome_id", "date_inserted","topology"],
+		facetFields: [],
+		defaultFieldList: ["owner", "version", "release_date", "gc_content", "taxon_id", "sequence_type", "sequence_id", "description",
+			"accession", "length", "gi", "public", "genome_name", "genome_id", "date_inserted", "topology"],
 
-		query: function(query,opts){
+		query: function(query, opts){
 			//we have to make the default query exclude the actual sequences themselves or it is way too slow
 			var sel = "&select(" + this.defaultFieldList.join(",") + ")";
 			query = query + sel;
 			console.log("Query: ", query);
-			return Store.prototype.query.apply(this, [query,opts]);
+			return Store.prototype.query.apply(this, [query, opts]);
 		}
-        });
+	});
 });
 
 
@@ -78979,28 +79759,25 @@ define([
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"rql/parser"
-], function(
-	declare,lang,
-	RQLParser
-){
+], function(declare, lang,
+			RQLParser){
 
+	var parseQuery = function(filter){
+		try{
+			var _parsed = RQLParser.parse(filter)
+		}catch(err){
+			console.log("Unable To Parse Query: ", filter);
+			return;
+		}
 
-    var parseQuery = function(filter){
-    	try {
-    		var _parsed = RQLParser.parse(filter)
-    	}catch(err){
-    		console.log("Unable To Parse Query: ", filter);
-    		return;
-    	}
-    	
-		var _self=this;
+		var _self = this;
 
 		var parsed = {
 			parsed: _parsed,
 			selected: [],
 			byCategory: {},
 			keywords: []
-		}
+		};
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
@@ -79009,14 +79786,14 @@ define([
 				case "or":
 					term.args.forEach(function(t){
 						walk(t);
-					})
+					});
 					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					parsed.selected.push({field:f, value: v});
-					if (!parsed.byCategory[f]){
-						parsed.byCategory[f]=[v];
+					parsed.selected.push({field: f, value: v});
+					if(!parsed.byCategory[f]){
+						parsed.byCategory[f] = [v];
 					}else{
 						parsed.byCategory[f].push(v);
 					}
@@ -79025,7 +79802,7 @@ define([
 					parsed.keywords.push(term.args[0]);
 					break;
 				default:
-					// console.log("Skipping Unused term: ", term.name, term.args);
+				// console.log("Skipping Unused term: ", term.name, term.args);
 			}
 		}
 
@@ -79033,49 +79810,51 @@ define([
 
 		return parsed;
 
-    }
+	};
 
-    function valueWrap(val){
-    	val = decodeURIComponent(val);
-    	return '<span class="queryValue">' + val + "</span>";
-    }
+	function valueWrap(val){
+		val = decodeURIComponent(val);
+		return '<span class="queryValue">' + val + "</span>";
+	}
 
 	return function(query){
 		var parsed = parseQuery(query);
-		var out=[];
+		var out = [];
 
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
-			var cout = ['<span class="queryField">'+cat + '</span> is']
+			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
-			if (C.length==1){
+			if(C.length == 1){
 				cout.push(valueWrap(C[0]));
-			}else if (C.length==2){
+			}else if(C.length == 2){
 				var vals = C.map(valueWrap).join('  <span class="queryOperator"> OR </span> ');
 				cout.push(vals)
 			}else{
-				var vals= C.map(valueWrap).slice(0,C.length-1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length-1]);
+				var vals = C.map(valueWrap).slice(0, C.length - 1).join(', ') + ', <span class="queryOperator"> OR </span>' + valueWrap(C[C.length - 1]);
 				cout.push(vals);
 			}
 			return cout.join(' ');
-		}).join(' <span class="queryOperator"> AND </span> ')
+		}).join(' <span class="queryOperator"> AND </span> ');
 
-		if (catsEnglish){ out.push(" where " + catsEnglish)}
+		if(catsEnglish){
+			out.push(" where " + catsEnglish)
+		}
 
 		var keywords = parsed.keywords.map(valueWrap);
-		if (keywords.length<1){
+		if(keywords.length < 1){
 
-		}else if (keywords.length==1){
-			out.push("that match the keyword "  + keywords[0] )
-		}else if (keywords.length==2){
+		}else if(keywords.length == 1){
+			out.push("that match the keyword " + keywords[0])
+		}else if(keywords.length == 2){
 			out.push("that match both keywords  " + keywords.join(' <span class="queryOperator"> AND </span> '))
 		}else{
-			out.push("that match all of the keywords " + keywords.slice(0,keywords.length-1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length-1])
+			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
 		}
 
 		console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
 
 		return out.join(" ");
-		console.log("parsed query: ", parsed);
+		//console.log("parsed query: ", parsed);
 	}
 
 });
@@ -79083,82 +79862,84 @@ define([
 },
 'p3/widget/app/Annotation':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html","./AppBase",
-	"dojo/_base/lang","../../WorkspaceManager"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,AppBase,lang,WorkspaceManager
-){
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Annotation.html", "./AppBase",
+	"dojo/_base/lang", "../../WorkspaceManager"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, AppBase,
+			lang, WorkspaceManager){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
 		required: true,
-		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
+		genera_four: ["Acholeplasma", "Entomoplasma", "Hepatoplasma", "Hodgkinia", "Mesoplasma", "Mycoplasma", "Spiroplasma", "Ureaplasma"],
 		code_four: false,
 		defaultPath: "",
 
 		constructor: function(){
-			this._autoTaxSet=false;
-			this._autoNameSet=false;
+			this._autoTaxSet = false;
+			this._autoNameSet = false;
 		},
 		startup: function(){
-                        var _self=this;
-                        if (this._started) { return; }
-                        this.inherited(arguments);
-                        _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-                        _self.output_pathWidget.set('value', _self.defaultPath);
-                },
-		changeCode: function(item){	
-			this.code_four=false;
-			item.lineage_names.forEach(lang.hitch(this, function(lname){
-				if (dojo.indexOf(this.genera_four, lname)>=0){
-					this.code_four=true;
-				};
-			}));
-			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
+			var _self = this;
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+			_self.output_pathWidget.set('value', _self.defaultPath);
 		},
-	
-		onTaxIDChange: function(val){
-            this._autoNameSet=true;
-            var tax_id=this.tax_idWidget.get("item").taxon_id;
-            var sci_name=this.tax_idWidget.get("item").taxon_name;
-            //var tax_obj=this.tax_idWidget.get("item");
-            if(tax_id){
-                var name_promise=this.scientific_nameWidget.store.get(tax_id);
-                name_promise.then(lang.hitch(this, function(tax_obj) {
-                    if(tax_obj){
-                        this.scientific_nameWidget.set('item',tax_obj);
-                        this.scientific_nameWidget.validate();
-			            this.changeCode(this.tax_idWidget.get("item"));
-                    }
-                }));
-                //this.scientific_nameWidget.set('value',sci_name);
-                //this.scientific_nameWidget.set('displayedValue',sci_name);
-                //this.scientific_nameWidget.set("item",tax_obj);
-                //this.scientific_nameWidget.validate();
+		changeCode: function(item){
+			this.code_four = false;
+			item.lineage_names.forEach(lang.hitch(this, function(lname){
+				if(dojo.indexOf(this.genera_four, lname) >= 0){
+					this.code_four = true;
+				}
+				;
+			}));
+			this.code_four ? this.genetic_code.set("value", "4") : this.genetic_code.set("value", "11");
+		},
 
-            } 
-			this._autoTaxSet=false;
+		onTaxIDChange: function(val){
+			this._autoNameSet = true;
+			var tax_id = this.tax_idWidget.get("item").taxon_id;
+			var sci_name = this.tax_idWidget.get("item").taxon_name;
+			//var tax_obj=this.tax_idWidget.get("item");
+			if(tax_id){
+				var name_promise = this.scientific_nameWidget.store.get(tax_id);
+				name_promise.then(lang.hitch(this, function(tax_obj){
+					if(tax_obj){
+						this.scientific_nameWidget.set('item', tax_obj);
+						this.scientific_nameWidget.validate();
+						this.changeCode(this.tax_idWidget.get("item"));
+					}
+				}));
+				//this.scientific_nameWidget.set('value',sci_name);
+				//this.scientific_nameWidget.set('displayedValue',sci_name);
+				//this.scientific_nameWidget.set("item",tax_obj);
+				//this.scientific_nameWidget.validate();
+
+			}
+			this._autoTaxSet = false;
 		},
 		onSuggestNameChange: function(val){
-            this._autoTaxSet=true;
-            var tax_id=this.scientific_nameWidget.get("value");
-            if(tax_id){
-                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-                //tax_promise.then(lang.hitch(this, function(tax_obj) {
-                //    if(tax_obj && tax_obj.length){
-                //        this.tax_idWidget.set('item',tax_obj[0]);
-                //    }
-                //}));
-                this.tax_idWidget.set('displayedValue',tax_id);
-                this.tax_idWidget.set('value',tax_id);
-			    this.changeCode(this.scientific_nameWidget.get("item"));
-            }
-			this._autoNameSet=false;
+			this._autoTaxSet = true;
+			var tax_id = this.scientific_nameWidget.get("value");
+			if(tax_id){
+				//var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+				//tax_promise.then(lang.hitch(this, function(tax_obj) {
+				//    if(tax_obj && tax_obj.length){
+				//        this.tax_idWidget.set('item',tax_obj[0]);
+				//    }
+				//}));
+				this.tax_idWidget.set('displayedValue', tax_id);
+				this.tax_idWidget.set('value', tax_id);
+				this.changeCode(this.scientific_nameWidget.get("item"));
+			}
+			this._autoNameSet = false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
@@ -79167,8 +79948,8 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
-			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
+			values["scientific_name"] = this.output_nameWidget.get('displayedValue');
+			values["taxonomy_id"] = this.tax_idWidget.get('displayedValue');
 			return values;
 		}
 
@@ -79179,26 +79960,24 @@ define([
 },
 'p3/widget/app/AppBase':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Sleep.html","dijit/form/Form","p3/widget/WorkspaceObjectSelector",
-	"dijit/Dialog","dojo/request","dojo/dom-construct","dojo/query","dijit/TooltipDialog","dijit/popup","dijit/registry","dojo/dom"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin,WorkspaceObjectSelector,
-	Dialog,xhr,domConstruct,query,TooltipDialog,popup,registry,dom
-){
-	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Sleep.html", "dijit/form/Form", "p3/widget/WorkspaceObjectSelector",
+	"dijit/Dialog", "dojo/request", "dojo/dom-construct", "dojo/query", "dijit/TooltipDialog", "dijit/popup", "dijit/registry", "dojo/dom"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, FormMixin, WorkspaceObjectSelector,
+			Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom){
+	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "App Sleep",
 		templateString: Template,
 		path: "",
-		applicationName:  "Date",
+		applicationName: "Date",
 		showCancel: false,
 		activeWorkspace: "",
 		activeWorkspacePath: "",
-		help_doc:null,
-	
+		help_doc: null,
+
 		postMixInProperties: function(){
 			this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
 			this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
@@ -79211,44 +79990,44 @@ define([
 
 		gethelp: function(){
 
-			var helprequest=xhr.get("/js/p3/widget/app/help/"+this.applicationName+"Help.html",{
-			   handleAs: "text"
-                        });		
+			var helprequest = xhr.get("/js/p3/widget/app/help/" + this.applicationName + "Help.html", {
+				handleAs: "text"
+			});
 			helprequest.then(function(data){
-				this.help_doc=domConstruct.toDom(data);
-			        var ibuttons=query(".infobutton");
+				this.help_doc = domConstruct.toDom(data);
+				var ibuttons = query(".infobutton");
 				ibuttons.forEach(function(item){
 					//var help_text= help_doc.getElementById(item.attributes.name.value) || "Help text missing";
 					//basic flat child workaround for getting help in safari. will break if nested.
 					var help_text = null;
-					for (i = 0; i < this.help_doc.childNodes.length; i++) {
-						if (this.help_doc.childNodes[i].id == item.attributes.name.value){
- 							help_text = this.help_doc.childNodes[i];
-						} 
+					for(i = 0; i < this.help_doc.childNodes.length; i++){
+						if(this.help_doc.childNodes[i].id == item.attributes.name.value){
+							help_text = this.help_doc.childNodes[i];
+						}
 					}
-					help_text= help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
-					help_text.style.overflowY='auto';
-					help_text.style.maxHeight='400px';
-					if (dojo.hasClass(item, "dialoginfo")){
+					help_text = help_text || dom.byId(item.attributes.name.value, this.help_doc) || domConstruct.toDom("<div>Help text missing</div>");
+					help_text.style.overflowY = 'auto';
+					help_text.style.maxHeight = '400px';
+					if(dojo.hasClass(item, "dialoginfo")){
 						item.info_dialog = new Dialog({
 							content: help_text,
 							"class": 'nonModal',
 							draggable: true,
 							style: "max-width: 350px;"
 						});
-						item.open=false;
+						item.open = false;
 						on(item, 'click', function(){
-							if(! item.open){
-								item.open=true;
+							if(!item.open){
+								item.open = true;
 								item.info_dialog.show();
 							}
 							else{
-								item.open=false;
+								item.open = false;
 								item.info_dialog.hide();
-							}	
+							}
 						});
 					}
-					else if (dojo.hasClass(item, "tooltipinfo")){
+					else if(dojo.hasClass(item, "tooltipinfo")){
 						item.info_dialog = new TooltipDialog({
 							content: help_text,
 							style: "overflow-y: auto; max-width: 350px; max-height: 400px",
@@ -79265,39 +80044,41 @@ define([
 						on(item, 'mouseout', function(){
 							popup.close(item.info_dialog);
 						});
-					}	
+					}
 				});
 			});
 		},
 
-                onOutputPathChange: function(val){
+		onOutputPathChange: function(val){
 			registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
 				obj.set("path", val);
 			});
-                },
+		},
 
 		startup: function(){
-			if (this._started) { return; }
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			var state = this.get("state")
-			if ((state == "Incomplete") || (state == "Error")) {
-			        this.submitButton.set("disabled", true);
+			if((state == "Incomplete") || (state == "Error")){
+				this.submitButton.set("disabled", true);
 			}
 
 			this.watch("state", function(prop, val, val2){
-			        if (val2=="Incomplete" || val2=="Error") {
-			                this.submitButton.set("disabled", true);
-			        }else{
-			                this.submitButton.set('disabled',false);
-			        }
+				if(val2 == "Incomplete" || val2 == "Error"){
+					this.submitButton.set("disabled", true);
+				}else{
+					this.submitButton.set('disabled', false);
+				}
 			});
 
-			if (!this.showCancel && this.cancelButton){
-					domClass.add(this.cancelButton.domNode, "dijitHidden");
+			if(!this.showCancel && this.cancelButton){
+				domClass.add(this.cancelButton.domNode, "dijitHidden");
 			}
 
 			this.gethelp();
-			this._started=true;
+			this._started = true;
 		},
 
 		onSubmit: function(evt){
@@ -79305,23 +80086,26 @@ define([
 
 			evt.preventDefault();
 			evt.stopPropagation();
-			if (this.validate()){
+			if(this.validate()){
 				var values = this.getValues();
 
-				domClass.add(this.domNode,"Working");
-				domClass.remove(this.domNode,"Error");
-				domClass.remove(this.domNode,"Submitted");
+				domClass.add(this.domNode, "Working");
+				domClass.remove(this.domNode, "Error");
+				domClass.remove(this.domNode, "Submitted");
 
-				if (window.App.noJobSubmission) {
-					var dlg = new Dialog({title: "Job Submission Params: ", content: "<pre>"+JSON.stringify(values,null,4) + "</pre>"});
+				if(window.App.noJobSubmission){
+					var dlg = new Dialog({
+						title: "Job Submission Params: ",
+						content: "<pre>" + JSON.stringify(values, null, 4) + "</pre>"
+					});
 					dlg.startup();
 					dlg.show();
 					return;
 				}
 				this.submitButton.set("disabled", true);
-				window.App.api.service("AppService.start_app",[this.applicationName,values]).then(function(results){
+				window.App.api.service("AppService.start_app", [this.applicationName, values]).then(function(results){
 					console.log("Job Submission Results: ", results);
-					domClass.remove(_self.domNode,"Working")
+					domClass.remove(_self.domNode, "Working")
 					domClass.add(_self.domNode, "Submitted");
 					_self.submitButton.set("disabled", false);
 					registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
@@ -79329,7 +80113,7 @@ define([
 					});
 				}, function(err){
 					console.log("Error:", err)
-					domClass.remove(_self.domNode,"Working");
+					domClass.remove(_self.domNode, "Working");
 					domClass.add(_self.domNode, "Error");
 					_self.errorMessage.innerHTML = err;
 				})
@@ -79341,7 +80125,7 @@ define([
 
 		onCancel: function(evt){
 			console.log("Cancel/Close Dialog", evt)
-			on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		}
 	});
 });
@@ -79520,29 +80304,25 @@ define([
 },
 'p3/widget/WorkspaceObjectSelector':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on","dojo/_base/lang",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceObjectSelector.html",
-	"./FlippableDialog","dijit/_HasDropDown","dijit/layout/ContentPane","dijit/form/TextBox",
-	"./WorkspaceExplorerView","dojo/dom-construct","../WorkspaceManager","dojo/store/Memory",
-	"./Uploader", "dijit/layout/BorderContainer","dojo/dom-attr",
-	"dijit/form/Button","dojo/_base/Deferred","dijit/form/CheckBox","dojo/topic",
-	"dijit/registry","dgrid/editor","./formatter"
+	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
+	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
+	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
+	"dijit/registry", "dgrid/editor", "./formatter"
 
-], function(
-	declare, WidgetBase, on,lang,
-	domClass,Templated,WidgetsInTemplate,
-	Template,Dialog,HasDropDown,ContentPane,TextBox,
-	Grid,domConstr,WorkspaceManager,Memory,
-	Uploader, BorderContainer,domAttr,
-	Button,Deferred,CheckBox,Topic,
-	registry,editor,formatter
-){
+], function(declare, WidgetBase, on, lang,
+			domClass, Templated, WidgetsInTemplate,
+			Template, Dialog, HasDropDown, ContentPane, TextBox,
+			Grid, domConstr, WorkspaceManager, Memory,
+			Uploader, BorderContainer, domAttr,
+			Button, Deferred, CheckBox, Topic,
+			registry, editor, formatter){
 
-
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "WorkspaceObjectSelector",
-		"disabled":false,
 		templateString: Template,
 		workspace: "",
 		selection: "",
@@ -79551,12 +80331,11 @@ define([
 		disabled: false,
 		required: false,
 		showUnspecified: false,
-		promptMessage:"",
 		missingMessage: "A valid workspace item is required.",
 		promptMessage: "Please choose or upload a workspace item",
 		placeHolder: "",
 		reset: function(){
-			this.searchBox.set('value','');
+			this.searchBox.set('value', '');
 		},
 		_setPlaceHolderAttr: function(val){
 			if(this.searchBox){
@@ -79565,62 +80344,64 @@ define([
 		},
 		_setShowUnspecifiedAttr: function(val){
 			this.showUnspecified = val;
-			if (val) {
-				if(!(this.type.indexOf("unspecified")>=0)){
+			if(val){
+				if(!(this.type.indexOf("unspecified") >= 0)){
 					this.type.push("unspecified");
 				}
 			}else{
 				this.type = this.type.filter(function(t){
-					return (t!="unspecified");
+					return (t != "unspecified");
 				});
 			}
-			if (this.grid) { this.grid.set('types', this.type);}
+			if(this.grid){
+				this.grid.set('types', this.type);
+			}
 		},
 
 		_setDisabledAttr: function(val){
-			this.disabled=val;
-			if (val) {
-				domClass.add(this.domNode,"disabled");
+			this.disabled = val;
+			if(val){
+				domClass.add(this.domNode, "disabled");
 			}else{
-				domClass.remove(this.domNode,"disabled");
+				domClass.remove(this.domNode, "disabled");
 			}
 
-			if (this.searchBox){
-				this.searchBox.set("disabled",val);
+			if(this.searchBox){
+				this.searchBox.set("disabled", val);
 			}
 		},
 		_setRequiredAttr: function(val){
-			this.required=val;
-			if (this.searchBox){
-				this.searchBox.set("required",val);
+			this.required = val;
+			if(this.searchBox){
+				this.searchBox.set("required", val);
 			}
 		},
-	
+
 		_setPathAttr: function(val){
 			console.log("_setPathAttr: ", val);
-			this.path=val;
-			if (this.grid) {
+			this.path = val;
+			if(this.grid){
 				console.log("set Grid Path: ", val);
 				this.grid.set('path', val);
 			}
-			if (this.uploader){
+			if(this.uploader){
 				this.uploader.set('path', val);
 			}
 
-			if (this.currentPathNode){
+			if(this.currentPathNode){
 				this.currentPathNode.innerHTML = "Folder: " + val;
 			}
-		},		
+		},
 		_setTypeAttr: function(type){
-			if (!(type instanceof Array)){
+			if(!(type instanceof Array)){
 				type = [type];
 			}
 			this.type = type;
 		},
-		_setValueAttr: function(value,refresh){
+		_setValueAttr: function(value, refresh){
 			this.value = value;
-			if (this._started) {
-				if (refresh) {
+			if(this._started){
+				if(refresh){
 					this.refreshWorkspaceItems()
 				}else{
 					this.searchBox.set('value', value);
@@ -79633,36 +80414,36 @@ define([
 		},
 
 		_setSelectionAttr: function(val){
-			this.selection=val;
+			this.selection = val;
 			console.log("this.selection: ", this.selection);
-			if (!val) {
-				this.selValNode.innerHTML="None.";
+			if(!val){
+				this.selValNode.innerHTML = "None.";
 				this.okButton.set('disabled', true);
 			}else{
-				this.selValNode.innerHTML=val.name;
+				this.selValNode.innerHTML = val.name;
 				this.okButton.set('disabled', false);
 			}
 		},
 
 		postMixinProperties: function(){
-			if (!this.value && this.workspace){
-				this.value=this.workspace;
+			if(!this.value && this.workspace){
+				this.value = this.workspace;
 			}
 			this.inherited(arguments);
 		},
 
 		createSelectedPane: function(){
-			var wrap= domConstr.create("div",{});
-			this.currentPathNode = domConstr.create("div",{innerHTML: "Folder: "+this.path},wrap);
-			var sel = domConstr.create("span", {innerHTML: "Selection: ", style:"text-align: right"},wrap);
-			this.selValNode = domConstr.create('span', {innerHTML: "None."},sel);
+			var wrap = domConstr.create("div", {});
+			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
+			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
+			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
 //			domConstr.place(this.selValNode, sel, "last");
 			var buttonContainer = domConstr.create("div", {
-				style: {"font-size":".85em",display: "inline-block","float":"right","text-align":"right"}, 
+				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
 				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
-			},wrap);
-			
-			return wrap;	
+			}, wrap);
+
+			return wrap;
 		},
 		focus: function(){
 			// summary:
@@ -79677,125 +80458,140 @@ define([
 		},
 
 		openChooser: function(){
-			if (this.disabled) { return; }
-			if (!this.dialog){
-				var _self=this;
-				this.dialog = new Dialog({title:"Choose or Upload a Workspace Object",draggable:true});
-				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});	
-				var backBC= new BorderContainer({style: {width: "500px", height: "400px","margin":"0",padding:"0px"}});	
-				this.dialog.backpaneTitleBar.innerHTML="Upload files to Workspace";
-				domConstr.place(frontBC.domNode, this.dialog.containerNode,"first");
+			if(this.disabled){
+				return;
+			}
+			if(!this.dialog){
+				var _self = this;
+				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
+				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});
+				var backBC = new BorderContainer({
+					style: {
+						width: "500px",
+						height: "400px",
+						"margin": "0",
+						padding: "0px"
+					}
+				});
+				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
 
-				var selectionPane = new ContentPane({region:"top", content: this.createSelectedPane(), style: "border:0px;"});
-				var buttonsPane= new ContentPane({region:"bottom", style: "text-align: right;border:0px;"});
+				var selectionPane = new ContentPane({
+					region: "top",
+					content: this.createSelectedPane(),
+					style: "border:0px;"
+				});
+				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
 				var span = domConstr.create("span", {style: {"float": 'left'}});
-				domConstr.place(span, buttonsPane.containerNode,"first");
-				this.showUnspecifiedWidget = 	new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+				domConstr.place(span, buttonsPane.containerNode, "first");
+				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
 				this.showUnspecifiedWidget.on("change", function(val){
 					console.log("changed showUnspecifiedwidget: ", val);
 					_self.set("showUnspecified", val);
 				});
-				domConstr.place(this.showUnspecifiedWidget.domNode, span,"first");
-				domConstr.create("span",{innerHTML: "Show files with an unspecified type"}, span);
+				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
+				domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
 				var cancelButton = new Button({label: "Cancel"});
 				cancelButton.on('click', function(){
 					_self.dialog.hide();
 				});
-				var okButton= this.okButton = new Button({label: "OK"});
+				var okButton = this.okButton = new Button({label: "OK"});
 
 				okButton.on("click", function(evt){
-					if (_self.selection){
+					if(_self.selection){
 						_self.set("value", _self.selection.path);
 					}
 					_self.dialog.hide();
 				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode,"last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode,"last");
-				
+				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+
 				on(selectionPane.domNode, "i:click", function(evt){
 					console.log("Click: ", evt);
-					var rel = domAttr.get(evt.target,"rel");	
+					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "upload":
 							_self.dialog.flip();
 							break;
 						case "createFolder":
 							console.log("Create Folder", _self.grid.row(0));
-							var element=_self.grid.row(0).element;
+							var element = _self.grid.row(0).element;
 							console.log("element: ", element);
-							_self.grid.addNewFolder({id:"untitled"});
-					
+							_self.grid.addNewFolder({id: "untitled"});
+
 							break;
 					}
 				});
-				var _self=this;
+				var _self = this;
 				var grid = this.grid = new Grid({
 					region: "center",
-					path: this.path, 
-					selectionMode:"single",
-					deselectOnRefresh:true, 
-					types: this.type?(["folder"].concat(this.type)):false,
+					path: this.path,
+					selectionMode: "single",
+					deselectOnRefresh: true,
+					types: this.type ? (["folder"].concat(this.type)) : false,
 					columns: {
-		                                "type": {
+						"type": {
 							label: "",
-							get: function(item) {
-		                                                if (item.type=="job_result" && item.autoMeta && item.autoMeta.app){
-									return item.type +"_"+(item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
-		                                                }
-                		                                return item.type;
-                               			         },
-		                                        className: "wsItemType",
+							get: function(item){
+								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
+									return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+								}
+								return item.type;
+							},
+							className: "wsItemType",
 							formatter: formatter.wsItemType,
 							unhidable: true
-		                                },
+						},
 						"name": editor({
-		                                        label: "Name",
-               			                         field: "name",
-                               			         className: "wsItemName",
-		                                        canEdit: function(obj,val){
-		                                                return obj.id=='untitled';
-		                                        },
-		                                        autoSave: true,
-		                                        editOn: "click",
-		                                        editor: TextBox,
-		                                        editorArgs: {placeHolder: "Untitled Folder", trim: true}
-		                                }),
-			                        creation_time: {
-                        		                label: "Created",
-		                                        field: "creation_time",
-		                                        className: "wsItemCreationTime",
-		                                        formatter: formatter.date
-		                                }
+							label: "Name",
+							field: "name",
+							className: "wsItemName",
+							canEdit: function(obj, val){
+								return obj.id == 'untitled';
+							},
+							autoSave: true,
+							editOn: "click",
+							editor: TextBox,
+							editorArgs: {placeHolder: "Untitled Folder", trim: true}
+						}),
+						creation_time: {
+							label: "Created",
+							field: "creation_time",
+							className: "wsItemCreationTime",
+							formatter: formatter.date
+						}
 					}
 				});
 				_self.grid.on("dgrid-datachange", function(evt){
 					var name = evt.value;
-					if (!name) { return; }
-					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name),function(){
+					if(!name){
+						return;
+					}
+					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
 						_self.grid.refreshWorkspace();
 						_self.refreshWorkspaceItems();
 					});
 				});
 				grid.allowSelect = function(row){
-					if (row.data.type && (_self.type.indexOf(row.data.type)>=0)){
-						return true;	
+					if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
+						return true;
 					}
 					return false;
-				}
+				};
 
 				grid.on("ItemDblClick", function(evt){
-					if (evt.item && evt.item.type=="folder" || evt.item.type=="parentfolder"){		
+					if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
 						_self.set('path', evt.item_path);
 					}else{
-						if (_self.selection) {
+						if(_self.selection){
 							_self.set('value', _self.selection.path);
 							_self.dialog.hide()
 						}
 					}
 					console.log("ItemDblClick for chooser: ", evt);
-				//	var row = evt.rows[0];
-				//	var data = row.data;
-				//	console.log("selected: ", data);
+					//	var row = evt.rows[0];
+					//	var data = row.data;
+					//	console.log("selected: ", data);
 				});
 
 				grid.on("select", function(evt){
@@ -79807,31 +80603,41 @@ define([
 					_self.set('selection', "");
 				});
 
-				frontBC.addChild(selectionPane);	
-				frontBC.addChild(grid);	
-				frontBC.addChild(buttonsPane);	
+				frontBC.addChild(selectionPane);
+				frontBC.addChild(grid);
+				frontBC.addChild(buttonsPane);
 				frontBC.startup();
-				var backhead= new ContentPane({region:"top", content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>' });
+				var backhead = new ContentPane({
+					region: "top",
+					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
+				});
 				on(backhead.domNode, "span:click", function(evt){
-                                        console.log("Click: ", evt);
-                                        var rel = domAttr.get(evt.target,"rel");
-                                        switch(rel){
-                                                case "flip":
-                                                        _self.dialog.flip();
-                                                        break;
-                                        }
-                                });	
-				var uploader = this.uploader =  new Uploader({path:_self.path,region: "center", multiple:false, types: this.type, pathLabel: "Upload file to: ", buttonLabel: "Select File"});
+					console.log("Click: ", evt);
+					var rel = domAttr.get(evt.target, "rel");
+					switch(rel){
+						case "flip":
+							_self.dialog.flip();
+							break;
+					}
+				});
+				var uploader = this.uploader = new Uploader({
+					path: _self.path,
+					region: "center",
+					multiple: false,
+					types: this.type,
+					pathLabel: "Upload file to: ",
+					buttonLabel: "Select File"
+				});
 
-				on(uploader.domNode,"dialogAction", function(evt){
-					console.log("Uploader Dialog Action: ",evt);
-					if (evt.files && evt.files[0] && evt.action=="close") {
+				on(uploader.domNode, "dialogAction", function(evt){
+					console.log("Uploader Dialog Action: ", evt);
+					if(evt.files && evt.files[0] && evt.action == "close"){
 						var file = evt.files[0];
-						_self.set("selection",file);
-						_self.set('value',file.path,true);	
+						_self.set("selection", file);
+						_self.set('value', file.path, true);
 						_self.dialog.hide();
 					}else{
-						_self.dialog.flip()		
+						_self.dialog.flip()
 					}
 				});
 
@@ -79840,7 +80646,7 @@ define([
 				backBC.addChild(backhead);
 				backBC.addChild(uploader);
 				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
-				var _self=this;
+				var _self = this;
 
 			}
 			this.dialog.flip("front");
@@ -79848,33 +80654,38 @@ define([
 		},
 
 		refreshWorkspaceItems: function(){
-			if (this._refreshing) { return; }
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type,true).then(lang.hitch(this,function(items){
+			if(this._refreshing){
+				return;
+			}
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
 				console.log("Ws Objects: ", items);
-				var store= new Memory({data: items,idProperty:"path"});
+				var store = new Memory({data: items, idProperty: "path"});
 				console.log('store: ', store);
-				
+
 				console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store",store);
-				if (this.value) {	
+				this.searchBox.set("store", store);
+				if(this.value){
 					this.searchBox.set('value', this.value);
-				}	
+				}
 			}));
 		},
 		onSearchChange: function(value){
-			this.set("value", value);	
+			this.set("value", value);
 			this.onChange(value);
 			this.validate(true);
 		},
-		onChange: function(){},
+		onChange: function(){
+		},
 		startup: function(){
-			if (this._started){return;}
+			if(this._started){
+				return;
+			}
 			console.log("call getObjectsByType(); ", this.type);
 			this.inherited(arguments);
 
-			var _self=this;
-			if (!this.path) {
+			var _self = this;
+			if(!this.path){
 				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
 					console.log("CURRENT PATH: ", path);
 					_self.set('path', path);
@@ -79883,36 +80694,34 @@ define([
 			}else{
 				this.refreshWorkspaceItems();
 			}
-			Topic.subscribe("/refreshWorkspace", lang.hitch(this,"refreshWorkspaceItems"));
+			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
 			this.searchBox.set('disabled', this.disabled);
 			this.searchBox.set('required', this.required);
 			this.searchBox.set('placeHolder', this.placeHolder);
-            this.searchBox.labelFunc=this.labelFunc;
+			this.searchBox.labelFunc = this.labelFunc;
 		},
 
-        labelFunc: function(item, store){
-            var label="<div style='font-size:1em; border-bottom:1px solid grey;'>"+"/";
-            var pathParts=item.path.split('/');
-            var workspace=pathParts[2];
-            var labelParts=[workspace];
-            if(pathParts.length-2 > 3){
-                labelParts.push("...");
-            }
-            if(pathParts.length-2 > 2){
-                var parentFolder=pathParts[pathParts.length-2];
-                parentFolder=parentFolder.replace(/^\./,"");
-                labelParts.push(parentFolder);
-            }
-            if(pathParts.length-1 >2){
-                var objName=pathParts[pathParts.length-1];
-                labelParts.push(objName);
-            }
-            labelParts[labelParts.length-1]="</br>"+"<span style='font-size:1.05em; font-weight:bold;'>"+labelParts[labelParts.length-1]+"</span></div>";
-            label+=labelParts.join("/");
-            return label;
-        },
-
-        
+		labelFunc: function(item, store){
+			var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + "/";
+			var pathParts = item.path.split('/');
+			var workspace = pathParts[2];
+			var labelParts = [workspace];
+			if(pathParts.length - 2 > 3){
+				labelParts.push("...");
+			}
+			if(pathParts.length - 2 > 2){
+				var parentFolder = pathParts[pathParts.length - 2];
+				parentFolder = parentFolder.replace(/^\./, "");
+				labelParts.push(parentFolder);
+			}
+			if(pathParts.length - 1 > 2){
+				var objName = pathParts[pathParts.length - 1];
+				labelParts.push(objName);
+			}
+			labelParts[labelParts.length - 1] = "</br>" + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + "</span></div>";
+			label += labelParts.join("/");
+			return label;
+		},
 
 		validate: function(/*Boolean*/ isFocused){
 			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
@@ -79934,127 +80743,126 @@ define([
 },
 'p3/widget/FlippableDialog':function(){
 define([
-	"dojo/_base/declare", "dijit/Dialog","dojo/dom-construct",
-	"dojo/dom-geometry","dojo/dom-style", "dojo/window", "dojo/sniff",
-	"dojo/text!./templates/FlippableDialog.html","dojo/on","dojo/dom-class",
-	"dojo/_base/lang","dijit/layout/utils","dojo/_base/array"
+	"dojo/_base/declare", "dijit/Dialog", "dojo/dom-construct",
+	"dojo/dom-geometry", "dojo/dom-style", "dojo/window", "dojo/sniff",
+	"dojo/text!./templates/FlippableDialog.html", "dojo/on", "dojo/dom-class",
+	"dojo/_base/lang", "dijit/layout/utils", "dojo/_base/array"
 
-], function(
-	declare, Dialog, domConstr,
-	domGeometry, domStyle,winUtils,has,
-	template,on,domClass,lang,utils,array
-){
-	return declare([Dialog],{
+], function(declare, Dialog, domConstr,
+			domGeometry, domStyle, winUtils, has,
+			template, on, domClass, lang, utils, array){
+	return declare([Dialog], {
 		templateString: template,
 		flip: function(side){
-			if (side=="front") {
-				domClass.remove(this.domNode,"flipped");
-			}else if (side=="back"){
+			if(side == "front"){
+				domClass.remove(this.domNode, "flipped");
+			}else if(side == "back"){
 				domClass.add(this.domNode, "flipped")
 			}else{
-				domClass.toggle(this.domNode,"flipped");
+				domClass.toggle(this.domNode, "flipped");
 			}
 		},
 
 		_setBackpaneContentAttr: function(content){
-			this.backPane.innerHTML=content;
+			this.backPane.innerHTML = content;
 		},
 
 		resize: function(dim){
-                        // summary:
-                        //              Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
-                        //              necessary to keep it visible.
-                        //
-                        //              Can also be called with an argument (by dojox/layout/ResizeHandle etc.) to explicitly set the
-                        //              size of the dialog.
-                        // dim: Object?
-                        //              Optional dimension object like {w: 200, h: 300}
+			// summary:
+			//         Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
+			//         necessary to keep it visible.
+			//
+			//         Can also be called with an argument (by dojox/layout/ResizeHandle etc.) to explicitly set the
+			//         size of the dialog.
+			// dim: Object?
+			//         Optional dimension object like {w: 200, h: 300}
 
-                        if(this.domNode.style.display != "none"){
+			if(this.domNode.style.display != "none"){
 
-                                this._checkIfSingleChild();
+				this._checkIfSingleChild();
 
-                                if(!dim){
-                                        if(this._shrunk){
-                                                // If we earlier shrunk the dialog to fit in the viewport, reset it to its natural size
-                                                if(this._singleChild){
-                                                        if(typeof this._singleChildOriginalStyle != "undefined"){
-                                                                this._singleChild.domNode.style.cssText = this._singleChildOriginalStyle;
-                                                                delete this._singleChildOriginalStyle;
-                                                        }
-                                                }
-                                                array.forEach([this.domNode, this.containerNode, this.titleBar], function(node){
-                                                        domStyle.set(node, {
-                                                                position: "static",
-                                                                width: "auto",
-                                                                height: "auto"
-                                                        });
-                                                });
-                                                this.domNode.style.position = "absolute";
-                                        }
+				if(!dim){
+					if(this._shrunk){
+						// If we earlier shrunk the dialog to fit in the viewport, reset it to its natural size
+						if(this._singleChild){
+							if(typeof this._singleChildOriginalStyle != "undefined"){
+								this._singleChild.domNode.style.cssText = this._singleChildOriginalStyle;
+								delete this._singleChildOriginalStyle;
+							}
+						}
+						array.forEach([this.domNode, this.containerNode, this.titleBar], function(node){
+							domStyle.set(node, {
+								position: "static",
+								width: "auto",
+								height: "auto"
+							});
+						});
+						this.domNode.style.position = "absolute";
+					}
 
-                                        // If necessary, shrink Dialog to fit in viewport and have some space around it
-                                        // to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
-                                        var viewport = winUtils.getBox(this.ownerDocument);
-                                        viewport.w *= this.maxRatio;
-                                        viewport.h *= this.maxRatio;
+					// If necessary, shrink Dialog to fit in viewport and have some space around it
+					// to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
+					var viewport = winUtils.getBox(this.ownerDocument);
+					viewport.w *= this.maxRatio;
+					viewport.h *= this.maxRatio;
 
-                                        var bb = domGeometry.position(this.domNode);
-                                        if(bb.w >= viewport.w || bb.h >= viewport.h){
-                                                dim = {
-                                                        w: Math.min(bb.w, viewport.w),
-                                                        h: Math.min(bb.h, viewport.h)
-                                                };
-                                                this._shrunk = true;
-                                        }else{
-                                                this._shrunk = false;
-                                        }
-                                }
+					var bb = domGeometry.position(this.domNode);
+					if(bb.w >= viewport.w || bb.h >= viewport.h){
+						dim = {
+							w: Math.min(bb.w, viewport.w),
+							h: Math.min(bb.h, viewport.h)
+						};
+						this._shrunk = true;
+					}else{
+						this._shrunk = false;
+					}
+				}
 
-                                // Code to run if user has requested an explicit size, or the shrinking code above set an implicit size
-                                if(dim){
-                                        // Set this.domNode to specified size
-                                        domGeometry.setMarginBox(this.domNode, dim);
- 
-                                        // And then size this.containerNode
-                                        var contentDim = utils.marginBox2contentBox(this.domNode, dim),
-                                                centerSize = {domNode: this.containerNode, region: "center"};
-                                        utils.layoutChildren(this.domNode, contentDim,
-                                                [ {domNode: this.titleBar, region: "top"}, centerSize ]);
+				// Code to run if user has requested an explicit size, or the shrinking code above set an implicit size
+				if(dim){
+					// Set this.domNode to specified size
+					domGeometry.setMarginBox(this.domNode, dim);
 
+					// And then size this.containerNode
+					var contentDim = utils.marginBox2contentBox(this.domNode, dim),
+						centerSize = {domNode: this.containerNode, region: "center"};
+					utils.layoutChildren(this.domNode, contentDim,
+						[{domNode: this.titleBar, region: "top"}, centerSize]);
 
-                                        // And then if this.containerNode has a single layout widget child, size it too.
-                                        // Otherwise, make this.containerNode show a scrollbar if it's overflowing.
-                                        if(this._singleChild){
-                                                var cb = utils.marginBox2contentBox(this.containerNode, centerSize);
-                                                // note: if containerNode has padding singleChildSize will have l and t set,
-                                                // but don't pass them to resize() or it will doubly-offset the child
-                                                this._singleChild.resize({w: cb.w, h: cb.h});
-                                                // TODO: save original size for restoring it on another show()?
-                                        }else{
-                                                this.containerNode.style.overflow = "auto";
-                                                this._layoutChildren();         // send resize() event to all child widgets
-                                        }
-                                }else{
-                                        this._layoutChildren();         // send resize() event to all child widgets
+					// And then if this.containerNode has a single layout widget child, size it too.
+					// Otherwise, make this.containerNode show a scrollbar if it's overflowing.
+					if(this._singleChild){
+						var cb = utils.marginBox2contentBox(this.containerNode, centerSize);
+						// note: if containerNode has padding singleChildSize will have l and t set,
+						// but don't pass them to resize() or it will doubly-offset the child
+						this._singleChild.resize({w: cb.w, h: cb.h});
+						// TODO: save original size for restoring it on another show()?
+					}else{
+						this.containerNode.style.overflow = "auto";
+						this._layoutChildren();         // send resize() event to all child widgets
+					}
+				}else{
+					this._layoutChildren();         // send resize() event to all child widgets
 
-                                }
-				var titleDim= domGeometry.getMarginBox(this.titleBar);
+				}
+				var titleDim = domGeometry.getMarginBox(this.titleBar);
 				console.log("titleContent: ", titleDim);
 				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
 				var dim = domGeometry.getMarginBox(this.domNode);
-				var contentDim = utils.marginBox2contentBox(this.domNode, dim)		
-				utils.layoutChildren(this.domNode, contentDim, [{domNode:this.backpaneTitleBar,region:"top"},{domNode:this.backPane,region:"center"}]);	
+				var contentDim = utils.marginBox2contentBox(this.domNode, dim);
+				utils.layoutChildren(this.domNode, contentDim, [{
+					domNode: this.backpaneTitleBar,
+					region: "top"
+				}, {domNode: this.backPane, region: "center"}]);
 
-                                if(!has("touch") && !dim){
-                                        // If the user has scrolled the viewport then reposition the Dialog.  But don't do it for touch
-                                        // devices, because it will counteract when a keyboard pops up and then the browser auto-scrolls
-                                        // the focused node into view.
-                                        this._position();
-                                }
-                        }
-                }
-
+				if(!has("touch") && !dim){
+					// If the user has scrolled the viewport then reposition the Dialog.  But don't do it for touch
+					// devices, because it will counteract when a keyboard pops up and then the browser auto-scrolls
+					// the focused node into view.
+					this._position();
+				}
+			}
+		}
 
 	});
 });
@@ -80063,73 +80871,86 @@ define([
 },
 'p3/widget/Uploader':function(){
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
-	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Uploader.html","dijit/form/Form","dojo/_base/Deferred",
-	"dijit/ProgressBar","dojo/dom-construct","p3/UploadManager","dojo/query","dojo/dom-attr",
-	"dojo/_base/lang","dojo/dom-geometry", "dojo/dom-style","dojo/promise/all","../WorkspaceManager"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template,FormMixin,Deferred,
-	ProgressBar,domConstruct,UploadManager,Query,domAttr,
-	lang,domGeometry,domStyle,All,WorkspaceManager
-){
-	return declare([WidgetBase,FormMixin,Templated,WidgetsInTemplate], {
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Uploader.html", "dijit/form/Form", "dojo/_base/Deferred",
+	"dijit/ProgressBar", "dojo/dom-construct", "p3/UploadManager", "dojo/query", "dojo/dom-attr",
+	"dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, FormMixin, Deferred,
+			ProgressBar, domConstruct, UploadManager, Query, domAttr,
+			lang, domGeometry, domStyle, All, WorkspaceManager){
+	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
 		"baseClass": "CreateWorkspace",
 		templateString: Template,
 		path: "",
 		overwrite: false,
-		multiple:false, 
-		types: false, 
-		pathLabel: "Upload file to: ", 
+		multiple: false,
+		types: false,
+		pathLabel: "Upload file to: ",
 		buttonLabel: "Select Files",
 		typeLabel: "Upload type: ",
 		knownTypes: {
-			unspecified: {label: "Unspecified",formats: ["*.*"]},
-			contigs: {label: "Contigs", formats: [".fa",".fasta",".fna"], description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."},
-			reads: {label: "Reads", formats: [".fq",".fastq",".fa",".fasta",".gz",".bz2"], description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."},
-			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv",".txt",".xls",".xlsx"]},
-			diffexp_input_metadata:{label: "Diff. Expression Input Metadata", formats: [".csv",".txt",".xls",".xlsx"]},
-			feature_protein_fasta: {label: "feature_protein_fasta", formats: [".fa",".fasta",".faa"], description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."}
+			unspecified: {label: "Unspecified", formats: ["*.*"]},
+			contigs: {
+				label: "Contigs",
+				formats: [".fa", ".fasta", ".fna"],
+				description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."
+			},
+			reads: {
+				label: "Reads",
+				formats: [".fq", ".fastq", ".fa", ".fasta", ".gz", ".bz2"],
+				description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."
+			},
+			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv", ".txt", ".xls", ".xlsx"]},
+			diffexp_input_metadata: {
+				label: "Diff. Expression Input Metadata",
+				formats: [".csv", ".txt", ".xls", ".xlsx"]
+			},
+			feature_protein_fasta: {
+				label: "feature_protein_fasta",
+				formats: [".fa", ".fasta", ".faa"],
+				description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."
+			}
 		},
 		_setPathAttr: function(val){
 			this.path = val;
-			this.destinationPath.innerHTML=val;
+			this.destinationPath.innerHTML = val;
 		},
 
 		onUploadTypeChanged: function(val){
 			console.log("UPLOAD TYPE CHANGED: ", val);
 			var formats = this.knownTypes[val].formats;
 			console.log("formats: ", val, formats);
-			this.formatListNode.innerHTML=formats.join(", ");
-		
+			this.formatListNode.innerHTML = formats.join(", ");
+
 			var description = this.knownTypes[val].description;
 
-			if (!this.showAllFormats.get('value')) {
+			if(!this.showAllFormats.get('value')){
 				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
 				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
-				if (formats == "*.*"){
-					domClass.add(this.fileFilterContainer,"dijitHidden");
+				if(formats == "*.*"){
+					domClass.add(this.fileFilterContainer, "dijitHidden");
 				}else{
-					domClass.remove(this.fileFilterContainer,"dijitHidden");
+					domClass.remove(this.fileFilterContainer, "dijitHidden");
 				}
 				console.log("set formats to: ", formats.join(","));
 				domAttr.set(this.fileInput, "accept", formats.join(","));
 			}
 
-			if (description) {
-				domClass.remove(this.typeDescriptionContainer, "dijitHidden"); 
-				this.typeDescriptionContainer.innerHTML = description; 
+			if(description){
+				domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+				this.typeDescriptionContainer.innerHTML = description;
 			}else{
-				domClass.add(this.typeDescriptionContainer, "dijitHidden"); 
+				domClass.add(this.typeDescriptionContainer, "dijitHidden");
 			}
 		},
 		onChangeShowAllFormats: function(val){
 			console.log("Show All Formats: ", val);
-			if (!val) {
+			if(!val){
 				console.log("Accept All formats");
 				domAttr.set(this.fileInput, "accept", "*.*");
 			}else{
@@ -80142,38 +80963,61 @@ define([
 
 		},
 
-                createUploadTable: function(empty){
+		createUploadTable: function(empty){
 
-			if (!this.uploadTable){
-				var table = domConstruct.create("table",{style: {border: "1px solid #eee", width: "100%"}}, this.fileTableContainer);
-				this.uploadTable = domConstruct.create('tbody',{}, table)
+			if(!this.uploadTable){
+				var table = domConstruct.create("table", {
+					style: {
+						border: "1px solid #eee",
+						width: "100%"
+					}
+				}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody', {}, table)
 				var htr = domConstruct.create("tr", {}, this.uploadTable);
-				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML: "File Selected"}, htr);
-				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Type"},htr);
-				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align":"left"}, innerHTML:"Size"},htr);
-				domConstruct.create("th",{style: {"background-color":"#eee","border":"none","text-align": "right"}},htr);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "File Selected"
+				}, htr);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "Type"
+				}, htr);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "Size"
+				}, htr);
+				domConstruct.create("th", {
+					style: {
+						"background-color": "#eee",
+						"border": "none",
+						"text-align": "right"
+					}
+				}, htr);
 				if(empty){
-					var row = domConstruct.create("tr",{"class":"fileRow"},this.uploadTable);
-					domConstruct.create("td",{style: {"padding-left":"5px","text-align":"left"}, innerHTML: "<i>None</i>"}, row);
-					domConstruct.create("td",{style: {"text-align":"left"}},row);
-					domConstruct.create("td",{style: {"text-align":"left"}},row);
-					domConstruct.create("td",{style: {"text-align": "right"}},row);
+					var row = domConstruct.create("tr", {"class": "fileRow"}, this.uploadTable);
+					domConstruct.create("td", {
+						style: {"padding-left": "5px", "text-align": "left"},
+						innerHTML: "<i>None</i>"
+					}, row);
+					domConstruct.create("td", {style: {"text-align": "left"}}, row);
+					domConstruct.create("td", {style: {"text-align": "left"}}, row);
+					domConstruct.create("td", {style: {"text-align": "right"}}, row);
 				}
 			}
 		},
 
 		createNewFileInput: function(){
-			if (this.fileInput){
-				if (!this._previousFileInputs){
+			if(this.fileInput){
+				if(!this._previousFileInputs){
 					this._previousFileInputs = [];
 				}
-				if (this.inputHandler) {
+				if(this.inputHandler){
 					this.inputHandler.remove();
 				}
 				domStyle.set(this.fileInput, "display", "none");
 				this._previousFileInputs.push(this.fileInput);
 			}
-			
+
 			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
 			console.log("Created fileInput: ", this.fileInput);
 			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
@@ -80181,26 +81025,28 @@ define([
 
 		},
 		startup: function(){
-			if (this._started){return;}
+			if(this._started){
+				return;
+			}
 
 			this.inherited(arguments);
 			var state = this.get("state")
 			this.createNewFileInput();
-	
-			var _self=this;
+
+			var _self = this;
 			console.log("Add Dropdown Options");
 			Object.keys(this.knownTypes).filter(function(t){
 				console.log("CHECKING: ", t);
-				return (!_self.types || (_self.types=="*") || ((_self.types instanceof Array)&&(_self.types.indexOf(t)>=0)))
+				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
 			}).forEach(function(t){
-				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType,_self.uploadType.addOption);
-				_self.uploadType.addOption({disabled:false,label:_self.knownTypes[t].label, value: t});
+				console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
+				_self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
 			});
 
 			var type = this.uploadType.get('value');
-			if (type && this.knownTypes[type]) {
+			if(type && this.knownTypes[type]){
 				var description = this.knownTypes[type].description;
-	                        if (description) {
+				if(description){
 					domClass.remove(this.typeDescriptionContainer, "dijitHidden");
 					this.typeDescriptionContainer.innerHTML = description;
 				}else{
@@ -80209,80 +81055,81 @@ define([
 			}else{
 				domClass.add(this.typeDescriptionContainer, "dijitHidden");
 			}
-	
 
-                        if (!this.path) {
-                                Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-                                        console.log("CURRENT PATH: ", path);
-                                        _self.set('path', path);
-                                });
+			if(!this.path){
+				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+					console.log("CURRENT PATH: ", path);
+					_self.set('path', path);
+				});
 			}
 
-			if ((state == "Incomplete") || (state == "Error")) {
-			        this.saveButton.set("disabled", true);
+			if((state == "Incomplete") || (state == "Error")){
+				this.saveButton.set("disabled", true);
 			}
 
 			this.watch("state", function(prop, val, val2){
-			        console.log("Upload Form State: ",prop, val, val2);
-			        if (val2=="Incomplete" || val2=="Error") {
-			                this.saveButton.set("disabled", true);
-			        }else{
-			                this.saveButton.set('disabled',false);
-			        }
+				console.log("Upload Form State: ", prop, val, val2);
+				if(val2 == "Incomplete" || val2 == "Error"){
+					this.saveButton.set("disabled", true);
+				}else{
+					this.saveButton.set('disabled', false);
+				}
 			});
 			this.createUploadTable(true);
 		},
 		validate: function(){
-			console.log("this.validate()",this);
+			console.log("this.validate()", this);
 			var valid = this.inherited(arguments);
 			var validFiles = []
-			Query("TR.fileRow",this.uploadTable).map(function(tr){
-					validFiles.push({filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")});
+			Query("TR.fileRow", this.uploadTable).map(function(tr){
+				validFiles.push({filename: domAttr.get(tr, "data-filename"), type: domAttr.get(tr, "data-filetype")});
 			})
-			if (!validFiles || validFiles.length<1){
+			if(!validFiles || validFiles.length < 1){
 				valid = false;
 			}
 
-			if (valid){
+			if(valid){
 				this.saveButton.set("disabled", false)
 			}else{
-				this.saveButton.set("disabled",true);
+				this.saveButton.set("disabled", true);
 			}
 			return valid;
 		},
 
-		uploadFile: function(file, uploadDirectory,type){
-			if (!this._uploading){ this._uploading=[]}
+		uploadFile: function(file, uploadDirectory, type){
+			if(!this._uploading){
+				this._uploading = []
+			}
 
-			var _self=this;
+			var _self = this;
 			var obj = {path: uploadDirectory, name: file.name, type: type}
-			return Deferred.when(WorkspaceManager.create(obj,true), function(obj){
-				domClass.add(_self.domNode,"Working");
+			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
+				domClass.add(_self.domNode, "Working");
 				console.log("obj: ", obj);
 				console.log("obj.link_reference: ", obj.link_reference);
 //				console.log("getUrlRes",getUrlRes, getUrlRes[0]);
 //				var uploadUrl = getUrlRes[0][0][11];
 				var uploadUrl = obj.link_reference;
 //				console.log("uploadUrl: ", uploadUrl);
-				if (!_self.uploadTable){
-					var table = domConstruct.create("table",{style: {width: "100%"}}, _self.fileTableContainer);
-					_self.uploadTable = domConstruct.create('tbody',{}, table)
+				if(!_self.uploadTable){
+					var table = domConstruct.create("table", {style: {width: "100%"}}, _self.fileTableContainer);
+					_self.uploadTable = domConstruct.create('tbody', {}, table)
 				}
 
-				var row = domConstruct.create("tr",{},_self.uploadTable);
-				var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
+				var row = domConstruct.create("tr", {}, _self.uploadTable);
+				var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
 
 //					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
 				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
 				UploadManager.upload(msg, window.App.authorizationToken);
-				return obj;	
+				return obj;
 			});
 
 		},
 		onFileSelectionChange: function(evt){
-			console.log("onFileSelectionChange",evt, this.fileInput);
-	
-			if (this.uploadTable && !this.multiple){
+			console.log("onFileSelectionChange", evt, this.fileInput);
+
+			if(this.uploadTable && !this.multiple){
 				domConstruct.empty(this.uploadTable);
 				delete this.uploadTable;
 			}
@@ -80291,75 +81138,74 @@ define([
 
 			var files = evt.target.files;
 			console.log("files: ", files);
-			var _self=this;
-			
-			Object.keys(files).forEach(function(idx) {
+			var _self = this;
+
+			Object.keys(files).forEach(function(idx){
 				console.log("files key: ", idx);
 				var file = files[idx];
-				if (file && file.name && file.size) {
+				if(file && file.name && file.size){
 					console.log("file: ", file);
-					var row = domConstruct.create("tr",{"class":"fileRow"},_self.uploadTable);
+					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
 					console.log('setfiletype: ', _self.uploadType.get('value'))
-					domAttr.set(row,"data-filename",file.name);
-					domAttr.set(row,"data-filetype",_self.uploadType.get('value'));
-					var nameNode = domConstruct.create("td",{innerHTML: file.name},row);
-					var typeNode = domConstruct.create("td",{innerHTML: _self.uploadType.get("value")},row);
-					var sizeNode = domConstruct.create("td",{innerHTML: file.size},row);
-					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'},row);
-					var handle=on(delNode,"click", lang.hitch(this,function(evt){
-						handle.remove();	
+					domAttr.set(row, "data-filename", file.name);
+					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
+					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
+					var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
+					var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'}, row);
+					var handle = on(delNode, "click", lang.hitch(this, function(evt){
+						handle.remove();
 						domConstruct.destroy(row);
 						this.validate()
 					}));
 				}
-			},this);
+			}, this);
 
 			this.createNewFileInput();
 		},
 
 		onSubmit: function(evt){
-			var _self =this;
+			var _self = this;
 			evt.preventDefault();
 			evt.stopPropagation();
 
-			if (!_self.path) {
+			if(!_self.path){
 				console.error("Missing Path for Upload: ", _self.path);
 				return;
 			}
 
 //			domClass.add(_self.domNode, "working");
-			var validFiles=[]
-			var inputFiles={};
-			var defs=[];
-			var wsFiles=[]
-			
+			var validFiles = []
+			var inputFiles = {};
+			var defs = [];
+			var wsFiles = []
+
 			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
 				console.log("FI: ", FI);
-				Object.keys(FI.files).forEach(lang.hitch(this,function(key){
+				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
 					console.log(" FI FILE KEY: ", key);
 					var f = FI.files[key];
 					console.log(" f: ", f);
-					if (f.name){
-					console.log(" f.name: ", f.name);
-						inputFiles[f.name]=f;
+					if(f.name){
+						console.log(" f.name: ", f.name);
+						inputFiles[f.name] = f;
 					}
 				}));
 			}));
 
-
 			console.log("InputFIles: ", inputFiles);
 			console.log("uploadTable: ", this.uploadTable);
-			Query("TR.fileRow",this.uploadTable).forEach(lang.hitch(this, function(tr){
-				console.log("File INPUT Row: ", tr, domAttr.get(tr,"data-filename"), domAttr.get(tr, "data-filetype") );
+			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
+				console.log("File INPUT Row: ", tr, domAttr.get(tr, "data-filename"), domAttr.get(tr, "data-filetype"));
 //				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
 //				console.log("V: ", v);
 //				validFiles.push(v);
-				if (tr && domAttr.get(tr,"data-filename")) {
+				if(tr && domAttr.get(tr, "data-filename")){
 					console.log("Got Name: ", domAttr.get(tr, "data-filename"));
-					var f = inputFiles[domAttr.get(tr,"data-filename")];
+					var f = inputFiles[domAttr.get(tr, "data-filename")];
 					console.log("Got File: ", f);
-					if (f.name) {
-						defs.push(Deferred.when(this.uploadFile(f,_self.path,domAttr.get(tr,"data-filetype")), function(res){
+					if(f.name){
+						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
 							wsFiles.push(res);
 							return true;
 						}));
@@ -80367,87 +81213,87 @@ define([
 				}
 			}));
 
-			All(defs).then(function(results){	
-				console.log("UPLOAD Create WS files results: ", wsFiles);	
-				on.emit(_self.domNode, "dialogAction", {action:"close",files: wsFiles, bubbles:true});
+			All(defs).then(function(results){
+				console.log("UPLOAD Create WS files results: ", wsFiles);
+				on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
 			});
 		},
 
 		onCancel: function(evt){
 			console.log("Cancel/Close Dialog", evt)
-			on.emit(this.domNode, "dialogAction", {action:"close",bubbles:true});
+			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 		},
-                resize: function(changeSize, resultSize){
-                        // summary:
-                        //              Call this to resize a widget, or after its size has changed.
-                        // description:
-                        //              ####Change size mode:
-                        //
-                        //              When changeSize is specified, changes the marginBox of this widget
-                        //              and forces it to re-layout its contents accordingly.
-                        //              changeSize may specify height, width, or both.
-                        //
-                        //              If resultSize is specified it indicates the size the widget will
-                        //              become after changeSize has been applied.
-                        //
-                        //              ####Notification mode:
-                        //
-                        //              When changeSize is null, indicates that the caller has already changed
-                        //              the size of the widget, or perhaps it changed because the browser
-                        //              window was resized.  Tells widget to re-layout its contents accordingly.
-                        //
-                        //              If resultSize is also specified it indicates the size the widget has
-                        //              become.
-                        //
-                        //              In either mode, this method also:
-                        //
-                        //              1. Sets this._borderBox and this._contentBox to the new size of
-                        //                      the widget.  Queries the current domNode size if necessary.
-                        //              2. Calls layout() to resize contents (and maybe adjust child widgets).
-                        // changeSize: Object?
-                        //              Sets the widget to this margin-box size and position.
-                        //              May include any/all of the following properties:
-                        //      |       {w: int, h: int, l: int, t: int}
-                        // resultSize: Object?
-                        //              The margin-box size of this widget after applying changeSize (if
-                        //              changeSize is specified).  If caller knows this size and
-                        //              passes it in, we don't need to query the browser to get the size.
-                        //      |       {w: int, h: int}
+		resize: function(changeSize, resultSize){
+			// summary:
+			//              Call this to resize a widget, or after its size has changed.
+			// description:
+			//              ####Change size mode:
+			//
+			//              When changeSize is specified, changes the marginBox of this widget
+			//              and forces it to re-layout its contents accordingly.
+			//              changeSize may specify height, width, or both.
+			//
+			//              If resultSize is specified it indicates the size the widget will
+			//              become after changeSize has been applied.
+			//
+			//              ####Notification mode:
+			//
+			//              When changeSize is null, indicates that the caller has already changed
+			//              the size of the widget, or perhaps it changed because the browser
+			//              window was resized.  Tells widget to re-layout its contents accordingly.
+			//
+			//              If resultSize is also specified it indicates the size the widget has
+			//              become.
+			//
+			//              In either mode, this method also:
+			//
+			//              1. Sets this._borderBox and this._contentBox to the new size of
+			//                      the widget.  Queries the current domNode size if necessary.
+			//              2. Calls layout() to resize contents (and maybe adjust child widgets).
+			// changeSize: Object?
+			//              Sets the widget to this margin-box size and position.
+			//              May include any/all of the following properties:
+			//      |       {w: int, h: int, l: int, t: int}
+			// resultSize: Object?
+			//              The margin-box size of this widget after applying changeSize (if
+			//              changeSize is specified).  If caller knows this size and
+			//              passes it in, we don't need to query the browser to get the size.
+			//      |       {w: int, h: int}
 
-                        var node = this.domNode;
+			var node = this.domNode;
 
-                        // set margin box size, unless it wasn't specified, in which case use current size
-                        if(changeSize){
-                                domGeometry.setMarginBox(node, changeSize);
-                        }
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+				domGeometry.setMarginBox(node, changeSize);
+			}
 
-                        // If either height or width wasn't specified by the user, then query node for it.
-                        // But note that setting the margin box and then immediately querying dimensions may return
-                        // inaccurate results, so try not to depend on it.
-                        var mb = resultSize || {};
-                        lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-                        if( !("h" in mb) || !("w" in mb) ){
-                                mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-                        }
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
 
-                        // Compute and save the size of my border box and content box
-                        // (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-                        var cs = domStyle.getComputedStyle(node);
-                        var me = domGeometry.getMarginExtents(node, cs);
-                        var be = domGeometry.getBorderExtents(node, cs);
-                        var bb = (this._borderBox = {
-                                w: mb.w - (me.w + be.w),
-                                h: mb.h - (me.h + be.h)
-                        });
-                        var pe = domGeometry.getPadExtents(node, cs);
-                        this._contentBox = {
-                                l: domStyle.toPixelValue(node, cs.paddingLeft),
-                                t: domStyle.toPixelValue(node, cs.paddingTop),
-                                w: bb.w - pe.w,
-                                h: bb.h - pe.h
-                        };
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
 
-                }
+		}
 	});
 });
 

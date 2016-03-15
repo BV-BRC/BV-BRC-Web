@@ -1,32 +1,31 @@
 define("p3/widget/TaxonomyTreeGrid", [
-	"dojo/_base/declare","dgrid/OnDemandGrid","dgrid/tree","dojo/on","dgrid/Selection",
-	"../store/TaxonomyJsonRest","dgrid/extensions/DijitRegistry","dojo/_base/lang"
+	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang"
 
-],function(
-	declare,Grid,Tree,on,Selection,
-	Store,DijitRegistryExt,lang
-){
-	return declare([Grid,DijitRegistryExt,Selection], {
+], function(declare, Grid, Tree, on, Selection,
+			Store, DijitRegistryExt, lang){
+	return declare([Grid, DijitRegistryExt, Selection], {
 		constructor: function(){
 			this.queryOptions = {
-	                        sort: [{ attribute: "taxon_name", descending: false}]
-			}
+				sort: [{attribute: "taxon_name", descending: false}]
+			};
 			console.log("this.queryOptions: ", this.queryOptions);
 		},
 		store: new Store({}),
 		columns: [
-			Tree({label: "Name", field:"taxon_name", shouldExpand: function(row,level,prevExpanded){
-				return (prevExpanded || (level < 1))
-			}}),
+			Tree({
+				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
+					return (prevExpanded || (level < 1))
+				}
+			}),
 			{label: "Rank", field: "taxon_rank"},
-			{label: "Genomes", field: "genomes",style: "width:50px;"}
+			{label: "Genomes", field: "genomes", style: "width:50px;"}
 		],
 		startup: function(){
-			var _self=this;
-					sort: [{attribute:"taxon_name"}]
-		
+			var _self = this;
+			//sort: [{attribute: "taxon_name"}];
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -38,8 +37,7 @@ define("p3/widget/TaxonomyTreeGrid", [
 				console.log("CLICK TREE ITEM: ", row.data);
 			});
 
-
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -47,7 +45,7 @@ define("p3/widget/TaxonomyTreeGrid", [
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "select", newEvt);
 				//console.log("dgrid-select");
 				//var rows = evt.rows;
@@ -56,7 +54,7 @@ define("p3/widget/TaxonomyTreeGrid", [
 				//Topic.publish("/select", sel);
 			});
 
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -64,7 +62,7 @@ define("p3/widget/TaxonomyTreeGrid", [
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "deselect", newEvt);
 				return;
 			});
@@ -79,6 +77,5 @@ define("p3/widget/TaxonomyTreeGrid", [
 			this.inherited(arguments);
 		}
 
-
 	});
-})
+});
