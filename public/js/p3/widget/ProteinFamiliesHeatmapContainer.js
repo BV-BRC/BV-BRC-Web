@@ -459,7 +459,13 @@ define([
 
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
+		},
+		cluster: function(){
+			// read data // FigFamSorter.js#prepareDataForCluster
+			// send to server // FigFamSorter.js#submitCluster
+			// run command // FIGfam.java#doCLustering
+			// read result and send back
+			// update this.currentData
 		}
-
 	});
 });
