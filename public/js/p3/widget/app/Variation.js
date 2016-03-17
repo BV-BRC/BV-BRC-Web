@@ -37,7 +37,7 @@ define([
 			this.pairToAttachPt1={"read1":null, "read2":null};
 			this.pairConditionToAttachPt={"read1":null,"read2":null,"condition_paired":["condition"]};
 			this.advPairToAttachPt={"interleaved":null, "insert_size_mean":null, "insert_size_stdev":null};
-			this.paramToAttachPt={"output_path":null,"output_file":null, "recipe":null};
+			this.paramToAttachPt={"output_path":null,"output_file":null};
 			this.singleToAttachPt={"read":null};
 			this.singleConditionToAttachPt={"read":null,"condition_single":["condition"]};
             this.conditionToAttachPt={"condition":["condition","id","label"]};
@@ -110,16 +110,6 @@ define([
 			//}
             var combinedList = pairedList.concat(singleList);
             assembly_values["reference_genome_id"]=values["genome_name"];
-            if(this.exp_design.checked){
-			    condList.forEach(function(condRecord){
-                    for(var i =0; i < combinedList.length; i++){
-                        if(combinedList[i].condition == condRecord.condition){
-				            condLibs.push(condRecord.condition);
-                            break;
-                        }
-                    }
-                });
-            }
 
 			pairedList.forEach(function(libRecord){
                 var toAdd={};
@@ -318,7 +308,7 @@ define([
 			var lrec={};
 			//If you want to disable advanced parameters while not shown this would be the place.
 			//but for right now, if you set them and then hide them, they are still active
-			var pairToIngest= this.exp_design.checked ? this.pairConditionToAttachPt : this.pairToAttachPt1;
+			var pairToIngest= this.pairToAttachPt1;
 			//pairToIngest=pairToIngest.concat(this.advPairToAttachPt);	
 			var chkPassed=this.ingestAttachPoints(pairToIngest, lrec);
 			//this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)

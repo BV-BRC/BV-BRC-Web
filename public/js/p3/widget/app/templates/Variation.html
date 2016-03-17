@@ -3,7 +3,7 @@
     <div style="width: 700px;margin:auto;">
     <div class="apptitle" id="apptitle">
                 <h3>Variation Analysis</h3>
-                <p>Calculate SNPs and generate a VCF file.</p>
+                <p>Calculate SNPs relative to a reference genome and generate a VCF file.</p>
     </div>
 	<div style="width:700px; margin:auto" class="formFieldsContainer">
 		<div style="display: none;">
@@ -78,13 +78,6 @@
                     <div name="pipelineinfo" class="infobox iconbox infobutton dialoginfo">
                         <i class="fa fa-info-circle fa"></i>
                     </div>
-                </div>
-                <div class="approw">
-                    <label for="recipe" class="paramlabel">Strategy</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                    <option value="Rockhopper">Rockhopper</option>
-                    <option value="RNA-Rocket">Tuxedo</option>
-                    </select>
                 </div>
                 <div class="approw">
                     <div class="appField">
