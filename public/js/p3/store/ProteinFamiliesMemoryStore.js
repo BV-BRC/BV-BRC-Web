@@ -340,6 +340,16 @@ define([
 			var keeps = [];
 			var colorStop = [];
 
+			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var genomeOrder = [], familyOrder = [];
+			if (isTransposed){
+				familyOrder = pfState.clusterRowOrder;
+				genomeOrder = pfState.clusterColumnOrder;
+			}else{
+				familyOrder = pfState.clusterColumnOrder;
+				genomeOrder = pfState.clusterRowOrder;
+			}
+
 			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
 				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
 
@@ -368,6 +378,15 @@ define([
 			//console.log("pfState: ", pfState);
 			//filterStore.data.forEach(function(genome, idx){
 			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+
+			if(genomeOrder !== [] && genomeOrder.length > 0){
+				pfState.genomeIds = genomeOrder;
+				genomeOrder.forEach(function(genomeId, idx){
+					console.log(genomeId, pfState.genomeFilterStatus[genomeId]);
+					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+				});
+			}
+
 			pfState.genomeIds.forEach(function(genomeId, idx){
 				var gfs = pfState.genomeFilterStatus[genomeId];
 				if(gfs.getStatus() != '1'){
@@ -386,16 +405,32 @@ define([
 			//console.warn(this);
 			var maxIntensity = 0;
 			var data = this.query("", {});
-			//console.log(data);
-			data.forEach(function(family, idx){
-				var meta = {
-					'instances': family.feature_count,
-					'members': family.genome_count,
-					'min': family.aa_length_min,
-					'max': family.aa_length_max
-				};
-				maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
-			});
+
+			if(familyOrder !== [] && familyOrder.length > 0){
+				var familyOrderMap = {};
+				familyOrder.forEach(function(familyId, idx){
+					familyOrderMap[familyId] = idx;
+				});
+				data.forEach(function(family, idx){
+					var meta = {
+						'instances': family.feature_count,
+						'members': family.genome_count,
+						'min': family.aa_length_min,
+						'max': family.aa_length_max
+					};
+					maxIntensity = createColumn(familyOrderMap[family.family_id], family, meta, family.family_id, keeps, maxIntensity);
+				});
+			}else{
+				data.forEach(function(family, idx){
+					var meta = {
+						'instances': family.feature_count,
+						'members': family.genome_count,
+						'min': family.aa_length_min,
+						'max': family.aa_length_max
+					};
+					maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
+				});
+			}
 
 			// colorStop
 			if(maxIntensity == 1){

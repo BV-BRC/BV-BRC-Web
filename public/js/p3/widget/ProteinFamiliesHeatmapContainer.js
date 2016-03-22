@@ -1,13 +1,15 @@
 define([
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct",
+	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
 	"dijit/TooltipDialog", "dijit/Dialog",
-	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
+	"dojo/_base/lang", "dojo/when", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
 
 ], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct,
+			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
 			TooltipDialog, Dialog,
-			lang, swfobject, request, PathJoin, Button){
+			Form, TitlePane, RadioButton, Select, registry,
+			lang, when, swfobject, request, PathJoin, Button){
 
 	return declare([BorderContainer], {
 		gutters: false,
@@ -28,17 +30,54 @@ define([
 				"Cluster",
 				"fa icon-make-group fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
-				function(selection){
-					// TODO: implement
-				},
+				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
 				"fa icon-make-group fa-2x",
-				{label: "Advanced Clustering", multiple: false, validTypes: ["*"]},
+				{label: "Advanced", multiple: false, validTypes: ["*"]},
+				function(){
+					var self = this;
+
+					this.dialog.set('content', this._buildPanelAdvancedClustering());
+
+					// building action bar
+					var actionBar = domConstruct.create("div", {
+						"class": "dijitDialogPaneActionBar"
+					});
+					var btnSubmit = new Button({
+						label: 'Submit',
+						onClick: function(){
+
+							var f = registry.byId("advancedClusterParams").value;
+							var param = {g: f['cluster_by'], e: f['algorithm'], m: f['type']};
+							//console.log('advanced cluster param: ', param);
+							self.cluster(param);
+							self.dialog.hide();
+						}
+					});
+					var btnCancel = new Button({
+						label: 'Cancel',
+						onClick: function(){
+							self.dialog.hide();
+						}
+					});
+					btnSubmit.placeAt(actionBar);
+					btnCancel.placeAt(actionBar);
+
+					domConstruct.place(actionBar, this.dialog.containerNode, "last");
+
+					this.dialog.show();
+				},
+				true
+			],
+			[
+				"Anchor",
+				"fa fa-random fa-2x",
+				{label: "Anchor", multiple: false, validType: ["*"]},
 				function(selection){
-					// TODO: implement
+
 				},
 				true
 			]
@@ -171,7 +210,8 @@ define([
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			//console.log("flashCellsSelected is called", colIDs, rowIDs);
-			var isTransposed = (this.pfState.heatmapAxis === 'Transposed') ? true : false;
+			if (rowIDs.length == 0) return;
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
 			var familyIds = originalAxis.columnIds;
@@ -197,7 +237,7 @@ define([
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
 			//console.log(gfs, gfs[genomeId]);
 			var genomeName = gfs[genomeId].getGenomeName();
@@ -254,6 +294,94 @@ define([
 			text.push('<b>Members:</b> ' + features.length);
 
 			return text.join("<br>");
+		},
+		_buildPanelAdvancedClustering: function(){
+
+			if (registry.byId("advancedClusterParams") !== undefined){
+				registry.byId("advancedClusterParams").destroyRecursive();
+			}
+
+			var form = new Form({
+				id: 'advancedClusterParams'
+			});
+
+			var tp_dim = new TitlePane({
+				title: "Cluster by"
+			}).placeAt(form.containerNode);
+
+			new RadioButton({
+				checked: false,
+				value: 2,
+				name: "cluster_by",
+				label: "Protein Families"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Protein Families</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: false,
+				value: 1,
+				name: "cluster_by",
+				label: "Genomes"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Genomes</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: true,
+				value: 3,
+				name: "cluster_by",
+				label: "Both"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Both</label>', tp_dim.containerNode, "last");
+
+			var sel_algorithm = new Select({
+				name: "algorithm",
+				value: 2,
+				options: [{
+					value: 0, label: "No clustering"
+				}, {
+					value: 1, label: "Un-centered correlation"
+				}, {
+					value: 2, label: "Pearson correlation"
+				}, {
+					value: 3, label: "Un-centered correlation, absolute value"
+				}, {
+					value: 4, label: "Pearson correlation, absolute value"
+				}, {
+					value: 5, label: "Spearman rank correlation"
+				}, {
+					value: 6, label: "Kendall tau"
+				}, {
+					value: 7, label: "Euclidean distance"
+				}, {
+					value: 8, label: "City-block distance"
+				}]
+			});
+
+			var sel_type = new Select({
+				name: "type",
+				value: 'a',
+				options:  [{
+					value : "m", label : "Pairwise complete-linkage"
+				}, {
+					value : "s", label : "Pairwise single-linkage"
+				}, {
+					value : "c", label : "Pairwise centroid-linkage"
+				}, {
+					value : "a", label : "Pairwise average-linkage"
+				}]
+			});
+
+			new TitlePane({
+				title: "Clustering algorithm",
+				content: sel_algorithm
+			}).placeAt(form.containerNode);
+
+			new TitlePane({
+				title: "Clustering type",
+				content: sel_type
+			}).placeAt(form.containerNode);
+
+			return form;
 		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
@@ -460,12 +588,82 @@ define([
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
 		},
-		cluster: function(){
-			// read data // FigFamSorter.js#prepareDataForCluster
-			// send to server // FigFamSorter.js#submitCluster
-			// run command // FIGfam.java#doCLustering
-			// read result and send back
-			// update this.currentData
+		cluster: function(param){
+
+			console.log("cluster is called", param);
+			//this.set('loading', true);
+			var data = this.prepareDataForCluster();
+			var p = param || {g: 2, e: 2, m: 'a'};
+			var pfState = this.pfState;
+			var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
+				console.log("Cluster Results: ", res);
+				//this.set('loading', false);
+
+				if(isTransposed){
+					pfState.clusterRowOrder = res.columns;
+					pfState.clusterColumnOrder = res.rows;
+				}else{
+					pfState.clusterRowOrder = res.rows;
+					pfState.clusterColumnOrder = res.columns;
+				}
+				this._prepareHeatmapData();
+				if(isTransposed){
+					this.flipAxises();
+				}
+				this.flashDom.refreshData();
+			}));
+		},
+		prepareDataForCluster: function(){
+			// compose heatmap raw data in tab delimited format
+			// this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
+
+			var cols, rows, id_field_name, data_field_name, tablePass = [], header = [''];
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
+
+			if(isTransposed){
+				cols = this.currentData.rows;
+				rows = this.currentData.columns;
+				id_field_name = 'rowID';
+				data_field_name = 'colID';
+			}else{
+				cols = this.currentData.columns;
+				rows = this.currentData.rows;
+				id_field_name = 'colID';
+				data_field_name = 'rowID';
+			}
+
+
+			cols.forEach(function(col, idx){
+				//if (idx > 4) return;
+				header.push(col[id_field_name]);
+			});
+
+			tablePass.push(header.join('\t'));
+
+			for (var i = 0, iLen = rows.length; i < iLen; i++){
+				// iLen = 5;
+				var r = [];
+				r.push(rows[i][data_field_name]);
+
+				for (var j = 0, jLen = cols.length; j < jLen; j++) {
+					// jLen = 5;
+
+					if (isTransposed){
+						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 +1], 16));
+					}else{
+						r.push(parseInt(cols[j].distribution[i * 2] + cols[j].distribution[i * 2 + 1], 16));
+					}
+				}
+
+				tablePass.push(r.join('\t'));
+			}
+
+			return tablePass.join('\n');
+		},
+		filterHeatmapData: function(pfState){
+
 		}
 	});
 });
