@@ -136,7 +136,7 @@ define([
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				console.log("evt.target: ", evt.target);
+				//console.log("evt.target: ", evt.target);
 				tooltip.close();
 				var target;
 				if(evt && evt.target && evt.target.attributes && evt.target.attributes.rel){
