@@ -375,14 +375,21 @@ define([
 			}
 
 			// rows - genomes
-			//console.log("pfState: ", pfState);
-			//filterStore.data.forEach(function(genome, idx){
-			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			// if genome order is changed, then needs to or-organize distribution in columns.
+			var genomeOrderChangeMap = [];
+			var distributionTransformer = function(dist, map){
+				var newDist = [];
+				map.forEach(function(pos, idx){
+					newDist[idx] = dist.substr(pos * 2, 2);
+				});
+				return newDist.join('');
+			};
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				pfState.genomeIds = genomeOrder;
 				genomeOrder.forEach(function(genomeId, idx){
-					console.log(genomeId, pfState.genomeFilterStatus[genomeId]);
+					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
+					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
 					pfState.genomeFilterStatus[genomeId].setIndex(idx);
 				});
 			}
@@ -396,8 +403,6 @@ define([
 
 					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
 					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
-
-					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
 				}
 			});
 
@@ -418,6 +423,9 @@ define([
 						'min': family.aa_length_min,
 						'max': family.aa_length_max
 					};
+					if(genomeOrderChangeMap.length > 0){
+						family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+					}
 					maxIntensity = createColumn(familyOrderMap[family.family_id], family, meta, family.family_id, keeps, maxIntensity);
 				});
 			}else{

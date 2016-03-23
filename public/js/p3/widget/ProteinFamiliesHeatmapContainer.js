@@ -23,7 +23,16 @@ define([
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				"flipAxises",
+				function(){
+					this.flipAxises();
+
+					// flip internal flag
+					if(this.pfState.heatmapAxis === ""){
+						this.pfState.heatmapAxis = "Transposed";
+					}else{
+						this.pfState.heatmapAxis = "";
+					}
+				},
 				true
 			],
 			[
@@ -623,13 +632,6 @@ define([
 				'afterCellLabel': ''
 			};
 
-			// flip internal flag
-			if(this.pfState.heatmapAxis === ""){
-				this.pfState.heatmapAxis = "Transposed";
-			}else{
-				this.pfState.heatmapAxis = "";
-			}
-
 			// send message to flash to refresh data reading
 			this.flashDom.refreshData();
 		},
@@ -656,8 +658,9 @@ define([
 				this._prepareHeatmapData();
 				if(isTransposed){
 					this.flipAxises();
+				}else{
+					this.flashDom.refreshData();
 				}
-				this.flashDom.refreshData();
 			}));
 		},
 		prepareDataForCluster: function(){
@@ -742,8 +745,9 @@ define([
 				this._prepareHeatmapData();
 				if(isTransposed){
 					this.flipAxises();
+				}else{
+					this.flashDom.refreshData();
 				}
-				this.flashDom.refreshData();
 			}));
 		}
 	});
