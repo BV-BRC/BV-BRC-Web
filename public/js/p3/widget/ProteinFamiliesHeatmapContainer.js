@@ -75,8 +75,31 @@ define([
 			[
 				"Anchor",
 				"fa fa-random fa-2x",
-				{label: "Anchor", multiple: false, validType: ["*"]},
-				function(selection){
+				{
+					label: "Anchor",
+					multiple: false,
+					validType: ["*"],
+					tooltip: "Anchor by genome",
+					tooltipDialog: null
+				},
+				function(){
+
+					// dialog for anchoring
+					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
+						this.tooltip_anchoring = new TooltipDialog({
+							content: this._buildPanelAnchoring()/*,
+							onMouseLeave: function(){
+								popup.close(this.tooltip_anchoring);
+							}*/
+						});
+						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
+					}
+
+					popup.open({
+						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+						around: this.containerActionBar._actions.Anchor.button,
+						orient: ["below"]
+					});
 
 				},
 				true
@@ -210,7 +233,7 @@ define([
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			//console.log("flashCellsSelected is called", colIDs, rowIDs);
-			if (rowIDs.length == 0) return;
+			if(rowIDs.length == 0) return;
 			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
@@ -297,7 +320,7 @@ define([
 		},
 		_buildPanelAdvancedClustering: function(){
 
-			if (registry.byId("advancedClusterParams") !== undefined){
+			if(registry.byId("advancedClusterParams") !== undefined){
 				registry.byId("advancedClusterParams").destroyRecursive();
 			}
 
@@ -360,14 +383,14 @@ define([
 			var sel_type = new Select({
 				name: "type",
 				value: 'a',
-				options:  [{
-					value : "m", label : "Pairwise complete-linkage"
+				options: [{
+					value: "m", label: "Pairwise complete-linkage"
 				}, {
-					value : "s", label : "Pairwise single-linkage"
+					value: "s", label: "Pairwise single-linkage"
 				}, {
-					value : "c", label : "Pairwise centroid-linkage"
+					value: "c", label: "Pairwise centroid-linkage"
 				}, {
-					value : "a", label : "Pairwise average-linkage"
+					value: "a", label: "Pairwise average-linkage"
 				}]
 			});
 
@@ -382,6 +405,28 @@ define([
 			}).placeAt(form.containerNode);
 
 			return form;
+		},
+		_buildPanelAnchoring: function(){
+
+			var self = this;
+			var pfState = self.pfState;
+			var options = pfState.genomeIds.map(function(genomeId){
+				return {
+					value: genomeId,
+					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+				};
+			});
+
+			var anchor = new Select({
+				name: "anchor",
+				options: options
+			});
+			anchor.on('change', function(genomeId){
+				self.anchor(genomeId);
+				popup.close(self.tooltip_anchoring);
+			});
+
+			return anchor;
 		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
@@ -634,7 +679,6 @@ define([
 				data_field_name = 'rowID';
 			}
 
-
 			cols.forEach(function(col, idx){
 				//if (idx > 4) return;
 				header.push(col[id_field_name]);
@@ -642,16 +686,16 @@ define([
 
 			tablePass.push(header.join('\t'));
 
-			for (var i = 0, iLen = rows.length; i < iLen; i++){
+			for(var i = 0, iLen = rows.length; i < iLen; i++){
 				// iLen = 5;
 				var r = [];
 				r.push(rows[i][data_field_name]);
 
-				for (var j = 0, jLen = cols.length; j < jLen; j++) {
+				for(var j = 0, jLen = cols.length; j < jLen; j++){
 					// jLen = 5;
 
-					if (isTransposed){
-						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 +1], 16));
+					if(isTransposed){
+						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 + 1], 16));
 					}else{
 						r.push(parseInt(cols[j].distribution[i * 2] + cols[j].distribution[i * 2 + 1], 16));
 					}
@@ -662,8 +706,45 @@ define([
 
 			return tablePass.join('\n');
 		},
-		filterHeatmapData: function(pfState){
+		anchor: function(genomeId){
 
+			var dataStore = this.dataGridContainer.grid.store;
+
+			when(dataStore.getSyntonyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
+
+				var pfState = this.pfState;
+				var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
+				if(isTransposed){
+					currentFamilyOrder = this.currentData.rows.map(function(row){
+						return row.rowID;
+					});
+				}else{
+					currentFamilyOrder = this.currentData.columns.map(function(col){
+						return col.colID;
+					});
+				}
+
+				currentFamilyOrder.forEach(function(id){
+					if(!newFamilyOrderSet.hasOwnProperty(id)){
+						leftOver.push(id);
+					}
+				});
+
+				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+
+				if(isTransposed){
+					pfState.clusterRowOrder = adjustedFamilyOrder;
+				}else{
+					pfState.clusterColumnOrder = adjustedFamilyOrder;
+				}
+				this._prepareHeatmapData();
+				if(isTransposed){
+					this.flipAxises();
+				}
+				this.flashDom.refreshData();
+			}));
 		}
 	});
 });

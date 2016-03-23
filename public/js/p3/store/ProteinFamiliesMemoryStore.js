@@ -342,7 +342,7 @@ define([
 
 			var isTransposed = (pfState.heatmapAxis === 'Transposed');
 			var genomeOrder = [], familyOrder = [];
-			if (isTransposed){
+			if(isTransposed){
 				familyOrder = pfState.clusterRowOrder;
 				genomeOrder = pfState.clusterColumnOrder;
 			}else{
@@ -460,6 +460,58 @@ define([
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+		},
+
+		getSyntonyOrder: function(genomeId){
+
+			var _self = this;
+			var familyIdName = this.pfState.familyType + '_id';
+
+			return when(request.post(_self.apiServer + '/genome_feature/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
+					fl: familyIdName,
+					sort: 'accession asc,start asc',
+					rows: 1000000
+				}
+			}), function(res){
+
+				var familyIdSet = {};
+				var idx = 0;
+				// var order = [];
+
+				// var start = window.performance.now();
+
+				res.response.docs.forEach(function(doc){
+					var fId = doc[familyIdName];
+
+					if(!familyIdSet.hasOwnProperty(fId)){
+						familyIdSet[fId] = idx;
+						// order.push({groupId: fId, syntonyAt: idx});
+						idx++;
+					}
+				});
+
+				// order.sort(function(a, b){
+				// 	if(a.groupId > b.groupId) return 1;
+				// 	if(a.groupId < b.groupId) return -1;
+				// 	return 0;
+				// });
+
+				// var end = window.performance.now();
+				// console.log('performance: ', (end - start));
+				// console.log(order);
+
+				// return order; // original implementation
+				return familyIdSet;
+			});
 		}
 	});
 });
