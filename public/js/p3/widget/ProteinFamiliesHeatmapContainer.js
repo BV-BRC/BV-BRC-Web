@@ -58,9 +58,13 @@ define([
 					var btnSubmit = new Button({
 						label: 'Submit',
 						onClick: function(){
-
+							var param = {};
 							var f = registry.byId("advancedClusterParams").value;
-							var param = {g: f['cluster_by'], e: f['algorithm'], m: f['type']};
+
+							param.g = (f['cluster_by'] === 3 || f['cluster_by'] === 1) ? f['algorithm'] : 0;
+							param.e = (f['cluster_by'] === 3 || f['cluster_by'] === 2) ? f['algorithm'] : 0;
+							param.m = f['type'];
+
 							//console.log('advanced cluster param: ', param);
 							self.cluster(param);
 							self.dialog.hide();
