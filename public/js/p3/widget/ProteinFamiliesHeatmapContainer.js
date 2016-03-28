@@ -24,14 +24,14 @@ define([
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
 				function(){
-					this.flipAxises();
-
 					// flip internal flag
 					if(this.pfState.heatmapAxis === ""){
 						this.pfState.heatmapAxis = "Transposed";
 					}else{
 						this.pfState.heatmapAxis = "";
 					}
+
+					Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
 				},
 				true
 			],
@@ -125,17 +125,24 @@ define([
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", function(){
+			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "refresh":
 						self.flashReady();
 						break;
+					case "refreshHeatmap":
+						this.flashDom.refreshData();
+						break;
+					case "drawHeatmap":
+						this.currentData = this.dataGridContainer.grid.store.getHeatmapData(this.pfState);
+						Topic.publish("ProteinFamiliesHeatmap", "refreshHeatmap");
+						break;
 					default:
 						break;
 				}
-			});
+			}));
 		},
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
@@ -203,20 +210,12 @@ define([
 			var target = document.getElementById(flashObjectID) || this.flashDom;
 			//console.log("flashReady is called", flashObjectID, target);
 			if(typeof(target.refreshData) == "function"){
-				this._prepareHeatmapData();
-				target.refreshData(); // this triggers flashRequestsData callback
+				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
 			}
 		},
 		flashRequestsData: function(){
 			//console.log("flashRequestsData is called");
 			return this.currentData;
-		},
-		_prepareHeatmapData: function(){
-			//console.log("_prepareHeatmapData is called");
-			var dataStore = this.dataGridContainer.grid.store;
-			//console.log("dataStore: ", dataStore);
-			this.currentData = dataStore.getHeatmapData(this.pfState);
-			//console.log("currentData: ", this.currentData);
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
 			//console.log("flashCellClicked is called ", colID, rowID);
@@ -554,36 +553,6 @@ define([
 
 			return actionBar;
 		},
-		//_countMembers: function(colIDs, rowIDs){
-		//	var columns = this.currentData.columns;
-		//	var rows = this.currentData.rows;
-		//
-		//	var rowPositions = [];
-		//	var count = 0;
-		//
-		//	//console.log(columns, rows);
-		//	rows.forEach(function(row){
-		//		rowIDs.forEach(function(rowID){
-		//			if(rowID === row.rowID){
-		//				rowPositions.push(row.order * 2);
-		//			}
-		//		})
-		//	});
-		//	//console.log(rowPositions);
-		//
-		//	columns.forEach(function(col){
-		//		colIDs.forEach(function(colID){
-		//			if(colID === col.colID){
-		//				rowPositions.forEach(function(pos){
-		//					//console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
-		//					count += parseInt(col.distribution.substr(pos, 2), 16);
-		//				});
-		//			}
-		//		});
-		//	});
-		//
-		//	return count;
-		//},
 		_getOriginalAxis: function(isTransposed, columnIds, rowIds){
 			var originalAxis = {};
 			//console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
@@ -596,48 +565,6 @@ define([
 				originalAxis.rowIds = rowIds;
 			}
 			return originalAxis;
-		},
-		flipAxises: function(){
-			var currentData = this.currentData;
-			var flippedDistribution = new Array(currentData.rows.length);
-			currentData.rows.forEach(function(row, rowIdx){
-				var distribution = [];
-				currentData.columns.forEach(function(col){
-					distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
-				});
-				flippedDistribution[rowIdx] = distribution.join("");
-			});
-
-			// create new rows
-			var newRows = [];
-			currentData.columns.forEach(function(col, colID){
-				newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
-			});
-			// create new columns
-			var newColumns = [];
-			currentData.rows.forEach(function(row, rowID){
-				newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
-			});
-
-			this.currentData = {
-				'rows': newRows,
-				'columns': newColumns,
-				'colTrunc': currentData.rowTrunc,
-				'rowTrunc': currentData.colTrunc,
-				'colLabel': currentData.rowLabel,
-				'rowLabel': currentData.colLabel,
-				'offset': 1,
-				'digits': 2,
-				'countLabel': 'Members',
-				'negativeBit': false,
-				'cellLabelField': '',
-				'cellLabelsOverrideCount': false,
-				'beforeCellLabel': '',
-				'afterCellLabel': ''
-			};
-
-			// send message to flash to refresh data reading
-			this.flashDom.refreshData();
 		},
 		cluster: function(param){
 
@@ -652,19 +579,12 @@ define([
 				console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
-				if(isTransposed){
-					pfState.clusterRowOrder = res.columns;
-					pfState.clusterColumnOrder = res.rows;
-				}else{
-					pfState.clusterRowOrder = res.rows;
-					pfState.clusterColumnOrder = res.columns;
-				}
-				this._prepareHeatmapData();
-				if(isTransposed){
-					this.flipAxises();
-				}else{
-					this.flashDom.refreshData();
-				}
+				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
+				pfState.clusterRowOrder = res.rows;
+				pfState.clusterColumnOrder = res.columns;
+
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
 			}));
 		},
 		prepareDataForCluster: function(){
@@ -694,13 +614,10 @@ define([
 			tablePass.push(header.join('\t'));
 
 			for(var i = 0, iLen = rows.length; i < iLen; i++){
-				// iLen = 5;
 				var r = [];
 				r.push(rows[i][data_field_name]);
 
 				for(var j = 0, jLen = cols.length; j < jLen; j++){
-					// jLen = 5;
-
 					if(isTransposed){
 						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 + 1], 16));
 					}else{
@@ -717,7 +634,7 @@ define([
 
 			var dataStore = this.dataGridContainer.grid.store;
 
-			when(dataStore.getSyntonyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
+			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
 
 				var pfState = this.pfState;
 				var isTransposed = pfState.heatmapAxis === 'Transposed';
@@ -741,17 +658,11 @@ define([
 
 				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
 
-				if(isTransposed){
-					pfState.clusterRowOrder = adjustedFamilyOrder;
-				}else{
-					pfState.clusterColumnOrder = adjustedFamilyOrder;
-				}
-				this._prepareHeatmapData();
-				if(isTransposed){
-					this.flipAxises();
-				}else{
-					this.flashDom.refreshData();
-				}
+				// clusterRow/ColumnOrder assumes corrected axises
+				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
 			}));
 		}
 	});

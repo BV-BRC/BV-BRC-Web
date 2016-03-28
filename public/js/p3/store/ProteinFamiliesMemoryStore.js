@@ -341,14 +341,10 @@ define([
 			var colorStop = [];
 
 			var isTransposed = (pfState.heatmapAxis === 'Transposed');
-			var genomeOrder = [], familyOrder = [];
-			if(isTransposed){
-				familyOrder = pfState.clusterRowOrder;
-				genomeOrder = pfState.clusterColumnOrder;
-			}else{
-				familyOrder = pfState.clusterColumnOrder;
-				genomeOrder = pfState.clusterRowOrder;
-			}
+
+			// assumes axises are corrected
+			var familyOrder = pfState.clusterColumnOrder;
+			var genomeOrder = pfState.clusterRowOrder;
 
 			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
 				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
@@ -451,7 +447,7 @@ define([
 
 			//console.log(rows, cols, colorStop);
 
-			return {
+			var currentData = {
 				'rows': rows,
 				'columns': cols,
 				'colorStops': colorStop,
@@ -468,9 +464,52 @@ define([
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+
+			if (isTransposed){
+
+				var flippedDistribution = new Array(currentData.rows.length);
+				currentData.rows.forEach(function(row, rowIdx){
+					var distribution = [];
+					currentData.columns.forEach(function(col){
+						distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
+					});
+					flippedDistribution[rowIdx] = distribution.join("");
+				});
+
+				// create new rows
+				var newRows = [];
+				currentData.columns.forEach(function(col, colID){
+					newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+				});
+				// create new columns
+				var newColumns = [];
+				currentData.rows.forEach(function(row, rowID){
+					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
+				});
+
+				var transposedData = {
+					'rows': newRows,
+					'columns': newColumns,
+					'colTrunc': currentData.rowTrunc,
+					'rowTrunc': currentData.colTrunc,
+					'colLabel': currentData.rowLabel,
+					'rowLabel': currentData.colLabel,
+					'offset': 1,
+					'digits': 2,
+					'countLabel': 'Members',
+					'negativeBit': false,
+					'cellLabelField': '',
+					'cellLabelsOverrideCount': false,
+					'beforeCellLabel': '',
+					'afterCellLabel': ''
+				};
+				currentData = transposedData;
+			}
+
+			return currentData;
 		},
 
-		getSyntonyOrder: function(genomeId){
+		getSyntenyOrder: function(genomeId){
 
 			var _self = this;
 			var familyIdName = this.pfState.familyType + '_id';
