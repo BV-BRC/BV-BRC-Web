@@ -395,7 +395,7 @@ define([
 		downloadFile: function(path){
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
 				console.log("download Urls: ", urls);
-				window.open(urls[0], "Download");
+				window.open(urls[0]);
 			});
 		},
 
@@ -488,11 +488,15 @@ define([
 						return true;
 					}else{
 
+						var headers = {
+							"X-Requested-With": null
+						};
+						if(window.App.authorizationToken){
+							headers.Authorization = "OAuth " + window.App.authorizationToken;
+						}
+
 						var d = xhr.get(meta.link_reference + "?download", {
-							headers: {
-								Authorization: "OAuth " + window.App.authorizationToken,
-								"X-Requested-With": null
-							}
+							headers: headers
 						});
 
 						return Deferred.when(d, function(data){
@@ -546,8 +550,9 @@ define([
 						}
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
-							return false
+							return false;
 						}
+
 						return true;
 					});
 					//console.log("Final getFolderContents()", res)
@@ -603,16 +608,20 @@ define([
 			}
 
 			this.token = token;
-			this.apiUrl = apiUrl
+			this.apiUrl = apiUrl;
 			this.api = RPC(apiUrl, token);
 			this.userId = userId;
-			Deferred.when(this.get("currentPath"), function(cwsp){
-				console.log("Current Workspace Path: ", cwsp)
-			});
+			if(userId && token){
+				Deferred.when(this.get("currentPath"), function(cwsp){
+					console.log("Current Workspace Path: ", cwsp)
+				});
+			}else{
+				this.currentPath = "/";
+				this.currentWorkspace = "/NOWORKSPACE";
+			}
 
 		}
 	}))();
 
 	return WorkspaceManager;
 });
-

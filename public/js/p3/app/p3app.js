@@ -138,7 +138,7 @@ define([
 				newState.widgetClass = "p3/widget/WorkspaceManager";
 				newState.value = path;
 				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -211,7 +211,7 @@ define([
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -220,14 +220,14 @@ define([
 				this.api = {}
 			}
 
-			if(this.workspaceAPI && this.user){
-				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user ? this.user.id : "");
-				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
+			if(this.workspaceAPI){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken || "", this.user ? this.user.id : "");
+				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken || "");
 			}
 
-			if(this.serviceAPI && this.user){
+			if(this.serviceAPI){
 				// console.log("Setup API Service @ ", this.serviceAPI);
-				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
+				this.api.service = RPC(this.serviceAPI, this.authorizationToken || "");
 			}
 
 			if(this.dataAPI){
