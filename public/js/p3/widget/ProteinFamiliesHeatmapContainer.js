@@ -3,21 +3,22 @@ define([
 	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
 	"dijit/TooltipDialog", "dijit/Dialog",
 	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
-	"dojo/_base/lang", "dojo/when", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"./HeatmapContainer",
+	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
 
 ], function(declare, ContentPane, BorderContainer, on,
 			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
 			TooltipDialog, Dialog,
 			Form, TitlePane, RadioButton, Select, registry,
-			lang, when, swfobject, request, PathJoin, Button){
+			HeatmapContainer,
+			lang, when, request, PathJoin, Button){
 
-	return declare([BorderContainer], {
+	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		dataGridContainer: null,
 		pfState: null,
-		flashDom: null,
 		containerActions: [
 			[
 				"Flip Axis",
@@ -31,7 +32,7 @@ define([
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
+					Topic.publish("ProteinFamiliesHeatmap", "refresh");
 				},
 				true
 			],
@@ -130,14 +131,8 @@ define([
 
 				switch(key){
 					case "refresh":
-						self.flashReady();
-						break;
-					case "refreshHeatmap":
-						this.flashDom.refreshData();
-						break;
-					case "drawHeatmap":
 						this.currentData = this.dataGridContainer.grid.store.getHeatmapData(this.pfState);
-						Topic.publish("ProteinFamiliesHeatmap", "refreshHeatmap");
+						this.flashDom.refreshData();
 						break;
 					default:
 						break;
@@ -149,37 +144,8 @@ define([
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				this.initializeFlash();
+				this.initializeFlash('ProteinFamilyHeatMap');
 			}
-		},
-		initializeFlash: function(){
-			var flashVars = {
-				showLog: false,
-				startColor: '0x6666ff',
-				endColor: '0x00ff00'
-			};
-			var params = {
-				quality: 'high',
-				bgcolor: "#ffffff",
-				allowscriptaccess: 'sameDomain',
-				allowfullscreen: false,
-				wmode: 'transparent'
-			};
-			var attributes = {
-				id: 'ProteinFamilyHeatMap',
-				name: 'ProteinFamilyHeatMap'
-			};
-			var target = document.getElementById("flashTarget");
-			// binding flash functions
-			window.flashReady = lang.hitch(this, "flashReady");
-			window.flashRequestsData = lang.hitch(this, "flashRequestsData");
-			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
-			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
-			//["flashReady", "flashRequestsData"].forEach(function(item){
-			//	window[item] = lang.hitch(this, item);
-			//});
-			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
-			this.flashDom = document.getElementById("ProteinFamilyHeatMap");
 		},
 		onFirstView: function(){
 			if(this._firstView){
@@ -205,17 +171,10 @@ define([
 			this.inherited(arguments);
 			this._firstView = true;
 		},
-		// flash interface functions
-		flashReady: function(flashObjectID){
-			var target = document.getElementById(flashObjectID) || this.flashDom;
-			//console.log("flashReady is called", flashObjectID, target);
-			if(typeof(target.refreshData) == "function"){
-				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
+		flashReady: function(){
+			if(typeof(this.flashDom.refreshData) == "function"){
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
 			}
-		},
-		flashRequestsData: function(){
-			//console.log("flashRequestsData is called");
-			return this.currentData;
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
 			//console.log("flashCellClicked is called ", colID, rowID);
@@ -570,10 +529,10 @@ define([
 
 			console.log("cluster is called", param);
 			//this.set('loading', true);
-			var data = this.prepareDataForCluster();
 			var p = param || {g: 2, e: 2, m: 'a'};
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
+			var data = this.exportCurrentData(isTransposed);
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				console.log("Cluster Results: ", res);
@@ -584,51 +543,8 @@ define([
 				pfState.clusterColumnOrder = res.columns;
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
 			}));
-		},
-		prepareDataForCluster: function(){
-			// compose heatmap raw data in tab delimited format
-			// this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
-
-			var cols, rows, id_field_name, data_field_name, tablePass = [], header = [''];
-			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
-
-			if(isTransposed){
-				cols = this.currentData.rows;
-				rows = this.currentData.columns;
-				id_field_name = 'rowID';
-				data_field_name = 'colID';
-			}else{
-				cols = this.currentData.columns;
-				rows = this.currentData.rows;
-				id_field_name = 'colID';
-				data_field_name = 'rowID';
-			}
-
-			cols.forEach(function(col, idx){
-				//if (idx > 4) return;
-				header.push(col[id_field_name]);
-			});
-
-			tablePass.push(header.join('\t'));
-
-			for(var i = 0, iLen = rows.length; i < iLen; i++){
-				var r = [];
-				r.push(rows[i][data_field_name]);
-
-				for(var j = 0, jLen = cols.length; j < jLen; j++){
-					if(isTransposed){
-						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 + 1], 16));
-					}else{
-						r.push(parseInt(cols[j].distribution[i * 2] + cols[j].distribution[i * 2 + 1], 16));
-					}
-				}
-
-				tablePass.push(r.join('\t'));
-			}
-
-			return tablePass.join('\n');
 		},
 		anchor: function(genomeId){
 
@@ -662,7 +578,7 @@ define([
 				pfState.clusterColumnOrder = adjustedFamilyOrder;
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "drawHeatmap");
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
 			}));
 		}
 	});
