@@ -450,8 +450,7 @@ define([
 						var r = [];
 						r.push(row.rowLabel);
 						colIndexes.forEach(function(colIdx){
-							var val = parseInt(_self.currentData.columns[colIdx].distribution.charAt(idx * 2)
-								+ _self.currentData.columns[colIdx].distribution.charAt(idx * 2 + 1), 16);
+							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
