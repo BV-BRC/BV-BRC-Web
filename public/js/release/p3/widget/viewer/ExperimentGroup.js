@@ -63,8 +63,9 @@ define("p3/widget/viewer/ExperimentGroup", [
 					wsItemDef.resolve([]);
 				}
 
-				if(obj && obj.data && obj.data.id_list && obj.data.id_list.expid){
-					var query = "?in(expid,(" + obj.data.id_list.expid.join(",") + "))";
+				if(obj && obj.data && obj.data.id_list && obj.data.id_list.eid){
+					var list = obj.data.id_list.eid.join(",");
+					var query = "?or(in(expid,(" + list + ")),in(eid,(" + list + ")))";
 					console.log("Query: ", query);
 					eidDefer = this.store.query(query)
 				}else{

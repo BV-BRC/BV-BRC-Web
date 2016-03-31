@@ -25,7 +25,7 @@ define("p3/util/PathJoin", [], function(){
 		var out = parts.join('/');
 		//console.log("OUT: ", out);
 
-		if(out.match("http[s]:\/\/")){
+		if(out.match("^(http|https):\/\/")){
 			return out;
 		}else{
 			return "/" + out;

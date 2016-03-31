@@ -1,44 +1,120 @@
 define("p3/widget/ProteinFamiliesHeatmapContainer", [
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct",
+	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
 	"dijit/TooltipDialog", "dijit/Dialog",
-	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
+	"./HeatmapContainer",
+	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
 
 ], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct,
+			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
 			TooltipDialog, Dialog,
-			lang, swfobject, request, PathJoin, Button){
+			Form, TitlePane, RadioButton, Select, registry,
+			HeatmapContainer,
+			lang, when, request, PathJoin, Button){
 
-	return declare([BorderContainer], {
+	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		dataGridContainer: null,
 		pfState: null,
-		flashDom: null,
 		containerActions: [
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				"flipAxises",
+				function(){
+					// flip internal flag
+					if(this.pfState.heatmapAxis === ""){
+						this.pfState.heatmapAxis = "Transposed";
+					}else{
+						this.pfState.heatmapAxis = "";
+					}
+
+					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				},
 				true
 			],
 			[
 				"Cluster",
 				"fa icon-make-group fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
-				function(selection){
-					// TODO: implement
-				},
+				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
 				"fa icon-make-group fa-2x",
-				{label: "Advanced Clustering", multiple: false, validTypes: ["*"]},
-				function(selection){
-					// TODO: implement
+				{label: "Advanced", multiple: false, validTypes: ["*"]},
+				function(){
+					var self = this;
+
+					this.dialog.set('content', this._buildPanelAdvancedClustering());
+
+					// building action bar
+					var actionBar = domConstruct.create("div", {
+						"class": "dijitDialogPaneActionBar"
+					});
+					var btnSubmit = new Button({
+						label: 'Submit',
+						onClick: function(){
+							var param = {};
+							var f = registry.byId("advancedClusterParams").value;
+
+							param.g = (f['cluster_by'] === 3 || f['cluster_by'] === 1) ? f['algorithm'] : 0;
+							param.e = (f['cluster_by'] === 3 || f['cluster_by'] === 2) ? f['algorithm'] : 0;
+							param.m = f['type'];
+
+							//console.log('advanced cluster param: ', param);
+							self.cluster(param);
+							self.dialog.hide();
+						}
+					});
+					var btnCancel = new Button({
+						label: 'Cancel',
+						onClick: function(){
+							self.dialog.hide();
+						}
+					});
+					btnSubmit.placeAt(actionBar);
+					btnCancel.placeAt(actionBar);
+
+					domConstruct.place(actionBar, this.dialog.containerNode, "last");
+
+					this.dialog.show();
+				},
+				true
+			],
+			[
+				"Anchor",
+				"fa fa-random fa-2x",
+				{
+					label: "Anchor",
+					multiple: false,
+					validType: ["*"],
+					tooltip: "Anchor by genome",
+					tooltipDialog: null
+				},
+				function(){
+
+					// dialog for anchoring
+					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
+						this.tooltip_anchoring = new TooltipDialog({
+							content: this._buildPanelAnchoring()/*,
+							onMouseLeave: function(){
+								popup.close(this.tooltip_anchoring);
+							}*/
+						});
+						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
+					}
+
+					popup.open({
+						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+						around: this.containerActionBar._actions.Anchor.button,
+						orient: ["below"]
+					});
+
 				},
 				true
 			]
@@ -50,54 +126,26 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", function(){
+			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "refresh":
-						self.flashReady();
+						this.currentData = this.dataGridContainer.grid.store.getHeatmapData(this.pfState);
+						this.flashDom.refreshData();
 						break;
 					default:
 						break;
 				}
-			});
+			}));
 		},
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				this.initializeFlash();
+				this.initializeFlash('ProteinFamilyHeatMap');
 			}
-		},
-		initializeFlash: function(){
-			var flashVars = {
-				showLog: false,
-				startColor: '0x6666ff',
-				endColor: '0x00ff00'
-			};
-			var params = {
-				quality: 'high',
-				bgcolor: "#ffffff",
-				allowscriptaccess: 'sameDomain',
-				allowfullscreen: false,
-				wmode: 'transparent'
-			};
-			var attributes = {
-				id: 'ProteinFamilyHeatMap',
-				name: 'ProteinFamilyHeatMap'
-			};
-			var target = document.getElementById("flashTarget");
-			// binding flash functions
-			window.flashReady = lang.hitch(this, "flashReady");
-			window.flashRequestsData = lang.hitch(this, "flashRequestsData");
-			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
-			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
-			//["flashReady", "flashRequestsData"].forEach(function(item){
-			//	window[item] = lang.hitch(this, item);
-			//});
-			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
-			this.flashDom = document.getElementById("ProteinFamilyHeatMap");
 		},
 		onFirstView: function(){
 			if(this._firstView){
@@ -123,25 +171,10 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			this.inherited(arguments);
 			this._firstView = true;
 		},
-		// flash interface functions
-		flashReady: function(flashObjectID){
-			var target = document.getElementById(flashObjectID) || this.flashDom;
-			//console.log("flashReady is called", flashObjectID, target);
-			if(typeof(target.refreshData) == "function"){
-				this._prepareHeatmapData();
-				target.refreshData(); // this triggers flashRequestsData callback
+		flashReady: function(){
+			if(typeof(this.flashDom.refreshData) == "function"){
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
 			}
-		},
-		flashRequestsData: function(){
-			//console.log("flashRequestsData is called");
-			return this.currentData;
-		},
-		_prepareHeatmapData: function(){
-			//console.log("_prepareHeatmapData is called");
-			var dataStore = this.dataGridContainer.grid.store;
-			//console.log("dataStore: ", dataStore);
-			this.currentData = dataStore.getHeatmapData(this.pfState);
-			//console.log("currentData: ", this.currentData);
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
 			//console.log("flashCellClicked is called ", colID, rowID);
@@ -171,7 +204,8 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			//console.log("flashCellsSelected is called", colIDs, rowIDs);
-			var isTransposed = (this.pfState.heatmapAxis === 'Transposed') ? true : false;
+			if(rowIDs.length == 0) return;
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
 			var familyIds = originalAxis.columnIds;
@@ -197,7 +231,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
 			//console.log(gfs, gfs[genomeId]);
 			var genomeName = gfs[genomeId].getGenomeName();
@@ -255,6 +289,116 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			return text.join("<br>");
 		},
+		_buildPanelAdvancedClustering: function(){
+
+			if(registry.byId("advancedClusterParams") !== undefined){
+				registry.byId("advancedClusterParams").destroyRecursive();
+			}
+
+			var form = new Form({
+				id: 'advancedClusterParams'
+			});
+
+			var tp_dim = new TitlePane({
+				title: "Cluster by"
+			}).placeAt(form.containerNode);
+
+			new RadioButton({
+				checked: false,
+				value: 2,
+				name: "cluster_by",
+				label: "Protein Families"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Protein Families</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: false,
+				value: 1,
+				name: "cluster_by",
+				label: "Genomes"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Genomes</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: true,
+				value: 3,
+				name: "cluster_by",
+				label: "Both"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Both</label>', tp_dim.containerNode, "last");
+
+			var sel_algorithm = new Select({
+				name: "algorithm",
+				value: 2,
+				options: [{
+					value: 0, label: "No clustering"
+				}, {
+					value: 1, label: "Un-centered correlation"
+				}, {
+					value: 2, label: "Pearson correlation"
+				}, {
+					value: 3, label: "Un-centered correlation, absolute value"
+				}, {
+					value: 4, label: "Pearson correlation, absolute value"
+				}, {
+					value: 5, label: "Spearman rank correlation"
+				}, {
+					value: 6, label: "Kendall tau"
+				}, {
+					value: 7, label: "Euclidean distance"
+				}, {
+					value: 8, label: "City-block distance"
+				}]
+			});
+
+			var sel_type = new Select({
+				name: "type",
+				value: 'a',
+				options: [{
+					value: "m", label: "Pairwise complete-linkage"
+				}, {
+					value: "s", label: "Pairwise single-linkage"
+				}, {
+					value: "c", label: "Pairwise centroid-linkage"
+				}, {
+					value: "a", label: "Pairwise average-linkage"
+				}]
+			});
+
+			new TitlePane({
+				title: "Clustering algorithm",
+				content: sel_algorithm
+			}).placeAt(form.containerNode);
+
+			new TitlePane({
+				title: "Clustering type",
+				content: sel_type
+			}).placeAt(form.containerNode);
+
+			return form;
+		},
+		_buildPanelAnchoring: function(){
+
+			var self = this;
+			var pfState = self.pfState;
+			var options = pfState.genomeIds.map(function(genomeId){
+				return {
+					value: genomeId,
+					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+				};
+			});
+
+			var anchor = new Select({
+				name: "anchor",
+				options: options
+			});
+			anchor.on('change', function(genomeId){
+				self.anchor(genomeId);
+				popup.close(self.tooltip_anchoring);
+			});
+
+			return anchor;
+		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
 			var actionBar = domConstruct.create("div", {
@@ -306,8 +450,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 						var r = [];
 						r.push(row.rowLabel);
 						colIndexes.forEach(function(colIdx){
-							var val = parseInt(_self.currentData.columns[colIdx].distribution.charAt(idx * 2)
-								+ _self.currentData.columns[colIdx].distribution.charAt(idx * 2 + 1), 16);
+							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
@@ -368,36 +511,6 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 			return actionBar;
 		},
-		//_countMembers: function(colIDs, rowIDs){
-		//	var columns = this.currentData.columns;
-		//	var rows = this.currentData.rows;
-		//
-		//	var rowPositions = [];
-		//	var count = 0;
-		//
-		//	//console.log(columns, rows);
-		//	rows.forEach(function(row){
-		//		rowIDs.forEach(function(rowID){
-		//			if(rowID === row.rowID){
-		//				rowPositions.push(row.order * 2);
-		//			}
-		//		})
-		//	});
-		//	//console.log(rowPositions);
-		//
-		//	columns.forEach(function(col){
-		//		colIDs.forEach(function(colID){
-		//			if(colID === col.colID){
-		//				rowPositions.forEach(function(pos){
-		//					//console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
-		//					count += parseInt(col.distribution.substr(pos, 2), 16);
-		//				});
-		//			}
-		//		});
-		//	});
-		//
-		//	return count;
-		//},
 		_getOriginalAxis: function(isTransposed, columnIds, rowIds){
 			var originalAxis = {};
 			//console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
@@ -411,61 +524,61 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			}
 			return originalAxis;
 		},
-		flipAxises: function(){
-			var currentData = this.currentData;
-			var flippedDistribution = new Array(currentData.rows.length);
-			currentData.rows.forEach(function(row, rowIdx){
-				var distribution = [];
-				currentData.columns.forEach(function(col){
-					distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
-				});
-				flippedDistribution[rowIdx] = distribution.join("");
-			});
+		cluster: function(param){
 
-			// create new rows
-			var newRows = [];
-			currentData.columns.forEach(function(col, colID){
-				newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
-			});
-			// create new columns
-			var newColumns = [];
-			currentData.rows.forEach(function(row, rowID){
-				newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
-			});
+			console.log("cluster is called", param);
+			//this.set('loading', true);
+			var p = param || {g: 2, e: 2, m: 'a'};
+			var pfState = this.pfState;
+			var isTransposed = pfState.heatmapAxis === 'Transposed';
+			var data = this.exportCurrentData(isTransposed);
 
-			this.currentData = {
-				'rows': newRows,
-				'columns': newColumns,
-				'colTrunc': currentData.rowTrunc,
-				'rowTrunc': currentData.colTrunc,
-				'colLabel': currentData.rowLabel,
-				'rowLabel': currentData.colLabel,
-				'offset': 1,
-				'digits': 2,
-				'countLabel': 'Members',
-				'negativeBit': false,
-				'cellLabelField': '',
-				'cellLabelsOverrideCount': false,
-				'beforeCellLabel': '',
-				'afterCellLabel': ''
-			};
+			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
+				console.log("Cluster Results: ", res);
+				//this.set('loading', false);
 
-			// flip internal flag
-			if(this.pfState.heatmapAxis === ""){
-				this.pfState.heatmapAxis = "Transposed";
-			}else{
-				this.pfState.heatmapAxis = "";
-			}
+				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
+				pfState.clusterRowOrder = res.rows;
+				pfState.clusterColumnOrder = res.columns;
 
-			// send message to flash to refresh data reading
-			this.flashDom.refreshData();
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+			}));
 		},
-		cluster: function(){
-			// read data // FigFamSorter.js#prepareDataForCluster
-			// send to server // FigFamSorter.js#submitCluster
-			// run command // FIGfam.java#doCLustering
-			// read result and send back
-			// update this.currentData
+		anchor: function(genomeId){
+
+			var dataStore = this.dataGridContainer.grid.store;
+
+			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
+
+				var pfState = this.pfState;
+				var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
+				if(isTransposed){
+					currentFamilyOrder = this.currentData.rows.map(function(row){
+						return row.rowID;
+					});
+				}else{
+					currentFamilyOrder = this.currentData.columns.map(function(col){
+						return col.colID;
+					});
+				}
+
+				currentFamilyOrder.forEach(function(id){
+					if(!newFamilyOrderSet.hasOwnProperty(id)){
+						leftOver.push(id);
+					}
+				});
+
+				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+
+				// clusterRow/ColumnOrder assumes corrected axises
+				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+			}));
 		}
 	});
 });
