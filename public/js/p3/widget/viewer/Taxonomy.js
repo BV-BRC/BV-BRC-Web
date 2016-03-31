@@ -87,9 +87,9 @@ define([
 			this.set("taxon_id", parts[parts.length - 1]);
 			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
 
-			if (state.search && state.search != s){
+			if (state.search ){
 				console.log("GENERATE ENGLISH QUERY for ", state.search);
-				this.filteredTaxon = QueryToEnglish(state.search);
+				this.filteredTaxon = QueryToEnglish(state.search.replace(s,""));
 				state.search = s + "&" + state.search;
 
 			}else{
