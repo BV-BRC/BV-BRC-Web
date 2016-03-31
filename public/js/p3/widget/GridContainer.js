@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog",
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog){
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -38,12 +38,9 @@ define([
 
 		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
 	});
-	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
-	var downloadSelectionTT = new TooltipDialog({
-		content: dstContent, onMouseLeave: function(){
-			popup.close(downloadSelectionTT);
-		}
-	});
+
+	var downloadSelectionTT = new DownloadTooltipDialog({});
+	downloadSelectionTT.startup();
 
 	var idMappingTTDialog = new TooltipDialog({
 		content: IDMappingTemplate, onMouseLeave: function(){
@@ -282,7 +279,7 @@ define([
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-eye2 fa-2x",
+				"MultiButton fa icon-genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -388,7 +385,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data"]
 				},
 				function(selection){
 					console.log("view FASTA")
@@ -440,6 +437,8 @@ define([
 
 					console.log("TTDlg: ", idMappingTTDialog);
 					console.log("this: ", this);
+					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					return;
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
@@ -493,10 +492,10 @@ define([
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection){
-					new Dialog({content: "IMPLEMENT ME!"}).show();
+					new Dialog({content: "<p>Link to the Pathways related to the selected entities.</p><br>IMPLEMENT ME!"}).show();
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -512,7 +511,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_sample_data" ]
 				},
 				function(selection, containerWidget){
 					console.log("Add Items to Group", selection);
@@ -563,12 +562,20 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
 				},
 				function(selection){
-					this.selectionActionBar._actions.DownloadSelection.selection = selection;
-					popup.open({
-						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-						around: this.selectionActionBar._actions.DownloadSelection.button,
-						orient: ["below"]
-					});
+					console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
+
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
+
+					setTimeout(lang.hitch(this,function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.DownloadSelection.button,
+							orient: ["below"]
+						});
+					}),10);
+
 				},
 				false
 			], [
