@@ -62,11 +62,11 @@ define([
 				Object.keys(gfs).forEach(function(genomeId){
 					var index = gfs[genomeId].getIndex();
 					var status = gfs[genomeId].getStatus();
-					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index*2+1), 16));
-					if(status == 1 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) > 0){
+					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.substr(index * 2, 2), 16));
+					if(status == 1 && parseInt(family.genomes.substr(index * 2, 2), 16) > 0){
 						skip = true;
 					}
-					else if(status == 0 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) == 0){
+					else if(status == 0 && parseInt(family.genomes.substr(index * 2, 2), 16) == 0){
 						skip = true;
 					}
 				});
@@ -74,7 +74,7 @@ define([
 					newData.push(family);
 				}
 			});
-			console.log("genomeFilter took " + (window.performance.now() - tsStart) + " ms");
+			console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
@@ -337,38 +337,34 @@ define([
 
 			var rows = [];
 			var cols = [];
-			var keeps = [];
+			var maxIntensity = 0; // global and will be modified inside createColumn function
+			var keeps = []; // global and will be referenced inside createColumn function
 			var colorStop = [];
 
 			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var start = window.performance.now();
 
 			// assumes axises are corrected
 			var familyOrder = pfState.clusterColumnOrder;
 			var genomeOrder = pfState.clusterRowOrder;
 
-			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
-				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
+			var createColumn = function(order, colId, label, distribution, meta){
+				var filtered = [], isEven = (order % 2) === 0;
 
-				for(j = 0; j < keeps.length; j++){
-					pick = keeps[j];
-					iSend += intensity.charAt(pick);
-					++pick;
-					iSend += intensity.charAt(pick);
+				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
+					filtered[i] = distribution.substr(idx, 2);
+					var val = parseInt(filtered[i], 16);
 
-					iSendDecimal = parseInt(intensity.charAt(pick - 1) + intensity.charAt(pick), 16);
-
-					if(maxIntensity <= iSendDecimal){
-						maxIntensity = iSendDecimal;
+					if(maxIntensity < val){
+						maxIntensity = val;
 					}
-				}
+				});
 
-				labelColor = ((i % 2) == 0) ? 0x000066 : null;
-				columnColor = ((i % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
-
-				cols[i] = new Column(i, groupId, family.description, iSend, labelColor, columnColor, meta);
-
-				return maxIntensity;
-			}
+				return new Column(order, colId, label, filtered.join(''),
+					((isEven) ? 0x000066 : null) /* label color */,
+					((isEven) ? 0xF4F4F4 : 0xd6e4f4) /*bg color */,
+					meta);
+			};
 
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
@@ -404,37 +400,32 @@ define([
 
 			// cols - families
 			//console.warn(this);
-			var maxIntensity = 0;
 			var data = this.query("", {});
 
+			var familyOrderMap = {};
 			if(familyOrder !== [] && familyOrder.length > 0){
-				var familyOrderMap = {};
 				familyOrder.forEach(function(familyId, idx){
 					familyOrderMap[familyId] = idx;
 				});
-				data.forEach(function(family, idx){
-					var meta = {
-						'instances': family.feature_count,
-						'members': family.genome_count,
-						'min': family.aa_length_min,
-						'max': family.aa_length_max
-					};
-					if(genomeOrderChangeMap.length > 0){
-						family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
-					}
-					maxIntensity = createColumn(familyOrderMap[family.family_id], family, meta, family.family_id, keeps, maxIntensity);
-				});
 			}else{
 				data.forEach(function(family, idx){
-					var meta = {
-						'instances': family.feature_count,
-						'members': family.genome_count,
-						'min': family.aa_length_min,
-						'max': family.aa_length_max
-					};
-					maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
-				});
+					familyOrderMap[family.family_id] = idx;
+				})
 			}
+
+			data.forEach(function(family){
+				var meta = {
+					'instances': family.feature_count,
+					'members': family.genome_count,
+					'min': family.aa_length_min,
+					'max': family.aa_length_max
+				};
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
+				var order = familyOrderMap[family.family_id];
+				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
+			});
 
 			// colorStop
 			if(maxIntensity == 1){
@@ -465,13 +456,13 @@ define([
 				'afterCellLabel': ''
 			};
 
-			if (isTransposed){
+			if(isTransposed){
 
-				var flippedDistribution = new Array(currentData.rows.length);
+				var flippedDistribution = []; // new Array(currentData.rows.length);
 				currentData.rows.forEach(function(row, rowIdx){
 					var distribution = [];
 					currentData.columns.forEach(function(col){
-						distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
+						distribution.push(col.distribution.substr(rowIdx * 2, 2));
 					});
 					flippedDistribution[rowIdx] = distribution.join("");
 				});
@@ -487,24 +478,18 @@ define([
 					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
 				});
 
-				var transposedData = {
+				currentData = lang.mixin(currentData, {
 					'rows': newRows,
 					'columns': newColumns,
-					'colTrunc': currentData.rowTrunc,
-					'rowTrunc': currentData.colTrunc,
-					'colLabel': currentData.rowLabel,
-					'rowLabel': currentData.colLabel,
-					'offset': 1,
-					'digits': 2,
-					'countLabel': 'Members',
-					'negativeBit': false,
-					'cellLabelField': '',
-					'cellLabelsOverrideCount': false,
-					'beforeCellLabel': '',
-					'afterCellLabel': ''
-				};
-				currentData = transposedData;
+					'rowLabel': 'Protein Families',
+					'colLabel': 'Genomes',
+					'rowTrunc': 'end',
+					'colTrunc': 'mid'
+				});
 			}
+
+			var end = window.performance.now();
+			console.log('getHeatmapData() took: ', (end - start), "ms");
 
 			return currentData;
 		},
