@@ -27,7 +27,7 @@ define(["dojo/request", "dojo/_base/Deferred"
 				}
 			}, function(err){
 				var message = err.response.data.error.message;
-				var message = message.split("\n\n\n")[0];
+				message = message.split("\n\n\n")[0];
 				def.reject(message || err.message);
 			});
 

@@ -143,7 +143,7 @@ define([
                         if (conf.otherData){
                                 conf.otherData.forEach(function(type){
                                         domConstruct.create("div", {"class":"wsActionTooltip", rel: type, innerHTML: this.downloadableDataTypes[type]}, this.otherDownloadNode);
-                                },this)
+                                },this);
                         }	 
 
                 }

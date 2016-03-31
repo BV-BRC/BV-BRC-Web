@@ -15,7 +15,7 @@ define([
 		panels: {},
 		constructor: function(opts){
 			if(opts){
-				for(prop in opts){
+				for(var prop in opts){
 					this[prop] = opts[prop]
 				}
 			}

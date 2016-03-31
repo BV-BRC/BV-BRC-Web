@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog",
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
@@ -768,13 +768,13 @@ define([
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
-
+				var sel=[];
 				if(!evt.selected){
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
-					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 						// console.log("rownum: ", rownum);
 						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
