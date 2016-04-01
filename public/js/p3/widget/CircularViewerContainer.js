@@ -128,7 +128,7 @@ define([
 				data: refseqs
 			}, "perimeter", true);
 
-			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, "#307D32", null)
+			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
 			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
 
 			var fillFn = function(item){

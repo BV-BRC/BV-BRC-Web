@@ -138,7 +138,7 @@ define("p3/app/p3app", [
 				newState.widgetClass = "p3/widget/WorkspaceManager";
 				newState.value = path;
 				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -150,12 +150,14 @@ define("p3/app/p3app", [
 
 				newState.href = path;
 				newState.prev = params.oldPath;
-
+				console.log("parser getState: ", parser);
 				if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
 				}else{
 					newState.search = "";
 				}
+
+				console.log("New State Search: ", newState.search);
 				newState.hash = parser.hash;
 				newState.pathname = parser.pathname
 
@@ -180,12 +182,14 @@ define("p3/app/p3app", [
 				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
 				var newState = getState(params, path);
 
+				console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
+
 				var parts = newState.pathname.split("/")
 				parts.shift();
 				var type = parts.shift();
 
 				newState.widgetClass = "p3/widget/viewer/" + type;
-				console.log("'/view/' New Navigation State: ", newState);
+				console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
 				_self.navigate(newState);
 			});
 
@@ -211,7 +215,7 @@ define("p3/app/p3app", [
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -220,14 +224,14 @@ define("p3/app/p3app", [
 				this.api = {}
 			}
 
-			if(this.workspaceAPI && this.user){
-				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user ? this.user.id : "");
-				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
+			if(this.workspaceAPI){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken || "", this.user ? this.user.id : "");
+				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken || "");
 			}
 
-			if(this.serviceAPI && this.user){
+			if(this.serviceAPI){
 				// console.log("Setup API Service @ ", this.serviceAPI);
-				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
+				this.api.service = RPC(this.serviceAPI, this.authorizationToken || "");
 			}
 
 			if(this.dataAPI){

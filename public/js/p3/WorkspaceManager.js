@@ -175,7 +175,7 @@ define([
 				if(res && res.data && res.data.id_list && res.data.id_list[idType]){
 					console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
-						return !(ids.indexOf(id) >= 0);
+						return (ids.indexOf(id) < 0);
 					});
 					console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
@@ -386,7 +386,7 @@ define([
 			}));
 		},
 		getDownloadUrls: function(paths){
-			var paths = paths instanceof Array ? paths : [paths];
+			paths = paths instanceof Array ? paths : [paths];
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: paths}]), function(urls){
 				return urls[0];
 			});

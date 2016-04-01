@@ -222,8 +222,9 @@ define("p3/widget/viewer/_FeatureList", [
 			evt.preventDefault();
 			var f = evt.filter;
 			var parts = [];
+			var q;
 			if(this.query){
-				var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
 					parts.push(q)
 				}

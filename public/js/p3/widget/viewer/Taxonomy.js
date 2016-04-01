@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../Phylogeny", "../../util/PathJoin", "../DataItemFormatter",
-	"../TaxonomyTreeGridContainer", "../TaxonomyOverview"
+	"../TaxonomyTreeGridContainer", "../TaxonomyOverview","dojo/topic","../../util/QueryToEnglish"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, Phylogeny, PathJoin, DataItemFormatter,
-			TaxonomyTreeGrid, TaxonomyOverview){
+			TaxonomyTreeGrid, TaxonomyOverview,Topic, QueryToEnglish){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -76,7 +76,7 @@ define([
 			//prevent default action
 		},
 		onSetState: function(attr, oldVal, state){
-			console.log("Taxonomy onSetState")
+			console.log("Taxonomy onSetState", JSON.stringify(state,null,4));
 			if(!state){
 				throw Error("No State Set");
 				return;
@@ -85,9 +85,17 @@ define([
 			var parts = state.pathname.split("/");
 
 			this.set("taxon_id", parts[parts.length - 1]);
+			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
 
-			state.search = "eq(taxon_lineage_ids," + this.taxon_id + ")";
+			if (state.search ){
+				console.log("GENERATE ENGLISH QUERY for ", state.search);
+				this.filteredTaxon = QueryToEnglish(state.search.replace(s,""));
+				state.search = s + "&" + state.search;
 
+			}else{
+				state.search = s;
+				this.filteredTaxon=false;
+			}
 			//console.log("GenomeList onSetState()");
 			this.inherited(arguments);
 			// this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
@@ -155,6 +163,12 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
+			console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
+
+			if (this.filteredTaxon){
+				out.push(this.filteredTaxon);				
+			}
+
 			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
 		},
 
@@ -163,6 +177,54 @@ define([
 				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
 			});
+		},
+
+		onSetAnchor: function(evt){
+			console.log("onSetAnchor: ", evt, evt.filter);
+			evt.stopPropagation();
+			evt.preventDefault();
+			var f = evt.filter;
+			var parts = [];
+
+			// if(this.query){
+			// 	var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+			// 	if(q != "keyword(*)"){
+			// 		parts.push(q)
+			// 	}
+			// }
+
+			if(evt.filter && evt.filter != "false"){
+				parts.push(evt.filter)
+			}
+
+			console.log("parts: ", parts);
+
+			if(parts.length > 1){
+				q = "?and(" + parts.join(",") + ")"
+			}else if(parts.length == 1){
+				q = "?" + parts[0]
+			}else{
+				q = "";
+			}
+
+			console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
+			var hp;
+
+			if(this.state.hashParams && this.state.hashParams.view_tab){
+				hp = {view_tab: this.state.hashParams.view_tab}
+			}else{
+				hp = {}
+			}
+
+			hp.filter = "false";
+
+			console.log("HP: ", JSON.stringify(hp));
+			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
+					return key + "=" + hp[key]
+				}, this).join("&");
+
+			console.log(" NavigateTo: ", l);
+			Topic.publish("/navigate", {href: l});
 		}
 	});
 });

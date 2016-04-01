@@ -27,12 +27,16 @@ define("p3/store/ProteinFamiliesFilterMemoryStore", [
 			return this.status;
 		}
 
+		function setIndex(idx){
+			this.index = idx;
+		}
+
 		function setStatus(status){
 			this.status = status;
 		}
 
 		return function(){
-			this.init = init, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
+			this.init = init, this.setIndex = setIndex, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
 			return this;
 		}
 	})();

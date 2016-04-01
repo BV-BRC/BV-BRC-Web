@@ -44,21 +44,6 @@ define("p3/widget/TranscriptomicsComparisonGridContainer", [
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{
-					label: "FILTERS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Toggle Filters",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					on.emit(this.domNode, "ToggleFilters", {});
-				},
-				true
-			],
-			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
 				{

@@ -140,7 +140,7 @@ define([
 				newState.widgetClass = "p3/widget/WorkspaceManager";
 				newState.value = path;
 				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -152,12 +152,14 @@ define([
 
 				newState.href = path;
 				newState.prev = params.oldPath;
-
+				console.log("parser getState: ", parser);
 				if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
 				}else{
 					newState.search = "";
 				}
+
+				console.log("New State Search: ", newState.search);
 				newState.hash = parser.hash;
 				newState.pathname = parser.pathname
 
@@ -182,12 +184,14 @@ define([
 				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
 				var newState = getState(params, path);
 
+				console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
+
 				var parts = newState.pathname.split("/")
 				parts.shift();
 				var type = parts.shift();
 
 				newState.widgetClass = "p3/widget/viewer/" + type;
-				console.log("'/view/' New Navigation State: ", newState);
+				console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
 				_self.navigate(newState);
 			});
 
@@ -213,7 +217,7 @@ define([
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -222,14 +226,14 @@ define([
 				this.api = {}
 			}
 
-			if(this.workspaceAPI && this.user){
-				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken, this.user ? this.user.id : "");
-				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken);
+			if(this.workspaceAPI){
+				WorkspaceManager.init(this.workspaceAPI, this.authorizationToken || "", this.user ? this.user.id : "");
+				this.api.workspace = RPC(this.workspaceAPI, this.authorizationToken || "");
 			}
 
-			if(this.serviceAPI && this.user){
+			if(this.serviceAPI){
 				// console.log("Setup API Service @ ", this.serviceAPI);
-				this.api.service = RPC(this.serviceAPI, this.authorizationToken);
+				this.api.service = RPC(this.serviceAPI, this.authorizationToken || "");
 			}
 
 			if(this.dataAPI){
@@ -4850,7 +4854,7 @@ define([
 		panels: {},
 		constructor: function(opts){
 			if(opts){
-				for(prop in opts){
+				for(var prop in opts){
 					this[prop] = opts[prop]
 				}
 			}
@@ -14169,7 +14173,7 @@ define(["dojo/request", "dojo/_base/Deferred"
 				}
 			}, function(err){
 				var message = err.response.data.error.message;
-				var message = message.split("\n\n\n")[0];
+				message = message.split("\n\n\n")[0];
 				def.reject(message || err.message);
 			});
 
@@ -14400,7 +14404,7 @@ define([
 				if(res && res.data && res.data.id_list && res.data.id_list[idType]){
 					console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
-						return !(ids.indexOf(id) >= 0);
+						return (ids.indexOf(id) < 0);
 					});
 					console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
@@ -14611,7 +14615,7 @@ define([
 			}));
 		},
 		getDownloadUrls: function(paths){
-			var paths = paths instanceof Array ? paths : [paths];
+			paths = paths instanceof Array ? paths : [paths];
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: paths}]), function(urls){
 				return urls[0];
 			});
@@ -14620,7 +14624,7 @@ define([
 		downloadFile: function(path){
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
 				console.log("download Urls: ", urls);
-				window.open(urls[0], "Download");
+				window.open(urls[0]);
 			});
 		},
 
@@ -14713,11 +14717,15 @@ define([
 						return true;
 					}else{
 
+						var headers = {
+							"X-Requested-With": null
+						};
+						if(window.App.authorizationToken){
+							headers.Authorization = "OAuth " + window.App.authorizationToken;
+						}
+
 						var d = xhr.get(meta.link_reference + "?download", {
-							headers: {
-								Authorization: "OAuth " + window.App.authorizationToken,
-								"X-Requested-With": null
-							}
+							headers: headers
 						});
 
 						return Deferred.when(d, function(data){
@@ -14771,8 +14779,9 @@ define([
 						}
 					}).filter(function(r){
 						if(!showHidden && r.name.charAt(0) == "."){
-							return false
+							return false;
 						}
+
 						return true;
 					});
 					//console.log("Final getFolderContents()", res)
@@ -14828,19 +14837,23 @@ define([
 			}
 
 			this.token = token;
-			this.apiUrl = apiUrl
+			this.apiUrl = apiUrl;
 			this.api = RPC(apiUrl, token);
 			this.userId = userId;
-			Deferred.when(this.get("currentPath"), function(cwsp){
-				console.log("Current Workspace Path: ", cwsp)
-			});
+			if(userId && token){
+				Deferred.when(this.get("currentPath"), function(cwsp){
+					console.log("Current Workspace Path: ", cwsp)
+				});
+			}else{
+				this.currentPath = "/";
+				this.currentWorkspace = "/NOWORKSPACE";
+			}
 
 		}
 	}))();
 
 	return WorkspaceManager;
 });
-
 
 },
 'dijit/layout/BorderContainer':function(){
@@ -27803,10 +27816,10 @@ define([
 			var workspace = parts[0] + "/" + parts[1];
 			var obj;
 			console.log("Workspace: ", workspace, parts[1], val)
-			if(!window.App.user || !window.App.user.id){
-				Topic.publish("/login");
-				return;
-			}
+			// if (!window.App.user || !window.App.user.id){
+			// 	Topic.publish("/login");
+			// 	return;
+			// }
 			if(!parts[1]){
 				obj = {metadata: {type: "folder"}}
 			}else{
@@ -28017,6 +28030,11 @@ define([
 					*/
 				}));
 
+			}), lang.hitch(this, function(err){
+				var parts = err.split("_ERROR_");
+				var m = parts[1] || parts[0];
+				var d = new Dialog({content: m, title: "Error Loading Workspace"});
+				d.show();
 			}));
 		},
 
@@ -37715,7 +37733,7 @@ define([
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
-				console.log("evt.target: ", evt.target);
+				//console.log("evt.target: ", evt.target);
 				tooltip.close();
 				var target;
 				if(evt && evt.target && evt.target.attributes && evt.target.attributes.rel){
@@ -50919,7 +50937,7 @@ define([], function(){
 		var out = parts.join('/');
 		//console.log("OUT: ", out);
 
-		if(out.match("http[s]:\/\/")){
+		if(out.match("^(http|https):\/\/")){
 			return out;
 		}else{
 			return "/" + out;
@@ -53302,8 +53320,9 @@ define([
 			evt.preventDefault();
 			var f = evt.filter;
 			var parts = [];
+			var q;
 			if(this.query){
-				var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
 					parts.push(q)
 				}
@@ -67681,11 +67700,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog){
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -67717,12 +67736,9 @@ define([
 
 		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
 	});
-	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
-	var downloadSelectionTT = new TooltipDialog({
-		content: dstContent, onMouseLeave: function(){
-			popup.close(downloadSelectionTT);
-		}
-	});
+
+	var downloadSelectionTT = new DownloadTooltipDialog({});
+	downloadSelectionTT.startup();
 
 	var idMappingTTDialog = new TooltipDialog({
 		content: IDMappingTemplate, onMouseLeave: function(){
@@ -67961,7 +67977,7 @@ define([
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-eye2 fa-2x",
+				"MultiButton fa icon-genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -68067,7 +68083,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data"]
 				},
 				function(selection){
 					console.log("view FASTA")
@@ -68119,6 +68135,8 @@ define([
 
 					console.log("TTDlg: ", idMappingTTDialog);
 					console.log("this: ", this);
+					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					return;
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
@@ -68172,10 +68190,10 @@ define([
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection){
-					new Dialog({content: "IMPLEMENT ME!"}).show();
+					new Dialog({content: "<p>Link to the Pathways related to the selected entities.</p><br>IMPLEMENT ME!"}).show();
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -68191,7 +68209,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_sample_data" ]
 				},
 				function(selection, containerWidget){
 					console.log("Add Items to Group", selection);
@@ -68242,12 +68260,20 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
 				},
 				function(selection){
-					this.selectionActionBar._actions.DownloadSelection.selection = selection;
-					popup.open({
-						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-						around: this.selectionActionBar._actions.DownloadSelection.button,
-						orient: ["below"]
-					});
+					console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
+
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
+
+					setTimeout(lang.hitch(this,function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.DownloadSelection.button,
+							orient: ["below"]
+						});
+					}),10);
+
 				},
 				false
 			], [
@@ -68440,13 +68466,13 @@ define([
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
-
+				var sel=[];
 				if(!evt.selected){
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
-					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 						// console.log("rownum: ", rownum);
 						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
@@ -69715,6 +69741,161 @@ define([
 });
 
 },
+'p3/widget/DownloadTooltipDialog':function(){
+define([
+        "dojo/_base/declare", "dojo/on", "dojo/dom-construct",
+        "dojo/_base/lang","dojo/mouse",
+        "dojo/topic", "dojo/query", "dijit/layout/ContentPane", 
+        "dijit/Dialog", "dijit/popup", "dijit/TooltipDialog"
+], function(declare, on, domConstruct,
+		lang,Mouse,
+		Topic, query, ContentPane,
+		Dialog, popup, TooltipDialog
+){
+
+	return declare([TooltipDialog], {
+                containerType: "",
+		selection: null,
+
+                _setSelectionAttr: function(val){
+                        this.selection = val;
+                },
+
+                timeout: function(val){
+			var _self=this;
+                        this._timer = setTimeout(function(){
+                                popup.close(_self);
+                        },val||2500);
+                },
+
+                onMouseEnter: function(){
+                        if (this._timer){
+                                clearTimeout(this._timer);
+                        }
+
+                        this.inherited(arguments);
+                },
+                onMouseLeave: function(){
+                        popup.close(this);
+                },
+
+                startup: function(){
+			if (this._started) { return; }
+			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
+			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
+
+                        on(this.domNode, ".wsActionTooltip:click", function(evt){
+                                console.log("evt.target: ", evt.target, evt.target.attributes);
+                                var rel = evt.target.attributes.rel.value;
+                                if (rel=="advancedDownload"){
+                                        var d = new Dialog({content: "Advanced Download Dialog"}).show();
+                                        return;
+                                }
+//                              var sel = this.selection;
+//                                      delete downloadSelectionTT.selection;
+                                console.log("DOWNLOAD ", rel);
+                        });
+
+			var dstContent = domConstruct.create("div",{});
+                        this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
+                        this.selectedCount = domConstruct.create("div", {},dstContent);
+			var table = domConstruct.create("table",{},dstContent);
+   //                      var tr = domConstruct.create("tr", {}, table);
+
+			// var tDataH = this.tDataHeader = domConstruct.create("th",{innerHTML: "TABLE"},tr);
+   //                      var oDataH = this.oDataHeader = domConstruct.create("th",{innerHTML: "DATA"},tr);
+
+			var tr = domConstruct.create("tr",{}, table);
+                        var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+                        //spacer
+                        domConstruct.create("td",{style: "width:10px;"}, tr);
+                        var oData = this.otherDownloadNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+
+                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "text", innerHTML: "Text"}, tData);
+                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
+                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+
+                        tr = domConstruct.create("tr",{}, table);
+                        var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
+                        domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
+
+
+
+			this.set("content", dstContent);
+
+			this._started=true;
+			this.set("label", this.label);
+                        this.set("selection", this.selection);
+
+                },
+
+		_setLabelAttr: function(val){
+			this.label=val;
+			if (this._started){
+				this.labelNode.innerHTML="Download selected " + val + " (" + (this.selection?this.selection.length:"0") + ") as...";
+			}
+		},
+
+                downloadableDataTypes: {
+                        "dna+fasta": "DNA FASTA",
+                        "protein+fasta": "Protein FASTA"
+                },
+
+                "downloadableConfig": {
+                        "genome_data": {
+                                label: "Genomes",
+                                tableData: true
+                        },
+                        "sequence_data": {
+                              label: "Sequences",
+                              tableData: true,
+                              otherData: ["dna+fasta","protein+fasta"]
+                        },
+                        "feature_data": {
+                              label: "Features",
+                              tableData: true,
+                              otherData: ["dna+fasta","protein+fasta"]
+                        },
+                        "spgene_data": {
+                              label: "Specialty Genes",
+                              tableData: true
+                        },
+                        "pathway_data": {
+                              label: "Pathways",
+                              tableData: true  
+                        },
+                        "default": {
+                              label: "Items",
+                              tableData: true  
+                        }
+                },
+		
+                _setContainerTypeAttr: function(val){
+                        console.log("setContainerType: ", val);
+                        var label;
+                        this.containerType=val;
+
+                        var conf = this.downloadableConfig[val] || this.downloadableConfig["default"];
+
+
+			this.set("label", conf.label);
+
+                        if (!this._started) { return; }
+
+			domConstruct.empty(this.otherDownloadNode);
+
+                        if (conf.otherData){
+                                conf.otherData.forEach(function(type){
+                                        domConstruct.create("div", {"class":"wsActionTooltip", rel: type, innerHTML: this.downloadableDataTypes[type]}, this.otherDownloadNode);
+                                },this);
+                        }	 
+
+                }
+        });
+
+});
+
+},
 'p3/widget/FeatureGrid':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
@@ -70260,21 +70441,6 @@ define([
 		getFilterPanel: function(opts){
 		},
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{
-					label: "FILTERS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Toggle Filters",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					on.emit(this.domNode, "ToggleFilters", {});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -72488,11 +72654,11 @@ define([
 				Object.keys(gfs).forEach(function(genomeId){
 					var index = gfs[genomeId].getIndex();
 					var status = gfs[genomeId].getStatus();
-					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index*2+1), 16));
-					if(status == 1 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) > 0){
+					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.substr(index * 2, 2), 16));
+					if(status == 1 && parseInt(family.genomes.substr(index * 2, 2), 16) > 0){
 						skip = true;
 					}
-					else if(status == 0 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) == 0){
+					else if(status == 0 && parseInt(family.genomes.substr(index * 2, 2), 16) == 0){
 						skip = true;
 					}
 				});
@@ -72500,7 +72666,7 @@ define([
 					newData.push(family);
 				}
 			});
-			console.log("genomeFilter took " + (window.performance.now() - tsStart) + " ms");
+			console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
@@ -72763,37 +72929,55 @@ define([
 
 			var rows = [];
 			var cols = [];
-			var keeps = [];
+			var maxIntensity = 0; // global and will be modified inside createColumn function
+			var keeps = []; // global and will be referenced inside createColumn function
 			var colorStop = [];
 
-			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
-				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
+			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var start = window.performance.now();
 
-				for(j = 0; j < keeps.length; j++){
-					pick = keeps[j];
-					iSend += intensity.charAt(pick);
-					++pick;
-					iSend += intensity.charAt(pick);
+			// assumes axises are corrected
+			var familyOrder = pfState.clusterColumnOrder;
+			var genomeOrder = pfState.clusterRowOrder;
 
-					iSendDecimal = parseInt(intensity.charAt(pick - 1) + intensity.charAt(pick), 16);
+			var createColumn = function(order, colId, label, distribution, meta){
+				var filtered = [], isEven = (order % 2) === 0;
 
-					if(maxIntensity <= iSendDecimal){
-						maxIntensity = iSendDecimal;
+				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
+					filtered[i] = distribution.substr(idx, 2);
+					var val = parseInt(filtered[i], 16);
+
+					if(maxIntensity < val){
+						maxIntensity = val;
 					}
-				}
+				});
 
-				labelColor = ((i % 2) == 0) ? 0x000066 : null;
-				columnColor = ((i % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
-
-				cols[i] = new Column(i, groupId, family.description, iSend, labelColor, columnColor, meta);
-
-				return maxIntensity;
-			}
+				return new Column(order, colId, label, filtered.join(''),
+					((isEven) ? 0x000066 : null) /* label color */,
+					((isEven) ? 0xF4F4F4 : 0xd6e4f4) /*bg color */,
+					meta);
+			};
 
 			// rows - genomes
-			//console.log("pfState: ", pfState);
-			//filterStore.data.forEach(function(genome, idx){
-			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			// if genome order is changed, then needs to or-organize distribution in columns.
+			var genomeOrderChangeMap = [];
+			var distributionTransformer = function(dist, map){
+				var newDist = [];
+				map.forEach(function(pos, idx){
+					newDist[idx] = dist.substr(pos * 2, 2);
+				});
+				return newDist.join('');
+			};
+
+			if(genomeOrder !== [] && genomeOrder.length > 0){
+				pfState.genomeIds = genomeOrder;
+				genomeOrder.forEach(function(genomeId, idx){
+					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
+					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
+					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+				});
+			}
+
 			pfState.genomeIds.forEach(function(genomeId, idx){
 				var gfs = pfState.genomeFilterStatus[genomeId];
 				if(gfs.getStatus() != '1'){
@@ -72803,24 +72987,36 @@ define([
 
 					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
 					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
-
-					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
 				}
 			});
 
 			// cols - families
 			//console.warn(this);
-			var maxIntensity = 0;
 			var data = this.query("", {});
-			//console.log(data);
-			data.forEach(function(family, idx){
+
+			var familyOrderMap = {};
+			if(familyOrder !== [] && familyOrder.length > 0){
+				familyOrder.forEach(function(familyId, idx){
+					familyOrderMap[familyId] = idx;
+				});
+			}else{
+				data.forEach(function(family, idx){
+					familyOrderMap[family.family_id] = idx;
+				})
+			}
+
+			data.forEach(function(family){
 				var meta = {
 					'instances': family.feature_count,
 					'members': family.genome_count,
 					'min': family.aa_length_min,
 					'max': family.aa_length_max
 				};
-				maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
+				var order = familyOrderMap[family.family_id];
+				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
 			});
 
 			// colorStop
@@ -72834,7 +73030,7 @@ define([
 
 			//console.log(rows, cols, colorStop);
 
-			return {
+			var currentData = {
 				'rows': rows,
 				'columns': cols,
 				'colorStops': colorStop,
@@ -72851,6 +73047,95 @@ define([
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+
+			if(isTransposed){
+
+				var flippedDistribution = []; // new Array(currentData.rows.length);
+				currentData.rows.forEach(function(row, rowIdx){
+					var distribution = [];
+					currentData.columns.forEach(function(col){
+						distribution.push(col.distribution.substr(rowIdx * 2, 2));
+					});
+					flippedDistribution[rowIdx] = distribution.join("");
+				});
+
+				// create new rows
+				var newRows = [];
+				currentData.columns.forEach(function(col, colID){
+					newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+				});
+				// create new columns
+				var newColumns = [];
+				currentData.rows.forEach(function(row, rowID){
+					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
+				});
+
+				currentData = lang.mixin(currentData, {
+					'rows': newRows,
+					'columns': newColumns,
+					'rowLabel': 'Protein Families',
+					'colLabel': 'Genomes',
+					'rowTrunc': 'end',
+					'colTrunc': 'mid'
+				});
+			}
+
+			var end = window.performance.now();
+			console.log('getHeatmapData() took: ', (end - start), "ms");
+
+			return currentData;
+		},
+
+		getSyntenyOrder: function(genomeId){
+
+			var _self = this;
+			var familyIdName = this.pfState.familyType + '_id';
+
+			return when(request.post(_self.apiServer + '/genome_feature/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
+					fl: familyIdName,
+					sort: 'accession asc,start asc',
+					rows: 1000000
+				}
+			}), function(res){
+
+				var familyIdSet = {};
+				var idx = 0;
+				// var order = [];
+
+				// var start = window.performance.now();
+
+				res.response.docs.forEach(function(doc){
+					var fId = doc[familyIdName];
+
+					if(!familyIdSet.hasOwnProperty(fId)){
+						familyIdSet[fId] = idx;
+						// order.push({groupId: fId, syntonyAt: idx});
+						idx++;
+					}
+				});
+
+				// order.sort(function(a, b){
+				// 	if(a.groupId > b.groupId) return 1;
+				// 	if(a.groupId < b.groupId) return -1;
+				// 	return 0;
+				// });
+
+				// var end = window.performance.now();
+				// console.log('performance: ', (end - start));
+				// console.log(order);
+
+				// return order; // original implementation
+				return familyIdSet;
+			});
 		}
 	});
 });
@@ -73228,12 +73513,16 @@ define([
 			return this.status;
 		}
 
+		function setIndex(idx){
+			this.index = idx;
+		}
+
 		function setStatus(status){
 			this.status = status;
 		}
 
 		return function(){
-			this.init = init, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
+			this.init = init, this.setIndex = setIndex, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
 			return this;
 		}
 	})();
@@ -73557,45 +73846,121 @@ return declare(Selection, {
 'p3/widget/ProteinFamiliesHeatmapContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct",
+	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
 	"dijit/TooltipDialog", "dijit/Dialog",
-	"dojo/_base/lang", "swfobject/swfobject", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
+	"./HeatmapContainer",
+	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
 
 ], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct,
+			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
 			TooltipDialog, Dialog,
-			lang, swfobject, request, PathJoin, Button){
+			Form, TitlePane, RadioButton, Select, registry,
+			HeatmapContainer,
+			lang, when, request, PathJoin, Button){
 
-	return declare([BorderContainer], {
+	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		dataGridContainer: null,
 		pfState: null,
-		flashDom: null,
 		containerActions: [
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
 				{label: "Flip Axis", multiple: false, validTypes: ["*"]},
-				"flipAxises",
+				function(){
+					// flip internal flag
+					if(this.pfState.heatmapAxis === ""){
+						this.pfState.heatmapAxis = "Transposed";
+					}else{
+						this.pfState.heatmapAxis = "";
+					}
+
+					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				},
 				true
 			],
 			[
 				"Cluster",
 				"fa icon-make-group fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
-				function(selection){
-					// TODO: implement
-				},
+				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
 				"fa icon-make-group fa-2x",
-				{label: "Advanced Clustering", multiple: false, validTypes: ["*"]},
-				function(selection){
-					// TODO: implement
+				{label: "Advanced", multiple: false, validTypes: ["*"]},
+				function(){
+					var self = this;
+
+					this.dialog.set('content', this._buildPanelAdvancedClustering());
+
+					// building action bar
+					var actionBar = domConstruct.create("div", {
+						"class": "dijitDialogPaneActionBar"
+					});
+					var btnSubmit = new Button({
+						label: 'Submit',
+						onClick: function(){
+							var param = {};
+							var f = registry.byId("advancedClusterParams").value;
+
+							param.g = (f['cluster_by'] === 3 || f['cluster_by'] === 1) ? f['algorithm'] : 0;
+							param.e = (f['cluster_by'] === 3 || f['cluster_by'] === 2) ? f['algorithm'] : 0;
+							param.m = f['type'];
+
+							//console.log('advanced cluster param: ', param);
+							self.cluster(param);
+							self.dialog.hide();
+						}
+					});
+					var btnCancel = new Button({
+						label: 'Cancel',
+						onClick: function(){
+							self.dialog.hide();
+						}
+					});
+					btnSubmit.placeAt(actionBar);
+					btnCancel.placeAt(actionBar);
+
+					domConstruct.place(actionBar, this.dialog.containerNode, "last");
+
+					this.dialog.show();
+				},
+				true
+			],
+			[
+				"Anchor",
+				"fa fa-random fa-2x",
+				{
+					label: "Anchor",
+					multiple: false,
+					validType: ["*"],
+					tooltip: "Anchor by genome",
+					tooltipDialog: null
+				},
+				function(){
+
+					// dialog for anchoring
+					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
+						this.tooltip_anchoring = new TooltipDialog({
+							content: this._buildPanelAnchoring()/*,
+							onMouseLeave: function(){
+								popup.close(this.tooltip_anchoring);
+							}*/
+						});
+						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
+					}
+
+					popup.open({
+						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+						around: this.containerActionBar._actions.Anchor.button,
+						orient: ["below"]
+					});
+
 				},
 				true
 			]
@@ -73607,54 +73972,26 @@ define([
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", function(){
+			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(this, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "refresh":
-						self.flashReady();
+						this.currentData = this.dataGridContainer.grid.store.getHeatmapData(this.pfState);
+						this.flashDom.refreshData();
 						break;
 					default:
 						break;
 				}
-			});
+			}));
 		},
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				this.initializeFlash();
+				this.initializeFlash('ProteinFamilyHeatMap');
 			}
-		},
-		initializeFlash: function(){
-			var flashVars = {
-				showLog: false,
-				startColor: '0x6666ff',
-				endColor: '0x00ff00'
-			};
-			var params = {
-				quality: 'high',
-				bgcolor: "#ffffff",
-				allowscriptaccess: 'sameDomain',
-				allowfullscreen: false,
-				wmode: 'transparent'
-			};
-			var attributes = {
-				id: 'ProteinFamilyHeatMap',
-				name: 'ProteinFamilyHeatMap'
-			};
-			var target = document.getElementById("flashTarget");
-			// binding flash functions
-			window.flashReady = lang.hitch(this, "flashReady");
-			window.flashRequestsData = lang.hitch(this, "flashRequestsData");
-			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
-			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
-			//["flashReady", "flashRequestsData"].forEach(function(item){
-			//	window[item] = lang.hitch(this, item);
-			//});
-			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
-			this.flashDom = document.getElementById("ProteinFamilyHeatMap");
 		},
 		onFirstView: function(){
 			if(this._firstView){
@@ -73680,25 +74017,10 @@ define([
 			this.inherited(arguments);
 			this._firstView = true;
 		},
-		// flash interface functions
-		flashReady: function(flashObjectID){
-			var target = document.getElementById(flashObjectID) || this.flashDom;
-			//console.log("flashReady is called", flashObjectID, target);
-			if(typeof(target.refreshData) == "function"){
-				this._prepareHeatmapData();
-				target.refreshData(); // this triggers flashRequestsData callback
+		flashReady: function(){
+			if(typeof(this.flashDom.refreshData) == "function"){
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
 			}
-		},
-		flashRequestsData: function(){
-			//console.log("flashRequestsData is called");
-			return this.currentData;
-		},
-		_prepareHeatmapData: function(){
-			//console.log("_prepareHeatmapData is called");
-			var dataStore = this.dataGridContainer.grid.store;
-			//console.log("dataStore: ", dataStore);
-			this.currentData = dataStore.getHeatmapData(this.pfState);
-			//console.log("currentData: ", this.currentData);
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
 			//console.log("flashCellClicked is called ", colID, rowID);
@@ -73728,7 +74050,8 @@ define([
 		},
 		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
 			//console.log("flashCellsSelected is called", colIDs, rowIDs);
-			var isTransposed = (this.pfState.heatmapAxis === 'Transposed') ? true : false;
+			if(rowIDs.length == 0) return;
+			var isTransposed = (this.pfState.heatmapAxis === 'Transposed');
 			var originalAxis = this._getOriginalAxis(isTransposed, colIDs, rowIDs);
 
 			var familyIds = originalAxis.columnIds;
@@ -73754,7 +74077,7 @@ define([
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
 			//console.log(gfs, gfs[genomeId]);
 			var genomeName = gfs[genomeId].getGenomeName();
@@ -73812,6 +74135,116 @@ define([
 
 			return text.join("<br>");
 		},
+		_buildPanelAdvancedClustering: function(){
+
+			if(registry.byId("advancedClusterParams") !== undefined){
+				registry.byId("advancedClusterParams").destroyRecursive();
+			}
+
+			var form = new Form({
+				id: 'advancedClusterParams'
+			});
+
+			var tp_dim = new TitlePane({
+				title: "Cluster by"
+			}).placeAt(form.containerNode);
+
+			new RadioButton({
+				checked: false,
+				value: 2,
+				name: "cluster_by",
+				label: "Protein Families"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Protein Families</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: false,
+				value: 1,
+				name: "cluster_by",
+				label: "Genomes"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Genomes</label><br/>', tp_dim.containerNode, "last");
+
+			new RadioButton({
+				checked: true,
+				value: 3,
+				name: "cluster_by",
+				label: "Both"
+			}).placeAt(tp_dim.containerNode);
+			domConstruct.place('<label>Both</label>', tp_dim.containerNode, "last");
+
+			var sel_algorithm = new Select({
+				name: "algorithm",
+				value: 2,
+				options: [{
+					value: 0, label: "No clustering"
+				}, {
+					value: 1, label: "Un-centered correlation"
+				}, {
+					value: 2, label: "Pearson correlation"
+				}, {
+					value: 3, label: "Un-centered correlation, absolute value"
+				}, {
+					value: 4, label: "Pearson correlation, absolute value"
+				}, {
+					value: 5, label: "Spearman rank correlation"
+				}, {
+					value: 6, label: "Kendall tau"
+				}, {
+					value: 7, label: "Euclidean distance"
+				}, {
+					value: 8, label: "City-block distance"
+				}]
+			});
+
+			var sel_type = new Select({
+				name: "type",
+				value: 'a',
+				options: [{
+					value: "m", label: "Pairwise complete-linkage"
+				}, {
+					value: "s", label: "Pairwise single-linkage"
+				}, {
+					value: "c", label: "Pairwise centroid-linkage"
+				}, {
+					value: "a", label: "Pairwise average-linkage"
+				}]
+			});
+
+			new TitlePane({
+				title: "Clustering algorithm",
+				content: sel_algorithm
+			}).placeAt(form.containerNode);
+
+			new TitlePane({
+				title: "Clustering type",
+				content: sel_type
+			}).placeAt(form.containerNode);
+
+			return form;
+		},
+		_buildPanelAnchoring: function(){
+
+			var self = this;
+			var pfState = self.pfState;
+			var options = pfState.genomeIds.map(function(genomeId){
+				return {
+					value: genomeId,
+					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+				};
+			});
+
+			var anchor = new Select({
+				name: "anchor",
+				options: options
+			});
+			anchor.on('change', function(genomeId){
+				self.anchor(genomeId);
+				popup.close(self.tooltip_anchoring);
+			});
+
+			return anchor;
+		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
 			var actionBar = domConstruct.create("div", {
@@ -73863,8 +74296,7 @@ define([
 						var r = [];
 						r.push(row.rowLabel);
 						colIndexes.forEach(function(colIdx){
-							var val = parseInt(_self.currentData.columns[colIdx].distribution.charAt(idx * 2)
-								+ _self.currentData.columns[colIdx].distribution.charAt(idx * 2 + 1), 16);
+							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
 						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
@@ -73925,36 +74357,6 @@ define([
 
 			return actionBar;
 		},
-		//_countMembers: function(colIDs, rowIDs){
-		//	var columns = this.currentData.columns;
-		//	var rows = this.currentData.rows;
-		//
-		//	var rowPositions = [];
-		//	var count = 0;
-		//
-		//	//console.log(columns, rows);
-		//	rows.forEach(function(row){
-		//		rowIDs.forEach(function(rowID){
-		//			if(rowID === row.rowID){
-		//				rowPositions.push(row.order * 2);
-		//			}
-		//		})
-		//	});
-		//	//console.log(rowPositions);
-		//
-		//	columns.forEach(function(col){
-		//		colIDs.forEach(function(colID){
-		//			if(colID === col.colID){
-		//				rowPositions.forEach(function(pos){
-		//					//console.log(colID, col.distribution, parseInt(col.distribution.substr(pos, 2), 16));
-		//					count += parseInt(col.distribution.substr(pos, 2), 16);
-		//				});
-		//			}
-		//		});
-		//	});
-		//
-		//	return count;
-		//},
 		_getOriginalAxis: function(isTransposed, columnIds, rowIds){
 			var originalAxis = {};
 			//console.log("_getOriginalAxis: ", isTransposed, columnIds, rowIds);
@@ -73968,65 +74370,334 @@ define([
 			}
 			return originalAxis;
 		},
-		flipAxises: function(){
-			var currentData = this.currentData;
-			var flippedDistribution = new Array(currentData.rows.length);
-			currentData.rows.forEach(function(row, rowIdx){
-				var distribution = [];
-				currentData.columns.forEach(function(col){
-					distribution.push(col.distribution.charAt(rowIdx * 2) + col.distribution.charAt(rowIdx * 2 + 1));
-				});
-				flippedDistribution[rowIdx] = distribution.join("");
-			});
+		cluster: function(param){
 
-			// create new rows
-			var newRows = [];
-			currentData.columns.forEach(function(col, colID){
-				newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
-			});
-			// create new columns
-			var newColumns = [];
-			currentData.rows.forEach(function(row, rowID){
-				newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
-			});
+			console.log("cluster is called", param);
+			//this.set('loading', true);
+			var p = param || {g: 2, e: 2, m: 'a'};
+			var pfState = this.pfState;
+			var isTransposed = pfState.heatmapAxis === 'Transposed';
+			var data = this.exportCurrentData(isTransposed);
 
-			this.currentData = {
-				'rows': newRows,
-				'columns': newColumns,
-				'colTrunc': currentData.rowTrunc,
-				'rowTrunc': currentData.colTrunc,
-				'colLabel': currentData.rowLabel,
-				'rowLabel': currentData.colLabel,
-				'offset': 1,
-				'digits': 2,
-				'countLabel': 'Members',
-				'negativeBit': false,
-				'cellLabelField': '',
-				'cellLabelsOverrideCount': false,
-				'beforeCellLabel': '',
-				'afterCellLabel': ''
-			};
+			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
+				console.log("Cluster Results: ", res);
+				//this.set('loading', false);
 
-			// flip internal flag
-			if(this.pfState.heatmapAxis === ""){
-				this.pfState.heatmapAxis = "Transposed";
-			}else{
-				this.pfState.heatmapAxis = "";
-			}
+				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
+				pfState.clusterRowOrder = res.rows;
+				pfState.clusterColumnOrder = res.columns;
 
-			// send message to flash to refresh data reading
-			this.flashDom.refreshData();
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+			}));
 		},
-		cluster: function(){
-			// read data // FigFamSorter.js#prepareDataForCluster
-			// send to server // FigFamSorter.js#submitCluster
-			// run command // FIGfam.java#doCLustering
-			// read result and send back
-			// update this.currentData
+		anchor: function(genomeId){
+
+			var dataStore = this.dataGridContainer.grid.store;
+
+			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
+
+				var pfState = this.pfState;
+				var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
+				if(isTransposed){
+					currentFamilyOrder = this.currentData.rows.map(function(row){
+						return row.rowID;
+					});
+				}else{
+					currentFamilyOrder = this.currentData.columns.map(function(col){
+						return col.colID;
+					});
+				}
+
+				currentFamilyOrder.forEach(function(id){
+					if(!newFamilyOrderSet.hasOwnProperty(id)){
+						leftOver.push(id);
+					}
+				});
+
+				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+
+				// clusterRow/ColumnOrder assumes corrected axises
+				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// re-draw heatmap
+				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+			}));
 		}
 	});
 });
 
+},
+'dijit/form/Form':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/sniff", // has("ie")
+	"../_Widget",
+	"../_TemplatedMixin",
+	"./_FormMixin",
+	"../layout/_ContentPaneResizeMixin"
+], function(declare, domAttr, kernel, has, _Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin){
+
+	// module:
+	//		dijit/form/Form
+
+
+	return declare("dijit.form.Form", [_Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin], {
+		// summary:
+		//		Widget corresponding to HTML form tag, for validation and serialization
+		//
+		// example:
+		//	|	<form data-dojo-type="dijit/form/Form" id="myForm">
+		//	|		Name: <input type="text" name="name" />
+		//	|	</form>
+		//	|	// Example assumes you have required dijit/registry
+		//	|	myObj = {name: "John Doe"};
+		//	|	registry.byId('myForm').set('value', myObj);
+		//	|
+		//	|	myObj=registry.byId('myForm').get('value');
+
+		// HTML <FORM> attributes
+
+		// name: String?
+		//		Name of form for scripting.
+		name: "",
+
+		// action: String?
+		//		Server-side form handler.
+		action: "",
+
+		// method: String?
+		//		HTTP method used to submit the form, either "GET" or "POST".
+		method: "",
+
+		// encType: String?
+		//		Encoding type for the form, ex: application/x-www-form-urlencoded.
+		encType: "",
+
+		// accept-charset: String?
+		//		List of supported charsets.
+		"accept-charset": "",
+
+		// accept: String?
+		//		List of MIME types for file upload.
+		accept: "",
+
+		// target: String?
+		//		Target frame for the document to be opened in.
+		target: "",
+
+		templateString: "<form data-dojo-attach-point='containerNode' data-dojo-attach-event='onreset:_onReset,onsubmit:_onSubmit' ${!nameAttrSetting}></form>",
+
+		postMixInProperties: function(){
+			// Setup name=foo string to be referenced from the template (but only if a name has been specified)
+			// Unfortunately we can't use _setNameAttr to set the name due to IE limitations, see #8660
+			this.nameAttrSetting = this.name ? ("name='" + this.name + "'") : "";
+			this.inherited(arguments);
+		},
+
+		execute: function(/*Object*/ /*===== formContents =====*/){
+			// summary:
+			//		Deprecated: use submit()
+			// tags:
+			//		deprecated
+		},
+
+		onExecute: function(){
+			// summary:
+			//		Deprecated: use onSubmit()
+			// tags:
+			//		deprecated
+		},
+
+		_setEncTypeAttr: function(/*String*/ value){
+			domAttr.set(this.domNode, "encType", value);
+			if(has("ie")){
+				this.domNode.encoding = value;
+			}
+			this._set("encType", value);
+		},
+
+		reset: function(/*Event?*/ e){
+			// summary:
+			//		restores all widget values back to their init values,
+			//		calls onReset() which can cancel the reset by returning false
+
+			// create fake event so we can know if preventDefault() is called
+			var faux = {
+				returnValue: true, // the IE way
+				preventDefault: function(){ // not IE
+					this.returnValue = false;
+				},
+				stopPropagation: function(){
+				},
+				currentTarget: e ? e.target : this.domNode,
+				target: e ? e.target : this.domNode
+			};
+			// if return value is not exactly false, and haven't called preventDefault(), then reset
+			if(!(this.onReset(faux) === false) && faux.returnValue){
+				this.inherited(arguments, []);
+			}
+		},
+
+		onReset: function(/*Event?*/ /*===== e =====*/){
+			// summary:
+			//		Callback when user resets the form. This method is intended
+			//		to be over-ridden. When the `reset` method is called
+			//		programmatically, the return value from `onReset` is used
+			//		to compute whether or not resetting should proceed
+			// tags:
+			//		callback
+			return true; // Boolean
+		},
+
+		_onReset: function(e){
+			this.reset(e);
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		},
+
+		_onSubmit: function(e){
+			var fp = this.constructor.prototype;
+			// TODO: remove this if statement beginning with 2.0
+			if(this.execute != fp.execute || this.onExecute != fp.onExecute){
+				kernel.deprecated("dijit.form.Form:execute()/onExecute() are deprecated. Use onSubmit() instead.", "", "2.0");
+				this.onExecute();
+				this.execute(this.getValues());
+			}
+			if(this.onSubmit(e) === false){ // only exactly false stops submit
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		},
+
+		onSubmit: function(/*Event?*/ /*===== e =====*/){
+			// summary:
+			//		Callback when user submits the form.
+			// description:
+			//		This method is intended to be over-ridden, but by default it checks and
+			//		returns the validity of form elements. When the `submit`
+			//		method is called programmatically, the return value from
+			//		`onSubmit` is used to compute whether or not submission
+			//		should proceed
+			// tags:
+			//		extension
+
+			return this.isValid(); // Boolean
+		},
+
+		submit: function(){
+			// summary:
+			//		programmatically submit form if and only if the `onSubmit` returns true
+			if(!(this.onSubmit() === false)){
+				this.containerNode.submit();
+			}
+		}
+	});
+});
+
+},
+'p3/widget/HeatmapContainer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"swfobject/swfobject"
+], function(declare, lang,
+			swfobject){
+
+	return declare([], {
+		flashDom: null,
+		currentData: null,
+
+		initializeFlash: function(domName){
+			var flashVars = {
+				showLog: false,
+				startColor: '0x6666ff',
+				endColor: '0x00ff00'
+			};
+			var params = {
+				quality: 'high',
+				bgcolor: "#ffffff",
+				allowscriptaccess: 'sameDomain',
+				allowfullscreen: false,
+				wmode: 'transparent'
+			};
+			var attributes = {
+				id: domName,
+				name: domName
+			};
+			var target = document.getElementById("flashTarget");
+			// binding flash functions
+			window.flashReady = lang.hitch(this, "flashReady");
+			window.flashRequestsData = lang.hitch(this, "flashRequestsData");
+			window.flashCellClicked = lang.hitch(this, "flashCellClicked");
+			window.flashCellsSelected = lang.hitch(this, "flashCellsSelected");
+
+			swfobject.embedSWF('/js/p3/resources/HeatmapViewer.swf', target, '100%', '100%', 19, '/js/swfobject/lib/expressInstall.swf', flashVars, params, attributes);
+			this.flashDom = document.getElementById(domName);
+		},
+
+		exportCurrentData: function(isTransposed){
+			// compose heatmap raw data in tab delimited format
+			// this de-transpose (if it is transposed) so that cluster algorithm can be applied to a specific data type
+
+			var cols, rows, id_field_name, data_field_name, tablePass = [], header = [''];
+
+			if(isTransposed){
+				cols = this.currentData.rows;
+				rows = this.currentData.columns;
+				id_field_name = 'rowID';
+				data_field_name = 'colID';
+			}else{
+				cols = this.currentData.columns;
+				rows = this.currentData.rows;
+				id_field_name = 'colID';
+				data_field_name = 'rowID';
+			}
+
+			cols.forEach(function(col){
+				header.push(col[id_field_name]);
+			});
+
+			tablePass.push(header.join('\t'));
+
+			for(var i = 0, iLen = rows.length; i < iLen; i++){
+				var r = [];
+				r.push(rows[i][data_field_name]);
+
+				for(var j = 0, jLen = cols.length; j < jLen; j++){
+					if(isTransposed){
+						r.push(parseInt(rows[i].distribution[j * 2] + rows[i].distribution[j * 2 + 1], 16));
+					}else{
+						r.push(parseInt(cols[j].distribution[i * 2] + cols[j].distribution[i * 2 + 1], 16));
+					}
+				}
+
+				tablePass.push(r.join('\t'));
+			}
+
+			return tablePass.join('\n');
+		},
+
+		// flash interface functions
+		flashReady: function(){
+			// update this.currentData
+			// this.flashDom.refreshData();
+		},
+		flashRequestsData: function(){
+			return this.currentData;
+		},
+		flashCellClicked: function(flashObjectID, colID, rowID){
+			// implement
+		},
+		flashCellsSelected: function(flashObjectID, colIDs, rowIDs){
+			// implement
+		}
+	});
+});
 },
 'swfobject/swfobject':function(){
 /*!    SWFObject v2.3.20120118 <http://github.com/swfobject/swfobject>
@@ -75418,7 +76089,7 @@ define([
 				data: refseqs
 			}, "perimeter", true);
 
-			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,\+))", true, "#307D32", null)
+			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
 			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
 
 			var fillFn = function(item){
@@ -79074,21 +79745,6 @@ define([
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{
-					label: "FILTERS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Toggle Filters",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					on.emit(this.domNode, "ToggleFilters", {});
-				},
-				true
-			],
-			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
 				{
@@ -79279,21 +79935,6 @@ define([
 		},
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{
-					label: "FILTERS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Toggle Filters",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					on.emit(this.domNode, "ToggleFilters", {});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -79615,21 +80256,6 @@ define([
 		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
-				"ToggleFilters",
-				"fa icon-filter fa-2x",
-				{
-					label: "FILTERS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "Toggle Filters",
-					tooltipDialog: downloadTT
-				},
-				function(selection){
-					on.emit(this.domNode, "ToggleFilters", {});
-				},
-				true
-			],
 			[
 				"DownloadTable",
 				"fa fa-download fa-2x",
@@ -80126,177 +80752,6 @@ define([
 		onCancel: function(evt){
 			console.log("Cancel/Close Dialog", evt)
 			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
-		}
-	});
-});
-
-},
-'dijit/form/Form':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/_base/kernel", // kernel.deprecated
-	"dojo/sniff", // has("ie")
-	"../_Widget",
-	"../_TemplatedMixin",
-	"./_FormMixin",
-	"../layout/_ContentPaneResizeMixin"
-], function(declare, domAttr, kernel, has, _Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin){
-
-	// module:
-	//		dijit/form/Form
-
-
-	return declare("dijit.form.Form", [_Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin], {
-		// summary:
-		//		Widget corresponding to HTML form tag, for validation and serialization
-		//
-		// example:
-		//	|	<form data-dojo-type="dijit/form/Form" id="myForm">
-		//	|		Name: <input type="text" name="name" />
-		//	|	</form>
-		//	|	// Example assumes you have required dijit/registry
-		//	|	myObj = {name: "John Doe"};
-		//	|	registry.byId('myForm').set('value', myObj);
-		//	|
-		//	|	myObj=registry.byId('myForm').get('value');
-
-		// HTML <FORM> attributes
-
-		// name: String?
-		//		Name of form for scripting.
-		name: "",
-
-		// action: String?
-		//		Server-side form handler.
-		action: "",
-
-		// method: String?
-		//		HTTP method used to submit the form, either "GET" or "POST".
-		method: "",
-
-		// encType: String?
-		//		Encoding type for the form, ex: application/x-www-form-urlencoded.
-		encType: "",
-
-		// accept-charset: String?
-		//		List of supported charsets.
-		"accept-charset": "",
-
-		// accept: String?
-		//		List of MIME types for file upload.
-		accept: "",
-
-		// target: String?
-		//		Target frame for the document to be opened in.
-		target: "",
-
-		templateString: "<form data-dojo-attach-point='containerNode' data-dojo-attach-event='onreset:_onReset,onsubmit:_onSubmit' ${!nameAttrSetting}></form>",
-
-		postMixInProperties: function(){
-			// Setup name=foo string to be referenced from the template (but only if a name has been specified)
-			// Unfortunately we can't use _setNameAttr to set the name due to IE limitations, see #8660
-			this.nameAttrSetting = this.name ? ("name='" + this.name + "'") : "";
-			this.inherited(arguments);
-		},
-
-		execute: function(/*Object*/ /*===== formContents =====*/){
-			// summary:
-			//		Deprecated: use submit()
-			// tags:
-			//		deprecated
-		},
-
-		onExecute: function(){
-			// summary:
-			//		Deprecated: use onSubmit()
-			// tags:
-			//		deprecated
-		},
-
-		_setEncTypeAttr: function(/*String*/ value){
-			domAttr.set(this.domNode, "encType", value);
-			if(has("ie")){
-				this.domNode.encoding = value;
-			}
-			this._set("encType", value);
-		},
-
-		reset: function(/*Event?*/ e){
-			// summary:
-			//		restores all widget values back to their init values,
-			//		calls onReset() which can cancel the reset by returning false
-
-			// create fake event so we can know if preventDefault() is called
-			var faux = {
-				returnValue: true, // the IE way
-				preventDefault: function(){ // not IE
-					this.returnValue = false;
-				},
-				stopPropagation: function(){
-				},
-				currentTarget: e ? e.target : this.domNode,
-				target: e ? e.target : this.domNode
-			};
-			// if return value is not exactly false, and haven't called preventDefault(), then reset
-			if(!(this.onReset(faux) === false) && faux.returnValue){
-				this.inherited(arguments, []);
-			}
-		},
-
-		onReset: function(/*Event?*/ /*===== e =====*/){
-			// summary:
-			//		Callback when user resets the form. This method is intended
-			//		to be over-ridden. When the `reset` method is called
-			//		programmatically, the return value from `onReset` is used
-			//		to compute whether or not resetting should proceed
-			// tags:
-			//		callback
-			return true; // Boolean
-		},
-
-		_onReset: function(e){
-			this.reset(e);
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
-		},
-
-		_onSubmit: function(e){
-			var fp = this.constructor.prototype;
-			// TODO: remove this if statement beginning with 2.0
-			if(this.execute != fp.execute || this.onExecute != fp.onExecute){
-				kernel.deprecated("dijit.form.Form:execute()/onExecute() are deprecated. Use onSubmit() instead.", "", "2.0");
-				this.onExecute();
-				this.execute(this.getValues());
-			}
-			if(this.onSubmit(e) === false){ // only exactly false stops submit
-				e.stopPropagation();
-				e.preventDefault();
-			}
-		},
-
-		onSubmit: function(/*Event?*/ /*===== e =====*/){
-			// summary:
-			//		Callback when user submits the form.
-			// description:
-			//		This method is intended to be over-ridden, but by default it checks and
-			//		returns the validity of form elements. When the `submit`
-			//		method is called programmatically, the return value from
-			//		`onSubmit` is used to compute whether or not submission
-			//		should proceed
-			// tags:
-			//		extension
-
-			return this.isValid(); // Boolean
-		},
-
-		submit: function(){
-			// summary:
-			//		programmatically submit form if and only if the `onSubmit` returns true
-			if(!(this.onSubmit() === false)){
-				this.containerNode.submit();
-			}
 		}
 	});
 });

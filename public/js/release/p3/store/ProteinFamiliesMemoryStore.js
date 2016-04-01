@@ -62,11 +62,11 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				Object.keys(gfs).forEach(function(genomeId){
 					var index = gfs[genomeId].getIndex();
 					var status = gfs[genomeId].getStatus();
-					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index*2+1), 16));
-					if(status == 1 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) > 0){
+					//console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.substr(index * 2, 2), 16));
+					if(status == 1 && parseInt(family.genomes.substr(index * 2, 2), 16) > 0){
 						skip = true;
 					}
-					else if(status == 0 && parseInt(family.genomes.charAt(index * 2) + family.genomes.charAt(index * 2 + 1), 16) == 0){
+					else if(status == 0 && parseInt(family.genomes.substr(index * 2, 2), 16) == 0){
 						skip = true;
 					}
 				});
@@ -74,7 +74,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					newData.push(family);
 				}
 			});
-			console.log("genomeFilter took " + (window.performance.now() - tsStart) + " ms");
+			console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
@@ -337,37 +337,55 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 			var rows = [];
 			var cols = [];
-			var keeps = [];
+			var maxIntensity = 0; // global and will be modified inside createColumn function
+			var keeps = []; // global and will be referenced inside createColumn function
 			var colorStop = [];
 
-			function createColumn(i, family, meta, groupId, keeps, maxIntensity){
-				var iSend = "", intensity = family.genomes, j, pick, iSendDecimal, labelColor, columnColor;
+			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var start = window.performance.now();
 
-				for(j = 0; j < keeps.length; j++){
-					pick = keeps[j];
-					iSend += intensity.charAt(pick);
-					++pick;
-					iSend += intensity.charAt(pick);
+			// assumes axises are corrected
+			var familyOrder = pfState.clusterColumnOrder;
+			var genomeOrder = pfState.clusterRowOrder;
 
-					iSendDecimal = parseInt(intensity.charAt(pick - 1) + intensity.charAt(pick), 16);
+			var createColumn = function(order, colId, label, distribution, meta){
+				var filtered = [], isEven = (order % 2) === 0;
 
-					if(maxIntensity <= iSendDecimal){
-						maxIntensity = iSendDecimal;
+				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
+					filtered[i] = distribution.substr(idx, 2);
+					var val = parseInt(filtered[i], 16);
+
+					if(maxIntensity < val){
+						maxIntensity = val;
 					}
-				}
+				});
 
-				labelColor = ((i % 2) == 0) ? 0x000066 : null;
-				columnColor = ((i % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
-
-				cols[i] = new Column(i, groupId, family.description, iSend, labelColor, columnColor, meta);
-
-				return maxIntensity;
-			}
+				return new Column(order, colId, label, filtered.join(''),
+					((isEven) ? 0x000066 : null) /* label color */,
+					((isEven) ? 0xF4F4F4 : 0xd6e4f4) /*bg color */,
+					meta);
+			};
 
 			// rows - genomes
-			//console.log("pfState: ", pfState);
-			//filterStore.data.forEach(function(genome, idx){
-			//	var gfs = filterStore.state.genomeFilterStatus[genome.genome_id];
+			// if genome order is changed, then needs to or-organize distribution in columns.
+			var genomeOrderChangeMap = [];
+			var distributionTransformer = function(dist, map){
+				var newDist = [];
+				map.forEach(function(pos, idx){
+					newDist[idx] = dist.substr(pos * 2, 2);
+				});
+				return newDist.join('');
+			};
+
+			if(genomeOrder !== [] && genomeOrder.length > 0){
+				pfState.genomeIds = genomeOrder;
+				genomeOrder.forEach(function(genomeId, idx){
+					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
+					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
+					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+				});
+			}
+
 			pfState.genomeIds.forEach(function(genomeId, idx){
 				var gfs = pfState.genomeFilterStatus[genomeId];
 				if(gfs.getStatus() != '1'){
@@ -377,24 +395,36 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
 					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
-
-					//syntenyOrderStore.push([genome.genome_id, genome.genome_name]);
 				}
 			});
 
 			// cols - families
 			//console.warn(this);
-			var maxIntensity = 0;
 			var data = this.query("", {});
-			//console.log(data);
-			data.forEach(function(family, idx){
+
+			var familyOrderMap = {};
+			if(familyOrder !== [] && familyOrder.length > 0){
+				familyOrder.forEach(function(familyId, idx){
+					familyOrderMap[familyId] = idx;
+				});
+			}else{
+				data.forEach(function(family, idx){
+					familyOrderMap[family.family_id] = idx;
+				})
+			}
+
+			data.forEach(function(family){
 				var meta = {
 					'instances': family.feature_count,
 					'members': family.genome_count,
 					'min': family.aa_length_min,
 					'max': family.aa_length_max
 				};
-				maxIntensity = createColumn(idx, family, meta, family.family_id, keeps, maxIntensity);
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
+				var order = familyOrderMap[family.family_id];
+				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
 			});
 
 			// colorStop
@@ -408,7 +438,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 			//console.log(rows, cols, colorStop);
 
-			return {
+			var currentData = {
 				'rows': rows,
 				'columns': cols,
 				'colorStops': colorStop,
@@ -425,6 +455,95 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				'beforeCellLabel': '',
 				'afterCellLabel': ''
 			};
+
+			if(isTransposed){
+
+				var flippedDistribution = []; // new Array(currentData.rows.length);
+				currentData.rows.forEach(function(row, rowIdx){
+					var distribution = [];
+					currentData.columns.forEach(function(col){
+						distribution.push(col.distribution.substr(rowIdx * 2, 2));
+					});
+					flippedDistribution[rowIdx] = distribution.join("");
+				});
+
+				// create new rows
+				var newRows = [];
+				currentData.columns.forEach(function(col, colID){
+					newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+				});
+				// create new columns
+				var newColumns = [];
+				currentData.rows.forEach(function(row, rowID){
+					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
+				});
+
+				currentData = lang.mixin(currentData, {
+					'rows': newRows,
+					'columns': newColumns,
+					'rowLabel': 'Protein Families',
+					'colLabel': 'Genomes',
+					'rowTrunc': 'end',
+					'colTrunc': 'mid'
+				});
+			}
+
+			var end = window.performance.now();
+			console.log('getHeatmapData() took: ', (end - start), "ms");
+
+			return currentData;
+		},
+
+		getSyntenyOrder: function(genomeId){
+
+			var _self = this;
+			var familyIdName = this.pfState.familyType + '_id';
+
+			return when(request.post(_self.apiServer + '/genome_feature/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
+					fl: familyIdName,
+					sort: 'accession asc,start asc',
+					rows: 1000000
+				}
+			}), function(res){
+
+				var familyIdSet = {};
+				var idx = 0;
+				// var order = [];
+
+				// var start = window.performance.now();
+
+				res.response.docs.forEach(function(doc){
+					var fId = doc[familyIdName];
+
+					if(!familyIdSet.hasOwnProperty(fId)){
+						familyIdSet[fId] = idx;
+						// order.push({groupId: fId, syntonyAt: idx});
+						idx++;
+					}
+				});
+
+				// order.sort(function(a, b){
+				// 	if(a.groupId > b.groupId) return 1;
+				// 	if(a.groupId < b.groupId) return -1;
+				// 	return 0;
+				// });
+
+				// var end = window.performance.now();
+				// console.log('performance: ', (end - start));
+				// console.log(order);
+
+				// return order; // original implementation
+				return familyIdSet;
+			});
 		}
 	});
 });
