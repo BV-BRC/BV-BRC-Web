@@ -1,12 +1,12 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/selector"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore"
+], function(declare, lang, Deferred,
+			on, domClass, domConstruct, aspect, request,
+			BorderContainer, ContentPane,
+			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -46,7 +46,7 @@ define([
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -94,10 +94,10 @@ define([
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				console.log("ProteinFamiliesGrid _setState()")
+				// console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
 
-				console.log("ProteinFamiliesGrid Call Grid Refresh()")
+				// console.log("ProteinFamiliesGrid Call Grid Refresh()");
 				this.refresh();
 			}
 		},

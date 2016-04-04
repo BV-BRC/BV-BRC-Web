@@ -1,12 +1,10 @@
 define([
-	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog",
-	"dojo/_base/lang"
-], function(declare, GridContainer, on,
-			ProteinFamiliesGrid, popup, Topic,
-			TooltipDialog,
-			lang){
+	"dojo/_base/declare", "dojo/on", "dojo/topic",
+	"dijit/popup", "dijit/TooltipDialog",
+	"./ProteinFamiliesGrid", "./GridContainer"
+], function(declare, on, Topic,
+			popup, TooltipDialog,
+			ProteinFamiliesGrid, GridContainer){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -47,12 +45,12 @@ define([
 			if(!state){
 				return;
 			}
-			console.log("PathwaysGridContainer _setStateAttr: ", state);
+			// console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
-				console.log("   call set state on this.grid: ", this.grid);
+				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (PathwaysGridContainer)");
+				console.log("No Grid Yet (ProteinFamiliesGridContainer)");
 			}
 
 			this._set("state", state);
@@ -111,7 +109,9 @@ define([
 				},
 				function(selection){
 
-					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){ return sel.family_id; }).join(',') +")))";
+					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){
+							return sel.family_id;
+						}).join(',') + ")))";
 					// var state = lang.mixin({}, this.state, {search: query});
 					this.membersGridPanel.set("query", query);
 					// // tabMenu.page.set("state", state);

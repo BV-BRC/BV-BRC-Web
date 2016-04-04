@@ -1,17 +1,15 @@
 define([
-	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
-	"dijit/TooltipDialog", "dijit/Dialog",
-	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
-	"./HeatmapContainer",
-	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
+	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
+	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
+	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin"
 
-], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
-			TooltipDialog, Dialog,
-			Form, TitlePane, RadioButton, Select, registry,
-			HeatmapContainer,
-			lang, when, request, PathJoin, Button){
+], function(declare, lang,
+			on, Topic, domConstruct, dom, Query, when, request,
+			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
+			TitlePane, registry, Form, RadioButton, Select, Button,
+			ContainerActionBar, HeatmapContainer, PathJoin){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
@@ -526,7 +524,7 @@ define([
 		},
 		cluster: function(param){
 
-			console.log("cluster is called", param);
+			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
 			var pfState = this.pfState;
@@ -534,7 +532,7 @@ define([
 			var data = this.exportCurrentData(isTransposed);
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
-				console.log("Cluster Results: ", res);
+				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises

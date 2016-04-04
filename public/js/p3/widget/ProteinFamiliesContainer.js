@@ -1,16 +1,16 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"./ActionBar", "./ContainerActionBar",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"./ProteinFamiliesMembersGridContainer",
-	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
-	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
-], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer, StackController,
+	"./ProteinFamiliesMembersGridContainer"
+], function(declare, lang, on, Topic, domConstruct,
+			BorderContainer, TabContainer, StackController, ContentPane,
+			RadioButton, TextArea, TextBox, Button,
+			ActionBar, ContainerActionBar,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ProteinFamiliesMembersGridContainer,
-			ContentPane, Topic, RadioButton, domConstruct,
-			TextArea, TextBox, Button){
+			ProteinFamiliesMembersGridContainer){
 
 	// configurations for proteinFamilies components (grid, filter, heatmap)
 	var pfState = {

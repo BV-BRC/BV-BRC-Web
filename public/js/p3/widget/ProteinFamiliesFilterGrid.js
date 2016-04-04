@@ -1,12 +1,14 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put", "dojo/topic"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, CellSelection, selector, put, Topic){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/aspect", "dojo/topic",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"dgrid/CellSelection", "dgrid/selector", "put-selector/put",
+	"./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore"
+], function(declare, lang, Deferred,
+			on, request, domConstruct, domClass, aspect, Topic,
+			BorderContainer, ContentPane,
+			CellSelection, selector, put,
+			Grid, formatter, Store){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
