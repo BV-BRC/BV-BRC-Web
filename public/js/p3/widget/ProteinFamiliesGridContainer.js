@@ -22,12 +22,12 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
+		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery);
+		// console.log("selection: ", selection);
+		// console.log("DownloadQuery: ", dataType, currentQuery);
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
