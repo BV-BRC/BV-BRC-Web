@@ -2,11 +2,13 @@ define([
         "dojo/_base/declare", "dojo/on", "dojo/dom-construct",
         "dojo/_base/lang","dojo/mouse",
         "dojo/topic", "dojo/query", "dijit/layout/ContentPane", 
-        "dijit/Dialog", "dijit/popup", "dijit/TooltipDialog"
+        "dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
+        "./AdvancedDownload","dojo/dom-class"
 ], function(declare, on, domConstruct,
 		lang,Mouse,
 		Topic, query, ContentPane,
-		Dialog, popup, TooltipDialog
+		Dialog, popup, TooltipDialog,
+                AdvancedDownload,domClass
 ){
 
 	return declare([TooltipDialog], {
@@ -14,9 +16,9 @@ define([
 		selection: null,
 
                 _setSelectionAttr: function(val){
+                        console.log("DownloadTooltipDialog set selection: ", val);
                         this.selection = val;
                 },
-
                 timeout: function(val){
 			var _self=this;
                         this._timer = setTimeout(function(){
@@ -39,12 +41,17 @@ define([
 			if (this._started) { return; }
 			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
 			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
-
+                        var _self=this;
                         on(this.domNode, ".wsActionTooltip:click", function(evt){
                                 console.log("evt.target: ", evt.target, evt.target.attributes);
                                 var rel = evt.target.attributes.rel.value;
                                 if (rel=="advancedDownload"){
-                                        var d = new Dialog({content: "Advanced Download Dialog"}).show();
+
+                                        console.log("Selection: ", _self.selection);
+                                        var d = new Dialog({});
+                                        var ad = new AdvancedDownload({selection: _self.selection, containerType: _self.containerType});
+                                        domConstruct.place(ad.domNode, d.containerNode);
+                                        d.show();
                                         return;
                                 }
 //                              var sel = this.selection;
@@ -56,10 +63,6 @@ define([
                         this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
                         this.selectedCount = domConstruct.create("div", {},dstContent);
 			var table = domConstruct.create("table",{},dstContent);
-   //                      var tr = domConstruct.create("tr", {}, table);
-
-			// var tDataH = this.tDataHeader = domConstruct.create("th",{innerHTML: "TABLE"},tr);
-   //                      var oDataH = this.oDataHeader = domConstruct.create("th",{innerHTML: "DATA"},tr);
 
 			var tr = domConstruct.create("tr",{}, table);
                         var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
@@ -73,7 +76,7 @@ define([
 
                         tr = domConstruct.create("tr",{}, table);
                         var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
-                        domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
+                        this.advancedDownloadButton = domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
 
 
 
@@ -100,13 +103,14 @@ define([
                 "downloadableConfig": {
                         "genome_data": {
                                 label: "Genomes",
-                                tableData: true
+                                tableData: true,
+                                advanced:true
                         },
                         "sequence_data": {
                               label: "Sequences",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
-                        },
+                         },
                         "feature_data": {
                               label: "Features",
                               tableData: true,
@@ -144,7 +148,13 @@ define([
                                 conf.otherData.forEach(function(type){
                                         domConstruct.create("div", {"class":"wsActionTooltip", rel: type, innerHTML: this.downloadableDataTypes[type]}, this.otherDownloadNode);
                                 },this);
-                        }	 
+                        }	
+
+                        if (conf.advanced){
+                                domClass.remove(this.advancedDownloadButton,"dijitHidden");
+                        } else{
+                               domClass.add(this.advancedDownloadButton,"dijitHidden"); 
+                        }
 
                 }
         });

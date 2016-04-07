@@ -494,8 +494,10 @@ define([
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection){
-					new Dialog({content: "<p>Link to the Pathways related to the selected entities.</p><br>IMPLEMENT ME!"}).show();
+				function(selection,containerWidget){
+					var sel = selection[0];
+					console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
+					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})	
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -563,7 +565,7 @@ define([
 				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
-
+					console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
