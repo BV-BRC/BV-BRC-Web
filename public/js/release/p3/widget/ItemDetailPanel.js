@@ -29,7 +29,7 @@ define("p3/widget/ItemDetailPanel", [
 			"organism_name": "name"
 		},
 		_setContainerWidgetAttr: function(val){
-			console.log("Set Container Widget: ", val);
+			// console.log("Set Container Widget: ", val);
 			this._set("containerWidget", val);
 		},
 		startup: function(){
@@ -39,7 +39,7 @@ define("p3/widget/ItemDetailPanel", [
 
 			this.watch("containerWidget", lang.hitch(this, function(prop, oldVal, containerWidget){
 
-				console.log("set containerWidget", containerWidget);
+				// console.log("set containerWidget", containerWidget);
 
 				if(oldVal && oldVal.containerType){
 					domClass.remove(this.domNode, oldVal.containerType);
@@ -53,21 +53,21 @@ define("p3/widget/ItemDetailPanel", [
 			}));
 
 			this.watch("selection", lang.hitch(this, function(prop, oldVal, selection){
-				console.log("ItemDetailPanel set selection: ", selection);
+				// console.log("ItemDetailPanel set selection: ", selection);
 
 				if(!selection || selection.length < 1){
-					console.log("no selection set");
+					// console.log("no selection set");
 					domClass.add(this.domNode, "noSelection");
 					domClass.remove(this.domNode, "multipleSelection");
 					domClass.remove(this.domNode, "singleSelection");
 				}else if(selection && selection.length == 1){
-					console.log("single selection set");
+					// console.log("single selection set");
 					domClass.remove(this.domNode, "noSelection");
 					domClass.remove(this.domNode, "multipleSelection");
 					domClass.add(this.domNode, "singleSelection");
 					this.set("item", selection[0]);
 				}else if(selection && selection.length > 1){
-					console.log("multiple Selection set");
+					// console.log("multiple Selection set");
 					domClass.remove(this.domNode, "noSelection");
 					domClass.add(this.domNode, "multipleSelection");
 					domClass.remove(this.domNode, "singleSelection");
@@ -76,9 +76,9 @@ define("p3/widget/ItemDetailPanel", [
 			}));
 
 			this.watch("item", lang.hitch(this, function(prop, oldVal, item){
-				console.log("ItemDetailPanel Set(): ", arguments);
+				// console.log("ItemDetailPanel Set(): ", arguments);
 				domClass.remove(_self.typeIcon, currentIcon)
-				console.log("Container Widget: ", this.containerWidget);
+				// console.log("Container Widget: ", this.containerWidget);
 				if(item.type){
 					domClass.add(this.domNode, "workspaceItem");
 					domClass.remove(this.domNode, "dataItem");
@@ -219,7 +219,7 @@ define("p3/widget/ItemDetailPanel", [
 		},
 
 		saveType: function(val){
-			console.log("onSaveType: ", val, this.item);
+			// console.log("onSaveType: ", val, this.item);
 			WorkspaceManager.updateMetadata(this.item.path, false, val);
 		}
 	});

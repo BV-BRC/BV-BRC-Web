@@ -2,11 +2,13 @@ define("p3/widget/ProteinFamiliesContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
+	"./ProteinFamiliesMembersGridContainer",
 	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
 	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
+			ProteinFamiliesMembersGridContainer,
 			ContentPane, Topic, RadioButton, domConstruct,
 			TextArea, TextBox, Button){
 
@@ -54,6 +56,9 @@ define("p3/widget/ProteinFamiliesContainer", [
 			}
 			if(this.heatmap){
 				this.heatmap.set('visible', true);
+			}
+			if(this.proteinFamiliesMembersGrid){
+				this.proteinFamiliesMembersGrid.set('visible', true);
 			}
 		},
 
@@ -216,10 +221,20 @@ define("p3/widget/ProteinFamiliesContainer", [
 				"class": "TextTabButtons"
 			});
 
+			this.proteinFamiliesMembersGrid = new ProteinFamiliesMembersGridContainer({
+				id: 'pfMembersGrid',
+				title: "", // hide tab
+				content: "Protein Family Members",
+				state: this.state
+			});
+
 			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
 				title: "Table",
 				content: "Protein Families Table",
 				state: this.state,
+				tabContainer: this.tabContainer,
+				membersGridPanel: this.proteinFamiliesMembersGrid,
+				pfState: pfState,
 				apiServer: this.apiServer
 			});
 
@@ -234,6 +249,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 
 			this.tabContainer.addChild(this.proteinFamiliesGrid);
 			this.tabContainer.addChild(this.heatmap);
+			this.tabContainer.addChild(this.proteinFamiliesMembersGrid);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.addChild(filterPanel);
