@@ -166,5 +166,40 @@ define([], function()
 	function rgbTohex(r, g, b){
 		return "0x" + componentTohex(~~r) + componentTohex(~~g) + componentTohex(~~b);
 	}*/
-}
-);
+
+	this.distributionTransformer = function(dist, map){
+		var newDist = [];
+		map.forEach(function(pos, idx){
+			newDist[idx] = dist.substr(pos * 2, 2);
+		});
+		return newDist.join('');
+	};
+
+	this.FilterStatus = (function(){
+		return function(){
+			this.init = function(idx, lbl){
+				this.index = idx;
+				this.status = ' ';
+				this.label = lbl;
+			};
+			this.setIndex = function(idx){
+				this.index = idx;
+			};
+			this.getIndex = function(){
+				return this.index;
+			};
+			this.setStatus = function(sts){
+				this.status = sts;
+			};
+			this.getStatus = function(){
+				return this.status;
+			};
+			this.getLabel = function(){
+				return this.label;
+			};
+			return this;
+		};
+	})();
+
+	return this;
+});

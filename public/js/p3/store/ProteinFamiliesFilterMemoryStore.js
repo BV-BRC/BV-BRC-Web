@@ -2,44 +2,11 @@ define([
 	"dojo/_base/declare", "dojo/request",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
 	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic"
+	"dojo/topic", "./HeatmapDataTypes"
 ], function(declare, request,
 			Memory, QueryResults,
 			when, lang, Stateful, Deferred,
 			Topic){
-
-	var genomeFilterStatus = (function(){
-		function init(index, genome_name){
-			this.index = index;
-			this.status = ' ';
-			this.genome_name = genome_name;
-		}
-
-		function getIndex(){
-			return this.index;
-		}
-
-		function getGenomeName(){
-			return this.genome_name;
-		}
-
-		function getStatus(){
-			return this.status;
-		}
-
-		function setIndex(idx){
-			this.index = idx;
-		}
-
-		function setStatus(status){
-			this.status = status;
-		}
-
-		return function(){
-			this.init = init, this.setIndex = setIndex, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
-			return this;
-		}
-	})();
 
 	return declare([Memory, Stateful], {
 		baseQuery: {},
@@ -145,17 +112,12 @@ define([
 				var data = response.response.docs;
 
 				// set genomeFilterStatus
-				var _genomeIds = [];
-				var _genomeFilterStatus = {};
 				data.forEach(function(genome, idx){
-					var gfs = new genomeFilterStatus();
+					var gfs = new FilterStatus();
 					gfs.init(idx, genome.genome_name);
-					_genomeFilterStatus[genome.genome_id] = gfs;
-					_genomeIds.push(genome.genome_id);
+					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
+					_self.pfState.genomeIds.push(genome.genome_id);
 				});
-
-				_self.pfState.genomeIds = _genomeIds;
-				_self.pfState.genomeFilterStatus = _genomeFilterStatus;
 
 				Topic.publish("ProteinFamilies", "genomeIds", _self.pfState);
 

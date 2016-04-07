@@ -127,6 +127,8 @@ define([
 				return this._loadingDeferred;
 			}
 
+			var _self = this;
+
 			if(!this.pfState || this.pfState.genomeIds.length < 1){
 				// console.log("No Genome IDS, use empty data set for initial store");
 
@@ -134,13 +136,12 @@ define([
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
-					this.setData([]);
-					this._loaded = true;
+				setTimeout(lang.hitch(_self, function(){
+					_self.setData([]);
+					_self._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;
-
 			}
 
 			var familyType = this.pfState.familyType;
@@ -157,8 +158,6 @@ define([
 			var q = Object.keys(query).map(function(p){
 				return p + "=" + query[p]
 			}).join("&");
-
-			var _self = this;
 
 			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
 				handleAs: 'json',
@@ -349,6 +348,7 @@ define([
 			var genomeOrder = pfState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
+				// this reads global variable keeps, and update global variable maxIntensity
 				var filtered = [], isEven = (order % 2) === 0;
 
 				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
@@ -369,13 +369,6 @@ define([
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var genomeOrderChangeMap = [];
-			var distributionTransformer = function(dist, map){
-				var newDist = [];
-				map.forEach(function(pos, idx){
-					newDist[idx] = dist.substr(pos * 2, 2);
-				});
-				return newDist.join('');
-			};
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				pfState.genomeIds = genomeOrder;
@@ -394,7 +387,7 @@ define([
 					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
 					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
+					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
 				}
 			});
 

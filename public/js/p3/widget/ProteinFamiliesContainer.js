@@ -28,6 +28,7 @@ define([
 	};
 
 	return declare([BorderContainer], {
+		id: "PFContainer",
 		gutters: false,
 		state: null,
 		maxGenomeCount: 10000,
