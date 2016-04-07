@@ -30,7 +30,7 @@ define([
 				}else if(d['alt_locus_tag']){
 					idType = "alt_locus_tag";
 				}
-				console.log("SET ID TYPE TO: ", idType)
+				// console.log("SET ID TYPE TO: ", idType)
 			}
 
 			return d[idType];
@@ -50,14 +50,14 @@ define([
 
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
+		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
-		console.log("selection: ", selection);
+		// console.log("selection: ", selection);
 		var ids = selection.map(function(d){
 			return d['feature_id'];
 		});
 
-		console.log("ID MAP ", ids);
+		// console.log("ID MAP ", ids);
 		// xhr.post("/view/idmap, {
 		// 	data: {
 		// 		keyword: ids.join(","),
@@ -108,7 +108,7 @@ define([
 
 		constructor: function(){
 			this._firstView = false;
-			console.log("GRIDCONTAINER CTOR() ", arguments)
+			// console.log("GRIDCONTAINER CTOR() ", arguments)
 		},
 
 		postCreate: function(){
@@ -122,7 +122,7 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state){
-			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			// console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;
@@ -137,17 +137,17 @@ define([
 				// filter set to false, no filtering
 
 			}else if(state.hashParams){
-				console.log("   Found state.hashParams");
+				// console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
-					console.log("       Found state.hashParams.filter, using");
+					// console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
 				}else if(!oldState && this.defaultFilter){
-					console.log("       No original state, using default Filter");
+					// console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', state);
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
-					console.log("       Found oldState with hashparams.filter, using");
+					// console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
 					this.set('state', state);
 					return;
@@ -156,7 +156,7 @@ define([
 					this.set('state', state);
 					return;
 				}else{
-					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+					// console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
 
 				}
 			}else{
@@ -172,7 +172,7 @@ define([
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				console.log("    FilterPanel Found (in GridContainer): ", state);
+				// console.log("    FilterPanel Found (in GridContainer): ", state);
 				this.filterPanel.set("state", state);
 			}
 			// console.log("setState query: ",q.join("&"), " state: ", state)
@@ -180,8 +180,8 @@ define([
 
 		},
 		_setQueryAttr: function(query){
-			console.log(this.id, " GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter);
-			console.log("    Query: ", query, "this.query: ", this.query)
+			// console.log(this.id, " GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter);
+			// console.log("    Query: ", query, "this.query: ", this.query)
 			// if(query == this.query){
 			//console.log("  Not Skipping Query Update (unchanged)");
 			// return;
@@ -211,7 +211,7 @@ define([
 
 		visible: false,
 		_setVisibleAttr: function(visible){
-			console.log("GridContainer setVisible: ", visible)
+			// console.log("GridContainer setVisible: ", visible);
 			this.visible = visible;
 			if(this.visible && !this._firstView){
 				// console.log("Trigger First View: ", this.id)
@@ -222,12 +222,13 @@ define([
 		selectionActions: [
 			[
 				"ToggleItemDetail",
-				"fa fa-info-circle fa-2x", {
-				label: "DETAIL",
-				persistent: true,
-				validTypes: ["*"],
-				tooltip: "Toggle Selection Detail"
-			},
+				"fa fa-info-circle fa-2x",
+				{
+					label: "DETAIL",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Selection Detail"
+				},
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
@@ -273,7 +274,7 @@ define([
 				function(selection){
 					var sel = selection[0];
 					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-					console.log("View SP GENE: ", sel)
+					// console.log("View SP GENE: ", sel)
 					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
 				},
 				false
@@ -289,8 +290,8 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 				},
 				false
@@ -306,8 +307,8 @@ define([
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 				},
 				false
@@ -322,7 +323,7 @@ define([
 					validContainerTypes: ["genome_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
 				},
@@ -338,7 +339,7 @@ define([
 					validContainerTypes: ["sequence_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession," + sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
 				},
@@ -354,7 +355,7 @@ define([
 					validContainerTypes: ["genome_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
 				},
@@ -370,7 +371,7 @@ define([
 					validContainerTypes: ["sequence_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
 				},
@@ -388,9 +389,9 @@ define([
 					validContainerTypes: ["feature_data", "spgene_data"]
 				},
 				function(selection){
-					console.log("view FASTA")
+					// console.log("view FASTA")
 					viewFASTATT.selection = selection;
-					console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -411,11 +412,11 @@ define([
 					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection){
-					console.log("MSA Selection: ", selection);
+					// console.log("MSA Selection: ", selection);
 					var ids = selection.map(function(d){
 						return d['feature_id'];
 					});
-					console.log("OPEN MSA VIEWER");
+					// console.log("OPEN MSA VIEWER");
 					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
 
 				},
@@ -435,16 +436,17 @@ define([
 				},
 				function(selection){
 
-					console.log("TTDlg: ", idMappingTTDialog);
-					console.log("this: ", this);
+					// console.log("TTDlg: ", idMappingTTDialog);
+					// console.log("this: ", this);
 					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
 					return;
+
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
 						orient: ["below"]
 					});
-					console.log("popup idmapping", selection);
+					// console.log("popup idmapping", selection);
 				},
 				false
 			], [
@@ -461,14 +463,14 @@ define([
 				},
 				function(selection){
 
-					console.log("TTDlg: ", idMappingTTDialog);
-					console.log("this: ", this);
+					// console.log("TTDlg: ", idMappingTTDialog);
+					// console.log("this: ", this);
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
 						orient: ["below"]
 					});
-					console.log("popup idmapping", selection);
+					// console.log("popup idmapping", selection);
 				},
 				false
 			], [
@@ -482,8 +484,8 @@ define([
 					tooltip: "View Experiment Gene List"
 				},
 				function(selection){
-					console.log("this.currentContainerType: ", this.currentContainerType, this);
-					console.log("View Gene List", selection);
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
 					new Dialog({content: "IMPLEMENT ME!"}).show();
 				},
 				false
@@ -516,12 +518,12 @@ define([
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_sample_data" ]
 				},
 				function(selection, containerWidget){
-					console.log("Add Items to Group", selection);
+					// console.log("Add Items to Group", selection);
 					var dlg = new Dialog({title: "Copy Selection to Group"});
 					var type;
 
 					if(!containerWidget){
-						console.log("Container Widget not setup for addGroup");
+						// console.log("Container Widget not setup for addGroup");
 						return;
 					}
 
@@ -582,7 +584,7 @@ define([
 				false
 			], [
 				"ViewTaxon",
-				"fa icon-eye2 fa fa-2x",
+				"fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
 					multiple: false,
@@ -598,7 +600,7 @@ define([
 				false
 			], [
 				"ViewTaxonGenomes",
-				"fa icon-genome fa fa-2x",
+				"fa icon-genome fa-2x",
 				{
 					label: "VIEW",
 					multiple: false,
@@ -613,7 +615,7 @@ define([
 				false
 			], [
 				"ViewTaxonGenomeFeatures",
-				"fa icon-genome-features-cds fa fa-2x",
+				"fa icon-genome-features-cds fa-2x",
 				{
 					label: "CDS",
 					multiple: false,
@@ -655,7 +657,7 @@ define([
 		},
 
 		createFilterPanel: function(){
-			console.log("Create Container ActionBar with currentContainerWidget: ", this)
+			// console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
 			this.containerActionBar = this.filterPanel = new ContainerActionBar({
 				region: "top",
@@ -702,7 +704,7 @@ define([
 				state: this.state,
 				apiServer: this.apiServer,
 				visible: true
-			}
+			};
 
 			if(this.columns){
 				o.columns = this.columns;
@@ -712,7 +714,7 @@ define([
 				o.queryOptions = this.queryOptions;
 			}
 
-			console.log("GridContainer onFirstView create Grid: ", o)
+			// console.log("GridContainer onFirstView create Grid: ", o);
 
 			if(this.store){
 				o.store = this.store
@@ -788,7 +790,7 @@ define([
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				console.log("toggleFilters");
+				// console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -797,7 +799,7 @@ define([
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
 						this.filterPanel.set("minimized", false);
 						this.filterPanel.resize({
@@ -828,7 +830,7 @@ define([
 
 		},
 		startup: function(){
-			console.log("GridContainer Startup()  isVisible: ", this.visible);
+			// console.log("GridContainer Startup()  isVisible: ", this.visible);
 			if(this._started){
 				return;
 			}

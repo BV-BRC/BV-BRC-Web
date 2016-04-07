@@ -126,12 +126,12 @@ define([
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(this, function(){
+			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(self, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
 					case "refresh":
-						this.currentData = this.dataGridContainer.grid.store.getHeatmapData(this.pfState);
+						this.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
 						this.flashDom.refreshData();
 						break;
 					default:

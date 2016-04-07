@@ -99,6 +99,26 @@ define([
 					});
 				},
 				false
+			], [
+				"ViewProteinFamiliesMembers",
+				"fa fa-users fa-2x",
+				{
+					label: "Members",
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "View Family Members",
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){ return sel.family_id; }).join(',') +")))";
+					// var state = lang.mixin({}, this.state, {search: query});
+					this.membersGridPanel.set("query", query);
+					// // tabMenu.page.set("state", state);
+
+					this.tabContainer.selectChild(this.membersGridPanel);
+				},
+				false
 			]
 
 		])
