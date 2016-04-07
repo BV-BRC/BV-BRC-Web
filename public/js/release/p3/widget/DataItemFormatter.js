@@ -6,7 +6,7 @@ define("p3/widget/DataItemFormatter", [
 
 	var formatters = {
 		"default": function(item, options){
-			console.log("item: ", item);
+			// console.log("item: ", item);
 			options = options || {}
 
 			var table = domConstruct.create("table");
@@ -87,11 +87,11 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			console.log("Create Display Header")
+			// console.log("Create Display Header")
 			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
-			console.log("TBODY: ", tbody)
+			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
-			console.log("Display Detail Complete")
+			// console.log("Display Detail Complete")
 
 			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
@@ -134,9 +134,9 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			console.log("Create Display Header")
+			// console.log("Create Display Header")
 			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
-			console.log("TBODY: ", tbody)
+			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 
 			var tpDiv = domConstruct.create("div", {}, div);
@@ -520,11 +520,11 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			console.log("Create Display Header")
+			// console.log("Create Display Header")
 			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
-			console.log("TBODY: ", tbody)
+			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
-			console.log("Display Detail Complete")
+			// console.log("Display Detail Complete")
 
 			return div;
 		},
@@ -1380,7 +1380,7 @@ define("p3/widget/DataItemFormatter", [
 		}
 
 		var additional = 0;
-		console.log("diaplayColumns=", diaplayColumns);
+		// console.log("diaplayColumns=", diaplayColumns);
 
 		if(hideExtra == false && mini == false){
 			Object.keys(item).sort().forEach(function(key){
@@ -1407,7 +1407,7 @@ define("p3/widget/DataItemFormatter", [
 	}
 
 	return function(item, type, options){
-		console.log("Format Data: ", type, item);
+		// console.log("Format Data: ", type, item);
 		var new_type = type;
 		var out;
 		if(type == "genome_group"){
@@ -1431,7 +1431,7 @@ define("p3/widget/DataItemFormatter", [
 			out = formatters["default"](item, options);
 		}
 
-		console.log("output: ", out);
+		// console.log("output: ", out);
 		return out;
 	}
 });

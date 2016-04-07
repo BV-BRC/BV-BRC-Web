@@ -106,7 +106,7 @@ define("p3/store/ProteinFamiliesFilterMemoryStore", [
 			var state = this.state || {};
 
 			if(!state.genome_ids || state.genome_ids.length < 1){
-				console.log("No Genome IDS, use empty data set for initial store");
+				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it

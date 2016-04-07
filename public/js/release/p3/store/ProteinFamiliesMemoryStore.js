@@ -54,7 +54,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			var data = self._original;
 			var newData = [];
 
-			var tsStart = window.performance.now();
+			// var tsStart = window.performance.now();
 			data.forEach(function(family){
 
 				var skip = false;
@@ -74,7 +74,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					newData.push(family);
 				}
 			});
-			console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
+			// console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
 
 			self.setData(newData);
 			self.set("refresh");
@@ -128,7 +128,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			}
 
 			if(!this.pfState || this.pfState.genomeIds.length < 1){
-				console.log("No Genome IDS, use empty data set for initial store");
+				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -189,7 +189,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				// sub query - genome distribution
 				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
 
-				console.log("Do Second Request to /genome_feature/");
+				// console.log("Do Second Request to /genome_feature/");
 				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
@@ -318,15 +318,15 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
 
-						var measures = window.performance.getEntriesByType('measure');
-						for(var i = 0, len = measures.length; i < len; ++i){
-							console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
-						}
+						// var measures = window.performance.getEntriesByType('measure');
+						// for(var i = 0, len = measures.length; i < len; ++i){
+						// 	console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
+						// }
 						_self.setData(data);
 						_self._loaded = true;
 						return true;
 					}, function(err){
-						console.log("Error in ProteinFamiliesStore: ", err)
+						console.error("Error in ProteinFamiliesStore: ", err)
 					});
 				});
 			});
@@ -488,8 +488,8 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				});
 			}
 
-			var end = window.performance.now();
-			console.log('getHeatmapData() took: ', (end - start), "ms");
+			// var end = window.performance.now();
+			// console.log('getHeatmapData() took: ', (end - start), "ms");
 
 			return currentData;
 		},
