@@ -98,9 +98,9 @@ define([
 			this.inherited(arguments);
 			// this._started = true;
 			// this.refresh();
-		},
+		}
 
-		// state: null,
+		// ,state: null,
 		// postCreate: function(){
 		// 	this.inherited(arguments);
 		// },

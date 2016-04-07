@@ -14,38 +14,38 @@ define([
 		templateString: Template,
 		"downloadableConfig": {
 			"genome_data": {
-			        label: "Genomes",
+			        "label": "Genomes",
 			        tableData: true,
 			        downloadTypes: [
-			        	{label: "Genomic Sequences in FASTA (*.fna)", type: "application/dna+fasta"},
-						{label: "Protein Sequences in FASTA (*.fna)", type: "application/protein+fasta"},
-						{label: "All annotations in GenBank file format (*.gbf)", type: "application/gbf"},
-						{label: "All Genomic features in tab-delimited format (*.features.tab)", type: "text/csv"},
-						{label: "Protein coding genes tab-delimited format (*.cds.tab)", type: "text/csv"},
-						{label: "RNAs in tab-delimited format (*.rna.tab)", type: "text/csv"},
-						{label: "DNA Sequences of Protein Coding Genes (*.ffn)", type: "application/ffn"},
-						{label: "DNA Sequences of RNA Coding Genes (*.frn)", type: "application/frn"},
-						{label: "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "text/csv"}
+			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "application/dna+fasta"},
+						{"label": "Protein Sequences in FASTA (*.fna)", type: "application/protein+fasta"},
+						{"label": "All annotations in GenBank file format (*.gbf)", type: "application/gbf"},
+						{"label": "All Genomic features in tab-delimited format (*.features.tab)", type: "text/csv"},
+						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "text/csv"},
+						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "text/csv"},
+						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "application/ffn"},
+						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "application/frn"},
+						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "text/csv"}
 			        ]
 			},
 			"sequence_data": {
-			      label: "Sequences",
-			      tableData: true,
+			      "label": "Sequences",
+			      tableData: true
 			 },
 			"feature_data": {
-			      label: "Features",
-			      tableData: true,
+			      "label": "Features",
+			      tableData: true
 			},
 			"spgene_data": {
-			      label: "Specialty Genes",
+			      "label": "Specialty Genes",
 			      tableData: true
 			},
 			"pathway_data": {
-			      label: "Pathways",
+			      "label": "Pathways",
 			      tableData: true  
 			},
 			"default": {
-			      label: "Items",
+			      "label": "Items",
 			      tableData: true  
 	    	}
 	    },

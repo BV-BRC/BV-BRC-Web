@@ -102,30 +102,30 @@ define([
 
                 "downloadableConfig": {
                         "genome_data": {
-                                label: "Genomes",
+                                "label": "Genomes",
                                 tableData: true,
                                 advanced:true
                         },
                         "sequence_data": {
-                              label: "Sequences",
+                              "label": "Sequences",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                          },
                         "feature_data": {
-                              label: "Features",
+                              "label": "Features",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                         },
                         "spgene_data": {
-                              label: "Specialty Genes",
+                              "label": "Specialty Genes",
                               tableData: true
                         },
                         "pathway_data": {
-                              label: "Pathways",
+                              "label": "Pathways",
                               tableData: true  
                         },
                         "default": {
-                              label: "Items",
+                              "label": "Items",
                               tableData: true  
                         }
                 },
