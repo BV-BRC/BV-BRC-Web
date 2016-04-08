@@ -12,35 +12,33 @@ define([
 			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
 			ProteinFamiliesMembersGridContainer){
 
-	// configurations for proteinFamilies components (grid, filter, heatmap)
-	var pfState = {
-		'familyType': 'figfam', // default
-		'heatmapAxis': '',
-		'genomeIds': [],
-		'genomeFilterStatus': {},
-		'clusterRowOrder': [],
-		'clusterColumnOrder': [],
-		'perfectFamMatch': 'A',
-		'min_member_count': null,
-		'max_member_count': null,
-		'min_genome_count': null,
-		'max_genome_count': null
-	};
-
 	return declare([BorderContainer], {
 		id: "PFContainer",
 		gutters: false,
 		state: null,
 		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
+		constructor: function() {
+			var self = this;
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "showMembers":
+						self.proteinFamiliesMembersGrid.set("query", value);
+						self.tabContainer.selectChild(self.proteinFamiliesMembersGrid);
+						break;
+					default:
+						break;
+				}
+			}));
+		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			//if(this.proteinFamiliesGrid){
-			//	this.proteinFamiliesGrid.set('state', state);
-			//}
-
-			if(this.filterPanelGrid){
-				this.filterPanelGrid.set('state', state);
+			if(this.proteinFamiliesGrid){
+				this.proteinFamiliesGrid.set('state', state);
 			}
 			this._set('state', state);
 		},
@@ -120,8 +118,7 @@ define([
 
 			// genome list grid
 			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state,
-				pfState: pfState
+				state: this.state
 			});
 			filterPanel.addChild(this.filterPanelGrid);
 
@@ -222,28 +219,23 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			this.proteinFamiliesMembersGrid = new ProteinFamiliesMembersGridContainer({
-				id: 'pfMembersGrid',
-				title: "", // hide tab
-				content: "Protein Family Members",
-				state: this.state
-			});
-
 			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
 				title: "Table",
 				content: "Protein Families Table",
 				state: this.state,
-				tabContainer: this.tabContainer,
-				membersGridPanel: this.proteinFamiliesMembersGrid,
-				pfState: pfState,
 				apiServer: this.apiServer
 			});
 
 			this.heatmap = new ProteinFamiliesHeatmapContainer({
 				title: "Heatmap",
-				content: "heatmap",
-				dataGridContainer: this.proteinFamiliesGrid,
-				pfState: pfState
+				content: "Heatmap"
+			});
+
+			this.proteinFamiliesMembersGrid = new ProteinFamiliesMembersGridContainer({
+				id: 'pfMembersGrid',
+				title: "", // hide tab
+				content: "Protein Family Members",
+				state: this.state
 			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));

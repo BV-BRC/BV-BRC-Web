@@ -1,14 +1,16 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/aspect", "dojo/topic",
+	"dojo/store/Memory",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/CellSelection", "dgrid/selector", "put-selector/put",
-	"./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore"
+	"./Grid"
 ], function(declare, lang, Deferred,
 			on, request, domConstruct, domClass, aspect, Topic,
+			Store,
 			BorderContainer, ContentPane,
 			CellSelection, selector, put,
-			Grid, formatter, Store){
+			Grid){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
@@ -28,12 +30,17 @@ define([
 		return filterSelector(true, cell, object);
 	};
 
+	// create empty Memory Store
+	var store = new Store({
+		idProperty: "genome_id"
+	});
+
 	return declare([Grid, CellSelection], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
-		store: null,
+		store: store,
 		pfState: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
@@ -54,10 +61,31 @@ define([
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
-			if(options && options.apiServer){
-				this.apiServer = options.apiServer;
+			if(options && options.state){
+				this.state = options.state;
 			}
-			this.pfState = options.pfState;
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+				// console.log("ProteinFamiliesFilterGrid:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "pfState":
+						this.pfState = value;
+						break;
+					case "filterGridData":
+						// if(!this.store){
+						// 	this.store = new Store();
+						// }
+						this.store.setData(value);
+						this.store._loaded = true;
+						// console.log(this.store);
+						this.refresh();
+						break;
+					default:
+						break;
+				}
+			}));
 		},
 		startup: function(){
 			var _self = this;
@@ -71,7 +99,6 @@ define([
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
-				var state = _self.store.state;
 
 				if(cell.row){
 					// data row is clicked
@@ -87,7 +114,7 @@ define([
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
-						state.genome_ids.forEach(function(genomeId){
+						_self.pfState.genomeIds.forEach(function(genomeId){
 							if(_self.cell(genomeId, el).element.input.checked == false){
 								allSelected = false;
 							}
@@ -97,7 +124,7 @@ define([
 
 				}else{
 					// if header is clicked, reset the selections & update
-					state.genome_ids.forEach(function(genomeId){
+					_self.pfState.genomeIds.forEach(function(genomeId){
 						options.forEach(function(el){
 							if(el === colId){
 								toggleSelection(_self.cell(genomeId, el).element.input, true);
@@ -138,7 +165,7 @@ define([
 				});
 			});
 
-			this.inherited(arguments);
+			// this.inherited(arguments);
 			this._started = true;
 		},
 
@@ -148,23 +175,6 @@ define([
 		},
 		_setApiServer: function(server){
 			this.apiServer = server;
-		},
-		_setState: function(state){
-			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				this.store.set('state', state);
-				this.refresh();
-			}
-		},
-		createStore: function(server, token, state){
-
-			return new Store({
-				token: token,
-				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state,
-				pfState: this.pfState
-			});
 		}
 	});
 });

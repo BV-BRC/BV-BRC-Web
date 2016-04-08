@@ -1,8 +1,8 @@
 define([
-	"dojo/_base/declare", "dojo/on", "dojo/topic",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
 	"dijit/popup", "dijit/TooltipDialog",
 	"./ProteinFamiliesGrid", "./GridContainer"
-], function(declare, on, Topic,
+], function(declare, lang, on, Topic,
 			popup, TooltipDialog,
 			ProteinFamiliesGrid, GridContainer){
 
@@ -37,6 +37,20 @@ define([
 		containerType: "proteinfamily_data",
 		facetFields: [],
 		enableFilterPanel: false,
+		constructor: function(){
+			var self = this;
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "pfState":
+						self.pfState = value;
+						break;
+					default:
+						break;
+				}
+			}));
+		},
 		_setQueryAttr: function(query){
 			//block default query handler for now.
 		},
@@ -112,11 +126,8 @@ define([
 					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){
 							return sel.family_id;
 						}).join(',') + ")))";
-					// var state = lang.mixin({}, this.state, {search: query});
-					this.membersGridPanel.set("query", query);
-					// // tabMenu.page.set("state", state);
 
-					this.tabContainer.selectChild(this.membersGridPanel);
+					Topic.publish("ProteinFamilies", "showMembers", query);
 				},
 				false
 			]

@@ -118,8 +118,6 @@ define([
 			]
 		],
 		constructor: function(options){
-			this.dataGridContainer = options.dataGridContainer;
-			this.pfState = options.pfState;
 			this.dialog = new Dialog({});
 
 			var self = this;
@@ -129,8 +127,27 @@ define([
 
 				switch(key){
 					case "refresh":
-						this.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
-						this.flashDom.refreshData();
+						// self.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "reqCurrentData", self.pfState);
+						break;
+					case "resCurrentData":
+						self.currentData = value;
+						if(typeof(this.flashDom.refreshData) == "function"){
+							self.flashDom.refreshData();
+						}
+						break;
+					default:
+						break;
+				}
+			}));
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "pfState":
+						self.pfState = value;
 						break;
 					default:
 						break;
