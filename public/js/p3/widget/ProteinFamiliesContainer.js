@@ -66,11 +66,53 @@ define([
 				return;
 			}
 
+			var filterPanel = this._buildFilterPanel();
+
+			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
+
+			var tabController = new StackController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+			this.mainGridContainer = new MainGridContainer({
+				title: "Table",
+				content: "Protein Families Table",
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
+			this.heatmapContainer = new HeatmapContainer({
+				title: "Heatmap",
+				content: "Heatmap"
+			});
+
+			this.membersGridContainer = new MembersGridContainer({
+				title: "", // hide tab
+				content: "Protein Family Members",
+				state: this.state
+			});
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			this.tabContainer.addChild(this.mainGridContainer);
+			this.tabContainer.addChild(this.heatmapContainer);
+			this.tabContainer.addChild(this.membersGridContainer);
+			this.addChild(tabController);
+			this.addChild(this.tabContainer);
+			this.addChild(filterPanel);
+
+			this.inherited(arguments);
+			this._firstView = true;
+		},
+		_buildFilterPanel: function(){
+
 			var filterPanel = new ContentPane({
 				region: "left",
 				title: "filter",
 				content: "Filter By",
-				style: "width:400px; overflow:auto;",
+				style: "width:380px; overflow:auto",
 				splitter: true
 			});
 
@@ -117,10 +159,10 @@ define([
 			filterPanel.addChild(familyTypePanel);
 
 			// genome list grid
-			this.filterGrid = new FilterGrid({
+			var filterGrid = new FilterGrid({
 				state: this.state
 			});
-			filterPanel.addChild(this.filterGrid);
+			filterPanel.addChild(filterGrid);
 
 			//// other filter items
 			var otherFilterPanel = new ContentPane({
@@ -211,44 +253,7 @@ define([
 
 			filterPanel.addChild(otherFilterPanel);
 
-			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
-
-			var tabController = new StackController({
-				containerId: this.id + "_TabContainer",
-				region: "top",
-				"class": "TextTabButtons"
-			});
-
-			this.mainGridContainer = new MainGridContainer({
-				title: "Table",
-				content: "Protein Families Table",
-				state: this.state,
-				apiServer: this.apiServer
-			});
-
-			this.heatmapContainer = new HeatmapContainer({
-				title: "Heatmap",
-				content: "Heatmap"
-			});
-
-			this.membersGridContainer = new MembersGridContainer({
-				id: 'pfMembersGrid',
-				title: "", // hide tab
-				content: "Protein Family Members",
-				state: this.state
-			});
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
-			this.tabContainer.addChild(this.mainGridContainer);
-			this.tabContainer.addChild(this.heatmapContainer);
-			this.tabContainer.addChild(this.membersGridContainer);
-			this.addChild(tabController);
-			this.addChild(this.tabContainer);
-			this.addChild(filterPanel);
-
-			this.inherited(arguments);
-			this._firstView = true;
+			return filterPanel;
 		}
 	});
 });

@@ -39,29 +39,10 @@ define([
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
-		// defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
 		},
 		enableFilterPanel: false,
-		// _setQueryAttr: function(query){
-		// 	//block default query handler for now.
-		// },
-		// _setStateAttr: function(state){
-		// 	this.inherited(arguments);
-		// 	if(!state){
-		// 		return;
-		// 	}
-		//
-		// 	if(this.grid){
-		// 		console.log("   call set state on this.grid: ", this.grid);
-		// 		this.grid.set('query', state.search);
-		// 	}else{
-		// 		console.log("No Grid Yet (ProteinFamiliesMembersGridContainer)");
-		// 	}
-		//
-		// 	this._set("state", state);
-		// },
 
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
