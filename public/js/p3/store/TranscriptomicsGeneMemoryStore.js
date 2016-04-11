@@ -36,21 +36,21 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "comparisonFilter":
-						self.comparisonFilter(value);
+					case "applyConditionFilter":
+						self.conditionFilter(value);
 						self.currentData = self.getHeatmapData(self.tgState);
-						Topic.publish("TranscriptomicsGeneHeatmap", "resCurrentData", self.currentData);
+						Topic.publish("TranscriptomicsGene", "updateHeatmapData", self.currentData);
 						break;
-					case "reqCurrentData":
+					case "requestHeatmapData":
 						self.currentData = self.getHeatmapData(value);
-						Topic.publish("TranscriptomicsGeneHeatmap", "resCurrentData", self.currentData);
+						Topic.publish("TranscriptomicsGene", "updateHeatmapData", self.currentData);
 						break;
 					default:
 						break;
 				}
 			});
 		},
-		comparisonFilter: function(gfs){
+		conditionFilter: function(gfs){
 			// TODO: implement here
 			// var self = this;
 			// if(self._filtered == undefined){ // first time
@@ -184,8 +184,8 @@ define([
 					cfs.init(idx, comparison.expname);
 					_self.tgState.comparisonFilterStatus[comparison.pid] = cfs;
 				});
-				Topic.publish("TranscriptomicsGene", "tgState", _self.tgState);
-				Topic.publish("TranscriptomicsGene", "filterGridData", comparisons);
+				Topic.publish("TranscriptomicsGene", "updateTgState", _self.tgState);
+				Topic.publish("TranscriptomicsGene", "updateFilterGrid", comparisons);
 
 				// console.warn("Comparisons:", comparisonIdList);
 				// TODO: read experiment from workspace and populate comparisons

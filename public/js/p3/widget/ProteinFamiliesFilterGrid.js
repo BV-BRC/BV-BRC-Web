@@ -60,7 +60,6 @@ define([
 			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
 		},
 		constructor: function(options){
-			//console.log("ProteinFamiliesFilterGrid Ctor: ", options);
 			if(options && options.state){
 				this.state = options.state;
 			}
@@ -70,16 +69,12 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "pfState":
+					case "updatePfState":
 						this.pfState = value;
 						break;
-					case "filterGridData":
-						// if(!this.store){
-						// 	this.store = new Store();
-						// }
+					case "updateFilterGrid":
 						this.store.setData(value);
 						this.store._loaded = true;
-						// console.log(this.store);
 						this.refresh();
 						break;
 					default:
@@ -100,6 +95,9 @@ define([
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
 
+				var conditionIds = _self.pfState.genomeIds;
+				var conditionStatus = _self.pfState.genomeFilterStatus;
+
 				if(cell.row){
 					// data row is clicked
 					var rowId = cell.row.id;
@@ -114,8 +112,8 @@ define([
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
-						_self.pfState.genomeIds.forEach(function(genomeId){
-							if(_self.cell(genomeId, el).element.input.checked == false){
+						conditionIds.forEach(function(conditionId){
+							if(_self.cell(conditionId, el).element.input.checked == false){
 								allSelected = false;
 							}
 						});
@@ -124,12 +122,12 @@ define([
 
 				}else{
 					// if header is clicked, reset the selections & update
-					_self.pfState.genomeIds.forEach(function(genomeId){
+					conditionIds.forEach(function(conditionId){
 						options.forEach(function(el){
 							if(el === colId){
-								toggleSelection(_self.cell(genomeId, el).element.input, true);
+								toggleSelection(_self.cell(conditionId, el).element.input, true);
 							}else{
-								toggleSelection(_self.cell(genomeId, el).element.input, false);
+								toggleSelection(_self.cell(conditionId, el).element.input, false);
 							}
 						});
 					});
@@ -143,20 +141,17 @@ define([
 				}
 
 				// update filter
-				Object.keys(_self.pfState.genomeFilterStatus).forEach(function(genomeId){
+				Object.keys(conditionStatus).forEach(function(conditionId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(genomeId, el).element.input.checked){
+						if(_self.cell(conditionId, el).element.input.checked){
 							return el;
 						}
 					});
-					//console.log(genomeId, status);
-					_self.pfState.genomeFilterStatus[genomeId].setStatus(status);
+
+					conditionStatus[conditionId].setStatus(status);
 				});
 
-				//Object.keys(pfState.genomeFilterStatus).forEach(function(el){
-				//	console.warn(pfState.genomeFilterStatus[el].getGenomeName(), pfState.genomeFilterStatus[el].getStatus());
-				//});
-				Topic.publish("ProteinFamilies", "genomeFilter", _self.pfState.genomeFilterStatus);
+				Topic.publish("ProteinFamilies", "applyConditionFilter", conditionStatus);
 			});
 
 			aspect.before(_self, 'renderArray', function(results){

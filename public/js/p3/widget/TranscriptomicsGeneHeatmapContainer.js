@@ -29,7 +29,7 @@ define([
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+					Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 				},
 				true
 			],
@@ -100,36 +100,26 @@ define([
 				true
 			]
 		],
-		constructor: function(options){
+		constructor: function(){
 			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("TranscriptomicsGeneHeatmap", lang.hitch(self, function(){
-				var key = arguments[0], value = arguments[1];
-
-				switch(key){
-					case "refresh":
-						// this.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.tgState);
-						Topic.publish("TranscriptomicsGene", "reqCurrentData", self.tgState);
-						break;
-					case "resCurrentData":
-						self.currentData = value;
-						if(typeof(self.flashDom.refreshData) == "function"){
-							self.flashDom.refreshData();
-						}
-						break;
-					default:
-						break;
-				}
-			}));
-
 			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "tgState":
+					case "updateTgState":
 						self.tgState = value;
+						break;
+					case "refreshHeatmap":
+						Topic.publish("TranscriptomicsGene", "requestHeatmapData", self.tgState);
+						break;
+					case "updateHeatmapData":
+						self.currentData = value;
+						if(typeof(self.flashDom.refreshData) == "function"){
+							self.flashDom.refreshData();
+						}
 						break;
 					default:
 						break;
@@ -170,7 +160,7 @@ define([
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("TranscriptomicsGeneHeatmap", "refresh");
+				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -539,7 +529,7 @@ define([
 				pfState.clusterColumnOrder = res.columns;
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 			}));
 		}
 	});

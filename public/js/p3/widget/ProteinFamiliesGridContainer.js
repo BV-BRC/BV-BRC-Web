@@ -43,7 +43,7 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "pfState":
+					case "updatePfState":
 						self.pfState = value;
 						break;
 					default:
@@ -81,7 +81,7 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
+				function(){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -104,6 +104,8 @@ define([
 					tooltipDialog: viewFASTATT
 				},
 				function(selection){
+					// TODO: pass selection and implement detail
+					console.log(selection);
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -127,7 +129,7 @@ define([
 							return sel.family_id;
 						}).join(',') + ")))";
 
-					Topic.publish("ProteinFamilies", "showMembers", query);
+					Topic.publish("ProteinFamilies", "showMembersGrid", query);
 				},
 				false
 			]

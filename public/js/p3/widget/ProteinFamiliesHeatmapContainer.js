@@ -15,7 +15,6 @@ define([
 		gutters: false,
 		state: null,
 		visible: false,
-		dataGridContainer: null,
 		pfState: null,
 		containerActions: [
 			[
@@ -30,7 +29,7 @@ define([
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+					Topic.publish("ProteinFamilies", "refreshHeatmap");
 				},
 				true
 			],
@@ -117,37 +116,26 @@ define([
 				true
 			]
 		],
-		constructor: function(options){
+		constructor: function(){
 			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "refresh":
-						// self.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
-						Topic.publish("ProteinFamilies", "reqCurrentData", self.pfState);
+					case "updatePfState":
+						self.pfState = value;
 						break;
-					case "resCurrentData":
+					case "refreshHeatmap":
+						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						break;
+					case "updateHeatmapData":
 						self.currentData = value;
-						if(typeof(this.flashDom.refreshData) == "function"){
+						if(typeof(self.flashDom.refreshData) == "function"){
 							self.flashDom.refreshData();
 						}
-						break;
-					default:
-						break;
-				}
-			}));
-
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
-				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
-				var key = arguments[0], value = arguments[1];
-
-				switch(key){
-					case "pfState":
-						self.pfState = value;
 						break;
 					default:
 						break;
@@ -188,7 +176,7 @@ define([
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -557,7 +545,7 @@ define([
 				pfState.clusterColumnOrder = res.columns;
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}));
 		},
 		anchor: function(genomeId){
@@ -592,7 +580,7 @@ define([
 				pfState.clusterColumnOrder = adjustedFamilyOrder;
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}));
 		}
 	});

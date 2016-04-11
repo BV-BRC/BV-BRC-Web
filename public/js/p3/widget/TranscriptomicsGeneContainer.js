@@ -8,34 +8,17 @@ define([
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button,
 			ActionBar, ContainerActionBar,
-			TGGridContainer, TGFilterGrid, TGHeatmapContainer){
+			MainGridContainer, FilterGrid, HeatmapContainer){
 
 	return declare([BorderContainer], {
 		id: "TGContainer",
 		gutters: false,
 		state: null,
 		apiServer: window.App.dataServiceURL,
-		constructor: function() {
-			// var self = this;
-
-			// Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
-			// 	// console.log("ProteinFamiliesHeatmapContainer:", arguments);
-			// 	var key = arguments[0], value = arguments[1];
-			//
-			// 	switch(key){
-			// 		case "showMembers":
-			// 			self.proteinFamiliesMembersGrid.set("query", value);
-			// 			self.tabContainer.selectChild(self.proteinFamiliesMembersGrid);
-			// 			break;
-			// 		default:
-			// 			break;
-			// 	}
-			// }));
-		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			if(this.experimentGrid){
-				this.experimentGrid.set('state', state);
+			if(this.mainGridContainer){
+				this.mainGridContainer.set('state', state);
 			}
 			this._set('state', state);
 		},
@@ -47,11 +30,11 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 			}
-			if(this.experimentGrid){
-				this.experimentGrid.set('visible', true);
+			if(this.mainGridContainer){
+				this.mainGridContainer.set('visible', true);
 			}
-			if(this.heatmap){
-				this.heatmap.set('visible', true);
+			if(this.heatmapContainer){
+				this.heatmapContainer.set('visible', true);
 			}
 		},
 
@@ -69,10 +52,10 @@ define([
 			});
 
 			// genome list grid
-			this.filterPanelGrid = new TGFilterGrid({
+			this.filterGrid = new FilterGrid({
 				state: this.state
 			});
-			filterPanel.addChild(this.filterPanelGrid);
+			filterPanel.addChild(this.filterGrid);
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
@@ -82,22 +65,22 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			this.experimentGrid = new TGGridContainer({
+			this.mainGridContainer = new MainGridContainer({
 				title: "Table",
 				content: "Transcriptomics Gene Table",
 				state: this.state,
 				apiServer: this.apiServer
 			});
 
-			this.heatmap = new TGHeatmapContainer({
+			this.heatmapContainer = new HeatmapContainer({
 				title: "Heatmap",
 				content: "Heatmap"
 			});
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
-			this.tabContainer.addChild(this.experimentGrid);
-			this.tabContainer.addChild(this.heatmap);
+			this.tabContainer.addChild(this.mainGridContainer);
+			this.tabContainer.addChild(this.heatmapContainer);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.addChild(filterPanel);

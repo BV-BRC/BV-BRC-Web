@@ -9,17 +9,17 @@ define([
 			Topic){
 
 	var pfState = {
-		'familyType': 'figfam', // default
-		'heatmapAxis': '',
-		'genomeIds': [],
-		'genomeFilterStatus': {},
-		'clusterRowOrder': [],
-		'clusterColumnOrder': [],
-		'perfectFamMatch': 'A',
-		'min_member_count': null,
-		'max_member_count': null,
-		'min_genome_count': null,
-		'max_genome_count': null
+		familyType: 'figfam', // default
+		heatmapAxis: '',
+		genomeIds: [],
+		genomeFilterStatus: {},
+		clusterRowOrder: [],
+		clusterColumnOrder: [],
+		perfectFamMatch: 'A',
+		min_member_count: null,
+		max_member_count: null,
+		min_genome_count: null,
+		max_genome_count: null
 	};
 
 	return declare([Memory, Stateful], {
@@ -38,31 +38,31 @@ define([
 			var self = this;
 
 			Topic.subscribe("ProteinFamilies", function(){
-				//console.log("received:", arguments);
+				// console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "familyType":
+					case "setFamilyType":
 						self.pfState.familyType = value;
 						self.reload();
 						self.currentData = self.getHeatmapData(self.pfState);
-						Topic.publish("ProteinFamiliesHeatmap", "resCurrentData", self.currentData);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
-					case "genomeFilter":
-						self.genomeFilter(value);
+					case "applyConditionFilter":
+						self.conditionFilter(value);
 						self.currentData = self.getHeatmapData(self.pfState);
-						Topic.publish("ProteinFamiliesHeatmap", "resCurrentData", self.currentData);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
-					case "reqCurrentData":
+					case "requestHeatmapData":
 						self.currentData = self.getHeatmapData(value);
-						Topic.publish("ProteinFamiliesHeatmap", "resCurrentData", self.currentData);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					default:
 						break;
 				}
 			});
 		},
-		genomeFilter: function(gfs){
+		conditionFilter: function(gfs){
 			var self = this;
 			if(self._filtered == undefined){ // first time
 				self._filtered = true;
@@ -146,7 +146,8 @@ define([
 
 			var _self = this;
 
-			if(!this.state.genome_ids || this.state.genome_ids.length < 1){
+			// console.warn(this.state.genome_ids, !this.state.genome_ids);
+			if(!this.state.genome_ids){
 				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
@@ -183,8 +184,8 @@ define([
 					_self.pfState.genomeIds.push(genome.genome_id);
 				});
 				// publish pfState & update filter panel
-				Topic.publish("ProteinFamilies", "pfState", _self.pfState);
-				Topic.publish("ProteinFamilies", "filterGridData", genomes);
+				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
+				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
 
 				var familyType = _self.pfState.familyType;
 				var familyId = familyType + '_id';
@@ -232,7 +233,6 @@ define([
 					q = Object.keys(query).map(function(p){
 						return p + "=" + query[p]
 					}).join("&");
-
 
 					// console.log("Do Second Request to /genome_feature/");
 					return when(request.post(_self.apiServer + '/genome_feature/', {

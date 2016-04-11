@@ -67,10 +67,10 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "tgState":
+					case "updateTgState":
 						this.tgState = value;
 						break;
-					case "filterGridData":
+					case "updateFilterGrid":
 						this.store.setData(value);
 						this.store._loaded = true;
 						this.refresh();
@@ -92,7 +92,9 @@ define([
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
-				var state = _self.store.state;
+
+				var conditionIds = _self.tgState.comparisonIds;
+				var conditionStatus = _self.tgState.comparisonFilterStatus;
 
 				if(cell.row){
 					// data row is clicked
@@ -108,8 +110,8 @@ define([
 					// check whether entire rows are selected & mark as needed
 					options.forEach(function(el){
 						var allSelected = true;
-						_self.tgState.comparisonIds.forEach(function(genomeId){
-							if(_self.cell(genomeId, el).element.input.checked == false){
+						conditionIds.forEach(function(conditionId){
+							if(_self.cell(conditionId, el).element.input.checked == false){
 								allSelected = false;
 							}
 						});
@@ -118,12 +120,12 @@ define([
 
 				}else{
 					// if header is clicked, reset the selections & update
-					_self.tgState.comparisonIds.forEach(function(genomeId){
+					conditionIds.forEach(function(conditionId){
 						options.forEach(function(el){
 							if(el === colId){
-								toggleSelection(_self.cell(genomeId, el).element.input, true);
+								toggleSelection(_self.cell(conditionId, el).element.input, true);
 							}else{
-								toggleSelection(_self.cell(genomeId, el).element.input, false);
+								toggleSelection(_self.cell(conditionId, el).element.input, false);
 							}
 						});
 					});
@@ -137,20 +139,17 @@ define([
 				}
 
 				// update filter
-				Object.keys(_self.tgState.comparisonFilterStatus).forEach(function(genomeId){
+				Object.keys(conditionStatus).forEach(function(conditionId){
 					var status = options.findIndex(function(el){
-						if(_self.cell(genomeId, el).element.input.checked){
+						if(_self.cell(conditionId, el).element.input.checked){
 							return el;
 						}
 					});
-					//console.log(genomeId, status);
-					_self.tgState.comparisonFilterStatus[genomeId].setStatus(status);
+
+					conditionStatus[conditionId].setStatus(status);
 				});
 
-				Object.keys(_self.tgState.comparisonFilterStatus).forEach(function(el){
-					// console.log(_self.tgState.comparisonFilterStatus[el].getLabel(), _self.tgState.genomeFilterStatus[el].getStatus());
-				});
-				Topic.publish("TranscriptomicsGene", "comparisonFilter", _self.tgState.comparisonFilterStatus);
+				Topic.publish("TranscriptomicsGene", "applyConditionFilter", conditionStatus);
 			});
 
 			aspect.before(_self, 'renderArray', function(results){

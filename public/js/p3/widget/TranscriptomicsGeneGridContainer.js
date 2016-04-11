@@ -44,7 +44,7 @@ define([
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "tgState":
+					case "updateTgState":
 						self.tgState = value;
 						break;
 					default:
