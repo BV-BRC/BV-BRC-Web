@@ -1,16 +1,16 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/aspect", "dojo/topic",
+	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
 	"dojo/store/Memory",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/CellSelection", "dgrid/selector", "put-selector/put",
-	"./Grid"
+	"./Grid", "./formatter"
 ], function(declare, lang, Deferred,
-			on, request, domConstruct, domClass, aspect, Topic,
+			on, request, domStyle, aspect, Topic,
 			Store,
 			BorderContainer, ContentPane,
 			CellSelection, selector, put,
-			Grid){
+			Grid, formatter){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
@@ -51,13 +51,13 @@ define([
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
 			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
-			genome_name: {label: 'Genome Name', field: 'genome_name'}/*,
+			genome_name: {label: 'Genome Name', field: 'genome_name'},
 			genome_status: {label: 'Genome Status', field: 'genome_status'},
 			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
 			host_name: {label: 'Host', field: 'host_name'},
 			disease: {label: 'Disease', field: 'disease'},
 			collection_date: {label: 'Collection Date', field: 'collection_date'},
-			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
+			completion_date: {label: 'Completion Date', field: 'completion_date', formatter: formatter.dateOnly}
 		},
 		constructor: function(options){
 			if(options && options.state){
@@ -162,6 +162,9 @@ define([
 
 			// this.inherited(arguments);
 			this._started = true;
+
+			// increase grid width after rendering content-pane
+			domStyle.set(this.id, "width", "650px");
 		},
 
 		state: null,
