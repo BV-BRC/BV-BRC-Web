@@ -155,8 +155,8 @@ define([
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
 				setTimeout(lang.hitch(_self, function(){
-					_self.setData([]);
-					_self._loaded = true;
+					this.setData([]);
+					this._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;
