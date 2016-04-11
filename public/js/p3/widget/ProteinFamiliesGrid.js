@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore"
+	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request,
 			BorderContainer, ContentPane,
