@@ -3,13 +3,13 @@ define([
 	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
 	"dojo/store/Memory",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"dgrid/CellSelection", "dgrid/selector", "put-selector/put",
+	"dgrid/selector", "put-selector/put",
 	"./Grid", "./formatter"
 ], function(declare, lang, Deferred,
 			on, request, domStyle, aspect, Topic,
 			Store,
 			BorderContainer, ContentPane,
-			CellSelection, selector, put,
+			selector, put,
 			Grid, formatter){
 
 	var filterSelector = function(value, cell, object){
@@ -17,12 +17,12 @@ define([
 
 		// must set the class name on the outer cell in IE for keystrokes to be intercepted
 		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
-		var input = cell.input || (cell.input = put(cell, "input[type=radio]", {
+		var input = cell.input || (cell.input = put(cell, 'i', {
 				tabIndex: -1,
-				checked: value
+				checked: !!value
 			}));
+		input.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
 		input.setAttribute("aria-checked", !!value);
-
 		return input;
 	};
 
@@ -35,7 +35,7 @@ define([
 		idProperty: "genome_id"
 	});
 
-	return declare([Grid, CellSelection], {
+	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
@@ -44,9 +44,7 @@ define([
 		pfState: null,
 		dataModel: "genome",
 		primaryKey: "genome_id",
-		selectionModel: "extended",
 		deselectOnRefresh: true,
-		selectionMode: 'none',
 		columns: {
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
@@ -87,6 +85,7 @@ define([
 			var options = ['present', 'absent', 'mixed'];
 			var toggleSelection = function(element, value){
 				element.checked = value;
+				element.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
 				element.setAttribute("aria-checked", value);
 			};
 
@@ -98,6 +97,8 @@ define([
 				var conditionIds = _self.pfState.genomeIds;
 				var conditionStatus = _self.pfState.genomeFilterStatus;
 
+				if(!cell.element.input) return;
+
 				if(cell.row){
 					// data row is clicked
 					var rowId = cell.row.id;
@@ -106,6 +107,10 @@ define([
 					options.forEach(function(el){
 						if(el != colId && _self.cell(rowId, el).element.input.checked){
 							toggleSelection(_self.cell(rowId, el).element.input, false);
+						}
+						// updated selected box
+						if(el === colId){
+							toggleSelection(_self.cell(rowId, el).element.input, true);
 						}
 					});
 
