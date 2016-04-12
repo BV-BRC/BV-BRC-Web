@@ -16,6 +16,7 @@ define([
 		id: "PFContainer",
 		gutters: false,
 		state: null,
+		pfState: null,
 		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
@@ -29,6 +30,9 @@ define([
 					case "showMembersGrid":
 						self.membersGridContainer.set("query", value);
 						self.tabContainer.selectChild(self.membersGridContainer);
+						break;
+					case "updatePfState":
+						self.pfState = value;
 						break;
 					default:
 						break;
@@ -168,13 +172,14 @@ define([
 			var otherFilterPanel = new ContentPane({
 				region: "bottom"
 			});
+			/*
 			var ta_keyword = new TextArea({
 				style: "width:215px; min-height:75px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
-
+			*/
 			//
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
@@ -182,9 +187,7 @@ define([
 				name: "familyMatch",
 				value: "perfect"
 			});
-			rb_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
 			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
@@ -193,9 +196,7 @@ define([
 				name: "familyMatch",
 				value: "non_perfect"
 			});
-			rb_non_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
 			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
@@ -205,9 +206,7 @@ define([
 				value: "all_match",
 				checked: true
 			});
-			rb_all_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
 			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
@@ -246,8 +245,43 @@ define([
 			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
 
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var defaultFilterValue = {
+				min_member_count: null,
+				max_member_count: null,
+				min_genome_count: null,
+				max_genome_count: null
+			};
+
 			var btn_submit = new Button({
-				label: "Filter"
+				label: "Filter",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {};
+
+					if(rb_perfect_match.get('value')){
+						filter.perfectFamMatch = 'Y';
+					}else if(rb_non_perfect_match.get('value')){
+						filter.perfectFamMatch = 'N';
+					}else if(rb_all_match.get('value')){
+						filter.perfectFamMatch = 'A';
+					}
+
+					var min_member_count = parseInt(tb_num_protein_family_min.get('value'));
+					var max_member_count = parseInt(tb_num_protein_family_max.get('value'));
+					var min_genome_count = parseInt(tb_num_genome_family_min.get('value'));
+					var max_genome_count = parseInt(tb_num_genome_family_max.get('value'));
+
+					!isNaN(min_member_count) ? filter.min_member_count = min_member_count : {};
+					!isNaN(max_member_count) ? filter.max_member_count = max_member_count : {};
+
+					!isNaN(min_genome_count) ? filter.min_genome_count = min_genome_count : {};
+					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
+
+					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
+					// console.log(this.pfState);
+					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
 

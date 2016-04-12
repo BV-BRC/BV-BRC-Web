@@ -49,8 +49,10 @@ define([
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "applyConditionFilter":
+						self.pfState = value;
 						self.conditionFilter(value);
 						self.currentData = self.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "updatePfState", self.pfState);
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
@@ -62,7 +64,7 @@ define([
 				}
 			});
 		},
-		conditionFilter: function(gfs){
+		conditionFilter: function(pfState){
 			var self = this;
 			if(self._filtered == undefined){ // first time
 				self._filtered = true;
@@ -70,12 +72,14 @@ define([
 			}
 			var data = self._original;
 			var newData = [];
+			var gfs = pfState.genomeFilterStatus;
 
 			// var tsStart = window.performance.now();
 			data.forEach(function(family){
 
 				var skip = false;
 
+				// genomes
 				Object.keys(gfs).forEach(function(genomeId){
 					var index = gfs[genomeId].getIndex();
 					var status = gfs[genomeId].getStatus();
@@ -87,6 +91,30 @@ define([
 						skip = true;
 					}
 				});
+
+				// perfect family
+				if(pfState.perfectFamMatch === 'Y'){
+					family.feature_count !== family.genome_count ? skip = true : {};
+				}else if(pfState.perfectFamMatch === 'N'){
+					family.feature_count === family.genome_count ? skip = true : {};
+				}
+
+				// num proteins per family
+				if(pfState.min_member_count){
+					family.feature_count < pfState.min_member_count ? skip = true : {};
+				}
+				if(pfState.max_member_count){
+					family.feature_count > pfState.max_member_count ? skip = true : {};
+				}
+
+				// num genomes per family
+				if(pfState.min_genome_count){
+					family.genome_count < pfState.min_genome_count ? skip = true : {};
+				}
+				if(pfState.max_genome_count){
+					family.genome_count > pfState.max_genome_count ? skip = true : {};
+				}
+
 				if(!skip){
 					newData.push(family);
 				}

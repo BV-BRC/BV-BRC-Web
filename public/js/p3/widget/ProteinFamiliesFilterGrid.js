@@ -90,7 +90,7 @@ define([
 				element.setAttribute("aria-checked", value);
 			};
 
-			this.on(".dgrid-cell:click", function(evt){
+			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
@@ -151,8 +151,9 @@ define([
 					conditionStatus[conditionId].setStatus(status);
 				});
 
-				Topic.publish("ProteinFamilies", "applyConditionFilter", conditionStatus);
-			});
+				this.pfState.genomeFilterStatus = conditionStatus;
+				Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+			}));
 
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
