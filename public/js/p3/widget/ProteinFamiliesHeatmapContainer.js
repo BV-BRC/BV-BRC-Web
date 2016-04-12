@@ -387,7 +387,7 @@ define([
 			var options = pfState.genomeIds.map(function(genomeId){
 				return {
 					value: genomeId,
-					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+					label: pfState.genomeFilterStatus[genomeId].getLabel()
 				};
 			});
 
@@ -396,7 +396,7 @@ define([
 				options: options
 			});
 			anchor.on('change', function(genomeId){
-				self.anchor(genomeId);
+				Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
 				popup.close(self.tooltip_anchoring);
 			});
 
@@ -543,41 +543,6 @@ define([
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
 				pfState.clusterRowOrder = res.rows;
 				pfState.clusterColumnOrder = res.columns;
-
-				// re-draw heatmap
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
-			}));
-		},
-		anchor: function(genomeId){
-
-			var dataStore = this.dataGridContainer.grid.store;
-
-			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
-
-				var pfState = this.pfState;
-				var isTransposed = pfState.heatmapAxis === 'Transposed';
-
-				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
-				if(isTransposed){
-					currentFamilyOrder = this.currentData.rows.map(function(row){
-						return row.rowID;
-					});
-				}else{
-					currentFamilyOrder = this.currentData.columns.map(function(col){
-						return col.colID;
-					});
-				}
-
-				currentFamilyOrder.forEach(function(id){
-					if(!newFamilyOrderSet.hasOwnProperty(id)){
-						leftOver.push(id);
-					}
-				});
-
-				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
-
-				// clusterRow/ColumnOrder assumes corrected axises
-				pfState.clusterColumnOrder = adjustedFamilyOrder;
 
 				// re-draw heatmap
 				Topic.publish("ProteinFamilies", "refreshHeatmap");

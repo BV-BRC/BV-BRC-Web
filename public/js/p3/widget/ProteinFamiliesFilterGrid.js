@@ -89,6 +89,8 @@ define([
 				element.setAttribute("aria-checked", value);
 			};
 
+			// TODO: catch grid sort event and update genome order in heatmap
+
 			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
