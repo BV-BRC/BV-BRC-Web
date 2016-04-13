@@ -1,16 +1,14 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
-	"dojo/store/Memory",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/selector", "put-selector/put",
-	"./Grid", "./formatter"
+	"../store/ArrangeableMemoryStore", "./Grid", "./formatter"
 ], function(declare, lang, Deferred,
 			on, request, domStyle, aspect, Topic,
-			Store,
 			BorderContainer, ContentPane,
 			selector, put,
-			Grid, formatter){
+			Store, Grid, formatter){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
@@ -73,6 +71,10 @@ define([
 					case "updateFilterGrid":
 						this.store.setData(value);
 						this.store._loaded = true;
+						this.refresh();
+						break;
+					case "updateFilterGridOrder":
+						this.store.arrange(value);
 						this.refresh();
 						break;
 					default:

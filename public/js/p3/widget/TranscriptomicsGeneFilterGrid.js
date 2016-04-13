@@ -1,26 +1,25 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/request", "dojo/dom-construct", "dojo/dom-class", "dojo/aspect", "dojo/topic",
-	"dojo/store/Memory",
+	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"dgrid/CellSelection", "dgrid/selector", "put-selector/put",
-	"./Grid"
+	"dgrid/selector", "put-selector/put",
+	"./Grid", "../store/ArrangeableMemoryStore"
 ], function(declare, lang, Deferred,
-			on, request, domConstruct, domClass, aspect, Topic,
-			Store,
+			on, request, domStyle, aspect, Topic,
 			BorderContainer, ContentPane,
-			CellSelection, selector, put,
-			Grid){
+			selector, put,
+			Grid, Store){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
 
 		// must set the class name on the outer cell in IE for keystrokes to be intercepted
 		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
-		var input = cell.input || (cell.input = put(cell, "input[type=radio]", {
+		var input = cell.input || (cell.input = put(cell, 'i', {
 				tabIndex: -1,
-				checked: value
+				checked: !!value
 			}));
+		input.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
 		input.setAttribute("aria-checked", !!value);
 
 		return input;
@@ -34,7 +33,7 @@ define([
 		idProperty: "pid"
 	});
 
-	return declare([Grid, CellSelection], {
+	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
@@ -43,9 +42,7 @@ define([
 		tgState: null,
 		dataModel: "transcriptomics_sample",
 		primaryKey: "pid",
-		selectionModel: "extended",
 		deselectOnRefresh: true,
-		selectionMode: 'none',
 		columns: {
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
@@ -75,6 +72,10 @@ define([
 						this.store._loaded = true;
 						this.refresh();
 						break;
+					case "updateFilterGridOrder":
+						this.store.arrange(value);
+						this.refresh();
+						break;
 					default:
 						break;
 				}
@@ -85,16 +86,19 @@ define([
 			var options = ['present', 'absent', 'mixed'];
 			var toggleSelection = function(element, value){
 				element.checked = value;
+				element.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
 				element.setAttribute("aria-checked", value);
 			};
 
-			this.on(".dgrid-cell:click", function(evt){
+			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
 
 				var conditionIds = _self.tgState.comparisonIds;
 				var conditionStatus = _self.tgState.comparisonFilterStatus;
+
+				if(!cell.element.input) return;
 
 				if(cell.row){
 					// data row is clicked
@@ -104,6 +108,11 @@ define([
 					options.forEach(function(el){
 						if(el != colId && _self.cell(rowId, el).element.input.checked){
 							toggleSelection(_self.cell(rowId, el).element.input, false);
+						}
+
+						// updated selected box
+						if(el === colId){
+							toggleSelection(_self.cell(rowId, el).element.input, true);
 						}
 					});
 
@@ -149,8 +158,9 @@ define([
 					conditionStatus[conditionId].setStatus(status);
 				});
 
-				Topic.publish("TranscriptomicsGene", "applyConditionFilter", conditionStatus);
-			});
+				this.tgState.comparisonFilterStatus = conditionStatus;
+				Topic.publish("TranscriptomicsGene", "applyConditionFilter", this.tgState);
+			}));
 
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
@@ -160,6 +170,9 @@ define([
 
 			// this.inherited(arguments);
 			this._started = true;
+
+			// increase grid width after rendering content-pane
+			domStyle.set(this.id, "width", "650px");
 		},
 
 		state: null,

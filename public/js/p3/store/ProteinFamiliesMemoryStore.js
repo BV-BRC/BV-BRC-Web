@@ -1,12 +1,12 @@
 define([
-	"dojo/_base/declare", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic", "./HeatmapDataTypes"
-], function(declare, request,
+	"./ArrangeableMemoryStore", "./HeatmapDataTypes"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred,
-			Topic){
+			ArrangeableMemoryStore){
 
 	var pfState = {
 		familyType: 'figfam', // default
@@ -22,7 +22,7 @@ define([
 		max_genome_count: null
 	};
 
-	return declare([Memory, Stateful], {
+	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
@@ -137,10 +137,6 @@ define([
 
 		query: function(query, opts){
 			query = query || {};
-			//console.warn("query: ", query, opts);
-			if(opts.sort == undefined){
-				opts.sort = [{attribute: "family_id", descending: false}];
-			}
 			if(this._loaded){
 				return this.inherited(arguments);
 			}
@@ -188,7 +184,7 @@ define([
 				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
 					this._loaded = true;
-					def.resolve(true);
+					// def.resolve(true);
 				}), 0);
 				return def.promise;
 			}
@@ -227,7 +223,8 @@ define([
 					//fq: "figfam_id:(FIG01956050)",
 					rows: 0,
 					facet: true,
-					'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
+					'facet.method': 'uif',
+					'json.facet': '{stat:{type:field,field:' + familyId + ',sort:index,limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
 				};
 				var q = Object.keys(query).map(function(p){
 					return p + "=" + query[p]
@@ -646,6 +643,9 @@ define([
 
 				// clusterRow/ColumnOrder assumes corrected axises
 				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// update main grid
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
 				// Topic.publish("ProteinFamilies", "refreshHeatmap");

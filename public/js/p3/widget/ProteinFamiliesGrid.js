@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request",
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
 ], function(declare, lang, Deferred,
-			on, domClass, domConstruct, aspect, request,
+			on, domClass, domConstruct, aspect, request, Topic,
 			BorderContainer, ContentPane,
 			Grid, formatter, Store){
 	return declare([Grid], {
@@ -33,6 +33,20 @@ define([
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+				// console.log("ProteinFamiliesGrid:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updateMainGridOrder":
+						this.store.arrange(value);
+						this.refresh();
+						break;
+					default:
+						break;
+				}
+			}));
 		},
 		startup: function(){
 			var _self = this;

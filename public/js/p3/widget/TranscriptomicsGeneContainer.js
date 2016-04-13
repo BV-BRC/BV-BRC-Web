@@ -14,7 +14,24 @@ define([
 		id: "TGContainer",
 		gutters: false,
 		state: null,
+		tgState: null,
 		apiServer: window.App.dataServiceURL,
+		constructor: function(){
+			var self = this;
+
+			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
+				// console.log("TranscriptomicsGeneContainer:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updateTgState":
+						self.tgState = value;
+						break;
+					default:
+						break;
+				}
+			}));
+		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 			if(this.mainGridContainer){
@@ -43,19 +60,7 @@ define([
 				return;
 			}
 
-			var filterPanel = new ContentPane({
-				region: "left",
-				title: "filter",
-				content: "Filter By",
-				style: "width:400px; overflow:auto;",
-				splitter: true
-			});
-
-			// genome list grid
-			this.filterGrid = new FilterGrid({
-				state: this.state
-			});
-			filterPanel.addChild(this.filterGrid);
+			var filterPanel = this._buildFilterPanel();
 
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
@@ -87,6 +92,24 @@ define([
 
 			this.inherited(arguments);
 			this._firstView = true;
+		},
+		_buildFilterPanel: function(){
+
+			var filterPanel = new ContentPane({
+				region: "left",
+				title: "filter",
+				content: "Filter By",
+				style: "width:380px; overflow:auto",
+				splitter: true
+			});
+
+			// genome list grid
+			var filterGrid = new FilterGrid({
+				state: this.state
+			});
+			filterPanel.addChild(filterGrid);
+
+			return filterPanel;
 		}
 	});
 });

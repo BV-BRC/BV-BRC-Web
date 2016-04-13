@@ -1,12 +1,12 @@
 define([
-	"dojo/_base/declare", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic", "./HeatmapDataTypes"
-], function(declare, request,
+	"./ArrangeableMemoryStore", "./HeatmapDataTypes"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred,
-			Topic){
+			ArrangeableMemoryStore){
 
 	var tgState = {
 		heatmapAxis: '',
@@ -16,7 +16,7 @@ define([
 		clusterColumnOrder: []
 	};
 
-	return declare([Memory, Stateful], {
+	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "feature_id",
@@ -37,8 +37,10 @@ define([
 
 				switch(key){
 					case "applyConditionFilter":
+						self.tgState = value;
 						self.conditionFilter(value);
 						self.currentData = self.getHeatmapData(self.tgState);
+						Topic.publish("TranscriptomicsGene", "updateTgState", self.tgState);
 						Topic.publish("TranscriptomicsGene", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
@@ -50,7 +52,7 @@ define([
 				}
 			});
 		},
-		conditionFilter: function(gfs){
+		conditionFilter: function(tgState){
 			// TODO: implement here
 			// var self = this;
 			// if(self._filtered == undefined){ // first time
@@ -96,10 +98,6 @@ define([
 
 		query: function(query, opts){
 			query = query || {};
-			// console.warn("query: ", query, opts);
-			// if(opts.sort == undefined){
-			// 	opts.sort = [{attribute: "family_id", descending: false}];
-			// }
 			if(this._loaded){
 				return this.inherited(arguments);
 			}
@@ -414,39 +412,42 @@ define([
 				};
 
 				// calculate distribution based on the threshold. gene.dist
-				var dist = []; var labels = [];
+				var dist = [];
+				var labels = [];
 				// gene.samples.forEach(function(sample, idx){
 				pfState.comparisonIds.forEach(function(comparisonId, idx){
 					var comparison = gene.samples[comparisonId];
 
 					// lets copy current implementation for now
 					var lr = parseFloat(comparison.log_ratio);
-					if(isNaN(lr)){ lr = 0; }
+					if(isNaN(lr)){
+						lr = 0;
+					}
 
 					// skip checking all vs significant genes
 					// skip checking threshold
 					var val;
-					if (lr < 0 && lr >= -1) {
+					if(lr < 0 && lr >= -1){
 						val = "01";
-					} else if (lr < -1 && lr >= -2) {
+					}else if(lr < -1 && lr >= -2){
 						val = "02";
-					} else if (lr < -2 && lr >= -3) {
+					}else if(lr < -2 && lr >= -3){
 						val = "03";
-					} else if (lr < -3 && lr >= -4) {
+					}else if(lr < -3 && lr >= -4){
 						val = "04";
-					} else if (lr < -4) {
+					}else if(lr < -4){
 						val = "05";
-					} else if (lr > 0 && lr <= 1) {
+					}else if(lr > 0 && lr <= 1){
 						val = "06";
-					} else if (lr > 1 && lr <= 2) {
+					}else if(lr > 1 && lr <= 2){
 						val = "07";
-					} else if (lr > 2 && lr <= 3) {
+					}else if(lr > 2 && lr <= 3){
 						val = "08";
-					} else if (lr > 3 && lr <= 4) {
+					}else if(lr > 3 && lr <= 4){
 						val = "09";
-					} else if (lr > 4) {
+					}else if(lr > 4){
 						val = "0A";
-					} else {
+					}else{
 						val = "0B";
 					}
 					dist[idx] = val;

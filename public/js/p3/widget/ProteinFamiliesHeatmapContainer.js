@@ -544,6 +544,9 @@ define([
 				pfState.clusterRowOrder = res.rows;
 				pfState.clusterColumnOrder = res.columns;
 
+				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
+
 				// re-draw heatmap
 				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}));

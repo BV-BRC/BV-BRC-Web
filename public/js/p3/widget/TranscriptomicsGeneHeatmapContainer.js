@@ -364,28 +364,6 @@ define([
 
 			return form;
 		},
-		_buildPanelAnchoring: function(){
-
-			var self = this;
-			var pfState = self.pfState;
-			var options = pfState.genomeIds.map(function(genomeId){
-				return {
-					value: genomeId,
-					label: pfState.genomeFilterStatus[genomeId]['genome_name']
-				};
-			});
-
-			var anchor = new Select({
-				name: "anchor",
-				options: options
-			});
-			anchor.on('change', function(genomeId){
-				self.anchor(genomeId);
-				popup.close(self.tooltip_anchoring);
-			});
-
-			return anchor;
-		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
 			var actionBar = domConstruct.create("div", {
@@ -516,8 +494,8 @@ define([
 			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
-			var pfState = this.pfState;
-			var isTransposed = pfState.heatmapAxis === 'Transposed';
+			var tgState = this.tgState;
+			var isTransposed = tgState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
@@ -525,8 +503,11 @@ define([
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
-				pfState.clusterRowOrder = res.rows;
-				pfState.clusterColumnOrder = res.columns;
+				tgState.clusterRowOrder = res.rows;
+				tgState.clusterColumnOrder = res.columns;
+
+				Topic.publish("TranscriptomicsGene", "updateFilterGridOrder", res.rows);
+				Topic.publish("TranscriptomicsGene", "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
 				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
