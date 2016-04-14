@@ -62,6 +62,7 @@ define([
 			// console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
+				Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
 				console.log("No Grid Yet (ProteinFamiliesGridContainer)");

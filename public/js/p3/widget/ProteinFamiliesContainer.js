@@ -2,12 +2,14 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"dojox/widget/Standby",
 	"./ActionBar", "./ContainerActionBar",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
 	"./ProteinFamiliesMembersGridContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button,
+			Standby,
 			ActionBar, ContainerActionBar,
 			MainGridContainer, FilterGrid, HeatmapContainer,
 			MembersGridContainer){
@@ -17,6 +19,7 @@ define([
 		gutters: false,
 		state: null,
 		pfState: null,
+		loadingMask: null,
 		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
@@ -34,10 +37,22 @@ define([
 					case "updatePfState":
 						self.pfState = value;
 						break;
+					case "showLoadingMask":
+						self.loadingMask.show();
+						break;
+					case "hideLoadingMask":
+						self.loadingMask.hide();
+						break;
 					default:
 						break;
 				}
 			}));
+		},
+		postCreate: function(){
+			// create a loading mask
+			this.loadingMask = new Standby({target: this.id});
+			this.addChild(this.loadingMask);
+			this.loadingMask.startup();
 		},
 		onSetState: function(attr, oldVal, state){
 			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);

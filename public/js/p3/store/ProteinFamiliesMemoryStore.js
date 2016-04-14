@@ -397,6 +397,7 @@ define([
 							// }
 							_self.setData(data);
 							_self._loaded = true;
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
 							return true;
 						}, function(err){
 							console.error("Error in ProteinFamiliesStore: ", err)
@@ -616,6 +617,8 @@ define([
 
 		anchorByGenome: function(genomeId){
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
+
 			var self = this;
 			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
 
@@ -648,7 +651,6 @@ define([
 				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
 
 				// re-draw heatmap
-				// Topic.publish("ProteinFamilies", "refreshHeatmap");
 				self.currentData = this.getHeatmapData(pfState);
 				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 			}));

@@ -135,6 +135,7 @@ define([
 						self.currentData = value;
 						if(typeof(self.flashDom.refreshData) == "function"){
 							self.flashDom.refreshData();
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
 						}
 						break;
 					default:
@@ -535,6 +536,8 @@ define([
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
+
+			Topic.publish("ProteinFamilies", "showLoadingMask");
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
