@@ -217,7 +217,7 @@ define([
 
 			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
-			request.post(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
