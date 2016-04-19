@@ -91,8 +91,6 @@ define([
 				element.setAttribute("aria-checked", value);
 			};
 
-			// TODO: catch grid sort event and update genome order in heatmap
-
 			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
 				var cell = _self.cell(evt);
 				var colId = cell.column.id;
@@ -176,7 +174,22 @@ define([
 			// increase grid width after rendering content-pane
 			domStyle.set(this.id, "width", "650px");
 		},
+		_setSort: function(sort){
+			this.inherited(arguments);
 
+			// console.log("old order", this.pfState.genomeIds);
+			this.pfState.genomeIds = this.store.query({}, {sort: sort})
+				.filter(function(obj){
+					return typeof(obj) == 'object';
+				})
+				.map(function(genome){
+					return genome.genome_id;
+				});
+			// console.log("new order", this.pfState.genomeIds);
+
+			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
+			Topic.publish("ProteinFamilies", "refreshHeatmap");
+		},
 		state: null,
 		postCreate: function(){
 			this.inherited(arguments);
