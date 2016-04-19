@@ -214,6 +214,17 @@ define([
 				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
 				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
 
+				// _self.pfState, _self.token
+				var opts = {
+					token: ""
+				};
+				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
+					_self.setData(data);
+					_self._loaded = true;
+					Topic.publish("ProteinFamilies", "hideLoadingMask");
+				}));
+
+/*
 				var familyType = _self.pfState.familyType;
 				var familyId = familyType + '_id';
 
@@ -404,6 +415,7 @@ define([
 						});
 					});
 				});
+*/
 			});
 			return this._loadingDeferred;
 		},
