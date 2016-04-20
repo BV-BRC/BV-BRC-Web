@@ -74,6 +74,7 @@ define([
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
+						this.set('sort', [{}]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -178,14 +179,12 @@ define([
 			this.inherited(arguments);
 
 			// console.log("old order", this.pfState.genomeIds);
-			this.pfState.genomeIds = this.store.query({}, {sort: sort})
-				.filter(function(obj){
-					return typeof(obj) == 'object';
-				})
-				.map(function(genome){
-					return genome.genome_id;
-				});
-			// console.log("new order", this.pfState.genomeIds);
+			var newIds = [];
+			this.store.query({}, {sort: sort}).forEach(function(genome){
+					newIds.push(genome.genome_id);
+			});
+			this.pfState.clusterRowOrder = newIds;
+			// console.log("new order", this.pfState.clusterRowOrder);
 
 			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
 			Topic.publish("ProteinFamilies", "refreshHeatmap");

@@ -59,6 +59,7 @@ define([
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
+						// console.log("requestHeatmapData with ", value.genomeIds);
 						self.currentData = self.getHeatmapData(value);
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;

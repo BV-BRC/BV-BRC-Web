@@ -122,6 +122,7 @@ define([
 			var self = this;
 			// subscribe
 			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
@@ -547,6 +548,7 @@ define([
 				pfState.clusterRowOrder = res.rows;
 				pfState.clusterColumnOrder = res.columns;
 
+				Topic.publish("ProteinFamilies", "updatePfState", pfState);
 				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
 				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
 
