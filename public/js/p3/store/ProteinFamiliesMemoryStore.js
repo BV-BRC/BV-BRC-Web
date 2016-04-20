@@ -288,14 +288,14 @@ define([
 						return when(request.post(_self.apiServer + '/protein_family_ref/', {
 							handleAs: 'json',
 							headers: {
-								'Accept': "application/solr+json",
+								'Accept': "application/json",
 								'Content-Type': "application/solrquery+x-www-form-urlencoded",
 								'X-Requested-With': null,
 								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 							},
 							data: {
 								q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
-								rows: 1000000
+								rows: familyIdList.length
 							}
 						}), function(res){
 							var genomeFamilyDist = response.facets.stat.buckets;
@@ -359,7 +359,7 @@ define([
 							window.performance.mark('mark_start_stat3');
 
 							var familyRefHash = {};
-							res.response.docs.forEach(function(el){
+							res.forEach(function(el){
 								if(!(el.family_id in familyRefHash)){
 									familyRefHash[el.family_id] = el.family_product;
 								}
