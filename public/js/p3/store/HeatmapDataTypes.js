@@ -179,7 +179,7 @@ define([], function()
 		return function(){
 			this.init = function(idx, lbl){
 				this.index = idx;
-				this.status = ' ';
+				this.status = 2; // 0: present, 1: absent, 2: don't care
 				this.label = lbl;
 			};
 			this.setIndex = function(idx){
