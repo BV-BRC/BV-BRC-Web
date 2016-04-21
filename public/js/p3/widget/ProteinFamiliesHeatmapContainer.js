@@ -216,7 +216,7 @@ define([
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
 			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
@@ -239,7 +239,7 @@ define([
 			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
 			//console.log(gfs, gfs[genomeId]);
-			var genomeName = gfs[genomeId].getGenomeName();
+			var genomeName = gfs[genomeId].getLabel();
 			var description = '', memberCount = 0, index = 0;
 
 			if(isTransposed){
@@ -271,7 +271,7 @@ define([
 			text.push('<b>Family ID:</b> ' + familyId);
 			text.push('<b>Members:</b> ' + memberCount);
 			features.forEach(function(feature){
-				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
+				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
 				if(feature.refseq_locus_tag !== undefined){
 					featureLink += ", " + feature.refseq_locus_tag;
 				}
