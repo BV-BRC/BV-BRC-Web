@@ -80,7 +80,18 @@ define([
 		},
 		onCopy: function(evt){
 			console.log("Copy Selection: ", this.selection, " to ", this.value);
-			var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+			var idType = "genome_id";
+			if(this.type == "genome_group"){
+				idType = "genome_id";
+			}
+			else if(this.type == "feature_group"){
+				idType = "feature_id";
+			}
+			else if(this.type == "experiment_group"){
+				idType = "eid";
+			}
+			
 			var def;
 			if(this.targetType.get("value") == "existing"){
 				def = WorkspaceManager.addToGroup(this.value, idType, this.selection.map(function(o){

@@ -576,7 +576,7 @@ define([
 				ignoreDataType: true,
 				multiple: true,
 				validTypes: ["*"],
-				validContainerTypes: ["genome_group", "feature_group"],
+				validContainerTypes: ["genome_group", "feature_group", "experiment_group"],
 				tooltip: "Copy selection to a new or existing group"
 			}, function(selection, containerWidget){
 				console.log("Add Items to Group", selection);
@@ -600,7 +600,8 @@ define([
 
 			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {
 					label: "GCOMPARE",
-					ignoreDataType: true,
+					ignoreDataType: false,
+					allowMultiTypes: false,
 					min: 2,
 					max: 3,
 					multiple: true,
