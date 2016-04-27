@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
-	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
 	"./TranscriptomicsGeneGridContainer", "./TranscriptomicsGeneFilterGrid", "./TranscriptomicsGeneHeatmapContainer",
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
-			RadioButton, TextArea, TextBox, Button,
+			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
 			MainGridContainer, FilterGrid, HeatmapContainer){
 
@@ -108,6 +108,64 @@ define([
 				state: this.state
 			});
 			filterPanel.addChild(filterGrid);
+
+			// other filter items
+			var otherFilterPanel = new ContentPane({
+				region: "bottom"
+			});
+
+			var select_log_ratio = new Select({
+				name: "selectLogRatio",
+				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
+					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
+					{value: 3, label: "3"}
+				],
+				style: "width: 80px; margin: 5px 0"
+			});
+			var label_select_log_ratio = domConstruct.create("label", {innerHTML: "Filter by |Log Ratio|: "});
+			domConstruct.place(label_select_log_ratio, otherFilterPanel.containerNode, "last");
+			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var select_z_score = new Select({
+				name: "selectZScore",
+				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
+					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
+					{value: 3, label: "3"}
+				],
+				style: "width: 80px; margin: 5px 0"
+			});
+			var label_select_z_score = domConstruct.create("label", {innerHTML: "Filter by |Z-score|: "});
+			domConstruct.place(label_select_z_score, otherFilterPanel.containerNode, "last");
+			domConstruct.place(select_z_score.domNode, otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var defaultFilterValue = {
+				upFold: 0,
+				downFold: 0,
+				upZscore: 0,
+				downZscore: 0
+			};
+
+			var btn_submit = new Button({
+				label: "Filter",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {};
+
+					var lr = parseFloat(select_log_ratio.get('value'));
+					var zs = parseFloat(select_z_score.get('value'));
+
+					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr): {};
+					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs): {};
+
+					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+					Topic.publish("TranscriptomicsGene", "applyConditionFilter", this.tgState);
+				})
+			});
+			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			filterPanel.addChild(otherFilterPanel);
 
 			return filterPanel;
 		}
