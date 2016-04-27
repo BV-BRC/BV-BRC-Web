@@ -13,7 +13,13 @@ define([
 		comparisonIds: [],
 		comparisonFilterStatus: {},
 		clusterRowOrder: [],
-		clusterColumnOrder: []
+		clusterColumnOrder: [],
+		significantGenes: 'Y',
+		colorScheme: 'rgb',
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
 	};
 
 	return declare([ArrangeableMemoryStore, Stateful], {
@@ -53,40 +59,169 @@ define([
 			});
 		},
 		conditionFilter: function(tgState){
-			// TODO: implement here
-			// var self = this;
-			// if(self._filtered == undefined){ // first time
-			// 	self._filtered = true;
-			// 	self._original = this.query("", {});
-			// }
-			// var data = self._original;
-			// var newData = [];
-			//
-			// // var tsStart = window.performance.now();
-			// data.forEach(function(family){
-			//
-			// 	console.log(family);
-			// 	var skip = false;
-			//
-			// 	Object.keys(gfs).forEach(function(genomeId){
-			// 		var index = gfs[genomeId].getIndex();
-			// 		var status = gfs[genomeId].getStatus();
-			// 		console.log(family, family.family_id, genomeId, index, status, family.dist, parseInt(family.dist.substr(index * 2, 2), 16));
-			// 		if(status == 1 && parseInt(family.dist.substr(index * 2, 2), 16) > 0){
-			// 			skip = true;
-			// 		}
-			// 		else if(status == 0 && parseInt(family.dist.substr(index * 2, 2), 16) == 0){
-			// 			skip = true;
-			// 		}
-			// 	});
-			// 	if(!skip){
-			// 		newData.push(family);
-			// 	}
-			// });
-			// // console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
-			//
-			// self.setData(newData);
-			// self.set("refresh");
+			var self = this;
+			if(self._filtered == undefined){ // first time
+				self._filtered = true;
+				self._original = this.query("", {});
+			}
+			var data = self._original;
+			var newData = [];
+			var gfs = tgState.comparisonFilterStatus;
+
+			var tsStart = window.performance.now();
+			data.forEach(function(family){
+
+				var skip = false;
+				var up_r = 0, down_r = 0, total_samples = 0;
+
+				// comparisons
+				Object.keys(gfs).forEach(function(comparisonId){
+					var index = gfs[comparisonId].getIndex();
+					var status = gfs[comparisonId].getStatus();
+					// console.log(family, family.family_id, genomeId, index, status, family.dist, parseInt(family.dist.substr(index * 2, 2), 16));
+					// if(status == 1 && parseInt(family.dist.substr(index * 2, 2), 16) > 0){
+					// 	skip = true;
+					// }
+					// else if(status == 0 && parseInt(family.dist.substr(index * 2, 2), 16) == 0){
+					// 	skip = true;
+					// }
+
+					var sample_flag = false;
+					var expression = family.sample_binary.substr(index, 1);
+					if(expression === '1'){
+						if(status != 2){
+							if(self._thresholdFilter(family.samples[comparisonId], tgState, status)){
+								sample_flag = true;
+							}else{
+								sample_flag = false;
+							}
+						}else{
+							if(!sample_flag){
+								if(self._thresholdFilter(family.samples[comparisonId], tgState, status)){
+									sample_flag = true;
+								}else{
+									sample_flag = false;
+								}
+							}
+						}
+					}else{
+						if(status != 2){
+							sample_flag = true;
+						}
+					}
+
+					if(self._comparisonUp(family.samples[comparisonId], tgState.upFold)){
+						up_r++;
+					}
+					if(self._comparisonDown(family.samples[comparisonId], tgState.downFold)){
+						down_r++;
+					}
+					if(self._comparisonPresent(family.samples[comparisonId])){
+						total_samples++;
+					}
+					family.up = up_r;
+					family.down = down_r;
+					family.sample_size = total_samples;
+					// if(!skip){
+					skip = !sample_flag;
+					// }
+				});
+
+				if(!skip){
+					newData.push(family);
+				}
+			});
+			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
+
+			self.setData(newData);
+			self.set("refresh");
+		},
+		_thresholdFilter: function(comparison, tgState, filterStatus){
+			var uf = tgState.upFold, df = tgState.downFold;
+			var uz = tgState.upZscore, dz = tgState.downZscore;
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
+
+			var pass = false;
+			switch(filterStatus){
+				case 2: // don't care (' ')
+					if(comparison){
+						if(dz === uz && df === uf){
+							pass = true;
+						}else if((z >= uz || z <= dz) && (l >= uf || l <= df)){
+							pass = true;
+						}
+					}
+					break;
+				case 0: // up-regulated (1)
+					if(comparison && (uz != 0 ? z >= uz : true) && l >= uf){
+						pass = true;
+					}
+					break;
+				case 1: // down-regulated (0)
+					if(comparison && (dz != 0 ? z <= dz : true) && l <= df){
+						pass = true;
+					}
+					break;
+				default:
+					break;
+			}
+			// console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			return pass;
+		},
+		_comparisonUp: function(comparison, uf){
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			if(!comparison) return false;
+			return (l > uf);
+		},
+		_comparisonDown: function(comparison, df){
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			if(!comparison) return false;
+			return (l < df);
+		},
+		_comparisonPresent: function(comparison){
+			if(!comparison) return false;
+			return !isNaN(parseFloat(comparison['log_ratio']));
+		},
+		_getColorStop: function(colorScheme, maxIntensity){
+			var colorStop = [];
+			var colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000', colorPercentage = [];
+			var colorSignificantUp = "0xFF0000", colorSignificantDown = "0x00FF00";
+
+			if(colorScheme === 'rgb'){
+				colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000';
+				colorPercentage.push('20', '40', '60', '80');
+				colorSignificantUp = "0xFF0000";
+				colorSignificantDown = "0x00FF00";
+			}else if(colorScheme === 'rbw'){
+				colorUp = [255, 255, 255], colorDown = [255, 255, 255], colorZero = '0xFFFFFF';
+				colorPercentage.push('80', '60', '40', '20');
+				colorSignificantUp = "0xFF0000";
+				colorSignificantDown = "0x0000FF";
+			}
+
+			for(var i = 1; i <= maxIntensity; i++){
+				switch(true){
+					case i < 5:
+						colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
+						break;
+					case i == 5:
+						colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
+						break;
+					case i > 5 && i < 10:
+						colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
+						break;
+					case i == 10:
+						colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
+						break;
+					case i == 11:
+						colorStop.push(new ColorStop(i / maxIntensity, colorZero));
+						break;
+					default:
+						break;
+				}
+			}
+			return colorStop;
 		},
 		reload: function(){
 			var self = this;
@@ -192,13 +327,14 @@ define([
 				return when(request.post(_self.apiServer + '/transcriptomics_gene/', {
 					handleAs: 'json',
 					headers: {
-						'Accept': "application/json",
+						'Accept': "application/solr+json",
 						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 						'X-Requested-With': null,
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
 					data: query + "&select(pid,refseq_locus_tag,feature_id,log_ratio,z_score)"
-				}), function(expressions){
+				}), function(response){
+					var expressions = response.response.docs;
 
 					// console.warn("Expressions:", expressions);
 					// TODO: read experiment from workspace and populate expressions
@@ -227,7 +363,7 @@ define([
 					return when(request.post(_self.apiServer + '/genome_feature/', {
 						handleAs: 'json',
 						headers: {
-							'Accept': "application/json",
+							'Accept': "application/solr+json",
 							'Content-Type': "application/solrquery+x-www-form-urlencoded",
 							'X-Requested-With': null,
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
@@ -240,7 +376,8 @@ define([
 
 							rows: (p3FeatureIdList.length + p2FeatureIdList.length)
 						}
-					}), function(features){
+					}), function(response){
+						var features = response.response.docs;
 						// console.warn("features: ", features);
 
 						var expressionHash = {};
@@ -334,19 +471,19 @@ define([
 			return this._loadingDeferred;
 		},
 
-		getHeatmapData: function(pfState){
+		getHeatmapData: function(tgState){
+			var self = this;
 			var rows = [];
 			var cols = [];
 			var maxIntensity = 0; // global and will be modified inside createColumn function
 			var keeps = []; // global and will be referenced inside createColumn function
-			var colorStop = [];
 
-			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			var isTransposed = (tgState.heatmapAxis === 'Transposed');
 			// var start = window.performance.now();
 
 			// assumes axises are corrected
-			var geneOrder = pfState.clusterColumnOrder;
-			var comparisonOrder = pfState.clusterRowOrder;
+			var geneOrder = tgState.clusterColumnOrder;
+			var comparisonOrder = tgState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
 				var filtered = [], isEven = (order % 2) === 0;
@@ -371,16 +508,16 @@ define([
 			var comparisonOrderChangeMap = [];
 
 			if(comparisonOrder !== [] && comparisonOrder.length > 0){
-				pfState.comparisonIds = comparisonOrder;
+				tgState.comparisonIds = comparisonOrder;
 				comparisonOrder.forEach(function(comparisonId, idx){
-					// console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
-					comparisonOrderChangeMap.push(pfState.comparisonFilterStatus[comparisonId].getIndex()); // keep the original position
-					pfState.comparisonFilterStatus[comparisonId].setIndex(idx);
+					// console.log(genomeId, tgState.genomeFilterStatus[genomeId], idx);
+					comparisonOrderChangeMap.push(tgState.comparisonFilterStatus[comparisonId].getIndex()); // keep the original position
+					tgState.comparisonFilterStatus[comparisonId].setIndex(idx);
 				});
 			}
 
-			pfState.comparisonIds.forEach(function(comparisonId, idx){
-				var gfs = pfState.comparisonFilterStatus[comparisonId];
+			tgState.comparisonIds.forEach(function(comparisonId, idx){
+				var gfs = tgState.comparisonFilterStatus[comparisonId];
 				if(gfs.getStatus() != '1'){
 					keeps.push(2 * gfs.getIndex());
 					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
@@ -410,70 +547,107 @@ define([
 				var meta = {
 					'samples': gene.samples
 				};
+				var push_flag = false;
 
 				// calculate distribution based on the threshold. gene.dist
 				var dist = [];
 				var labels = [];
 				// gene.samples.forEach(function(sample, idx){
-				pfState.comparisonIds.forEach(function(comparisonId, idx){
+				tgState.comparisonIds.forEach(function(comparisonId, idx){
 					var comparison = gene.samples[comparisonId];
+					var all_genes_flag = false;
+					var filterStatus = tgState.comparisonFilterStatus[comparisonId].getStatus();
+					var expression = gene.sample_binary.substr(idx, 1);
+					// console.log(comparisonId, filterStatus, expression);
 
-					// lets copy current implementation for now
-					var lr = parseFloat(comparison.log_ratio);
-					if(isNaN(lr)){
-						lr = 0;
-					}
-
-					// skip checking all vs significant genes
-					// skip checking threshold
-					var val;
-					if(lr < 0 && lr >= -1){
-						val = "01";
-					}else if(lr < -1 && lr >= -2){
-						val = "02";
-					}else if(lr < -2 && lr >= -3){
-						val = "03";
-					}else if(lr < -3 && lr >= -4){
-						val = "04";
-					}else if(lr < -4){
-						val = "05";
-					}else if(lr > 0 && lr <= 1){
-						val = "06";
-					}else if(lr > 1 && lr <= 2){
-						val = "07";
-					}else if(lr > 2 && lr <= 3){
-						val = "08";
-					}else if(lr > 3 && lr <= 4){
-						val = "09";
-					}else if(lr > 4){
-						val = "0A";
+					if(tgState.significantGenes === 'N'){
+						if(expression === '1'){
+							if(self._thresholdFilter(comparison, tgState, filterStatus)){
+								push_flag = true;
+								all_genes_flag = false;
+							}else{
+								if(tgState.significantGenes === 'N'){
+									push_flag = true;
+									all_genes_flag = true;
+								}
+							}
+						}else{
+							if(filterStatus != 2){
+								push_flag = false;
+							}else{
+								if(tgState.significantGenes === 'N'){
+									all_genes_flag = true;
+								}
+							}
+						}
 					}else{
-						val = "0B";
+						all_genes_flag = false;
+						push_flag = true;
 					}
-					dist[idx] = val;
-					labels[idx] = lr;
+
+					var val;
+					if(comparison){
+						var lr = parseFloat(comparison.log_ratio);
+						if(isNaN(lr)){
+							lr = 0;
+						}
+
+						// skip checking all vs significant genes
+						if(all_genes_flag){
+							val = "0B";
+						}else{
+							// skip checking threshold
+							// console.log("threshold: ", self._thresholdFilter(comparison, tgState, filterStatus));
+							if(!self._thresholdFilter(comparison, tgState, filterStatus)){
+								val = "0B";
+							}else{
+								if(lr < 0 && lr >= -1){
+									val = "01";
+								}else if(lr < -1 && lr >= -2){
+									val = "02";
+								}else if(lr < -2 && lr >= -3){
+									val = "03";
+								}else if(lr < -3 && lr >= -4){
+									val = "04";
+								}else if(lr < -4){
+									val = "05";
+								}else if(lr > 0 && lr <= 1){
+									val = "06";
+								}else if(lr > 1 && lr <= 2){
+									val = "07";
+								}else if(lr > 2 && lr <= 3){
+									val = "08";
+								}else if(lr > 3 && lr <= 4){
+									val = "09";
+								}else if(lr > 4){
+									val = "0A";
+								}else{
+									val = "0B";
+								}
+							}
+						}
+						dist[idx] = val;
+						labels[idx] = lr;
+					}else{
+						dist[idx] = "0B";
+						labels[idx] = "0";
+					}
 				});
 				gene.dist = dist.join("");
 				meta.labels = labels.join("|");
 
-				if(comparisonOrderChangeMap.length > 0){
-					gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
+				if(push_flag){
+					if(comparisonOrderChangeMap.length > 0){
+						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
+					}
+					var order = geneOrderMap[gene.feature_id];
+					cols[order] = createColumn(order, gene.feature_id, gene.alt_locus_tag + "_" + gene.product, gene.dist, meta);
 				}
-				var order = geneOrderMap[gene.feature_id];
-				cols[order] = createColumn(order, gene.feature_id, gene.alt_locus_tag + "_" + gene.product, gene.dist, meta);
 			});
 
-			// TODO: re-implement
-			// colorStop
-			if(maxIntensity == 1){
-				colorStop = [new ColorStop(1, 0xfadb4e)];
-			}else if(maxIntensity == 2){
-				colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
-			}else if(maxIntensity >= 3){
-				colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
-			}
+			var colorStop = self._getColorStop(tgState.colorScheme, maxIntensity);
 
-			//console.log(rows, cols, colorStop);
+			// console.warn(rows, cols, colorStop);
 
 			var currentData = {
 				'rows': rows,

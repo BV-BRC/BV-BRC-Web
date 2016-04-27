@@ -73,6 +73,7 @@ define([
 						this.refresh();
 						break;
 					case "updateFilterGridOrder":
+						this.set('sort', [{}]);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -172,9 +173,23 @@ define([
 			this._started = true;
 
 			// increase grid width after rendering content-pane
-			domStyle.set(this.id, "width", "650px");
+			domStyle.set(this.id, "width", "750px");
 		},
+		_setSort: function(sort){
+			this.inherited(arguments);
 
+			// console.log("old order", this.pfState.genomeIds);
+			var newIds = [];
+			var idProperty = this.store.idProperty;
+			this.store.query({}, {sort: sort}).forEach(function(condition){
+				newIds.push(condition[idProperty]);
+			});
+			this.tgState.clusterRowOrder = newIds;
+			// console.log("new order", this.pfState.clusterRowOrder);
+
+			Topic.publish("TranscriptomicsGene", "updateTgState", this.tgState);
+			Topic.publish("TranscriptomicsGene", "refreshHeatmap");
+		},
 		state: null,
 		postCreate: function(){
 			this.inherited(arguments);
