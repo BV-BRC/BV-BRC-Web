@@ -156,8 +156,8 @@ define([
 					var lr = parseFloat(select_log_ratio.get('value'));
 					var zs = parseFloat(select_z_score.get('value'));
 
-					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr): {};
-					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs): {};
+					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr) : {};
+					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					Topic.publish("TranscriptomicsGene", "applyConditionFilter", this.tgState);
