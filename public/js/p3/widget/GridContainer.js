@@ -568,10 +568,10 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
 				},
 				function(selection){
-					console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
+					console.log("this.currentContainerType: ", this.containerType);
 					console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerType);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
 
 					setTimeout(lang.hitch(this,function(){

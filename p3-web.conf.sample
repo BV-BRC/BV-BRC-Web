@@ -1,7 +1,5 @@
 {
 	"production": false,
-	"solr": {
-		"url":"http://dayhoff.vbi.vt.edu:8080/solr"
-	}
+    "dataServiceURL": "",
+    "enableDevTools": true
 }
-

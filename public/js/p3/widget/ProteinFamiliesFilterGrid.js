@@ -180,8 +180,9 @@ define([
 
 			// console.log("old order", this.pfState.genomeIds);
 			var newIds = [];
-			this.store.query({}, {sort: sort}).forEach(function(genome){
-					newIds.push(genome.genome_id);
+			var idProperty = this.store.idProperty;
+			this.store.query({}, {sort: sort}).forEach(function(condition){
+				newIds.push(condition[idProperty]);
 			});
 			this.pfState.clusterRowOrder = newIds;
 			// console.log("new order", this.pfState.clusterRowOrder);

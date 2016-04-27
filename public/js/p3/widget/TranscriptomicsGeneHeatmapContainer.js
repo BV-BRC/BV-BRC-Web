@@ -506,6 +506,7 @@ define([
 				tgState.clusterRowOrder = res.rows;
 				tgState.clusterColumnOrder = res.columns;
 
+				Topic.publish("TranscriptomicsGene", "updateTgState", tgState);
 				Topic.publish("TranscriptomicsGene", "updateFilterGridOrder", res.rows);
 				Topic.publish("TranscriptomicsGene", "updateMainGridOrder", res.columns);
 
