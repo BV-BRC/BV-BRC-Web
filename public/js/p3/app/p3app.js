@@ -116,7 +116,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.value = "http://localhost:3001/content" + path;
+				newState.value=_self.dataAPI + "/content/" +  path;
 				newState.set = "href";
 				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
