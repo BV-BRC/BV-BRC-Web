@@ -16,6 +16,7 @@ define([
 		clusterColumnOrder: [],
 		significantGenes: 'Y',
 		colorScheme: 'rgb',
+		maxIntensity: 0,
 		upFold: 0,
 		downFold: 0,
 		upZscore: 0,
@@ -69,66 +70,59 @@ define([
 			var gfs = tgState.comparisonFilterStatus;
 
 			var tsStart = window.performance.now();
-			data.forEach(function(family){
+			data.forEach(function(gene){
 
-				var skip = false;
+				var pass = false;
 				var up_r = 0, down_r = 0, total_samples = 0;
 
 				// comparisons
-				Object.keys(gfs).forEach(function(comparisonId){
+				for(var i = 0, len = tgState.comparisonIds.length; i < len; i++){
+					var comparisonId = tgState.comparisonIds[i];
 					var index = gfs[comparisonId].getIndex();
 					var status = gfs[comparisonId].getStatus();
-					// console.log(family, family.family_id, genomeId, index, status, family.dist, parseInt(family.dist.substr(index * 2, 2), 16));
-					// if(status == 1 && parseInt(family.dist.substr(index * 2, 2), 16) > 0){
-					// 	skip = true;
-					// }
-					// else if(status == 0 && parseInt(family.dist.substr(index * 2, 2), 16) == 0){
-					// 	skip = true;
-					// }
+					var comparison = gene.samples[comparisonId];
+					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
 
-					var sample_flag = false;
-					var expression = family.sample_binary.substr(index, 1);
+					var expression = gene.sample_binary.substr(index, 1);
 					if(expression === '1'){
 						if(status != 2){
-							if(self._thresholdFilter(family.samples[comparisonId], tgState, status)){
-								sample_flag = true;
-							}else{
-								sample_flag = false;
+							pass = self._thresholdFilter(comparison, tgState, status);
+							if(!pass){
+								break;
 							}
 						}else{
-							if(!sample_flag){
-								if(self._thresholdFilter(family.samples[comparisonId], tgState, status)){
-									sample_flag = true;
-								}else{
-									sample_flag = false;
-								}
+							// status == 2, don't care
+							if(!pass){
+								pass = self._thresholdFilter(comparison, tgState, status)
 							}
 						}
 					}else{
 						if(status != 2){
-							sample_flag = true;
+							pass = false;
+							break;
 						}
 					}
 
-					if(self._comparisonUp(family.samples[comparisonId], tgState.upFold)){
-						up_r++;
+					if (comparison){
+						var value = parseFloat(comparison.log_ratio);
+						if (!isNaN(value)){
+							if(value > tgState.upFold){
+								up_r++;
+							}
+							if(value < tgState.downFold){
+								down_r++;
+							}
+							total_samples++;
+						}
 					}
-					if(self._comparisonDown(family.samples[comparisonId], tgState.downFold)){
-						down_r++;
-					}
-					if(self._comparisonPresent(family.samples[comparisonId])){
-						total_samples++;
-					}
-					family.up = up_r;
-					family.down = down_r;
-					family.sample_size = total_samples;
-					// if(!skip){
-					skip = !sample_flag;
-					// }
-				});
+				}
 
-				if(!skip){
-					newData.push(family);
+				gene.up = up_r;
+				gene.down = down_r;
+				gene.sample_size = total_samples;
+
+				if(pass){
+					newData.push(gene);
 				}
 			});
 			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
@@ -141,87 +135,25 @@ define([
 			var uz = tgState.upZscore, dz = tgState.downZscore;
 			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
 			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
+			if(!comparison) return false;
 
 			var pass = false;
 			switch(filterStatus){
 				case 2: // don't care (' ')
-					if(comparison){
-						if(dz === uz && df === uf){
-							pass = true;
-						}else if((z >= uz || z <= dz) && (l >= uf || l <= df)){
-							pass = true;
-						}
-					}
+					pass = (dz === uz && df === uf)
+						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
 					break;
 				case 0: // up-regulated (1)
-					if(comparison && (uz != 0 ? z >= uz : true) && l >= uf){
-						pass = true;
-					}
+					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
 					break;
 				case 1: // down-regulated (0)
-					if(comparison && (dz != 0 ? z <= dz : true) && l <= df){
-						pass = true;
-					}
+					pass = ((dz != 0 ? z <= dz : true) && l <= df);
 					break;
 				default:
 					break;
 			}
 			// console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
 			return pass;
-		},
-		_comparisonUp: function(comparison, uf){
-			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
-			if(!comparison) return false;
-			return (l > uf);
-		},
-		_comparisonDown: function(comparison, df){
-			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
-			if(!comparison) return false;
-			return (l < df);
-		},
-		_comparisonPresent: function(comparison){
-			if(!comparison) return false;
-			return !isNaN(parseFloat(comparison['log_ratio']));
-		},
-		_getColorStop: function(colorScheme, maxIntensity){
-			var colorStop = [];
-			var colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000', colorPercentage = [];
-			var colorSignificantUp = "0xFF0000", colorSignificantDown = "0x00FF00";
-
-			if(colorScheme === 'rgb'){
-				colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000';
-				colorPercentage.push('20', '40', '60', '80');
-				colorSignificantUp = "0xFF0000";
-				colorSignificantDown = "0x00FF00";
-			}else if(colorScheme === 'rbw'){
-				colorUp = [255, 255, 255], colorDown = [255, 255, 255], colorZero = '0xFFFFFF';
-				colorPercentage.push('80', '60', '40', '20');
-				colorSignificantUp = "0xFF0000";
-				colorSignificantDown = "0x0000FF";
-			}
-
-			for(var i = 1; i <= maxIntensity; i++){
-				switch(true){
-					case i < 5:
-						colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
-						break;
-					case i == 5:
-						colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
-						break;
-					case i > 5 && i < 10:
-						colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
-						break;
-					case i == 10:
-						colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
-						break;
-					case i == 11:
-						colorStop.push(new ColorStop(i / maxIntensity, colorZero));
-						break;
-					default:
-						break;
-				}
-			}
-			return colorStop;
 		},
 		reload: function(){
 			var self = this;
@@ -307,15 +239,18 @@ define([
 					return true;
 				}
 
-				var comparisons = response;
-				var comparisonIdList = comparisons.map(function(comparison){
-					return comparison.pid;
+				var comparisonIdList = [];
+				var comparisons = response.map(function(comparison){
+					var strPId = comparison.pid.toString();
+					comparison.pid = strPId;
+					comparisonIdList.push(strPId);
+					return comparison;
 				});
 				_self.tgState.comparisonIds = comparisonIdList;
 				comparisons.forEach(function(comparison, idx){
 					var cfs = new FilterStatus();
 					cfs.init(idx, comparison.expname);
-					_self.tgState.comparisonFilterStatus[comparison.pid] = cfs;
+					_self.tgState.comparisonFilterStatus[comparison.pid.toString()] = cfs;
 				});
 				Topic.publish("TranscriptomicsGene", "updateTgState", _self.tgState);
 				Topic.publish("TranscriptomicsGene", "updateFilterGrid", comparisons);
@@ -399,9 +334,9 @@ define([
 								(expression.hasOwnProperty('na_feature_id')) ? expr.p2_feature_id = expression.na_feature_id : '';
 								(expression.hasOwnProperty('refseq_locus_tag')) ? expr.refseq_locus_tag = expression.refseq_locus_tag : expression.exp_locus_tag;
 								var log_ratio = expression.log_ratio, z_score = expression.z_score;
-								expr.samples[expression.pid] = {
+								expr.samples[expression.pid.toString()] = {
 									log_ratio: log_ratio || '',
-									z_score: z_score | ''
+									z_score: z_score || ''
 								};
 								expr.up = (log_ratio != null && Number(log_ratio) > 0) ? 1 : 0;
 								expr.down = (log_ratio != null && Number(log_ratio) < 0) ? 1 : 0;
@@ -409,10 +344,10 @@ define([
 								expressionHash[featureId] = expr;
 							}else{
 								expr = expressionHash[featureId];
-								if(!expr.samples.hasOwnProperty(expression.pid)){
+								if(!expr.samples.hasOwnProperty(expression.pid.toString())){
 									log_ratio = expression.log_ratio;
 									z_score = expression.z_score;
-									expr.samples[expression.pid] = {
+									expr.samples[expression.pid.toString()] = {
 										log_ratio: log_ratio || '',
 										z_score: z_score || ''
 									};
@@ -504,13 +439,12 @@ define([
 			};
 
 			// rows - comparisons
-			// if genome order is changed, then needs to or-organize distribution in columns.
+			// if comparison order is changed, then needs to or-organize distribution in columns.
 			var comparisonOrderChangeMap = [];
 
 			if(comparisonOrder !== [] && comparisonOrder.length > 0){
 				tgState.comparisonIds = comparisonOrder;
 				comparisonOrder.forEach(function(comparisonId, idx){
-					// console.log(genomeId, tgState.genomeFilterStatus[genomeId], idx);
 					comparisonOrderChangeMap.push(tgState.comparisonFilterStatus[comparisonId].getIndex()); // keep the original position
 					tgState.comparisonFilterStatus[comparisonId].setIndex(idx);
 				});
@@ -518,14 +452,13 @@ define([
 
 			tgState.comparisonIds.forEach(function(comparisonId, idx){
 				var gfs = tgState.comparisonFilterStatus[comparisonId];
-				if(gfs.getStatus() != '1'){
-					keeps.push(2 * gfs.getIndex());
-					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
-					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+				// if(gfs.getStatus() != '1'){
+				keeps.push(2 * gfs.getIndex());
+				var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+				var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-					rows.push(new Row(gfs.getIndex(), comparisonId, gfs.getLabel(), labelColor, rowColor));
-				}
+				rows.push(new Row(gfs.getIndex(), comparisonId, gfs.getLabel(), labelColor, rowColor));
+				// }
 			});
 
 			// cols - genes
@@ -556,13 +489,13 @@ define([
 				tgState.comparisonIds.forEach(function(comparisonId, idx){
 					var comparison = gene.samples[comparisonId];
 					var all_genes_flag = false;
-					var filterStatus = tgState.comparisonFilterStatus[comparisonId].getStatus();
+					var status = tgState.comparisonFilterStatus[comparisonId].getStatus();
 					var expression = gene.sample_binary.substr(idx, 1);
 					// console.log(comparisonId, filterStatus, expression);
 
 					if(tgState.significantGenes === 'N'){
 						if(expression === '1'){
-							if(self._thresholdFilter(comparison, tgState, filterStatus)){
+							if(self._thresholdFilter(comparison, tgState, status)){
 								push_flag = true;
 								all_genes_flag = false;
 							}else{
@@ -572,7 +505,7 @@ define([
 								}
 							}
 						}else{
-							if(filterStatus != 2){
+							if(status != 2){
 								push_flag = false;
 							}else{
 								if(tgState.significantGenes === 'N'){
@@ -598,7 +531,7 @@ define([
 						}else{
 							// skip checking threshold
 							// console.log("threshold: ", self._thresholdFilter(comparison, tgState, filterStatus));
-							if(!self._thresholdFilter(comparison, tgState, filterStatus)){
+							if(!self._thresholdFilter(comparison, tgState, status)){
 								val = "0B";
 							}else{
 								if(lr < 0 && lr >= -1){
@@ -641,11 +574,12 @@ define([
 						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
 					}
 					var order = geneOrderMap[gene.feature_id];
-					cols[order] = createColumn(order, gene.feature_id, gene.alt_locus_tag + "_" + gene.product, gene.dist, meta);
+					cols[order] = createColumn(order, gene.feature_id, gene.alt_locus_tag + " - " + gene.product, gene.dist, meta);
 				}
 			});
 
-			var colorStop = self._getColorStop(tgState.colorScheme, maxIntensity);
+			tgState.maxIntensity = maxIntensity; // store for later use
+			var colorStop = getColorStops(tgState.colorScheme, maxIntensity);
 
 			// console.warn(rows, cols, colorStop);
 
