@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
+	"./PageGrid", "./formatter", "../store/TranscriptomicsGeneMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			BorderContainer, ContentPane,
@@ -19,14 +19,18 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
-			family_id: {label: 'ID', field: 'family_id'},
-			feature_count: {label: 'Proteins', field: 'feature_count'},
-			genome_count: {label: 'Genomes', field: 'genome_count'},
-			description: {label: 'Description', field: 'description'},
-			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
-			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
-			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
-			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric}
+			genome_name: {label: 'Genome', field: 'genome_name'},
+			patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag'},
+			alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+			gene: {label: 'Gene Symbol', field: 'gene'},
+			product: {label: 'Product', field: 'product'},
+			start: {label: 'Start', field: 'start', hidden:true},
+			end: {label: 'End', field: 'end', hidden:true},
+			strand: {label: 'Strand', field: 'strand', hidden:true},
+			comparisons: {label: 'Comparisons', field: 'sample_size'},
+			up_reg: {label: 'Up', field: 'up'},
+			down_reg: {label: 'Down', field: 'down'}
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);
@@ -34,8 +38,8 @@ define([
 				this.apiServer = options.apiServer;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
-				// console.log("ProteinFamiliesGrid:", arguments);
+			Topic.subscribe("TranscriptomicsGene", lang.hitch(this, function(){
+				// console.log("TranscriptomicsGeneGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
@@ -108,10 +112,8 @@ define([
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				// console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
 
-				// console.log("ProteinFamiliesGrid Call Grid Refresh()");
 				this.refresh();
 			}
 		},

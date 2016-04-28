@@ -6,9 +6,6 @@ var defaults = {
 	"application_id": "patric3",
 	"p3_clientId": "patric3",
 	"p3_clientSecret": "patric3",
-	"solr": {
-		"url": "http://localhost:8983/solr"
-	},
 	"redis": {
 		"host": "127.0.0.1",
 		"port": 6379,

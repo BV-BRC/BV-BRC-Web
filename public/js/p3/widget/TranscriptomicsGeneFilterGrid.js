@@ -3,12 +3,12 @@ define([
 	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/selector", "put-selector/put",
-	"../store/ArrangeableMemoryStore", "./Grid", "./formatter"
+	"./Grid", "../store/ArrangeableMemoryStore"
 ], function(declare, lang, Deferred,
 			on, request, domStyle, aspect, Topic,
 			BorderContainer, ContentPane,
 			selector, put,
-			Store, Grid, formatter){
+			Grid, Store){
 
 	var filterSelector = function(value, cell, object){
 		var parent = cell.parentNode;
@@ -21,6 +21,7 @@ define([
 			}));
 		input.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
 		input.setAttribute("aria-checked", !!value);
+
 		return input;
 	};
 
@@ -28,9 +29,8 @@ define([
 		return filterSelector(true, cell, object);
 	};
 
-	// create empty Memory Store
 	var store = new Store({
-		idProperty: "genome_id"
+		idProperty: "pid"
 	});
 
 	return declare([Grid], {
@@ -39,34 +39,33 @@ define([
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: store,
-		pfState: null,
-		dataModel: "genome",
-		primaryKey: "genome_id",
+		tgState: null,
+		dataModel: "transcriptomics_sample",
+		primaryKey: "pid",
 		deselectOnRefresh: true,
 		columns: {
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
 			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
-			genome_name: {label: 'Genome Name', field: 'genome_name'},
-			genome_status: {label: 'Genome Status', field: 'genome_status'},
-			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
-			host_name: {label: 'Host', field: 'host_name'},
-			disease: {label: 'Disease', field: 'disease'},
-			collection_date: {label: 'Collection Date', field: 'collection_date'},
-			completion_date: {label: 'Completion Date', field: 'completion_date', formatter: formatter.dateOnly}
+			source: {label: 'Source', field: 'source'},
+			title: {label: 'Title', field: 'expname'},
+			strain: {label: 'Strain', field: 'strain'},
+			modification: {label: 'Modification', field: 'mutant'},
+			condition: {label: 'Condition', field: 'condition'},
+			timepoint: {label: 'Time Point', field: 'timepoint'}
 		},
 		constructor: function(options){
 			if(options && options.state){
 				this.state = options.state;
 			}
 
-			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
-				// console.log("ProteinFamiliesFilterGrid:", arguments);
+			Topic.subscribe("TranscriptomicsGene", lang.hitch(this, function(){
+				// console.log("TranscriptomicsGeneFilterGrid:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "updatePfState":
-						this.pfState = value;
+					case "updateTgState":
+						this.tgState = value;
 						break;
 					case "updateFilterGrid":
 						this.store.setData(value);
@@ -97,8 +96,8 @@ define([
 				var colId = cell.column.id;
 				var columnHeaders = cell.column.grid.columns;
 
-				var conditionIds = _self.pfState.genomeIds;
-				var conditionStatus = _self.pfState.genomeFilterStatus;
+				var conditionIds = _self.tgState.comparisonIds;
+				var conditionStatus = _self.tgState.comparisonFilterStatus;
 
 				if(!cell.element.input) return;
 
@@ -111,6 +110,7 @@ define([
 						if(el != colId && _self.cell(rowId, el).element.input.checked){
 							toggleSelection(_self.cell(rowId, el).element.input, false);
 						}
+
 						// updated selected box
 						if(el === colId){
 							toggleSelection(_self.cell(rowId, el).element.input, true);
@@ -159,8 +159,8 @@ define([
 					conditionStatus[conditionId].setStatus(status);
 				});
 
-				this.pfState.genomeFilterStatus = conditionStatus;
-				Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+				this.tgState.comparisonFilterStatus = conditionStatus;
+				Topic.publish("TranscriptomicsGene", "applyConditionFilter", this.tgState);
 			}));
 
 			aspect.before(_self, 'renderArray', function(results){
@@ -173,7 +173,7 @@ define([
 			this._started = true;
 
 			// increase grid width after rendering content-pane
-			domStyle.set(this.id, "width", "650px");
+			domStyle.set(this.id, "width", "750px");
 		},
 		_setSort: function(sort){
 			this.inherited(arguments);
@@ -184,11 +184,11 @@ define([
 			this.store.query({}, {sort: sort}).forEach(function(condition){
 				newIds.push(condition[idProperty]);
 			});
-			this.pfState.clusterRowOrder = newIds;
+			this.tgState.clusterRowOrder = newIds;
 			// console.log("new order", this.pfState.clusterRowOrder);
 
-			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
-			Topic.publish("ProteinFamilies", "refreshHeatmap");
+			Topic.publish("TranscriptomicsGene", "updateTgState", this.tgState);
+			Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 		},
 		state: null,
 		postCreate: function(){

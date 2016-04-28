@@ -15,7 +15,7 @@ define([
 		gutters: false,
 		state: null,
 		visible: false,
-		pfState: null,
+		tgState: null,
 		containerActions: [
 			[
 				"Flip Axis",
@@ -29,7 +29,15 @@ define([
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamilies", "refreshHeatmap");
+					Topic.publish("TranscriptomicsGene", "refreshHeatmap");
+				},
+				true
+			],
+			[
+				"Heatmap Color",
+				"fa fa-delicious fa-2x",
+				{label: "Color", multiple: false, validTypes: ["*"]},
+				function(){
 				},
 				true
 			],
@@ -84,34 +92,10 @@ define([
 				true
 			],
 			[
-				"Anchor",
-				"fa fa-random fa-2x",
-				{
-					label: "Anchor",
-					multiple: false,
-					validType: ["*"],
-					tooltip: "Anchor by genome",
-					tooltipDialog: null
-				},
+				"Filter",
+				"fa fa-filter fa-2x",
+				{label: "Show", multiple: false, validTypes: ["*"]},
 				function(){
-
-					// dialog for anchoring
-					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
-						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()/*,
-							onMouseLeave: function(){
-								popup.close(this.tooltip_anchoring);
-							}*/
-						});
-						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
-					}
-
-					popup.open({
-						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-						around: this.containerActionBar._actions.Anchor.button,
-						orient: ["below"]
-					});
-
 				},
 				true
 			]
@@ -121,22 +105,20 @@ define([
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
-				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
+			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "updatePfState":
-						self.pfState = value;
+					case "updateTgState":
+						self.tgState = value;
 						break;
 					case "refreshHeatmap":
-						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						Topic.publish("TranscriptomicsGene", "requestHeatmapData", self.tgState);
 						break;
 					case "updateHeatmapData":
 						self.currentData = value;
 						if(typeof(self.flashDom.refreshData) == "function"){
 							self.flashDom.refreshData();
-							Topic.publish("ProteinFamilies", "hideLoadingMask");
 						}
 						break;
 					default:
@@ -149,7 +131,7 @@ define([
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				this.initializeFlash('ProteinFamilyHeatMap');
+				this.initializeFlash('TranscriptomicsGeneHeatMap');
 			}
 		},
 		onFirstView: function(){
@@ -178,7 +160,7 @@ define([
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -216,9 +198,9 @@ define([
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
 
-			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
+			request.post(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
@@ -239,7 +221,7 @@ define([
 			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
 			var gfs = this.pfState.genomeFilterStatus;
 			//console.log(gfs, gfs[genomeId]);
-			var genomeName = gfs[genomeId].getLabel();
+			var genomeName = gfs[genomeId].getGenomeName();
 			var description = '', memberCount = 0, index = 0;
 
 			if(isTransposed){
@@ -271,7 +253,7 @@ define([
 			text.push('<b>Family ID:</b> ' + familyId);
 			text.push('<b>Members:</b> ' + memberCount);
 			features.forEach(function(feature){
-				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
+				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
 				if(feature.refseq_locus_tag !== undefined){
 					featureLink += ", " + feature.refseq_locus_tag;
 				}
@@ -381,28 +363,6 @@ define([
 			}).placeAt(form.containerNode);
 
 			return form;
-		},
-		_buildPanelAnchoring: function(){
-
-			var self = this;
-			var pfState = self.pfState;
-			var options = pfState.genomeIds.map(function(genomeId){
-				return {
-					value: genomeId,
-					label: pfState.genomeFilterStatus[genomeId].getLabel()
-				};
-			});
-
-			var anchor = new Select({
-				name: "anchor",
-				options: options
-			});
-			anchor.on('change', function(genomeId){
-				Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
-				popup.close(self.tooltip_anchoring);
-			});
-
-			return anchor;
 		},
 		_buildPanelButtons: function(colIDs, rowIDs, familyIds, genomeIds, features){
 			var _self = this;
@@ -534,26 +494,24 @@ define([
 			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
-			var pfState = this.pfState;
-			var isTransposed = pfState.heatmapAxis === 'Transposed';
+			var tgState = this.tgState;
+			var isTransposed = tgState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
-
-			Topic.publish("ProteinFamilies", "showLoadingMask");
 
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
 				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
-				pfState.clusterRowOrder = res.rows;
-				pfState.clusterColumnOrder = res.columns;
+				tgState.clusterRowOrder = res.rows;
+				tgState.clusterColumnOrder = res.columns;
 
-				Topic.publish("ProteinFamilies", "updatePfState", pfState);
-				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
-				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
+				Topic.publish("TranscriptomicsGene", "updateTgState", tgState);
+				Topic.publish("TranscriptomicsGene", "updateFilterGridOrder", res.rows);
+				Topic.publish("TranscriptomicsGene", "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamilies", "refreshHeatmap");
+				Topic.publish("TranscriptomicsGene", "refreshHeatmap");
 			}));
 		}
 	});

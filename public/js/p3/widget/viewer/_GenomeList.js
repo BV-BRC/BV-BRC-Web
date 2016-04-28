@@ -31,11 +31,11 @@ define([
 			// }
 
 			var _self = this;
-			console.log('genomeList setQuery - this.query: ', this.query);
+			// console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			console.log("url: ", url);
+			// console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -45,7 +45,7 @@ define([
 				handleAs: "json"
 			}).then(function(res){
 				//console.log(" URL: ", url);
-				console.log("Get GenomeList Res: ", res);
+				// console.log("Get GenomeList Res: ", res);
 				if(res && res.response && res.response.docs){
 					var genomes = res.response.docs;
 					if(genomes){
@@ -56,29 +56,29 @@ define([
 						_self._set("genome_ids", genome_ids)
 					}
 				}else{
-					console.log("Invalid Response for: ", url);
+					console.warn("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.log("Error Retreiving Genomes: ", err)
+				console.error("Error Retreiving Genomes: ", err)
 			});
 
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			if(!state.genome_ids){
-				console.log("	NO Genome_IDS")
+				// console.log("	NO Genome_IDS")
 				if(state.search == oldVal.search){
-					console.log("		Same Search")
-					console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					// console.log("		Same Search")
+					// console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
 					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
 					this.set("query", state.search);
 				}
 			}else if(state.search != oldVal.search){
-				console.log("SET QUERY: ", state.search);
+				// console.log("SET QUERY: ", state.search);
 				this.set("query", state.search);
 			}
 
@@ -94,7 +94,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			console.log("English Content: ", content);
+			// console.log("English Content: ", content);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
@@ -103,12 +103,12 @@ define([
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active: ", active, "state: ", this.state);
+			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				console.log("ACTIVE TAB NOT FOUND: ", active);
+				// console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
@@ -116,7 +116,7 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					// console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
@@ -125,10 +125,10 @@ define([
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
+						// console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
+						// console.log("Active Query State: ", activeQueryState);
 
 					}
 
@@ -139,11 +139,11 @@ define([
 					}
 					break;
 			}
-			console.log("Set Active State COMPLETE");
+			// console.log("Set Active State COMPLETE");
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			// console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
 		},
@@ -227,14 +227,14 @@ define([
 			// }));
 		},
 		onSetTotalGenomes: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
+			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
+				// console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
 				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
-					console.log("\t\tDisable Child: ", child.id);
+					// console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
@@ -267,7 +267,7 @@ define([
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			console.log("onSetAnchor: ", evt, evt.filter);
+			// console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
 			var f = evt.filter;
@@ -283,7 +283,7 @@ define([
 				parts.push(evt.filter)
 			}
 
-			console.log("parts: ", parts);
+			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
 				q = "?and(" + parts.join(",") + ")"
@@ -293,7 +293,7 @@ define([
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
+			// console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
 
 			if(this.state.hashParams && this.state.hashParams.view_tab){
@@ -304,11 +304,11 @@ define([
 
 			hp.filter = "false";
 
-			console.log("HP: ", JSON.stringify(hp));
+			// console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
-			console.log("NavigateTo: ", l);
+			// console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});

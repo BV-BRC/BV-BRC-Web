@@ -515,7 +515,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_sample_data" ]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -528,9 +528,11 @@ define([
 					}
 
 					if(containerWidget.containerType == "genome_data"){
-						type = "genome_group"
+						type = "genome_group";
 					}else if(containerWidget.containerType == "feature_data"){
 						type = "feature_group";
+					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
+						type = "experiment_group";
 					}
 
 					if(!type){
@@ -566,10 +568,10 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
 				},
 				function(selection){
-					console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
+					console.log("this.currentContainerType: ", this.containerType);
 					console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerType);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
 
 					setTimeout(lang.hitch(this,function(){

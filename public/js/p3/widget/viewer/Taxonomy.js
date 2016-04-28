@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../Phylogeny", "../../util/PathJoin", "../DataItemFormatter",
-	"../TaxonomyTreeGridContainer", "../TaxonomyOverview","dojo/topic","../../util/QueryToEnglish"
+	"../TaxonomyTreeGridContainer", "../TaxonomyOverview", "dojo/topic", "../../util/QueryToEnglish"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, GenomeOverview,
@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, Phylogeny, PathJoin, DataItemFormatter,
-			TaxonomyTreeGrid, TaxonomyOverview,Topic, QueryToEnglish){
+			TaxonomyTreeGrid, TaxonomyOverview, Topic, QueryToEnglish){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
@@ -76,7 +76,7 @@ define([
 			//prevent default action
 		},
 		onSetState: function(attr, oldVal, state){
-			console.log("Taxonomy onSetState", JSON.stringify(state,null,4));
+			console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
 			if(!state){
 				throw Error("No State Set");
 				return;
@@ -87,14 +87,14 @@ define([
 			this.set("taxon_id", parts[parts.length - 1]);
 			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
 
-			if (state.search ){
+			if(state.search){
 				console.log("GENERATE ENGLISH QUERY for ", state.search);
-				this.filteredTaxon = QueryToEnglish(state.search.replace(s,""));
+				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
 				state.search = s + "&" + state.search;
 
 			}else{
 				state.search = s;
-				this.filteredTaxon=false;
+				this.filteredTaxon = false;
 			}
 			//console.log("GenomeList onSetState()");
 			this.inherited(arguments);
@@ -165,8 +165,8 @@ define([
 			});
 			console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
 
-			if (this.filteredTaxon){
-				out.push(this.filteredTaxon);				
+			if(this.filteredTaxon){
+				out.push(this.filteredTaxon);
 			}
 
 			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
