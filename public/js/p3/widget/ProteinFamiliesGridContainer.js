@@ -51,6 +51,9 @@ define([
 				}
 			}));
 		},
+		buildQuery: function(){
+			return "";
+		},
 		_setQueryAttr: function(query){
 			//block default query handler for now.
 		},
