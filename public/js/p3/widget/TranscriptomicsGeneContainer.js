@@ -3,7 +3,7 @@ define([
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./TranscriptomicsGeneGridContainer", "./TranscriptomicsGeneFilterGrid", "./TranscriptomicsGeneHeatmapContainer",
+	"./TranscriptomicsGeneGridContainer", "./TranscriptomicsGeneFilterGrid", "./TranscriptomicsGeneHeatmapContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
@@ -33,7 +33,7 @@ define([
 			}));
 		},
 		onSetState: function(attr, oldVal, state){
-			//console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			// console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 			if(this.mainGridContainer){
 				this.mainGridContainer.set('state', state);
 			}
@@ -113,6 +113,16 @@ define([
 			var otherFilterPanel = new ContentPane({
 				region: "bottom"
 			});
+
+			// var select_genome_filter = new Select({
+			// 	name: "selectGenomeFilter",
+			// 	options:[{}],
+			// 	style: "width: 250px; margin: 5px 0"
+			// });
+			// var label_select_genome_filter = domConstruct.create("label", {innerHTML: "Filer by Genome: "});
+			// domConstruct.place(label_select_genome_filter, otherFilterPanel.containerNode, "last");
+			// domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, "last");
+			// domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
 			var select_log_ratio = new Select({
 				name: "selectLogRatio",

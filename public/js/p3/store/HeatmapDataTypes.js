@@ -74,6 +74,47 @@ define([], function(){
 		this.meta = meta;
 	};
 
+	this.getColorStops = function(colorScheme, maxIntensity){
+		var colorStop = [];
+		var colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000', colorPercentage = [];
+		var colorSignificantUp = "0xFF0000", colorSignificantDown = "0x00FF00";
+
+		if(colorScheme === 'rgb'){
+			colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000';
+			colorPercentage.push('20', '40', '60', '80');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x00FF00";
+		}else if(colorScheme === 'rbw'){
+			colorUp = [255, 255, 255], colorDown = [255, 255, 255], colorZero = '0xFFFFFF';
+			colorPercentage.push('80', '60', '40', '20');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x0000FF";
+		}
+
+		for(var i = 1; i <= maxIntensity; i++){
+			switch(true){
+				case i < 5:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
+					break;
+				case i == 5:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
+					break;
+				case i > 5 && i < 10:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
+					break;
+				case i == 10:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
+					break;
+				case i == 11:
+					colorStop.push(new ColorStop(i / maxIntensity, colorZero));
+					break;
+				default:
+					break;
+			}
+		}
+		return colorStop;
+	};
+
 	this.getColor = function(light, colorArr, scheme, value){
 		var rgb = {
 			r: colorArr[0],
