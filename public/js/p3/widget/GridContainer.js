@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
@@ -486,7 +486,14 @@ define([
 				function(selection){
 					// console.log("this.currentContainerType: ", this.currentContainerType, this);
 					// console.log("View Gene List", selection);
-					new Dialog({content: "IMPLEMENT ME!"}).show();
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					if(experimentIdList.length == 1){
+						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+					}else{
+						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+					}
 				},
 				false
 			], [
@@ -496,10 +503,10 @@ define([
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection,containerWidget){
+				function(selection, containerWidget){
 					var sel = selection[0];
 					console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
-					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})	
+					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -571,16 +578,16 @@ define([
 					console.log("this.currentContainerType: ", this.containerType);
 					console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerType);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
 
-					setTimeout(lang.hitch(this,function(){
+					setTimeout(lang.hitch(this, function(){
 						popup.open({
 							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
 							around: this.selectionActionBar._actions.DownloadSelection.button,
 							orient: ["below"]
 						});
-					}),10);
+					}), 10);
 
 				},
 				false
@@ -774,7 +781,7 @@ define([
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
-				var sel=[];
+				var sel = [];
 				if(!evt.selected){
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
