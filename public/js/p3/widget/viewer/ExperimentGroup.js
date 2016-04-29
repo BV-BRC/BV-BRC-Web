@@ -137,12 +137,14 @@ define([
 				deselectOnRefresh: true,
 				columns: {
 					source: {label: "Source", field: "source"},
-					dataType: {label: "Data Type", field: "data_type"},
+					//dataType: {label: "Data Type", field: "document_type"},
 					title: {label: "Title", field: "title"},
 					comparisons: {label: "Comparisons", field: "samples"},
-					genes: {label: "Genes", field: "genesTotal"},
+					genes: {label: "Genes", field: "genes"},
 					pubmed: {label: "PubMed", field: "pmid"},
-					organism: {label: "Organism", field: "organism"}
+					organism: {label: "Organism", field: "organism"},
+					condition: {label: "Condition", field: "condition"},
+					timeseries: {label: "Time Series", field: "timeseries"}
 				}
 			});
 			var _self = this

@@ -315,6 +315,30 @@ define([
 				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
 
+
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+			var viewFASTATT = new TooltipDialog({
+				content: vfc, onMouseLeave: function(){
+					popup.close(viewFASTATT);
+				}
+			})
+
+			on(viewFASTATT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				console.log("selection: ", selection);
+				popup.close(viewFASTATT);
+				var idType = "feature_id";
+				
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
+
+				Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+			});
+
+/*
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
@@ -347,7 +371,7 @@ define([
 
 				frm.submit();
 			});
-
+*/
 			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
 				label: "FASTA",
 				ignoreDataType: true,
@@ -370,6 +394,7 @@ define([
 				label: "MSA",
 				ignoreDataType: true,
 				multiple: true,
+				min: 2,
 				validTypes: ["*"],
 				validContainerTypes: ["feature_group"],
 				tooltip: "Multiple Sequence Alignment"
