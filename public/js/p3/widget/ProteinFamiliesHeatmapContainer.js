@@ -498,6 +498,16 @@ define([
 			var btnShowDetails = new Button({
 				label: 'Show Proteins'
 			});
+			on(btnShowDetails.domNode, "click", function(){
+
+				var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
+						return feature.feature_id;
+					}).join(',') + ")))";
+
+				Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				_self.dialog.hide();
+			});
+
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group'
 			});
