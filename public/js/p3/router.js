@@ -56,7 +56,17 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 
 		go: function(href, state){
 			console.log("go(" + href + ")", state)
+
+			state = state || {};
+
 			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
+
+			if (href.length>4000){
+				var parts = href.split("?");
+				href = parts[0];
+				state.search = parts[1];
+			}
+
 			if(href != this._currentPath){
 				// console.log("pushState")
 				window.history.pushState(state || {}, "route", href);
