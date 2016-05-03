@@ -254,7 +254,7 @@ define([
 					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Feature",
-					validContainerTypes: ["feature_data"]
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -386,7 +386,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["feature_data", "spgene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					// console.log("view FASTA")
@@ -409,7 +409,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					// console.log("MSA Selection: ", selection);
@@ -432,7 +432,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 
@@ -522,7 +522,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data"]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
 				function(selection, containerWidget){
 					// console.log("Add Items to Group", selection);
@@ -536,7 +536,7 @@ define([
 
 					if(containerWidget.containerType == "genome_data"){
 						type = "genome_group";
-					}else if(containerWidget.containerType == "feature_data"){
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
 						type = "feature_group";
 					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
 						type = "experiment_group";
@@ -572,7 +572,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.containerType);
