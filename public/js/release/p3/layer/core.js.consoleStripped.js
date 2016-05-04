@@ -118,7 +118,7 @@ define([
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.value = "http://localhost:3001/content" + path;
+				newState.value=_self.dataAPI + "/content/" +  path;
 				newState.set = "href";
 				newState.requireAuth = false;
 				//  0 && console.log("Navigate to ", newState);
@@ -148,12 +148,14 @@ define([
 			function getState(params, path){
 				var parser = document.createElement("a");
 				parser.href = path;
-				var newState = {};
+				var newState = params.state || {};
 
 				newState.href = path;
 				newState.prev = params.oldPath;
 				 0 && console.log("parser getState: ", parser);
-				if(parser.search){
+				if (newState.search){
+
+				}else if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
 				}else{
 					newState.search = "";
@@ -181,10 +183,10 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				 0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
+				//  0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
-				 0 && console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
+				//  0 && console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
 
 				var parts = newState.pathname.split("/")
 				parts.shift();
@@ -4975,6 +4977,13 @@ define([
 			});
 
 			Topic.subscribe("/navigate", function(msg){
+				 0 && console.log("app.js handle /navigate msg");
+				 0 && console.log("msg.href length: ", msg.href.length)
+				if (!msg || !msg.href ){
+					 0 && console.error("Missing navigation message");
+					return;
+				}
+
 				Router.go(msg.href);
 			});
 
@@ -5200,7 +5209,7 @@ define([
 						});*/
 		},
 		navigate: function(msg){
-			//  0 && console.log("Navigate to ", msg);
+			 0 && console.log("Navigate to ", msg);
 			if(!msg.href){
 				if(msg.id){
 					msg.href = msg.id;
@@ -10745,7 +10754,17 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 
 		go: function(href, state){
 			 0 && console.log("go(" + href + ")", state)
+
+			state = state || {};
+
 			 0 && console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
+
+			if (href.length>4000){
+				var parts = href.split("?");
+				href = parts[0];
+				state.search = parts[1];
+			}
+
 			if(href != this._currentPath){
 				//  0 && console.log("pushState")
 				window.history.pushState(state || {}, "route", href);
@@ -14160,6 +14179,7 @@ define(["dojo/request", "dojo/_base/Deferred"
 					"X-Requested-With": false
 				},
 				handleAs: "json",
+				timeout: 600000,
 				data: JSON.stringify({id: idx++, method: method, params: params, jsonrpc: "2.0"})
 			}), function(response){
 				//  0 && console.log("JSON RPC RESPONSE: ", response);
@@ -14252,6 +14272,8 @@ define([
 					return "/" + [this.userId, "home", "Feature Groups"].join("/");
 				case "experiment_folder":
 					return "/" + [this.userId, "home", "Experiments"].join("/");
+				case "experiment_group":
+					return "/" + [this.userId, "home", "Experiment Groups"].join("/");
 
 				default:
 					return "/" + [this.userId, "home"].join("/");
@@ -27414,6 +27436,30 @@ define([
 				Topic.publish("/openDialog", {type: "CreateFolder", params: selection[0].path + selection[0].name});
 			}, true);
 
+
+			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+			var viewFASTATT = new TooltipDialog({
+				content: vfc, onMouseLeave: function(){
+					popup.close(viewFASTATT);
+				}
+			})
+
+			on(viewFASTATT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				 0 && console.log("REL: ", rel);
+				var selection = self.actionPanel.get('selection')
+				 0 && console.log("selection: ", selection);
+				popup.close(viewFASTATT);
+				var idType = "feature_id";
+				
+				var ids = selection.map(function(d){
+					return d['feature_id'];
+				});
+
+				Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
+			});
+
+/*
 			var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 			var viewFASTATT = new TooltipDialog({
 				content: vfc, onMouseLeave: function(){
@@ -27446,7 +27492,7 @@ define([
 
 				frm.submit();
 			});
-
+*/
 			this.actionPanel.addAction("ViewFASTA", "fa icon-fasta fa-2x", {
 				label: "FASTA",
 				ignoreDataType: true,
@@ -27469,6 +27515,7 @@ define([
 				label: "MSA",
 				ignoreDataType: true,
 				multiple: true,
+				min: 2,
 				validTypes: ["*"],
 				validContainerTypes: ["feature_group"],
 				tooltip: "Multiple Sequence Alignment"
@@ -27675,7 +27722,7 @@ define([
 				ignoreDataType: true,
 				multiple: true,
 				validTypes: ["*"],
-				validContainerTypes: ["genome_group", "feature_group"],
+				validContainerTypes: ["genome_group", "feature_group", "experiment_group"],
 				tooltip: "Copy selection to a new or existing group"
 			}, function(selection, containerWidget){
 				 0 && console.log("Add Items to Group", selection);
@@ -27699,7 +27746,8 @@ define([
 
 			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {
 					label: "GCOMPARE",
-					ignoreDataType: true,
+					ignoreDataType: false,
+					allowMultiTypes: false,
 					min: 2,
 					max: 3,
 					multiple: true,
@@ -37632,6 +37680,9 @@ define([
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				// 0 && console.log("Checking s: ", type, s);
+				if (!type){
+					 0 && console.log("MISSING TYPE: ", s);
+				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){
 						if(typeof s.autoMeta.app == "string"){
@@ -37648,7 +37699,7 @@ define([
 
 			if(sel.length > 1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
-//				 0 && console.log("isMultiTyped: ", multiTypedSelection);	
+//				// 0 && console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					// 0 && console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)
@@ -38532,7 +38583,18 @@ define([
 		},
 		onCopy: function(evt){
 			 0 && console.log("Copy Selection: ", this.selection, " to ", this.value);
-			var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
+			var idType = "genome_id";
+			if(this.type == "genome_group"){
+				idType = "genome_id";
+			}
+			else if(this.type == "feature_group"){
+				idType = "feature_id";
+			}
+			else if(this.type == "experiment_group"){
+				idType = "eid";
+			}
+			
 			var def;
 			if(this.targetType.get("value") == "existing"){
 				def = WorkspaceManager.addToGroup(this.value, idType, this.selection.map(function(o){
@@ -38751,8 +38813,9 @@ define([
 				}
 				else if(myType === 'experiment_group'){
 					url = window.App.dataServiceURL + "/transcriptomics_experiment/";
-					var q = "in(expid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
+					var q = "in(eid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
 					 0 && console.log("url: ", url);
+					 0 && console.log("ids: ", ids);
 					xhr.post(url, {
 						data: q,
 						headers: {
@@ -38780,7 +38843,8 @@ define([
 						grid.renderArray(dataArray);
 						grid.resize();
 					}, function(err){
-						 0 && console.log("Error Retreiving Genomes: ", err)
+						 0 && console.log("Error Retreiving Experiment: ", err)
+						document.getElementById('gse-members-grid').innerHTML = "This is a private experiment: " + ids;
 					});
 				}
 			}
@@ -39057,11 +39121,9 @@ define([
 				if(group_data[i].data.id_list.eid){
 					group.members = group_data[i].data.id_list.eid;
 				}
-				/*
 				else if (group_data[i].data.id_list.ws_item_path) {
 				  group.members = group_data[i].data.id_list.ws_item_path;
 				}
-				*/
 			}
 			 0 && console.log("current group ", group);
 			groups.push(group);
@@ -53079,11 +53141,11 @@ define([
 			// }
 
 			var _self = this;
-			 0 && console.log('genomeList setQuery - this.query: ', this.query);
+			//  0 && console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			 0 && console.log("url: ", url);
+			//  0 && console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -53093,7 +53155,7 @@ define([
 				handleAs: "json"
 			}).then(function(res){
 				// 0 && console.log(" URL: ", url);
-				 0 && console.log("Get GenomeList Res: ", res);
+				//  0 && console.log("Get GenomeList Res: ", res);
 				if(res && res.response && res.response.docs){
 					var genomes = res.response.docs;
 					if(genomes){
@@ -53104,29 +53166,29 @@ define([
 						_self._set("genome_ids", genome_ids)
 					}
 				}else{
-					 0 && console.log("Invalid Response for: ", url);
+					 0 && console.warn("Invalid Response for: ", url);
 				}
 			}, function(err){
-				 0 && console.log("Error Retreiving Genomes: ", err)
+				 0 && console.error("Error Retreiving Genomes: ", err)
 			});
 
 		},
 
 		onSetState: function(attr, oldVal, state){
-			 0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			//  0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			if(!state.genome_ids){
-				 0 && console.log("	NO Genome_IDS")
+				//  0 && console.log("	NO Genome_IDS")
 				if(state.search == oldVal.search){
-					 0 && console.log("		Same Search")
-					 0 && console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					//  0 && console.log("		Same Search")
+					//  0 && console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
 					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
 					this.set("query", state.search);
 				}
 			}else if(state.search != oldVal.search){
-				 0 && console.log("SET QUERY: ", state.search);
+				//  0 && console.log("SET QUERY: ", state.search);
 				this.set("query", state.search);
 			}
 
@@ -53142,7 +53204,7 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 
 			var content = QueryToEnglish(newVal);
-			 0 && console.log("English Content: ", content);
+			//  0 && console.log("English Content: ", content);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
@@ -53151,12 +53213,12 @@ define([
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			 0 && console.log("Active: ", active, "state: ", this.state);
+			//  0 && console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				 0 && console.log("ACTIVE TAB NOT FOUND: ", active);
+				//  0 && console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
@@ -53164,7 +53226,7 @@ define([
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-					 0 && console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					//  0 && console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
@@ -53173,10 +53235,10 @@ define([
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						 0 && console.log("Found Genome_IDS in state object");
+						//  0 && console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						//  0 && console.log("gidQueryState: ", gidQueryState);
-						 0 && console.log("Active Query State: ", activeQueryState);
+						//  0 && console.log("Active Query State: ", activeQueryState);
 
 					}
 
@@ -53187,11 +53249,11 @@ define([
 					}
 					break;
 			}
-			 0 && console.log("Set Active State COMPLETE");
+			//  0 && console.log("Set Active State COMPLETE");
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			 0 && console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			//  0 && console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
 		},
@@ -53275,14 +53337,14 @@ define([
 			// }));
 		},
 		onSetTotalGenomes: function(attr, oldVal, newVal){
-			 0 && console.log("ON SET TOTAL GENOMES: ", newVal);
+			//  0 && console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				 0 && console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
+				//  0 && console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
 				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
-					 0 && console.log("\t\tDisable Child: ", child.id);
+					//  0 && console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);
 				}else{
@@ -53315,7 +53377,7 @@ define([
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			 0 && console.log("onSetAnchor: ", evt, evt.filter);
+			//  0 && console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
 			var f = evt.filter;
@@ -53331,7 +53393,7 @@ define([
 				parts.push(evt.filter)
 			}
 
-			 0 && console.log("parts: ", parts);
+			//  0 && console.log("parts: ", parts);
 
 			if(parts.length > 1){
 				q = "?and(" + parts.join(",") + ")"
@@ -53341,7 +53403,7 @@ define([
 				q = "";
 			}
 
-			 0 && console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
+			//  0 && console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
 
 			if(this.state.hashParams && this.state.hashParams.view_tab){
@@ -53352,11 +53414,11 @@ define([
 
 			hp.filter = "false";
 
-			 0 && console.log("HP: ", JSON.stringify(hp));
+			//  0 && console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
-			 0 && console.log("NavigateTo: ", l);
+			//  0 && console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});
@@ -67700,7 +67762,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog","./DownloadTooltipDialog"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
@@ -67952,7 +68014,7 @@ define([
 					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Feature",
-					validContainerTypes: ["feature_data"]
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -68084,7 +68146,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["feature_data", "spgene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					//  0 && console.log("view FASTA")
@@ -68107,7 +68169,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					//  0 && console.log("MSA Selection: ", selection);
@@ -68130,7 +68192,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 
@@ -68184,7 +68246,14 @@ define([
 				function(selection){
 					//  0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
 					//  0 && console.log("View Gene List", selection);
-					new Dialog({content: "IMPLEMENT ME!"}).show();
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					if(experimentIdList.length == 1){
+						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+					}else{
+						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+					}
 				},
 				false
 			], [
@@ -68194,10 +68263,10 @@ define([
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection,containerWidget){
+				function(selection, containerWidget){
 					var sel = selection[0];
 					 0 && console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
-					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})	
+					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
 					// var selection = self.actionPanel.get('selection')
 					// var ids = selection.map(function(d){ return d['feature_id']; });
 
@@ -68213,7 +68282,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					tooltip: "Copy selection to a new or existing group",
-					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_sample_data" ]
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
 				function(selection, containerWidget){
 					//  0 && console.log("Add Items to Group", selection);
@@ -68226,9 +68295,11 @@ define([
 					}
 
 					if(containerWidget.containerType == "genome_data"){
-						type = "genome_group"
-					}else if(containerWidget.containerType == "feature_data"){
+						type = "genome_group";
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
 						type = "feature_group";
+					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
+						type = "experiment_group";
 					}
 
 					if(!type){
@@ -68259,24 +68330,25 @@ define([
 					label: "DWNLD",
 					multiple: true,
 					validTypes: ["*"],
+					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
-					 0 && console.log("this.currentContainerType: ", this.containerActionBar.currentContainerType, this);
+					 0 && console.log("this.currentContainerType: ", this.containerType);
 					 0 && console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType",  this.containerActionBar.currentContainerType);	
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);					
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
 
-					setTimeout(lang.hitch(this,function(){
+					setTimeout(lang.hitch(this, function(){
 						popup.open({
 							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
 							around: this.selectionActionBar._actions.DownloadSelection.button,
 							orient: ["below"]
 						});
-					}),10);
+					}), 10);
 
 				},
 				false
@@ -68470,7 +68542,7 @@ define([
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
-				var sel=[];
+				var sel = [];
 				if(!evt.selected){
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
@@ -70806,16 +70878,20 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: lang.mixin({}, this.pathwaysGrid.get('columns'), {
-					ecnumber: {
-						label: 'EC Number',
-						field: 'ec_number'
-					}, annotation: {label: 'Annotation', field: 'annotation'}
-				}),
+				columns: {
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					description: {label: 'Description', field: 'ec_description'},
+					genome_count: {label: 'Genome Count', field: 'genome_count'},
+					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+				},
 				store: ecNumberStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "ec_number"}]
+					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
 				}
 			});
 
@@ -70826,15 +70902,24 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: lang.mixin({}, this.ecNumbersGrid.get('columns'), {
+				columns: {
+					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+					genome_name: {label: 'Genome Name', field: 'genome_name'},
+					accession: {label: 'Accession', field: 'accession', hidden: true},
+					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
 					gene: {label: 'Gene', field: 'gene'},
-					ecnumber: {label: 'EC Number', field: 'ec_number'},
-					annotation: {label: 'Annotation', field: 'annotation'}
-				}),
+					product: {label: 'Product', field: 'product'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					ec_description: {label: 'EC Description', field: 'ec_description'}
+				},
 				store: geneStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "gene"}]
+					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
 				}
 			});
 
@@ -71268,11 +71353,11 @@ define([
 					}
 				}
 			})) + ")",
-			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			genes: "&limit(25000)&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
-						field: "gene",
+						field: "feature_id",
 						limit: -1,
 						facet: {
 							genome_count: "unique(genome_id)",
@@ -71368,7 +71453,7 @@ define([
 				var props = {
 					"pathway": "pathway_id",
 					"ecnumber": "ec_number",
-					"genes": 'gene'
+					"genes": 'feature_id'
 				};
 				 0 && console.log("Pathway Base Query Response:", response);
 				//  0 && console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
@@ -71420,50 +71505,69 @@ define([
 		}
 	})
 });
+
 },
 'p3/widget/ProteinFamiliesContainer':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
-	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
+	"dojox/widget/Standby",
+	"./ActionBar", "./ContainerActionBar",
 	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"./ProteinFamiliesMembersGridContainer",
-	"dijit/layout/ContentPane", "dojo/topic", "dijit/form/RadioButton", "dojo/dom-construct",
-	"dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button"
-], function(declare, BorderContainer, on, lang,
-			ActionBar, ContainerActionBar, TabContainer, StackController,
-			ProteinFamiliesGridContainer, ProteinFamiliesFilterGrid, ProteinFamiliesHeatmapContainer,
-			ProteinFamiliesMembersGridContainer,
-			ContentPane, Topic, RadioButton, domConstruct,
-			TextArea, TextBox, Button){
-
-	// configurations for proteinFamilies components (grid, filter, heatmap)
-	var pfState = {
-		'familyType': 'figfam', // default
-		'heatmapAxis': '',
-		'genomeIds': [],
-		'genomeFilterStatus': {},
-		'clusterRowOrder': [],
-		'clusterColumnOrder': [],
-		'perfectFamMatch': 'A',
-		'min_member_count': null,
-		'max_member_count': null,
-		'min_genome_count': null,
-		'max_genome_count': null
-	};
+	"./ProteinFamiliesMembersGridContainer"
+], function(declare, lang, on, Topic, domConstruct,
+			BorderContainer, TabContainer, StackController, ContentPane,
+			RadioButton, TextArea, TextBox, Button,
+			Standby,
+			ActionBar, ContainerActionBar,
+			MainGridContainer, FilterGrid, HeatmapContainer,
+			MembersGridContainer){
 
 	return declare([BorderContainer], {
+		id: "PFContainer",
 		gutters: false,
 		state: null,
+		pfState: null,
+		loadingMask: null,
 		maxGenomeCount: 10000,
 		apiServer: window.App.dataServiceURL,
+		constructor: function(){
+			var self = this;
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				//  0 && console.log("ProteinFamiliesHeatmapContainer:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "showMembersGrid":
+						self.membersGridContainer.set("query", value);
+						self.tabContainer.selectChild(self.membersGridContainer);
+						break;
+					case "updatePfState":
+						self.pfState = value;
+						break;
+					case "showLoadingMask":
+						self.loadingMask.show();
+						break;
+					case "hideLoadingMask":
+						self.loadingMask.hide();
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		postCreate: function(){
+			// create a loading mask
+			this.loadingMask = new Standby({target: this.id});
+			this.addChild(this.loadingMask);
+			this.loadingMask.startup();
+		},
 		onSetState: function(attr, oldVal, state){
 			// 0 && console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			//if(this.proteinFamiliesGrid){
-			//	this.proteinFamiliesGrid.set('state', state);
-			//}
-
-			if(this.filterPanelGrid){
-				this.filterPanelGrid.set('state', state);
+			if(this.mainGridContainer){
+				this.mainGridContainer.set('state', state);
 			}
 			this._set('state', state);
 		},
@@ -71475,14 +71579,14 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 			}
-			if(this.proteinFamiliesGrid){
-				this.proteinFamiliesGrid.set('visible', true);
+			if(this.mainGridContainer){
+				this.mainGridContainer.set('visible', true);
 			}
-			if(this.heatmap){
-				this.heatmap.set('visible', true);
+			if(this.heatmapContainer){
+				this.heatmapContainer.set('visible', true);
 			}
-			if(this.proteinFamiliesMembersGrid){
-				this.proteinFamiliesMembersGrid.set('visible', true);
+			if(this.membersGridContainer){
+				this.membersGridContainer.set('visible', true);
 			}
 		},
 
@@ -71491,11 +71595,53 @@ define([
 				return;
 			}
 
+			var filterPanel = this._buildFilterPanel();
+
+			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
+
+			var tabController = new StackController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+			this.mainGridContainer = new MainGridContainer({
+				title: "Table",
+				content: "Protein Families Table",
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
+			this.heatmapContainer = new HeatmapContainer({
+				title: "Heatmap",
+				content: "Heatmap"
+			});
+
+			this.membersGridContainer = new MembersGridContainer({
+				title: "", // hide tab
+				content: "Protein Family Members",
+				state: this.state
+			});
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			this.tabContainer.addChild(this.mainGridContainer);
+			this.tabContainer.addChild(this.heatmapContainer);
+			this.tabContainer.addChild(this.membersGridContainer);
+			this.addChild(tabController);
+			this.addChild(this.tabContainer);
+			this.addChild(filterPanel);
+
+			this.inherited(arguments);
+			this._firstView = true;
+		},
+		_buildFilterPanel: function(){
+
 			var filterPanel = new ContentPane({
 				region: "left",
 				title: "filter",
 				content: "Filter By",
-				style: "width:400px; overflow:auto;",
+				style: "width:380px; overflow:auto",
 				splitter: true
 			});
 
@@ -71508,7 +71654,7 @@ define([
 				value: "plfam"
 			});
 			rb_plfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "plfam")
+				Topic.publish("ProteinFamilies", "setFamilyType", "plfam")
 			});
 			var label_plfam = domConstruct.create("label", {innerHTML: " PATRIC genus-specific families (PLfams)<br/>"});
 			domConstruct.place(rb_plfam.domNode, familyTypePanel.containerNode, "last");
@@ -71520,7 +71666,7 @@ define([
 				value: "pgfam"
 			});
 			rb_pgfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "pgfam")
+				Topic.publish("ProteinFamilies", "setFamilyType", "pgfam")
 			});
 			var label_pgfam = domConstruct.create("label", {innerHTML: " PATRIC cross-genus families (PGfams)<br/>"});
 			domConstruct.place(rb_pgfam.domNode, familyTypePanel.containerNode, "last");
@@ -71533,7 +71679,7 @@ define([
 				checked: true
 			});
 			rb_figfam.on("click", function(){
-				Topic.publish("ProteinFamilies", "familyType", "figfam")
+				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
 			});
 			var label_figfam = domConstruct.create("label", {innerHTML: " FIGFam"});
 			domConstruct.place(rb_figfam.domNode, familyTypePanel.containerNode, "last");
@@ -71542,23 +71688,23 @@ define([
 			filterPanel.addChild(familyTypePanel);
 
 			// genome list grid
-			this.filterPanelGrid = new ProteinFamiliesFilterGrid({
-				state: this.state,
-				pfState: pfState
+			var filterGrid = new FilterGrid({
+				state: this.state
 			});
-			filterPanel.addChild(this.filterPanelGrid);
+			filterPanel.addChild(filterGrid);
 
 			//// other filter items
 			var otherFilterPanel = new ContentPane({
 				region: "bottom"
 			});
+			/*
 			var ta_keyword = new TextArea({
 				style: "width:215px; min-height:75px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
-
+			*/
 			//
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
@@ -71566,9 +71712,7 @@ define([
 				name: "familyMatch",
 				value: "perfect"
 			});
-			rb_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_perfect_match = domConstruct.create("label", {innerHTML: " Perfect Families (One protein per genome)<br/>"});
 			domConstruct.place(rb_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_perfect_match, otherFilterPanel.containerNode, "last");
@@ -71577,9 +71721,7 @@ define([
 				name: "familyMatch",
 				value: "non_perfect"
 			});
-			rb_non_perfect_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_non_perfect_match = domConstruct.create("label", {innerHTML: " Non perfect Families<br/>"});
 			domConstruct.place(rb_non_perfect_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_non_perfect_match, otherFilterPanel.containerNode, "last");
@@ -71589,9 +71731,7 @@ define([
 				value: "all_match",
 				checked: true
 			});
-			rb_all_match.on("click", function(){
-				//Topic.publish()
-			});
+
 			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
 			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
@@ -71630,70 +71770,1088 @@ define([
 			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
 
 			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var defaultFilterValue = {
+				min_member_count: null,
+				max_member_count: null,
+				min_genome_count: null,
+				max_genome_count: null
+			};
+
 			var btn_submit = new Button({
-				label: "Filter"
+				label: "Filter",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {};
+
+					if(rb_perfect_match.get('value')){
+						filter.perfectFamMatch = 'Y';
+					}else if(rb_non_perfect_match.get('value')){
+						filter.perfectFamMatch = 'N';
+					}else if(rb_all_match.get('value')){
+						filter.perfectFamMatch = 'A';
+					}
+
+					var min_member_count = parseInt(tb_num_protein_family_min.get('value'));
+					var max_member_count = parseInt(tb_num_protein_family_max.get('value'));
+					var min_genome_count = parseInt(tb_num_genome_family_min.get('value'));
+					var max_genome_count = parseInt(tb_num_genome_family_max.get('value'));
+
+					!isNaN(min_member_count) ? filter.min_member_count = min_member_count : {};
+					!isNaN(max_member_count) ? filter.max_member_count = max_member_count : {};
+
+					!isNaN(min_genome_count) ? filter.min_genome_count = min_genome_count : {};
+					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
+
+					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
+					//  0 && console.log(this.pfState);
+					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
 
 			filterPanel.addChild(otherFilterPanel);
 
-			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
-
-			var tabController = new StackController({
-				containerId: this.id + "_TabContainer",
-				region: "top",
-				"class": "TextTabButtons"
-			});
-
-			this.proteinFamiliesMembersGrid = new ProteinFamiliesMembersGridContainer({
-				id: 'pfMembersGrid',
-				title: "", // hide tab
-				content: "Protein Family Members",
-				state: this.state
-			});
-
-			this.proteinFamiliesGrid = new ProteinFamiliesGridContainer({
-				title: "Table",
-				content: "Protein Families Table",
-				state: this.state,
-				tabContainer: this.tabContainer,
-				membersGridPanel: this.proteinFamiliesMembersGrid,
-				pfState: pfState,
-				apiServer: this.apiServer
-			});
-
-			this.heatmap = new ProteinFamiliesHeatmapContainer({
-				title: "Heatmap",
-				content: "heatmap",
-				dataGridContainer: this.proteinFamiliesGrid,
-				pfState: pfState
-			});
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
-			this.tabContainer.addChild(this.proteinFamiliesGrid);
-			this.tabContainer.addChild(this.heatmap);
-			this.tabContainer.addChild(this.proteinFamiliesMembersGrid);
-			this.addChild(tabController);
-			this.addChild(this.tabContainer);
-			this.addChild(filterPanel);
-
-			this.inherited(arguments);
-			this._firstView = true;
+			return filterPanel;
 		}
 	});
 });
 },
+'dijit/form/Textarea':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-style", // domStyle.set
+	"./_ExpandingTextAreaMixin",
+	"./SimpleTextarea"
+], function(declare, domStyle, _ExpandingTextAreaMixin, SimpleTextarea){
+
+	// module:
+	//		dijit/form/Textarea
+
+	return declare("dijit.form.Textarea", [SimpleTextarea, _ExpandingTextAreaMixin], {
+		// summary:
+		//		A textarea widget that adjusts it's height according to the amount of data.
+		//
+		// description:
+		//		A textarea that dynamically expands/contracts (changing it's height) as
+		//		the user types, to display all the text without requiring a scroll bar.
+		//
+		//		Takes nearly all the parameters (name, value, etc.) that a vanilla textarea takes.
+		//		Rows is not supported since this widget adjusts the height.
+
+
+		// TODO: for 2.0, rename this to ExpandingTextArea, and rename SimpleTextarea to TextArea
+
+		baseClass: "dijitTextBox dijitTextArea dijitExpandingTextArea",
+
+		// Override SimpleTextArea.cols to default to width:100%, for backward compatibility
+		cols: "",
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			// tweak textarea style to reduce browser differences
+			domStyle.set(this.textbox, { overflowY: 'hidden', overflowX: 'auto', boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' });
+		}
+	});
+});
+
+},
+'dijit/form/_ExpandingTextAreaMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-construct", // domConstruct.create
+	"dojo/has",
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"dojo/_base/window", // win.body
+	"../Viewport"
+], function(declare, domConstruct, has, lang, on, win, Viewport){
+
+	// module:
+	//		dijit/form/_ExpandingTextAreaMixin
+
+	// feature detection, true for mozilla and webkit
+	has.add("textarea-needs-help-shrinking", function(){
+		var body = win.body(),	// note: if multiple documents exist, doesn't matter which one we use
+			te = domConstruct.create('textarea', {
+			rows:"5",
+			cols:"20",
+			value: ' ',
+			style: {zoom:1, fontSize:"12px", height:"96px", overflow:'hidden', visibility:'hidden', position:'absolute', border:"5px solid white", margin:"0", padding:"0", boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' }
+		}, body, "last");
+		var needsHelpShrinking = te.scrollHeight >= te.clientHeight;
+		body.removeChild(te);
+		return needsHelpShrinking;
+	});
+
+	return declare("dijit.form._ExpandingTextAreaMixin", null, {
+		// summary:
+		//		Mixin for textarea widgets to add auto-expanding capability
+
+		_setValueAttr: function(){
+			this.inherited(arguments);
+			this.resize();
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+			var textarea = this.textbox;
+			textarea.style.overflowY = "hidden";
+			this.own(on(textarea, "focus, resize", lang.hitch(this, "_resizeLater")));
+		},
+
+		startup: function(){ 
+			this.inherited(arguments);
+			this.own(Viewport.on("resize", lang.hitch(this, "_resizeLater")));
+			this._resizeLater();
+		},
+
+		_onInput: function(e){
+			this.inherited(arguments);
+			this.resize();
+		},
+
+		_estimateHeight: function(){
+			// summary:
+			//		Approximate the height when the textarea is invisible with the number of lines in the text.
+			//		Fails when someone calls setValue with a long wrapping line, but the layout fixes itself when the user clicks inside so . . .
+			//		In IE, the resize event is supposed to fire when the textarea becomes visible again and that will correct the size automatically.
+			//
+			var textarea = this.textbox;
+			// #rows = #newlines+1
+			textarea.rows = (textarea.value.match(/\n/g) || []).length + 1;
+		},
+
+		_resizeLater: function(){
+			this.defer("resize");
+		},
+
+		resize: function(){
+			// summary:
+			//		Resizes the textarea vertically (should be called after a style/value change)
+
+			var textarea = this.textbox;
+
+			function textareaScrollHeight(){
+				var empty = false;
+				if(textarea.value === ''){
+					textarea.value = ' ';
+					empty = true;
+				}
+				var sh = textarea.scrollHeight;
+				if(empty){ textarea.value = ''; }
+				return sh;
+			}
+
+			if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
+			if(this.busyResizing){ return; }
+			this.busyResizing = true;
+			if(textareaScrollHeight() || textarea.offsetHeight){
+				var newH = textareaScrollHeight() + Math.max(textarea.offsetHeight - textarea.clientHeight, 0);
+				var newHpx = newH + "px";
+				if(newHpx != textarea.style.height){
+					textarea.style.height = newHpx;
+					textarea.rows = 1; // rows can act like a minHeight if not cleared
+				}
+				if(has("textarea-needs-help-shrinking")){
+					var	origScrollHeight = textareaScrollHeight(),
+						newScrollHeight = origScrollHeight,
+						origMinHeight = textarea.style.minHeight,
+						decrement = 4, // not too fast, not too slow
+						thisScrollHeight,
+						origScrollTop = textarea.scrollTop;
+					textarea.style.minHeight = newHpx; // maintain current height
+					textarea.style.height = "auto"; // allow scrollHeight to change
+					while(newH > 0){
+						textarea.style.minHeight = Math.max(newH - decrement, 4) + "px";
+						thisScrollHeight = textareaScrollHeight();
+						var change = newScrollHeight - thisScrollHeight;
+						newH -= change;
+						if(change < decrement){
+							break; // scrollHeight didn't shrink
+						}
+						newScrollHeight = thisScrollHeight;
+						decrement <<= 1;
+					}
+					textarea.style.height = newH + "px";
+					textarea.style.minHeight = origMinHeight;
+					textarea.scrollTop = origScrollTop;
+				}
+				textarea.style.overflowY = textareaScrollHeight() > textarea.clientHeight ? "auto" : "hidden";
+				if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
+			}else{
+				// hidden content of unknown size
+				this._estimateHeight();
+			}
+			this.busyResizing = false;
+		}
+	});
+});
+
+},
+'dijit/form/SimpleTextarea':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.add
+	"dojo/sniff", // has("ie") has("opera")
+	"./TextBox"
+], function(declare, domClass, has, TextBox){
+
+	// module:
+	//		dijit/form/SimpleTextarea
+
+	return declare("dijit.form.SimpleTextarea", TextBox, {
+		// summary:
+		//		A simple textarea that degrades, and responds to
+		//		minimal LayoutContainer usage, and works with dijit/form/Form.
+		//		Doesn't automatically size according to input, like Textarea.
+		//
+		// example:
+		//	|	<textarea data-dojo-type="dijit/form/SimpleTextarea" name="foo" value="bar" rows=30 cols=40></textarea>
+		//
+		// example:
+		//	|	new SimpleTextarea({ rows:20, cols:30 }, "foo");
+
+		baseClass: "dijitTextBox dijitTextArea",
+
+		// rows: Number
+		//		The number of rows of text.
+		rows: "3",
+
+		// rows: Number
+		//		The number of characters per line.
+		cols: "20",
+
+		templateString: "<textarea ${!nameAttrSetting} data-dojo-attach-point='focusNode,containerNode,textbox' autocomplete='off'></textarea>",
+
+		postMixInProperties: function(){
+			// Copy value from srcNodeRef, unless user specified a value explicitly (or there is no srcNodeRef)
+			// TODO: parser will handle this in 2.0
+			if(!this.value && this.srcNodeRef){
+				this.value = this.srcNodeRef.value;
+			}
+			this.inherited(arguments);
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			if(has("ie") && this.cols){ // attribute selectors is not supported in IE6
+				domClass.add(this.textbox, "dijitTextAreaCols");
+			}
+		},
+
+		filter: function(/*String*/ value){
+			// Override TextBox.filter to deal with newlines... specifically (IIRC) this is for IE which writes newlines
+			// as \r\n instead of just \n
+			if(value){
+				value = value.replace(/\r/g, "");
+			}
+			return this.inherited(arguments);
+		},
+
+		_onInput: function(/*Event?*/ e){
+			// Override TextBox._onInput() to enforce maxLength restriction
+			if(this.maxLength){
+				var maxLength = parseInt(this.maxLength);
+				var value = this.textbox.value.replace(/\r/g, '');
+				var overflow = value.length - maxLength;
+				if(overflow > 0){
+					var textarea = this.textbox;
+					if(textarea.selectionStart){
+						var pos = textarea.selectionStart;
+						var cr = 0;
+						if(has("opera")){
+							cr = (this.textbox.value.substring(0, pos).match(/\r/g) || []).length;
+						}
+						this.textbox.value = value.substring(0, pos - overflow - cr) + value.substring(pos - cr);
+						textarea.setSelectionRange(pos - overflow, pos - overflow);
+					}else if(this.ownerDocument.selection){ //IE
+						textarea.focus();
+						var range = this.ownerDocument.selection.createRange();
+						// delete overflow characters
+						range.moveStart("character", -overflow);
+						range.text = '';
+						// show cursor
+						range.select();
+					}
+				}
+			}
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
+'dojox/widget/Standby':function(){
+define(["dojo/_base/kernel",
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dojo/_base/event",
+	"dojo/_base/sniff",
+	"dojo/dom",
+	"dojo/dom-attr",
+	"dojo/dom-construct",
+	"dojo/dom-geometry",
+	"dojo/dom-style",
+	"dojo/window",
+	"dojo/_base/window",
+	"dojo/_base/fx",
+	"dojo/fx",
+	"dijit/_Widget",
+	"dijit/_TemplatedMixin",
+	"dijit/registry"],
+
+function(kernel,
+		declare,
+		array,
+		event,
+		has,
+		dom,
+		attr,
+		construct,
+		geometry,
+		domStyle,
+		window,
+		baseWindow,
+		baseFx,
+		fx,
+		_Widget,
+		_TemplatedMixin,
+		registry) {
+
+kernel.experimental("dojox.widget.Standby");
+
+return declare("dojox.widget.Standby", [_Widget, _TemplatedMixin],{
+	// summary:
+	//		A widget designed to act as a Standby/Busy/Disable/Blocking widget to indicate a
+	//		particular DOM node is processing and cannot be clicked on at this time.
+	//		This widget uses absolute positioning to apply the overlay and image.
+
+	// image: String
+	//		A URL to an image to center within the blocking overlay.
+	//		The default is a basic spinner.
+	image: require.toUrl("dojox/widget/Standby/images/loading.gif").toString(),
+
+	// imageText: String
+	//		Text to set on the ALT tag of the image.
+	//		The default is 'Please wait...'
+	imageText: "Please Wait...", // TODO: i18n
+
+	// text: String
+	//		Text/HTML to display in the center of the overlay
+	//		This is used if image center is disabled.
+	//		Defaults to 'Please Wait...'
+	text: "Please wait...",
+
+	// centerIndicator: String
+	//		Property to define if the image and its alt text should be used, or
+	//		a simple Text/HTML node should be used.  Allowable values are 'image'
+	//		and 'text'.
+	//		Default is 'image'.
+	centerIndicator: "image",
+	
+	// target: DOMNode||DOMID(String)||WidgetID(String)
+	//		The target to overlay when active.  Can be a widget id, a
+	//		dom id, or a direct node reference.
+	target: "",
+
+	// color:	String
+	//		The color to set the overlay.  Should be in #XXXXXX form.
+	//		Default color for the translucent overlay is light gray.
+	color: "#C0C0C0",
+
+	// duration: Integer
+	//		Integer defining how long the show and hide effects should take in milliseconds.
+	//		Defaults to 500
+	duration: 500,
+	
+	// zIndex: String
+	//		Control that lets you specify if the zIndex for the overlay
+	//		should be auto-computed based off parent zIndex, or should be set
+	//		to a particular value.  This is useful when you want to overlay
+	//		things in digit.Dialogs, you can specify a base zIndex to append from.
+	zIndex: "auto",
+	
+	// opacity: float
+	//		The opacity to make the overlay when it is displayed/faded in.
+	//		The default is 0.75.  This does not affect the image opacity, only the
+	//		overlay.
+	opacity: 0.75,	
+	
+	// templateString: [protected] String
+	//		The template string defining out the basics of the widget.  No need for an external
+	//		file.
+	templateString:
+		"<div>" +
+			"<div style=\"display: none; opacity: 0; z-index: 9999; " +
+				"position: absolute; cursor:wait;\" dojoAttachPoint=\"_underlayNode\"></div>" +
+			"<img src=\"${image}\" style=\"opacity: 0; display: none; z-index: -10000; " +
+				"position: absolute; top: 0px; left: 0px; cursor:wait;\" "+
+				"dojoAttachPoint=\"_imageNode\">" +
+			"<div style=\"opacity: 0; display: none; z-index: -10000; position: absolute; " +
+				"top: 0px;\" dojoAttachPoint=\"_textNode\"></div>" +
+		"</div>",
+
+	// _underlayNode: [private] DOMNode
+	//		The node that is the translucent underlay for the
+	//		image that blocks access to the target.
+	_underlayNode: null,
+
+	// _imageNode: [private] DOMNode
+	//		The image node where we attach and define the image to display.
+	_imageNode: null,
+
+	// _textNode: [private] DOMNode
+	//		The div to attach text/HTML in the overlay center item.
+	_textNode: null,
+
+	// _centerNode: [private] DOMNode
+	//		Which node to use as the center node, the image or the text node.
+	_centerNode: null,
+
+	// _displayed: [private] Boolean
+	//		Flag to indicate if the overlay is displayed or not.
+	_displayed: false,
+
+	// _resizeCheck: [private] Object
+	//		Handle to interval function that checks the target for changes.
+	_resizeCheck: null,
+
+	// _started: [private] Boolean
+	//		Trap flag to ensure startup only processes once.
+	_started: false,
+
+	// _parent: [private] DOMNode
+	//		Wrapping div for the widget, also used for IE 7 in dealing with the
+	//		zoom issue.
+	_parent: null,
+
+	startup: function(args){
+		// summary:
+		//		Over-ride of the basic widget startup function.
+		//		Configures the target node and sets the image to use.
+		if(!this._started){
+			if(typeof this.target === "string"){
+				var w = registry.byId(this.target);
+				this.target = w ? w.domNode : dom.byId(this.target);
+			}
+
+			if(this.text){
+				this._textNode.innerHTML = this.text;
+			}
+			if(this.centerIndicator === "image"){
+				this._centerNode = this._imageNode;
+				attr.set(this._imageNode, "src", this.image);
+				attr.set(this._imageNode, "alt", this.imageText);
+			}else{
+				this._centerNode = this._textNode;
+			}
+			domStyle.set(this._underlayNode, {
+				display: "none",
+				backgroundColor: this.color
+			});
+			domStyle.set(this._centerNode, "display", "none");
+			this.connect(this._underlayNode, "onclick", "_ignore");
+
+			//Last thing to do is move the widgets parent, if any, to the current document body.
+			//Avoids having to deal with parent relative/absolute mess.  Otherwise positioning
+			//tends to go goofy.
+			if(this.domNode.parentNode && this.domNode.parentNode != baseWindow.body()){
+				baseWindow.body().appendChild(this.domNode);
+			}
+
+			//IE 7 has a horrible bug with zoom, so we have to create this node
+			//to cross-check later.  Sigh.
+			if(has("ie") == 7){
+				this._ieFixNode = construct.create("div");
+				domStyle.set(this._ieFixNode, {
+					opacity: "0",
+					zIndex: "-1000",
+					position: "absolute",
+					top: "-1000px"
+				});
+				baseWindow.body().appendChild(this._ieFixNode);
+			}
+			this.inherited(arguments);
+		}		
+	},
+
+	show: function(){
+		// summary:
+		//		Function to display the blocking overlay and busy/status icon or text.
+		if(!this._displayed){
+			if(this._anim){
+				this._anim.stop();
+				delete this._anim;
+			}
+			this._displayed = true;
+			this._size();
+			this._disableOverflow();
+			this._fadeIn();
+		}
+	},
+
+	hide: function(){
+		// summary:
+		//		Function to hide the blocking overlay and status icon or text.
+		if(this._displayed){
+			if(this._anim){
+				this._anim.stop();
+				delete this._anim;
+			}
+			this._size();
+			this._fadeOut();
+			this._displayed = false;
+			if(this._resizeCheck !== null){
+				clearInterval(this._resizeCheck);
+				this._resizeCheck = null;
+			}
+		}
+	},
+
+	isVisible: function(){
+		// summary:
+		//		Helper function so you can test if the widget is already visible or not.
+		// returns:
+		//		boolean indicating if the widget is in 'show' state or not.
+		return this._displayed; // boolean
+	},
+
+	onShow: function(){
+		// summary:
+		//		Event that fires when the display of the Standby completes.
+	},
+
+	onHide: function(){
+		// summary:
+		//		Event that fires when the display of the Standby completes.
+	},
+
+	uninitialize: function(){
+		// summary:
+		//		Over-ride to hide the widget, which clears intervals, before cleanup.
+		this._displayed = false;
+		if(this._resizeCheck){
+			clearInterval(this._resizeCheck);
+		}
+		domStyle.set(this._centerNode, "display", "none");
+		domStyle.set(this._underlayNode, "display", "none");
+		if(has("ie") == 7 && this._ieFixNode){
+			baseWindow.body().removeChild(this._ieFixNode);
+			delete this._ieFixNode;
+		}
+		if(this._anim){
+			this._anim.stop();
+			delete this._anim;
+		}
+		this.target = null;
+		this._imageNode = null;
+		this._textNode = null;
+		this._centerNode = null;
+		this.inherited(arguments);
+	},
+
+	_size: function(){
+		// summary:
+		//		Internal function that handles resizing the overlay and
+		//		centering of the image on window resizing.
+		// tags:
+		//		private
+		if(this._displayed){
+			var dir = attr.get(baseWindow.body(), "dir");
+			if(dir){dir = dir.toLowerCase();}
+			var _ie7zoom;
+			var scrollers = this._scrollerWidths();
+
+			var target = this.target;
+
+			//Show the image and make sure the zIndex is set high.
+			var curStyle = domStyle.get(this._centerNode, "display");
+			domStyle.set(this._centerNode, "display", "block");
+			var box = geometry.position(target, true);
+			if(target === baseWindow.body() || target === baseWindow.doc){
+				// Target is the whole doc, so scale to viewport.
+				box = window.getBox();
+				box.x = box.l;
+				box.y = box.t;
+			}
+
+			var cntrIndicator = geometry.getMarginBox(this._centerNode);
+			domStyle.set(this._centerNode, "display", curStyle);
+
+			//IE has a horrible zoom bug.  So, we have to try and account for
+			//it and fix up the scaling.
+			if(this._ieFixNode){
+				_ie7zoom = -this._ieFixNode.offsetTop / 1000;
+				box.x = Math.floor((box.x + 0.9) / _ie7zoom);
+				box.y = Math.floor((box.y + 0.9) / _ie7zoom);
+				box.w = Math.floor((box.w + 0.9) / _ie7zoom);
+				box.h = Math.floor((box.h + 0.9) / _ie7zoom);
+			}
+
+			//Figure out how to zIndex this thing over the target.
+			var zi = domStyle.get(target, "zIndex");
+			var ziUl = zi;
+			var ziIn = zi;
+
+			if(this.zIndex === "auto"){
+				if(zi != "auto"){
+					ziUl = parseInt(ziUl, 10) + 1;
+					ziIn = parseInt(ziIn, 10) + 2;
+				}else{
+					//We need to search up the chain to see if there
+					//are any parent zIndexs to overlay.
+					var cNode = target;
+					if(cNode && cNode !== baseWindow.body() && cNode !== baseWindow.doc){
+						cNode = target.parentNode;
+						var oldZi = -100000;
+						while(cNode && cNode !== baseWindow.body()){
+							zi = domStyle.get(cNode, "zIndex");
+							if(!zi || zi === "auto"){
+								cNode = cNode.parentNode;
+							}else{
+								var newZi = parseInt(zi, 10);
+								if(oldZi < newZi){
+									oldZi = newZi;
+									ziUl = newZi + 1;
+									ziIn = newZi + 2;
+								}
+								// Keep looking until we run out, we want the highest zIndex.
+								cNode = cNode.parentNode;
+							}
+						}
+					}
+				}
+			}else{
+				ziUl = parseInt(this.zIndex, 10) + 1;
+				ziIn = parseInt(this.zIndex, 10) + 2;
+			}
+
+			domStyle.set(this._centerNode, "zIndex", ziIn);
+			domStyle.set(this._underlayNode, "zIndex", ziUl);
+
+
+			var pn = target.parentNode;
+			if(pn && pn !== baseWindow.body() &&
+				target !== baseWindow.body() &&
+				target !== baseWindow.doc){
+				
+				// If the parent is the body tag itself,
+				// we can avoid all this, the body takes
+				// care of overflow for me.  Besides, browser
+				// weirdness with height and width on body causes
+				// problems with this sort of intersect testing
+				// anyway.
+				var obh = box.h;
+				var obw = box.w;
+				var pnBox = geometry.position(pn, true);
+
+				//More IE zoom corrections.  Grr.
+				if(this._ieFixNode){
+					_ie7zoom = -this._ieFixNode.offsetTop / 1000;
+					pnBox.x = Math.floor((pnBox.x + 0.9) / _ie7zoom);
+					pnBox.y = Math.floor((pnBox.y + 0.9) / _ie7zoom);
+					pnBox.w = Math.floor((pnBox.w + 0.9) / _ie7zoom);
+					pnBox.h = Math.floor((pnBox.h + 0.9) / _ie7zoom);
+				}
+				
+				//Shift the parent width/height a bit if scollers are present.
+				pnBox.w -= pn.scrollHeight > pn.clientHeight &&
+					pn.clientHeight > 0 ? scrollers.v: 0;
+				pnBox.h -= pn.scrollWidth > pn.clientWidth &&
+					pn.clientWidth > 0 ? scrollers.h: 0;
+
+				//RTL requires a bit of massaging in some cases
+				//(and differently depending on browser, ugh!)
+				//WebKit and others still need work.
+				if(dir === "rtl"){
+					if(has("opera")){
+						box.x += pn.scrollHeight > pn.clientHeight &&
+							pn.clientHeight > 0 ? scrollers.v: 0;
+						pnBox.x += pn.scrollHeight > pn.clientHeight &&
+							pn.clientHeight > 0 ? scrollers.v: 0;
+					}else if(has("ie")){
+						pnBox.x += pn.scrollHeight > pn.clientHeight &&
+							pn.clientHeight > 0 ? scrollers.v: 0;
+					}else if(has("webkit")){
+						//TODO:  FIX THIS!
+					}
+				}
+
+				//Figure out if we need to adjust the overlay to fit a viewable
+				//area, then resize it, we saved the original height/width above.
+				//This is causing issues on IE.  Argh!
+				if(pnBox.w < box.w){
+					//Scale down the width if necessary.
+					box.w = box.w - pnBox.w;
+				}
+				if(pnBox.h < box.h){
+					//Scale down the width if necessary.
+					box.h = box.h - pnBox.h;
+				}
+
+				//Look at the y positions and see if we intersect with the
+				//viewport borders.  Will have to do computations off it.
+				var vpTop = pnBox.y;
+				var vpBottom = pnBox.y + pnBox.h;
+				var bTop = box.y;
+				var bBottom = box.y + obh;
+				var vpLeft = pnBox.x;
+				var vpRight = pnBox.x + pnBox.w;
+				var bLeft = box.x;
+				var bRight = box.x + obw;
+				var delta;
+				//Adjust the height now
+				if(bBottom > vpTop &&
+					bTop < vpTop){
+					box.y = pnBox.y;
+					//intersecting top, need to do some shifting.
+					delta = vpTop - bTop;
+					var visHeight = obh - delta;
+					//If the visible height < viewport height,
+					//We need to shift it.
+					if(visHeight < pnBox.h){
+						box.h = visHeight;
+					}else{
+						//Deal with horizontal scrollbars if necessary.
+						box.h -= 2*(pn.scrollWidth > pn.clientWidth &&
+							pn.clientWidth > 0? scrollers.h: 0);
+					}
+				}else if(bTop < vpBottom && bBottom > vpBottom){
+					//Intersecting bottom, just figure out how much
+					//overlay to show.
+					box.h = vpBottom - bTop;
+				}else if(bBottom <= vpTop || bTop >= vpBottom){
+					//Outside view, hide it.
+					box.h = 0;
+				}
+
+				//adjust width
+				if(bRight > vpLeft && bLeft < vpLeft){
+					box.x = pnBox.x;
+					//intersecting left, need to do some shifting.
+					delta = vpLeft - bLeft;
+					var visWidth = obw - delta;
+					//If the visible width < viewport width,
+					//We need to shift it.
+					if(visWidth < pnBox.w){
+						box.w = visWidth;
+					}else{
+						//Deal with horizontal scrollbars if necessary.
+						box.w -= 2*(pn.scrollHeight > pn.clientHeight &&
+							pn.clientHeight > 0? scrollers.w:0);
+					}
+				}else if(bLeft < vpRight && bRight > vpRight){
+					//Intersecting right, just figure out how much
+					//overlay to show.
+					box.w = vpRight - bLeft;
+				}else if(bRight <= vpLeft || bLeft >= vpRight){
+					//Outside view, hide it.
+					box.w = 0;
+				}
+			}
+
+			if(box.h > 0 && box.w > 0){
+				//Set position and size of the blocking div overlay.
+				domStyle.set(this._underlayNode, {
+					display: "block",
+					width: box.w + "px",
+					height: box.h + "px",
+					top: box.y + "px",
+					left: box.x + "px"
+				});
+
+				var styles = ["borderRadius", "borderTopLeftRadius",
+					"borderTopRightRadius","borderBottomLeftRadius",
+					"borderBottomRightRadius"];
+				this._cloneStyles(styles);
+				if(!has("ie")){
+					//Browser specific styles to try and clone if non-IE.
+					styles = ["MozBorderRadius", "MozBorderRadiusTopleft",
+						"MozBorderRadiusTopright","MozBorderRadiusBottomleft",
+						"MozBorderRadiusBottomright","WebkitBorderRadius",
+						"WebkitBorderTopLeftRadius", "WebkitBorderTopRightRadius",
+						"WebkitBorderBottomLeftRadius","WebkitBorderBottomRightRadius"
+					];
+					this._cloneStyles(styles, this);
+				}
+				var cntrIndicatorTop = (box.h/2) - (cntrIndicator.h/2);
+				var cntrIndicatorLeft = (box.w/2) - (cntrIndicator.w/2);
+				//Only show the image if there is height and width room.
+				if(box.h >= cntrIndicator.h && box.w >= cntrIndicator.w){
+					domStyle.set(this._centerNode, {
+						top: (cntrIndicatorTop + box.y) + "px",
+						left: (cntrIndicatorLeft + box.x) + "px",
+						display: "block"
+					});
+				}else{
+					domStyle.set(this._centerNode, "display", "none");
+				}
+			}else{
+				//Target has no size, display nothing on it!
+				domStyle.set(this._underlayNode, "display", "none");
+				domStyle.set(this._centerNode, "display", "none");
+			}
+			if(this._resizeCheck === null){
+				//Set an interval timer that checks the target size and scales as needed.
+				//Checking every 10th of a second seems to generate a fairly smooth update.
+				var self = this;
+				this._resizeCheck = setInterval(function(){self._size();}, 100);
+			}
+		}
+	},
+
+	_cloneStyles: function(list){
+		// summary:
+		//		Internal function to clone a set of styles from the target to
+		//		the underlay.
+		// list: Array
+		//		An array of style names to clone.
+		//
+		// tags:
+		//		private
+		array.forEach(list, function(s){
+			domStyle.set(this._underlayNode, s, domStyle.get(this.target, s));
+		}, this);
+	},
+
+	_fadeIn: function(){
+		// summary:
+		//		Internal function that does the opacity style fade in animation.
+		// tags:
+		//		private
+		var self = this;
+		var underlayNodeAnim = baseFx.animateProperty({
+			duration: self.duration,
+			node: self._underlayNode,
+			properties: {opacity: {start: 0, end: self.opacity}}
+		});
+		var imageAnim = baseFx.animateProperty({
+			duration: self.duration,
+			node: self._centerNode,
+			properties: {opacity: {start: 0, end: 1}},
+			onEnd: function(){
+				self.onShow();
+				delete self._anim;
+			}
+		});
+		this._anim = fx.combine([underlayNodeAnim,imageAnim]);
+		this._anim.play();
+	},
+
+	_fadeOut: function(){
+		// summary:
+		//		Internal function that does the opacity style fade out animation.
+		// tags:
+		//		private
+		var self = this;
+		var underlayNodeAnim = baseFx.animateProperty({
+			duration: self.duration,
+			node: self._underlayNode,
+			properties: {opacity: {start: self.opacity, end: 0}},
+			onEnd: function(){
+				domStyle.set(this.node,{"display":"none", "zIndex": "-1000"});
+			}
+		});
+		var imageAnim = baseFx.animateProperty({
+			duration: self.duration,
+			node: self._centerNode,
+			properties: {opacity: {start: 1, end: 0}},
+			onEnd: function(){
+				domStyle.set(this.node,{"display":"none", "zIndex": "-1000"});
+				self.onHide();
+				self._enableOverflow();
+				delete self._anim;
+			}
+		});
+		this._anim = fx.combine([underlayNodeAnim,imageAnim]);
+		this._anim.play();
+	},
+
+	_ignore: function(e){
+		// summary:
+		//		Function to ignore events that occur on the overlay.
+		// event: Event
+		//		The event to halt
+		// tags:
+		//		private
+		if(e){
+			event.stop(e);
+		}
+	},
+
+	_scrollerWidths: function(){
+		// summary:
+		//		This function will calculate the size of the vertical and
+		//		horizontaol scrollbars.
+		// returns:
+		//		Object of form: {v: Number, h: Number} where v is vertical scrollbar width
+		//		and h is horizontal scrollbar width.
+		// tags:
+		//		private
+		var div = construct.create("div");
+		domStyle.set(div, {
+			position: "absolute",
+			opacity: 0,
+			overflow: "hidden",
+			width: "50px",
+			height: "50px",
+			zIndex: "-100",
+			top: "-200px",
+			padding: "0px",
+			margin: "0px"
+		});
+		var iDiv = construct.create("div");
+		domStyle.set(iDiv, {
+			width: "200px",
+			height: "10px"
+		});
+		div.appendChild(iDiv);
+		baseWindow.body().appendChild(div);
+
+		//Figure out content size before and after
+		//scrollbars are there, then just subtract to
+		//get width.
+		var b = geometry.getContentBox(div);
+		domStyle.set(div, "overflow", "scroll");
+		var a = geometry.getContentBox(div);
+		baseWindow.body().removeChild(div);
+		return { v: b.w - a.w, h: b.h - a.h };
+	},
+
+	/* The following are functions that tie into _Widget.attr() */
+
+	_setTextAttr: function(text){
+		// summary:
+		//		Function to allow widget.attr to set the text displayed in center
+		//		if using text display.
+		// text: String
+		//		The text to set.
+		this._textNode.innerHTML = text;
+		this.text = text;
+	},
+
+	_setColorAttr: function(c){
+		// summary:
+		//		Function to allow widget.attr to set the color used for the translucent
+		//		div overlay.
+		// c: String
+		//		The color to set the background underlay to in #XXXXXX format..
+		domStyle.set(this._underlayNode, "backgroundColor", c);
+		this.color = c;
+	},
+
+	_setImageTextAttr: function(text){
+		// summary:
+		//		Function to allow widget.attr to set the ALT text text displayed for
+		//		the image (if using image center display).
+		// text: String
+		//		The text to set.
+		attr.set(this._imageNode, "alt", text);
+		this.imageText = text;
+	},
+
+	_setImageAttr: function(url){
+		// summary:
+		//		Function to allow widget.attr to set the url source for the center image
+		// text: String
+		//		The url to set for the image.
+		attr.set(this._imageNode, "src", url);
+		this.image = url;
+	},
+
+	_setCenterIndicatorAttr: function(indicator){
+		// summary:
+		//		Function to allow widget.attr to set the node used for the center indicator,
+		//		either the image or the text.
+		// indicator: String
+		//		The indicator to use, either 'image' or 'text'.
+		this.centerIndicator = indicator;
+		if(indicator === "image"){
+			this._centerNode = this._imageNode;
+			domStyle.set(this._textNode, "display", "none");
+		}else{
+			this._centerNode = this._textNode;
+			domStyle.set(this._imageNode, "display", "none");
+		}
+	},
+
+	_disableOverflow: function(){
+		 // summary:
+		 //		Function to disable scrollbars on the body.  Only used if the overlay
+		 //		targets the body or the document.
+		 if(this.target === baseWindow.body() || this.target === baseWindow.doc){
+			 // Store the overflow state we have to restore later.
+			 // IE had issues, so have to check that it's defined.  Ugh.
+			 this._overflowDisabled = true;
+			 var body = baseWindow.body();
+			 if(body.style && body.style.overflow){
+				 this._oldOverflow = domStyle.get(body, "overflow");
+			 }else{
+				 this._oldOverflow = "";
+			 }
+			 if(has("ie") && !has("quirks")){
+				 // IE will put scrollbars in anyway, html (parent of body)
+				 // also controls them in standards mode, so we have to
+				 // remove them, argh.
+				 if(body.parentNode &&
+					body.parentNode.style &&
+					body.parentNode.style.overflow){
+					 this._oldBodyParentOverflow = body.parentNode.style.overflow;
+				 }else{
+					 try{
+						this._oldBodyParentOverflow = domStyle.get(body.parentNode, "overflow");
+					 }catch(e){
+						 this._oldBodyParentOverflow = "scroll";
+					 }
+				 }
+				 domStyle.set(body.parentNode, "overflow", "hidden");
+			 }
+			 domStyle.set(body, "overflow", "hidden");
+		 }
+	},
+
+	_enableOverflow: function(){
+		 // summary:
+		 //		Function to restore scrollbars on the body.  Only used if the overlay
+		 //		targets the body or the document.
+		 if(this._overflowDisabled){
+			delete this._overflowDisabled;
+			var body = baseWindow.body();
+			// Restore all the overflow.
+			if(has("ie") && !has("quirks")){
+				body.parentNode.style.overflow = this._oldBodyParentOverflow;
+				delete this._oldBodyParentOverflow;
+			}
+			domStyle.set(body, "overflow", this._oldOverflow);
+			if(has("webkit")){
+				//Gotta poke WebKit, or scrollers don't come back. :-(
+				var div = construct.create("div", { style: {
+						height: "2px"
+					}
+				});
+				body.appendChild(div);
+				setTimeout(function(){
+					body.removeChild(div);
+				}, 0);
+			}
+			delete this._oldOverflow;
+		}
+	}
+});
+
+});
+
+},
 'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
-	"dojo/_base/declare", "./GridContainer", "dojo/on",
-	"./ProteinFamiliesGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog",
-	"dojo/_base/lang"
-], function(declare, GridContainer, on,
-			ProteinFamiliesGrid, popup, Topic,
-			TooltipDialog,
-			lang){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
+	"dijit/popup", "dijit/TooltipDialog",
+	"./ProteinFamiliesGrid", "./GridContainer"
+], function(declare, lang, on, Topic,
+			popup, TooltipDialog,
+			ProteinFamiliesGrid, GridContainer){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -71711,12 +72869,12 @@ define([
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		 0 && console.log("REL: ", rel);
+		//  0 && console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
 		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		 0 && console.log("selection: ", selection);
-		 0 && console.log("DownloadQuery: ", dataType, currentQuery);
+		//  0 && console.log("selection: ", selection);
+		//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
 		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 		popup.close(downloadTT);
 	});
@@ -71726,6 +72884,23 @@ define([
 		containerType: "proteinfamily_data",
 		facetFields: [],
 		enableFilterPanel: false,
+		constructor: function(){
+			var self = this;
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updatePfState":
+						self.pfState = value;
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		buildQuery: function(){
+			return "";
+		},
 		_setQueryAttr: function(query){
 			//block default query handler for now.
 		},
@@ -71734,12 +72909,13 @@ define([
 			if(!state){
 				return;
 			}
-			 0 && console.log("PathwaysGridContainer _setStateAttr: ", state);
+			//  0 && console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
 			if(this.grid){
-				 0 && console.log("   call set state on this.grid: ", this.grid);
+				//  0 && console.log("   call set state on this.grid: ", this.grid);
+				Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
-				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
+				 0 && console.log("No Grid Yet (ProteinFamiliesGridContainer)");
 			}
 
 			this._set("state", state);
@@ -71756,7 +72932,7 @@ define([
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(selection){
+				function(){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -71779,6 +72955,8 @@ define([
 					tooltipDialog: viewFASTATT
 				},
 				function(selection){
+					// TODO: pass selection and implement detail
+					 0 && console.log(selection);
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -71798,12 +72976,11 @@ define([
 				},
 				function(selection){
 
-					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){ return sel.family_id; }).join(',') +")))";
-					// var state = lang.mixin({}, this.state, {search: query});
-					this.membersGridPanel.set("query", query);
-					// // tabMenu.page.set("state", state);
+					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){
+							return sel.family_id;
+						}).join(',') + ")))";
 
-					this.tabContainer.selectChild(this.membersGridPanel);
+					Topic.publish("ProteinFamilies", "showMembersGrid", query);
 				},
 				false
 			]
@@ -71815,14 +72992,14 @@ define([
 },
 'p3/widget/ProteinFamiliesGrid':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/selector"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"./PageGrid", "./formatter", "../store/ProteinFamiliesMemoryStore"
+], function(declare, lang, Deferred,
+			on, domClass, domConstruct, aspect, request, Topic,
+			BorderContainer, ContentPane,
+			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -71849,6 +73026,20 @@ define([
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+				//  0 && console.log("ProteinFamiliesGrid:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updateMainGridOrder":
+						this.store.arrange(value);
+						this.refresh();
+						break;
+					default:
+						break;
+				}
+			}));
 		},
 		startup: function(){
 			var _self = this;
@@ -71862,7 +73053,7 @@ define([
 					bubbles: true,
 					cancelable: true
 				});
-				 0 && console.log('after emit');
+				//  0 && console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -71910,10 +73101,10 @@ define([
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				 0 && console.log("ProteinFamiliesGrid _setState()")
+				//  0 && console.log("ProteinFamiliesGrid _setState()");
 				this.store.set('state', state);
 
-				 0 && console.log("ProteinFamiliesGrid Call Grid Refresh()")
+				//  0 && console.log("ProteinFamiliesGrid Call Grid Refresh()");
 				this.refresh();
 			}
 		},
@@ -71927,6 +73118,1181 @@ define([
 			store.watch('refresh', lang.hitch(this, "refresh"));
 
 			return store;
+		}
+	});
+});
+
+},
+'p3/store/ProteinFamiliesMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
+	"dojo/store/Memory", "dojo/store/util/QueryResults",
+	"./ArrangeableMemoryStore", "./HeatmapDataTypes"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
+			Memory, QueryResults,
+			ArrangeableMemoryStore){
+
+	var pfState = {
+		familyType: 'figfam', // default
+		heatmapAxis: '',
+		genomeIds: [],
+		genomeFilterStatus: {},
+		clusterRowOrder: [],
+		clusterColumnOrder: [],
+		perfectFamMatch: 'A',
+		min_member_count: null,
+		max_member_count: null,
+		min_genome_count: null,
+		max_genome_count: null
+	};
+
+	return declare([ArrangeableMemoryStore, Stateful], {
+		baseQuery: {},
+		apiServer: window.App.dataServiceURL,
+		idProperty: "family_id",
+		state: null,
+		pfState: pfState,
+
+		constructor: function(options){
+			this._loaded = false;
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+
+			var self = this;
+
+			Topic.subscribe("ProteinFamilies", function(){
+				//  0 && console.log("received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "setFamilyType":
+						self.pfState.familyType = value;
+						self.reload();
+						self.currentData = self.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						break;
+					case "anchorByGenome":
+						self.anchorByGenome(value);
+						break;
+					case "applyConditionFilter":
+						self.pfState = value;
+						self.conditionFilter(value);
+						self.currentData = self.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "updatePfState", self.pfState);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						break;
+					case "requestHeatmapData":
+						//  0 && console.log("requestHeatmapData with ", value.genomeIds);
+						self.currentData = self.getHeatmapData(value);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						break;
+					default:
+						break;
+				}
+			});
+		},
+		conditionFilter: function(pfState){
+			var self = this;
+			if(self._filtered == undefined){ // first time
+				self._filtered = true;
+				self._original = this.query("", {});
+			}
+			var data = self._original;
+			var newData = [];
+			var gfs = pfState.genomeFilterStatus;
+
+			// var tsStart = window.performance.now();
+			data.forEach(function(family){
+
+				var skip = false;
+
+				// genomes
+				Object.keys(gfs).forEach(function(genomeId){
+					var index = gfs[genomeId].getIndex();
+					var status = gfs[genomeId].getStatus();
+					// 0 && console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.substr(index * 2, 2), 16));
+					if(status == 1 && parseInt(family.genomes.substr(index * 2, 2), 16) > 0){
+						skip = true;
+					}
+					else if(status == 0 && parseInt(family.genomes.substr(index * 2, 2), 16) == 0){
+						skip = true;
+					}
+				});
+
+				// perfect family
+				if(pfState.perfectFamMatch === 'Y'){
+					family.feature_count !== family.genome_count ? skip = true : {};
+				}else if(pfState.perfectFamMatch === 'N'){
+					family.feature_count === family.genome_count ? skip = true : {};
+				}
+
+				// num proteins per family
+				if(pfState.min_member_count){
+					family.feature_count < pfState.min_member_count ? skip = true : {};
+				}
+				if(pfState.max_member_count){
+					family.feature_count > pfState.max_member_count ? skip = true : {};
+				}
+
+				// num genomes per family
+				if(pfState.min_genome_count){
+					family.genome_count < pfState.min_genome_count ? skip = true : {};
+				}
+				if(pfState.max_genome_count){
+					family.genome_count > pfState.max_genome_count ? skip = true : {};
+				}
+
+				if(!skip){
+					newData.push(family);
+				}
+			});
+			//  0 && console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
+
+			self.setData(newData);
+			self.set("refresh");
+		},
+		reload: function(){
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				var qr = QueryResults(when(this.loadData(), function(){
+					results = _self.query(query, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+
+			var _self = this;
+
+			//  0 && console.warn(this.state.genome_ids, !this.state.genome_ids);
+			if(!this.state.genome_ids){
+				//  0 && console.log("No Genome IDS, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(_self, function(){
+					this.setData([]);
+					this._loaded = true;
+					// def.resolve(true);
+				}), 0);
+				return def.promise;
+			}
+
+			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: "genome_id:(" + _self.state.genome_ids.join(" OR ") + ")",
+					rows: _self.state.genome_ids.length,
+					sort: "genome_name asc"
+				}
+			}), function(genomes){
+
+				genomes.forEach(function(genome, idx){
+					var gfs = new FilterStatus();
+					gfs.init(idx, genome.genome_name);
+					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
+					_self.pfState.genomeIds.push(genome.genome_id);
+				});
+				// publish pfState & update filter panel
+				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
+				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
+
+				// _self.pfState, _self.token
+				var opts = {
+					token: ""
+				};
+				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
+					_self.setData(data);
+					_self._loaded = true;
+					Topic.publish("ProteinFamilies", "hideLoadingMask");
+				}));
+
+/*
+				var familyType = _self.pfState.familyType;
+				var familyId = familyType + '_id';
+
+				var query = {
+					q: "genome_id:(" + _self.pfState.genomeIds.join(' OR ') + ")",
+					fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
+					//fq: "figfam_id:(FIG01956050)",
+					rows: 0,
+					facet: true,
+					'facet.method': 'uif',
+					'json.facet': '{stat:{type:field,field:' + familyId + ',sort:index,limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
+				};
+				var q = Object.keys(query).map(function(p){
+					return p + "=" + query[p]
+				}).join("&");
+
+				return when(request.post(_self.apiServer + '/genome_feature/', {
+					handleAs: 'json',
+					headers: {
+						'Accept': "application/solr+json",
+						'Content-Type': "application/solrquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					},
+					data: q
+				}), function(response){
+					// 0 && console.warn(response);
+					if(response.facets.count == 0){
+						// data is not available
+						_self.setData([]);
+						_self._loaded = true;
+						return true;
+					}
+					var familyStat = response.facets.stat.buckets;
+
+					var familyIdList = [];
+					familyStat.forEach(function(element){
+						if(element.val != ""){
+							familyIdList.push(element.val);
+						}
+					});
+
+					// sub query - genome distribution
+					query = lang.mixin(query, {'json.facet': '{stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}'});
+					q = Object.keys(query).map(function(p){
+						return p + "=" + query[p]
+					}).join("&");
+
+					//  0 && console.log("Do Second Request to /genome_feature/");
+					return when(request.post(_self.apiServer + '/genome_feature/', {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/solr+json",
+							'Content-Type': "application/solrquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+						},
+						data: q
+					}), function(response){
+
+						return when(request.post(_self.apiServer + '/protein_family_ref/', {
+							handleAs: 'json',
+							headers: {
+								'Accept': "application/json",
+								'Content-Type': "application/solrquery+x-www-form-urlencoded",
+								'X-Requested-With': null,
+								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+							},
+							data: {
+								q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
+								rows: familyIdList.length
+							}
+						}), function(res){
+							var genomeFamilyDist = response.facets.stat.buckets;
+							var familyGenomeCount = {};
+							var familyGenomeIdCountMap = {};
+							var familyGenomeIdSet = {};
+							var genomePosMap = {};
+							var genome_ids = _self.pfState.genomeIds;
+							genome_ids.forEach(function(genomeId, idx){
+								genomePosMap[genomeId] = idx;
+							});
+
+							window.performance.mark('mark_start_stat1');
+							genomeFamilyDist.forEach(function(genome){
+								var genomeId = genome.val;
+								var genomePos = genomePosMap[genomeId];
+								var familyBuckets = genome.families.buckets;
+
+								familyBuckets.forEach(function(bucket){
+									var familyId = bucket.val;
+									if(familyId != ""){
+										var genomeCount = bucket.count.toString(16);
+										if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
+
+										if(familyId in familyGenomeIdCountMap){
+											familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
+										}
+										else{
+											var genomeIdCount = new Array(genome_ids.length).fill('00');
+											genomeIdCount[genomePos] = genomeCount;
+											familyGenomeIdCountMap[familyId] = genomeIdCount;
+										}
+
+										if(familyId in familyGenomeIdSet){
+											familyGenomeIdSet[familyId].push(genomeId);
+										}
+										else{
+											var genomeIds = new Array(genome_ids.length);
+											genomeIds.push(genomeId);
+											familyGenomeIdSet[familyId] = genomeIds;
+										}
+									}
+								});
+							});
+
+							window.performance.mark('mark_end_stat1');
+							window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
+
+							window.performance.mark('mark_start_stat2');
+							Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
+								var hashSet = {};
+								familyGenomeIdSet[familyId].forEach(function(value){
+									hashSet[value] = true;
+								});
+								familyGenomeCount[familyId] = Object.keys(hashSet).length;
+							});
+
+							window.performance.mark('mark_end_stat2');
+							window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
+
+							window.performance.mark('mark_start_stat3');
+
+							var familyRefHash = {};
+							res.forEach(function(el){
+								if(!(el.family_id in familyRefHash)){
+									familyRefHash[el.family_id] = el.family_product;
+								}
+							});
+							window.performance.mark('mark_end_stat3');
+							window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
+
+							window.performance.mark('mark_start_stat4');
+							//var data = new Array(Object.keys(familyRefHash).length);
+							var data = [];
+							familyStat.forEach(function(element){
+								var familyId = element.val;
+								if(familyId != ""){
+									var featureCount = element.count;
+									var std = 0;
+									if(featureCount > 1){
+										var sumSq = element.ss || 0;
+										var sum = element.sum || 0;
+										var realSq = sumSq - (sum * sum) / featureCount;
+										std = Math.sqrt(realSq / (featureCount - 1));
+									}
+
+									var row = {
+										family_id: familyId,
+										feature_count: featureCount,
+										genome_count: familyGenomeCount[familyId],
+										aa_length_std: std,
+										aa_length_max: element.aa_length_max,
+										aa_length_mean: element.aa_length_mean,
+										aa_length_min: element.aa_length_min,
+										description: familyRefHash[familyId],
+										genomes: familyGenomeIdCountMap[familyId].join("")
+									};
+									data.push(row);
+								}
+							});
+							window.performance.mark('mark_end_stat4');
+							window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
+							//  0 && console.log(data);
+
+							window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
+
+							// var measures = window.performance.getEntriesByType('measure');
+							// for(var i = 0, len = measures.length; i < len; ++i){
+							// 	 0 && console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
+							// }
+							_self.setData(data);
+							_self._loaded = true;
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
+							return true;
+						}, function(err){
+							 0 && console.error("Error in ProteinFamiliesStore: ", err)
+						});
+					});
+				});
+*/
+			});
+			return this._loadingDeferred;
+		},
+
+		getHeatmapData: function(pfState){
+
+			var rows = [];
+			var cols = [];
+			var maxIntensity = 0; // global and will be modified inside createColumn function
+			var keeps = []; // global and will be referenced inside createColumn function
+			var colorStop = [];
+
+			var isTransposed = (pfState.heatmapAxis === 'Transposed');
+			// var start = window.performance.now();
+
+			// assumes axises are corrected
+			var familyOrder = pfState.clusterColumnOrder;
+			var genomeOrder = pfState.clusterRowOrder;
+
+			var createColumn = function(order, colId, label, distribution, meta){
+				// this reads global variable keeps, and update global variable maxIntensity
+				var filtered = [], isEven = (order % 2) === 0;
+
+				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
+					filtered[i] = distribution.substr(idx, 2);
+					var val = parseInt(filtered[i], 16);
+
+					if(maxIntensity < val){
+						maxIntensity = val;
+					}
+				});
+
+				return new Column(order, colId, label, filtered.join(''),
+					((isEven) ? 0x000066 : null) /* label color */,
+					((isEven) ? 0xF4F4F4 : 0xd6e4f4) /*bg color */,
+					meta);
+			};
+
+			// rows - genomes
+			// if genome order is changed, then needs to or-organize distribution in columns.
+			var genomeOrderChangeMap = [];
+
+			if(genomeOrder !== [] && genomeOrder.length > 0){
+				pfState.genomeIds = genomeOrder;
+				genomeOrder.forEach(function(genomeId, idx){
+					//  0 && console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
+					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
+					pfState.genomeFilterStatus[genomeId].setIndex(idx);
+				});
+			}
+
+			pfState.genomeIds.forEach(function(genomeId, idx){
+				var gfs = pfState.genomeFilterStatus[genomeId];
+				if(gfs.getStatus() != '1'){
+					keeps.push(2 * gfs.getIndex());
+					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+
+					// 0 && console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
+					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
+				}
+			});
+
+			// cols - families
+			// 0 && console.warn(this);
+			var data = this.query("", {});
+
+			var familyOrderMap = {};
+			if(familyOrder !== [] && familyOrder.length > 0){
+				familyOrder.forEach(function(familyId, idx){
+					familyOrderMap[familyId] = idx;
+				});
+			}else{
+				data.forEach(function(family, idx){
+					familyOrderMap[family.family_id] = idx;
+				})
+			}
+
+			data.forEach(function(family){
+				var meta = {
+					'instances': family.feature_count,
+					'members': family.genome_count,
+					'min': family.aa_length_min,
+					'max': family.aa_length_max
+				};
+				if(genomeOrderChangeMap.length > 0){
+					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
+				}
+				var order = familyOrderMap[family.family_id];
+				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
+			});
+
+			// colorStop
+			if(maxIntensity == 1){
+				colorStop = [new ColorStop(1, 0xfadb4e)];
+			}else if(maxIntensity == 2){
+				colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
+			}else if(maxIntensity >= 3){
+				colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
+			}
+
+			// 0 && console.log(rows, cols, colorStop);
+
+			var currentData = {
+				'rows': rows,
+				'columns': cols,
+				'colorStops': colorStop,
+				'rowLabel': 'Genomes',
+				'colLabel': 'Protein Families',
+				'rowTrunc': 'mid',
+				'colTrunc': 'end',
+				'offset': 1,
+				'digits': 2,
+				'countLabel': 'Members',
+				'negativeBit': false,
+				'cellLabelField': '',
+				'cellLabelsOverrideCount': false,
+				'beforeCellLabel': '',
+				'afterCellLabel': ''
+			};
+
+			if(isTransposed){
+
+				var flippedDistribution = []; // new Array(currentData.rows.length);
+				currentData.rows.forEach(function(row, rowIdx){
+					var distribution = [];
+					currentData.columns.forEach(function(col){
+						distribution.push(col.distribution.substr(rowIdx * 2, 2));
+					});
+					flippedDistribution[rowIdx] = distribution.join("");
+				});
+
+				// create new rows
+				var newRows = [];
+				currentData.columns.forEach(function(col, colID){
+					newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
+				});
+				// create new columns
+				var newColumns = [];
+				currentData.rows.forEach(function(row, rowID){
+					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
+				});
+
+				currentData = lang.mixin(currentData, {
+					'rows': newRows,
+					'columns': newColumns,
+					'rowLabel': 'Protein Families',
+					'colLabel': 'Genomes',
+					'rowTrunc': 'end',
+					'colTrunc': 'mid'
+				});
+			}
+
+			// var end = window.performance.now();
+			//  0 && console.log('getHeatmapData() took: ', (end - start), "ms");
+
+			return currentData;
+		},
+
+		getSyntenyOrder: function(genomeId){
+
+			var _self = this;
+			var familyIdName = this.pfState.familyType + '_id';
+
+			return when(request.post(_self.apiServer + '/genome_feature/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
+					fl: familyIdName,
+					sort: 'accession asc,start asc',
+					rows: 1000000
+				}
+			}), function(res){
+
+				var familyIdSet = {};
+				var idx = 0;
+				// var order = [];
+
+				// var start = window.performance.now();
+
+				res.response.docs.forEach(function(doc){
+					var fId = doc[familyIdName];
+
+					if(!familyIdSet.hasOwnProperty(fId)){
+						familyIdSet[fId] = idx;
+						// order.push({groupId: fId, syntonyAt: idx});
+						idx++;
+					}
+				});
+
+				// order.sort(function(a, b){
+				// 	if(a.groupId > b.groupId) return 1;
+				// 	if(a.groupId < b.groupId) return -1;
+				// 	return 0;
+				// });
+
+				// var end = window.performance.now();
+				//  0 && console.log('performance: ', (end - start));
+				//  0 && console.log(order);
+
+				// return order; // original implementation
+				return familyIdSet;
+			});
+		},
+
+		anchorByGenome: function(genomeId){
+
+			Topic.publish("ProteinFamilies", "showLoadingMask");
+
+			var self = this;
+			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
+
+				var pfState = this.pfState;
+				var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
+				if(isTransposed){
+					currentFamilyOrder = this.currentData.rows.map(function(row){
+						return row.rowID;
+					});
+				}else{
+					currentFamilyOrder = this.currentData.columns.map(function(col){
+						return col.colID;
+					});
+				}
+
+				currentFamilyOrder.forEach(function(id){
+					if(!newFamilyOrderSet.hasOwnProperty(id)){
+						leftOver.push(id);
+					}
+				});
+
+				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+
+				// clusterRow/ColumnOrder assumes corrected axises
+				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// update main grid
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
+
+				// re-draw heatmap
+				self.currentData = this.getHeatmapData(pfState);
+				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+			}));
+		}
+	});
+});
+},
+'p3/store/ArrangeableMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/store/Memory"
+], function(declare, Memory){
+
+	return declare([Memory], {
+		arrange: function(orderedIds){
+			this.index = {};
+			var sortedData = [];
+
+			for(var i = 0, l = this.data.length; i < l; i++){
+				var newIdx = orderedIds.indexOf(this.data[i][this.idProperty]);
+				sortedData[newIdx] = this.data[i];
+				this.index[this.data[i][this.idProperty]] = newIdx;
+			}
+			this.data = sortedData;
+		}
+	});
+});
+},
+'p3/store/HeatmapDataTypes':function(){
+define([], function(){
+	//function DataSet(/* array */rows, /* array */columns, rowTrunc, colTrunc, rowLabel, colLabel, /* array */colorStops, digits, offset, negativeBit, /* array */rTree, /* array */cTree){
+	//	this.rows = rows;
+	//	this.columns = columns;
+	//	this.rowTrunc = rowTrunc;
+	//	this.colTrunc = colTrunc;
+	//	this.rowLabel = rowLabel;
+	//	this.colLabel = colLabel;
+	//	//this.countLabel = countLabel;
+	//	this.offset = offset;
+	//	this.digits = digits;
+	//	this.negativeBit = negativeBit;
+	//	this.rowTree = rTree;
+	//	this.colTree = cTree;
+	//	this.colorStops = colorStops;
+	//
+	//	this.cellLabelField = "";
+	//	this.cellLabelsOverrideCount = false;
+	//	this.beforeCellLabel = "";
+	//	this.afterCellLabel = "";
+	//}
+
+// Creates a color stop to give to the heatmap
+// `position` The *end* position of the color stop, expressed as a float between 0 and 1. Color stops defined at position 0 are ignored.
+// `color` The color for the stop expressed as an integer (hexidecimal values OK)
+	this.ColorStop = function(position, color){
+		this.position = position;
+		this.color = color;
+	};
+
+// Creates a new Row item for the heatmap.
+//
+// `order`		order of the item in the set
+// `rowID`		machine-readable identifier for the row
+// `rowLabel`		human-readable identifier for the row
+// `labelColor`	the foreground (text color) for the label
+// `bgColor`		the background (gradient color) for the label
+// `[meta]`		arbitrary object that contains any other meta data
+
+	//function Row(order, rowID, rowLabel, labelColor, bgColor, meta){
+	this.Row = function(order, rowID, rowLabel, labelColor, bgColor, meta){
+		this.order = order;
+		this.rowID = rowID;
+		this.rowLabel = rowLabel;
+		this.labelColor = labelColor;
+		this.bgColor = bgColor;
+		this.meta = meta;
+	};
+
+// Creates a new column item for the heatmap
+//
+// `order`		order of the item in the set
+// `colID`		machine-readable identifier for the row
+// `colLabel`		human-readable identifier for the row
+// `labelColor`	the foreground (text color) for the label
+// `distribution`	Distribution of column over rows using hex pairs; should follow row order.
+// `bgColor`		the background (gradient color) for the label
+// `[meta]`		arbitrary object that contains any other meta data.
+//
+// ### Distribution example:
+//		this.distribution = "0105F000";
+// * Row 1: 1 occurance
+// * Row 2: 5 occurances
+// * Row 3: 240 occurances
+// * Row 4: 0 occurances
+
+	this.Column = function(order, colID, colLabel, dist, labelColor, bgColor, meta){
+		this.order = order;
+		this.colID = colID;
+		this.colLabel = colLabel;
+		this.distribution = dist;
+		this.labelColor = labelColor;
+		this.bgColor = bgColor;
+		this.meta = meta;
+	};
+
+	this.getColorStops = function(colorScheme, maxIntensity){
+		var colorStop = [];
+		var colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000', colorPercentage = [];
+		var colorSignificantUp = "0xFF0000", colorSignificantDown = "0x00FF00";
+
+		if(colorScheme === 'rgb'){
+			colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000';
+			colorPercentage.push('20', '40', '60', '80');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x00FF00";
+		}else if(colorScheme === 'rbw'){
+			colorUp = [255, 255, 255], colorDown = [255, 255, 255], colorZero = '0xFFFFFF';
+			colorPercentage.push('80', '60', '40', '20');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x0000FF";
+		}
+
+		for(var i = 1; i <= maxIntensity; i++){
+			switch(true){
+				case i < 5:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
+					break;
+				case i == 5:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
+					break;
+				case i > 5 && i < 10:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
+					break;
+				case i == 10:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
+					break;
+				case i == 11:
+					colorStop.push(new ColorStop(i / maxIntensity, colorZero));
+					break;
+				default:
+					break;
+			}
+		}
+		return colorStop;
+	};
+
+	this.getColor = function(light, colorArr, scheme, value){
+		var rgb = {
+			r: colorArr[0],
+			g: colorArr[1],
+			b: colorArr[2]
+		}, hsv = {};
+
+		rgbTohsv(rgb, hsv);
+		hsv.v = parseInt(light);
+		hsvTorgb(hsv, rgb);
+
+		if(scheme === 'rbw'){
+			if(value === 'up'){
+				return rgbTohex(255, rgb.g, rgb.b);
+			}else{
+				return rgbTohex(rgb.r, rgb.g, 255);
+			}
+		}else{
+			return rgbTohex(rgb.r, rgb.g, rgb.b);
+		}
+	};
+
+	this.rgbTohsv = function(RGB, HSV){
+		var r = RGB.r / 255;
+		var g = RGB.g / 255;
+		var b = RGB.b / 255;
+		// Scale to unity.
+		var minVal = Math.min(r, g, b);
+		var maxVal = Math.max(r, g, b);
+		var delta = maxVal - minVal;
+		HSV.v = maxVal;
+		if(delta == 0){
+			HSV.h = 0;
+			HSV.s = 0;
+		}else{
+			HSV.s = delta / maxVal;
+			var del_R = (((maxVal - r) / 6) + (delta / 2)) / delta;
+			var del_G = (((maxVal - g) / 6) + (delta / 2)) / delta;
+			var del_B = (((maxVal - b) / 6) + (delta / 2)) / delta;
+			if(r == maxVal){
+				HSV.h = del_B - del_G;
+			}else if(g == maxVal){
+				HSV.h = (1 / 3) + del_R - del_B;
+			}else if(b == maxVal){
+				HSV.h = (2 / 3) + del_G - del_R;
+			}
+			if(HSV.h < 0){
+				HSV.h += 1;
+			}
+			if(HSV.h > 1){
+				HSV.h -= 1;
+			}
+		}
+		HSV.h *= 360;
+		HSV.s *= 100;
+		HSV.v *= 100;
+	};
+
+	this.hsvTorgb = function(HSV, RGB){
+
+		var h = HSV.h / 360;
+		var s = HSV.s / 100;
+		var v = HSV.v / 100;
+		if(s === 0){
+			RGB.r = v * 255;
+			RGB.g = v * 255;
+			RGB.b = v * 255;
+		}else{
+			var var_h = h * 6;
+			var var_i = Math.floor(var_h);
+			var var_1 = v * (1 - s);
+			var var_2 = v * (1 - s * (var_h - var_i));
+			var var_3 = v * (1 - s * (1 - (var_h - var_i)));
+			var var_r, var_g, var_b;
+
+			switch(var_i){
+				case 0:
+					var_r = v;
+					var_g = var_3;
+					var_b = var_1;
+					break;
+				case 1:
+					var_r = var_2;
+					var_g = v;
+					var_b = var_1;
+					break;
+				case 2:
+					var_r = var_1;
+					var_g = v;
+					var_b = var_3;
+					break;
+				case 3:
+					var_r = var_1;
+					var_g = var_2;
+					var_b = v;
+					break;
+				case 4:
+					var_r = var_3;
+					var_g = var_1;
+					var_b = v;
+					break;
+				default:
+					var_r = v;
+					var_g = var_1;
+					var_b = var_2;
+					break;
+			}
+			RGB.r = var_r * 255;
+			RGB.g = var_g * 255;
+			RGB.b = var_b * 255;
+		}
+	};
+
+	this.componentToHex = function(c){
+		var hex = c.toString(16);
+		return hex.length === 1 ? "0" + hex : hex;
+	};
+
+	this.rgbTohex = function(r, g, b){
+		return "0x" + componentToHex(~~r) + componentToHex(~~g) + componentToHex(~~b);
+	};
+
+	this.distributionTransformer = function(dist, map){
+		var newDist = [];
+		map.forEach(function(pos, idx){
+			newDist[idx] = dist.substr(pos * 2, 2);
+		});
+		return newDist.join('');
+	};
+
+	this.FilterStatus = (function(){
+		return function(){
+			this.init = function(idx, lbl){
+				this.index = idx;
+				this.status = 2; // 0: present, 1: absent, 2: don't care
+				this.label = lbl;
+			};
+			this.setIndex = function(idx){
+				this.index = idx;
+			};
+			this.getIndex = function(){
+				return this.index;
+			};
+			this.setStatus = function(sts){
+				this.status = sts;
+			};
+			this.getStatus = function(){
+				return this.status;
+			};
+			this.getLabel = function(){
+				return this.label;
+			};
+			return this;
+		};
+	})();
+
+	return this;
+});
+},
+'p3/widget/ProteinFamiliesFilterGrid':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"dgrid/selector", "put-selector/put",
+	"../store/ArrangeableMemoryStore", "./Grid", "./formatter"
+], function(declare, lang, Deferred,
+			on, request, domStyle, aspect, Topic,
+			BorderContainer, ContentPane,
+			selector, put,
+			Store, Grid, formatter){
+
+	var filterSelector = function(value, cell, object){
+		var parent = cell.parentNode;
+
+		// must set the class name on the outer cell in IE for keystrokes to be intercepted
+		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
+		var input = cell.input || (cell.input = put(cell, 'i', {
+				tabIndex: -1,
+				checked: !!value
+			}));
+		input.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
+		input.setAttribute("aria-checked", !!value);
+		return input;
+	};
+
+	var filterSelectorChecked = function(value, cell, object){
+		return filterSelector(true, cell, object);
+	};
+
+	// create empty Memory Store
+	var store = new Store({
+		idProperty: "genome_id"
+	});
+
+	return declare([Grid], {
+		region: "center",
+		query: (this.query || ""),
+		apiToken: window.App.authorizationToken,
+		apiServer: window.App.dataServiceURL,
+		store: store,
+		pfState: null,
+		dataModel: "genome",
+		primaryKey: "genome_id",
+		deselectOnRefresh: true,
+		columns: {
+			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
+			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
+			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
+			genome_name: {label: 'Genome Name', field: 'genome_name'},
+			genome_status: {label: 'Genome Status', field: 'genome_status'},
+			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
+			host_name: {label: 'Host', field: 'host_name'},
+			disease: {label: 'Disease', field: 'disease'},
+			collection_date: {label: 'Collection Date', field: 'collection_date'},
+			completion_date: {label: 'Completion Date', field: 'completion_date', formatter: formatter.dateOnly}
+		},
+		constructor: function(options){
+			if(options && options.state){
+				this.state = options.state;
+			}
+
+			Topic.subscribe("ProteinFamilies", lang.hitch(this, function(){
+				//  0 && console.log("ProteinFamiliesFilterGrid:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updatePfState":
+						this.pfState = value;
+						break;
+					case "updateFilterGrid":
+						this.store.setData(value);
+						this.store._loaded = true;
+						this.refresh();
+						break;
+					case "updateFilterGridOrder":
+						this.set('sort', [{}]);
+						this.store.arrange(value);
+						this.refresh();
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		startup: function(){
+			var _self = this;
+			var options = ['present', 'absent', 'mixed'];
+			var toggleSelection = function(element, value){
+				element.checked = value;
+				element.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
+				element.setAttribute("aria-checked", value);
+			};
+
+			this.on(".dgrid-cell:click", lang.hitch(_self, function(evt){
+				var cell = _self.cell(evt);
+				var colId = cell.column.id;
+				var columnHeaders = cell.column.grid.columns;
+
+				var conditionIds = _self.pfState.genomeIds;
+				var conditionStatus = _self.pfState.genomeFilterStatus;
+
+				if(!cell.element.input) return;
+
+				if(cell.row){
+					// data row is clicked
+					var rowId = cell.row.id;
+
+					// deselect other radio in the same row
+					options.forEach(function(el){
+						if(el != colId && _self.cell(rowId, el).element.input.checked){
+							toggleSelection(_self.cell(rowId, el).element.input, false);
+						}
+						// updated selected box
+						if(el === colId){
+							toggleSelection(_self.cell(rowId, el).element.input, true);
+						}
+					});
+
+					// check whether entire rows are selected & mark as needed
+					options.forEach(function(el){
+						var allSelected = true;
+						conditionIds.forEach(function(conditionId){
+							if(_self.cell(conditionId, el).element.input.checked == false){
+								allSelected = false;
+							}
+						});
+						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
+					});
+
+				}else{
+					// if header is clicked, reset the selections & update
+					conditionIds.forEach(function(conditionId){
+						options.forEach(function(el){
+							if(el === colId){
+								toggleSelection(_self.cell(conditionId, el).element.input, true);
+							}else{
+								toggleSelection(_self.cell(conditionId, el).element.input, false);
+							}
+						});
+					});
+
+					// deselect other radio in the header
+					options.forEach(function(el){
+						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked){
+							toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
+						}
+					});
+				}
+
+				// update filter
+				Object.keys(conditionStatus).forEach(function(conditionId){
+					var status = options.findIndex(function(el){
+						if(_self.cell(conditionId, el).element.input.checked){
+							return el;
+						}
+					});
+
+					conditionStatus[conditionId].setStatus(status);
+				});
+
+				this.pfState.genomeFilterStatus = conditionStatus;
+				Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
+			}));
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			// this.inherited(arguments);
+			this._started = true;
+
+			// increase grid width after rendering content-pane
+			domStyle.set(this.id, "width", "650px");
+		},
+		_setSort: function(sort){
+			this.inherited(arguments);
+
+			//  0 && console.log("old order", this.pfState.genomeIds);
+			var newIds = [];
+			var idProperty = this.store.idProperty;
+			this.store.query({}, {sort: sort}).forEach(function(condition){
+				newIds.push(condition[idProperty]);
+			});
+			this.pfState.clusterRowOrder = newIds;
+			//  0 && console.log("new order", this.pfState.clusterRowOrder);
+
+			Topic.publish("ProteinFamilies", "updatePfState", this.pfState);
+			Topic.publish("ProteinFamilies", "refreshHeatmap");
+		},
+		state: null,
+		postCreate: function(){
+			this.inherited(arguments);
+		},
+		_setApiServer: function(server){
+			this.apiServer = server;
 		}
 	});
 });
@@ -72732,1281 +75098,24 @@ return declare([List, _StoreMixin], {
 });
 
 },
-'p3/store/ProteinFamiliesMemoryStore':function(){
-define([
-	"dojo/_base/declare", "dojo/request",
-	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic", "./HeatmapDataTypes"
-], function(declare, request,
-			Memory, QueryResults,
-			when, lang, Stateful, Deferred,
-			Topic){
-	return declare([Memory, Stateful], {
-		baseQuery: {},
-		apiServer: window.App.dataServiceURL,
-		idProperty: "family_id",
-		state: null,
-		pfState: null,
-
-		constructor: function(options){
-			this._loaded = false;
-			if(options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-
-			var self = this;
-
-			Topic.subscribe("ProteinFamilies", function(){
-				// 0 && console.log("received:", arguments);
-				var key = arguments[0], value = arguments[1];
-
-				switch(key){
-					case "genomeIds":
-						self.pfState = value;
-						self.reload();
-						break;
-					case "familyType":
-						self.pfState.familyType = value;
-						self.reload();
-						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
-						break;
-					case "genomeFilter":
-						self.genomeFilter(value);
-						Topic.publish("ProteinFamiliesHeatmap", "refresh");
-						break;
-					default:
-						break;
-				}
-			});
-		},
-		genomeFilter: function(gfs){
-			var self = this;
-			if(self._filtered == undefined){ // first time
-				self._filtered = true;
-				self._original = this.query("", {});
-			}
-			var data = self._original;
-			var newData = [];
-
-			// var tsStart = window.performance.now();
-			data.forEach(function(family){
-
-				var skip = false;
-
-				Object.keys(gfs).forEach(function(genomeId){
-					var index = gfs[genomeId].getIndex();
-					var status = gfs[genomeId].getStatus();
-					// 0 && console.log(family.family_id, genomeId, index, status, family.genomes, parseInt(family.genomes.substr(index * 2, 2), 16));
-					if(status == 1 && parseInt(family.genomes.substr(index * 2, 2), 16) > 0){
-						skip = true;
-					}
-					else if(status == 0 && parseInt(family.genomes.substr(index * 2, 2), 16) == 0){
-						skip = true;
-					}
-				});
-				if(!skip){
-					newData.push(family);
-				}
-			});
-			//  0 && console.log("genomeFilter took " + (window.performance.now() - tsStart), " ms");
-
-			self.setData(newData);
-			self.set("refresh");
-		},
-		reload: function(){
-			var self = this;
-			delete self._loadingDeferred;
-			self._loaded = false;
-			self.loadData();
-			self.set("refresh");
-		},
-
-		query: function(query, opts){
-			query = query || {};
-			// 0 && console.warn("query: ", query, opts);
-			if(opts.sort == undefined){
-				opts.sort = [{attribute: "family_id", descending: false}];
-			}
-			if(this._loaded){
-				return this.inherited(arguments);
-			}
-			else{
-				var _self = this;
-				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
-					qr.total = when(results, function(results){
-						return results.total || results.length
-					});
-					return results;
-				}));
-
-				return qr;
-			}
-		},
-
-		get: function(id, opts){
-			if(this._loaded){
-				return this.inherited(arguments);
-			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
-			}
-		},
-
-		loadData: function(){
-			if(this._loadingDeferred){
-				return this._loadingDeferred;
-			}
-
-			if(!this.pfState || this.pfState.genomeIds.length < 1){
-				//  0 && console.log("No Genome IDS, use empty data set for initial store");
-
-				//this is done as a deferred instead of returning an empty array
-				//in order to make it happen on the next tick.  Otherwise it
-				//in the query() function above, the callback happens before qr exists
-				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
-					this.setData([]);
-					this._loaded = true;
-					def.resolve(true);
-				}), 0);
-				return def.promise;
-
-			}
-
-			var familyType = this.pfState.familyType;
-			var familyId = familyType + '_id';
-
-			var query = {
-				q: "genome_id:(" + this.pfState.genomeIds.join(' OR ') + ")",
-				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
-				//fq: "figfam_id:(FIG01956050)",
-				rows: 0,
-				facet: true,
-				'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
-			};
-			var q = Object.keys(query).map(function(p){
-				return p + "=" + query[p]
-			}).join("&");
-
-			var _self = this;
-
-			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				},
-				data: q
-			}), function(response){
-				// 0 && console.warn(response);
-				if(response.facets.count == 0){
-					// data is not available
-					_self.setData([]);
-					_self._loaded = true;
-					return true;
-				}
-				var familyStat = response.facets.stat.buckets;
-
-				var familyIdList = [];
-				familyStat.forEach(function(element){
-					if(element.val != ""){
-						familyIdList.push(element.val);
-					}
-				});
-
-				// sub query - genome distribution
-				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
-
-				//  0 && console.log("Do Second Request to /genome_feature/");
-				return when(request.post(_self.apiServer + '/genome_feature/', {
-					handleAs: 'json',
-					headers: {
-						'Accept': "application/solr+json",
-						'Content-Type': "application/solrquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-					},
-					data: query
-				}), function(response){
-
-					return when(request.post(_self.apiServer + '/protein_family_ref/', {
-						handleAs: 'json',
-						headers: {
-							'Accept': "application/solr+json",
-							'Content-Type': "application/solrquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-						},
-						data: {
-							q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
-							rows: 1000000
-						}
-					}), function(res){
-						var genomeFamilyDist = response.facets.stat.buckets;
-						var familyGenomeCount = {};
-						var familyGenomeIdCountMap = {};
-						var familyGenomeIdSet = {};
-						var genomePosMap = {};
-						var genome_ids = _self.pfState.genomeIds;
-						genome_ids.forEach(function(genomeId, idx){
-							genomePosMap[genomeId] = idx;
-						});
-
-						window.performance.mark('mark_start_stat1');
-						genomeFamilyDist.forEach(function(genome){
-							var genomeId = genome.val;
-							var genomePos = genomePosMap[genomeId];
-							var familyBuckets = genome.families.buckets;
-
-							familyBuckets.forEach(function(bucket){
-								var familyId = bucket.val;
-								if(familyId != ""){
-									var genomeCount = bucket.count.toString(16);
-									if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
-
-									if(familyId in familyGenomeIdCountMap){
-										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
-									}
-									else{
-										var genomeIdCount = new Array(genome_ids.length).fill('00');
-										genomeIdCount[genomePos] = genomeCount;
-										familyGenomeIdCountMap[familyId] = genomeIdCount;
-									}
-
-									if(familyId in familyGenomeIdSet){
-										familyGenomeIdSet[familyId].push(genomeId);
-									}
-									else{
-										var genomeIds = new Array(genome_ids.length);
-										genomeIds.push(genomeId);
-										familyGenomeIdSet[familyId] = genomeIds;
-									}
-								}
-							});
-						});
-
-						window.performance.mark('mark_end_stat1');
-						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
-
-						window.performance.mark('mark_start_stat2');
-						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-							var hashSet = {};
-							familyGenomeIdSet[familyId].forEach(function(value){
-								hashSet[value] = true;
-							});
-							familyGenomeCount[familyId] = Object.keys(hashSet).length;
-						});
-
-						window.performance.mark('mark_end_stat2');
-						window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
-
-						window.performance.mark('mark_start_stat3');
-
-						var familyRefHash = {};
-						res.response.docs.forEach(function(el){
-							if(!(el.family_id in familyRefHash)){
-								familyRefHash[el.family_id] = el.family_product;
-							}
-						});
-						window.performance.mark('mark_end_stat3');
-						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
-
-						window.performance.mark('mark_start_stat4');
-						//var data = new Array(Object.keys(familyRefHash).length);
-						var data = [];
-						familyStat.forEach(function(element){
-							var familyId = element.val;
-							if(familyId != ""){
-								var featureCount = element.count;
-								var std = 0;
-								if(featureCount > 1){
-									var sumSq = element.ss || 0;
-									var sum = element.sum || 0;
-									var realSq = sumSq - (sum * sum) / featureCount;
-									std = Math.sqrt(realSq / (featureCount - 1));
-								}
-
-								var row = {
-									family_id: familyId,
-									feature_count: featureCount,
-									genome_count: familyGenomeCount[familyId],
-									aa_length_std: std,
-									aa_length_max: element.aa_length_max,
-									aa_length_mean: element.aa_length_mean,
-									aa_length_min: element.aa_length_min,
-									description: familyRefHash[familyId],
-									genomes: familyGenomeIdCountMap[familyId].join("")
-								};
-								data.push(row);
-							}
-						});
-						window.performance.mark('mark_end_stat4');
-						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
-						//  0 && console.log(data);
-
-						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
-
-						// var measures = window.performance.getEntriesByType('measure');
-						// for(var i = 0, len = measures.length; i < len; ++i){
-						// 	 0 && console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
-						// }
-						_self.setData(data);
-						_self._loaded = true;
-						return true;
-					}, function(err){
-						 0 && console.error("Error in ProteinFamiliesStore: ", err)
-					});
-				});
-			});
-			return this._loadingDeferred;
-		},
-
-		getHeatmapData: function(pfState){
-
-			var rows = [];
-			var cols = [];
-			var maxIntensity = 0; // global and will be modified inside createColumn function
-			var keeps = []; // global and will be referenced inside createColumn function
-			var colorStop = [];
-
-			var isTransposed = (pfState.heatmapAxis === 'Transposed');
-			var start = window.performance.now();
-
-			// assumes axises are corrected
-			var familyOrder = pfState.clusterColumnOrder;
-			var genomeOrder = pfState.clusterRowOrder;
-
-			var createColumn = function(order, colId, label, distribution, meta){
-				var filtered = [], isEven = (order % 2) === 0;
-
-				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
-					filtered[i] = distribution.substr(idx, 2);
-					var val = parseInt(filtered[i], 16);
-
-					if(maxIntensity < val){
-						maxIntensity = val;
-					}
-				});
-
-				return new Column(order, colId, label, filtered.join(''),
-					((isEven) ? 0x000066 : null) /* label color */,
-					((isEven) ? 0xF4F4F4 : 0xd6e4f4) /*bg color */,
-					meta);
-			};
-
-			// rows - genomes
-			// if genome order is changed, then needs to or-organize distribution in columns.
-			var genomeOrderChangeMap = [];
-			var distributionTransformer = function(dist, map){
-				var newDist = [];
-				map.forEach(function(pos, idx){
-					newDist[idx] = dist.substr(pos * 2, 2);
-				});
-				return newDist.join('');
-			};
-
-			if(genomeOrder !== [] && genomeOrder.length > 0){
-				pfState.genomeIds = genomeOrder;
-				genomeOrder.forEach(function(genomeId, idx){
-					//  0 && console.log(genomeId, pfState.genomeFilterStatus[genomeId], idx);
-					genomeOrderChangeMap.push(pfState.genomeFilterStatus[genomeId].getIndex()); // keep the original position
-					pfState.genomeFilterStatus[genomeId].setIndex(idx);
-				});
-			}
-
-			pfState.genomeIds.forEach(function(genomeId, idx){
-				var gfs = pfState.genomeFilterStatus[genomeId];
-				if(gfs.getStatus() != '1'){
-					keeps.push(2 * gfs.getIndex());
-					var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
-					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
-
-					// 0 && console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
-				}
-			});
-
-			// cols - families
-			// 0 && console.warn(this);
-			var data = this.query("", {});
-
-			var familyOrderMap = {};
-			if(familyOrder !== [] && familyOrder.length > 0){
-				familyOrder.forEach(function(familyId, idx){
-					familyOrderMap[familyId] = idx;
-				});
-			}else{
-				data.forEach(function(family, idx){
-					familyOrderMap[family.family_id] = idx;
-				})
-			}
-
-			data.forEach(function(family){
-				var meta = {
-					'instances': family.feature_count,
-					'members': family.genome_count,
-					'min': family.aa_length_min,
-					'max': family.aa_length_max
-				};
-				if(genomeOrderChangeMap.length > 0){
-					family.genomes = distributionTransformer(family.genomes, genomeOrderChangeMap);
-				}
-				var order = familyOrderMap[family.family_id];
-				cols[order] = createColumn(order, family.family_id, family.description, family.genomes, meta);
-			});
-
-			// colorStop
-			if(maxIntensity == 1){
-				colorStop = [new ColorStop(1, 0xfadb4e)];
-			}else if(maxIntensity == 2){
-				colorStop = [new ColorStop(0.5, 0xfadb4e), new ColorStop(1, 0xf6b437)];
-			}else if(maxIntensity >= 3){
-				colorStop = [new ColorStop(1 / maxIntensity, 0xfadb4e), new ColorStop(2 / maxIntensity, 0xf6b437), new ColorStop(3 / maxIntensity, 0xff6633), new ColorStop(maxIntensity / maxIntensity, 0xff6633)];
-			}
-
-			// 0 && console.log(rows, cols, colorStop);
-
-			var currentData = {
-				'rows': rows,
-				'columns': cols,
-				'colorStops': colorStop,
-				'rowLabel': 'Genomes',
-				'colLabel': 'Protein Families',
-				'rowTrunc': 'mid',
-				'colTrunc': 'end',
-				'offset': 1,
-				'digits': 2,
-				'countLabel': 'Members',
-				'negativeBit': false,
-				'cellLabelField': '',
-				'cellLabelsOverrideCount': false,
-				'beforeCellLabel': '',
-				'afterCellLabel': ''
-			};
-
-			if(isTransposed){
-
-				var flippedDistribution = []; // new Array(currentData.rows.length);
-				currentData.rows.forEach(function(row, rowIdx){
-					var distribution = [];
-					currentData.columns.forEach(function(col){
-						distribution.push(col.distribution.substr(rowIdx * 2, 2));
-					});
-					flippedDistribution[rowIdx] = distribution.join("");
-				});
-
-				// create new rows
-				var newRows = [];
-				currentData.columns.forEach(function(col, colID){
-					newRows.push(new Row(colID, col.colID, col.colLabel, col.labelColor, col.bgColor, col.meta));
-				});
-				// create new columns
-				var newColumns = [];
-				currentData.rows.forEach(function(row, rowID){
-					newColumns.push(new Column(rowID, row.rowID, row.rowLabel, flippedDistribution[rowID], row.labelColor, row.bgColor, row.meta))
-				});
-
-				currentData = lang.mixin(currentData, {
-					'rows': newRows,
-					'columns': newColumns,
-					'rowLabel': 'Protein Families',
-					'colLabel': 'Genomes',
-					'rowTrunc': 'end',
-					'colTrunc': 'mid'
-				});
-			}
-
-			// var end = window.performance.now();
-			//  0 && console.log('getHeatmapData() took: ', (end - start), "ms");
-
-			return currentData;
-		},
-
-		getSyntenyOrder: function(genomeId){
-
-			var _self = this;
-			var familyIdName = this.pfState.familyType + '_id';
-
-			return when(request.post(_self.apiServer + '/genome_feature/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-				},
-				data: {
-					q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',
-					fl: familyIdName,
-					sort: 'accession asc,start asc',
-					rows: 1000000
-				}
-			}), function(res){
-
-				var familyIdSet = {};
-				var idx = 0;
-				// var order = [];
-
-				// var start = window.performance.now();
-
-				res.response.docs.forEach(function(doc){
-					var fId = doc[familyIdName];
-
-					if(!familyIdSet.hasOwnProperty(fId)){
-						familyIdSet[fId] = idx;
-						// order.push({groupId: fId, syntonyAt: idx});
-						idx++;
-					}
-				});
-
-				// order.sort(function(a, b){
-				// 	if(a.groupId > b.groupId) return 1;
-				// 	if(a.groupId < b.groupId) return -1;
-				// 	return 0;
-				// });
-
-				// var end = window.performance.now();
-				//  0 && console.log('performance: ', (end - start));
-				//  0 && console.log(order);
-
-				// return order; // original implementation
-				return familyIdSet;
-			});
-		}
-	});
-});
-},
-'p3/store/HeatmapDataTypes':function(){
-define([], function()
-{
-	//function DataSet(/* array */rows, /* array */columns, rowTrunc, colTrunc, rowLabel, colLabel, /* array */colorStops, digits, offset, negativeBit, /* array */rTree, /* array */cTree){
-	//	this.rows = rows;
-	//	this.columns = columns;
-	//	this.rowTrunc = rowTrunc;
-	//	this.colTrunc = colTrunc;
-	//	this.rowLabel = rowLabel;
-	//	this.colLabel = colLabel;
-	//	//this.countLabel = countLabel;
-	//	this.offset = offset;
-	//	this.digits = digits;
-	//	this.negativeBit = negativeBit;
-	//	this.rowTree = rTree;
-	//	this.colTree = cTree;
-	//	this.colorStops = colorStops;
-	//
-	//	this.cellLabelField = "";
-	//	this.cellLabelsOverrideCount = false;
-	//	this.beforeCellLabel = "";
-	//	this.afterCellLabel = "";
-	//}
-
-// Creates a color stop to give to the heatmap
-// `position` The *end* position of the color stop, expressed as a float between 0 and 1. Color stops defined at position 0 are ignored.
-// `color` The color for the stop expressed as an integer (hexidecimal values OK)
-	this.ColorStop = function(position, color){
-		this.position = position;
-		this.color = color;
-	};
-
-// Creates a new Row item for the heatmap.
-//
-// `order`		order of the item in the set
-// `rowID`		machine-readable identifier for the row
-// `rowLabel`		human-readable identifier for the row
-// `labelColor`	the foreground (text color) for the label
-// `bgColor`		the background (gradient color) for the label
-// `[meta]`		arbitrary object that contains any other meta data
-
-	//function Row(order, rowID, rowLabel, labelColor, bgColor, meta){
-	this.Row = function(order, rowID, rowLabel, labelColor, bgColor, meta){
-		this.order = order;
-		this.rowID = rowID;
-		this.rowLabel = rowLabel;
-		this.labelColor = labelColor;
-		this.bgColor = bgColor;
-		this.meta = meta;
-	};
-
-// Creates a new column item for the heatmap
-//
-// `order`		order of the item in the set
-// `colID`		machine-readable identifier for the row
-// `colLabel`		human-readable identifier for the row
-// `labelColor`	the foreground (text color) for the label
-// `distribution`	Distribution of column over rows using hex pairs; should follow row order.
-// `bgColor`		the background (gradient color) for the label
-// `[meta]`		arbitrary object that contains any other meta data.
-//
-// ### Distribution example:
-//		this.distribution = "0105F000";
-// * Row 1: 1 occurance
-// * Row 2: 5 occurances
-// * Row 3: 240 occurances
-// * Row 4: 0 occurances
-
-	this.Column = function(order, colID, colLabel, dist, labelColor, bgColor, meta){
-		this.order = order;
-		this.colID = colID;
-		this.colLabel = colLabel;
-		this.distribution = dist;
-		this.labelColor = labelColor;
-		this.bgColor = bgColor;
-		this.meta = meta;
-	};
-
-	/*function rgbTohsv(RGB, HSV){
-		r = RGB.r / 255;
-		g = RGB.g / 255;
-		b = RGB.b / 255;
-		// Scale to unity.
-		var minVal = Math.min(r, g, b);
-		var maxVal = Math.max(r, g, b);
-		var delta = maxVal - minVal;
-		HSV.v = maxVal;
-		if(delta == 0){
-			HSV.h = 0;
-			HSV.s = 0;
-		}else{
-			HSV.s = delta / maxVal;
-			var del_R = (((maxVal - r) / 6) + (delta / 2)) / delta;
-			var del_G = (((maxVal - g) / 6) + (delta / 2)) / delta;
-			var del_B = (((maxVal - b) / 6) + (delta / 2)) / delta;
-			if(r == maxVal){
-				HSV.h = del_B - del_G;
-			}else if(g == maxVal){
-				HSV.h = (1 / 3) + del_R - del_B;
-			}else if(b == maxVal){
-				HSV.h = (2 / 3) + del_G - del_R;
-			}
-			if(HSV.h < 0){
-				HSV.h += 1;
-			}
-			if(HSV.h > 1){
-				HSV.h -= 1;
-			}
-		}
-		HSV.h *= 360;
-		HSV.s *= 100;
-		HSV.v *= 100;
-	}
-
-	function hsvTorgb(HSV, RGB){
-
-		var h = HSV.h / 360;
-		var s = HSV.s / 100;
-		var v = HSV.v / 100;
-		if(s == 0){
-			RGB.r = v * 255;
-			RGB.g = v * 255;
-			RGB.b = v * 255;
-		}else{
-			var_h = h * 6;
-			var_i = Math.floor(var_h);
-			var_1 = v * (1 - s);
-			var_2 = v * (1 - s * (var_h - var_i));
-			var_3 = v * (1 - s * (1 - (var_h - var_i)));
-			if(var_i == 0){
-				var_r = v;
-				var_g = var_3;
-				var_b = var_1;
-			}else if(var_i == 1){
-				var_r = var_2;
-				var_g = v;
-				var_b = var_1;
-			}else if(var_i == 2){
-				var_r = var_1;
-				var_g = v;
-				var_b = var_3;
-			}else if(var_i == 3){
-				var_r = var_1;
-				var_g = var_2;
-				var_b = v;
-			}else if(var_i == 4){
-				var_r = var_3;
-				var_g = var_1;
-				var_b = v;
-			}else{
-				var_r = v;
-				var_g = var_1;
-				var_b = var_2;
-			}
-			RGB.r = var_r * 255;
-			RGB.g = var_g * 255;
-			RGB.b = var_b * 255;
-		}
-
-	}
-
-	function componentTohex(c){
-		var hex = c.toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
-	}
-
-	function rgbTohex(r, g, b){
-		return "0x" + componentTohex(~~r) + componentTohex(~~g) + componentTohex(~~b);
-	}*/
-}
-);
-},
-'p3/widget/ProteinFamiliesFilterGrid':function(){
-define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/ProteinFamiliesFilterMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/CellSelection", "dgrid/selector", "put-selector/put", "dojo/topic"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, CellSelection, selector, put, Topic){
-
-	var filterSelector = function(value, cell, object){
-		var parent = cell.parentNode;
-
-		// must set the class name on the outer cell in IE for keystrokes to be intercepted
-		put(parent && parent.contents ? parent : cell, ".dgrid-selector");
-		var input = cell.input || (cell.input = put(cell, "input[type=radio]", {
-				tabIndex: -1,
-				checked: value
-			}));
-		input.setAttribute("aria-checked", !!value);
-
-		return input;
-	};
-
-	var filterSelectorChecked = function(value, cell, object){
-		return filterSelector(true, cell, object);
-	};
-
-	return declare([Grid, CellSelection], {
-		region: "center",
-		query: (this.query || ""),
-		apiToken: window.App.authorizationToken,
-		apiServer: window.App.dataServiceURL,
-		store: null,
-		pfState: null,
-		dataModel: "genome",
-		primaryKey: "genome_id",
-		selectionModel: "extended",
-		deselectOnRefresh: true,
-		selectionMode: 'none',
-		columns: {
-			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
-			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
-			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
-			genome_name: {label: 'Genome Name', field: 'genome_name'}/*,
-			genome_status: {label: 'Genome Status', field: 'genome_status'},
-			isolation_country: {label: 'Isolation Country', field: 'isolation_country'},
-			host_name: {label: 'Host', field: 'host_name'},
-			disease: {label: 'Disease', field: 'disease'},
-			collection_date: {label: 'Collection Date', field: 'collection_date'},
-			completion_date: {label: 'Completion Date', field: 'completion_date'}*/
-		},
-		constructor: function(options){
-			// 0 && console.log("ProteinFamiliesFilterGrid Ctor: ", options);
-			if(options && options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-			this.pfState = options.pfState;
-		},
-		startup: function(){
-			var _self = this;
-			var options = ['present', 'absent', 'mixed'];
-			var toggleSelection = function(element, value){
-				element.checked = value;
-				element.setAttribute("aria-checked", value);
-			};
-
-			this.on(".dgrid-cell:click", function(evt){
-				var cell = _self.cell(evt);
-				var colId = cell.column.id;
-				var columnHeaders = cell.column.grid.columns;
-				var state = _self.store.state;
-
-				if(cell.row){
-					// data row is clicked
-					var rowId = cell.row.id;
-
-					// deselect other radio in the same row
-					options.forEach(function(el){
-						if(el != colId && _self.cell(rowId, el).element.input.checked){
-							toggleSelection(_self.cell(rowId, el).element.input, false);
-						}
-					});
-
-					// check whether entire rows are selected & mark as needed
-					options.forEach(function(el){
-						var allSelected = true;
-						state.genome_ids.forEach(function(genomeId){
-							if(_self.cell(genomeId, el).element.input.checked == false){
-								allSelected = false;
-							}
-						});
-						toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, allSelected);
-					});
-
-				}else{
-					// if header is clicked, reset the selections & update
-					state.genome_ids.forEach(function(genomeId){
-						options.forEach(function(el){
-							if(el === colId){
-								toggleSelection(_self.cell(genomeId, el).element.input, true);
-							}else{
-								toggleSelection(_self.cell(genomeId, el).element.input, false);
-							}
-						});
-					});
-
-					// deselect other radio in the header
-					options.forEach(function(el){
-						if(el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked){
-							toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
-						}
-					});
-				}
-
-				// update filter
-				Object.keys(_self.pfState.genomeFilterStatus).forEach(function(genomeId){
-					var status = options.findIndex(function(el){
-						if(_self.cell(genomeId, el).element.input.checked){
-							return el;
-						}
-					});
-					// 0 && console.log(genomeId, status);
-					_self.pfState.genomeFilterStatus[genomeId].setStatus(status);
-				});
-
-				//Object.keys(pfState.genomeFilterStatus).forEach(function(el){
-				//	 0 && console.warn(pfState.genomeFilterStatus[el].getGenomeName(), pfState.genomeFilterStatus[el].getStatus());
-				//});
-				Topic.publish("ProteinFamilies", "genomeFilter", _self.pfState.genomeFilterStatus);
-			});
-
-			aspect.before(_self, 'renderArray', function(results){
-				Deferred.when(results.total, function(x){
-					_self.set("totalRows", x);
-				});
-			});
-
-			this.inherited(arguments);
-			this._started = true;
-		},
-
-		state: null,
-		postCreate: function(){
-			this.inherited(arguments);
-		},
-		_setApiServer: function(server){
-			this.apiServer = server;
-		},
-		_setState: function(state){
-			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				this.store.set('state', state);
-				this.refresh();
-			}
-		},
-		createStore: function(server, token, state){
-
-			return new Store({
-				token: token,
-				apiServer: this.apiServer || window.App.dataServiceURL,
-				state: state || this.state,
-				pfState: this.pfState
-			});
-		}
-	});
-});
-
-},
-'p3/store/ProteinFamiliesFilterMemoryStore':function(){
-define([
-	"dojo/_base/declare", "dojo/request",
-	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic"
-], function(declare, request,
-			Memory, QueryResults,
-			when, lang, Stateful, Deferred,
-			Topic){
-
-	var genomeFilterStatus = (function(){
-		function init(index, genome_name){
-			this.index = index;
-			this.status = ' ';
-			this.genome_name = genome_name;
-		}
-
-		function getIndex(){
-			return this.index;
-		}
-
-		function getGenomeName(){
-			return this.genome_name;
-		}
-
-		function getStatus(){
-			return this.status;
-		}
-
-		function setIndex(idx){
-			this.index = idx;
-		}
-
-		function setStatus(status){
-			this.status = status;
-		}
-
-		return function(){
-			this.init = init, this.setIndex = setIndex, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
-			return this;
-		}
-	})();
-
-	return declare([Memory, Stateful], {
-		baseQuery: {},
-		apiServer: window.App.dataServiceURL,
-		idProperty: "genome_id",
-		state: null,
-		pfState: null,
-
-		onSetState: function(attr, oldVal, state){
-			var cur = (this.genome_ids || []).join("");
-			var next = (state.genome_ids || []).join("");
-			if(cur != next){
-				this.set("genome_ids", state.genome_ids || []);
-				this._loaded = false;
-				delete this._loadingDeferred;
-			}
-		},
-		constructor: function(options){
-			this._loaded = false;
-			this.genome_ids = [];
-			if(options.apiServer){
-				this.apiServer = options.apiServer;
-			}
-			this.pfState = options.pfState;
-			this.watch('state', lang.hitch(this, 'onSetState'));
-		},
-
-		query: function(query, opts){
-			query = query || {};
-			if(this._loaded){
-				return this.inherited(arguments);
-			}
-			else{
-				var _self = this;
-				var results;
-				var qr = QueryResults(when(this.loadData(), function(){
-					results = _self.query(query, opts);
-					qr.total = when(results, function(results){
-						return results.total || results.length
-					});
-					return results;
-				}));
-
-				return qr;
-			}
-		},
-
-		get: function(id, opts){
-			if(this._loaded){
-				return this.inherited(arguments);
-			}else{
-				var _self = this;
-				return when(this.loadData(), function(){
-					return _self.get(id, options)
-				})
-			}
-		},
-
-		loadData: function(){
-			if(this._loadingDeferred){
-				return this._loadingDeferred;
-			}
-
-			var state = this.state || {};
-
-			if(!state.genome_ids || state.genome_ids.length < 1){
-				//  0 && console.log("No Genome IDS, use empty data set for initial store");
-
-				//this is done as a deferred instead of returning an empty array
-				//in order to make it happen on the next tick.  Otherwise it
-				//in the query() function above, the callback happens before qr exists
-				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
-					this.setData([]);
-					this._loaded = true;
-					def.resolve(true);
-				}), 0);
-				return def.promise;
-
-			}
-
-			var query = {
-				q: "genome_id:(" + this.genome_ids.join(' OR ') + ")",
-				rows: this.genome_ids.length,
-				sort: "genome_name asc"
-			};
-			var q = Object.keys(query).map(function(p){
-				return p + "=" + query[p]
-			}).join("&");
-
-			var _self = this;
-
-			this._loadingDeferred = when(request.post(this.apiServer + '/genome/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/solr+json",
-					'Content-Type': "application/solrquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
-				},
-				data: q
-			}), function(response){
-				var data = response.response.docs;
-
-				// set genomeFilterStatus
-				var _genomeIds = [];
-				var _genomeFilterStatus = {};
-				data.forEach(function(genome, idx){
-					var gfs = new genomeFilterStatus();
-					gfs.init(idx, genome.genome_name);
-					_genomeFilterStatus[genome.genome_id] = gfs;
-					_genomeIds.push(genome.genome_id);
-				});
-
-				_self.pfState.genomeIds = _genomeIds;
-				_self.pfState.genomeFilterStatus = _genomeFilterStatus;
-
-				Topic.publish("ProteinFamilies", "genomeIds", _self.pfState);
-
-				_self.setData(data);
-				_self._loaded = true;
-				return true;
-			});
-			return this._loadingDeferred;
-		}
-	});
-});
-},
-'dgrid/CellSelection':function(){
-define([
-	"dojo/_base/declare",
-	"dojo/aspect",
-	"dojo/on",
-	"dojo/has",
-	"./Selection",
-	"put-selector/put"
-], function(declare, aspect, listen, has, Selection, put){
-
-return declare(Selection, {
-	// summary:
-	//		Add cell level selection capabilities to a grid. The grid will have a selection property and
-	//		fire "dgrid-select" and "dgrid-deselect" events.
-	
-	// ensure we don't select when an individual cell is not identifiable
-	selectionDelegate: ".dgrid-cell",
-	
-	_selectionTargetType: "cells",
-	
-	_select: function(cell, toCell, value){
-		var i, id;
-		if(typeof value === "undefined"){
-			// default to true
-			value = true;
-		}
-		if(typeof cell != "object" || !("element" in cell)){
-			cell = this.cell(cell);
-		}else if(!cell.row){
-			// Row object was passed instead of cell
-			if(value && typeof value === "object"){
-				// value is a hash of true/false values
-				for(id in value){
-					this._select(this.cell(cell.id, id), null, value[id]);
-				}
-			}else{
-				// Select/deselect all columns in row
-				for(id in this.columns){
-					this._select(this.cell(cell.id, id), null, value);
-				}
-			}
-			return;
-		}
-		if(this.allowSelect(cell)){
-			var selection = this.selection,
-				rowId = cell.row.id,
-				previousRow = selection[rowId];
-			if(!cell.column){
-				for(i in this.columns){
-					this._select(this.cell(rowId, i), null, value);
-				}
-				return;
-			}
-			var previous = previousRow && previousRow[cell.column.id];
-			if(value === null){
-				// indicates a toggle
-				value = !previous;
-			}
-			var element = cell.element;
-			previousRow = previousRow || {};
-			previousRow[cell.column.id] = value;
-			this.selection[rowId] = previousRow;
-			
-			// Check for all-false objects to see if it can be deleted.
-			// This prevents build-up of unnecessary iterations later.
-			var hasSelected = false;
-			for(i in previousRow){
-				if(previousRow[i] === true){
-					hasSelected = true;
-					break;
-				}
-			}
-			if(!hasSelected){ delete this.selection[rowId]; }
-			
-			if(element){
-				// add or remove classes as appropriate
-				if(value){
-					put(element, ".dgrid-selected" +
-						(this.addUiClasses ? ".ui-state-active" : ""));
-				}else{
-					put(element, "!dgrid-selected!ui-state-active");
-				}
-			}
-			if(value != previous && element){
-				this._selectionEventQueues[(value ? "" : "de") + "select"].push(cell);
-			}
-			if(toCell){
-				if(!toCell.element){
-					toCell = this.cell(toCell);
-				}
-				
-				if(!toCell || !toCell.row){
-					this._lastSelected = element;
-					 0 && console.warn("The selection range has been reset because the " +
-						"beginning of the selection is no longer in the DOM. " +
-						"If you are using OnDemandList, you may wish to increase " +
-						"farOffRemoval to avoid this, but note that keeping more nodes " +
-						"in the DOM may impact performance.");
-					return;
-				}
-				
-				var toElement = toCell.element;
-				var fromElement = cell.element;
-				// Find if it is earlier or later in the DOM
-				var direction = this._determineSelectionDirection(fromElement, toElement);
-				if(!direction){
-					// The original element was actually replaced
-					toCell = this.cell(
-						document.getElementById(toCell.row.element.id), toElement.columnId);
-					toElement = toCell && toCell.element;
-					direction = this._determineSelectionDirection(fromElement, toElement);
-				}
-				// now we determine which columns are in the range 
-				var idFrom = cell.column.id, idTo = toCell.column.id, started, columnIds = [];
-				for(id in this.columns){
-					if(started){
-						columnIds.push(id);				
-					}
-					if(id == idFrom && (idFrom = columnIds) || // once found, we mark it off so we don't hit it again
-						id == idTo && (idTo = columnIds)){
-						columnIds.push(id);
-						if(started || // last id, we are done 
-							(idFrom == columnIds && id == idTo)){ // the ids are the same, we are done
-							break;
-						}
-						started = true;
-					}
-				}
-				// now we iterate over rows
-				var row = cell.row, nextNode = row.element;
-				toElement = toCell.row.element;
-				do{
-					// looping through each row..
-					// and now loop through each column to be selected
-					for(i = 0; i < columnIds.length; i++){
-						cell = this.cell(nextNode, columnIds[i]);
-						this._select(cell, null, value);
-					}
-					if(nextNode == toElement){
-						break;
-					}
-				}while((nextNode = cell.row.element[direction]));
-			}
-		}
-	},
-	
-	_determineSelectionDirection: function () {
-		// Extend Selection to return next/previousSibling instead of down/up,
-		// given how CellSelection#_select is written
-		var result = this.inherited(arguments);
-		if(result === "down"){
-			return "nextSibling";
-		}
-		if(result === "up"){
-			return "previousSibling";
-		}
-		return result;
-	},
-	
-	isSelected: function(object, columnId){
-		// summary:
-		//		Returns true if the indicated cell is selected.
-		
-		if(typeof object === "undefined" || object === null){
-			return false;
-		}
-		if(!object.element){
-			object = this.cell(object, columnId);
-		}
-		
-		// First check whether the given cell is indicated in the selection hash;
-		// failing that, check if allSelected is true (testing against the
-		// allowSelect method if possible)
-		var rowId = object.row.id;
-		if(rowId in this.selection){
-			return !!this.selection[rowId][object.column.id];
-		}else{
-			return this.allSelected && (!object.row.data || this.allowSelect(object));
-		}
-	},
-	clearSelection: function(exceptId){
-		// disable exceptId in cell selection, since it would require double parameters
-		exceptId = false;
-		this.inherited(arguments);
-	}
-});
-});
-
-},
 'p3/widget/ProteinFamiliesHeatmapContainer':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
-	"dijit/TooltipDialog", "dijit/Dialog",
-	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
-	"./HeatmapContainer",
-	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
+	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
+	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
+	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin"
 
-], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
-			TooltipDialog, Dialog,
-			Form, TitlePane, RadioButton, Select, registry,
-			HeatmapContainer,
-			lang, when, request, PathJoin, Button){
+], function(declare, lang,
+			on, Topic, domConstruct, dom, Query, when, request,
+			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
+			TitlePane, registry, Form, RadioButton, Select, Button,
+			ContainerActionBar, HeatmapContainer, PathJoin){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
-		dataGridContainer: null,
 		pfState: null,
 		containerActions: [
 			[
@@ -74021,7 +75130,7 @@ define([
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+					Topic.publish("ProteinFamilies", "refreshHeatmap");
 				},
 				true
 			],
@@ -74108,20 +75217,28 @@ define([
 				true
 			]
 		],
-		constructor: function(options){
-			this.dataGridContainer = options.dataGridContainer;
-			this.pfState = options.pfState;
+		constructor: function(){
 			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				//  0 && console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "refresh":
-						this.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
-						this.flashDom.refreshData();
+					case "updatePfState":
+						self.pfState = value;
+						break;
+					case "refreshHeatmap":
+						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						break;
+					case "updateHeatmapData":
+						self.currentData = value;
+						if(typeof(self.flashDom.refreshData) == "function"){
+							self.flashDom.refreshData();
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
+						}
 						break;
 					default:
 						break;
@@ -74162,7 +75279,7 @@ define([
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -74200,9 +75317,9 @@ define([
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
-			request.post(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
@@ -74220,10 +75337,10 @@ define([
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			// 0 && console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+
 			var gfs = this.pfState.genomeFilterStatus;
-			// 0 && console.log(gfs, gfs[genomeId]);
-			var genomeName = gfs[genomeId].getGenomeName();
+
+			var genomeName = gfs[genomeId].getLabel();
 			var description = '', memberCount = 0, index = 0;
 
 			if(isTransposed){
@@ -74255,7 +75372,7 @@ define([
 			text.push('<b>Family ID:</b> ' + familyId);
 			text.push('<b>Members:</b> ' + memberCount);
 			features.forEach(function(feature){
-				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
+				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
 				if(feature.refseq_locus_tag !== undefined){
 					featureLink += ", " + feature.refseq_locus_tag;
 				}
@@ -74373,7 +75490,7 @@ define([
 			var options = pfState.genomeIds.map(function(genomeId){
 				return {
 					value: genomeId,
-					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+					label: pfState.genomeFilterStatus[genomeId].getLabel()
 				};
 			});
 
@@ -74382,7 +75499,7 @@ define([
 				options: options
 			});
 			anchor.on('change', function(genomeId){
-				self.anchor(genomeId);
+				Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
 				popup.close(self.tooltip_anchoring);
 			});
 
@@ -74414,11 +75531,11 @@ define([
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELEMITER;
+				var DELIMITER;
 				if(rel === 'text/csv'){
-					DELEMITER = ',';
+					DELIMITER = ',';
 				}else{
-					DELEMITER = '\t';
+					DELIMITER = '\t';
 				}
 
 				var colIndexes = [];
@@ -74430,7 +75547,7 @@ define([
 
 				var header = _self.currentData.rowLabel + "/" + _self.currentData.colLabel;
 				colIndexes.forEach(function(colIdx){
-					header += DELEMITER + _self.currentData.columns[colIdx].colLabel;
+					header += DELIMITER + _self.currentData.columns[colIdx].colLabel;
 				});
 
 				var data = [];
@@ -74442,7 +75559,7 @@ define([
 							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
-						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
+						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
 				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
@@ -74482,6 +75599,16 @@ define([
 			var btnShowDetails = new Button({
 				label: 'Show Proteins'
 			});
+			on(btnShowDetails.domNode, "click", function(){
+
+				var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
+						return feature.feature_id;
+					}).join(',') + ")))";
+
+				Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				_self.dialog.hide();
+			});
+
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group'
 			});
@@ -74515,58 +75642,29 @@ define([
 		},
 		cluster: function(param){
 
-			 0 && console.log("cluster is called", param);
+			//  0 && console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
+
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
-				 0 && console.log("Cluster Results: ", res);
+				//  0 && console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
 				pfState.clusterRowOrder = res.rows;
 				pfState.clusterColumnOrder = res.columns;
 
-				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
-			}));
-		},
-		anchor: function(genomeId){
-
-			var dataStore = this.dataGridContainer.grid.store;
-
-			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
-
-				var pfState = this.pfState;
-				var isTransposed = pfState.heatmapAxis === 'Transposed';
-
-				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
-				if(isTransposed){
-					currentFamilyOrder = this.currentData.rows.map(function(row){
-						return row.rowID;
-					});
-				}else{
-					currentFamilyOrder = this.currentData.columns.map(function(col){
-						return col.colID;
-					});
-				}
-
-				currentFamilyOrder.forEach(function(id){
-					if(!newFamilyOrderSet.hasOwnProperty(id)){
-						leftOver.push(id);
-					}
-				});
-
-				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
-
-				// clusterRow/ColumnOrder assumes corrected axises
-				pfState.clusterColumnOrder = adjustedFamilyOrder;
+				Topic.publish("ProteinFamilies", "updatePfState", pfState);
+				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}));
 		}
 	});
@@ -75699,8 +76797,7 @@ define([
 	"./GridContainer", "./ProteinFamiliesMembersGrid"
 ], function(declare, lang, on, Topic,
 			popup, TooltipDialog,
-			GridContainer, ProteinFamiliesMembersGrid
-){
+			GridContainer, ProteinFamiliesMembersGrid){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -75735,29 +76832,10 @@ define([
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
-		// defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
 		},
 		enableFilterPanel: false,
-		// _setQueryAttr: function(query){
-		// 	//block default query handler for now.
-		// },
-		// _setStateAttr: function(state){
-		// 	this.inherited(arguments);
-		// 	if(!state){
-		// 		return;
-		// 	}
-		//
-		// 	if(this.grid){
-		// 		 0 && console.log("   call set state on this.grid: ", this.grid);
-		// 		this.grid.set('query', state.search);
-		// 	}else{
-		// 		 0 && console.log("No Grid Yet (ProteinFamiliesMembersGridContainer)");
-		// 	}
-		//
-		// 	this._set("state", state);
-		// },
 
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -75786,13 +76864,13 @@ define([
 },
 'p3/widget/ProteinFamiliesMembersGrid':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/xhr", "dojo/_base/lang",  "dojo/_base/Deferred",
-	"dojo/aspect",  "dojo/request", "dojo/on", "dojo/dom-class",  "dojo/dom-construct",
+	"dojo/_base/declare", "dojo/_base/xhr", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/aspect", "dojo/request", "dojo/on", "dojo/dom-class", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./Grid", "./formatter", "../store/GenomeFeatureJsonRest",
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest",
 	"dgrid/selector"
 ], function(declare, xhr, lang, Deferred,
-			aspect, request,on,domClass,domConstruct,
+			aspect, request, on, domClass, domConstruct,
 			BorderContainer, ContentPane,
 			Grid, formatter, Store,
 			selector){
@@ -75802,12 +76880,11 @@ define([
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false}, {
-					attribute: "strand",
-					descending: false
-				}, {attribute: "start", descending: false}]
+				sort: [{attribute: "genome_name", descending: false},
+					{attribute: "accession", descending: false},
+					{attribute: "start", descending: false}]
 			};
-			 0 && console.warn("this.queryOptions: ", this.queryOptions);
+			//  0 && console.warn("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
 		query: (this.query || ""),
@@ -75885,302 +76962,6 @@ define([
 			this.inherited(arguments);
 			// this._started = true;
 			// this.refresh();
-		}
-
-		// ,state: null,
-		// postCreate: function(){
-		// 	this.inherited(arguments);
-		// },
-		// _setApiServer: function(server){
-		// 	this.apiServer = server;
-		// },
-		// _setState: function(state){
-		// 	if(!this.store){
-		// 		this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-		// 	}else{
-		// 		 0 && console.log("ProteinFamiliesGrid _setState()")
-		// 		this.store.set('state', state);
-		//
-		// 		 0 && console.log("ProteinFamiliesGrid Call Grid Refresh()")
-		// 		this.refresh();
-		// 	}
-		// },
-		// createStore: function(server, token, state){
-		//
-		// 	var store = new Store({
-		// 		token: token,
-		// 		apiServer: this.apiServer || window.App.dataServiceURL,
-		// 		state: state || this.state
-		// 	});
-		// 	store.watch('refresh', lang.hitch(this, "refresh"));
-		//
-		// 	return store;
-		// }
-	});
-});
-
-},
-'dijit/form/Textarea':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-style", // domStyle.set
-	"./_ExpandingTextAreaMixin",
-	"./SimpleTextarea"
-], function(declare, domStyle, _ExpandingTextAreaMixin, SimpleTextarea){
-
-	// module:
-	//		dijit/form/Textarea
-
-	return declare("dijit.form.Textarea", [SimpleTextarea, _ExpandingTextAreaMixin], {
-		// summary:
-		//		A textarea widget that adjusts it's height according to the amount of data.
-		//
-		// description:
-		//		A textarea that dynamically expands/contracts (changing it's height) as
-		//		the user types, to display all the text without requiring a scroll bar.
-		//
-		//		Takes nearly all the parameters (name, value, etc.) that a vanilla textarea takes.
-		//		Rows is not supported since this widget adjusts the height.
-
-
-		// TODO: for 2.0, rename this to ExpandingTextArea, and rename SimpleTextarea to TextArea
-
-		baseClass: "dijitTextBox dijitTextArea dijitExpandingTextArea",
-
-		// Override SimpleTextArea.cols to default to width:100%, for backward compatibility
-		cols: "",
-
-		buildRendering: function(){
-			this.inherited(arguments);
-
-			// tweak textarea style to reduce browser differences
-			domStyle.set(this.textbox, { overflowY: 'hidden', overflowX: 'auto', boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' });
-		}
-	});
-});
-
-},
-'dijit/form/_ExpandingTextAreaMixin':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-construct", // domConstruct.create
-	"dojo/has",
-	"dojo/_base/lang", // lang.hitch
-	"dojo/on",
-	"dojo/_base/window", // win.body
-	"../Viewport"
-], function(declare, domConstruct, has, lang, on, win, Viewport){
-
-	// module:
-	//		dijit/form/_ExpandingTextAreaMixin
-
-	// feature detection, true for mozilla and webkit
-	has.add("textarea-needs-help-shrinking", function(){
-		var body = win.body(),	// note: if multiple documents exist, doesn't matter which one we use
-			te = domConstruct.create('textarea', {
-			rows:"5",
-			cols:"20",
-			value: ' ',
-			style: {zoom:1, fontSize:"12px", height:"96px", overflow:'hidden', visibility:'hidden', position:'absolute', border:"5px solid white", margin:"0", padding:"0", boxSizing: 'border-box', MsBoxSizing: 'border-box', WebkitBoxSizing: 'border-box', MozBoxSizing: 'border-box' }
-		}, body, "last");
-		var needsHelpShrinking = te.scrollHeight >= te.clientHeight;
-		body.removeChild(te);
-		return needsHelpShrinking;
-	});
-
-	return declare("dijit.form._ExpandingTextAreaMixin", null, {
-		// summary:
-		//		Mixin for textarea widgets to add auto-expanding capability
-
-		_setValueAttr: function(){
-			this.inherited(arguments);
-			this.resize();
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-			var textarea = this.textbox;
-			textarea.style.overflowY = "hidden";
-			this.own(on(textarea, "focus, resize", lang.hitch(this, "_resizeLater")));
-		},
-
-		startup: function(){ 
-			this.inherited(arguments);
-			this.own(Viewport.on("resize", lang.hitch(this, "_resizeLater")));
-			this._resizeLater();
-		},
-
-		_onInput: function(e){
-			this.inherited(arguments);
-			this.resize();
-		},
-
-		_estimateHeight: function(){
-			// summary:
-			//		Approximate the height when the textarea is invisible with the number of lines in the text.
-			//		Fails when someone calls setValue with a long wrapping line, but the layout fixes itself when the user clicks inside so . . .
-			//		In IE, the resize event is supposed to fire when the textarea becomes visible again and that will correct the size automatically.
-			//
-			var textarea = this.textbox;
-			// #rows = #newlines+1
-			textarea.rows = (textarea.value.match(/\n/g) || []).length + 1;
-		},
-
-		_resizeLater: function(){
-			this.defer("resize");
-		},
-
-		resize: function(){
-			// summary:
-			//		Resizes the textarea vertically (should be called after a style/value change)
-
-			var textarea = this.textbox;
-
-			function textareaScrollHeight(){
-				var empty = false;
-				if(textarea.value === ''){
-					textarea.value = ' ';
-					empty = true;
-				}
-				var sh = textarea.scrollHeight;
-				if(empty){ textarea.value = ''; }
-				return sh;
-			}
-
-			if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
-			if(this.busyResizing){ return; }
-			this.busyResizing = true;
-			if(textareaScrollHeight() || textarea.offsetHeight){
-				var newH = textareaScrollHeight() + Math.max(textarea.offsetHeight - textarea.clientHeight, 0);
-				var newHpx = newH + "px";
-				if(newHpx != textarea.style.height){
-					textarea.style.height = newHpx;
-					textarea.rows = 1; // rows can act like a minHeight if not cleared
-				}
-				if(has("textarea-needs-help-shrinking")){
-					var	origScrollHeight = textareaScrollHeight(),
-						newScrollHeight = origScrollHeight,
-						origMinHeight = textarea.style.minHeight,
-						decrement = 4, // not too fast, not too slow
-						thisScrollHeight,
-						origScrollTop = textarea.scrollTop;
-					textarea.style.minHeight = newHpx; // maintain current height
-					textarea.style.height = "auto"; // allow scrollHeight to change
-					while(newH > 0){
-						textarea.style.minHeight = Math.max(newH - decrement, 4) + "px";
-						thisScrollHeight = textareaScrollHeight();
-						var change = newScrollHeight - thisScrollHeight;
-						newH -= change;
-						if(change < decrement){
-							break; // scrollHeight didn't shrink
-						}
-						newScrollHeight = thisScrollHeight;
-						decrement <<= 1;
-					}
-					textarea.style.height = newH + "px";
-					textarea.style.minHeight = origMinHeight;
-					textarea.scrollTop = origScrollTop;
-				}
-				textarea.style.overflowY = textareaScrollHeight() > textarea.clientHeight ? "auto" : "hidden";
-				if(textarea.style.overflowY == "hidden"){ textarea.scrollTop = 0; }
-			}else{
-				// hidden content of unknown size
-				this._estimateHeight();
-			}
-			this.busyResizing = false;
-		}
-	});
-});
-
-},
-'dijit/form/SimpleTextarea':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-class", // domClass.add
-	"dojo/sniff", // has("ie") has("opera")
-	"./TextBox"
-], function(declare, domClass, has, TextBox){
-
-	// module:
-	//		dijit/form/SimpleTextarea
-
-	return declare("dijit.form.SimpleTextarea", TextBox, {
-		// summary:
-		//		A simple textarea that degrades, and responds to
-		//		minimal LayoutContainer usage, and works with dijit/form/Form.
-		//		Doesn't automatically size according to input, like Textarea.
-		//
-		// example:
-		//	|	<textarea data-dojo-type="dijit/form/SimpleTextarea" name="foo" value="bar" rows=30 cols=40></textarea>
-		//
-		// example:
-		//	|	new SimpleTextarea({ rows:20, cols:30 }, "foo");
-
-		baseClass: "dijitTextBox dijitTextArea",
-
-		// rows: Number
-		//		The number of rows of text.
-		rows: "3",
-
-		// rows: Number
-		//		The number of characters per line.
-		cols: "20",
-
-		templateString: "<textarea ${!nameAttrSetting} data-dojo-attach-point='focusNode,containerNode,textbox' autocomplete='off'></textarea>",
-
-		postMixInProperties: function(){
-			// Copy value from srcNodeRef, unless user specified a value explicitly (or there is no srcNodeRef)
-			// TODO: parser will handle this in 2.0
-			if(!this.value && this.srcNodeRef){
-				this.value = this.srcNodeRef.value;
-			}
-			this.inherited(arguments);
-		},
-
-		buildRendering: function(){
-			this.inherited(arguments);
-			if(has("ie") && this.cols){ // attribute selectors is not supported in IE6
-				domClass.add(this.textbox, "dijitTextAreaCols");
-			}
-		},
-
-		filter: function(/*String*/ value){
-			// Override TextBox.filter to deal with newlines... specifically (IIRC) this is for IE which writes newlines
-			// as \r\n instead of just \n
-			if(value){
-				value = value.replace(/\r/g, "");
-			}
-			return this.inherited(arguments);
-		},
-
-		_onInput: function(/*Event?*/ e){
-			// Override TextBox._onInput() to enforce maxLength restriction
-			if(this.maxLength){
-				var maxLength = parseInt(this.maxLength);
-				var value = this.textbox.value.replace(/\r/g, '');
-				var overflow = value.length - maxLength;
-				if(overflow > 0){
-					var textarea = this.textbox;
-					if(textarea.selectionStart){
-						var pos = textarea.selectionStart;
-						var cr = 0;
-						if(has("opera")){
-							cr = (this.textbox.value.substring(0, pos).match(/\r/g) || []).length;
-						}
-						this.textbox.value = value.substring(0, pos - overflow - cr) + value.substring(pos - cr);
-						textarea.setSelectionRange(pos - overflow, pos - overflow);
-					}else if(this.ownerDocument.selection){ //IE
-						textarea.focus();
-						var range = this.ownerDocument.selection.createRange();
-						// delete overflow characters
-						range.moveStart("character", -overflow);
-						range.text = '';
-						// show cursor
-						range.select();
-					}
-				}
-			}
-			this.inherited(arguments);
 		}
 	});
 });

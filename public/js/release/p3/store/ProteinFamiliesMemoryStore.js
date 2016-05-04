@@ -1,18 +1,33 @@
 define("p3/store/ProteinFamiliesMemoryStore", [
-	"dojo/_base/declare", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang", "dojo/Stateful", "dojo/_base/Deferred",
-	"dojo/topic", "./HeatmapDataTypes"
-], function(declare, request,
+	"./ArrangeableMemoryStore", "./HeatmapDataTypes"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
 			Memory, QueryResults,
-			when, lang, Stateful, Deferred,
-			Topic){
-	return declare([Memory, Stateful], {
+			ArrangeableMemoryStore){
+
+	var pfState = {
+		familyType: 'figfam', // default
+		heatmapAxis: '',
+		genomeIds: [],
+		genomeFilterStatus: {},
+		clusterRowOrder: [],
+		clusterColumnOrder: [],
+		perfectFamMatch: 'A',
+		min_member_count: null,
+		max_member_count: null,
+		min_genome_count: null,
+		max_genome_count: null
+	};
+
+	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
 		idProperty: "family_id",
 		state: null,
-		pfState: null,
+		pfState: pfState,
 
 		constructor: function(options){
 			this._loaded = false;
@@ -23,29 +38,37 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			var self = this;
 
 			Topic.subscribe("ProteinFamilies", function(){
-				//console.log("received:", arguments);
+				// console.log("received:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "genomeIds":
-						self.pfState = value;
-						self.reload();
-						break;
-					case "familyType":
+					case "setFamilyType":
 						self.pfState.familyType = value;
 						self.reload();
-						Topic.publish("ProteinFamiliesHeatmap", "refresh"); // call flash refresh individually now. we will move it later.
+						self.currentData = self.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
-					case "genomeFilter":
-						self.genomeFilter(value);
-						Topic.publish("ProteinFamiliesHeatmap", "refresh");
+					case "anchorByGenome":
+						self.anchorByGenome(value);
+						break;
+					case "applyConditionFilter":
+						self.pfState = value;
+						self.conditionFilter(value);
+						self.currentData = self.getHeatmapData(self.pfState);
+						Topic.publish("ProteinFamilies", "updatePfState", self.pfState);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						break;
+					case "requestHeatmapData":
+						// console.log("requestHeatmapData with ", value.genomeIds);
+						self.currentData = self.getHeatmapData(value);
+						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					default:
 						break;
 				}
 			});
 		},
-		genomeFilter: function(gfs){
+		conditionFilter: function(pfState){
 			var self = this;
 			if(self._filtered == undefined){ // first time
 				self._filtered = true;
@@ -53,12 +76,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			}
 			var data = self._original;
 			var newData = [];
+			var gfs = pfState.genomeFilterStatus;
 
 			// var tsStart = window.performance.now();
 			data.forEach(function(family){
 
 				var skip = false;
 
+				// genomes
 				Object.keys(gfs).forEach(function(genomeId){
 					var index = gfs[genomeId].getIndex();
 					var status = gfs[genomeId].getStatus();
@@ -70,6 +95,30 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 						skip = true;
 					}
 				});
+
+				// perfect family
+				if(pfState.perfectFamMatch === 'Y'){
+					family.feature_count !== family.genome_count ? skip = true : {};
+				}else if(pfState.perfectFamMatch === 'N'){
+					family.feature_count === family.genome_count ? skip = true : {};
+				}
+
+				// num proteins per family
+				if(pfState.min_member_count){
+					family.feature_count < pfState.min_member_count ? skip = true : {};
+				}
+				if(pfState.max_member_count){
+					family.feature_count > pfState.max_member_count ? skip = true : {};
+				}
+
+				// num genomes per family
+				if(pfState.min_genome_count){
+					family.genome_count < pfState.min_genome_count ? skip = true : {};
+				}
+				if(pfState.max_genome_count){
+					family.genome_count > pfState.max_genome_count ? skip = true : {};
+				}
+
 				if(!skip){
 					newData.push(family);
 				}
@@ -89,10 +138,6 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 
 		query: function(query, opts){
 			query = query || {};
-			//console.warn("query: ", query, opts);
-			if(opts.sort == undefined){
-				opts.sort = [{attribute: "family_id", descending: false}];
-			}
 			if(this._loaded){
 				return this.inherited(arguments);
 			}
@@ -127,69 +172,76 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				return this._loadingDeferred;
 			}
 
-			if(!this.pfState || this.pfState.genomeIds.length < 1){
+			var _self = this;
+
+			// console.warn(this.state.genome_ids, !this.state.genome_ids);
+			if(!this.state.genome_ids){
 				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
+				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
 					this._loaded = true;
-					def.resolve(true);
+					// def.resolve(true);
 				}), 0);
 				return def.promise;
-
 			}
 
-			var familyType = this.pfState.familyType;
-			var familyId = familyType + '_id';
-
-			var query = {
-				q: "genome_id:(" + this.pfState.genomeIds.join(' OR ') + ")",
-				fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
-				//fq: "figfam_id:(FIG01956050)",
-				rows: 0,
-				facet: true,
-				'json.facet': '{stat:{type:field,field:' + familyId + ',limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
-			};
-			var q = Object.keys(query).map(function(p){
-				return p + "=" + query[p]
-			}).join("&");
-
-			var _self = this;
-
-			this._loadingDeferred = when(request.post(this.apiServer + '/genome_feature/', {
+			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
 				handleAs: 'json',
 				headers: {
-					'Accept': "application/solr+json",
+					'Accept': "application/json",
 					'Content-Type': "application/solrquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 				},
-				data: q
-			}), function(response){
-				//console.warn(response);
-				if(response.facets.count == 0){
-					// data is not available
-					_self.setData([]);
-					_self._loaded = true;
-					return true;
+				data: {
+					q: "genome_id:(" + _self.state.genome_ids.join(" OR ") + ")",
+					rows: _self.state.genome_ids.length,
+					sort: "genome_name asc"
 				}
-				var familyStat = response.facets.stat.buckets;
+			}), function(genomes){
 
-				var familyIdList = [];
-				familyStat.forEach(function(element){
-					if(element.val != ""){
-						familyIdList.push(element.val);
-					}
+				genomes.forEach(function(genome, idx){
+					var gfs = new FilterStatus();
+					gfs.init(idx, genome.genome_name);
+					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
+					_self.pfState.genomeIds.push(genome.genome_id);
 				});
+				// publish pfState & update filter panel
+				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
+				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
 
-				// sub query - genome distribution
-				query = q + '&json.facet={stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}';
+				// _self.pfState, _self.token
+				var opts = {
+					token: ""
+				};
+				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
+					_self.setData(data);
+					_self._loaded = true;
+					Topic.publish("ProteinFamilies", "hideLoadingMask");
+				}));
 
-				// console.log("Do Second Request to /genome_feature/");
+/*
+				var familyType = _self.pfState.familyType;
+				var familyId = familyType + '_id';
+
+				var query = {
+					q: "genome_id:(" + _self.pfState.genomeIds.join(' OR ') + ")",
+					fq: "annotation:PATRIC AND feature_type:CDS AND " + familyId + ":[* TO *]",
+					//fq: "figfam_id:(FIG01956050)",
+					rows: 0,
+					facet: true,
+					'facet.method': 'uif',
+					'json.facet': '{stat:{type:field,field:' + familyId + ',sort:index,limit:-1,facet:{aa_length_min:"min(aa_length)",aa_length_max:"max(aa_length)",aa_length_mean:"avg(aa_length)",ss:"sumsq(aa_length)",sum:"sum(aa_length)"}}}'
+				};
+				var q = Object.keys(query).map(function(p){
+					return p + "=" + query[p]
+				}).join("&");
+
 				return when(request.post(_self.apiServer + '/genome_feature/', {
 					handleAs: 'json',
 					headers: {
@@ -198,10 +250,32 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 						'X-Requested-With': null,
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
-					data: query
+					data: q
 				}), function(response){
+					//console.warn(response);
+					if(response.facets.count == 0){
+						// data is not available
+						_self.setData([]);
+						_self._loaded = true;
+						return true;
+					}
+					var familyStat = response.facets.stat.buckets;
 
-					return when(request.post(_self.apiServer + '/protein_family_ref/', {
+					var familyIdList = [];
+					familyStat.forEach(function(element){
+						if(element.val != ""){
+							familyIdList.push(element.val);
+						}
+					});
+
+					// sub query - genome distribution
+					query = lang.mixin(query, {'json.facet': '{stat:{type:field,field:genome_id,limit:-1,facet:{families:{type:field,field:' + familyId + ',limit:-1,sort:{index:asc}}}}}'});
+					q = Object.keys(query).map(function(p){
+						return p + "=" + query[p]
+					}).join("&");
+
+					// console.log("Do Second Request to /genome_feature/");
+					return when(request.post(_self.apiServer + '/genome_feature/', {
 						handleAs: 'json',
 						headers: {
 							'Accept': "application/solr+json",
@@ -209,126 +283,140 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 							'X-Requested-With': null,
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
-						data: {
-							q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
-							rows: 1000000
-						}
-					}), function(res){
-						var genomeFamilyDist = response.facets.stat.buckets;
-						var familyGenomeCount = {};
-						var familyGenomeIdCountMap = {};
-						var familyGenomeIdSet = {};
-						var genomePosMap = {};
-						var genome_ids = _self.pfState.genomeIds;
-						genome_ids.forEach(function(genomeId, idx){
-							genomePosMap[genomeId] = idx;
-						});
+						data: q
+					}), function(response){
 
-						window.performance.mark('mark_start_stat1');
-						genomeFamilyDist.forEach(function(genome){
-							var genomeId = genome.val;
-							var genomePos = genomePosMap[genomeId];
-							var familyBuckets = genome.families.buckets;
+						return when(request.post(_self.apiServer + '/protein_family_ref/', {
+							handleAs: 'json',
+							headers: {
+								'Accept': "application/json",
+								'Content-Type': "application/solrquery+x-www-form-urlencoded",
+								'X-Requested-With': null,
+								'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+							},
+							data: {
+								q: 'family_type:' + familyType + ' AND family_id:(' + familyIdList.join(' OR ') + ')',
+								rows: familyIdList.length
+							}
+						}), function(res){
+							var genomeFamilyDist = response.facets.stat.buckets;
+							var familyGenomeCount = {};
+							var familyGenomeIdCountMap = {};
+							var familyGenomeIdSet = {};
+							var genomePosMap = {};
+							var genome_ids = _self.pfState.genomeIds;
+							genome_ids.forEach(function(genomeId, idx){
+								genomePosMap[genomeId] = idx;
+							});
 
-							familyBuckets.forEach(function(bucket){
-								var familyId = bucket.val;
+							window.performance.mark('mark_start_stat1');
+							genomeFamilyDist.forEach(function(genome){
+								var genomeId = genome.val;
+								var genomePos = genomePosMap[genomeId];
+								var familyBuckets = genome.families.buckets;
+
+								familyBuckets.forEach(function(bucket){
+									var familyId = bucket.val;
+									if(familyId != ""){
+										var genomeCount = bucket.count.toString(16);
+										if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
+
+										if(familyId in familyGenomeIdCountMap){
+											familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
+										}
+										else{
+											var genomeIdCount = new Array(genome_ids.length).fill('00');
+											genomeIdCount[genomePos] = genomeCount;
+											familyGenomeIdCountMap[familyId] = genomeIdCount;
+										}
+
+										if(familyId in familyGenomeIdSet){
+											familyGenomeIdSet[familyId].push(genomeId);
+										}
+										else{
+											var genomeIds = new Array(genome_ids.length);
+											genomeIds.push(genomeId);
+											familyGenomeIdSet[familyId] = genomeIds;
+										}
+									}
+								});
+							});
+
+							window.performance.mark('mark_end_stat1');
+							window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
+
+							window.performance.mark('mark_start_stat2');
+							Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
+								var hashSet = {};
+								familyGenomeIdSet[familyId].forEach(function(value){
+									hashSet[value] = true;
+								});
+								familyGenomeCount[familyId] = Object.keys(hashSet).length;
+							});
+
+							window.performance.mark('mark_end_stat2');
+							window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
+
+							window.performance.mark('mark_start_stat3');
+
+							var familyRefHash = {};
+							res.forEach(function(el){
+								if(!(el.family_id in familyRefHash)){
+									familyRefHash[el.family_id] = el.family_product;
+								}
+							});
+							window.performance.mark('mark_end_stat3');
+							window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
+
+							window.performance.mark('mark_start_stat4');
+							//var data = new Array(Object.keys(familyRefHash).length);
+							var data = [];
+							familyStat.forEach(function(element){
+								var familyId = element.val;
 								if(familyId != ""){
-									var genomeCount = bucket.count.toString(16);
-									if(genomeCount.length < 2) genomeCount = '0' + genomeCount;
-
-									if(familyId in familyGenomeIdCountMap){
-										familyGenomeIdCountMap[familyId][genomePos] = genomeCount;
-									}
-									else{
-										var genomeIdCount = new Array(genome_ids.length).fill('00');
-										genomeIdCount[genomePos] = genomeCount;
-										familyGenomeIdCountMap[familyId] = genomeIdCount;
+									var featureCount = element.count;
+									var std = 0;
+									if(featureCount > 1){
+										var sumSq = element.ss || 0;
+										var sum = element.sum || 0;
+										var realSq = sumSq - (sum * sum) / featureCount;
+										std = Math.sqrt(realSq / (featureCount - 1));
 									}
 
-									if(familyId in familyGenomeIdSet){
-										familyGenomeIdSet[familyId].push(genomeId);
-									}
-									else{
-										var genomeIds = new Array(genome_ids.length);
-										genomeIds.push(genomeId);
-										familyGenomeIdSet[familyId] = genomeIds;
-									}
+									var row = {
+										family_id: familyId,
+										feature_count: featureCount,
+										genome_count: familyGenomeCount[familyId],
+										aa_length_std: std,
+										aa_length_max: element.aa_length_max,
+										aa_length_mean: element.aa_length_mean,
+										aa_length_min: element.aa_length_min,
+										description: familyRefHash[familyId],
+										genomes: familyGenomeIdCountMap[familyId].join("")
+									};
+									data.push(row);
 								}
 							});
+							window.performance.mark('mark_end_stat4');
+							window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
+							// console.log(data);
+
+							window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
+
+							// var measures = window.performance.getEntriesByType('measure');
+							// for(var i = 0, len = measures.length; i < len; ++i){
+							// 	console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
+							// }
+							_self.setData(data);
+							_self._loaded = true;
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
+							return true;
+						}, function(err){
+							console.error("Error in ProteinFamiliesStore: ", err)
 						});
-
-						window.performance.mark('mark_end_stat1');
-						window.performance.measure('measure_protein_family_stat1', 'mark_start_stat1', 'mark_end_stat1');
-
-						window.performance.mark('mark_start_stat2');
-						Object.keys(familyGenomeIdCountMap).forEach(function(familyId){
-							var hashSet = {};
-							familyGenomeIdSet[familyId].forEach(function(value){
-								hashSet[value] = true;
-							});
-							familyGenomeCount[familyId] = Object.keys(hashSet).length;
-						});
-
-						window.performance.mark('mark_end_stat2');
-						window.performance.measure('measure_protein_family_stat2', 'mark_start_stat2', 'mark_end_stat2');
-
-						window.performance.mark('mark_start_stat3');
-
-						var familyRefHash = {};
-						res.response.docs.forEach(function(el){
-							if(!(el.family_id in familyRefHash)){
-								familyRefHash[el.family_id] = el.family_product;
-							}
-						});
-						window.performance.mark('mark_end_stat3');
-						window.performance.measure('measure_protein_family_stat3', 'mark_start_stat3', 'mark_end_stat3');
-
-						window.performance.mark('mark_start_stat4');
-						//var data = new Array(Object.keys(familyRefHash).length);
-						var data = [];
-						familyStat.forEach(function(element){
-							var familyId = element.val;
-							if(familyId != ""){
-								var featureCount = element.count;
-								var std = 0;
-								if(featureCount > 1){
-									var sumSq = element.ss || 0;
-									var sum = element.sum || 0;
-									var realSq = sumSq - (sum * sum) / featureCount;
-									std = Math.sqrt(realSq / (featureCount - 1));
-								}
-
-								var row = {
-									family_id: familyId,
-									feature_count: featureCount,
-									genome_count: familyGenomeCount[familyId],
-									aa_length_std: std,
-									aa_length_max: element.aa_length_max,
-									aa_length_mean: element.aa_length_mean,
-									aa_length_min: element.aa_length_min,
-									description: familyRefHash[familyId],
-									genomes: familyGenomeIdCountMap[familyId].join("")
-								};
-								data.push(row);
-							}
-						});
-						window.performance.mark('mark_end_stat4');
-						window.performance.measure('measure_protein_family_stat4', 'mark_start_stat4', 'mark_end_stat4');
-						// console.log(data);
-
-						window.performance.measure('measure_total', 'mark_start_stat1', 'mark_end_stat4');
-
-						// var measures = window.performance.getEntriesByType('measure');
-						// for(var i = 0, len = measures.length; i < len; ++i){
-						// 	console.log(measures[i].name + ' took ' + measures[i].duration + ' ms');
-						// }
-						_self.setData(data);
-						_self._loaded = true;
-						return true;
-					}, function(err){
-						console.error("Error in ProteinFamiliesStore: ", err)
 					});
 				});
+*/
 			});
 			return this._loadingDeferred;
 		},
@@ -342,13 +430,14 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			var colorStop = [];
 
 			var isTransposed = (pfState.heatmapAxis === 'Transposed');
-			var start = window.performance.now();
+			// var start = window.performance.now();
 
 			// assumes axises are corrected
 			var familyOrder = pfState.clusterColumnOrder;
 			var genomeOrder = pfState.clusterRowOrder;
 
 			var createColumn = function(order, colId, label, distribution, meta){
+				// this reads global variable keeps, and update global variable maxIntensity
 				var filtered = [], isEven = (order % 2) === 0;
 
 				keeps.forEach(function(idx, i){ // idx is a start position of distribution. 2 * gfs.getIndex();
@@ -369,13 +458,6 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			// rows - genomes
 			// if genome order is changed, then needs to or-organize distribution in columns.
 			var genomeOrderChangeMap = [];
-			var distributionTransformer = function(dist, map){
-				var newDist = [];
-				map.forEach(function(pos, idx){
-					newDist[idx] = dist.substr(pos * 2, 2);
-				});
-				return newDist.join('');
-			};
 
 			if(genomeOrder !== [] && genomeOrder.length > 0){
 				pfState.genomeIds = genomeOrder;
@@ -394,7 +476,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 					var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
 					//console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor));
+					rows.push(new Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
 				}
 			});
 
@@ -544,6 +626,47 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 				// return order; // original implementation
 				return familyIdSet;
 			});
+		},
+
+		anchorByGenome: function(genomeId){
+
+			Topic.publish("ProteinFamilies", "showLoadingMask");
+
+			var self = this;
+			when(this.getSyntenyOrder(genomeId), lang.hitch(self, function(newFamilyOrderSet){
+
+				var pfState = this.pfState;
+				var isTransposed = pfState.heatmapAxis === 'Transposed';
+
+				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
+				if(isTransposed){
+					currentFamilyOrder = this.currentData.rows.map(function(row){
+						return row.rowID;
+					});
+				}else{
+					currentFamilyOrder = this.currentData.columns.map(function(col){
+						return col.colID;
+					});
+				}
+
+				currentFamilyOrder.forEach(function(id){
+					if(!newFamilyOrderSet.hasOwnProperty(id)){
+						leftOver.push(id);
+					}
+				});
+
+				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
+
+				// clusterRow/ColumnOrder assumes corrected axises
+				pfState.clusterColumnOrder = adjustedFamilyOrder;
+
+				// update main grid
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", adjustedFamilyOrder);
+
+				// re-draw heatmap
+				self.currentData = this.getHeatmapData(pfState);
+				Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+			}));
 		}
 	});
 });
