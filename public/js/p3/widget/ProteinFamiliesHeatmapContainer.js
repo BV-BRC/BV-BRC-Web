@@ -236,9 +236,9 @@ define([
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+
 			var gfs = this.pfState.genomeFilterStatus;
-			//console.log(gfs, gfs[genomeId]);
+
 			var genomeName = gfs[genomeId].getLabel();
 			var description = '', memberCount = 0, index = 0;
 
@@ -430,11 +430,11 @@ define([
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELEMITER;
+				var DELIMITER;
 				if(rel === 'text/csv'){
-					DELEMITER = ',';
+					DELIMITER = ',';
 				}else{
-					DELEMITER = '\t';
+					DELIMITER = '\t';
 				}
 
 				var colIndexes = [];
@@ -446,7 +446,7 @@ define([
 
 				var header = _self.currentData.rowLabel + "/" + _self.currentData.colLabel;
 				colIndexes.forEach(function(colIdx){
-					header += DELEMITER + _self.currentData.columns[colIdx].colLabel;
+					header += DELIMITER + _self.currentData.columns[colIdx].colLabel;
 				});
 
 				var data = [];
@@ -458,7 +458,7 @@ define([
 							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
-						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
+						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
 				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
@@ -498,6 +498,16 @@ define([
 			var btnShowDetails = new Button({
 				label: 'Show Proteins'
 			});
+			on(btnShowDetails.domNode, "click", function(){
+
+				var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
+						return feature.feature_id;
+					}).join(',') + ")))";
+
+				Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				_self.dialog.hide();
+			});
+
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group'
 			});

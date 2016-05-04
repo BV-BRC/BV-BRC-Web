@@ -94,7 +94,9 @@ define([
 				},
 				true
 			]
-		]),
+		])
+// use	ViewFASTA in GridContainer
+/*	,
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFASTA",
@@ -118,5 +120,6 @@ define([
 			]
 
 		])
+*/
 	});
 });
