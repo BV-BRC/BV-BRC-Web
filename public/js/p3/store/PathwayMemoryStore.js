@@ -89,7 +89,7 @@ define([
 		},
 
 		queryTypes: {
-			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -105,7 +105,7 @@ define([
 				}
 			})) + ")",
 
-			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -120,7 +120,7 @@ define([
 					}
 				}
 			})) + ")",
-			genes: "&limit(25000)&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
