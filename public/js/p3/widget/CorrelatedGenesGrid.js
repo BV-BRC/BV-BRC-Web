@@ -18,7 +18,7 @@ define([
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			// "Selection Checkboxes": selector({}), // no selector for now.
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
