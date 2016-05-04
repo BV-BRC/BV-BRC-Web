@@ -134,8 +134,9 @@ define("p3/widget/GroupExplore", [
 				}
 				else if(myType === 'experiment_group'){
 					url = window.App.dataServiceURL + "/transcriptomics_experiment/";
-					var q = "in(expid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
+					var q = "in(eid,(" + ids + "))&select(expid,accession,title,organism,strain,mutant,timeseries,condition)&sort(+expid)&limit(25000)";
 					console.log("url: ", url);
+					console.log("ids: ", ids);
 					xhr.post(url, {
 						data: q,
 						headers: {
@@ -163,7 +164,8 @@ define("p3/widget/GroupExplore", [
 						grid.renderArray(dataArray);
 						grid.resize();
 					}, function(err){
-						console.log("Error Retreiving Genomes: ", err)
+						console.log("Error Retreiving Experiment: ", err)
+						document.getElementById('gse-members-grid').innerHTML = "This is a private experiment: " + ids;
 					});
 				}
 			}
@@ -440,11 +442,9 @@ define("p3/widget/GroupExplore", [
 				if(group_data[i].data.id_list.eid){
 					group.members = group_data[i].data.id_list.eid;
 				}
-				/*
 				else if (group_data[i].data.id_list.ws_item_path) {
 				  group.members = group_data[i].data.id_list.ws_item_path;
 				}
-				*/
 			}
 			console.log("current group ", group);
 			groups.push(group);

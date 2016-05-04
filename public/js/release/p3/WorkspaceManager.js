@@ -23,6 +23,8 @@ define("p3/WorkspaceManager", [
 					return "/" + [this.userId, "home", "Feature Groups"].join("/");
 				case "experiment_folder":
 					return "/" + [this.userId, "home", "Experiments"].join("/");
+				case "experiment_group":
+					return "/" + [this.userId, "home", "Experiment Groups"].join("/");
 
 				default:
 					return "/" + [this.userId, "home"].join("/");

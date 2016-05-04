@@ -120,11 +120,11 @@ define("p3/store/PathwayMemoryStore", [
 					}
 				}
 			})) + ")",
-			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			genes: "&limit(25000)&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
-						field: "gene",
+						field: "feature_id",
 						limit: -1,
 						facet: {
 							genome_count: "unique(genome_id)",
@@ -220,7 +220,7 @@ define("p3/store/PathwayMemoryStore", [
 				var props = {
 					"pathway": "pathway_id",
 					"ecnumber": "ec_number",
-					"genes": 'gene'
+					"genes": 'feature_id'
 				};
 				console.log("Pathway Base Query Response:", response);
 				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])

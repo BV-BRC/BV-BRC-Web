@@ -1,10 +1,10 @@
-define("p3/widget/ProteinFamiliesGridContainer", [
+define("p3/widget/TranscriptomicsGeneGridContainer", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
 	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer"
+	"./TranscriptomicsGeneGrid", "./GridContainer"
 ], function(declare, lang, on, Topic,
 			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer){
+			TranscriptomicsGeneGrid, GridContainer){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -22,6 +22,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 
 	on(downloadTT.domNode, "div:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
+		var self = this;
 		// console.log("REL: ", rel);
 		var selection = self.actionPanel.get('selection');
 		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
@@ -33,18 +34,18 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 	});
 
 	return declare([GridContainer], {
-		gridCtor: ProteinFamiliesGrid,
-		containerType: "proteinfamily_data",
+		gridCtor: TranscriptomicsGeneGrid,
+		containerType: "transcriptomics_gene_data",
 		facetFields: [],
 		enableFilterPanel: false,
 		constructor: function(){
 			var self = this;
-			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+			Topic.subscribe("TranscriptomicsGene", lang.hitch(self, function(){
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "updatePfState":
-						self.pfState = value;
+					case "updateTgState":
+						self.tgState = value;
 						break;
 					default:
 						break;
@@ -52,7 +53,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 			}));
 		},
 		buildQuery: function(){
-			return "";
+			// prevent further filtering. DO NOT DELETE
 		},
 		_setQueryAttr: function(query){
 			//block default query handler for now.
@@ -62,13 +63,12 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 			if(!state){
 				return;
 			}
-			// console.log("ProteinFamiliesGridContainer _setStateAttr: ", state);
+			// console.log("TranscriptomicsGeneGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
-				Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (ProteinFamiliesGridContainer)");
+				console.log("No Grid Yet (TranscriptomicsGeneGridContainer)");
 			}
 
 			this._set("state", state);
@@ -85,7 +85,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 					tooltip: "Download Table",
 					tooltipDialog: downloadTT
 				},
-				function(){
+				function(selection){
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -94,7 +94,9 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 				},
 				true
 			]
-		]),
+		])
+// use	ViewFASTA in GridContainer
+/*	,
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFASTA",
@@ -108,8 +110,6 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 					tooltipDialog: viewFASTATT
 				},
 				function(selection){
-					// TODO: pass selection and implement detail
-					console.log(selection);
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -117,27 +117,9 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 					});
 				},
 				false
-			], [
-				"ViewProteinFamiliesMembers",
-				"fa fa-users fa-2x",
-				{
-					label: "Members",
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View Family Members",
-					validContainerTypes: ["proteinfamily_data"]
-				},
-				function(selection){
-
-					var query = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(sel){
-							return sel.family_id;
-						}).join(',') + ")))";
-
-					Topic.publish("ProteinFamilies", "showMembersGrid", query);
-				},
-				false
 			]
 
 		])
+*/
 	});
 });

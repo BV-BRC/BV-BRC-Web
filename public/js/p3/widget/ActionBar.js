@@ -35,6 +35,9 @@ define([
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
+				if (!type){
+					console.log("MISSING TYPE: ", s);
+				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){
 						if(typeof s.autoMeta.app == "string"){
@@ -51,7 +54,7 @@ define([
 
 			if(sel.length > 1){
 				var multiTypedSelection = (Object.keys(selectionTypes).length > 1);
-//				console.log("isMultiTyped: ", multiTypedSelection);	
+//				//console.log("isMultiTyped: ", multiTypedSelection);	
 				valid = Object.keys(this._actions).filter(function(an){
 					//console.log("Check action: ", an, this._actions[an].options);
 					return this._actions[an] && this._actions[an].options && (this._actions[an].options.multiple && ((this._actions[an].options.ignoreDataType || !multiTypedSelection || (multiTypedSelection && this._actions[an].options.allowMultiTypes)) ) || this._actions[an].options.persistent)

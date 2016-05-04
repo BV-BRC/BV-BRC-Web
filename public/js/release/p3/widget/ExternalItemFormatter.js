@@ -6,7 +6,7 @@ define("p3/widget/ExternalItemFormatter", [
 
 	var formatters = {
 		"default": function(item, options, shownode){
-			console.log("item: ", item);
+			// console.log("item: ", item);
 			options = options || {};
 
 			var table = domConstruct.create("table");
@@ -25,9 +25,9 @@ define("p3/widget/ExternalItemFormatter", [
 			options = options || {};
 			var taxonName = item.taxon_name;
 			var eutilSeaarchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
-			console.log("taxon_name = " + taxonName);
+			// console.log("taxon_name = " + taxonName);
 			var div = domConstruct.create("div");
-			console.log("Create Display Pubmed");
+			// console.log("Create Display Pubmed");
 			var table = domConstruct.create("table", {}, div);
 			var tbody = domConstruct.create("tbody", {}, table);
 
@@ -38,7 +38,7 @@ define("p3/widget/ExternalItemFormatter", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(pubmedList){
-				console.log("pubmedList=", pubmedList);
+				// console.log("pubmedList=", pubmedList);
 				if(pubmedList.esearchresult.count > 0){
 					var pmids = pubmedList.esearchresult.idlist;
 					var retmax = 5;
@@ -53,7 +53,7 @@ define("p3/widget/ExternalItemFormatter", [
 						},
 						handleAs: "json"
 					}).then(lang.hitch(this, function(pubmedSummary){
-						console.log("pubmedSummary=", pubmedSummary);
+						// console.log("pubmedSummary=", pubmedSummary);
 						for(var i = 0; i < pubmedSummary.result.uids.length; i++){
 							var value = pubmedSummary.result.uids[i];
 							// console.log("pubmedSummary value=", value);
@@ -91,7 +91,7 @@ define("p3/widget/ExternalItemFormatter", [
 	};
 
 	return function(item, type, options, shownode){
-		console.log("Format Data: ", type, item);
+		// console.log("Format Data: ", type, item);
 		var out;
 		if(type && formatters[type]){
 			out = formatters[type](item, options, shownode)
@@ -99,7 +99,7 @@ define("p3/widget/ExternalItemFormatter", [
 			out = formatters["default"](item, options, shownode);
 		}
 
-		console.log("output: ", out);
+		// console.log("output: ", out);
 		return out;
 	}
 });
