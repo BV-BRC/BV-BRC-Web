@@ -136,6 +136,13 @@ define("p3/app/app", [
 			});
 
 			Topic.subscribe("/navigate", function(msg){
+				console.log("app.js handle /navigate msg");
+				console.log("msg.href length: ", msg.href.length)
+				if (!msg || !msg.href ){
+					console.error("Missing navigation message");
+					return;
+				}
+
 				Router.go(msg.href);
 			});
 
@@ -361,7 +368,7 @@ define("p3/app/app", [
 						});*/
 		},
 		navigate: function(msg){
-			// console.log("Navigate to ", msg);
+			console.log("Navigate to ", msg);
 			if(!msg.href){
 				if(msg.id){
 					msg.href = msg.id;

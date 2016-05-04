@@ -116,7 +116,7 @@ define("p3/app/p3app", [
 
 				var path = params.params[0] || "/";
 				newState.widgetClass = "dijit/layout/ContentPane";
-				newState.value = "http://localhost:3001/content" + path;
+				newState.value=_self.dataAPI + "/content/" +  path;
 				newState.set = "href";
 				newState.requireAuth = false;
 				// console.log("Navigate to ", newState);
@@ -146,12 +146,14 @@ define("p3/app/p3app", [
 			function getState(params, path){
 				var parser = document.createElement("a");
 				parser.href = path;
-				var newState = {};
+				var newState = params.state || {};
 
 				newState.href = path;
 				newState.prev = params.oldPath;
 				console.log("parser getState: ", parser);
-				if(parser.search){
+				if (newState.search){
+
+				}else if(parser.search){
 					newState.search = (parser.search.charAt(0) == "?") ? parser.search.substr(1) : parser.search
 				}else{
 					newState.search = "";
@@ -179,10 +181,10 @@ define("p3/app/p3app", [
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path);
+				// console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
-				console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
+				// console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
 
 				var parts = newState.pathname.split("/")
 				parts.shift();
