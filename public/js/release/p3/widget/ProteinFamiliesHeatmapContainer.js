@@ -1,23 +1,20 @@
 define("p3/widget/ProteinFamiliesHeatmapContainer", [
-	"dojo/_base/declare", "dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dojo/on",
-	"./ContainerActionBar", "dijit/popup", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query",
-	"dijit/TooltipDialog", "dijit/Dialog",
-	"dijit/form/Form", "dijit/TitlePane", "dijit/form/RadioButton", "dijit/form/Select", "dijit/registry",
-	"./HeatmapContainer",
-	"dojo/_base/lang", "dojo/when", "dojo/request", "../util/PathJoin", "dijit/form/Button"
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
+	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
+	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
+	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin"
 
-], function(declare, ContentPane, BorderContainer, on,
-			ContainerActionBar, popup, Topic, domConstruct, dom, Query,
-			TooltipDialog, Dialog,
-			Form, TitlePane, RadioButton, Select, registry,
-			HeatmapContainer,
-			lang, when, request, PathJoin, Button){
+], function(declare, lang,
+			on, Topic, domConstruct, dom, Query, when, request,
+			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
+			TitlePane, registry, Form, RadioButton, Select, Button,
+			ContainerActionBar, HeatmapContainer, PathJoin){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
-		dataGridContainer: null,
 		pfState: null,
 		containerActions: [
 			[
@@ -32,7 +29,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 						this.pfState.heatmapAxis = "";
 					}
 
-					Topic.publish("ProteinFamiliesHeatmap", "refresh");
+					Topic.publish("ProteinFamilies", "refreshHeatmap");
 				},
 				true
 			],
@@ -119,20 +116,28 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				true
 			]
 		],
-		constructor: function(options){
-			this.dataGridContainer = options.dataGridContainer;
-			this.pfState = options.pfState;
+		constructor: function(){
 			this.dialog = new Dialog({});
 
 			var self = this;
 			// subscribe
-			Topic.subscribe("ProteinFamiliesHeatmap", lang.hitch(self, function(){
+			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
+				// console.log("ProteinFamiliesHeatmapContainer:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "refresh":
-						this.currentData = self.dataGridContainer.grid.store.getHeatmapData(self.pfState);
-						this.flashDom.refreshData();
+					case "updatePfState":
+						self.pfState = value;
+						break;
+					case "refreshHeatmap":
+						Topic.publish("ProteinFamilies", "requestHeatmapData", self.pfState);
+						break;
+					case "updateHeatmapData":
+						self.currentData = value;
+						if(typeof(self.flashDom.refreshData) == "function"){
+							self.flashDom.refreshData();
+							Topic.publish("ProteinFamilies", "hideLoadingMask");
+						}
 						break;
 					default:
 						break;
@@ -173,7 +178,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 		},
 		flashReady: function(){
 			if(typeof(this.flashDom.refreshData) == "function"){
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}
 		},
 		flashCellClicked: function(flashObjectID, colID, rowID){
@@ -211,9 +216,9 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			var familyIds = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))";
+			var query = "and(in(" + this.pfState.familyType + "_id,(" + familyIds + ")),in(genome_id,(" + genomeIds + ")),eq(feature_type,CDS),eq(annotation,PATRIC))&limit(250000,0)";
 
-			request.post(PathJoin(window.App.dataServiceURL, "genome_feature", query), {
+			request.post(PathJoin(window.App.dataServiceURL, "genome_feature"), {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/json",
@@ -231,10 +236,10 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			}));
 		},
 		_buildPanelCellClicked: function(isTransposed, familyId, genomeId, features){
-			//console.log("_buildPanelCellClicked is called. isTransposed: ", isTransposed, "familyId: " + familyId, "genomeId: " + genomeId);
+
 			var gfs = this.pfState.genomeFilterStatus;
-			//console.log(gfs, gfs[genomeId]);
-			var genomeName = gfs[genomeId].getGenomeName();
+
+			var genomeName = gfs[genomeId].getLabel();
 			var description = '', memberCount = 0, index = 0;
 
 			if(isTransposed){
@@ -266,7 +271,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			text.push('<b>Family ID:</b> ' + familyId);
 			text.push('<b>Members:</b> ' + memberCount);
 			features.forEach(function(feature){
-				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '">' + feature.patric_id + '</a>';
+				var featureLink = '<a href="/view/Feature/' + feature.feature_id + '" target="_blank">' + feature.patric_id + '</a>';
 				if(feature.refseq_locus_tag !== undefined){
 					featureLink += ", " + feature.refseq_locus_tag;
 				}
@@ -384,7 +389,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			var options = pfState.genomeIds.map(function(genomeId){
 				return {
 					value: genomeId,
-					label: pfState.genomeFilterStatus[genomeId]['genome_name']
+					label: pfState.genomeFilterStatus[genomeId].getLabel()
 				};
 			});
 
@@ -393,7 +398,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 				options: options
 			});
 			anchor.on('change', function(genomeId){
-				self.anchor(genomeId);
+				Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
 				popup.close(self.tooltip_anchoring);
 			});
 
@@ -425,11 +430,11 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			on(downloadHM.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var DELEMITER;
+				var DELIMITER;
 				if(rel === 'text/csv'){
-					DELEMITER = ',';
+					DELIMITER = ',';
 				}else{
-					DELEMITER = '\t';
+					DELIMITER = '\t';
 				}
 
 				var colIndexes = [];
@@ -441,7 +446,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 
 				var header = _self.currentData.rowLabel + "/" + _self.currentData.colLabel;
 				colIndexes.forEach(function(colIdx){
-					header += DELEMITER + _self.currentData.columns[colIdx].colLabel;
+					header += DELIMITER + _self.currentData.columns[colIdx].colLabel;
 				});
 
 				var data = [];
@@ -453,7 +458,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 							var val = parseInt(_self.currentData.columns[colIdx].distribution.substr(idx * 2, 2), 16);
 							r.push(val);
 						});
-						data[rowIDs.indexOf(row.rowID)] = r.join(DELEMITER);
+						data[rowIDs.indexOf(row.rowID)] = r.join(DELIMITER);
 					}
 				});
 				window.open('data:' + rel + ',' + encodeURIComponent(header + "\n" + data.join("\n")));
@@ -493,6 +498,16 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			var btnShowDetails = new Button({
 				label: 'Show Proteins'
 			});
+			on(btnShowDetails.domNode, "click", function(){
+
+				var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
+						return feature.feature_id;
+					}).join(',') + ")))";
+
+				Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				_self.dialog.hide();
+			});
+
 			var btnAddToWorkspace = new Button({
 				label: 'Add Proteins to Group'
 			});
@@ -526,58 +541,29 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 		},
 		cluster: function(param){
 
-			console.log("cluster is called", param);
+			// console.log("cluster is called", param);
 			//this.set('loading', true);
 			var p = param || {g: 2, e: 2, m: 'a'};
 			var pfState = this.pfState;
 			var isTransposed = pfState.heatmapAxis === 'Transposed';
 			var data = this.exportCurrentData(isTransposed);
 
+			Topic.publish("ProteinFamilies", "showLoadingMask");
+
 			return when(window.App.api.data("cluster", [data, p]), lang.hitch(this, function(res){
-				console.log("Cluster Results: ", res);
+				// console.log("Cluster Results: ", res);
 				//this.set('loading', false);
 
 				// DO NOT TRANSPOSE. clustering process is based on the corrected axises
 				pfState.clusterRowOrder = res.rows;
 				pfState.clusterColumnOrder = res.columns;
 
-				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
-			}));
-		},
-		anchor: function(genomeId){
-
-			var dataStore = this.dataGridContainer.grid.store;
-
-			when(dataStore.getSyntenyOrder(genomeId), lang.hitch(this, function(newFamilyOrderSet){
-
-				var pfState = this.pfState;
-				var isTransposed = pfState.heatmapAxis === 'Transposed';
-
-				var currentFamilyOrder, adjustedFamilyOrder, leftOver = [];
-				if(isTransposed){
-					currentFamilyOrder = this.currentData.rows.map(function(row){
-						return row.rowID;
-					});
-				}else{
-					currentFamilyOrder = this.currentData.columns.map(function(col){
-						return col.colID;
-					});
-				}
-
-				currentFamilyOrder.forEach(function(id){
-					if(!newFamilyOrderSet.hasOwnProperty(id)){
-						leftOver.push(id);
-					}
-				});
-
-				adjustedFamilyOrder = Object.keys(newFamilyOrderSet).concat(leftOver);
-
-				// clusterRow/ColumnOrder assumes corrected axises
-				pfState.clusterColumnOrder = adjustedFamilyOrder;
+				Topic.publish("ProteinFamilies", "updatePfState", pfState);
+				Topic.publish("ProteinFamilies", "updateFilterGridOrder", res.rows);
+				Topic.publish("ProteinFamilies", "updateMainGridOrder", res.columns);
 
 				// re-draw heatmap
-				Topic.publish("ProteinFamiliesHeatmap", "refresh");
+				Topic.publish("ProteinFamilies", "refreshHeatmap");
 			}));
 		}
 	});

@@ -136,16 +136,20 @@ define("p3/widget/PathwaysContainer", [
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: lang.mixin({}, this.pathwaysGrid.get('columns'), {
-					ecnumber: {
-						label: 'EC Number',
-						field: 'ec_number'
-					}, annotation: {label: 'Annotation', field: 'annotation'}
-				}),
+				columns: {
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					description: {label: 'Description', field: 'ec_description'},
+					genome_count: {label: 'Genome Count', field: 'genome_count'},
+					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+				},
 				store: ecNumberStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "ec_number"}]
+					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
 				}
 			});
 
@@ -156,15 +160,24 @@ define("p3/widget/PathwaysContainer", [
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: lang.mixin({}, this.ecNumbersGrid.get('columns'), {
+				columns: {
+					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+					genome_name: {label: 'Genome Name', field: 'genome_name'},
+					accession: {label: 'Accession', field: 'accession', hidden: true},
+					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
 					gene: {label: 'Gene', field: 'gene'},
-					ecnumber: {label: 'EC Number', field: 'ec_number'},
-					annotation: {label: 'Annotation', field: 'annotation'}
-				}),
+					product: {label: 'Product', field: 'product'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					ec_description: {label: 'EC Description', field: 'ec_description'}
+				},
 				store: geneStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "gene"}]
+					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
 				}
 			});
 

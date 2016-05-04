@@ -570,6 +570,7 @@ define([
 					label: "DWNLD",
 					multiple: true,
 					validTypes: ["*"],
+					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]

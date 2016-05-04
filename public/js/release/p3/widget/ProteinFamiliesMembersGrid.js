@@ -1,11 +1,11 @@
 define("p3/widget/ProteinFamiliesMembersGrid", [
-	"dojo/_base/declare", "dojo/_base/xhr", "dojo/_base/lang",  "dojo/_base/Deferred",
-	"dojo/aspect",  "dojo/request", "dojo/on", "dojo/dom-class",  "dojo/dom-construct",
+	"dojo/_base/declare", "dojo/_base/xhr", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/aspect", "dojo/request", "dojo/on", "dojo/dom-class", "dojo/dom-construct",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./Grid", "./formatter", "../store/GenomeFeatureJsonRest",
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest",
 	"dgrid/selector"
 ], function(declare, xhr, lang, Deferred,
-			aspect, request,on,domClass,domConstruct,
+			aspect, request, on, domClass, domConstruct,
 			BorderContainer, ContentPane,
 			Grid, formatter, Store,
 			selector){
@@ -15,12 +15,11 @@ define("p3/widget/ProteinFamiliesMembersGrid", [
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false}, {
-					attribute: "strand",
-					descending: false
-				}, {attribute: "start", descending: false}]
+				sort: [{attribute: "genome_name", descending: false},
+					{attribute: "accession", descending: false},
+					{attribute: "start", descending: false}]
 			};
-			console.warn("this.queryOptions: ", this.queryOptions);
+			// console.warn("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
 		query: (this.query || ""),
@@ -99,35 +98,5 @@ define("p3/widget/ProteinFamiliesMembersGrid", [
 			// this._started = true;
 			// this.refresh();
 		}
-
-		// ,state: null,
-		// postCreate: function(){
-		// 	this.inherited(arguments);
-		// },
-		// _setApiServer: function(server){
-		// 	this.apiServer = server;
-		// },
-		// _setState: function(state){
-		// 	if(!this.store){
-		// 		this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-		// 	}else{
-		// 		console.log("ProteinFamiliesGrid _setState()")
-		// 		this.store.set('state', state);
-		//
-		// 		console.log("ProteinFamiliesGrid Call Grid Refresh()")
-		// 		this.refresh();
-		// 	}
-		// },
-		// createStore: function(server, token, state){
-		//
-		// 	var store = new Store({
-		// 		token: token,
-		// 		apiServer: this.apiServer || window.App.dataServiceURL,
-		// 		state: state || this.state
-		// 	});
-		// 	store.watch('refresh', lang.hitch(this, "refresh"));
-		//
-		// 	return store;
-		// }
 	});
 });

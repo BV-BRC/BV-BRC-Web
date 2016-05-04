@@ -1,5 +1,4 @@
-define("p3/store/HeatmapDataTypes", [], function()
-{
+define("p3/store/HeatmapDataTypes", [], function(){
 	//function DataSet(/* array */rows, /* array */columns, rowTrunc, colTrunc, rowLabel, colLabel, /* array */colorStops, digits, offset, negativeBit, /* array */rTree, /* array */cTree){
 	//	this.rows = rows;
 	//	this.columns = columns;
@@ -75,10 +74,73 @@ define("p3/store/HeatmapDataTypes", [], function()
 		this.meta = meta;
 	};
 
-	/*function rgbTohsv(RGB, HSV){
-		r = RGB.r / 255;
-		g = RGB.g / 255;
-		b = RGB.b / 255;
+	this.getColorStops = function(colorScheme, maxIntensity){
+		var colorStop = [];
+		var colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000', colorPercentage = [];
+		var colorSignificantUp = "0xFF0000", colorSignificantDown = "0x00FF00";
+
+		if(colorScheme === 'rgb'){
+			colorUp = [255, 0, 0], colorDown = [0, 255, 0], colorZero = '0x000000';
+			colorPercentage.push('20', '40', '60', '80');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x00FF00";
+		}else if(colorScheme === 'rbw'){
+			colorUp = [255, 255, 255], colorDown = [255, 255, 255], colorZero = '0xFFFFFF';
+			colorPercentage.push('80', '60', '40', '20');
+			colorSignificantUp = "0xFF0000";
+			colorSignificantDown = "0x0000FF";
+		}
+
+		for(var i = 1; i <= maxIntensity; i++){
+			switch(true){
+				case i < 5:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorDown, colorScheme, 'down')));
+					break;
+				case i == 5:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantDown));
+					break;
+				case i > 5 && i < 10:
+					colorStop.push(new ColorStop(i / maxIntensity, getColor(colorPercentage[i % 5 - 1], colorUp, colorScheme, 'up')));
+					break;
+				case i == 10:
+					colorStop.push(new ColorStop(i / maxIntensity, colorSignificantUp));
+					break;
+				case i == 11:
+					colorStop.push(new ColorStop(i / maxIntensity, colorZero));
+					break;
+				default:
+					break;
+			}
+		}
+		return colorStop;
+	};
+
+	this.getColor = function(light, colorArr, scheme, value){
+		var rgb = {
+			r: colorArr[0],
+			g: colorArr[1],
+			b: colorArr[2]
+		}, hsv = {};
+
+		rgbTohsv(rgb, hsv);
+		hsv.v = parseInt(light);
+		hsvTorgb(hsv, rgb);
+
+		if(scheme === 'rbw'){
+			if(value === 'up'){
+				return rgbTohex(255, rgb.g, rgb.b);
+			}else{
+				return rgbTohex(rgb.r, rgb.g, 255);
+			}
+		}else{
+			return rgbTohex(rgb.r, rgb.g, rgb.b);
+		}
+	};
+
+	this.rgbTohsv = function(RGB, HSV){
+		var r = RGB.r / 255;
+		var g = RGB.g / 255;
+		var b = RGB.b / 255;
 		// Scale to unity.
 		var minVal = Math.min(r, g, b);
 		var maxVal = Math.max(r, g, b);
@@ -109,62 +171,105 @@ define("p3/store/HeatmapDataTypes", [], function()
 		HSV.h *= 360;
 		HSV.s *= 100;
 		HSV.v *= 100;
-	}
+	};
 
-	function hsvTorgb(HSV, RGB){
+	this.hsvTorgb = function(HSV, RGB){
 
 		var h = HSV.h / 360;
 		var s = HSV.s / 100;
 		var v = HSV.v / 100;
-		if(s == 0){
+		if(s === 0){
 			RGB.r = v * 255;
 			RGB.g = v * 255;
 			RGB.b = v * 255;
 		}else{
-			var_h = h * 6;
-			var_i = Math.floor(var_h);
-			var_1 = v * (1 - s);
-			var_2 = v * (1 - s * (var_h - var_i));
-			var_3 = v * (1 - s * (1 - (var_h - var_i)));
-			if(var_i == 0){
-				var_r = v;
-				var_g = var_3;
-				var_b = var_1;
-			}else if(var_i == 1){
-				var_r = var_2;
-				var_g = v;
-				var_b = var_1;
-			}else if(var_i == 2){
-				var_r = var_1;
-				var_g = v;
-				var_b = var_3;
-			}else if(var_i == 3){
-				var_r = var_1;
-				var_g = var_2;
-				var_b = v;
-			}else if(var_i == 4){
-				var_r = var_3;
-				var_g = var_1;
-				var_b = v;
-			}else{
-				var_r = v;
-				var_g = var_1;
-				var_b = var_2;
+			var var_h = h * 6;
+			var var_i = Math.floor(var_h);
+			var var_1 = v * (1 - s);
+			var var_2 = v * (1 - s * (var_h - var_i));
+			var var_3 = v * (1 - s * (1 - (var_h - var_i)));
+			var var_r, var_g, var_b;
+
+			switch(var_i){
+				case 0:
+					var_r = v;
+					var_g = var_3;
+					var_b = var_1;
+					break;
+				case 1:
+					var_r = var_2;
+					var_g = v;
+					var_b = var_1;
+					break;
+				case 2:
+					var_r = var_1;
+					var_g = v;
+					var_b = var_3;
+					break;
+				case 3:
+					var_r = var_1;
+					var_g = var_2;
+					var_b = v;
+					break;
+				case 4:
+					var_r = var_3;
+					var_g = var_1;
+					var_b = v;
+					break;
+				default:
+					var_r = v;
+					var_g = var_1;
+					var_b = var_2;
+					break;
 			}
 			RGB.r = var_r * 255;
 			RGB.g = var_g * 255;
 			RGB.b = var_b * 255;
 		}
+	};
 
-	}
-
-	function componentTohex(c){
+	this.componentToHex = function(c){
 		var hex = c.toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
-	}
+		return hex.length === 1 ? "0" + hex : hex;
+	};
 
-	function rgbTohex(r, g, b){
-		return "0x" + componentTohex(~~r) + componentTohex(~~g) + componentTohex(~~b);
-	}*/
-}
-);
+	this.rgbTohex = function(r, g, b){
+		return "0x" + componentToHex(~~r) + componentToHex(~~g) + componentToHex(~~b);
+	};
+
+	this.distributionTransformer = function(dist, map){
+		var newDist = [];
+		map.forEach(function(pos, idx){
+			newDist[idx] = dist.substr(pos * 2, 2);
+		});
+		return newDist.join('');
+	};
+
+	this.FilterStatus = (function(){
+		return function(){
+			this.init = function(idx, lbl){
+				this.index = idx;
+				this.status = 2; // 0: present, 1: absent, 2: don't care
+				this.label = lbl;
+			};
+			this.setIndex = function(idx){
+				this.index = idx;
+			};
+			this.getIndex = function(){
+				return this.index;
+			};
+			this.setStatus = function(sts){
+				this.status = sts;
+			};
+			this.getStatus = function(){
+				return this.status;
+			};
+			this.getLabel = function(){
+				return this.label;
+			};
+			return this;
+		};
+	})();
+
+	return this;
+});
