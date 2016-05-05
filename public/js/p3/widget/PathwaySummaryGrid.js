@@ -27,8 +27,11 @@ define([
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.queryOptions = {
+				sort: [{attribute: "coverage", descending: true}]
+			};
 		},
-		
+
 		startup: function(){
 			var _self = this;
 
