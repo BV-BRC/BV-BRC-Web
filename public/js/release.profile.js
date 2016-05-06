@@ -1,62 +1,62 @@
-var profile = {      
-	basePath: "./", 
-	layerOptimize: "closure", 
-	cssOptimize:false, //"comments.keepLines",
+var profile = {
+	basePath: "./",
+	layerOptimize: "closure",
+	cssOptimize: false, //"comments.keepLines",
 	releaseDir: "./release",
 	stripConsole: "all",
 	mini: true,
 	hasReport: true,
 	selectorEngine: "lite",
-	staticHasFeatures:{
+	staticHasFeatures: {
 		"dojo-firebug": false,
-		"dojo-debug-messages":true,
-		'dojo-trace-api':false,
-		'dojo-log-api':true,
+		"dojo-debug-messages": true,
+		'dojo-trace-api': false,
+		'dojo-log-api': true,
 		"async": true
 	},
 	plugins: {
 		"xstyle/css": "xstyle/build/amd-css"
 	},
 
-	packages:[ 
-		{ 
-			name: "dojo", 
-			location: "./dojo" 
-		}, 
-		{ 
-			name: "dijit", 
-			location: "./dijit" 
+	packages: [
+		{
+			name: "dojo",
+			location: "./dojo"
 		},
-		{ 
-			name: "dojox", 
-			location: "./dojox" 
+		{
+			name: "dijit",
+			location: "./dijit"
 		},
-		{ 
-			name: "p3", 
+		{
+			name: "dojox",
+			location: "./dojox"
+		},
+		{
+			name: "p3",
 			location: "./p3"
 		},
-		{ 
-			name: "dgrid", 
+		{
+			name: "dgrid",
 			location: "./dgrid"
 		},
-		{ 
-			name: "put-selector", 
+		{
+			name: "put-selector",
 			location: "./put-selector"
 		},
-		{ 
-			name: "xstyle", 
+		{
+			name: "xstyle",
 			location: "./xstyle"
 		},
-		{ 
-			name: "dbind", 
+		{
+			name: "dbind",
 			location: "./dbind"
 		},
-		{ 
-			name: "rql", 
+		{
+			name: "rql",
 			location: "./rql"
 		},
-		{ 
-			name: "JBrowse", 
+		{
+			name: "JBrowse",
 			location: "./JBrowse"
 		},
 		{
@@ -76,7 +76,7 @@ var profile = {
 			location: "./lazyload/",
 			main: "lazyload"
 		},
-		{ name: 'jDataView', location: './jDataView/src', main: 'jdataview' },
+		{name: 'jDataView', location: './jDataView/src', main: 'jdataview'},
 		{
 			name: "d3",
 			location: "./d3"
@@ -89,15 +89,13 @@ var profile = {
 			name: "phyloview",
 			location: "./phyloview"
 		}
-	
 
-	
-	], 
+	],
 
-	layers: {             
-	        "p3/layer/core": {
+	layers: {
+		"p3/layer/core": {
 			include: [
-				"p3/app/p3app", 
+				"p3/app/p3app",
 				"p3/panels",
 				"dijit/layout/BorderContainer",
 				"put-selector/put",
@@ -113,13 +111,13 @@ var profile = {
 				"p3/widget/WorkspaceManager",
 				"p3/widget/viewer/GenomeList",
 				"p3/widget/app/Annotation"
-                	]
-        	},
-	        "p3/layer/panels": {
+			]
+		},
+		"p3/layer/panels": {
 			include: [
-				"p3/widget/CreateFolder", 
-				"p3/widget/CreateWorkspace", 
-				"p3/widget/Uploader" 
+				"p3/widget/CreateFolder",
+				"p3/widget/CreateWorkspace",
+				"p3/widget/Uploader"
 			],
 			exclude: [
 				"p3/layer/core"
@@ -138,7 +136,7 @@ var profile = {
 				"dijit/WidgetSet",
 				"dijit/selection",
 				"dijit/form/ComboButton",
-				"dijit/form/ToggleButton"						
+				"dijit/form/ToggleButton"
 			]
 		},
 		"p3/layer/globalWSObject": {
@@ -148,8 +146,7 @@ var profile = {
 				"p3/GlobalWorkspace"
 			],
 			deps: ["p3/GlobalWorkspace"]
-		}	
-	
+		}
 	}
 };
 

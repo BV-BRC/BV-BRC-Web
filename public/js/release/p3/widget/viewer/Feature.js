@@ -4,13 +4,13 @@ define("p3/widget/viewer/Feature", [
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
-	"../TranscriptomicsContainer", "../CorrelatedGenesContainer","../../util/PathJoin"
+	"../TranscriptomicsContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
 			ActionBar, ContainerActionBar, PathwaysContainer,
-			TranscriptomicsContainer, CorrelatedGenesContainer,PathJoin){
+			TranscriptomicsContainer, CorrelatedGenesContainer, PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -28,7 +28,7 @@ define("p3/widget/viewer/Feature", [
 			this.feature_id = id;
 			this.state.feature_id = id;
 
-			xhr.get(PathJoin(this.apiServiceUrl,"genome_feature", id), {
+			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null,

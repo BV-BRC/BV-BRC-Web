@@ -27,12 +27,16 @@ define("p3/store/ProteinFamiliesFilterMemoryStore", [
 			return this.status;
 		}
 
+		function setIndex(idx){
+			this.index = idx;
+		}
+
 		function setStatus(status){
 			this.status = status;
 		}
 
 		return function(){
-			this.init = init, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
+			this.init = init, this.setIndex = setIndex, this.setStatus = setStatus, this.getStatus = getStatus, this.getGenomeName = getGenomeName, this.getIndex = getIndex;
 			return this;
 		}
 	})();
@@ -102,7 +106,7 @@ define("p3/store/ProteinFamiliesFilterMemoryStore", [
 			var state = this.state || {};
 
 			if(!state.genome_ids || state.genome_ids.length < 1){
-				console.log("No Genome IDS, use empty data set for initial store");
+				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it

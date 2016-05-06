@@ -3,16 +3,16 @@ require({cache:{
 define("p3/widget/GridContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
-	"dojo/topic", "dojo/query", "dijit/layout/ContentPane","dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog","dijit/popup","dijit/TooltipDialog"
+	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
-			Topic, query, ContentPane,IDMappingTemplate,
-			Dialog,popup,TooltipDialog){
+			Topic, query, ContentPane, IDMappingTemplate,
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function() {
+		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
@@ -23,41 +23,43 @@ define("p3/widget/GridContainer", [
 		delete viewFASTATT.selection;
 		var idType;
 
-		var ids = sel.map(function(d,idx){
-			if (!idType){
-				if (d['feature_id']){
-					idType="feature_id";
-				}else if (d['patric_id']) {
-					idType="patric_id"
-				}else if (d['alt_locus_tag']){
-					idType="alt_locus_tag";
+		var ids = sel.map(function(d, idx){
+			if(!idType){
+				if(d['feature_id']){
+					idType = "feature_id";
+				}else if(d['patric_id']){
+					idType = "patric_id"
+				}else if(d['alt_locus_tag']){
+					idType = "alt_locus_tag";
 				}
-				console.log("SET ID TYPE TO: ", idType)
+				// console.log("SET ID TYPE TO: ", idType)
 			}
 
 			return d[idType];
 		});
 
-
 		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/?in(" + idType + ",(" + ids.map(encodeURIComponent).join(",") + "))"});
-	})
-	var dstContent = '<div>Download Selection...</div><div class="wsActionTooltip" rel="text">Text</div><div class="wsActionTooltip" rel="csv">CSV</div><div class="wsActionTooltip" rel="excel">Excel</div><div class="wsActionTooltip" style="text-align: right">Advanced</div>'
-	var downloadSelectionTT = new TooltipDialog({
-		content: dstContent, onMouseLeave: function(){
-			popup.close(downloadSelectionTT);
+	});
+
+	var downloadSelectionTT = new DownloadTooltipDialog({});
+	downloadSelectionTT.startup();
+
+	var idMappingTTDialog = new TooltipDialog({
+		content: IDMappingTemplate, onMouseLeave: function(){
+			popup.close(idMappingTTDialog);
 		}
 	});
 
-	var idMappingTTDialog =  new TooltipDialog({content: IDMappingTemplate, onMouseLeave: function(){ popup.close(idMappingTTDialog); }})
-
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		console.log("selection: ", selection);
-		var ids = selection.map(function(d){ return d['feature_id']; });
+		// console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		// console.log("selection: ", selection);
+		var ids = selection.map(function(d){
+			return d['feature_id'];
+		});
 
-		console.log("ID MAP ", ids)
+		// console.log("ID MAP ", ids);
 		// xhr.post("/view/idmap, {
 		// 	data: {
 		// 		keyword: ids.join(","),
@@ -72,9 +74,6 @@ define("p3/widget/GridContainer", [
 		// });
 		popup.close(idMappingTTDialog);
 	});
-
-
-
 
 	return declare([BorderContainer], {
 		"class": "GridContainer",
@@ -92,24 +91,26 @@ define("p3/widget/GridContainer", [
 		store: null,
 		apiServer: window.App.dataServiceURL,
 		queryOptions: null,
-		columns:null,
+		columns: null,
 		enableAnchorButton: false,
 
 		_setColumnsAttr: function(columns){
-			if (this.grid){ 
+			if(this.grid){
 				this.grid.set('columns', columns)
 			}
-			this._set('columns', columns); 
+			this._set('columns', columns);
 		},
 
 		_getColumnsAttr: function(columns){
-			if (this.grid){ return this.grid.get('columns'); } 
+			if(this.grid){
+				return this.grid.get('columns');
+			}
 			return this.columns || {};
 		},
 
 		constructor: function(){
 			this._firstView = false;
-			console.log("GRIDCONTAINER CTOR() ", arguments)
+			// console.log("GRIDCONTAINER CTOR() ", arguments)
 		},
 
 		postCreate: function(){
@@ -123,7 +124,7 @@ define("p3/widget/GridContainer", [
 		// },
 
 		onSetState: function(attr, oldState, state){
-			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			// console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;
@@ -134,37 +135,37 @@ define("p3/widget/GridContainer", [
 				q.push(state.search);
 			}
 
-			if (state.hashParams && state.hashParams.filter && state.hashParams.filter=="false"){
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
 				// filter set to false, no filtering
 
 			}else if(state.hashParams){
-				console.log("   Found state.hashParams");
+				// console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
-					console.log("       Found state.hashParams.filter, using");
+					// console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
-				}else if (!oldState && this.defaultFilter){
-					console.log("       No original state, using default Filter");
+				}else if(!oldState && this.defaultFilter){
+					// console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', state);
 					return;
-				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
-					console.log("       Found oldState with hashparams.filter, using");
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					// console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
-					this.set('state',state);
+					this.set('state', state);
 					return;
-				}else if (this.defaultFilter){
+				}else if(this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', state);
 					return;
 				}else{
-					console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
-					
+					// console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+
 				}
 			}else{
-				state.hashParams={}
-				if (!oldState && this.defaultFilter){
+				state.hashParams = {}
+				if(!oldState && this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
-				}else if (oldState && oldState.hashParams && oldState.hashParams.filter){
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				this.set('state', state);
@@ -173,7 +174,7 @@ define("p3/widget/GridContainer", [
 			// console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				console.log("    FilterPanel Found (in GridContainer): ", state);
+				// console.log("    FilterPanel Found (in GridContainer): ", state);
 				this.filterPanel.set("state", state);
 			}
 			// console.log("setState query: ",q.join("&"), " state: ", state)
@@ -181,11 +182,11 @@ define("p3/widget/GridContainer", [
 
 		},
 		_setQueryAttr: function(query){
-			console.log(this.id," GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter );
-			console.log("    Query: ", query, "this.query: ", this.query)
+			// console.log(this.id, " GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter);
+			// console.log("    Query: ", query, "this.query: ", this.query)
 			// if(query == this.query){
-				//console.log("  Not Skipping Query Update (unchanged)");
-				// return;
+			//console.log("  Not Skipping Query Update (unchanged)");
+			// return;
 			// }
 
 			this.query = query;
@@ -212,7 +213,7 @@ define("p3/widget/GridContainer", [
 
 		visible: false,
 		_setVisibleAttr: function(visible){
-			console.log("GridContainer setVisible: ", visible)
+			// console.log("GridContainer setVisible: ", visible);
 			this.visible = visible;
 			if(this.visible && !this._firstView){
 				// console.log("Trigger First View: ", this.id)
@@ -223,12 +224,13 @@ define("p3/widget/GridContainer", [
 		selectionActions: [
 			[
 				"ToggleItemDetail",
-				"fa fa-info-circle fa-2x", {
-				label: "DETAIL",
-				persistent: true,
-				validTypes: ["*"],
-				tooltip: "Toggle Selection Detail"
-			},
+				"fa fa-info-circle fa-2x",
+				{
+					label: "DETAIL",
+					persistent: true,
+					validTypes: ["*"],
+					tooltip: "Toggle Selection Detail"
+				},
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
@@ -246,27 +248,27 @@ define("p3/widget/GridContainer", [
 					}
 				},
 				true
-			],[
+			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Feature",
-					validContainerTypes: ["feature_data"]
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-				}, 
-				false	
-			],[
+				},
+				false
+			], [
 				"ViewSpgeneItem",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Specialty Gene",
 					validContainerTypes: ["spgene_data"]
@@ -274,109 +276,109 @@ define("p3/widget/GridContainer", [
 				function(selection){
 					var sel = selection[0];
 					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
-					console.log("View SP GENE: ", sel)
+					// console.log("View SP GENE: ", sel)
 					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
-				}, 
-				false	
-			],[			
+				},
+				false
+			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-genome fa-2x",
 				{
 					label: "GENOME",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Genome",
 					validContainerTypes: ["genome_data"]
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
+				},
 				false
-			],[			
+			], [
 				"ViewGenomeItem",
-				"MultiButton fa icon-genome fa-2x", 
+				"MultiButton fa icon-genome fa-2x",
 				{
 					label: "GENOME",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Genome",
-					validContainerTypes: ["sequence_data","feature_data","spgene_data","sequence_data"]
+					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
 				},
 				function(selection){
 					var sel = selection[0];
-					console.log("sel: ", sel)
-					console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+					// console.log("sel: ", sel)
+					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
-				}, 
+				},
 				false
-			],[
+			], [
 				"ViewCDSFeatures",
 				"MultiButton fa icon-genome-features-cds fa-2x",
 				{
 					label: "CDS",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View CDS Features",
 					validContainerTypes: ["genome_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
 				},
 				false
-			],[
+			], [
 				"ViewCDSFeaturesSeq",
 				"MultiButton fa icon-genome-features-cds fa-2x",
 				{
 					label: "CDS",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View CDS Features",
 					validContainerTypes: ["sequence_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession,"+ sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
+					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession," + sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
 				},
 				false
-			],[	
+			], [
 				"ViewGenomeBrowser",
 				"MultiButton fa icon-genome_browser fa-2x",
-				{					
+				{
 					label: "BRWSR",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
 					validContainerTypes: ["genome_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
-				}, 
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+				},
 				false
-			],[	
+			], [
 				"ViewGenomeBrowserSeq",
 				"MultiButton fa icon-genome_browser fa-2x",
-				{					
+				{
 					label: "BRWSR",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "Open Genome Browser",
 					validContainerTypes: ["sequence_data"]
 				},
 				function(selection){
-					console.log("selection: ", selection);
+					// console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/"+ sel.genome_id + "#view_tab=browser"});
-				}, 
+					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+				},
 				false
-			],[						
+			], [
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -386,12 +388,12 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
-					validContainerTypes: ["genome_data", "sequence_data","feature_data","spgene_data","pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
-					console.log("view FASTA")
+					// console.log("view FASTA")
 					viewFASTATT.selection = selection;
-					console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -399,189 +401,246 @@ define("p3/widget/GridContainer", [
 					});
 				},
 				false
-			],[
+			], [
 				"MultipleSeqAlignmentFeatures",
 				"fa icon-alignment fa-2x",
 				{
-					label:"MSA",ignoreDataType:true,min:2, multiple: true,validTypes:["*"],tooltip: "Multiple Sequence Alignment",
-					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
-				}, 
+					label: "MSA",
+					ignoreDataType: true,
+					min: 2,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "Multiple Sequence Alignment",
+					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
+				},
 				function(selection){
-					console.log("MSA Selection: ", selection);
-					var ids = selection.map(function(d){ return d['feature_id']; });
-					console.log("OPEN MSA VIEWER");
+					// console.log("MSA Selection: ", selection);
+					var ids = selection.map(function(d){
+						return d['feature_id'];
+					});
+					// console.log("OPEN MSA VIEWER");
 					Topic.publish("/navigate", {href: "/view/MSA/?in(feature_id,(" + ids.map(encodeURIComponent).join(",") + "))"});
 
 				},
 				false
-			],[
+			], [
 				"idmappingFeatures",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,min:1, multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["feature_data","spgene_data"]
+				{
+					label: "ID MAP",
+					ignoreDataType: true,
+					min: 1,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "ID Mapping",
+					tooltipDialog: idMappingTTDialog,
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
 				},
 				function(selection){
 
-					console.log("TTDlg: ", idMappingTTDialog);
-					console.log("this: ", this);
+					// console.log("TTDlg: ", idMappingTTDialog);
+					// console.log("this: ", this);
+					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					return;
+
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
 						orient: ["below"]
 					});
-					console.log("popup idmapping", selection);
-				}, 
+					// console.log("popup idmapping", selection);
+				},
 				false
-			],[
+			], [
 				"idmapping",
 				"fa icon-exchange fa-2x",
-				{label:"ID MAP",ignoreDataType:true,multiple: true,validTypes:["*"],tooltip: "ID Mapping", tooltipDialog:idMappingTTDialog, 
-					validContainerTypes: ["proteinfamily_data","pathway_data"]
+				{
+					label: "ID MAP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "ID Mapping",
+					tooltipDialog: idMappingTTDialog,
+					validContainerTypes: ["proteinfamily_data", "pathway_data"]
 				},
 				function(selection){
 
-					console.log("TTDlg: ", idMappingTTDialog);
-					console.log("this: ", this);
+					// console.log("TTDlg: ", idMappingTTDialog);
+					// console.log("this: ", this);
 					popup.open({
 						popup: idMappingTTDialog,
 						// around: this._actions.idmapping.button,
 						orient: ["below"]
 					});
-					console.log("popup idmapping", selection);
-				}, 
+					// console.log("popup idmapping", selection);
+				},
 				false
-			],[
+			], [
 				"ExperimentGeneList",
 				"fa icon-list-unordered fa-2x",
-				{label: "GENES", multiple: true, validTypes: ["*"], validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"], tooltip: "View Experiment Gene List"}, 
+				{
+					label: "GENES",
+					multiple: true,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"],
+					tooltip: "View Experiment Gene List"
+				},
 				function(selection){
-					console.log("this.currentContainerType: ", this.currentContainerType, this);
-					console.log("View Gene List", selection);
-					new Dialog({content: "IMPLEMENT ME!"}).show();
-				}, 
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					if(experimentIdList.length == 1){
+						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+					}else{
+						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+					}
+				},
 				false
-			],[			
+			], [
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
-				{label:"PTHWY",ignoreDataType:true,multiple: true,validTypes:["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data","spgene_data","proteinfamily_data","pathway_data"]
-				}, 
-				function(selection){
-					new Dialog({content: "IMPLEMENT ME!"}).show();
-					// var selection = self.actionPanel.get('selection')
-					// var ids = selection.map(function(d){ return d['feature_id']; });
-					
-				}, 
-				false
-
-			],[
-				"AddGroup", 
-				"fa icon-object-group fa-2x", 
 				{
-					label:"GROUP",
-					ignoreDataType:true,
-					multiple: true, 
-					validTypes:["*"],
-					tooltip: "Copy selection to a new or existing group", 
-					validContainerTypes:["genome_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
+					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
+					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
-					console.log("Add Items to Group", selection);
-					var dlg = new Dialog({title:"Copy Selection to Group"});
+					var sel = selection[0];
+					console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
+					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
+					// var selection = self.actionPanel.get('selection')
+					// var ids = selection.map(function(d){ return d['feature_id']; });
+
+				},
+				false
+
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "Copy selection to a new or existing group",
+					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
+				},
+				function(selection, containerWidget){
+					// console.log("Add Items to Group", selection);
+					var dlg = new Dialog({title: "Copy Selection to Group"});
 					var type;
 
-					if (!containerWidget){ console.log("Container Widget not setup for addGroup"); return; }
-
-					if (containerWidget.containerType=="genome_data"){
-						type="genome_group"
-					}else if (containerWidget.containerType=="feature_data"){
-						type="feature_group";
+					if(!containerWidget){
+						// console.log("Container Widget not setup for addGroup");
+						return;
 					}
 
-					if (!type){
+					if(containerWidget.containerType == "genome_data"){
+						type = "genome_group";
+					}else if(containerWidget.containerType == "feature_data" || containerWidget.containerType == "transcriptomics_gene_data"){
+						type = "feature_group";
+					}else if(containerWidget.containerType == "transcriptomics_experiment_data"){
+						type = "experiment_group";
+					}
+
+					if(!type){
 						console.error("Missing type for AddGroup")
 						return;
 					}
-					var stg = new SelectionToGroup({selection: selection, type: type,path: containerWidget.get("path")});
+					var stg = new SelectionToGroup({
+						selection: selection,
+						type: type,
+						path: containerWidget.get("path")
+					});
 					on(dlg.domNode, "dialogAction", function(evt){
 						dlg.hide();
 						setTimeout(function(){
 							dlg.destroy();
-						},2000);
+						}, 2000);
 					});
-					domConstruct.place(stg.domNode, dlg.containerNode,"first");
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
 					stg.startup();
 					dlg.startup();
-					dlg.show();						
+					dlg.show();
 				},
 				false
-			],[
+			], [
 				"DownloadSelection",
 				"fa fa-download fa-2x",
 				{
-					label:"DWNLD",
+					label: "DWNLD",
 					multiple: true,
-					validTypes:["*"],
-					tooltip: "Download Selection", 
-					tooltipDialog: downloadSelectionTT, 
-					validContainerTypes:["genome_data","sequence_data","feature_data", "spgene_data","proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data","pathway_data"]
-				}, 
-				function(selection){	
-					this.selectionActionBar._actions.DownloadSelection.selection = selection;
-					popup.open({
-						popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-						around: this.selectionActionBar._actions.DownloadSelection.button,
-						orient: ["below"]
-					});
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Download Selection",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
+				},
+				function(selection){
+					console.log("this.currentContainerType: ", this.containerType);
+					console.log("GridContainer selection: ", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
+
+					setTimeout(lang.hitch(this, function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.DownloadSelection.button,
+							orient: ["below"]
+						});
+					}), 10);
+
 				},
 				false
-			],[
+			], [
 				"ViewTaxon",
-				"fa icon-eye2 fa fa-2x",
+				"fa icon-eye2 fa-2x",
 				{
-					label:"VIEW",
+					label: "VIEW",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Selected Taxonomy", 
-					tooltipDialog: downloadSelectionTT, 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Selected Taxonomy",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id})
 				},
 				false
-			],[
+			], [
 				"ViewTaxonGenomes",
-				"fa icon-genome fa fa-2x",
+				"fa icon-genome fa-2x",
 				{
-					label:"VIEW",
+					label: "VIEW",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Genome List", 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Genome List",
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
 				},
 				false
-			],[
+			], [
 				"ViewTaxonGenomeFeatures",
-				"fa icon-genome-features-cds fa fa-2x",
+				"fa icon-genome-features-cds fa-2x",
 				{
-					label:"CDS",
+					label: "CDS",
 					multiple: false,
-					validTypes:["*"],
-					tooltip: "View Genome List", 
-					validContainerTypes:["taxonomy_data"]
-				}, 
-				function(selection){	
+					validTypes: ["*"],
+					tooltip: "View Genome List",
+					validContainerTypes: ["taxonomy_data"]
+				},
+				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href:"/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
 				},
 				false
-			]							
+			]
 		],
 
 		buildQuery: function(){
@@ -610,36 +669,36 @@ define("p3/widget/GridContainer", [
 		},
 
 		createFilterPanel: function(){
-				console.log("Create Container ActionBar with currentContainerWidget: ", this)
+			// console.log("Create Container ActionBar with currentContainerWidget: ", this)
 
-				this.containerActionBar = this.filterPanel = new ContainerActionBar({
-					region: "top",
-					layoutPriority: 7,
-					splitter: true,
-					"className": "BrowserHeader",
-					dataModel: this.dataModel,
-					facetFields: this.facetFields,
-					state: this.state,
-					enableAnchorButton: this.enableAnchorButton,
-					currentContainerWidget: this
-				});
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: true,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				facetFields: this.facetFields,
+				state: this.state,
+				enableAnchorButton: this.enableAnchorButton,
+				currentContainerWidget: this
+			});
 
-				// console.log("gridcontainer startup()", this.state)
-				this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
-					// console.log("FILTER PANEL SET FILTER", arguments)
-					// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
-					// console.log("setFilter Watch() callback", newVal);
-					if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
-						// console.log("Emit UpdateHash: ", newVal);
-						on.emit(this.domNode, "UpdateHash", {
-							bubbles: true,
-							cancelable: true,
-							hashProperty: "filter",
-							value: newVal,
-							oldValue: oldVal
-						})
-					}
-				}));
+			// console.log("gridcontainer startup()", this.state)
+			this.filterPanel.watch("filter", lang.hitch(this, function(attr, oldVal, newVal){
+				// console.log("FILTER PANEL SET FILTER", arguments)
+				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
+				// console.log("setFilter Watch() callback", newVal);
+				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+					// console.log("Emit UpdateHash: ", newVal);
+					on.emit(this.domNode, "UpdateHash", {
+						bubbles: true,
+						cancelable: true,
+						hashProperty: "filter",
+						value: newVal,
+						oldValue: oldVal
+					})
+				}
+			}));
 		},
 
 		onFirstView: function(){
@@ -657,19 +716,21 @@ define("p3/widget/GridContainer", [
 				state: this.state,
 				apiServer: this.apiServer,
 				visible: true
-			}
+			};
 
-			if (this.columns){
+			if(this.columns){
 				o.columns = this.columns;
 			}
 
-			if (this.queryOptions){
+			if(this.queryOptions){
 				o.queryOptions = this.queryOptions;
 			}
 
-			console.log("GridContainer onFirstView create Grid: ", o)
+			// console.log("GridContainer onFirstView create Grid: ", o);
 
-			if (this.store){ o.store = this.store }
+			if(this.store){
+				o.store = this.store
+			}
 			this.grid = new this.gridCtor(o);
 
 			if(this.enableFilterPanel){
@@ -677,8 +738,6 @@ define("p3/widget/GridContainer", [
 
 				this.createFilterPanel();
 			}
-
-
 
 			this.selectionActionBar = new ActionBar({
 				region: "right",
@@ -704,7 +763,6 @@ define("p3/widget/GridContainer", [
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.itemDetailPanel);
-			
 
 			this.setupActions();
 			this.listen();
@@ -726,13 +784,13 @@ define("p3/widget/GridContainer", [
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
-
+				var sel = [];
 				if(!evt.selected){
 					this.actionPanel.set("selection", []);
 					this.itemDetailPanel.set("selection", []);
 				}
 				else{
-					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+					sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 						// console.log("rownum: ", rownum);
 						// console.log("Row: ", evt.grid.row(rownum).data);
 						return evt.grid.row(rownum).data;
@@ -744,7 +802,7 @@ define("p3/widget/GridContainer", [
 			}));
 
 			on(this.domNode, "ToggleFilters", lang.hitch(this, function(evt){
-				console.log("toggleFilters");
+				// console.log("toggleFilters");
 				if(!this.filterPanel && this.getFilterPanel){
 					this.filterPanel = this.getFilterPanel();
 					this.filterPanel.region = "top";
@@ -753,15 +811,15 @@ define("p3/widget/GridContainer", [
 					this.addChild(this.filterPanel);
 				}
 				else if(this.filterPanel){
-					console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
+					// console.log("this.filterPanel.minimized: ", this.filterPanel.minimized);
 					if(this.filterPanel.minimized){
-						this.filterPanel.set("minimized",false);
+						this.filterPanel.set("minimized", false);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize + 150
 						});
 					}
 					else{
-						this.filterPanel.set("minimized",true);
+						this.filterPanel.set("minimized", true);
 						this.filterPanel.resize({
 							h: this.filterPanel.minSize
 						});
@@ -774,20 +832,26 @@ define("p3/widget/GridContainer", [
 		setupActions: function(){
 			if(this.containerActionBar){
 				this.containerActions.forEach(function(a){
-					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
+					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 				}, this);
 			}
 
 			this.selectionActions.forEach(function(a){
-				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4],a[5]);
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
 
 		},
 		startup: function(){
-			console.log("GridContainer Startup()  isVisible: ", this.visible);
-			if (this._started){ return; }
-			if (this.visible){ this.onFirstView() }
-			if (this.state){ this.set('state', this.state)}
+			// console.log("GridContainer Startup()  isVisible: ", this.visible);
+			if(this._started){
+				return;
+			}
+			if(this.visible){
+				this.onFirstView()
+			}
+			if(this.state){
+				this.set('state', this.state)
+			}
 			this.inherited(arguments)
 		}
 	});

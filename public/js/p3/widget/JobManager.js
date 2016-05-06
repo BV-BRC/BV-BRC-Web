@@ -1,20 +1,20 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on","dojo/_base/lang",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
 	"dojo/dom-class", "dojo/dom-construct", "./JobsGrid",
-	"dojo/_base/Deferred", "dojo/dom-geometry","../JobManager",
-	"dojo/topic","dijit/layout/BorderContainer","./ActionBar","./ItemDetailPanel"
-], function(
-	declare, WidgetBase, on,lang,
-	domClass, domConstr, JobsGrid,
-	Deferred, domGeometry,JobManager,
-	Topic,BorderContainer,ActionBar,ItemDetailPanel
-) {
+	"dojo/_base/Deferred", "dojo/dom-geometry", "../JobManager",
+	"dojo/topic", "dijit/layout/BorderContainer", "./ActionBar", "./ItemDetailPanel"
+], function(declare, WidgetBase, on, lang,
+			domClass, domConstr, JobsGrid,
+			Deferred, domGeometry, JobManager,
+			Topic, BorderContainer, ActionBar, ItemDetailPanel){
 	return declare([BorderContainer], {
 		"disabled": false,
 		path: "/",
 
-		listJobs: function() {
-			return Deferred.when(JobManager.getJobs(),function(res){ return res; }, function(err) {
+		listJobs: function(){
+			return Deferred.when(JobManager.getJobs(), function(res){
+				return res;
+			}, function(err){
 				console.log("Error Getting Jobs:", err);
 				_self.showError(err);
 			})
@@ -24,7 +24,7 @@ define([
 			domClass.add(this.domNode, "JobManager");
 		},
 
-		showError: function(err) {
+		showError: function(err){
 			var n = domConstr.create("div", {
 				style: {
 					position: "relative",
@@ -41,15 +41,15 @@ define([
 				},
 				innerHTML: err
 			}, this.domNode);
-	
+
 		},
 //		queryOptions: {
 //			sort: [{attribute: "submit_time", descending: false}]
 //		},
 
-		render: function(items) {
-			items.sort(function(a,b){
-				return (Date.parse(a.submit_time) < Date.parse(b.submit_time))?1:-1;
+		render: function(items){
+			items.sort(function(a, b){
+				return (Date.parse(a.submit_time) < Date.parse(b.submit_time)) ? 1 : -1;
 			});
 			this.grid.refresh();
 			this.grid.renderArray(items);
@@ -82,12 +82,12 @@ define([
 					}
 				},
 				true
-			],[
+			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-eye2 fa-2x", 
+				"MultiButton fa icon-eye2 fa-2x",
 				{
 					label: "VIEW",
-					validTypes:["*"],
+					validTypes: ["*"],
 					multiple: false,
 					tooltip: "View Job Results",
 					validContainerTypes: ["*"]
@@ -95,40 +95,49 @@ define([
 				function(selection){
 					var sel = selection[0];
 					console.log("SEL: ", sel)
-					Topic.publish("/navigate", {href: "/workspace" + sel.parameters.output_path+ "/" + sel.parameters.output_file});
-				}, 
-				false	
+					Topic.publish("/navigate", {href: "/workspace" + sel.parameters.output_path + "/" + sel.parameters.output_file});
+				},
+				false
 			]
 		],
 
-		startup: function() {
-			if (this._started) {
+		startup: function(){
+			if(this._started){
 				return;
 			}
 			this.inherited(arguments);
 
 			var _self = this;
 
-			this.grid = new JobsGrid({region:"center"});
-			this.actionBar = new ActionBar({splitter:false,region:"right",layoutPriority:2, style:"width:48px;text-align:center;"});
-			this.itemDetailPanel = new ItemDetailPanel({region:"right",layoutPriority:1,splitter:true,style: "width:250px;"});
+			this.grid = new JobsGrid({region: "center"});
+			this.actionBar = new ActionBar({
+				splitter: false,
+				region: "right",
+				layoutPriority: 2,
+				style: "width:48px;text-align:center;"
+			});
+			this.itemDetailPanel = new ItemDetailPanel({
+				region: "right",
+				layoutPriority: 1,
+				splitter: true,
+				style: "width:250px;"
+			});
 
 			this.setupActions();
 
 			this.grid.on('select', lang.hitch(this, function(evt){
-				var sel = Object.keys(evt.selected).map(lang.hitch(this,function(rownum){
+				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
 					console.log("rownum: ", rownum);
 					console.log("Row: ", evt.grid.row(rownum).data);
-					var d=evt.grid.row(rownum).data;
+					var d = evt.grid.row(rownum).data;
 
 					d._formatterType = d.status + "_job";
 					return d;
 				}));
 				console.log("selection: ", sel);
-		
 
 				this.actionBar.set("selection", sel);
-				this.itemDetailPanel.set('selection',sel)
+				this.itemDetailPanel.set('selection', sel)
 			}))
 
 			this.addChild(this.grid)

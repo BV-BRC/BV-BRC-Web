@@ -1,19 +1,21 @@
 define("p3/widget/FeatureGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store, selector) {
-
+			Grid, formatter, Store, selector){
 
 	var store = new Store({});
 
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-	                        sort: [{ attribute: "genome_name", descending: false},{ attribute: "strand", descending: false},{ attribute: "start", descending: false}]
-			}
+				sort: [{attribute: "genome_name", descending: false}, {
+					attribute: "strand",
+					descending: false
+				}, {attribute: "start", descending: false}]
+			};
 			console.log("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
@@ -48,10 +50,10 @@ define("p3/widget/FeatureGrid", [
 //			sort: [{ attribute: "genome_name", descending: true }]
 //		},
 
-		startup: function() {
+		startup: function(){
 			var _self = this;
 
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -63,7 +65,7 @@ define("p3/widget/FeatureGrid", [
 				//console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -75,7 +77,7 @@ define("p3/widget/FeatureGrid", [
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,

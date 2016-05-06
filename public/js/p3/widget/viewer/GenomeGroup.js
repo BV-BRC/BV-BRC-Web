@@ -5,7 +5,7 @@ define([
 	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny","../../util/PathJoin","../DataItemFormatter",
+	"../TranscriptomicsContainer", "JBrowse/Browser", "../Phylogeny", "../../util/PathJoin", "../DataItemFormatter",
 	"../TaxonomyTreeGridContainer"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
@@ -13,16 +13,15 @@ define([
 			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin,DataItemFormatter,
-			TaxonomyTreeGrid
-){
+			TranscriptomicsContainer, JBrowser, Phylogeny, PathJoin, DataItemFormatter,
+			TaxonomyTreeGrid){
 	return declare([GenomeList], {
 		params: null,
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
 		groupPath: null,
-		
+
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},
@@ -40,11 +39,10 @@ define([
 				return;
 			}
 
-			var parts = "/" + state.pathname.split("/").slice(2).map(decodeURIComponent).join("/")
-
+			var parts = "/" + state.pathname.split("/").slice(2).map(decodeURIComponent).join("/");
 
 			console.log("Parts: ", parts, " pathname: ", state.pathname, " state: ", state);
-	
+
 			this.set("groupPath", parts);
 			console.log("GROUP PATH: ", parts)
 
@@ -60,9 +58,7 @@ define([
 
 			var activeTab = this[active];
 
-
-
-			if (!activeTab){
+			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
@@ -70,11 +66,11 @@ define([
 				case "transcriptomics":
 					var gpath = encodeURIComponent("/" + this.groupPath);
 
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,GenomeGroup(" + gpath  + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,GenomeGroup(" + gpath + "))"}))
 					break;
 				default:
 					var activeQueryState;
-					if (this.state && this.state.genome_ids){
+					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
 						//var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,GenomeGroup(" + this.groupPath + "))"});
 						activeQueryState = this.state;
@@ -83,7 +79,7 @@ define([
 
 					}
 
-					if (activeQueryState){
+					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);

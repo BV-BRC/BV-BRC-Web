@@ -6,8 +6,7 @@ define([
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore
-){
+			PathwayMemoryStore){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -41,7 +40,6 @@ define([
 		apiServer: window.App.dataServiceURL,
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 
-
 		postCreate: function(){
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
@@ -50,23 +48,25 @@ define([
 		onSetState: function(attr, oldVal, state){
 			// console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
-			if (!state) { return; };
+			if(!state){
+				return;
+			}
 
 			if(this.pathwaysGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.pathwayStore.set('state', state)
+				this.pathwayStore.set('state', state);
 				this.pathwaysGrid.set('state', state);
 			}
 
 			if(this.ecNumbersGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.ecNumberStore.set('state', state)
+				this.ecNumberStore.set('state', state);
 				this.ecNumbersGrid.set('state', state);
 			}
 
 			if(this.genesGrid){
 				//console.log("Set PathwaysGrid State: ", state);
-				this.geneStore.set('state', state)
+				this.geneStore.set('state', state);
 				this.genesGrid.set('state', state);
 			}
 
@@ -82,7 +82,7 @@ define([
 
 			if(this.visible && !this._firstView){
 				this.onFirstView();
-				
+
 				if(this.pathwaysGrid){
 					this.pathwaysGrid.set("visible", true)
 				}
@@ -110,7 +110,7 @@ define([
 				"class": "TextTabButtons"
 			});
 
-			var pathwayStore = this.pathwayStore =  new PathwayMemoryStore({type: "pathway", state: this.state});
+			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({type: "pathway", state: this.state});
 			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber", state: this.state});
 			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes", state: this.state});
 
@@ -121,7 +121,7 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				queryOptions: {
 					sort: [{attribute: "pathway_id"}]
 				},
@@ -135,12 +135,21 @@ define([
 				state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
-				columns: lang.mixin({},this.pathwaysGrid.get('columns'),{ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				columns: {
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					description: {label: 'Description', field: 'ec_description'},
+					genome_count: {label: 'Genome Count', field: 'genome_count'},
+					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+				},
 				store: ecNumberStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "ec_number"}]
+					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
 				}
 			});
 
@@ -150,12 +159,25 @@ define([
 				state: this.state,
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation","pathway_class","pathway_name","ec_number","gene"],
-				columns: lang.mixin({},this.ecNumbersGrid.get('columns'),{gene: {label: 'Gene', field: 'gene'},ecnumber: {label: 'EC Number', field: 'ec_number'},annotation: {label: 'Annotation', field: 'annotation'}}),
+				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				columns: {
+					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+					genome_name: {label: 'Genome Name', field: 'genome_name'},
+					accession: {label: 'Accession', field: 'accession', hidden: true},
+					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+					gene: {label: 'Gene', field: 'gene'},
+					product: {label: 'Product', field: 'product'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					ec_description: {label: 'EC Description', field: 'ec_description'}
+				},
 				store: geneStore,
 				enableFilterPanel: true,
 				queryOptions: {
-					sort: [{attribute: "gene"}]
+					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
 				}
 			});
 

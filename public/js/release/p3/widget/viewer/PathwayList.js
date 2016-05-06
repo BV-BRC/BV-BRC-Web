@@ -1,17 +1,15 @@
 define("p3/widget/viewer/PathwayList", [
-	"dojo/_base/declare","./TabViewerBase","dojo/on",
-	"dojo/dom-class","dijit/layout/ContentPane","dojo/dom-construct",
-	"../PageGrid","../formatter","../PathwaysGridContainer","../SequenceGridContainer",
-	"../../util/PathJoin","dojo/request","dojo/_base/lang"
-], function(
-	declare, TabViewerBase, on,
-	domClass,ContentPane,domConstruct,
-	Grid,formatter,PathwayGridContainer,SequenceGridContainer,
-	PathJoin,xhr,lang
-){
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"../PageGrid", "../formatter", "../PathwaysGridContainer", "../SequenceGridContainer",
+	"../../util/PathJoin", "dojo/request", "dojo/_base/lang"
+], function(declare, TabViewerBase, on,
+			domClass, ContentPane, domConstruct,
+			Grid, formatter, PathwayGridContainer, SequenceGridContainer,
+			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
 		"baseClass": "PathwayList",
-		"disabled":false,
+		"disabled": false,
 		"containerType": "feature_data",
 		"query": null,
 		paramsMap: "query",
@@ -57,10 +55,8 @@ define("p3/widget/viewer/PathwayList", [
 
 		},
 
-
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-			
 
 			// if (!state.feature_ids){
 			// 	console.log("	NO Genome_IDS")
@@ -76,12 +72,14 @@ define("p3/widget/viewer/PathwayList", [
 			// 	console.log("SET QUERY: ", state.search);
 			// 	this.set("query", state.search);
 			// }
-			
+
 			this.set("query", state.search);
 
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if (active=="pathways"){ this.setActivePanelState() };
+			if(active == "pathways"){
+				this.setActivePanelState()
+			}
 
 			this.inherited(arguments);
 		},
@@ -99,45 +97,84 @@ define("p3/widget/viewer/PathwayList", [
 
 			var activeTab = this[active];
 
-			if (!activeTab){
+			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 
 			switch(active){
 				case "overview":
-					activeTab.set("state",this.state);
+					activeTab.set("state", this.state);
 					break;
 				case "pathways":
 					var search = this.state.search + "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+						"&json(facet," + encodeURIComponent(JSON.stringify({
+							stat: {
+								field: {
+									field: "pathway_id",
+									limit: -1,
+									facet: {
+										genome_count: "unique(genome_id)",
+										gene_count: "unique(feature_id)",
+										ec_count: "unique(ec_number)",
+										genome_ec: "unique(genome_ec)"
+									}
+								}
+							}
+						})) + ")"
 
 					console.log("PATHWAY LIST SEARCH: ", search);
-					activeTab.set("state", lang.mixin({},this.state,{
-							search: search
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: search
 					}));
 					break;
 				case "ecnumbers":
 					var search = this.state.search + "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+						"&json(facet," + encodeURIComponent(JSON.stringify({
+							stat: {
+								field: {
+									field: "ec_number",
+									limit: -1,
+									facet: {
+										genome_count: "unique(genome_id)",
+										gene_count: "unique(feature_id)",
+										ec_count: "unique(ec_number)",
+										genome_ec: "unique(genome_ec)"
+									}
+								}
+							}
+						})) + ")"
 
 					console.log("PATHWAY LIST SEARCH: ", search);
-					activeTab.set("state", lang.mixin({},this.state,{
-							search: search
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: search
 					}));
 					break;
 				case "genes":
 					var search = this.state.search + "&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-							 "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+						"&json(facet," + encodeURIComponent(JSON.stringify({
+							stat: {
+								field: {
+									field: "gene",
+									limit: -1,
+									facet: {
+										genome_count: "unique(genome_id)",
+										gene_count: "unique(feature_id)",
+										ec_count: "unique(ec_number)",
+										genome_ec: "unique(genome_ec)"
+									}
+								}
+							}
+						})) + ")"
 
 					console.log("PATHWAY LIST SEARCH: ", search);
-					activeTab.set("state", lang.mixin({},this.state,{
-							search: search
+					activeTab.set("state", lang.mixin({}, this.state, {
+						search: search
 					}));
 					break;
 				default:
 					var activeQueryState;
-					if (this.state && this.state.genome_ids){
+					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
@@ -145,7 +182,7 @@ define("p3/widget/viewer/PathwayList", [
 
 					}
 
-					if (activeQueryState){
+					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);
@@ -161,7 +198,6 @@ define("p3/widget/viewer/PathwayList", [
 			this.setActivePanelState();
 		},
 
-
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
@@ -176,7 +212,7 @@ define("p3/widget/viewer/PathwayList", [
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("total_pathways", lang.hitch(this, "onSetTotalPathways"));
-			
+
 			this.overview = this.createOverviewPanel(this.state);
 			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
 			this.queryNode = domConstruct.create("span", {innerHTML: " Pathway List Query:  "});
@@ -184,27 +220,26 @@ define("p3/widget/viewer/PathwayList", [
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
-			this.pathways= new PathwayGridContainer({
+			this.pathways = new PathwayGridContainer({
 				title: "Pathways",
 				id: this.viewer.id + "_" + "pathways",
 				disabled: false,
-		        primaryKey: "pathway_id",
+				primaryKey: "pathway_id",
 			});
 
-			this.ecnumbers= new PathwayGridContainer({
+			this.ecnumbers = new PathwayGridContainer({
 				title: "EC Numbers",
 				id: this.viewer.id + "_" + "ecnumbers",
 				disabled: false,
 				primaryKey: "ec_number"
 			});
 
-			this.genes= new PathwayGridContainer({
+			this.genes = new PathwayGridContainer({
 				title: "Genes",
 				id: this.viewer.id + "_" + "genes",
 				disabled: false,
 				primaryKey: "gene"
 			});
-
 
 			// this.sequences = new SequenceGridContainer({
 			// 	title: "Sequences",
@@ -219,7 +254,6 @@ define("p3/widget/viewer/PathwayList", [
 			// 	state: this.state,
 			// 	disable: true
 			// });
-			
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.pathways);
@@ -228,7 +262,7 @@ define("p3/widget/viewer/PathwayList", [
 
 			// this.viewer.addChild(this.sequences);
 			// this.viewer.addChild(this.genomes);
-	
+
 		},
 		onSetTotalPathways: function(attr, oldVal, newVal){
 			console.log("ON SET TOTAL GENOMES: ", newVal);
@@ -255,7 +289,6 @@ define("p3/widget/viewer/PathwayList", [
 				this.removeChild(this.warningPanel);
 			}
 		},
-
 
 		showWarning: function(msg){
 			if(!this.warningPanel){

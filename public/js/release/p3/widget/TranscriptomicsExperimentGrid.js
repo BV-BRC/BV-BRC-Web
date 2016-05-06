@@ -1,12 +1,12 @@
 define("p3/widget/TranscriptomicsExperimentGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter","../store/TranscriptomicsExperimentJsonRest","dgrid/selector"
+	"./PageGrid", "./formatter", "../store/TranscriptomicsExperimentJsonRest", "dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, Store,selector) {
+			Grid, formatter, Store, selector){
 
-		var store = new Store({});
+	var store = new Store({});
 
 	return declare([Grid], {
 		region: "center",
@@ -19,25 +19,25 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
-			eid: {label: "Experiment ID", field: "eid",hidden:true},
+			eid: {label: "Experiment ID", field: "eid", hidden: true},
 			title: {label: "Title", field: "title", hidden: false},
 			samples: {label: "Comparisons", field: "samples", hidden: false},
-			genes:{label: "Genes", field: "genes",hidden: false},
-			pubmed:{label: "PubMed", field: "pmid",hidden: false},
-			linkout:{label: "Link Out", field: "",hidden: false},
-			organism: {label: "Organism", field: "organism",hidden: false},
-			strain: {label: "Strain", field: "strain",hidden: false},
-			geneMod: {label: "Gene Modification", field: "mutant",hidden: false},
-			expCond: {label: "Experimental Condition", field: "condition",hidden: false},
-			timeSeries: {label: "Time Series", field: "timeseries",hidden: false},
-			releaseDate: {label: "Release Date", field: "release_date",hidden: false},
-			author: {label: "Author", field: "author",hidden: true},
-			pi: {label: "PI", field: "pi",hidden:true},
-			institution: {label: "Institution", field: "institution",hidden:true}	
+			genes: {label: "Genes", field: "genes", hidden: false},
+			pubmed: {label: "PubMed", field: "pmid", hidden: false},
+			linkout: {label: "Link Out", field: "", hidden: false},
+			organism: {label: "Organism", field: "organism", hidden: false},
+			strain: {label: "Strain", field: "strain", hidden: false},
+			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
+			expCond: {label: "Experimental Condition", field: "condition", hidden: false},
+			timeSeries: {label: "Time Series", field: "timeseries", hidden: false},
+			releaseDate: {label: "Release Date", field: "release_date", hidden: false},
+			author: {label: "Author", field: "author", hidden: true},
+			pi: {label: "PI", field: "pi", hidden: true},
+			institution: {label: "Institution", field: "institution", hidden: true}
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this;
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -49,7 +49,7 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 				console.log('after emit');
 			});
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -60,7 +60,7 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 				};
 				on.emit(_self.domNode, "select", newEvt);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,

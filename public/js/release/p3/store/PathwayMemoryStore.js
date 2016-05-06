@@ -13,9 +13,7 @@ define("p3/store/PathwayMemoryStore", [
 			QueryResults,
 			when, lang,
 			Deferred, Stateful,
-			PathJoin
-
-){
+			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		idProperty: "pathway_id",
@@ -25,29 +23,33 @@ define("p3/store/PathwayMemoryStore", [
 		type: "pathway",
 		onSetState: function(attr, oldVal, state){
 			var ov, nv;
-			if (oldVal){ ov = oldVal.search + oldVal.filter};
-			if (state) { nv = state.search + state.filter };
+			if(oldVal){
+				ov = oldVal.search + oldVal.filter
+			}
+			if(state){
+				nv = state.search + state.filter
+			}
 
-			console.log("MEMORY STORE onSetState: ", state, oldVal)
+			console.log("MEMORY STORE onSetState: ", state, oldVal);
 			// if (ov!=nv){
-				console.log("clear memory store data")
-				this._loaded = false;
-				if (this._loadingDeferred){
-					console.log("Deleting _loadingDeferred", this._loadingDeferred);
-					delete this._loadingDeferred;
-				}
+			console.log("clear memory store data");
+			this._loaded = false;
+			if(this._loadingDeferred){
+				console.log("Deleting _loadingDeferred", this._loadingDeferred);
+				delete this._loadingDeferred;
+			}
 			// }
 		},
 		constructor: function(opts){
 			this.init(opts);
 		},
 		init: function(options){
-			options=options||{}
+			options = options || {};
 			console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
-			lang.mixin(this,options);
-			this.watch("state", lang.hitch(this, "onSetState"))
+			lang.mixin(this, options);
+			this.watch("state", lang.hitch(this, "onSetState"));
 			console.log("INIT COMPLETE: ", this)
 		},
 
@@ -59,7 +61,7 @@ define("p3/store/PathwayMemoryStore", [
 			else{
 				var _self = this;
 				var results;
-				console.log("Beofre LOAD type: ", this.type)
+				console.log("Beofre LOAD type: ", this.type);
 				console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
 					console.log("Do actual Query Against loadData() data. QR: ", qr);
@@ -87,27 +89,66 @@ define("p3/store/PathwayMemoryStore", [
 		},
 
 		queryTypes: {
-			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-				     "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"pathway_id",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
+			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "pathway_id",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")",
 
-			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-					  "&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"ec_number",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")",
-			genes: "&limit(25000)&group((field,gene),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
-					"&json(facet," + encodeURIComponent(JSON.stringify({stat:{field:{field:"gene",limit:-1,facet:{genome_count:"unique(genome_id)",gene_count:"unique(feature_id)",ec_count:"unique(ec_number)",genome_ec:"unique(genome_ec)"}}}})) + ")"
+			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "ec_number",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")",
+			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			"&json(facet," + encodeURIComponent(JSON.stringify({
+				stat: {
+					field: {
+						field: "feature_id",
+						limit: -1,
+						facet: {
+							genome_count: "unique(genome_id)",
+							gene_count: "unique(feature_id)",
+							ec_count: "unique(ec_number)",
+							genome_ec: "unique(genome_ec)"
+						}
+					}
+				}
+			})) + ")"
 		},
 		buildQuery: function(){
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					console.log("buildQuery SEARCH: ", this.state.search );
+					console.log("buildQuery SEARCH: ", this.state.search);
 
-					q.push((this.state.search.charAt(0)=="?")?this.state.search.substr(1):this.state.search);
-				}else if (this.state.genome_ids){
+					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
+				}else if(this.state.genome_ids){
 					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
 				}
 
 				if(this.state.hashParams && this.state.hashParams.filter){
-					if (this.state.hashParams.filter!="false"){
+					if(this.state.hashParams.filter != "false"){
 						q.push(this.state.hashParams.filter);
 					}
 				}
@@ -125,8 +166,8 @@ define("p3/store/PathwayMemoryStore", [
 			}
 			q = q + this.queryTypes[this.type];
 
-			console.log("End Build Query: ", q)
-			return (q.charAt(0)=="?")?q.substr(1):q ;
+			console.log("End Build Query: ", q);
+			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
 		loadData: function(){
@@ -152,7 +193,6 @@ define("p3/store/PathwayMemoryStore", [
 
 			}
 
-
 			// var lq;
 
 			// if(state && state.genome_ids){
@@ -164,7 +204,7 @@ define("p3/store/PathwayMemoryStore", [
 
 			var _self = this;
 			console.log("Load Data: ", q);
-			this._loadingDeferred = when(request.post(PathJoin(this.apiServer,'pathway')+'/', {
+			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
 					'Accept': "application/solr+json",
@@ -174,58 +214,58 @@ define("p3/store/PathwayMemoryStore", [
 				},
 				data: q
 
-			}), lang.hitch(this,function(response){
+			}), lang.hitch(this, function(response){
 
-				var docs=[]
+				var docs = [];
 				var props = {
 					"pathway": "pathway_id",
 					"ecnumber": "ec_number",
-					"genes": 'gene'
-				}
+					"genes": 'feature_id'
+				};
 				console.log("Pathway Base Query Response:", response);
 				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
-				if (response && response.grouped  && response.grouped[props[this.type]]){
+				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
 					var buckets = response.facets.stat.buckets;
-                	var map={};
-                	buckets.forEach(function(b){
-                		map[b["val"]]=b;
-                		delete b["val"];
-                	})
+					var map = {};
+					buckets.forEach(function(b){
+						map[b["val"]] = b;
+						delete b["val"];
+					});
 
-                	docs = ds.map(function(doc){
-                		var p = props[this.type];
-                		var pv = doc[p];
-                		// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
-                		lang.mixin(doc,map[pv]||{})
-                		if (doc.genome_ec && doc.genome_count){
-	                  		doc.ec_cons = (doc.genome_ec /doc.genome_count / doc.ec_count * 100).toFixed(2);
-	                  	}else{
-	                  		doc.ec_cons=0;
-	                  	}
-	                  	if (doc.gene_count && doc.genome_count){
-							doc.gene_cons =(doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+					docs = ds.map(function(doc){
+						var p = props[this.type];
+						var pv = doc[p];
+						// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
+						lang.mixin(doc, map[pv] || {});
+						if(doc.genome_ec && doc.genome_count){
+							doc.ec_cons = (doc.genome_ec / doc.genome_count / doc.ec_count * 100).toFixed(2);
 						}else{
-							doc.gene_cons=0;
+							doc.ec_cons = 0;
 						}
-                		return doc;
-                	},this)
+						if(doc.gene_count && doc.genome_count){
+							doc.gene_cons = (doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+						}else{
+							doc.gene_cons = 0;
+						}
+						return doc;
+					}, this);
 					console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
-					_self._loaded =true;
+					_self._loaded = true;
 					return true;
 
 				}else{
-					console.log("Unable to Process Response: ", response)
-					_self.setData([]),
-					_self._loaded=true;
+					console.log("Unable to Process Response: ", response);
+					_self.setData([]);
+					_self._loaded = true;
 					return false;
 				}
 			}), lang.hitch(this, function(err){
 				console.log("Error Loading Data: ", err);
-				_self.setData([]),
-				_self._loaded=true;
+				_self.setData([]);
+				_self._loaded = true;
 				return err;
 			}));
 			return this._loadingDeferred;

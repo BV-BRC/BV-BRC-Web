@@ -1,12 +1,10 @@
 define("p3/widget/GenomeGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeJsonRest","dgrid/selector"
-], function(
-	declare, BorderContainer, on,
-	domClass, ContentPane, domConstruct,
-	Grid, formatter, Store, selector
-) {
+	"./PageGrid", "./formatter", "../store/GenomeJsonRest", "dgrid/selector"
+], function(declare, BorderContainer, on,
+			domClass, ContentPane, domConstruct,
+			Grid, formatter, Store, selector){
 
 	var store = new Store({});
 	return declare([Grid], {
@@ -352,16 +350,16 @@ define("p3/widget/GenomeGrid", [
 		},
 		defaultSortProperty: "genome_name",
 		constructor: function(){
-			this.queryOptions={
+			this.queryOptions = {
 				sort: [{attribute: this.defaultSortProperty, descending: false}]
 			};
 		},
-		startup: function() {
+		startup: function(){
 			var _self = this
 			// if (this.defaultSortProperty) {
 			// 	this.set("sort", this.defaultSortProperty);
 			// }
-			this.on(".dgrid-content .dgrid-row:dblclick", function(evt) {
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
@@ -381,7 +379,7 @@ define("p3/widget/GenomeGrid", [
 			//_selection={};
 			//Topic.publish("/select", []);
 
-			this.on("dgrid-select", function(evt) {
+			this.on("dgrid-select", function(evt){
 				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
@@ -389,7 +387,7 @@ define("p3/widget/GenomeGrid", [
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "select", newEvt);
 				//console.log("dgrid-select");
 				//var rows = evt.rows;
@@ -397,7 +395,7 @@ define("p3/widget/GenomeGrid", [
 				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
 				//Topic.publish("/select", sel);
 			});
-			this.on("dgrid-deselect", function(evt) {
+			this.on("dgrid-deselect", function(evt){
 				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
@@ -405,7 +403,7 @@ define("p3/widget/GenomeGrid", [
 					grid: _self,
 					bubbles: true,
 					cancelable: true
-				}
+				};
 				on.emit(_self.domNode, "deselect", newEvt);
 				return;
 			});

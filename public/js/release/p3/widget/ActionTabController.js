@@ -1,7 +1,7 @@
 require({cache:{
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n"}});
 define("p3/widget/ActionTabController", ["dojo/_base/declare", "dijit/layout/StackController",
-	"dojo/dom-construct","dojo/text!dijit/layout/templates/_TabButton.html",
+	"dojo/dom-construct", "dojo/text!dijit/layout/templates/_TabButton.html",
 	"dojo/dom", // dom.setSelectable
 	"dojo/dom-attr", // domAttr.attr
 	"dojo/dom-class", // domClass.toggle
@@ -10,16 +10,23 @@ define("p3/widget/ActionTabController", ["dojo/_base/declare", "dijit/layout/Sta
 	"dojo/_base/lang",
 	"dijit/registry",
 	"dojo/on",
-	"dijit/form/TextBox" ,
+	"dijit/form/TextBox",
 	"dijit/_WidgetsInTemplateMixin",
 	"dijit/form/RadioButton"
 
-
-],function(
-	declare,StackController,
-	domConstruct,template,dom,domAttr,domClass,has,i18n,lang,registry,on,
-	TextBox,WidgetsInTemplate,RadioButton
-){
+], function(declare, StackController,
+			domConstruct, template,
+			dom,
+			domAttr,
+			domClass,
+			has,
+			i18n,
+			lang,
+			registry,
+			on,
+			TextBox,
+			WidgetsInTemplate,
+			RadioButton){
 
 	var TabButton = declare([StackController.StackButton], {
 		// summary:
@@ -110,8 +117,7 @@ define("p3/widget/ActionTabController", ["dojo/_base/declare", "dijit/layout/Sta
 		}
 	});
 
-
-	return declare([StackController,WidgetsInTemplate], {
+	return declare([StackController, WidgetsInTemplate], {
 		templateString: "<div role='tablist' data-dojo-attach-event='onkeydown'><span data-dojo-attach-point='containerNode'></span><div data-dojo-attach-point='menuNode' class='actionMenuNode' style='display:inline-block;width:75px;float:right;vertical-align:middle;'>Icon Here</div><div class='FacetHeaderBox' data-dojo-attach-point='headerBox' style='font-size:.75em;padding:4px;'><div><label>Assigment Mode: </label><input type='radio' id='docAssign' data-dojo-type='dijit/form/RadioButton' name='assignmentMode' value='document'/> <label for='docAssign'>Document</label><input type='radio' id='famAssign' data-dojo-type='dijit/form/RadioButton' name='assignmentMode' checked='true' value='Family'/><label for='famAssign'>Family</label></div></div></div></div>",
 		buttonWidget: TabButton,
 
@@ -121,23 +127,30 @@ define("p3/widget/ActionTabController", ["dojo/_base/declare", "dijit/layout/Sta
 
 		startup: function(){
 			console.log("FacetTabContainer Startup");
-			if (this._started){return;}
+			if(this._started){
+				return;
+			}
 			this.inherited(arguments);
 			var self = this;
 			on(this.menuNode, "click", function(evt){
-				if (domClass.contains(evt.target,"headerBoxToggler")) {
-					domClass.toggle(self.headerBox,"ToggleOpen");
-					on.emit(self.domNode,"ToggleHeader", {bubbles: true, open:domClass.contains(self.headerBox,"ToggleOpen")}); 
-				}		
+				if(domClass.contains(evt.target, "headerBoxToggler")){
+					domClass.toggle(self.headerBox, "ToggleOpen");
+					on.emit(self.domNode, "ToggleHeader", {
+						bubbles: true,
+						open: domClass.contains(self.headerBox, "ToggleOpen")
+					});
+				}
 			});
 		},
 
 		onSelectChild: function(/*dijit/_WidgetBase*/ page){
 			console.log("onSelectChild: ", page);
-			if (!page) {return; }
+			if(!page){
+				return;
+			}
 
 			console.log("onSelectChild() page.filtered: ", page.filtered, page.filterKey);
-			if (page.filtered){
+			if(page.filtered){
 				domClass.add(this.domNode, "filtered");
 			}else{
 				domClass.remove(this.domNode, "filtered");
@@ -145,20 +158,22 @@ define("p3/widget/ActionTabController", ["dojo/_base/declare", "dijit/layout/Sta
 
 			this.inherited(arguments);
 
-			if (page.getMenuButtons){
-				console.log("page: ", page);	
+			if(page.getMenuButtons){
+				console.log("page: ", page);
 				this.renderButtons(page.getMenuButtons());
 			}else{
 				this.renderButtons();
-			}	
+			}
 		},
 		renderButtons: function(buttons){
 			console.log("render buttons: ", buttons);
-			this.menuNode.innerHTML="";
-			if (!buttons) {return;}
+			this.menuNode.innerHTML = "";
+			if(!buttons){
+				return;
+			}
 			buttons.forEach(function(button){
 				domConstruct.place(button, this.menuNode);
-			},this);
+			}, this);
 		}
 
 	});

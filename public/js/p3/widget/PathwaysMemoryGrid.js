@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect","dgrid/selector"
+	"dojo/aspect", "dgrid/selector"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect,selector){
+			aspect, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -102,7 +102,9 @@ define([
 			//console.log("CreateStore() token: ", token);
 			//console.log("CreateStore() state: ", state);
 			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
-			if (this.store) { return this.store }
+			if(this.store){
+				return this.store
+			}
 
 			return new Store({
 				token: token,

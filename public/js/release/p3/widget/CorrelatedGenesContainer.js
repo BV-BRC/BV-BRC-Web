@@ -40,7 +40,9 @@ define("p3/widget/CorrelatedGenesContainer", [
 		onSetState: function(attr, oldVal, state){
 			console.log("CorrelatedGenesContainer set STATE.  feature_id: ", state.feature_id, " state: ", state);
 
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 
 			if(this.correlatedGenesGrid){
 				this.correlatedGenesGrid.set('state', state);
@@ -75,7 +77,6 @@ define("p3/widget/CorrelatedGenesContainer", [
 				state: this.state,
 				apiServer: this.apiServer
 			});
-
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 

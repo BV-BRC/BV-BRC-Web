@@ -2407,14 +2407,14 @@ createNavBox: function( parent ) {
     // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
     // set in the config, then put in a dropdown box for selecting
     // reference sequences
-    var refSeqSelectBoxPlaceHolder = dojo.create('div', {style: "display:inline-block;"}, navbox );
+    var refSeqSelectBoxPlaceHolder = dojo.create('span', {}, navbox );
 
     // make the location box
     this.locationBox = new dijitComboBox(
         {
             id: "location",
             name: "location",
-            style: { width: '75px' },
+            style: { width: '25ex' },
             maxLength: 400,
             searchAttr: "name"
         },

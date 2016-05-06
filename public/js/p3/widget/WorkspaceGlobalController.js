@@ -1,15 +1,13 @@
 define([
-	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/WorkspaceGlobalController.html"
-], function(
-	declare, WidgetBase, on,
-	domClass,Templated,WidgetsInTemplate,
-	Template
-){
-	return declare([WidgetBase,Templated,WidgetsInTemplate], {
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template){
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "WorkspaceGlobalController",
-		"disabled":false,
+		"disabled": false,
 		templateString: Template,
 		path: "",
 		postCreate: function(){
@@ -20,8 +18,8 @@ define([
 		},
 
 		setPathAttr: function(val){
-			this.path=val;
-			if (this._started){
+			this.path = val;
+			if(this._started){
 				console.log("Set Workspace Global Current Path")
 			}
 		}

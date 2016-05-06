@@ -38,10 +38,13 @@ a.HelpLink:active {
 	padding:2px;
 	color: #134d75;
 }
+.wsActionTooltip {
+	padding: 2px;
+}
 
 .wsActionTooltip:hover{
-background:#d2d2d2;
-cursor: pointer;
+	background:#d2d2d2;
+	cursor: pointer;
 }
 
 .idMappingTable td:hover{

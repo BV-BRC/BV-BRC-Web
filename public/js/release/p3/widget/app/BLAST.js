@@ -31,8 +31,7 @@ define("p3/widget/app/BLAST", [
 		validate: function(){
 			if(this.sequence.get('value') && (this.sequence.get('value')).length > 1
 				&& (/*this.database.get('value') != "" || */ this.addedGenomes > 0)
-				&& this.program.get('value'))
-			{
+				&& this.program.get('value')){
 				this.mapButton.set('disabled', false);
 				return true;
 			}else{
@@ -78,8 +77,7 @@ define("p3/widget/app/BLAST", [
 		},
 		buildGridOutput: function(data){
 
-
-			if (this.result_grid != undefined) {
+			if(this.result_grid != undefined){
 				this.result_grid.destroy();
 				domConstruct.create('div', {id: "blast_result"}, "blast_result_wrapper");
 
@@ -88,7 +86,7 @@ define("p3/widget/app/BLAST", [
 				data: data,
 				idProperty: "sseqid",
 				queryOptions: {
-					sort: [{ attribute: "pident" }]
+					sort: [{attribute: "pident"}]
 				}
 			});
 			this.result_grid = new (declare([Grid, Selection]))({
