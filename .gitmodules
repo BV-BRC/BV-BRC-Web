@@ -29,9 +29,6 @@
 [submodule "node_modules/msa"]
 	path = node_modules/msa
 	url = https://github.com/aswarren/msa.git
-[submodule "node_modules/msa-tnt"]
-	path = node_modules/msa-tnt
-	url = https://github.com/aswarren/msa-tree.git
 [submodule "public/js/jbrowse"]
 	path = public/js/jbrowse.repo
 	url = https://github.com/GMOD/jbrowse.git
