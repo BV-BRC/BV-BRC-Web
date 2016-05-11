@@ -77,14 +77,16 @@ define([
 			this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + "</div>");
 		},
 		onSetData: function(attr, oldVal, data){
-			this.createDataMap(data);
+			this.createDataMap();
 			this.render();
 		},
 
-		createDataMap: function(apiResult){
+		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
-			apiResult.alignment.split("\n").forEach(function(line){
+            this.alt_labels={};
+
+			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
@@ -93,6 +95,7 @@ define([
 						geneID = headerInfo[1];
 						clustal.push(geneID + "\t");
 						this.dataMap[geneID] = {"taxID": headerInfo[2], "geneID": geneID, sequence: []};
+                        this.alt_labels[geneID]=this.data.map[headerInfo[2]];
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
@@ -216,6 +219,9 @@ define([
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
 			//this.tree.setTree(this.data.tree);
+            
+            this.tree.addLabels(this.alt_labels, "Organism Names");
+            this.tree.startup();
 
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
@@ -292,24 +298,6 @@ define([
 			//noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
 			//m.addView("menu", defMenu);
 
-			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
-			var typeMenu = new DropDownMenu({style: "display: none;"});
-			typeMenu.addChild(new MenuItem({
-				label: "phylogram", onClick: lang.hitch(this, function(){
-					this.setTreeType("phylogram")
-				})
-			}));
-			typeMenu.addChild(new MenuItem({
-				label: "cladogram", onClick: lang.hitch(this, function(){
-					this.setTreeType("cladogram")
-				})
-			}));
-			typeMenu.startup();
-			var typeButton = new DropDownButton({
-				name: "typeButton",
-				label: "tree type",
-				dropDown: typeMenu
-			}, typeMenuDom).startup();
 			//this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
 			var colorMenuDom = domConstruct.create("div", {}, menuDiv);
 			var colorMenu = new DropDownMenu({style: "display: none;"});
@@ -323,9 +311,29 @@ define([
 			colorMenu.startup();
 			var colorButton = new DropDownButton({
 				name: "colorButton",
-				label: "color",
+				label: "Color",
 				dropDown: colorMenu
 			}, colorMenuDom).startup();
+
+
+
+			var idMenuDom = domConstruct.create("div", {}, menuDiv);
+			var idMenu = new DropDownMenu({style: "display: none;"});
+			Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
+				idMenu.addChild(new MenuItem({
+					label: labelAlias, onClick: lang.hitch(this, function(){
+						this.tree.selectLabels(labelAlias);
+					})
+				}));
+			}));
+			idMenu.startup();
+			var idButton = new DropDownButton({
+				name: "idButton",
+				label: "ID Type",
+				dropDown: idMenu
+			}, idMenuDom).startup();
+
+
 			this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
 			this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
 			this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
@@ -394,7 +402,7 @@ define([
 			}
 
 			this.watch("loading", lang.hitch(this, "onSetLoading"));
-			this.watch("data", lang.hitch(this, "onSetData"))
+			this.watch("data", lang.hitch(this, "onSetData"));
 
 			this.inherited(arguments);
 		}
