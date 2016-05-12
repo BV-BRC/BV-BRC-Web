@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",  "dojo/promise/all",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
 	"dojo/store/Memory", "dojo/store/util/QueryResults",
 	"./HeatmapDataTypes"
 ], function(declare, lang, Deferred,
@@ -9,7 +9,6 @@ define([
 
 	var pmState = {
 		heatmapAxis: 'Transposed',
-		pathway_id: '00010',
 		genomeIds: [],
 		genomeFilterStatus: {},
 		clusterRowOrder: [],
@@ -95,7 +94,7 @@ define([
 
 			// console.warn(this.state, this.state.genome_ids, !this.state.genome_ids);
 			if(!this.state.genome_ids){
-				console.log("No Genome IDS, use empty data set for initial store");
+				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -108,6 +107,14 @@ define([
 				}), 0);
 				return def.promise;
 			}
+
+			_self.pmState = lang.mixin(this.pmState, {
+				pathway_id: this.state.pathway_id,
+				ec_number: this.state.ec_number,
+				feature_id: this.state.feature_id,
+				taxon_id: this.state.taxon_id,
+				annotation: this.state.annotation
+			});
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
 				handleAs: 'json',
@@ -205,17 +212,7 @@ define([
 						});
 					});
 
-					// Object.keys(ecGenomeIdCountMap).forEach(function(ec){
-					// 	var hashSet = {};
-					// 	ecGenomeIdSet[ec].forEach(function(value){
-					// 		hashSet[value] = true;
-					// 	});
-					// 	ecGenomeCount[ec] = Object.keys(hashSet).length;
-					// });
-
-					// console.warn(ecGenomeIdCountMap, ecGenomeDist);
-
-					return when(request.post(_self.apiServer + '/enzyme_class_ref/', {
+					return when(request.post(_self.apiServer + '/pathway_ref/', {
 						handleAs: 'json',
 						headers: {
 							'Accept': "application/json",
@@ -224,18 +221,18 @@ define([
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
 						data: {
-							q: 'ec_number:(' + ecNumbers.join(' OR ') + ')',
-							fl: 'ec_number,ec_description',
+							q: 'pathway_id:' + _self.pmState.pathway_id + ' AND ec_number:(' + ecNumbers.join(' OR ') + ')',
+							fl: 'ec_number,ec_description,occurrence',
 							sort: 'ec_number asc',
 							rows: ecNumbers.length
 						}
 					}), function(res){
 
 						var ecRefHash = {};
+						var ecOccurrenceHash = {};
 						res.forEach(function(el){
-							if(!(el['ec_number'] in ecRefHash)){
-								ecRefHash[el['ec_number']] = el['ec_description'];
-							}
+							ecRefHash[el['ec_number']] = el['ec_description'];
+							ecOccurrenceHash[el['ec_number']] = el['occurrence'];
 						});
 
 						var data = [];
@@ -250,6 +247,7 @@ define([
 									genome_count: ecGenomeIdSet[ec].length,
 									genome_missing: (genome_ids.length - ecGenomeIdSet[ec].length),
 									description: ecRefHash[ec],
+									occurrence: ecOccurrenceHash[ec],
 									genomes: ecGenomeIdCountMap[ec].join("")
 								};
 								data.push(row);
@@ -259,7 +257,7 @@ define([
 
 						_self.setData(data);
 						_self._loaded = true;
-						Topic.publish("PathwayMap", "hideLoadingMask");
+						// Topic.publish("PathwayMap", "hideLoadingMask");
 						return true;
 					})
 				});
@@ -267,39 +265,6 @@ define([
 			return this._loadingDeferred;
 		},
 
-		getKeggmapData: function(){
-
-			var def = new Deferred();
-			var genome_x_y;
-			var all_coordinates;
-			var _self = this;
-
-			var defGenomeXy = when(request.get(_self.apiServer + '/pathway/', {
-				handleAs: 'json',
-				headers: {
-					'Accept': "application/json",
-					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
-				},
-				data: 'q=genome_id:1201035.3+AND+pathway_id:00401&rows=0&facet=true&json.facet={stat:{field:{field:ec_number,limit:-1,facet:{genome_count:"unique(genome_id)"}}}}'
-			}), function(response){
-				console.log("genomeXY: ", response);
-			});
-
-			var defAllCoordinates = when(request.post('', {
-
-			}), function(response){
-
-			});
-
-			All([defGenomeXy, defAllCoordinates], function(){
-
-				def.resolve({genome_x_y: genome_x_y, all_coordinates: all_coordinates});
-			});
-
-			return def.promise;
-		},
 		getHeatmapData: function(pmState){
 
 			var rows = [];

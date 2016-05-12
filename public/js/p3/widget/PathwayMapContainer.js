@@ -14,32 +14,6 @@ define([
 		id: "PMContainer",
 		gutters: false,
 		state: null,
-		pmState: null,
-		apiServer: window.App.dataServiceURL,
-		constructor: function(){
-			var self = this;
-
-			Topic.subscribe("PathwayMap", lang.hitch(self, function(){
-				// console.log("PathwayMapContainer:", arguments);
-				var key = arguments[0], value = arguments[1];
-
-				switch(key){
-					case "updatePmState":
-						self.pmState = value;
-						break;
-					default:
-						break;
-				}
-			}));
-		},
-		onSetState: function(attr, oldVal, state){
-			// console.log("ProteinFamiliesContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
-			if(this.mainMapContainer){
-				this.mainMapContainer.set('state', state);
-			}
-			this._set('state', state);
-		},
-
 		visible: false,
 		_setVisibleAttr: function(visible){
 			this.visible = visible;
@@ -80,7 +54,7 @@ define([
 				content: "Heatmap"
 			});
 
-			this.watch("state", lang.hitch(this, "onSetState"));
+			// this.watch("state", lang.hitch(this, "onSetState"));
 
 			this.tabContainer.addChild(this.mainMapContainer);
 			this.tabContainer.addChild(this.heatmapContainer);

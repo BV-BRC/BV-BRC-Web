@@ -3,12 +3,12 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "../util/PathJoin", "./PathwayMapGrid"
+	"./ContainerActionBar", "../util/PathJoin", "./PathwayMapGrid", "./PathwayMapKegg"
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, Select, Button,
-			ContainerActionBar, PathJoin, EcGrid){
+			ContainerActionBar, PathJoin, EcGrid, PathwayMapKeggContainer){
 	return declare([BorderContainer], {
 		gutters: false,
 		visible: false,
@@ -22,11 +22,9 @@ define([
 
 			if(this.ecTable){
 				this.ecTable.set('visible', true);
-				this.state = lang.mixin(this.state, {genome_ids:['1201033.3', '1201034.3', '1201035.3', '1202451.3', '1095900.3', '1094552.3']});
-				this.ecTable.set('state', this.state);
 			}
-			if(this.map){
-				this.map.set('visible', true);
+			if(this.mapContainer){
+				this.mapContainer.set('visible', true);
 			}
 		},
 		onFirstView: function(){
@@ -44,13 +42,13 @@ define([
 			});
 			this.ecTableContainer.addChild(this.ecTable);
 
-			this.map = new ContentPane({
-				region: "center",
-				content: '<img id="map_img" src="/patric/images/pathways/map00401.png" alt=""/>'
+			this.mapContainer = new PathwayMapKeggContainer({
+				state: this.state,
+				apiServer: this.apiServer
 			});
 
 			this.addChild(this.ecTableContainer);
-			this.addChild(this.map);
+			this.addChild(this.mapContainer);
 
 			this.inherited(arguments);
 			this._firstView = true;

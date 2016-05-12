@@ -71,6 +71,7 @@ define([
 					cancelable: true
 				};
 				on.emit(_self.domNode, "select", newEvt);
+				Topic.publish("PathwayMap", "highlightEC", Object.keys(evt.grid.selection));
 			});
 
 			this.on("dgrid-deselect", function(evt){
