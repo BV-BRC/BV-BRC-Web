@@ -11,7 +11,6 @@ define([
 			MainMapContainer, HeatmapContainer){
 
 	return declare([BorderContainer], {
-		id: "PMContainer",
 		gutters: false,
 		state: null,
 		visible: false,

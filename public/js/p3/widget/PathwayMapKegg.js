@@ -77,17 +77,35 @@ define([
 			this.addChild(new ContentPane({
 				region: "center",
 				style: "padding:0",
-				content: '<svg id="map_div" style="width:1200px;height:1000px;position:absolute;"></svg><img id="map_img" src="/patric/images/pathways/map' + this.state.pathway_id + '.png" alt=""/>',
+				content: '<svg id="map_div" style="width:1700px;height:1700px;position:absolute;"></svg><img id="map_img" src="/patric/images/pathways/map' + this.state.pathway_id + '.png" alt=""/>',
 			}));
 
 			this.inherited(arguments);
 			this._firstView = true;
-
-			// this.drawBoxes();
 		},
 		drawBoxes: function(pmState){
 			var self = this;
-			when(this.getKeggData(pmState), function(data){
+
+			var defEcCoordinates;
+			var defFeatureCoordinates;
+
+			if(pmState.hasOwnProperty('feature_id')){
+				defFeatureCoordinates = self.getKeggCoordinates(pmState.pathway_id, "feature", pmState.feature_id);
+			}else{
+				defFeatureCoordinates = Deferred.resolved;
+			}
+
+			if(pmState.hasOwnProperty('ec_number')){
+				defEcCoordinates = self.getKeggCoordinates(pmState.pathway_id, "ec_number", pmState.ec_number);
+			}else{
+				defEcCoordinates = Deferred.resolved;
+			}
+
+			var defKeggMap = self.getKeggData(pmState);
+
+			when(All([defKeggMap, defEcCoordinates, defFeatureCoordinates]), function(result){
+
+				var data = result[0];
 
 				// initialize
 				self.pNS = new PathwayPainter();
@@ -107,7 +125,21 @@ define([
 					});
 				});
 
-				self.pNS.setCurrent('PATRIC', 6);
+				// if ec_number is selected
+				if(result[1]){
+					self.pNS.data.forEach(function(d){
+						d.selected = (result[1].indexOf(d.name) > -1);
+					});
+				}
+
+				// if feature is selected
+				if(result[2]){
+					self.pNS.data.forEach(function(d){
+						d.selected = (result[2].indexOf(d.name) > -1);
+					})
+				}
+
+				self.pNS.setCurrent(pmState.annotation, pmState.genomeIds.length);
 				self.pNS.paint();
 			});
 		},
@@ -181,7 +213,7 @@ define([
 			}), function(response){
 
 				var coordinates = [];
-				response.map(function(row){
+				response.forEach(function(row){
 					row['map_location'].forEach(function(location){
 						var loc = location.split(',');
 						coordinates.push({
@@ -204,14 +236,14 @@ define([
 
 			return def.promise;
 		},
-		getKeggCoordinates: function(type, pathwayId, idValue){
+		getKeggCoordinates: function(pathwayId, type, idValue){
 
 			var def = new Deferred();
 			var _self = this;
 
 			switch(type){
 				case "ec_number":
-					when(request.post(_self.apiServer + '/pathway_ref', {
+					/*when(request.post(_self.apiServer + '/pathway_ref', {
 						handleAs: 'json',
 						headers: {
 							'Accept': "application/json",
@@ -222,17 +254,21 @@ define([
 						data: 'q=pathway_id:' + pathwayId + ' AND ec_number:' + idValue + '&fl=ec_number,map_location'
 					}), function(response){
 
-						var coordinates = response.map(function(row){
-							var loc = row['map_location'][0].split(',');
-							return {
-								ec_number: row['ec_number'],
-								x: parseInt(loc[0]),
-								y: parseInt(loc[1])
-							};
+						var coordinates = [];
+						response.forEach(function(row){
+							row['map_location'].forEach(function(location){
+								var loc = location.split(',');
+								coordinates.push({
+									ec_number: row['ec_number'],
+									x: parseInt(loc[0]),
+									y: parseInt(loc[1])
+								});
+							});
 						});
 
 						def.resolve(coordinates);
-					});
+					});*/
+					def.resolve([idValue]);
 					break;
 				case "feature":
 					when(request.post(_self.apiServer + '/pathway/', {
@@ -243,14 +279,15 @@ define([
 							'X-Requested-With': null,
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
-						data: 'q=pathway_id:' + pathwayId + ' AND feature_id(:' + idValue.replace(',', ' OR ') + ')&fl=ec_number'
+						data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValue.replace(',', ' OR ') + ')&fl=ec_number'
 					}), function(response){
 
 						var ecNumbers = response.map(function(row){
 							return row['ec_number'];
 						});
+						def.resolve(ecNumbers);
 
-						when(request.post(_self.apiServer + '/pathway_ref', {
+						/*when(request.post(_self.apiServer + '/pathway_ref', {
 							handleAs: 'json',
 							headers: {
 								'Accept': "application/json",
@@ -271,7 +308,7 @@ define([
 							});
 
 							def.resolve(coordinates);
-						});
+						});*/
 					});
 					break;
 				default:

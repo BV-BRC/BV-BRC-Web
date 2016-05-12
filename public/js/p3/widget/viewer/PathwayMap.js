@@ -25,7 +25,9 @@ define([
 			// var pmState = {}; // pathway_id, ec_number, feature_id, taxon_id, annotation
 			params.split('&').forEach(function(p){
 				var kv = p.split("=");
-				state[kv[0]] = kv[1];
+				if(kv[1]){
+					state[kv[0]] = kv[1];
+				}
 			});
 			if(!state.pathway_id) return;
 

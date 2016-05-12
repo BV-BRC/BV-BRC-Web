@@ -34,7 +34,7 @@ define([
 
 			this.ecTableContainer = new ContentPane({
 				region: "left",
-				content: "Total # of Genomes: ",
+				content: "",
 				style: "width: 380px"
 			});
 			this.ecTable = new EcGrid({
