@@ -108,13 +108,11 @@ define([
 				return def.promise;
 			}
 
-			_self.pmState = lang.mixin(this.pmState, {
-				pathway_id: this.state.pathway_id,
-				ec_number: this.state.ec_number,
-				feature_id: this.state.feature_id,
-				taxon_id: this.state.taxon_id,
-				annotation: this.state.annotation
-			});
+			(this.state.pathway_id) ? _self.pmState.pathway_id = this.state.pathway_id : {};
+			(this.state.ec_number) ? _self.pmState.ec_number = this.state.ec_number : {};
+			(this.state.feature_id) ? _self.pmState.feature_id = this.state.feature_id : {};
+			(this.state.taxon_id) ? _self.pmState.taxon_id = this.state.taxon_id : {};
+			(this.state.annotation) ? _self.pmState.annotation = this.state.annotation : {};
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/genome/', {
 				handleAs: 'json',

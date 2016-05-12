@@ -49,7 +49,7 @@ define([
 		typeMap: {
 			"pathway": "pathway_id",
 			"ec_number": "ec_number",
-			"gene": "gene"
+			"gene": "feature_id"
 		},
 		_setQueryAttr: function(query){
 			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
@@ -81,9 +81,9 @@ define([
 				_setQueryAttr: function(query){
 					// console.log("_setQueryAttr: ", query)
 					var p = _self.typeMap[_self.type];
-					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
-					console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
-					this._set("query", query)
+					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))";
+					// console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+					this._set("query", query);
 					this.getFacets(query).then(lang.hitch(this, function(facets){
 						// console.log("_setQuery got facets: ", facets)
 						if(!facets){
@@ -148,13 +148,59 @@ define([
 				"left"
 			]
 		]),
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewPathwayMap",
+				"fa fa-map-o fa-2x",
+				{
+					label: "Map",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "View PathwayMap",
+					validContainerTypes: ["pathway_data"]
+				},
+				function(selection){
+					console.log(selection, this.type, this.state);
+					var url = {annotation: 'PATRIC'};
 
+					if(this.state.hasOwnProperty('taxon_id')){
+						url['taxon_id'] = this.state.taxon_id;
+					}else if(this.state.hasOwnProperty('genome')){
+						url['genome_id'] = this.state.genome.genome_id;
+					}else if(this.state.hasOwnProperty('genome_ids')){
+						url['genome_id'] = this.state.genome_ids[0];
+					}
+
+					switch(this.type){
+						case "pathway":
+							url['pathway_id'] = selection[0].pathway_id;
+							break;
+						case "ec_number":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['ec_number'] = selection[0].ec_number;
+							break;
+						case "gene":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['feature_id'] = selection[0].feature_id;
+							break;
+						default:
+							break;
+					}
+					var params = Object.keys(url).map(function(p){
+						return p + "=" + url[p]
+					}).join("&");
+					// console.log(params);
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+				},
+				false
+			]
+		]),
 		_setStateAttr: function(state){
 			this.inherited(arguments);
 			if(!state){
 				return;
 			}
-			console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
+			// console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
