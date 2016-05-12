@@ -1,34 +1,35 @@
-define("p3/widget/PathwaysMemoryGrid", [
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/selector"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector){
+define("p3/widget/PathwaySummaryGrid", [
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
+	"./PageGrid", "./formatter", "../store/PathwaySummaryMemoryStore"
+], function(declare, lang, Deferred,
+			on, domClass, domConstruct, aspect, request, Topic,
+			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
-		dataModel: "pathway",
-		primaryKey: "idx",
+		dataModel: "pathway_summary",
+		primaryKey: "pathway_id",
 		selectionModel: "extended",
-		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
-			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-			annotation: {label: 'Annotation', field: 'annotation'},
-			genome_count: {label: 'Unique Genome Count', field: 'genome_count'},
-			gene_count: {label: 'Unique Gene Count', field: 'gene_count'},
-			ec_count: {label: 'Unique EC Count', field: 'ec_count'},
-			ec_cons: {label: 'EC Conservation', field: 'ec_cons'},
-			gene_cons: {label: 'Gene Conservation', field: 'gene_cons'}
+			genes_selected: {label: '# of Genes Selected', field: 'genes_selected'},
+			genes_annotated: {label: '# of Genes Annotated', field: 'genes_annotated'},
+			coverage: {label: '% Coverage', field: 'coverage'}
+		},
+		constructor: function(options){
+			//console.log("PathwaySummaryGrid Ctor: ", options);
+			if(options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+			this.queryOptions = {
+				sort: [{attribute: "coverage", descending: true}]
+			};
 		},
 
 		startup: function(){
@@ -43,7 +44,7 @@ define("p3/widget/PathwaysMemoryGrid", [
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -76,40 +77,36 @@ define("p3/widget/PathwaysMemoryGrid", [
 				});
 			});
 
+			this.inherited(arguments);
 			this._started = true;
 		},
-		state: null,
 
+		state: null,
+		postCreate: function(){
+			this.inherited(arguments);
+		},
 		_setApiServer: function(server){
 			this.apiServer = server;
 		},
-
 		_setState: function(state){
-			// console.log("PMS SET STATE: ", state, this.store)
 			if(!this.store){
-				// console.log("CREATE STORE FROM PMG _setState()")
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				this.store.set("state", state);
+				this.store.set('state', state);
+
 				this.refresh();
 			}
 		},
-
 		createStore: function(server, token, state){
-			// console.log("createStore()")
-			//console.log("CreateStore() server: ", server);
-			//console.log("CreateStore() token: ", token);
-			//console.log("CreateStore() state: ", state);
-			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
-			if(this.store){
-				return this.store
-			}
 
-			return new Store({
+			var store = new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
+			store.watch('refresh', lang.hitch(this, "refresh"));
+
+			return store;
 		}
 	});
 });

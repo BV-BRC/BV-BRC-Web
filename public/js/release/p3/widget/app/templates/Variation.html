@@ -3,7 +3,7 @@
     <div style="width: 700px;margin:auto;">
     <div class="apptitle" id="apptitle">
                 <h3>Variation Analysis</h3>
-                <p>Calculate SNPs relative to a reference genome and generate a VCF file.</p>
+                <p>Identify and annotate sequence variation (SNP, MNP, indel) relative to a closely related reference genome.</p>
     </div>
 	<div style="width:700px; margin:auto" class="formFieldsContainer">
 		<div style="display: none;">
@@ -80,6 +80,23 @@
                     </div>
                 </div>
                 <div class="approw">
+                    <label for="mapper" class="paramlabel">Aligner</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="mapper" data-dojo-attach-point="mapper" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'A strategy must be chosen',trim:true,placeHolder:'MySubFolder'">
+                    <option value="BWA-mem">BWA-mem</option>
+                    <option value="BWA-mem-strict">BWA-mem-strict</option>
+                    <option value="Bowtie2">Bowtie2</option>
+                    <option value="MOSAIK">MOSAIK</option>
+                    <option value="LAST">LAST</option>
+                    </select>
+                </div>
+                <div class="approw">
+                    <label for="caller" class="paramlabel">SNP caller</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="caller" data-dojo-attach-point="caller" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'SNP calling software to use',trim:true,placeHolder:'MySubFolder'">
+                    <option value="FreeBayes">FreeBayes</option>
+                    <option value="SAMtools">SAMtools</option>
+                    </select>
+                </div>
+                <div class="approw">
                     <div class="appField">
                         <label>Target Genome</label><br>
                         <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight=200 style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
@@ -105,15 +122,15 @@
 	</div>
 	<div class="appSubmissionArea">
 		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
-			Submitting RNA-Seq job
+			Submitting Variation job
 		</div>
 
 		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-			RNA-Seq job has been queued.
+			Variation job has been queued.
 		</div>
 
 		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
-			<div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
+			<div style="font-weight:900;font-size:1.1em;">Error Submitting Job</div>
 			<p data-dojo-attach-point="errorMessage">Error</p>
 		</div>
 		
