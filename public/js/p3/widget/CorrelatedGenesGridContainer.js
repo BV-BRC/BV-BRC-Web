@@ -1,12 +1,12 @@
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./CorrelatedGenesGrid", "dijit/popup", "dojo/topic",
-	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dijit/TooltipDialog", "./FacetFilterPanel", "./CorrelatedGenesActionBar",
 	"dojo/_base/lang"
 
 ], function(declare, GridContainer, on,
 			CorrelatedGenesGrid, popup, Topic,
-			TooltipDialog, FacetFilterPanel,
+			TooltipDialog, FacetFilterPanel, ContainerActionBar,
 			lang){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
@@ -38,10 +38,21 @@ define([
 	return declare([GridContainer], {
 		gridCtor: CorrelatedGenesGrid,
 		containerType: "feature_data",
-		facetFields: ["annotation", "feature_type"],
-		enableFilterPanel: false,
+		enableFilterPanel: true,
 		apiServer: window.App.dataServiceURL,
 
+		createFilterPanel: function(){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: false,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				state: this.state,
+				enableAnchorButton: this.enableAnchorButton,
+				currentContainerWidget: this
+			});
+		},
 		_setQueryAttr: function(query){
 			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
 		},
@@ -71,29 +82,6 @@ define([
 				true
 			]
 		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
-			[
-				"ViewFASTA",
-				"fa icon-fasta fa-2x",
-				{
-					label: "FASTA",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "View FASTA Data",
-					tooltipDialog: viewFASTATT
-				},
-				function(selection){
-					popup.open({
-						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-						around: this.selectionActionBar._actions.ViewFASTA.button,
-						orient: ["below"]
-					});
-				},
-				false
-			]
-
-		]),
 
 		_setStateAttr: function(state){
 			this.inherited(arguments);
@@ -102,7 +90,7 @@ define([
 			}
 			//console.log("CorrelatedGenesGridContainer _setStateAttr: ", state.feature_id);
 			if(this.grid){
-				console.log("   call set state on this.grid: ", this.grid);
+				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
 			}else{
 				console.log("No Grid Yet (CorrelatedGenesGridContainer)");
