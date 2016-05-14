@@ -15,14 +15,14 @@ define("p3/widget/ActionBar", [
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
-			console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
+			// console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
 
 			if(widget.currentContainer === this.currentContainerWidget){
 				return;
 			}
 			this.currentContainerType = widget.containerType;
 			this.currentContainerWidget = widget;
-			console.log("CurrentContainerType: ", this.currentContainerType)
+			// console.log("CurrentContainerType: ", this.currentContainerType)
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
@@ -35,8 +35,8 @@ define("p3/widget/ActionBar", [
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
-				if (!type){
-					console.log("MISSING TYPE: ", s);
+				if(!type){
+					// console.log("MISSING TYPE: ", s);
 				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){

@@ -93,7 +93,7 @@ define([
     					return this.slice(0, str.length) == str;
   				};
 			}
-			var assembly_values={};
+			var submit_values={};
 			var values = this.inherited(arguments);
 			var pairedList = this.libraryStore.query({"type":"paired"});
             var pairedAttrs=["read1","read2"];
@@ -102,14 +102,16 @@ define([
             var condLibs=[];
 			var pairedLibs =[];
 			var singleLibs=[];
-			this.ingestAttachPoints(this.paramToAttachPt, assembly_values);	
+			this.ingestAttachPoints(this.paramToAttachPt, submit_values);	
 			//for (var k in values) {
 			//	if(!k.startsWith("libdat_")){
-			//		assembly_values[k]=values[k];
+			//		submit_values[k]=values[k];
 			//	}
 			//}
             var combinedList = pairedList.concat(singleList);
-            assembly_values["reference_genome_id"]=values["genome_name"];
+            submit_values["reference_genome_id"]=values["genome_name"];
+            submit_values["mapper"]=values["mapper"]
+            submit_values["caller"]=values["caller"]
 
 			pairedList.forEach(function(libRecord){
                 var toAdd={};
@@ -120,7 +122,7 @@ define([
 				pairedLibs.push(toAdd);
             },this);
 			if(pairedLibs.length){
-				assembly_values["paired_end_libs"]=pairedLibs;
+				submit_values["paired_end_libs"]=pairedLibs;
 			}
 			singleList.forEach(function(libRecord){
                 var toAdd={};
@@ -131,9 +133,9 @@ define([
 				singleLibs.push(toAdd);
             },this);
 			if(singleLibs.length){
-				assembly_values["single_end_libs"]=singleLibs;
+				submit_values["single_end_libs"]=singleLibs;
 			}
-			return assembly_values;
+			return submit_values;
 				
 		},
         //gets values from dojo attach points listed in input_ptsi keys.

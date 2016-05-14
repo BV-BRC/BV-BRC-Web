@@ -2,10 +2,12 @@ require({cache:{
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/GridContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
+	"dojo/request", "dojo/when",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
+			request, when,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
 			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
@@ -503,15 +505,111 @@ define("p3/widget/GridContainer", [
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
 				},
 				function(selection, containerWidget){
-					var sel = selection[0];
-					console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
-					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
-					// var selection = self.actionPanel.get('selection')
-					// var ids = selection.map(function(d){ return d['feature_id']; });
 
+					// console.warn(containerWidget.containerType, containerWidget.type, containerWidget);
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
+
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						case "pathway_summary_data":
+							selection.map(function(d){
+								ids = ids.concat(d['feature_ids']);
+							});
+							break;
+						default:
+							// feature_data or spgene_data
+							ids = selection.map(function(sel){
+								return sel['feature_id']
+							});
+							break;
+					}
+
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
 				},
 				false
 

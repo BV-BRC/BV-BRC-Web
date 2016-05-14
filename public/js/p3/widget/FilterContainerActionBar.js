@@ -42,7 +42,7 @@ define([
 			selected: [],
 			byCategory: {},
 			keywords: []
-		}
+		};
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
@@ -51,7 +51,7 @@ define([
 				case "or":
 					term.args.forEach(function(t){
 						walk(t);
-					})
+					});
 					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
@@ -90,7 +90,6 @@ define([
 		dataModel: "",
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
-		state: null,
 		enableAnchorButton: false,
 		constructor: function(){
 			this._ffWidgets = {};
@@ -101,7 +100,7 @@ define([
 		_setStateAttr: function(state){
 			// console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
-			this._set("state", state)
+			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
@@ -153,7 +152,7 @@ define([
 			Object.keys(this._ffWidgets).forEach(function(category){
 				// console.log("Category: ", category)
 				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
-			}, this)
+			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
@@ -204,15 +203,15 @@ define([
 		},
 
 		setButtonText: function(action, text){
-			console.log("setButtonText: ", action, text)
-			var textNode = this._actions[action].textNode
-			console.log("textNode: ", textNode);
+			// console.log("setButtonText: ", action, text)
+			var textNode = this._actions[action].textNode;
+			// console.log("textNode: ", textNode);
 			textNode.innerHTML = text;
 		},
 		postCreate: function(){
 			this.inherited(arguments);
 			// domConstruct.destroy(this.pathContainer);
-			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
+			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);
 			domConstruct.destroy(this.pathContainer);
 			this.smallContentNode = domConstruct.create("div", {
 				"class": "minFilterView",
@@ -265,7 +264,7 @@ define([
 			var _self = this;
 			var setAnchor = function(){
 				var q = _self.query;
-				console.log("Anchor: ", this.state)
+				// console.log("Anchor: ", this.state)
 				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
 					// q = "and(" + q + "," + this.filter + ")";
@@ -278,7 +277,7 @@ define([
 				}else{
 					console.log("No Filters to set new anchor");
 				}
-			}
+			};
 
 			function toggleFilters(){
 				console.log("Toggle the Filters Panel", _self.domNode);
@@ -559,7 +558,7 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-			console.log("Internal Query: ", q);
+			// console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				// console.log("Facet Results: ",r);
 				w.set("data", r[category]);
@@ -707,7 +706,7 @@ define([
 			var q = ((q && q.charAt && (q.charAt(0) == "?")) ? q.substr(1) : q) + "&limit(1)" + f;
 			// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-			console.log("Facet Query: ", q)
+			// console.log("Facet Query: ", q)
 			var fr = xhr(PathJoin(this.apiServer, this.dataModel) + "/", {
 				method: "POST",
 				handleAs: "json",
@@ -718,7 +717,7 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				}
-			})
+			});
 
 			return fr.then(lang.hitch(this, function(response, res){
 				// console.log("RESPONSE: ",response,  res, res.facet_counts)
@@ -732,7 +731,7 @@ define([
 				return;
 
 			}, function(err){
-				console.log("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
+				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
 				return err;
 			}))
 		},
@@ -814,7 +813,7 @@ define([
 
 		},
 		addAction: function(name, classes, opts, fn, enabled, target){
-			console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+			// console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
 			if(target && typeof target == 'string'){
 				if(target == "left"){
 					target = this.leftButtons;

@@ -137,6 +137,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -161,6 +162,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},
 					accession: {label: 'Accession', field: 'accession', hidden: true},

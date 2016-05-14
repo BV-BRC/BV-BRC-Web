@@ -37660,14 +37660,14 @@ define([
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
 			// 0 && console.log("_set Current Container Widget: ", widget);
-			 0 && console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
+			//  0 && console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
 
 			if(widget.currentContainer === this.currentContainerWidget){
 				return;
 			}
 			this.currentContainerType = widget.containerType;
 			this.currentContainerWidget = widget;
-			 0 && console.log("CurrentContainerType: ", this.currentContainerType)
+			//  0 && console.log("CurrentContainerType: ", this.currentContainerType)
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
@@ -37680,8 +37680,8 @@ define([
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				// 0 && console.log("Checking s: ", type, s);
-				if (!type){
-					 0 && console.log("MISSING TYPE: ", s);
+				if(!type){
+					//  0 && console.log("MISSING TYPE: ", s);
 				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){
@@ -67760,10 +67760,12 @@ define([
 'p3/widget/GridContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
+	"dojo/request", "dojo/when",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
+			request, when,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
 			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
@@ -68261,15 +68263,111 @@ define([
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
 				},
 				function(selection, containerWidget){
-					var sel = selection[0];
-					 0 && console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
-					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
-					// var selection = self.actionPanel.get('selection')
-					// var ids = selection.map(function(d){ return d['feature_id']; });
 
+					//  0 && console.warn(containerWidget.containerType, containerWidget.type, containerWidget);
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
+
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						case "pathway_summary_data":
+							selection.map(function(d){
+								ids = ids.concat(d['feature_ids']);
+							});
+							break;
+						default:
+							// feature_data or spgene_data
+							ids = selection.map(function(sel){
+								return sel['feature_id']
+							});
+							break;
+					}
+
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
 				},
 				false
 
@@ -68661,7 +68759,7 @@ define([
 			selected: [],
 			byCategory: {},
 			keywords: []
-		}
+		};
 
 		function walk(term){
 			//  0 && console.log("Walk: ", term.name, " Args: ", term.args);
@@ -68670,7 +68768,7 @@ define([
 				case "or":
 					term.args.forEach(function(t){
 						walk(t);
-					})
+					});
 					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
@@ -68709,7 +68807,6 @@ define([
 		dataModel: "",
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
-		state: null,
 		enableAnchorButton: false,
 		constructor: function(){
 			this._ffWidgets = {};
@@ -68720,7 +68817,7 @@ define([
 		_setStateAttr: function(state){
 			//  0 && console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
-			this._set("state", state)
+			this._set("state", state);
 			//  0 && console.log("_setStateAttr query: ", state.search, this.query);
 			//  0 && console.log("_after _setStateAttr: ", state);
 		},
@@ -68772,7 +68869,7 @@ define([
 			Object.keys(this._ffWidgets).forEach(function(category){
 				//  0 && console.log("Category: ", category)
 				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
-			}, this)
+			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
@@ -68823,15 +68920,15 @@ define([
 		},
 
 		setButtonText: function(action, text){
-			 0 && console.log("setButtonText: ", action, text)
-			var textNode = this._actions[action].textNode
-			 0 && console.log("textNode: ", textNode);
+			//  0 && console.log("setButtonText: ", action, text)
+			var textNode = this._actions[action].textNode;
+			//  0 && console.log("textNode: ", textNode);
 			textNode.innerHTML = text;
 		},
 		postCreate: function(){
 			this.inherited(arguments);
 			// domConstruct.destroy(this.pathContainer);
-			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
+			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);
 			domConstruct.destroy(this.pathContainer);
 			this.smallContentNode = domConstruct.create("div", {
 				"class": "minFilterView",
@@ -68884,7 +68981,7 @@ define([
 			var _self = this;
 			var setAnchor = function(){
 				var q = _self.query;
-				 0 && console.log("Anchor: ", this.state)
+				//  0 && console.log("Anchor: ", this.state)
 				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
 					// q = "and(" + q + "," + this.filter + ")";
@@ -68897,7 +68994,7 @@ define([
 				}else{
 					 0 && console.log("No Filters to set new anchor");
 				}
-			}
+			};
 
 			function toggleFilters(){
 				 0 && console.log("Toggle the Filters Panel", _self.domNode);
@@ -69178,7 +69275,7 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-			 0 && console.log("Internal Query: ", q);
+			//  0 && console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				//  0 && console.log("Facet Results: ",r);
 				w.set("data", r[category]);
@@ -69326,7 +69423,7 @@ define([
 			var q = ((q && q.charAt && (q.charAt(0) == "?")) ? q.substr(1) : q) + "&limit(1)" + f;
 			//  0 && console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-			 0 && console.log("Facet Query: ", q)
+			//  0 && console.log("Facet Query: ", q)
 			var fr = xhr(PathJoin(this.apiServer, this.dataModel) + "/", {
 				method: "POST",
 				handleAs: "json",
@@ -69337,7 +69434,7 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				}
-			})
+			});
 
 			return fr.then(lang.hitch(this, function(response, res){
 				//  0 && console.log("RESPONSE: ",response,  res, res.facet_counts)
@@ -69351,7 +69448,7 @@ define([
 				return;
 
 			}, function(err){
-				 0 && console.log("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
+				 0 && console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
 				return err;
 			}))
 		},
@@ -69433,7 +69530,7 @@ define([
 
 		},
 		addAction: function(name, classes, opts, fn, enabled, target){
-			 0 && console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+			//  0 && console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
 			if(target && typeof target == 'string'){
 				if(target == "left"){
 					target = this.leftButtons;
@@ -70879,6 +70976,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -70903,6 +71001,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},
 					accession: {label: 'Accession', field: 'accession', hidden: true},
@@ -70991,7 +71090,7 @@ define([
 		typeMap: {
 			"pathway": "pathway_id",
 			"ec_number": "ec_number",
-			"gene": "gene"
+			"gene": "feature_id"
 		},
 		_setQueryAttr: function(query){
 			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
@@ -71023,9 +71122,9 @@ define([
 				_setQueryAttr: function(query){
 					//  0 && console.log("_setQueryAttr: ", query)
 					var p = _self.typeMap[_self.type];
-					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
-					 0 && console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
-					this._set("query", query)
+					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))";
+					//  0 && console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+					this._set("query", query);
 					this.getFacets(query).then(lang.hitch(this, function(facets){
 						//  0 && console.log("_setQuery got facets: ", facets)
 						if(!facets){
@@ -71090,13 +71189,59 @@ define([
 				"left"
 			]
 		]),
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewPathwayMap",
+				"fa fa-map-o fa-2x",
+				{
+					label: "Map",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "View PathwayMap",
+					validContainerTypes: ["pathway_data"]
+				},
+				function(selection){
+					 0 && console.log(selection, this.type, this.state);
+					var url = {annotation: 'PATRIC'};
 
+					if(this.state.hasOwnProperty('taxon_id')){
+						url['taxon_id'] = this.state.taxon_id;
+					}else if(this.state.hasOwnProperty('genome')){
+						url['genome_id'] = this.state.genome.genome_id;
+					}else if(this.state.hasOwnProperty('genome_ids')){
+						url['genome_id'] = this.state.genome_ids[0];
+					}
+
+					switch(this.type){
+						case "pathway":
+							url['pathway_id'] = selection[0].pathway_id;
+							break;
+						case "ec_number":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['ec_number'] = selection[0].ec_number;
+							break;
+						case "gene":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['feature_id'] = selection[0].feature_id;
+							break;
+						default:
+							break;
+					}
+					var params = Object.keys(url).map(function(p){
+						return p + "=" + url[p]
+					}).join("&");
+					//  0 && console.log(params);
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+				},
+				false
+			]
+		]),
 		_setStateAttr: function(state){
 			this.inherited(arguments);
 			if(!state){
 				return;
 			}
-			 0 && console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
+			//  0 && console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				//  0 && console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
@@ -71128,11 +71273,10 @@ define([
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		dataModel: "pathway",
-		primaryKey: "pathway_id",
+		primaryKey: "idx",
 		selectionModel: "extended",
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
-		store: null,
 		columns: {
 			// "Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
@@ -71200,9 +71344,9 @@ define([
 		},
 
 		_setState: function(state){
-			 0 && console.log("PMS SET STATE: ", state, this.store)
+			//  0 && console.log("PMS SET STATE: ", state, this.store)
 			if(!this.store){
-				 0 && console.log("CREATE STORE FROM PMG _setState()")
+				//  0 && console.log("CREATE STORE FROM PMG _setState()")
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set("state", state);
@@ -71211,7 +71355,7 @@ define([
 		},
 
 		createStore: function(server, token, state){
-			 0 && console.log("createStore()")
+			//  0 && console.log("createStore()")
 			// 0 && console.log("CreateStore() server: ", server);
 			// 0 && console.log("CreateStore() token: ", token);
 			// 0 && console.log("CreateStore() state: ", state);
@@ -71249,7 +71393,7 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "pathway_id",
+		idProperty: "idx",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null,
@@ -71263,12 +71407,12 @@ define([
 				nv = state.search + state.filter
 			}
 
-			 0 && console.log("MEMORY STORE onSetState: ", state, oldVal);
+			//  0 && console.log("MEMORY STORE onSetState: ", state, oldVal);
 			// if (ov!=nv){
-			 0 && console.log("clear memory store data");
+			//  0 && console.log("clear memory store data");
 			this._loaded = false;
 			if(this._loadingDeferred){
-				 0 && console.log("Deleting _loadingDeferred", this._loadingDeferred);
+				//  0 && console.log("Deleting _loadingDeferred", this._loadingDeferred);
 				delete this._loadingDeferred;
 			}
 			// }
@@ -71278,12 +71422,12 @@ define([
 		},
 		init: function(options){
 			options = options || {};
-			 0 && console.log("PMS Ctor Options: ", options);
+			//  0 && console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
 			this.watch("state", lang.hitch(this, "onSetState"));
-			 0 && console.log("INIT COMPLETE: ", this)
+			//  0 && console.log("INIT COMPLETE: ", this)
 		},
 
 		query: function(query, opts){
@@ -71294,10 +71438,10 @@ define([
 			else{
 				var _self = this;
 				var results;
-				 0 && console.log("Beofre LOAD type: ", this.type);
-				 0 && console.log("Initiate NON LOADED Query: ", query);
+				//  0 && console.log("Beofre LOAD type: ", this.type);
+				//  0 && console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
-					 0 && console.log("Do actual Query Against loadData() data. QR: ", qr);
+					//  0 && console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
@@ -71322,7 +71466,7 @@ define([
 		},
 
 		queryTypes: {
-			pathway: "&limit(25000)&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			pathway: "&group((field,pathway_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -71338,7 +71482,7 @@ define([
 				}
 			})) + ")",
 
-			ecnumber: "&limit(25000)&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			ecnumber: "&group((field,ec_number),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -71353,7 +71497,7 @@ define([
 					}
 				}
 			})) + ")",
-			genes: "&limit(25000)&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
+			genes: "&group((field,feature_id),(format,simple),(ngroups,true),(limit,1),(facet,true))" +
 			"&json(facet," + encodeURIComponent(JSON.stringify({
 				stat: {
 					field: {
@@ -71373,7 +71517,7 @@ define([
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					 0 && console.log("buildQuery SEARCH: ", this.state.search);
+					//  0 && console.log("buildQuery SEARCH: ", this.state.search);
 
 					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
 				}else if(this.state.genome_ids){
@@ -71399,7 +71543,7 @@ define([
 			}
 			q = q + this.queryTypes[this.type];
 
-			 0 && console.log("End Build Query: ", q);
+			//  0 && console.log("End Build Query: ", q);
 			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
@@ -71411,7 +71555,7 @@ define([
 			var state = this.state || {};
 
 			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
-				 0 && console.log("No Genome IDS, use empty data set for initial store");
+				//  0 && console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -71432,11 +71576,11 @@ define([
 			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
 			// }
 
-			 0 && console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
+			//  0 && console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
 			var q = this.buildQuery();
 
 			var _self = this;
-			 0 && console.log("Load Data: ", q);
+			//  0 && console.log("Load Data: ", q);
 			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
@@ -71455,7 +71599,7 @@ define([
 					"ecnumber": "ec_number",
 					"genes": 'feature_id'
 				};
-				 0 && console.log("Pathway Base Query Response:", response);
+				//  0 && console.log("Pathway Base Query Response:", response);
 				//  0 && console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
 				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
@@ -71481,22 +71625,37 @@ define([
 						}else{
 							doc.gene_cons = 0;
 						}
+
+						// compose index key
+						switch(this.type){
+							case "pathway":
+								doc.idx = doc.pathway_id;
+								break;
+							case "ecnumber":
+								doc.idx = doc.pathway_id + "_" + doc.ec_number;
+								break;
+							case "genes":
+								doc.idx = doc.feature_id;
+								break;
+							default:
+								break;
+						}
 						return doc;
 					}, this);
-					 0 && console.log("doc count: ", docs.length);
+					//  0 && console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
 					_self._loaded = true;
 					return true;
 
 				}else{
-					 0 && console.log("Unable to Process Response: ", response);
+					 0 && console.error("Unable to Process Response: ", response);
 					_self.setData([]);
 					_self._loaded = true;
 					return false;
 				}
 			}), lang.hitch(this, function(err){
-				 0 && console.log("Error Loading Data: ", err);
+				 0 && console.error("Error Loading Data: ", err);
 				_self.setData([]);
 				_self._loaded = true;
 				return err;
@@ -81640,84 +81799,100 @@ define([
 },
 'p3/widget/app/Annotation':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html", "./AppBase",
-	"dojo/_base/lang", "../../WorkspaceManager"
-], function(declare, WidgetBase, on,
-			domClass, Templated, WidgetsInTemplate,
-			Template, AppBase,
-			lang, WorkspaceManager){
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Annotation.html","./AppBase",
+	"dojo/_base/lang","../../WorkspaceManager"
+], function(
+	declare, WidgetBase, on,
+	domClass,Templated,WidgetsInTemplate,
+	Template,AppBase,lang,WorkspaceManager
+){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
 		required: true,
-		genera_four: ["Acholeplasma", "Entomoplasma", "Hepatoplasma", "Hodgkinia", "Mesoplasma", "Mycoplasma", "Spiroplasma", "Ureaplasma"],
+		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
 		code_four: false,
 		defaultPath: "",
 
 		constructor: function(){
-			this._autoTaxSet = false;
-			this._autoNameSet = false;
+			this._autoTaxSet=false;
+			this._autoNameSet=false;
 		},
 		startup: function(){
-			var _self = this;
-			if(this._started){
-				return;
-			}
-			this.inherited(arguments);
-			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-			_self.output_pathWidget.set('value', _self.defaultPath);
-		},
-		changeCode: function(item){
-			this.code_four = false;
+                        var _self=this;
+                        if (this._started) { return; }
+                        this.inherited(arguments);
+                        _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+                        _self.output_pathWidget.set('value', _self.defaultPath);
+                },
+		changeCode: function(item){	
+			this.code_four=false;
 			item.lineage_names.forEach(lang.hitch(this, function(lname){
-				if(dojo.indexOf(this.genera_four, lname) >= 0){
-					this.code_four = true;
-				}
-				;
+				if (dojo.indexOf(this.genera_four, lname)>=0){
+					this.code_four=true;
+				};
 			}));
-			this.code_four ? this.genetic_code.set("value", "4") : this.genetic_code.set("value", "11");
+			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
 		},
-
+	
 		onTaxIDChange: function(val){
-			this._autoNameSet = true;
-			var tax_id = this.tax_idWidget.get("item").taxon_id;
-			var sci_name = this.tax_idWidget.get("item").taxon_name;
-			//var tax_obj=this.tax_idWidget.get("item");
-			if(tax_id){
-				var name_promise = this.scientific_nameWidget.store.get(tax_id);
-				name_promise.then(lang.hitch(this, function(tax_obj){
-					if(tax_obj){
-						this.scientific_nameWidget.set('item', tax_obj);
-						this.scientific_nameWidget.validate();
-						this.changeCode(this.tax_idWidget.get("item"));
-					}
-				}));
-				//this.scientific_nameWidget.set('value',sci_name);
-				//this.scientific_nameWidget.set('displayedValue',sci_name);
-				//this.scientific_nameWidget.set("item",tax_obj);
-				//this.scientific_nameWidget.validate();
+            this._autoNameSet=true;
+            var tax_id=this.tax_idWidget.get("item").taxon_id;
+            var sci_name=this.tax_idWidget.get("item").taxon_name;
+            //var tax_obj=this.tax_idWidget.get("item");
+            if(tax_id){
+                var name_promise=this.scientific_nameWidget.store.get(tax_id);
+                name_promise.then(lang.hitch(this, function(tax_obj) {
+                    if(tax_obj){
+                        this.scientific_nameWidget.set('item',tax_obj);
+                        this.scientific_nameWidget.validate();
+			            this.changeCode(this.tax_idWidget.get("item"));
+                    }
+                }));
+                //this.scientific_nameWidget.set('value',sci_name);
+                //this.scientific_nameWidget.set('displayedValue',sci_name);
+                //this.scientific_nameWidget.set("item",tax_obj);
+                //this.scientific_nameWidget.validate();
 
-			}
-			this._autoTaxSet = false;
+            } 
+			this._autoTaxSet=false;
 		},
+
+
+        updateOutputName: function(){
+            var current_output_name = [];
+            var sci_item = this.scientific_nameWidget.get("item");
+            var label_value = this.myLabelWidget.get("value");
+            if(sci_item && sci_item.lineage_names.length > 0){
+                current_output_name.push(sci_item.lineage_names.slice(-1)[0]);
+            }
+            if(label_value.length >0){
+                current_output_name.push(label_value);
+            }
+            if(current_output_name.length > 0){
+                this.output_nameWidget.set("value", current_output_name.join(" "));
+            }
+        },
+
 		onSuggestNameChange: function(val){
-			this._autoTaxSet = true;
-			var tax_id = this.scientific_nameWidget.get("value");
-			if(tax_id){
-				//var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-				//tax_promise.then(lang.hitch(this, function(tax_obj) {
-				//    if(tax_obj && tax_obj.length){
-				//        this.tax_idWidget.set('item',tax_obj[0]);
-				//    }
-				//}));
-				this.tax_idWidget.set('displayedValue', tax_id);
-				this.tax_idWidget.set('value', tax_id);
-				this.changeCode(this.scientific_nameWidget.get("item"));
-			}
-			this._autoNameSet = false;
+            this._autoTaxSet=true;
+            var tax_id=this.scientific_nameWidget.get("value");
+            if(tax_id){
+                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+                //tax_promise.then(lang.hitch(this, function(tax_obj) {
+                //    if(tax_obj && tax_obj.length){
+                //        this.tax_idWidget.set('item',tax_obj[0]);
+                //    }
+                //}));
+                this.tax_idWidget.set('displayedValue',tax_id);
+                this.tax_idWidget.set('value',tax_id);
+			    this.changeCode(this.scientific_nameWidget.get("item"));
+                this.updateOutputName();
+            }
+			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
@@ -81726,8 +81901,8 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"] = this.output_nameWidget.get('displayedValue');
-			values["taxonomy_id"] = this.tax_idWidget.get('displayedValue');
+			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
+			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}
 
@@ -83672,7 +83847,7 @@ return number;
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genome Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'My bacillus cereus'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy Rank/Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
