@@ -673,7 +673,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -824,7 +824,8 @@ define("p3/widget/GridContainer", [
 				o.queryOptions = this.queryOptions;
 			}
 
-			// console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView this.store: ", this.store);
 
 			if(this.store){
 				o.store = this.store

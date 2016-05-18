@@ -49937,12 +49937,17 @@ define([
 define([
 	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin"],
+	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin",
+	"dgrid/extensions/ColumnReorder"
+],
 function(declare, Grid, Store, DijitRegistry, Pagination,
 		 Keyboard, Selection, formatter, ColumnResizer,
 		 ColumnHider, DnD, DnDSource,
-		 Deferred, aspect, lang, PathJoin){
-	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
+		 Deferred, aspect, lang, PathJoin,
+		 ColumnReorder
+
+){
+	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer,ColumnReorder, DijitRegistry, Selection], {
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
 				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
@@ -51007,6 +51012,202 @@ define([], function(){
 
 		return out;
 	}
+});
+
+},
+'dgrid/extensions/ColumnReorder':function(){
+define([
+	"dojo/_base/lang",
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dojo/on",
+	"dojo/query",
+	"dojo/dnd/Source",
+	"put-selector/put",
+	"xstyle/css!../css/extensions/ColumnReorder.css"
+], function(lang, declare, arrayUtil, on, query, DndSource, put){
+	var dndTypeRx = /(\d+)(?:-(\d+))?$/; // used to determine subrow from dndType
+	
+	// The following 2 functions are used by onDropInternal logic for
+	// retrieving/modifying a given subRow.  The `match` variable in each is
+	// expected to be the result of executing dndTypeRx on a subRow ID.
+	
+	function getMatchingSubRow(grid, match) {
+		var hasColumnSets = match[2],
+			rowOrSet = grid[hasColumnSets ? "columnSets" : "subRows"][match[1]];
+		
+		return hasColumnSets ? rowOrSet[match[2]] : rowOrSet;
+	}
+	
+	function setMatchingSubRow(grid, match, subRow) {
+		if(match[2]){
+			grid.columnSets[match[1]][match[2]] = subRow;
+		}else{
+			grid.subRows[match[1]] = subRow;
+		}
+	}
+
+	// Builds a prefix for a dndtype value based on a grid id.
+	function makeDndTypePrefix(gridId) {
+		return "dgrid-" + gridId + '-';
+	}
+
+	// Removes the grid id prefix from a dndtype value.  This allows the grid id to contain
+	// a dash-number suffix.  This works only if a column is dropped on the grid from which it
+	// originated.  Otherwise, a dash-number suffix will cause the regex to match on the wrong values.
+	function stripIdPrefix(gridId, dndtype) {
+		return dndtype.slice(makeDndTypePrefix(gridId).length);
+	}
+	
+	var ColumnDndSource = declare(DndSource, {
+		// summary:
+		//		Custom dojo/dnd source extension configured specifically for
+		//		dgrid column reordering.
+		
+		copyState: function(){ return false; }, // never copy
+		
+		checkAcceptance: function(source, nodes){
+			return source == this; // self-accept only
+		},
+		
+		_legalMouseDown: function(evt){
+			// Overridden to prevent blocking ColumnResizer resize handles.
+			return evt.target.className.indexOf("dgrid-resize-handle") > -1 ? false :
+				this.inherited(arguments);
+		},
+		
+		onDropInternal: function(nodes){
+			var grid = this.grid,
+				match = dndTypeRx.exec(stripIdPrefix(grid.id, nodes[0].getAttribute("dndType"))),
+				structureProperty = match[2] ? "columnSets" : "subRows",
+				oldSubRow = getMatchingSubRow(grid, match),
+				columns = grid.columns;
+			
+			// First, allow original DnD logic to place node in new location.
+			this.inherited(arguments);
+			
+			if(!match){ return; }
+			
+			// Then, iterate through the header cells in their new order,
+			// to populate a new row array to assign as a new sub-row to the grid.
+			// (Wait until the next turn to avoid errors in Opera.)
+			setTimeout(function(){
+				var newSubRow = arrayUtil.map(nodes[0].parentNode.childNodes, function(col) {
+						return columns[col.columnId];
+					}),
+					eventObject;
+				
+				setMatchingSubRow(grid, match, newSubRow);
+				
+				eventObject = {
+					grid: grid,
+					subRow: newSubRow,
+					column: columns[nodes[0].columnId],
+					bubbles: true,
+					cancelable: true,
+					// Set parentType to indicate this is the result of user interaction.
+					parentType: "dnd"
+				};
+				// Set columnSets or subRows depending on which the grid is using.
+				eventObject[structureProperty] = grid[structureProperty];
+				
+				// Emit a custom event which passes the new structure.
+				// Allow calling preventDefault() to cancel the reorder operation.
+				if(on.emit(grid.domNode, "dgrid-columnreorder", eventObject)){
+					// Event was not canceled - force processing of modified structure.
+					grid.set(structureProperty, grid[structureProperty]);
+				}else{
+					// Event was canceled - revert the structure and re-render the header
+					// (since the inherited logic invoked above will have shifted cells).
+					setMatchingSubRow(grid, match, oldSubRow);
+					grid.renderHeader();
+					// After re-rendering the header, re-apply the sort arrow if needed.
+					if (this._sort && this._sort.length){
+						this.updateSortArrow(this._sort);
+					}
+				}
+			}, 0);
+		}
+	});
+	
+	var ColumnReorder = declare(null, {
+		// summary:
+		//		Extension allowing reordering of columns in a grid via drag'n'drop.
+		//		Reordering of columns within the same subrow or columnset is also
+		//		supported; between different ones is not.
+		
+		// columnDndConstructor: Function
+		//		Constructor to call for instantiating DnD sources within the grid's
+		//		header.
+		columnDndConstructor: ColumnDndSource,
+		
+		_initSubRowDnd: function(subRow, dndType){
+			// summary:
+			//		Initializes a dojo/dnd source for one subrow of a grid;
+			//		this could be its only subrow, one of several, or a subrow within a
+			//		columnset.
+			
+			var dndParent, c, len, col, th;
+			
+			for(c = 0, len = subRow.length; c < len; c++){
+				col = subRow[c];
+				if(col.reorderable === false){ continue; }
+				
+				th = col.headerNode;
+				if(th.tagName != "TH"){ th = th.parentNode; } // from IE < 8 padding
+				// Add dojoDndItem class, and a dndType unique to this subrow.
+				put(th, ".dojoDndItem[dndType=" + dndType + "]");
+				
+				if(!dndParent){ dndParent = th.parentNode; }
+			}
+			
+			if(dndParent){ // (if dndParent wasn't set, no columns are draggable!)
+				this._columnDndSources.push(new this.columnDndConstructor(dndParent, {
+					horizontal: true,
+					grid: this
+				}));
+			}
+		},
+		
+		renderHeader: function(){
+			var dndTypePrefix = makeDndTypePrefix(this.id),
+				csLength, cs;
+			
+			this.inherited(arguments);
+			
+			// After header is rendered, set up a dnd source on each of its subrows.
+			
+			this._columnDndSources = [];
+			
+			if(this.columnSets){
+				// Iterate columnsets->subrows->columns.
+				for(cs = 0, csLength = this.columnSets.length; cs < csLength; cs++){
+					arrayUtil.forEach(this.columnSets[cs], function(subRow, sr){
+						this._initSubRowDnd(subRow, dndTypePrefix + cs + "-" + sr);
+					}, this);
+				}
+			}else{
+				// Iterate subrows->columns.
+				arrayUtil.forEach(this.subRows, function(subRow, sr){
+					this._initSubRowDnd(subRow, dndTypePrefix + sr);
+				}, this);
+			}
+		},
+		
+		_destroyColumns: function(){
+			if(this._columnDndSources){
+				// Destroy old dnd sources.
+				arrayUtil.forEach(this._columnDndSources, function(source){
+					source.destroy();
+				});
+			}
+			
+			this.inherited(arguments);
+		}
+	});
+	
+	ColumnReorder.ColumnDndSource = ColumnDndSource;
+	return ColumnReorder;
 });
 
 },
@@ -68431,7 +68632,7 @@ define([
 					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -68582,7 +68783,8 @@ define([
 				o.queryOptions = this.queryOptions;
 			}
 
-			// console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView this.store: ", this.store);
 
 			if(this.store){
 				o.store = this.store
@@ -69955,62 +70157,87 @@ define([
                 },
 
                 startup: function(){
-			if (this._started) { return; }
-			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
-			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
-                        var _self=this;
-                        on(this.domNode, ".wsActionTooltip:click", function(evt){
-                                console.log("evt.target: ", evt.target, evt.target.attributes);
-                                var rel = evt.target.attributes.rel.value;
-                                if (rel=="advancedDownload"){
+        			if (this._started) { return; }
+        			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
+        			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
+                    var _self=this;
+                    on(this.domNode, ".wsActionTooltip:click", function(evt){
+                            console.log("evt.target: ", evt.target, evt.target.attributes);
+                            var rel = evt.target.attributes.rel.value;
+                            if (rel=="advancedDownload"){
 
-                                        console.log("Selection: ", _self.selection);
-                                        var d = new Dialog({});
-                                        var ad = new AdvancedDownload({selection: _self.selection, containerType: _self.containerType});
-                                        domConstruct.place(ad.domNode, d.containerNode);
-                                        d.show();
-                                        return;
-                                }
-//                              var sel = this.selection;
-//                                      delete downloadSelectionTT.selection;
-                                console.log("DOWNLOAD ", rel);
-                        });
+                                    console.log("Selection: ", _self.selection);
+                                    var d = new Dialog({title: "Download"});
+                                    var ad = new AdvancedDownload({selection: _self.selection, containerType: _self.containerType});
+                                    domConstruct.place(ad.domNode, d.containerNode);
+                                    d.show();
+                                    return;
+                            }
+                            var conf = _self.downloadableConfig[_self.containerType];
 
-			var dstContent = domConstruct.create("div",{});
-                        this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
-                        this.selectedCount = domConstruct.create("div", {},dstContent);
-			var table = domConstruct.create("table",{},dstContent);
+                            var sel = _self.selection.map(function(sel){ return sel[conf.pk]});
 
-			var tr = domConstruct.create("tr",{}, table);
-                        var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
-                        //spacer
-                        domConstruct.create("td",{style: "width:10px;"}, tr);
-                        var oData = this.otherDownloadNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+                            var accept;
+                            switch(rel){
+                                case "csv":
+                                case "tsv":
+                                    accept="text/" + rel;
+                                    break;
+                                case "excel":
+                                    accept="application/vnd.openxmlformats";
+                                    break;
+                                default:
+                                    accept="application/" + rel;
+                                    break;
+                            }
 
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "text", innerHTML: "Text"}, tData);
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+                            var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+                            if(baseUrl.charAt(-1) !== "/"){
+                                 baseUrl = baseUrl + "/";
+                            }
+                            baseUrl = baseUrl + conf.dataType + "/";
+                            var query = "in(" + conf.pk +",(" + sel.join(",")  +"))&sort(+" + conf.pk +")&limit(2500000)"
+                            var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "?&http_download=true&http_accept=" + accept },_self.domNode);
+                            domConstruct.create('input', {type: "hidden", value: query, name: "rql"},form);
+                            form.submit();
+                           
+                    });
 
-                        tr = domConstruct.create("tr",{}, table);
-                        var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
-                        this.advancedDownloadButton = domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
+                    var dstContent = domConstruct.create("div",{});
+                    this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
+                    this.selectedCount = domConstruct.create("div", {},dstContent);
+                    var table = domConstruct.create("table",{},dstContent);
+
+                    var tr = domConstruct.create("tr",{}, table);
+                    var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+                    //spacer
+                    domConstruct.create("td",{style: "width:10px;"}, tr);
+                    var oData = this.otherDownloadNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "tsv", innerHTML: "Text"}, tData);
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+
+                    tr = domConstruct.create("tr",{}, table);
+                    var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
+                    this.advancedDownloadButton = domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
 
 
 
-			this.set("content", dstContent);
+        			this.set("content", dstContent);
 
-			this._started=true;
-			this.set("label", this.label);
-                        this.set("selection", this.selection);
+        			this._started=true;
+        			this.set("label", this.label);
+                    this.set("selection", this.selection);
 
                 },
 
-		_setLabelAttr: function(val){
-			this.label=val;
-			if (this._started){
-				this.labelNode.innerHTML="Download selected " + val + " (" + (this.selection?this.selection.length:"0") + ") as...";
-			}
-		},
+        		_setLabelAttr: function(val){
+        			this.label=val;
+        			if (this._started){
+        				this.labelNode.innerHTML="Download selected " + val + " (" + (this.selection?this.selection.length:"0") + ") as...";
+        			}
+        		},
 
                 downloadableDataTypes: {
                         "dna+fasta": "DNA FASTA",
@@ -70020,24 +70247,34 @@ define([
                 "downloadableConfig": {
                         "genome_data": {
                                 "label": "Genomes",
+                                "dataType": "genome",
+                                pk: "genome_id",
                                 tableData: true,
                                 advanced:true
                         },
                         "sequence_data": {
                               "label": "Sequences",
+                              "dataType": "sequence",
+                              pk: "sequence_id",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                          },
                         "feature_data": {
                               "label": "Features",
+                              "dataType": "genome_feature",
+                              pk: "feature_id",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                         },
                         "spgene_data": {
+                              dataType: "sp_gene",
+                              pk: "feature_id",
                               "label": "Specialty Genes",
                               tableData: true
                         },
                         "pathway_data": {
+                              pk: "pathway_id",
+                              dataType: "pathway",
                               "label": "Pathways",
                               tableData: true  
                         },
@@ -70081,12 +70318,12 @@ define([
 },
 'p3/widget/AdvancedDownload':function(){
 define([
-        "dojo/_base/declare", "dojo/on", "dojo/dom-construct",
+        "dojo/_base/declare", "dojo/on", "dojo/dom-construct","dojo/dom-attr",
         "dojo/_base/lang","dojo/mouse", "dijit/_WidgetBase","dijit/_WidgetsInTemplateMixin",
         "dojo/topic", "dijit/_TemplatedMixin","dojo/text!./templates/AdvancedDownload.html",
-        "dijit/Dialog"
+        "dijit/Dialog","dojo/query"
 
-], function(declare, on, domConstruct,
+], function(declare, on, domConstruct,domAttr,
 		lang,Mouse,WidgetBase,WidgetsInTemplate,
 		Topic,TemplatedMixin,Template,
 		Dialog
@@ -70097,17 +70334,20 @@ define([
 		"downloadableConfig": {
 			"genome_data": {
 			        "label": "Genomes",
+			        dataType: "genome",
 			        tableData: true,
 			        downloadTypes: [
-			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "application/dna+fasta"},
-						{"label": "Protein Sequences in FASTA (*.fna)", type: "application/protein+fasta"},
-						{"label": "All annotations in GenBank file format (*.gbf)", type: "application/gbf"},
-						{"label": "All Genomic features in tab-delimited format (*.features.tab)", type: "text/csv"},
-						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "text/csv"},
-						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "text/csv"},
-						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "application/ffn"},
-						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "application/frn"},
-						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "text/csv"}
+			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "fna",skipAnnotation:true},
+						{"label": "Protein Sequences in FASTA (*.faa)", type: "faa"},
+						{"label": "Annotations in GenBank file format (*.gbf)", type: "gbf"},
+						{"label": "Genomic features in Generic Feature Format format (*.gff)", type: "gff"},
+						{"label": "Genomic features in tab-delimited format (*.features.tab)", type: "features.tab"},
+						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "cds.tab"},
+
+						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "rna.tab"},
+						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "ffn"},
+						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "frn"},
+						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "pathway.tab"}
 			        ]
 			},
 			"sequence_data": {
@@ -70132,7 +70372,57 @@ define([
 	    	}
 	    },
 	    download: function(){
-	    	new Dialog({content: "Download backend not yet implemented"}).show();
+	    	var ids = this.selection.map(function(x){ return x.genome_id; });
+	    	console.log("Downloading genomes: ", ids);
+	    	var types=[];
+	    	dojo.query("input",this.fileTypesTable).forEach(function(node){
+	    		console.log("node: ", node, node.checked, node.value);
+	    		if (node.checked){
+
+	    			types.push(node.value);
+	    		}
+	    	});
+	    	//new Dialog({content: "Download: " + ids + "\nTypes: " + types}).show();
+	    	var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+	    	var conf = this.downloadableConfig[this.containerType]
+
+	    	var map={}
+	    	conf.downloadTypes.forEach(function(type){
+	    		map[type.type]=type;
+	    	})
+
+	    	var annotation = this.annotationType.get('value');
+
+	    	types = types.map(function(type){
+	    		if (map[type] && (map[type].skipAnnotation || annotation=="all" || !annotation)){
+	    			return "*."+type;
+	    		}else{
+	    			return "*"+annotation + "." + type;
+	    		}
+	    	})
+
+	    	if(baseUrl.charAt(-1) !== "/"){
+				baseUrl = baseUrl + "/";
+			}
+
+			
+			var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "bundle/" + conf.dataType + "/"},this.domNode);
+			domConstruct.create('input', {type: "hidden", name: "archiveType", value: this.archiveType.get('value')},form);
+			var typesNode = document.createElement("input");
+			typesNode.setAttribute('type',"hidden")
+			typesNode.setAttribute("name", "types");
+			typesNode.setAttribute("value", types.join(","));
+			form.appendChild(typesNode);
+
+			var qNode = document.createElement("input");
+			qNode.setAttribute('type',"hidden")
+			qNode.setAttribute("name", "q");
+			qNode.setAttribute("value", "in(genome_id,(" + ids.join(",") +"))");
+			form.appendChild(qNode);
+	
+			console.log("FORM SUBMIT: ", form);
+			form.submit();
+
 	    },
 		selection: null,
 		_setSelectionAttr: function(val){
@@ -83836,6 +84126,7 @@ return number;
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
+'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
@@ -83843,7 +84134,7 @@ return number;
 'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <table style=\"margin:2px;\">\n        <tbody>\n            <tr>\n                <td style=\"width:35%;padding:4px;vertical-align:top;\">\n                    <div class=\"section\">\n                       <!-- <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>-->\n                        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                            Loading Genome Summary...\n                        </div>\n                    </div>\n                </td>\n                <td style=\"width:40%;padding:4px;vertical-align:top;\">\n  \n                    <div class=\"section\" >\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                        <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                          <div data-dojo-attach-point=\"pfSummaryWidgetD\" style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                          <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n                </td>\n                <td style=\"width:25%;padding:4px;vertical-align:top;\">\n                    <div class=\"section \">\n                     <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                      <div  style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting the data types, you can generate and download a ZIP file containing the desired data.</p>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
+'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
