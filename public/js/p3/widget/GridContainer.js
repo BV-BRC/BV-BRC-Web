@@ -525,7 +525,7 @@ define([
 									'X-Requested-With': null,
 									'Authorization': (window.App.authorizationToken || "")
 								},
-								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)"
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
 							}), function(response){
 								ids = response.map(function(d){
 									return d['feature_id']
@@ -552,7 +552,7 @@ define([
 											'X-Requested-With': null,
 											'Authorization': (window.App.authorizationToken || "")
 										},
-										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)"
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
 									}), function(response){
 										ids = response.map(function(d){
 											return d['feature_id']
@@ -574,7 +574,7 @@ define([
 											'X-Requested-With': null,
 											'Authorization': (window.App.authorizationToken || "")
 										},
-										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)"
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
 									}), function(response){
 										ids = response.map(function(d){
 											return d['feature_id']
