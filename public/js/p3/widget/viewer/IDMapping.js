@@ -45,7 +45,7 @@ define([
 			});
 
 			this.viewerHeader = new ContentPane({
-				content: "",
+				content: "[placeholder for IDMapping summary: xxx feature found etc]",
 				region: "top"
 			});
 
