@@ -52,26 +52,13 @@ define([
 
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		// console.log("selection: ", selection);
-		var ids = selection.map(function(d){
-			return d['feature_id'];
-		});
+		var selection = idMappingTTDialog.selection;
+		delete idMappingTTDialog.selection;
 
-		// console.log("ID MAP ", ids);
-		// xhr.post("/view/idmap, {
-		// 	data: {
-		// 		keyword: ids.join(","),
-		// 		from: "feature_id",
-		// 		fromGroup: "PATRIC",
-		// 		to: rel,
-		// 		toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
-		// 		sraction: 'save_params'	
-		// 	}
-		// }).then(function(results){
-		// 	document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
-		// });
+		var toIdGroup = (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
+
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+
 		popup.close(idMappingTTDialog);
 	});
 
@@ -424,7 +411,7 @@ define([
 				},
 				false
 			], [
-				"idmappingFeatures",
+				"idmapping",
 				"fa icon-exchange fa-2x",
 				{
 					label: "ID MAP",
@@ -434,45 +421,128 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection){
+				function(selection, containerWidget){
 
-					// console.log("TTDlg: ", idMappingTTDialog);
-					// console.log("this: ", this);
-					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					return;
+					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					// new Dialog({content: idMappingTTDialog}).show();
+					var self = this;
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
 
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								idMappingTTDialog.selection = ids.join(",");
+								popup.open({
+									popup: idMappingTTDialog,
+									around: self.selectionActionBar._actions.idmapping.button,
+									orient: ["below"]
+								});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						default:
+							ids = selection.map(function(d){
+								return d['feature_id'];
+							});
+							break;
+					}
+
+					idMappingTTDialog.selection = ids.join(",");
 					popup.open({
 						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
+						around: this.selectionActionBar._actions.idmapping.button,
 						orient: ["below"]
 					});
-					// console.log("popup idmapping", selection);
-				},
-				false
-			], [
-				"idmapping",
-				"fa icon-exchange fa-2x",
-				{
-					label: "ID MAP",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "ID Mapping",
-					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["proteinfamily_data", "pathway_data"]
-				},
-				function(selection){
-
-					// console.log("TTDlg: ", idMappingTTDialog);
-					// console.log("this: ", this);
-					popup.open({
-						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
-						orient: ["below"]
-					});
-					// console.log("popup idmapping", selection);
 				},
 				false
 			], [
