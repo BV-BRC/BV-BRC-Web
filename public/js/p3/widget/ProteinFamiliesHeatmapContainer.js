@@ -90,28 +90,30 @@ define([
 					label: "Anchor",
 					multiple: false,
 					validType: ["*"],
-					tooltip: "Anchor by genome",
-					tooltipDialog: null
+					tooltip: "Anchor by genome"
 				},
 				function(){
 
 					// dialog for anchoring
 					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
 						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()/*,
-							onMouseLeave: function(){
-								popup.close(this.tooltip_anchoring);
-							}*/
+							content: this._buildPanelAnchoring()
 						});
 						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
 					}
 
-					popup.open({
-						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-						around: this.containerActionBar._actions.Anchor.button,
-						orient: ["below"]
-					});
-
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+							around: this.containerActionBar._actions.Anchor.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
 				},
 				true
 			]
