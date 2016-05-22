@@ -135,7 +135,7 @@ define([
 			var ecNumbers = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(ec_number,(" + ecNumbers + ")),in(genome_id,(" + genomeIds + ")),eq(annotation,PATRIC))&limit(250000,0)";
+			var query = "and(in(ec_number,(" + ecNumbers + ")),in(genome_id,(" + genomeIds + ")),eq(annotation,PATRIC))&limit(25000,0)";
 
 			request.post(PathJoin(window.App.dataServiceURL, "pathway"), {
 				handleAs: 'json',
@@ -308,13 +308,7 @@ define([
 				label: 'Show Proteins'
 			});
 			on(btnShowDetails.domNode, "click", function(){
-
-				var query = "?in(feature_id,(" + features.map(function(feature){
-						return feature.feature_id;
-					}).join(',') + "))";
-
-				Topic.publish("ProteinFamilies", "showMembersGrid", query);
-				_self.dialog.hide();
+				window.open("/view/FeatureList/?in(feature_id,(" + features.map(function(d){ return d.feature_id;}).join(',') + "))");
 			});
 
 			var btnAddToWorkspace = new Button({
