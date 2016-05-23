@@ -3,12 +3,12 @@ define([
 	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./GeneExpressionGridContainer"
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
-			GeneExpressionGridContainer){
+			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer){
 
 	return declare([BorderContainer], {
 		id: "GEContainer",
@@ -37,6 +37,12 @@ define([
 			if(this.GeneExpressionGridContainer){
 				this.GeneExpressionGridContainer.set('state', state);
 			}
+			if(this.GeneExpressionChartContainer){
+				this.GeneExpressionChartContainer.set('state', state);
+			}
+			if(this.GeneExpressionMetadataChartContainer){
+				this.GeneExpressionMetadataChartContainer.set('state', state);
+			}
 			this._set('state', state);
 		},
 
@@ -59,13 +65,54 @@ define([
 
 			var filterPanel = this._buildFilterPanel();
 
+			console.log("GeneExpressionGridContainer onFirstView: this", this);
+			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
+
+			// for charts
+			var bc = new BorderContainer({
+				region: "top",
+				style: "height: 350px;"
+			});
+
+			console.log("Before creating GeneExpressionChartContainer", this);
+
+			var chartContainer1 = new GeneExpressionChartContainer({
+				region: "leading", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartContainer1",
+				title: "Chart",
+				content: "Gene Expression Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+
+			chartContainer1.startup();
+
+
+			var chartContainer2 = new GeneExpressionMetadataChartContainer({
+				region: "leading", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartContainer2",
+				title: "Chart",
+				content: "Gene Expression Metadata Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+
+			chartContainer2.startup();
+
 			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
 			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
 
+			// for data grid
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
-			var tabController = new StackController({
-				containerId: this.id + "_TabContainer",
+			var tabController1 = new StackController({
+				containerId: this.id + "_chartTabContainer1",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+			var tabController2 = new StackController({
+				containerId: this.id + "_chartTabContainer2",
 				region: "top",
 				"class": "TextTabButtons"
 			});
@@ -82,53 +129,35 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 
 			this.addChild(filterPanel);
+			this.addChild(bc);
+			//bc.addChild(tabController1);
+			bc.addChild(chartContainer1);
+			//bc.addChild(tabController2);
+			bc.addChild(chartContainer2);
 			this.tabContainer.addChild(this.GeneExpressionGridContainer);
-			//this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			//this.addChild(this.GeneExpressionGridContainer);
 
 			this.inherited(arguments);
 			this._firstView = true;
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
 		},
+
 		_buildFilterPanel: function(){
-
-			//var filterPanel = new ContentPane({
-			//	region: "top",
-			//	title: "filter",
-			//	content: "Filter By",
-			//	style: "height:200px; overflow:auto",
-			//	splitter: true
-			//});
-
-			// genome list grid
-			//var filterGrid = new FilterGrid({
-			//	state: this.state
-			//});
-			//filterPanel.addChild(filterGrid);
 
 			// other filter items
 			var otherFilterPanel = new ContentPane({
 				region: "top"
 			});
 
-			// var select_genome_filter = new Select({
-			// 	name: "selectGenomeFilter",
-			// 	options:[{}],
-			// 	style: "width: 250px; margin: 5px 0"
-			// });
-			// var label_select_genome_filter = domConstruct.create("label", {innerHTML: "Filer by Genome: "});
-			// domConstruct.place(label_select_genome_filter, otherFilterPanel.containerNode, "last");
-			// domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, "last");
-			// domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
-			var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
+			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
 			var keyword_textbox = new TextBox({
 				name: "keywordText",
 				value: "",
-				style: "width: 120px"
+				placeHolder: "keyword",
+				style: "width: 200px; margin: 5px 0"
 			});
-			domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
+			//domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
 			domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, "last");
 
 
@@ -141,7 +170,7 @@ define([
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_log_ratio = domConstruct.create("label", {innerHTML: "  |Log Ratio|: "});
+			var label_select_log_ratio = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Log Ratio|: "});
 			domConstruct.place(label_select_log_ratio, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -155,7 +184,7 @@ define([
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_z_score = domConstruct.create("label", {innerHTML: " |Z-score|: "});
+			var label_select_z_score = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Z-score|: "});
 			domConstruct.place(label_select_z_score, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_z_score.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -168,8 +197,10 @@ define([
 				keyword: ""
 			};
 
+			this.tgState = defaultFilterValue;
 			var btn_submit = new Button({
 				label: "Filter",
+				style: "margin-left: 10px;",
 				onClick: lang.hitch(this, function(){
 
 					var filter = {
@@ -194,12 +225,14 @@ define([
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);					
+					console.log("submit btn clicked: this.tgState", this.tgState);
 				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
 
 			var reset_submit = new Button({
 				label: "Reset Filter",
+				style: "margin-left: 10px;",
 				type: "reset",
 				onClick: lang.hitch(this, function(){
 
@@ -234,6 +267,7 @@ define([
 
 			var all_submit = new Button({
 				label: "Show All Comparisons",
+				style: "margin-left: 10px;",
 				onClick: lang.hitch(this, function(){
 
 					var filter = {
@@ -256,6 +290,14 @@ define([
 			//filterPanel.addChild(otherFilterPanel);
 
 			return otherFilterPanel;
-		}
+		},
+		_buildChartPanel: function(){
+			// chart panel
+			var chartPanel = new ContentPane({
+				region: "top"
+			});
+			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
+			//domConstruct.place(keyword_label, chartPanel.containerNode, "last");
+		}		
 	});
 });
