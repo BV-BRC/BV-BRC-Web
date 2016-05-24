@@ -314,27 +314,7 @@ define([
 					console.log("INVALID Chart DATA", data);
 					return;
 				}
-/*								
-				var xData = [];
-				var yData = [];
-				var chartData = {};
-				var i=0;				
-				while(i<myData.length)
-				{
-					xData.push(myData[i]);
-					if (myData[i+1]){
-						yData.push(myData[i+1]);	
-					}
-					else {
-						yData.push(0);
-					}
-					i=i+2;
-				}
-				var xLabel = [];
-				xData.map(function(val, idx) {
-					xLabel.push({text: val, value: idx+1});
-				});
-*/
+
 				var xLabel = [];
 				var yData = [];
 				var chartData = {};

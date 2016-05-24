@@ -290,14 +290,6 @@ define([
 			//filterPanel.addChild(otherFilterPanel);
 
 			return otherFilterPanel;
-		},
-		_buildChartPanel: function(){
-			// chart panel
-			var chartPanel = new ContentPane({
-				region: "top"
-			});
-			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
-			//domConstruct.place(keyword_label, chartPanel.containerNode, "last");
-		}		
+		}
 	});
 });
