@@ -476,7 +476,8 @@ define([
 			});
 
 			var btnDownloadProteins = new Button({
-				label: 'Download Proteins'
+				label: 'Download Proteins',
+				disabled: (features.length === 0)
 			});
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
@@ -498,7 +499,8 @@ define([
 			});
 
 			var btnShowDetails = new Button({
-				label: 'Show Proteins'
+				label: 'Show Proteins',
+				disabled: (features.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
@@ -511,7 +513,8 @@ define([
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				disabled: (features.length === 0)
 			});
 			var btnCancel = new Button({
 				label: 'Cancel',
