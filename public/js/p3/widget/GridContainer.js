@@ -926,6 +926,7 @@ define([
 
 			if(this.containerActionBar){
 				this.addChild(this.containerActionBar);
+				this.containerActionBar.set("currentContainer",this);
 			}
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);

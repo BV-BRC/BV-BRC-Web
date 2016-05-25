@@ -27,6 +27,7 @@ define([
 					return;
 				}
 
+				console.log("Search Filter: ", searchFilter);
 				var parts = query.split(" ");
 				if(parts){
 					q = parts.map(function(w){
@@ -46,7 +47,10 @@ define([
 							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
 							clear = true;
 							break;
-
+						case "everything":
+							Topic.publish("/navigate", {href: "/search/?" + q});
+							clear = true;
+							break;
 						case "pathways":
 							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
 							clear = true;
