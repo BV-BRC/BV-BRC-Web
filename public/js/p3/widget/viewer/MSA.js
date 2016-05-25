@@ -5,14 +5,99 @@ define([
 	"dojo/request", "dojo/_base/lang", "dojo/when",
 	"../ActionBar", "../ContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem"
+	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem", "dijit/TooltipDialog"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang, when,
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
-			DropDownButton, DropDownMenu, MenuItem){
+			DropDownButton, DropDownMenu, MenuItem, TooltipDialog){
+
+        var schemes = [{
+            name: "Zappo", id: "zappo"
+        },
+        {
+            name: "Taylor",
+            id: "taylor"
+        },
+        {
+            name: "Hydrophobicity",
+            id: "hydro"
+        },
+        {
+            name: "Lesk",
+            id: "lesk"
+        },
+        {
+            name: "Cinema",
+            id: "cinema"
+        },
+        {
+            name: "MAE",
+            id: "mae"
+        },
+        {
+            name: "Clustal",
+            id: "clustal"
+        },
+        {
+            name: "Clustal2",
+            id: "clustal2"
+        },
+        {
+            name: "Turn",
+            id: "turn"
+        },
+        {
+            name: "Strand",
+            id: "strand"
+        },
+        {
+            name: "Buried",
+            id: "buried"
+        },
+        {
+            name: "Helix",
+            id: "helix"
+        },
+        {
+            name: "Nucleotide",
+            id: "nucleotide"
+        },
+        {
+            name: "Purine",
+            id: "purine"
+        },
+        {
+            name: "PID",
+            id: "pid"
+        },
+        {
+            name: "No color",
+            id: "foo"
+        }];
+
+        //var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
+        //noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
+        //m.addView("menu", defMenu);
+
+        //this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
+        var colorMenuDivs = [];
+
+        schemes.forEach(lang.hitch(this, function(scheme){
+            colorMenuDivs.push(domConstruct.create("div", {rel:scheme.id, innerHTML:scheme.name}));
+        }));
+
+        var colorMenu = new TooltipDialog({
+            content: colorMenuDivs.join(""),
+            onMouseLeave:function(){
+                popup.close(colorMenu);
+            }
+        });
+
+
+
 	return declare([Base], {
 		"baseClass": "Phylogeny",
 		"disabled": false,
@@ -77,14 +162,16 @@ define([
 			this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + "</div>");
 		},
 		onSetData: function(attr, oldVal, data){
-			this.createDataMap(data);
+			this.createDataMap();
 			this.render();
 		},
 
-		createDataMap: function(apiResult){
+		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
-			apiResult.alignment.split("\n").forEach(function(line){
+            this.alt_labels={};
+
+			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
@@ -93,6 +180,7 @@ define([
 						geneID = headerInfo[1];
 						clustal.push(geneID + "\t");
 						this.dataMap[geneID] = {"taxID": headerInfo[2], "geneID": geneID, sequence: []};
+                        this.alt_labels[geneID]=this.data.map[headerInfo[2]];
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
@@ -168,54 +256,14 @@ define([
 
 			// init msa
 			var m = new msa.msa(opts);
-			/*sel= new mt.selections();
-				treeDiv.innerHTML="";
-			nodes = mt.app({
-			seqs: m.seqs.toJSON(),
-			tree: msa_models.tree
-			});
-
-			console.log("nodes", nodes);
-			t = new mt.adapters.tree({
-			model: nodes,
-			el: treeDiv,
-			sel: sel
-			});
-			msaTree = new mt.adapters.msa({
-			model: nodes,
-			sel: sel,
-			msa: m
-			});
-			nodes.models.forEach(function(e) {
-				delete e.collection;
-			//return Object.setPrototypeOf(e, require("backbone-thin").Model.prototype);
-			});
-			//m.seqs.reset(nodes.models);
-			console.log(m.seqs);
-
-
-			//var nexusData =["20", "19", "38", "85", "(fig.509170.6.peg.19:0.03278,((fig.575586.4.peg.3246:0.0,fig.1120929.3.peg.86:0.0):0.00643,fig.981334.4.peg.3118:0.01314):0.06506,((fig.1405803.3.peg.6190:2.30354,((fig.1313303.3.peg.2841:0.0,fig.291331.8.peg.1145:0.0,fig.342109.8.peg.1061:0.0,fig.360094.4.peg.4335:0.0):2.83584,fig.1228988.4.peg.5452:1.00753):1.76172):1.37146,((fig.1392540.3.peg.2502:0.00016,((fig.665944.3.peg.5249:0.00016,(fig.1284812.3.peg.4952:0.02124,fig.665944.3.peg.5052:0.00015):0.04230):1.80493,((fig.1159496.3.peg.81:0.00616,fig.1159560.3.peg.58:0.03605):1.03487,(fig.758829.3.peg.2647:0.00015,(fig.1185418.3.peg.2928:0.00017,fig.1432547.3.peg.8379:0.02325):0.18273):0.65301):1.98034):1.24802):0.12367,fig.1330047.3.peg.969:0.05795):0.04715):0.00011);", "fig.1405803.3.peg.6190", "Pseudomonas_alcaligenes_MRY13-0052", "-----------------MYDFKKYVLDIALKQVNEH-----------TDIIVKVEQHKTGRSITGFSFSFKQKNQPRIQSNLKEIRIR--", "fig.1313303.3.peg.2841", "Xanthomonas_oryzae_ATCC_35933", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.291331.8.peg.1145", "Xanthomonas_oryzae_pv._oryzae_KACC_10331", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.342109.8.peg.1061", "Xanthomonas_oryzae_pv._oryzae_MAFF_311018", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.360094.4.peg.4335", "Xanthomonas_oryzae_pv._oryzae_PXO99A", "--------------MEILDDRVGTRATIITSQLPVEHWHAWL-----QDPTLADAILD-RLVHQAHKLPLKGESLRKRAPPDRPTSAP--", "fig.665944.3.peg.5249", "Klebsiella_sp._4_1_44FAA", "----------------------------MRQQLTREYAT--------GRFRGDKEALKREVERRVQERMLLSR--GNNYTRLATAPL---", "fig.1284812.3.peg.4952", "Klebsiella_pneumoniae_UHKPC81", "----------------------------MRQQLTREYAT--------GRFRGDHEALKREVERRVQERMLLSR--GNNYTRLATVPI---", "fig.665944.3.peg.5052", "Klebsiella_sp._4_1_44FAA", "----------------------------MRQQLTREYAT--------GRFRGDKEALKREVERRVQERMLLSR--GNNYTRLATVPI---", "fig.1228988.4.peg.5452", "Klebsiella_pneumoniae_subsp._pneumoniae_KpMDU1", "-----------------------------------------M-----SEYGVKSDTLELSFVEFVKMCGFNSRRSNKKNARSHQ------", "fig.1392540.3.peg.2502", "Acinetobacter_nectaris_CIP_110549", "-----------------MTDAQRHLFANKMSKMPEM-----------SKYSQGTESYQ-EFATRIAEMLLQPEKFRELYPLLEKNGFKL-", "fig.1330047.3.peg.969", "Acinetobacter_junii_MTCC_11364", "-----------------MTDSQRHLFANKMSEMPEM-----------SKYSQGTESYQ-QFAVRIAEMLLHPEKFKELYPILEKAGFKA-", "fig.509170.6.peg.19", "Acinetobacter_baumannii_SDF", "-----------------MTDAQRHLFANKMSEMPEM-----------SKYSQGTESYQ-QFSIRIADMLLEPEKFRELYPILEKAGFKG-", "fig.575586.4.peg.3246", "Acinetobacter_johnsonii_SH046", "-----------------------------MSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFQP-", "fig.1120929.3.peg.86", "Acinetobacter_towneri_DSM_14962_=_CIP_107472", "-----------------------------MSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFQP-", "fig.981334.4.peg.3118", "Acinetobacter_radioresistens_DSM_6976_=_NBRC_102413_=_CIP_103788", "-----------------MTDAQRHLFANKMSEMPEM-----------GKYSQGTESYQ-QFAIRIADMLLEPEKFRELYPILEKSGFNP-", "fig.758829.3.peg.2647", "Escherichia_coli_ECA-0157", "MRKAMEQLRDIGYLDYTEFKRGRATYFSVHYRNPKLISSPVKVPRKEEEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1185418.3.peg.2928", "Klebsiella_pneumoniae_subsp._pneumoniae_ST512-K30BO", "------------------------------MKVPRKA----------EEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1432547.3.peg.8379", "Klebsiella_pneumoniae_IS22", "------------------------------MKVPRKE----------EEEKAPEQNYD-EVIKALKAAGIDPLKLAEALSAMKPEN----", "fig.1159496.3.peg.81", "Cronobacter_dublinensis_subsp._lactaridi_LMG_23825", "----MEQLKEIGYLDYSEIKRGRVVYFHIHYRRPKLRPQSLP-----GALPAGEELQT-DNAAAVEEQGEMVMLTKEELALLEKIRKGQI", "fig.1159560.3.peg.58", "Cronobacter_dublinensis_subsp._lausannensis_LMG_23824", "----MEQLKEIGYLDYTEIKRGRVVYFHIHYRRPKLRPQSLP-----GALPAGEELPA-DNAAAVEEQGEMVMLTKEELALLEKIRKGQI"];
-			//var nexusData= ["11", "11", "39", "53", "(((fig|1310754.3.peg.2921:0.0,fig|1310727.3.peg.2939:0.0):1.17036,(fig|47716.4.peg.2238:0.11103,fig|66869.3.peg.5501:0.00641):0.99240):2.47910,((fig|1310683.3.peg.2856:0.0,fig|1310905.3.peg.2925:0.0):1.28000,fig|1235820.4.peg.2163:0.69592):2.18740,(((fig|321314.9.peg.37:0.0,fig|476213.4.peg.33:0.0):0.29056,fig|936157.3.peg.4962:0.43338):2.89151,fig|882800.3.peg.6267:0.00016):0.00019);", "fig|1310683.3.peg.2856", "Acinetobacter_baumannii_1566109", "--------MRFLQRYPSYQDFYCRFDVICF-DFPQKIAKTVQQDFSK-FHYDLQWIENVFTLD--", "fig|1310905.3.peg.2925", "Acinetobacter_baumannii_25977_1", "--------MRFLQRYPSYQDFYCRFDVICF-DFPQKIAKTVQQDFSK-FHYDLQWIENVFTLD--", "fig|1235820.4.peg.2163", "Prevotella_oris_JCM_12252", "-----------MKERAIWDDL--RFDLISI-------VGTAPENFK------LEHIVDAFNPLLV", "fig|321314.9.peg.37", "Salmonella_enterica_subsp._enterica_serovar_Choleraesuis_str._SC-B67", "MSSPGNPGKTSDGRHTEVGSF--NYSRAAD-RSNSENVLSSGMTQS-------------------", "fig|476213.4.peg.33", "Salmonella_enterica_subsp._enterica_serovar_Paratyphi_C_strain_RKS4594", "MSSPGNPGKTSDGRHTEVGSF--NYSRAAD-RSNSENVLSSGMTQS-------------------", "fig|936157.3.peg.4962", "Salmonella_enterica_subsp._enterica_serovar_Weltevreden_str._2007-60-3289-1", "-------MIVADGRNTQVGSF--NFSRAAD-RSNSENVLVVWDDPVLARSYLNHWTSR-------", "fig|1310754.3.peg.2921", "Acinetobacter_baumannii_2887", "-----------MLVAQQLGQW--AEQTALK-LLKEQNYEWVASNYHS-RRGEVDLIENAVTN---", "fig|1310727.3.peg.2939", "Acinetobacter_baumannii_836190", "-----------MLVAQQLGQW--AEQTALK-LLKEQNYEWVASNYHS-RRGEVDLIENAVTN---", "fig|882800.3.peg.6267", "Methylobacterium_extorquens_DSM_13060", "-----------MSRAAR--AWLARHPLAADATLRADAVFVAPRRWPR-------HLPNAFEIEGL", "fig|47716.4.peg.2238", "Streptomyces_olivaceus", "-----------MNARSALGRY--GETLAAR-RLADAGMTVLERNWRCGRTGEIDIVARDKQDELH", "fig|66869.3.peg.5501", "Streptomyces_atroolivaceus", "-----------MNARGALGRY--GEDLAAR-LLADAGMTVLDRNWRC-RTGEIDIVARDEQDELH"]
-
-
-			var treeLoaded=false;
-
-			treeUpdate=t.tree.update;
-			t.tree.update=function(){
-			treeUpdate();
-			setTimeout(function(){
-			var treeDiv2=document.getElementsByClassName("tnt_groupDiv");
-			var treeHeight=parseInt(treeDiv2[0].childNodes[0].getAttribute("height"));
-
-
-			msaDiv.style.height=(treeHeight+115).toString()+"px";
-			}, 1000);
-			}*/
 
 			this.tree = new d3Tree();
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
 			//this.tree.setTree(this.data.tree);
+            
+            this.tree.addLabels(this.alt_labels, "Organism Names");
+            this.tree.startup();
 
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
@@ -224,111 +272,71 @@ define([
 			menuOpts.msa = m;
 			var defMenu = new msa.menu.defaultmenu(menuOpts);
 
-			var schemes = [{
-				name: "Zappo", id: "zappo"
-			},
-			{
-				name: "Taylor",
-				id: "taylor"
-			},
-			{
-				name: "Hydrophobicity",
-				id: "hydro"
-			},
-			{
-				name: "Lesk",
-				id: "lesk"
-			},
-			{
-				name: "Cinema",
-				id: "cinema"
-			},
-			{
-				name: "MAE",
-				id: "mae"
-			},
-			{
-				name: "Clustal",
-				id: "clustal"
-			},
-			{
-				name: "Clustal2",
-				id: "clustal2"
-			},
-			{
-				name: "Turn",
-				id: "turn"
-			},
-			{
-				name: "Strand",
-				id: "strand"
-			},
-			{
-				name: "Buried",
-				id: "buried"
-			},
-			{
-				name: "Helix",
-				id: "helix"
-			},
-			{
-				name: "Nucleotide",
-				id: "nucleotide"
-			},
-			{
-				name: "Purine",
-				id: "purine"
-			},
-			{
-				name: "PID",
-				id: "pid"
-			},
-			{
-				name: "No color",
-				id: "foo"
-			}];
 
-			//var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
-			//noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
-			//m.addView("menu", defMenu);
 
-			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
-			var typeMenu = new DropDownMenu({style: "display: none;"});
-			typeMenu.addChild(new MenuItem({
-				label: "phylogram", onClick: lang.hitch(this, function(){
-					this.setTreeType("phylogram")
-				})
-			}));
-			typeMenu.addChild(new MenuItem({
-				label: "cladogram", onClick: lang.hitch(this, function(){
-					this.setTreeType("cladogram")
-				})
-			}));
-			typeMenu.startup();
-			var typeButton = new DropDownButton({
-				name: "typeButton",
-				label: "tree type",
-				dropDown: typeMenu
-			}, typeMenuDom).startup();
-			//this.typeButton = new Button({label:this.phylogram ? "cladogram" : "phylogram",onClick:lang.hitch(this, this.togglePhylo)}, this.typeButtonDom);
-			var colorMenuDom = domConstruct.create("div", {}, menuDiv);
-			var colorMenu = new DropDownMenu({style: "display: none;"});
-			schemes.forEach(lang.hitch(this, function(scheme){
-				colorMenu.addChild(new MenuItem({
-					label: scheme.name, onClick: function(){
-						m.g.colorscheme.set("scheme", scheme.id)
-					}
+            on(colorMenu.domNode, "click", function(evt){
+                var rel = evt.target.attributes.rel.value;
+                var sel = colorMenu.selection;
+                delete colorMenu.selection;
+                var idType;
+
+                var ids = sel.map(function(d, idx){
+                    if(!idType){
+                        if(d['feature_id']){
+                            idType = "feature_id";
+                        }else if(d['patric_id']){
+                            idType = "patric_id"
+                        }else if(d['alt_locus_tag']){
+                            idType = "alt_locus_tag";
+                        }
+                        // console.log("SET ID TYPE TO: ", idType)
+                    }
+
+                    return d[idType];
+                });
+                m.g.colorscheme.set("scheme", rel)
+            });
+
+
+
+
+			var idMenuDom = domConstruct.create("div", {}, menuDiv);
+			var idMenu = new DropDownMenu({style: "display: none;"});
+			Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
+				idMenu.addChild(new MenuItem({
+					label: labelAlias, onClick: lang.hitch(this, function(){
+						this.tree.selectLabels(labelAlias);
+					})
 				}));
 			}));
-			colorMenu.startup();
-			var colorButton = new DropDownButton({
-				name: "colorButton",
-				label: "color",
-				dropDown: colorMenu
-			}, colorMenuDom).startup();
-			this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
-			this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
-			this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
+			idMenu.startup();
+			var idButton = new DropDownButton({
+				name: "idButton",
+				label: "ID Type",
+				dropDown: idMenu
+			}, idMenuDom).startup();
+
+
+			var groupMenuDom = domConstruct.create("div", {}, menuDiv);
+			var groupMenu = new DropDownMenu({style: "display: none;"});
+			groupMenu.addChild(new MenuItem({
+			    label: "Feature Group", onClick: lang.hitch(this, function(){
+					this.tree.selectLabels(labelAlias);
+				})
+			}));
+			groupMenu.addChild(new MenuItem({
+			    label: "Feature Group", onClick: lang.hitch(this, function(){
+					this.tree.selectLabels(labelAlias);
+				})
+			}));
+			groupMenu.startup();
+			var groupButton = new DropDownButton({
+				name: "groupButton",
+				label: "Add Group",
+				dropDown: groupMenu
+			}, idMenuDom).startup();
+			
+            //this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
 			m.render();
 			//var msaDiv2=document.getElementsByClassName("biojs_msa_seqblock")[0];
 			//var ctx = msaDiv2.getContext("2d");
@@ -386,6 +394,56 @@ define([
 		postCreate: function(){
 			this.contentPane = new ContentPane({"region": "center"});
 			this.addChild(this.contentPane)
+			this.selectionActionBar = new ActionBar({
+				region: "right",
+				layoutPriority: 4,
+				style: "width:48px;text-align:center;",
+				splitter: false,
+				currentContainerWidget: this
+			});
+			this.addChild(this.selectionActionBar);
+		},
+
+
+		selectionActions: [
+			[
+				"ColorSelection",
+				"fa fa-info-circle fa-2x",
+				{
+					label: "Colors",
+					persistent: true,
+					validTypes: ["*"],
+                    validContainerTypes:["*"],
+					tooltip: "Selection Color",
+                    tooltipDialog: colorMenu,
+                    ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+					colorMenu.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.ColorSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.ColorSelection.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+        ],
+
+		setupActions: function(){
+			if(this.containerActionBar){
+				this.containerActions.forEach(function(a){
+					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+				}, this);
+			}
+
+			this.selectionActions.forEach(function(a){
+				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+			}, this);
+
 		},
 		startup: function(){
 
@@ -394,7 +452,7 @@ define([
 			}
 
 			this.watch("loading", lang.hitch(this, "onSetLoading"));
-			this.watch("data", lang.hitch(this, "onSetData"))
+			this.watch("data", lang.hitch(this, "onSetData"));
 
 			this.inherited(arguments);
 		}
