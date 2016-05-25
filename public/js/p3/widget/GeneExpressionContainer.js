@@ -1,14 +1,14 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
-	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer"
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog"
 ], function(declare, lang, on, Topic, domConstruct,
-			BorderContainer, TabContainer, StackController, ContentPane,
+			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
-			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer){
+			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog){
 
 	return declare([BorderContainer], {
 		id: "GEContainer",
@@ -67,55 +67,56 @@ define([
 
 			console.log("GeneExpressionGridContainer onFirstView: this", this);
 			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
+			this.tabContainer = new StackContainer({region: "center", id: this.id + "_TabContainer"});
+			var tabController = new TabController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
 
 			// for charts
+			// outer BorderContainer
+			var bc1 = new BorderContainer({
+				region: "top",
+				title: "Chart",
+				style: "height: 350px;",
+				gutters: false
+			});
+
 			var bc = new BorderContainer({
 				region: "top",
+				title: "Chart",
 				style: "height: 350px;"
 			});
 
 			console.log("Before creating GeneExpressionChartContainer", this);
 
 			var chartContainer1 = new GeneExpressionChartContainer({
-				region: "leading", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartContainer1",
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
 				title: "Chart",
 				content: "Gene Expression Chart",
 				state: this.state,
 				tgtate: this.tgState,
 				apiServer: this.apiServer
 			});
-
 			chartContainer1.startup();
 
-
 			var chartContainer2 = new GeneExpressionMetadataChartContainer({
-				region: "leading", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartContainer2",
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
 				title: "Chart",
 				content: "Gene Expression Metadata Chart",
 				state: this.state,
 				tgtate: this.tgState,
 				apiServer: this.apiServer
 			});
-
 			chartContainer2.startup();
 
 			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
 			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
 
 			// for data grid
-			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
-
-			var tabController1 = new StackController({
-				containerId: this.id + "_chartTabContainer1",
-				region: "top",
-				"class": "TextTabButtons"
-			});
-
-			var tabController2 = new StackController({
-				containerId: this.id + "_chartTabContainer2",
-				region: "top",
-				"class": "TextTabButtons"
-			});
 			
 			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 				title: "Table",
@@ -128,15 +129,15 @@ define([
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
+			this.addChild(tabController);
 			this.addChild(filterPanel);
-			this.addChild(bc);
-			//bc.addChild(tabController1);
+			this.tabContainer.addChild(bc1);
+			bc1.addChild(bc);
 			bc.addChild(chartContainer1);
-			//bc.addChild(tabController2);
 			bc.addChild(chartContainer2);
 			this.tabContainer.addChild(this.GeneExpressionGridContainer);
 			this.addChild(this.tabContainer);
-
+			
 			this.inherited(arguments);
 			this._firstView = true;
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
@@ -245,15 +246,6 @@ define([
 					};
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					Topic.publish("GeneExpression", "updateTgState", this.tgState);
-					/*
-					console.log("reset_submit btn clicked: select_z_score", select_z_score);
-					for (var i = 0; i < select_log_ratio.options.length; i++) {
-					    select_log_ratio.options[i].selected = select_log_ratio.options[i].defaultSelected;
-					    select_z_score.options[i].selected = select_z_score.options[i].defaultSelected;
-					}
-					select_log_ratio.options[0].selected = "selected";
-					select_z_score.options[0].selected = "selected";
-					*/
 
 					keyword_textbox.reset();
 					select_log_ratio.reset();
@@ -286,8 +278,6 @@ define([
 				})
 			});
 			domConstruct.place(all_submit.domNode, otherFilterPanel.containerNode, "last");
-
-			//filterPanel.addChild(otherFilterPanel);
 
 			return otherFilterPanel;
 		}
