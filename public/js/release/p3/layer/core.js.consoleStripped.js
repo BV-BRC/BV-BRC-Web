@@ -78,17 +78,11 @@ define([
 				_self.navigate(newState);
 			});
 
-			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
-				var newState = {href: params.newPath}
-				for(var prop in params.state){
-					newState[prop] = params.state[prop]
-				}
-
-				var path = params.params[0] || "/";
+			Router.register("\/search/(.*)", function(params, oldPath, newPath, state){
+				 0 && console.log("Search Route: ", arguments);
+				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/AdvancedSearch";
-				newState.value = path;
-				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				 0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -183,7 +177,7 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				//  0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+				 0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
 				//  0 && console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
@@ -22562,6 +22556,7 @@ define([
 					return;
 				}
 
+				 0 && console.log("Search Filter: ", searchFilter);
 				var parts = query.split(" ");
 				if(parts){
 					q = parts.map(function(w){
@@ -22581,7 +22576,10 @@ define([
 							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
 							clear = true;
 							break;
-
+						case "everything":
+							Topic.publish("/navigate", {href: "/search/?" + q});
+							clear = true;
+							break;
 						case "pathways":
 							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
 							clear = true;
@@ -67888,12 +67886,12 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./FeatureGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang"
+	"dojo/_base/lang","dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			FeatureGrid, popup, Topic,
 			TooltipDialog, FacetFilterPanel,
-			lang){
+			lang,domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
 	var viewFASTATT = new TooltipDialog({
@@ -67909,17 +67907,6 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
 
 	return declare([GridContainer], {
 		gridCtor: FeatureGrid,
@@ -67928,6 +67915,8 @@ define([
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
+		primaryKey: "feature_id",
+		maxDownloadSize: 25000,
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
@@ -67944,6 +67933,47 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -68013,26 +68043,13 @@ define([
 
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		//  0 && console.log("selection: ", selection);
-		var ids = selection.map(function(d){
-			return d['feature_id'];
-		});
+		var selection = idMappingTTDialog.selection;
+		delete idMappingTTDialog.selection;
 
-		//  0 && console.log("ID MAP ", ids);
-		// xhr.post("/view/idmap, {
-		// 	data: {
-		// 		keyword: ids.join(","),
-		// 		from: "feature_id",
-		// 		fromGroup: "PATRIC",
-		// 		to: rel,
-		// 		toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
-		// 		sraction: 'save_params'	
-		// 	}
-		// }).then(function(results){
-		// 	document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
-		// });
+		var toIdGroup = (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
+
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+
 		popup.close(idMappingTTDialog);
 	});
 
@@ -68385,7 +68402,7 @@ define([
 				},
 				false
 			], [
-				"idmappingFeatures",
+				"idmapping",
 				"fa icon-exchange fa-2x",
 				{
 					label: "ID MAP",
@@ -68395,45 +68412,128 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection){
+				function(selection, containerWidget){
 
-					//  0 && console.log("TTDlg: ", idMappingTTDialog);
-					//  0 && console.log("this: ", this);
-					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					return;
+					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					// new Dialog({content: idMappingTTDialog}).show();
+					var self = this;
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
 
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								idMappingTTDialog.selection = ids.join(",");
+								popup.open({
+									popup: idMappingTTDialog,
+									around: self.selectionActionBar._actions.idmapping.button,
+									orient: ["below"]
+								});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						default:
+							ids = selection.map(function(d){
+								return d['feature_id'];
+							});
+							break;
+					}
+
+					idMappingTTDialog.selection = ids.join(",");
 					popup.open({
 						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
+						around: this.selectionActionBar._actions.idmapping.button,
 						orient: ["below"]
 					});
-					//  0 && console.log("popup idmapping", selection);
-				},
-				false
-			], [
-				"idmapping",
-				"fa icon-exchange fa-2x",
-				{
-					label: "ID MAP",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "ID Mapping",
-					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["proteinfamily_data", "pathway_data"]
-				},
-				function(selection){
-
-					//  0 && console.log("TTDlg: ", idMappingTTDialog);
-					//  0 && console.log("this: ", this);
-					popup.open({
-						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
-						orient: ["below"]
-					});
-					//  0 && console.log("popup idmapping", selection);
 				},
 				false
 			], [
@@ -68486,7 +68586,7 @@ define([
 									'X-Requested-With': null,
 									'Authorization': (window.App.authorizationToken || "")
 								},
-								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)"
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
 							}), function(response){
 								ids = response.map(function(d){
 									return d['feature_id']
@@ -68513,7 +68613,7 @@ define([
 											'X-Requested-With': null,
 											'Authorization': (window.App.authorizationToken || "")
 										},
-										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)"
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
 									}), function(response){
 										ids = response.map(function(d){
 											return d['feature_id']
@@ -68535,7 +68635,7 @@ define([
 											'X-Requested-With': null,
 											'Authorization': (window.App.authorizationToken || "")
 										},
-										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)"
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
 									}), function(response){
 										ids = response.map(function(d){
 											return d['feature_id']
@@ -68817,6 +68917,7 @@ define([
 
 			if(this.containerActionBar){
 				this.addChild(this.containerActionBar);
+				this.containerActionBar.set("currentContainer",this);
 			}
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
@@ -70132,14 +70233,14 @@ define([
 
 	return declare([TooltipDialog], {
                 containerType: "",
-		selection: null,
+                selection: null,
 
                 _setSelectionAttr: function(val){
                          0 && console.log("DownloadTooltipDialog set selection: ", val);
                         this.selection = val;
                 },
                 timeout: function(val){
-			var _self=this;
+			             var _self=this;
                         this._timer = setTimeout(function(){
                                 popup.close(_self);
                         },val||2500);
@@ -70292,11 +70393,11 @@ define([
                         var conf = this.downloadableConfig[val] || this.downloadableConfig["default"];
 
 
-			this.set("label", conf.label);
+		      	        this.set("label", conf.label);
 
                         if (!this._started) { return; }
 
-			domConstruct.empty(this.otherDownloadNode);
+			             domConstruct.empty(this.otherDownloadNode);
 
                         if (conf.otherData){
                                 conf.otherData.forEach(function(type){
@@ -70967,11 +71068,11 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on, domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -70987,18 +71088,6 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		containerType: "spgene_data",
 		facetFields: ["property", "source", "evidence"],
@@ -71006,6 +71095,8 @@ define([
 		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
 		},
+		primaryKey: "id",
+		maxDownloadSize: 250000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -71018,13 +71109,55 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
-				true
+				true,
+				"left"
 			]
 		]),
 		gridCtor: Grid
@@ -71051,10 +71184,11 @@ define([
 		apiServer: window.App.dataAPI,
 		store: store,
 		dataModel: "sp_gene",
-		primaryKey: "feature_id",
+		primaryKey: "id",
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
+			id: {label: "ID", field: "id", hidden: true},
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},
@@ -71119,7 +71253,7 @@ define([
 			Store){
 	return declare([Store], {
 		dataModel: "sp_gene",
-		idProperty: "feature_id",
+		idProperty: "patric_id",
 		facetFields: []
 	});
 });
@@ -75640,28 +75774,30 @@ define([
 					label: "Anchor",
 					multiple: false,
 					validType: ["*"],
-					tooltip: "Anchor by genome",
-					tooltipDialog: null
+					tooltip: "Anchor by genome"
 				},
 				function(){
 
 					// dialog for anchoring
 					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
 						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()/*,
-							onMouseLeave: function(){
-								popup.close(this.tooltip_anchoring);
-							}*/
+							content: this._buildPanelAnchoring()
 						});
 						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
 					}
 
-					popup.open({
-						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-						around: this.containerActionBar._actions.Anchor.button,
-						orient: ["below"]
-					});
-
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+							around: this.containerActionBar._actions.Anchor.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
 				},
 				true
 			]
@@ -76024,7 +76160,8 @@ define([
 			});
 
 			var btnDownloadProteins = new Button({
-				label: 'Download Proteins'
+				label: 'Download Proteins',
+				disabled: (features.length === 0)
 			});
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
@@ -76046,7 +76183,8 @@ define([
 			});
 
 			var btnShowDetails = new Button({
-				label: 'Show Proteins'
+				label: 'Show Proteins',
+				disabled: (features.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
@@ -76059,7 +76197,8 @@ define([
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				disabled: (features.length === 0)
 			});
 			var btnCancel = new Button({
 				label: 'Cancel',
@@ -81744,29 +81883,21 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./GenomeGrid", "dijit/popup", "dojo/_base/lang",
-	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic"
+	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic",
+	"dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			GenomeGrid, popup, lang,
-			TooltipDialog, FacetFilterPanel, Topic){
+			TooltipDialog, FacetFilterPanel, Topic,
+			domConstruct
+	){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
-	});
-
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		 0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		 0 && console.log("selection: ", selection);
-		 0 && console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
 	});
 
 	return declare([GridContainer], {
@@ -81776,8 +81907,10 @@ define([
 		getFilterPanel: function(opts){
 			return;
 		},
-		dataModel: "genome",
 		enableAnchorButton: true,
+		dataModel: "genome",
+		primaryKey: "genome_id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -81790,6 +81923,47 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -81799,16 +81973,6 @@ define([
 				true,
 				"left"
 			]
-			// ,[
-			// 	"ToggleFilters",
-			// 	"fa icon-filter fa-2x",
-			// 	{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle the visibility of the available filters"}, 
-			// 	function(selection){	
-			// 		 0 && console.log("Toggle the Filters Panel");
-			// 		on.emit(this.domNode,"ToggleFilters",{});
-			// 	},
-			// 	true
-			// ]
 		])
 	});
 });
@@ -81819,11 +81983,11 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SequenceGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on, domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
@@ -81839,23 +82003,13 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		containerType: "sequence_data",
 		facetFields: ["sequence_type", "topology"],
 		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
+		primaryKey: "sequence_id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -81868,13 +82022,55 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
-				true
+				true,
+				"left"
 			]
 		]),
 		// selectionActions: [GridContainer.prototype.selectionActions[0]],
@@ -84108,7 +84304,7 @@ return number;
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"Everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<!--<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
@@ -84124,7 +84320,7 @@ return number;
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",

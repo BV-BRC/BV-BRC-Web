@@ -1,14 +1,14 @@
 define("p3/widget/GeneExpressionContainer", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
-	"dijit/layout/BorderContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./GeneExpressionGridContainer"
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog"
 ], function(declare, lang, on, Topic, domConstruct,
-			BorderContainer, TabContainer, StackController, ContentPane,
+			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
-			GeneExpressionGridContainer){
+			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog){
 
 	return declare([BorderContainer], {
 		id: "GEContainer",
@@ -37,6 +37,12 @@ define("p3/widget/GeneExpressionContainer", [
 			if(this.GeneExpressionGridContainer){
 				this.GeneExpressionGridContainer.set('state', state);
 			}
+			if(this.GeneExpressionChartContainer){
+				this.GeneExpressionChartContainer.set('state', state);
+			}
+			if(this.GeneExpressionMetadataChartContainer){
+				this.GeneExpressionMetadataChartContainer.set('state', state);
+			}
 			this._set('state', state);
 		},
 
@@ -59,16 +65,58 @@ define("p3/widget/GeneExpressionContainer", [
 
 			var filterPanel = this._buildFilterPanel();
 
-			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
-			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
-
-			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
-
-			var tabController = new StackController({
+			console.log("GeneExpressionGridContainer onFirstView: this", this);
+			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
+			this.tabContainer = new StackContainer({region: "center", id: this.id + "_TabContainer"});
+			var tabController = new TabController({
 				containerId: this.id + "_TabContainer",
 				region: "top",
 				"class": "TextTabButtons"
 			});
+
+			// for charts
+			// outer BorderContainer
+			var bc1 = new BorderContainer({
+				region: "top",
+				title: "Chart",
+				style: "height: 350px;",
+				gutters: false
+			});
+
+			var bc = new BorderContainer({
+				region: "top",
+				title: "Chart",
+				style: "height: 350px;"
+			});
+
+			console.log("Before creating GeneExpressionChartContainer", this);
+
+			var chartContainer1 = new GeneExpressionChartContainer({
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+				title: "Chart",
+				content: "Gene Expression Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+			chartContainer1.startup();
+
+			var chartContainer2 = new GeneExpressionMetadataChartContainer({
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+				title: "Chart",
+				content: "Gene Expression Metadata Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+			chartContainer2.startup();
+
+			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
+			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
+
+			// for data grid
 			
 			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 				title: "Table",
@@ -81,54 +129,36 @@ define("p3/widget/GeneExpressionContainer", [
 
 			this.watch("state", lang.hitch(this, "onSetState"));
 
+			this.addChild(tabController);
 			this.addChild(filterPanel);
+			this.tabContainer.addChild(bc1);
+			bc1.addChild(bc);
+			bc.addChild(chartContainer1);
+			bc.addChild(chartContainer2);
 			this.tabContainer.addChild(this.GeneExpressionGridContainer);
-			//this.addChild(tabController);
 			this.addChild(this.tabContainer);
-			//this.addChild(this.GeneExpressionGridContainer);
-
+			
 			this.inherited(arguments);
 			this._firstView = true;
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
 		},
+
 		_buildFilterPanel: function(){
-
-			//var filterPanel = new ContentPane({
-			//	region: "top",
-			//	title: "filter",
-			//	content: "Filter By",
-			//	style: "height:200px; overflow:auto",
-			//	splitter: true
-			//});
-
-			// genome list grid
-			//var filterGrid = new FilterGrid({
-			//	state: this.state
-			//});
-			//filterPanel.addChild(filterGrid);
 
 			// other filter items
 			var otherFilterPanel = new ContentPane({
 				region: "top"
 			});
 
-			// var select_genome_filter = new Select({
-			// 	name: "selectGenomeFilter",
-			// 	options:[{}],
-			// 	style: "width: 250px; margin: 5px 0"
-			// });
-			// var label_select_genome_filter = domConstruct.create("label", {innerHTML: "Filer by Genome: "});
-			// domConstruct.place(label_select_genome_filter, otherFilterPanel.containerNode, "last");
-			// domConstruct.place(select_genome_filter.domNode, otherFilterPanel.containerNode, "last");
-			// domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
-			var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
+			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
 			var keyword_textbox = new TextBox({
 				name: "keywordText",
 				value: "",
-				style: "width: 120px"
+				placeHolder: "keyword",
+				style: "width: 200px; margin: 5px 0"
 			});
-			domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
+			//domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
 			domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, "last");
 
 
@@ -141,7 +171,7 @@ define("p3/widget/GeneExpressionContainer", [
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_log_ratio = domConstruct.create("label", {innerHTML: "  |Log Ratio|: "});
+			var label_select_log_ratio = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Log Ratio|: "});
 			domConstruct.place(label_select_log_ratio, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -155,7 +185,7 @@ define("p3/widget/GeneExpressionContainer", [
 				],
 				style: "width: 80px; margin: 5px 0"
 			});
-			var label_select_z_score = domConstruct.create("label", {innerHTML: " |Z-score|: "});
+			var label_select_z_score = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Z-score|: "});
 			domConstruct.place(label_select_z_score, otherFilterPanel.containerNode, "last");
 			domConstruct.place(select_z_score.domNode, otherFilterPanel.containerNode, "last");
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
@@ -168,8 +198,10 @@ define("p3/widget/GeneExpressionContainer", [
 				keyword: ""
 			};
 
+			this.tgState = defaultFilterValue;
 			var btn_submit = new Button({
 				label: "Filter",
+				style: "margin-left: 10px;",
 				onClick: lang.hitch(this, function(){
 
 					var filter = {
@@ -194,12 +226,14 @@ define("p3/widget/GeneExpressionContainer", [
 
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);					
+					console.log("submit btn clicked: this.tgState", this.tgState);
 				})
 			});
 			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
 
 			var reset_submit = new Button({
 				label: "Reset Filter",
+				style: "margin-left: 10px;",
 				type: "reset",
 				onClick: lang.hitch(this, function(){
 
@@ -212,15 +246,6 @@ define("p3/widget/GeneExpressionContainer", [
 					};
 					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
 					Topic.publish("GeneExpression", "updateTgState", this.tgState);
-					/*
-					console.log("reset_submit btn clicked: select_z_score", select_z_score);
-					for (var i = 0; i < select_log_ratio.options.length; i++) {
-					    select_log_ratio.options[i].selected = select_log_ratio.options[i].defaultSelected;
-					    select_z_score.options[i].selected = select_z_score.options[i].defaultSelected;
-					}
-					select_log_ratio.options[0].selected = "selected";
-					select_z_score.options[0].selected = "selected";
-					*/
 
 					keyword_textbox.reset();
 					select_log_ratio.reset();
@@ -234,6 +259,7 @@ define("p3/widget/GeneExpressionContainer", [
 
 			var all_submit = new Button({
 				label: "Show All Comparisons",
+				style: "margin-left: 10px;",
 				onClick: lang.hitch(this, function(){
 
 					var filter = {
@@ -252,8 +278,6 @@ define("p3/widget/GeneExpressionContainer", [
 				})
 			});
 			domConstruct.place(all_submit.domNode, otherFilterPanel.containerNode, "last");
-
-			//filterPanel.addChild(otherFilterPanel);
 
 			return otherFilterPanel;
 		}
