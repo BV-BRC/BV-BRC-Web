@@ -1,4 +1,4 @@
-define("p3/store/IdMappingMemoryStore", [
+define("p3/store/IDMappingMemoryStore", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
 	"dojo/store/Memory", "dojo/store/util/QueryResults"
