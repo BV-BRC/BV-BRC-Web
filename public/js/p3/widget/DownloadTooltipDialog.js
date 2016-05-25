@@ -13,14 +13,14 @@ define([
 
 	return declare([TooltipDialog], {
                 containerType: "",
-		selection: null,
+                selection: null,
 
                 _setSelectionAttr: function(val){
                         console.log("DownloadTooltipDialog set selection: ", val);
                         this.selection = val;
                 },
                 timeout: function(val){
-			var _self=this;
+			             var _self=this;
                         this._timer = setTimeout(function(){
                                 popup.close(_self);
                         },val||2500);
@@ -173,11 +173,11 @@ define([
                         var conf = this.downloadableConfig[val] || this.downloadableConfig["default"];
 
 
-			this.set("label", conf.label);
+		      	        this.set("label", conf.label);
 
                         if (!this._started) { return; }
 
-			domConstruct.empty(this.otherDownloadNode);
+			             domConstruct.empty(this.otherDownloadNode);
 
                         if (conf.otherData){
                                 conf.otherData.forEach(function(type){

@@ -76,17 +76,11 @@ define([
 				_self.navigate(newState);
 			});
 
-			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
-				var newState = {href: params.newPath}
-				for(var prop in params.state){
-					newState[prop] = params.state[prop]
-				}
-
-				var path = params.params[0] || "/";
+			Router.register("\/search/(.*)", function(params, oldPath, newPath, state){
+				console.log("Search Route: ", arguments);
+				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/AdvancedSearch";
-				newState.value = path;
-				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -181,7 +175,7 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				// console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
 				// console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));

@@ -5,7 +5,7 @@ define([
 			Store){
 	return declare([Store], {
 		dataModel: "sp_gene",
-		idProperty: "feature_id",
+		idProperty: "patric_id",
 		facetFields: []
 	});
 });

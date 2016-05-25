@@ -1,29 +1,21 @@
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./GenomeGrid", "dijit/popup", "dojo/_base/lang",
-	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic"
+	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic",
+	"dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			GenomeGrid, popup, lang,
-			TooltipDialog, FacetFilterPanel, Topic){
+			TooltipDialog, FacetFilterPanel, Topic,
+			domConstruct
+	){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
-	});
-
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
 	});
 
 	return declare([GridContainer], {
@@ -33,8 +25,10 @@ define([
 		getFilterPanel: function(opts){
 			return;
 		},
-		dataModel: "genome",
 		enableAnchorButton: true,
+		dataModel: "genome",
+		primaryKey: "genome_id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -47,6 +41,47 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -56,16 +91,6 @@ define([
 				true,
 				"left"
 			]
-			// ,[
-			// 	"ToggleFilters",
-			// 	"fa icon-filter fa-2x",
-			// 	{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle the visibility of the available filters"}, 
-			// 	function(selection){	
-			// 		console.log("Toggle the Filters Panel");
-			// 		on.emit(this.domNode,"ToggleFilters",{});
-			// 	},
-			// 	true
-			// ]
 		])
 	});
 });
