@@ -78,17 +78,11 @@ define([
 				_self.navigate(newState);
 			});
 
-			Router.register("\/search(\/.*)", function(params, oldPath, newPath, state){
-				var newState = {href: params.newPath}
-				for(var prop in params.state){
-					newState[prop] = params.state[prop]
-				}
-
-				var path = params.params[0] || "/";
+			Router.register("\/search/(.*)", function(params, oldPath, newPath, state){
+				console.log("Search Route: ", arguments);
+				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/AdvancedSearch";
-				newState.value = path;
-				newState.set = "path";
-				newState.requireAuth = true;
+				newState.requireAuth = false;
 				console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -183,7 +177,7 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				// console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
 				// console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
@@ -22562,6 +22556,7 @@ define([
 					return;
 				}
 
+				console.log("Search Filter: ", searchFilter);
 				var parts = query.split(" ");
 				if(parts){
 					q = parts.map(function(w){
@@ -22581,7 +22576,10 @@ define([
 							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
 							clear = true;
 							break;
-
+						case "everything":
+							Topic.publish("/navigate", {href: "/search/?" + q});
+							clear = true;
+							break;
 						case "pathways":
 							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
 							clear = true;
@@ -37660,14 +37658,14 @@ define([
 		currentContainerWidget: null,
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
-			console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
+			// console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
 
 			if(widget.currentContainer === this.currentContainerWidget){
 				return;
 			}
 			this.currentContainerType = widget.containerType;
 			this.currentContainerWidget = widget;
-			console.log("CurrentContainerType: ", this.currentContainerType)
+			// console.log("CurrentContainerType: ", this.currentContainerType)
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
@@ -37680,8 +37678,8 @@ define([
 			sel.forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
-				if (!type){
-					console.log("MISSING TYPE: ", s);
+				if(!type){
+					// console.log("MISSING TYPE: ", s);
 				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){
@@ -49937,12 +49935,17 @@ define([
 define([
 	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
-	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin"],
+	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin",
+	"dgrid/extensions/ColumnReorder"
+],
 function(declare, Grid, Store, DijitRegistry, Pagination,
 		 Keyboard, Selection, formatter, ColumnResizer,
 		 ColumnHider, DnD, DnDSource,
-		 Deferred, aspect, lang, PathJoin){
-	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
+		 Deferred, aspect, lang, PathJoin,
+		 ColumnReorder
+
+){
+	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer,ColumnReorder, DijitRegistry, Selection], {
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
 				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
@@ -51007,6 +51010,202 @@ define([], function(){
 
 		return out;
 	}
+});
+
+},
+'dgrid/extensions/ColumnReorder':function(){
+define([
+	"dojo/_base/lang",
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dojo/on",
+	"dojo/query",
+	"dojo/dnd/Source",
+	"put-selector/put",
+	"xstyle/css!../css/extensions/ColumnReorder.css"
+], function(lang, declare, arrayUtil, on, query, DndSource, put){
+	var dndTypeRx = /(\d+)(?:-(\d+))?$/; // used to determine subrow from dndType
+	
+	// The following 2 functions are used by onDropInternal logic for
+	// retrieving/modifying a given subRow.  The `match` variable in each is
+	// expected to be the result of executing dndTypeRx on a subRow ID.
+	
+	function getMatchingSubRow(grid, match) {
+		var hasColumnSets = match[2],
+			rowOrSet = grid[hasColumnSets ? "columnSets" : "subRows"][match[1]];
+		
+		return hasColumnSets ? rowOrSet[match[2]] : rowOrSet;
+	}
+	
+	function setMatchingSubRow(grid, match, subRow) {
+		if(match[2]){
+			grid.columnSets[match[1]][match[2]] = subRow;
+		}else{
+			grid.subRows[match[1]] = subRow;
+		}
+	}
+
+	// Builds a prefix for a dndtype value based on a grid id.
+	function makeDndTypePrefix(gridId) {
+		return "dgrid-" + gridId + '-';
+	}
+
+	// Removes the grid id prefix from a dndtype value.  This allows the grid id to contain
+	// a dash-number suffix.  This works only if a column is dropped on the grid from which it
+	// originated.  Otherwise, a dash-number suffix will cause the regex to match on the wrong values.
+	function stripIdPrefix(gridId, dndtype) {
+		return dndtype.slice(makeDndTypePrefix(gridId).length);
+	}
+	
+	var ColumnDndSource = declare(DndSource, {
+		// summary:
+		//		Custom dojo/dnd source extension configured specifically for
+		//		dgrid column reordering.
+		
+		copyState: function(){ return false; }, // never copy
+		
+		checkAcceptance: function(source, nodes){
+			return source == this; // self-accept only
+		},
+		
+		_legalMouseDown: function(evt){
+			// Overridden to prevent blocking ColumnResizer resize handles.
+			return evt.target.className.indexOf("dgrid-resize-handle") > -1 ? false :
+				this.inherited(arguments);
+		},
+		
+		onDropInternal: function(nodes){
+			var grid = this.grid,
+				match = dndTypeRx.exec(stripIdPrefix(grid.id, nodes[0].getAttribute("dndType"))),
+				structureProperty = match[2] ? "columnSets" : "subRows",
+				oldSubRow = getMatchingSubRow(grid, match),
+				columns = grid.columns;
+			
+			// First, allow original DnD logic to place node in new location.
+			this.inherited(arguments);
+			
+			if(!match){ return; }
+			
+			// Then, iterate through the header cells in their new order,
+			// to populate a new row array to assign as a new sub-row to the grid.
+			// (Wait until the next turn to avoid errors in Opera.)
+			setTimeout(function(){
+				var newSubRow = arrayUtil.map(nodes[0].parentNode.childNodes, function(col) {
+						return columns[col.columnId];
+					}),
+					eventObject;
+				
+				setMatchingSubRow(grid, match, newSubRow);
+				
+				eventObject = {
+					grid: grid,
+					subRow: newSubRow,
+					column: columns[nodes[0].columnId],
+					bubbles: true,
+					cancelable: true,
+					// Set parentType to indicate this is the result of user interaction.
+					parentType: "dnd"
+				};
+				// Set columnSets or subRows depending on which the grid is using.
+				eventObject[structureProperty] = grid[structureProperty];
+				
+				// Emit a custom event which passes the new structure.
+				// Allow calling preventDefault() to cancel the reorder operation.
+				if(on.emit(grid.domNode, "dgrid-columnreorder", eventObject)){
+					// Event was not canceled - force processing of modified structure.
+					grid.set(structureProperty, grid[structureProperty]);
+				}else{
+					// Event was canceled - revert the structure and re-render the header
+					// (since the inherited logic invoked above will have shifted cells).
+					setMatchingSubRow(grid, match, oldSubRow);
+					grid.renderHeader();
+					// After re-rendering the header, re-apply the sort arrow if needed.
+					if (this._sort && this._sort.length){
+						this.updateSortArrow(this._sort);
+					}
+				}
+			}, 0);
+		}
+	});
+	
+	var ColumnReorder = declare(null, {
+		// summary:
+		//		Extension allowing reordering of columns in a grid via drag'n'drop.
+		//		Reordering of columns within the same subrow or columnset is also
+		//		supported; between different ones is not.
+		
+		// columnDndConstructor: Function
+		//		Constructor to call for instantiating DnD sources within the grid's
+		//		header.
+		columnDndConstructor: ColumnDndSource,
+		
+		_initSubRowDnd: function(subRow, dndType){
+			// summary:
+			//		Initializes a dojo/dnd source for one subrow of a grid;
+			//		this could be its only subrow, one of several, or a subrow within a
+			//		columnset.
+			
+			var dndParent, c, len, col, th;
+			
+			for(c = 0, len = subRow.length; c < len; c++){
+				col = subRow[c];
+				if(col.reorderable === false){ continue; }
+				
+				th = col.headerNode;
+				if(th.tagName != "TH"){ th = th.parentNode; } // from IE < 8 padding
+				// Add dojoDndItem class, and a dndType unique to this subrow.
+				put(th, ".dojoDndItem[dndType=" + dndType + "]");
+				
+				if(!dndParent){ dndParent = th.parentNode; }
+			}
+			
+			if(dndParent){ // (if dndParent wasn't set, no columns are draggable!)
+				this._columnDndSources.push(new this.columnDndConstructor(dndParent, {
+					horizontal: true,
+					grid: this
+				}));
+			}
+		},
+		
+		renderHeader: function(){
+			var dndTypePrefix = makeDndTypePrefix(this.id),
+				csLength, cs;
+			
+			this.inherited(arguments);
+			
+			// After header is rendered, set up a dnd source on each of its subrows.
+			
+			this._columnDndSources = [];
+			
+			if(this.columnSets){
+				// Iterate columnsets->subrows->columns.
+				for(cs = 0, csLength = this.columnSets.length; cs < csLength; cs++){
+					arrayUtil.forEach(this.columnSets[cs], function(subRow, sr){
+						this._initSubRowDnd(subRow, dndTypePrefix + cs + "-" + sr);
+					}, this);
+				}
+			}else{
+				// Iterate subrows->columns.
+				arrayUtil.forEach(this.subRows, function(subRow, sr){
+					this._initSubRowDnd(subRow, dndTypePrefix + sr);
+				}, this);
+			}
+		},
+		
+		_destroyColumns: function(){
+			if(this._columnDndSources){
+				// Destroy old dnd sources.
+				arrayUtil.forEach(this._columnDndSources, function(source){
+					source.destroy();
+				});
+			}
+			
+			this.inherited(arguments);
+		}
+	});
+	
+	ColumnReorder.ColumnDndSource = ColumnDndSource;
+	return ColumnReorder;
 });
 
 },
@@ -67687,12 +67886,12 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./FeatureGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang"
+	"dojo/_base/lang","dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			FeatureGrid, popup, Topic,
 			TooltipDialog, FacetFilterPanel,
-			lang){
+			lang,domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> '
 	var viewFASTATT = new TooltipDialog({
@@ -67708,17 +67907,6 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
 
 	return declare([GridContainer], {
 		gridCtor: FeatureGrid,
@@ -67727,6 +67915,8 @@ define([
 		filter: "",
 		maxGenomeCount: 10000,
 		dataModel: "genome_feature",
+		primaryKey: "feature_id",
+		maxDownloadSize: 25000,
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
 		getFilterPanel: function(opts){
 
@@ -67743,6 +67933,47 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -67760,10 +67991,12 @@ define([
 'p3/widget/GridContainer':function(){
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
+	"dojo/request", "dojo/when",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
 ], function(declare, BorderContainer, on, domConstruct,
+			request, when,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
 			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
@@ -67810,26 +68043,13 @@ define([
 
 	on(idMappingTTDialog.domNode, "TD:click", function(evt){
 		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		// console.log("selection: ", selection);
-		var ids = selection.map(function(d){
-			return d['feature_id'];
-		});
+		var selection = idMappingTTDialog.selection;
+		delete idMappingTTDialog.selection;
 
-		// console.log("ID MAP ", ids);
-		// xhr.post("/view/idmap, {
-		// 	data: {
-		// 		keyword: ids.join(","),
-		// 		from: "feature_id",
-		// 		fromGroup: "PATRIC",
-		// 		to: rel,
-		// 		toGroup: (["seed_id","feature_id","alt_locus_tag","refseq_locus_tag","protein_id","gene_id","gi"].indexOf(rel) > -1)?"PATRIC":"Other",
-		// 		sraction: 'save_params'	
-		// 	}
-		// }).then(function(results){
-		// 	document.location = "/portal/portal/patric/IDMapping?cType=taxon&cId=131567&dm=result&pk=" + results;
-		// });
+		var toIdGroup = (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
+
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+
 		popup.close(idMappingTTDialog);
 	});
 
@@ -68182,7 +68402,7 @@ define([
 				},
 				false
 			], [
-				"idmappingFeatures",
+				"idmapping",
 				"fa icon-exchange fa-2x",
 				{
 					label: "ID MAP",
@@ -68192,45 +68412,128 @@ define([
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
-				function(selection){
+				function(selection, containerWidget){
 
-					// console.log("TTDlg: ", idMappingTTDialog);
-					// console.log("this: ", this);
-					new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					return;
+					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
+					// new Dialog({content: idMappingTTDialog}).show();
+					var self = this;
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
 
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								idMappingTTDialog.selection = ids.join(",");
+								popup.open({
+									popup: idMappingTTDialog,
+									around: self.selectionActionBar._actions.idmapping.button,
+									orient: ["below"]
+								});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+
+										idMappingTTDialog.selection = ids.join(",");
+										popup.open({
+											popup: idMappingTTDialog,
+											around: self.selectionActionBar._actions.idmapping.button,
+											orient: ["below"]
+										});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						default:
+							ids = selection.map(function(d){
+								return d['feature_id'];
+							});
+							break;
+					}
+
+					idMappingTTDialog.selection = ids.join(",");
 					popup.open({
 						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
+						around: this.selectionActionBar._actions.idmapping.button,
 						orient: ["below"]
 					});
-					// console.log("popup idmapping", selection);
-				},
-				false
-			], [
-				"idmapping",
-				"fa icon-exchange fa-2x",
-				{
-					label: "ID MAP",
-					ignoreDataType: true,
-					multiple: true,
-					validTypes: ["*"],
-					tooltip: "ID Mapping",
-					tooltipDialog: idMappingTTDialog,
-					validContainerTypes: ["proteinfamily_data", "pathway_data"]
-				},
-				function(selection){
-
-					// console.log("TTDlg: ", idMappingTTDialog);
-					// console.log("this: ", this);
-					popup.open({
-						popup: idMappingTTDialog,
-						// around: this._actions.idmapping.button,
-						orient: ["below"]
-					});
-					// console.log("popup idmapping", selection);
 				},
 				false
 			], [
@@ -68261,15 +68564,111 @@ define([
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["spgene_data", "proteinfamily_data", "pathway_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
 				},
 				function(selection, containerWidget){
-					var sel = selection[0];
-					console.log("PATHWAY LINK: ", selection, containerWidget.containerType);
-					Topic.publish("/navigate", {href: "/view/Pathway/" + sel.pathway_id})
-					// var selection = self.actionPanel.get('selection')
-					// var ids = selection.map(function(d){ return d['feature_id']; });
 
+					// console.warn(containerWidget.containerType, containerWidget.type, containerWidget);
+					var ids = [];
+					switch(containerWidget.containerType){
+						case "proteinfamily_data":
+							var familyIds = selection.map(function(d){
+								return d['family_id']
+							});
+							var genomeIds = containerWidget.state.genome_ids;
+							var familyIdName = containerWidget.pfState.familyType + "_id";
+
+							when(request.post(this.apiServer + '/genome_feature/', {
+								handleAs: 'json',
+								headers: {
+									'Accept': "application/json",
+									'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+									'X-Requested-With': null,
+									'Authorization': (window.App.authorizationToken || "")
+								},
+								data: "and(in(" + familyIdName + ",(" + familyIds.join(",") + ")),in(genome_id,(" + genomeIds.join(",") + ")))&select(feature_id)&limit(25000)"
+							}), function(response){
+								ids = response.map(function(d){
+									return d['feature_id']
+								});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+							});
+
+							return;
+							break;
+						case "pathway_data":
+
+							var queryContext = containerWidget.grid.store.state.search;
+							switch(containerWidget.type){
+								case "pathway":
+									var pathway_ids = selection.map(function(d){
+										return d['pathway_id']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(pathway_id,(" + pathway_ids.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+									return;
+									break;
+								case "ec_number":
+									var ec_numbers = selection.map(function(d){
+										return d['ec_number']
+									});
+
+									when(request.post(this.apiServer + '/pathway/', {
+										handleAs: 'json',
+										headers: {
+											'Accept': "application/json",
+											'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+											'X-Requested-With': null,
+											'Authorization': (window.App.authorizationToken || "")
+										},
+										data: "and(in(ec_number,(" + ec_numbers.join(",") + "))," + queryContext + ")&select(feature_id)&limit(25000)"
+									}), function(response){
+										ids = response.map(function(d){
+											return d['feature_id']
+										});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+									});
+
+									return;
+									break;
+								case "gene":
+									ids = selection.map(function(d){
+										return d['feature_id']
+									});
+									break;
+								default:
+									return;
+									break;
+							}
+							break;
+						case "pathway_summary_data":
+							selection.map(function(d){
+								ids = ids.concat(d['feature_ids']);
+							});
+							break;
+						default:
+							// feature_data or spgene_data
+							ids = selection.map(function(sel){
+								return sel['feature_id']
+							});
+							break;
+					}
+
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
 				},
 				false
 
@@ -68333,7 +68732,7 @@ define([
 					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -68484,7 +68883,8 @@ define([
 				o.queryOptions = this.queryOptions;
 			}
 
-			// console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView create Grid: ", o);
+		 console.log("GridContainer onFirstView this.store: ", this.store);
 
 			if(this.store){
 				o.store = this.store
@@ -68517,6 +68917,7 @@ define([
 
 			if(this.containerActionBar){
 				this.addChild(this.containerActionBar);
+				this.containerActionBar.set("currentContainer",this);
 			}
 			this.addChild(this.grid);
 			this.addChild(this.selectionActionBar);
@@ -68661,7 +69062,7 @@ define([
 			selected: [],
 			byCategory: {},
 			keywords: []
-		}
+		};
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
@@ -68670,7 +69071,7 @@ define([
 				case "or":
 					term.args.forEach(function(t){
 						walk(t);
-					})
+					});
 					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
@@ -68709,7 +69110,6 @@ define([
 		dataModel: "",
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
-		state: null,
 		enableAnchorButton: false,
 		constructor: function(){
 			this._ffWidgets = {};
@@ -68720,7 +69120,7 @@ define([
 		_setStateAttr: function(state){
 			// console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
-			this._set("state", state)
+			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
@@ -68772,7 +69172,7 @@ define([
 			Object.keys(this._ffWidgets).forEach(function(category){
 				// console.log("Category: ", category)
 				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
-			}, this)
+			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
@@ -68823,15 +69223,15 @@ define([
 		},
 
 		setButtonText: function(action, text){
-			console.log("setButtonText: ", action, text)
-			var textNode = this._actions[action].textNode
-			console.log("textNode: ", textNode);
+			// console.log("setButtonText: ", action, text)
+			var textNode = this._actions[action].textNode;
+			// console.log("textNode: ", textNode);
 			textNode.innerHTML = text;
 		},
 		postCreate: function(){
 			this.inherited(arguments);
 			// domConstruct.destroy(this.pathContainer);
-			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);		
+			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);
 			domConstruct.destroy(this.pathContainer);
 			this.smallContentNode = domConstruct.create("div", {
 				"class": "minFilterView",
@@ -68884,7 +69284,7 @@ define([
 			var _self = this;
 			var setAnchor = function(){
 				var q = _self.query;
-				console.log("Anchor: ", this.state)
+				// console.log("Anchor: ", this.state)
 				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
 					// q = "and(" + q + "," + this.filter + ")";
@@ -68897,7 +69297,7 @@ define([
 				}else{
 					console.log("No Filters to set new anchor");
 				}
-			}
+			};
 
 			function toggleFilters(){
 				console.log("Toggle the Filters Panel", _self.domNode);
@@ -69178,7 +69578,7 @@ define([
 				q = "and(" + q.join(",") + ")";
 			}
 
-			console.log("Internal Query: ", q);
+			// console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				// console.log("Facet Results: ",r);
 				w.set("data", r[category]);
@@ -69326,7 +69726,7 @@ define([
 			var q = ((q && q.charAt && (q.charAt(0) == "?")) ? q.substr(1) : q) + "&limit(1)" + f;
 			// console.log("ID: ", this.id, " Facet Request Index: ", idx, " URL Length: ", url.length)
 
-			console.log("Facet Query: ", q)
+			// console.log("Facet Query: ", q)
 			var fr = xhr(PathJoin(this.apiServer, this.dataModel) + "/", {
 				method: "POST",
 				handleAs: "json",
@@ -69337,7 +69737,7 @@ define([
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				}
-			})
+			});
 
 			return fr.then(lang.hitch(this, function(response, res){
 				// console.log("RESPONSE: ",response,  res, res.facet_counts)
@@ -69351,7 +69751,7 @@ define([
 				return;
 
 			}, function(err){
-				console.log("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
+				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
 				return err;
 			}))
 		},
@@ -69433,7 +69833,7 @@ define([
 
 		},
 		addAction: function(name, classes, opts, fn, enabled, target){
-			console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
+			// console.log("ADD ACTION '" + name + "' TO TARGET: ", target)
 			if(target && typeof target == 'string'){
 				if(target == "left"){
 					target = this.leftButtons;
@@ -69833,14 +70233,14 @@ define([
 
 	return declare([TooltipDialog], {
                 containerType: "",
-		selection: null,
+                selection: null,
 
                 _setSelectionAttr: function(val){
                         console.log("DownloadTooltipDialog set selection: ", val);
                         this.selection = val;
                 },
                 timeout: function(val){
-			var _self=this;
+			             var _self=this;
                         this._timer = setTimeout(function(){
                                 popup.close(_self);
                         },val||2500);
@@ -69858,62 +70258,87 @@ define([
                 },
 
                 startup: function(){
-			if (this._started) { return; }
-			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
-			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
-                        var _self=this;
-                        on(this.domNode, ".wsActionTooltip:click", function(evt){
-                                console.log("evt.target: ", evt.target, evt.target.attributes);
-                                var rel = evt.target.attributes.rel.value;
-                                if (rel=="advancedDownload"){
+        			if (this._started) { return; }
+        			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
+        			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
+                    var _self=this;
+                    on(this.domNode, ".wsActionTooltip:click", function(evt){
+                            console.log("evt.target: ", evt.target, evt.target.attributes);
+                            var rel = evt.target.attributes.rel.value;
+                            if (rel=="advancedDownload"){
 
-                                        console.log("Selection: ", _self.selection);
-                                        var d = new Dialog({});
-                                        var ad = new AdvancedDownload({selection: _self.selection, containerType: _self.containerType});
-                                        domConstruct.place(ad.domNode, d.containerNode);
-                                        d.show();
-                                        return;
-                                }
-//                              var sel = this.selection;
-//                                      delete downloadSelectionTT.selection;
-                                console.log("DOWNLOAD ", rel);
-                        });
+                                    console.log("Selection: ", _self.selection);
+                                    var d = new Dialog({title: "Download"});
+                                    var ad = new AdvancedDownload({selection: _self.selection, containerType: _self.containerType});
+                                    domConstruct.place(ad.domNode, d.containerNode);
+                                    d.show();
+                                    return;
+                            }
+                            var conf = _self.downloadableConfig[_self.containerType];
 
-			var dstContent = domConstruct.create("div",{});
-                        this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
-                        this.selectedCount = domConstruct.create("div", {},dstContent);
-			var table = domConstruct.create("table",{},dstContent);
+                            var sel = _self.selection.map(function(sel){ return sel[conf.pk]});
 
-			var tr = domConstruct.create("tr",{}, table);
-                        var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
-                        //spacer
-                        domConstruct.create("td",{style: "width:10px;"}, tr);
-                        var oData = this.otherDownloadNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+                            var accept;
+                            switch(rel){
+                                case "csv":
+                                case "tsv":
+                                    accept="text/" + rel;
+                                    break;
+                                case "excel":
+                                    accept="application/vnd.openxmlformats";
+                                    break;
+                                default:
+                                    accept="application/" + rel;
+                                    break;
+                            }
 
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "text", innerHTML: "Text"}, tData);
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
-                        domConstruct.create("div", {"class":"wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+                            var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+                            if(baseUrl.charAt(-1) !== "/"){
+                                 baseUrl = baseUrl + "/";
+                            }
+                            baseUrl = baseUrl + conf.dataType + "/";
+                            var query = "in(" + conf.pk +",(" + sel.join(",")  +"))&sort(+" + conf.pk +")&limit(2500000)"
+                            var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "?&http_download=true&http_accept=" + accept },_self.domNode);
+                            domConstruct.create('input', {type: "hidden", value: query, name: "rql"},form);
+                            form.submit();
+                           
+                    });
 
-                        tr = domConstruct.create("tr",{}, table);
-                        var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
-                        this.advancedDownloadButton = domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
+                    var dstContent = domConstruct.create("div",{});
+                    this.labelNode = domConstruct.create("div",{style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
+                    this.selectedCount = domConstruct.create("div", {},dstContent);
+                    var table = domConstruct.create("table",{},dstContent);
+
+                    var tr = domConstruct.create("tr",{}, table);
+                    var tData = this.tableDownloadsNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+                    //spacer
+                    domConstruct.create("td",{style: "width:10px;"}, tr);
+                    var oData = this.otherDownloadNode = domConstruct.create("td",{style: "vertical-align:top;"}, tr);
+
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "tsv", innerHTML: "Text"}, tData);
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
+                    domConstruct.create("div", {"class":"wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+
+                    tr = domConstruct.create("tr",{}, table);
+                    var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
+                    this.advancedDownloadButton = domConstruct.create("span", {"class":"wsActionTooltip", style: "padding:4px;", rel: "advancedDownload", innerHTML: "Advanced"}, td);
 
 
 
-			this.set("content", dstContent);
+        			this.set("content", dstContent);
 
-			this._started=true;
-			this.set("label", this.label);
-                        this.set("selection", this.selection);
+        			this._started=true;
+        			this.set("label", this.label);
+                    this.set("selection", this.selection);
 
                 },
 
-		_setLabelAttr: function(val){
-			this.label=val;
-			if (this._started){
-				this.labelNode.innerHTML="Download selected " + val + " (" + (this.selection?this.selection.length:"0") + ") as...";
-			}
-		},
+        		_setLabelAttr: function(val){
+        			this.label=val;
+        			if (this._started){
+        				this.labelNode.innerHTML="Download selected " + val + " (" + (this.selection?this.selection.length:"0") + ") as...";
+        			}
+        		},
 
                 downloadableDataTypes: {
                         "dna+fasta": "DNA FASTA",
@@ -69923,24 +70348,34 @@ define([
                 "downloadableConfig": {
                         "genome_data": {
                                 "label": "Genomes",
+                                "dataType": "genome",
+                                pk: "genome_id",
                                 tableData: true,
                                 advanced:true
                         },
                         "sequence_data": {
                               "label": "Sequences",
+                              "dataType": "sequence",
+                              pk: "sequence_id",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                          },
                         "feature_data": {
                               "label": "Features",
+                              "dataType": "genome_feature",
+                              pk: "feature_id",
                               tableData: true,
                               otherData: ["dna+fasta","protein+fasta"]
                         },
                         "spgene_data": {
+                              dataType: "sp_gene",
+                              pk: "feature_id",
                               "label": "Specialty Genes",
                               tableData: true
                         },
                         "pathway_data": {
+                              pk: "pathway_id",
+                              dataType: "pathway",
                               "label": "Pathways",
                               tableData: true  
                         },
@@ -69958,11 +70393,11 @@ define([
                         var conf = this.downloadableConfig[val] || this.downloadableConfig["default"];
 
 
-			this.set("label", conf.label);
+		      	        this.set("label", conf.label);
 
                         if (!this._started) { return; }
 
-			domConstruct.empty(this.otherDownloadNode);
+			             domConstruct.empty(this.otherDownloadNode);
 
                         if (conf.otherData){
                                 conf.otherData.forEach(function(type){
@@ -69984,12 +70419,12 @@ define([
 },
 'p3/widget/AdvancedDownload':function(){
 define([
-        "dojo/_base/declare", "dojo/on", "dojo/dom-construct",
+        "dojo/_base/declare", "dojo/on", "dojo/dom-construct","dojo/dom-attr",
         "dojo/_base/lang","dojo/mouse", "dijit/_WidgetBase","dijit/_WidgetsInTemplateMixin",
         "dojo/topic", "dijit/_TemplatedMixin","dojo/text!./templates/AdvancedDownload.html",
-        "dijit/Dialog"
+        "dijit/Dialog","dojo/query"
 
-], function(declare, on, domConstruct,
+], function(declare, on, domConstruct,domAttr,
 		lang,Mouse,WidgetBase,WidgetsInTemplate,
 		Topic,TemplatedMixin,Template,
 		Dialog
@@ -70000,17 +70435,20 @@ define([
 		"downloadableConfig": {
 			"genome_data": {
 			        "label": "Genomes",
+			        dataType: "genome",
 			        tableData: true,
 			        downloadTypes: [
-			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "application/dna+fasta"},
-						{"label": "Protein Sequences in FASTA (*.fna)", type: "application/protein+fasta"},
-						{"label": "All annotations in GenBank file format (*.gbf)", type: "application/gbf"},
-						{"label": "All Genomic features in tab-delimited format (*.features.tab)", type: "text/csv"},
-						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "text/csv"},
-						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "text/csv"},
-						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "application/ffn"},
-						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "application/frn"},
-						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "text/csv"}
+			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "fna",skipAnnotation:true},
+						{"label": "Protein Sequences in FASTA (*.faa)", type: "faa"},
+						{"label": "Annotations in GenBank file format (*.gbf)", type: "gbf"},
+						{"label": "Genomic features in Generic Feature Format format (*.gff)", type: "gff"},
+						{"label": "Genomic features in tab-delimited format (*.features.tab)", type: "features.tab"},
+						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "cds.tab"},
+
+						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "rna.tab"},
+						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "ffn"},
+						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "frn"},
+						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "pathway.tab"}
 			        ]
 			},
 			"sequence_data": {
@@ -70035,7 +70473,57 @@ define([
 	    	}
 	    },
 	    download: function(){
-	    	new Dialog({content: "Download backend not yet implemented"}).show();
+	    	var ids = this.selection.map(function(x){ return x.genome_id; });
+	    	console.log("Downloading genomes: ", ids);
+	    	var types=[];
+	    	dojo.query("input",this.fileTypesTable).forEach(function(node){
+	    		console.log("node: ", node, node.checked, node.value);
+	    		if (node.checked){
+
+	    			types.push(node.value);
+	    		}
+	    	});
+	    	//new Dialog({content: "Download: " + ids + "\nTypes: " + types}).show();
+	    	var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+	    	var conf = this.downloadableConfig[this.containerType]
+
+	    	var map={}
+	    	conf.downloadTypes.forEach(function(type){
+	    		map[type.type]=type;
+	    	})
+
+	    	var annotation = this.annotationType.get('value');
+
+	    	types = types.map(function(type){
+	    		if (map[type] && (map[type].skipAnnotation || annotation=="all" || !annotation)){
+	    			return "*."+type;
+	    		}else{
+	    			return "*"+annotation + "." + type;
+	    		}
+	    	})
+
+	    	if(baseUrl.charAt(-1) !== "/"){
+				baseUrl = baseUrl + "/";
+			}
+
+			
+			var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "bundle/" + conf.dataType + "/"},this.domNode);
+			domConstruct.create('input', {type: "hidden", name: "archiveType", value: this.archiveType.get('value')},form);
+			var typesNode = document.createElement("input");
+			typesNode.setAttribute('type',"hidden")
+			typesNode.setAttribute("name", "types");
+			typesNode.setAttribute("value", types.join(","));
+			form.appendChild(typesNode);
+
+			var qNode = document.createElement("input");
+			qNode.setAttribute('type',"hidden")
+			qNode.setAttribute("name", "q");
+			qNode.setAttribute("value", "in(genome_id,(" + ids.join(",") +"))");
+			form.appendChild(qNode);
+	
+			console.log("FORM SUBMIT: ", form);
+			form.submit();
+
 	    },
 		selection: null,
 		_setSelectionAttr: function(val){
@@ -70580,11 +71068,11 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on, domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -70600,18 +71088,6 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		containerType: "spgene_data",
 		facetFields: ["property", "source", "evidence"],
@@ -70619,6 +71095,8 @@ define([
 		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
 		},
+		primaryKey: "id",
+		maxDownloadSize: 250000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -70631,13 +71109,55 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
-				true
+				true,
+				"left"
 			]
 		]),
 		gridCtor: Grid
@@ -70664,10 +71184,11 @@ define([
 		apiServer: window.App.dataAPI,
 		store: store,
 		dataModel: "sp_gene",
-		primaryKey: "feature_id",
+		primaryKey: "id",
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
+			id: {label: "ID", field: "id", hidden: true},
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},
@@ -70732,7 +71253,7 @@ define([
 			Store){
 	return declare([Store], {
 		dataModel: "sp_gene",
-		idProperty: "feature_id",
+		idProperty: "patric_id",
 		facetFields: []
 	});
 });
@@ -70879,6 +71400,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -70903,6 +71425,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
 				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},
 					accession: {label: 'Accession', field: 'accession', hidden: true},
@@ -70991,7 +71514,7 @@ define([
 		typeMap: {
 			"pathway": "pathway_id",
 			"ec_number": "ec_number",
-			"gene": "gene"
+			"gene": "feature_id"
 		},
 		_setQueryAttr: function(query){
 			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
@@ -71023,9 +71546,9 @@ define([
 				_setQueryAttr: function(query){
 					// console.log("_setQueryAttr: ", query)
 					var p = _self.typeMap[_self.type];
-					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))"
-					console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
-					this._set("query", query)
+					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))";
+					// console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
+					this._set("query", query);
 					this.getFacets(query).then(lang.hitch(this, function(facets){
 						// console.log("_setQuery got facets: ", facets)
 						if(!facets){
@@ -71090,13 +71613,59 @@ define([
 				"left"
 			]
 		]),
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewPathwayMap",
+				"fa fa-map-o fa-2x",
+				{
+					label: "Map",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "View PathwayMap",
+					validContainerTypes: ["pathway_data"]
+				},
+				function(selection){
+					console.log(selection, this.type, this.state);
+					var url = {annotation: 'PATRIC'};
 
+					if(this.state.hasOwnProperty('taxon_id')){
+						url['taxon_id'] = this.state.taxon_id;
+					}else if(this.state.hasOwnProperty('genome')){
+						url['genome_id'] = this.state.genome.genome_id;
+					}else if(this.state.hasOwnProperty('genome_ids')){
+						url['genome_id'] = this.state.genome_ids[0];
+					}
+
+					switch(this.type){
+						case "pathway":
+							url['pathway_id'] = selection[0].pathway_id;
+							break;
+						case "ec_number":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['ec_number'] = selection[0].ec_number;
+							break;
+						case "gene":
+							url['pathway_id'] = selection[0].pathway_id;
+							url['feature_id'] = selection[0].feature_id;
+							break;
+						default:
+							break;
+					}
+					var params = Object.keys(url).map(function(p){
+						return p + "=" + url[p]
+					}).join("&");
+					// console.log(params);
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+				},
+				false
+			]
+		]),
 		_setStateAttr: function(state){
 			this.inherited(arguments);
 			if(!state){
 				return;
 			}
-			console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
+			// console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
@@ -71128,11 +71697,10 @@ define([
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		dataModel: "pathway",
-		primaryKey: "pathway_id",
+		primaryKey: "idx",
 		selectionModel: "extended",
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
-		store: null,
 		columns: {
 			// "Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
@@ -71200,9 +71768,9 @@ define([
 		},
 
 		_setState: function(state){
-			console.log("PMS SET STATE: ", state, this.store)
+			// console.log("PMS SET STATE: ", state, this.store)
 			if(!this.store){
-				console.log("CREATE STORE FROM PMG _setState()")
+				// console.log("CREATE STORE FROM PMG _setState()")
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set("state", state);
@@ -71211,7 +71779,7 @@ define([
 		},
 
 		createStore: function(server, token, state){
-			console.log("createStore()")
+			// console.log("createStore()")
 			//console.log("CreateStore() server: ", server);
 			//console.log("CreateStore() token: ", token);
 			//console.log("CreateStore() state: ", state);
@@ -71249,7 +71817,7 @@ define([
 			PathJoin){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
-		idProperty: "pathway_id",
+		idProperty: "idx",
 		apiServer: window.App.dataServiceURL,
 		state: null,
 		genome_ids: null,
@@ -71263,12 +71831,12 @@ define([
 				nv = state.search + state.filter
 			}
 
-			console.log("MEMORY STORE onSetState: ", state, oldVal);
+			// console.log("MEMORY STORE onSetState: ", state, oldVal);
 			// if (ov!=nv){
-			console.log("clear memory store data");
+			// console.log("clear memory store data");
 			this._loaded = false;
 			if(this._loadingDeferred){
-				console.log("Deleting _loadingDeferred", this._loadingDeferred);
+				// console.log("Deleting _loadingDeferred", this._loadingDeferred);
 				delete this._loadingDeferred;
 			}
 			// }
@@ -71278,12 +71846,12 @@ define([
 		},
 		init: function(options){
 			options = options || {};
-			console.log("PMS Ctor Options: ", options);
+			// console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
 			this.watch("state", lang.hitch(this, "onSetState"));
-			console.log("INIT COMPLETE: ", this)
+			// console.log("INIT COMPLETE: ", this)
 		},
 
 		query: function(query, opts){
@@ -71294,10 +71862,10 @@ define([
 			else{
 				var _self = this;
 				var results;
-				console.log("Beofre LOAD type: ", this.type);
-				console.log("Initiate NON LOADED Query: ", query);
+				// console.log("Beofre LOAD type: ", this.type);
+				// console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
-					console.log("Do actual Query Against loadData() data. QR: ", qr);
+					// console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
@@ -71373,7 +71941,7 @@ define([
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					console.log("buildQuery SEARCH: ", this.state.search);
+					// console.log("buildQuery SEARCH: ", this.state.search);
 
 					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
 				}else if(this.state.genome_ids){
@@ -71399,7 +71967,7 @@ define([
 			}
 			q = q + this.queryTypes[this.type];
 
-			console.log("End Build Query: ", q);
+			// console.log("End Build Query: ", q);
 			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
@@ -71411,7 +71979,7 @@ define([
 			var state = this.state || {};
 
 			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
-				console.log("No Genome IDS, use empty data set for initial store");
+				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -71432,11 +72000,11 @@ define([
 			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
 			// }
 
-			console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
+			// console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
 			var q = this.buildQuery();
 
 			var _self = this;
-			console.log("Load Data: ", q);
+			// console.log("Load Data: ", q);
 			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
@@ -71455,7 +72023,7 @@ define([
 					"ecnumber": "ec_number",
 					"genes": 'feature_id'
 				};
-				console.log("Pathway Base Query Response:", response);
+				// console.log("Pathway Base Query Response:", response);
 				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
 				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
@@ -71481,22 +72049,37 @@ define([
 						}else{
 							doc.gene_cons = 0;
 						}
+
+						// compose index key
+						switch(this.type){
+							case "pathway":
+								doc.idx = doc.pathway_id;
+								break;
+							case "ecnumber":
+								doc.idx = doc.pathway_id + "_" + doc.ec_number;
+								break;
+							case "genes":
+								doc.idx = doc.feature_id;
+								break;
+							default:
+								break;
+						}
 						return doc;
 					}, this);
-					console.log("doc count: ", docs.length);
+					// console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
 					_self._loaded = true;
 					return true;
 
 				}else{
-					console.log("Unable to Process Response: ", response);
+					console.error("Unable to Process Response: ", response);
 					_self.setData([]);
 					_self._loaded = true;
 					return false;
 				}
 			}), lang.hitch(this, function(err){
-				console.log("Error Loading Data: ", err);
+				console.error("Error Loading Data: ", err);
 				_self.setData([]);
 				_self._loaded = true;
 				return err;
@@ -75191,28 +75774,30 @@ define([
 					label: "Anchor",
 					multiple: false,
 					validType: ["*"],
-					tooltip: "Anchor by genome",
-					tooltipDialog: null
+					tooltip: "Anchor by genome"
 				},
 				function(){
 
 					// dialog for anchoring
 					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
 						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()/*,
-							onMouseLeave: function(){
-								popup.close(this.tooltip_anchoring);
-							}*/
+							content: this._buildPanelAnchoring()
 						});
 						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
 					}
 
-					popup.open({
-						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-						around: this.containerActionBar._actions.Anchor.button,
-						orient: ["below"]
-					});
-
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+							around: this.containerActionBar._actions.Anchor.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
 				},
 				true
 			]
@@ -75575,7 +76160,8 @@ define([
 			});
 
 			var btnDownloadProteins = new Button({
-				label: 'Download Proteins'
+				label: 'Download Proteins',
+				disabled: (features.length === 0)
 			});
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
@@ -75597,7 +76183,8 @@ define([
 			});
 
 			var btnShowDetails = new Button({
-				label: 'Show Proteins'
+				label: 'Show Proteins',
+				disabled: (features.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
@@ -75610,7 +76197,8 @@ define([
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				disabled: (features.length === 0)
 			});
 			var btnCancel = new Button({
 				label: 'Cancel',
@@ -81295,29 +81883,21 @@ define([
 define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./GenomeGrid", "dijit/popup", "dojo/_base/lang",
-	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic"
+	"dijit/TooltipDialog", "./FacetFilterPanel", "dojo/topic",
+	"dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			GenomeGrid, popup, lang,
-			TooltipDialog, FacetFilterPanel, Topic){
+			TooltipDialog, FacetFilterPanel, Topic,
+			domConstruct
+	){
 
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>'
+
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
 			popup.close(downloadTT);
 		}
-	});
-
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection')
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature"
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		console.log("selection: ", selection);
-		console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
 	});
 
 	return declare([GridContainer], {
@@ -81327,8 +81907,10 @@ define([
 		getFilterPanel: function(opts){
 			return;
 		},
-		dataModel: "genome",
 		enableAnchorButton: true,
+		dataModel: "genome",
+		primaryKey: "genome_id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -81341,6 +81923,47 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -81350,16 +81973,6 @@ define([
 				true,
 				"left"
 			]
-			// ,[
-			// 	"ToggleFilters",
-			// 	"fa icon-filter fa-2x",
-			// 	{label:"FILTERS",multiple: false,validTypes:["*"],tooltip: "Toggle the visibility of the available filters"}, 
-			// 	function(selection){	
-			// 		console.log("Toggle the Filters Panel");
-			// 		on.emit(this.domNode,"ToggleFilters",{});
-			// 	},
-			// 	true
-			// ]
 		])
 	});
 });
@@ -81370,11 +81983,11 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./SequenceGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on, domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
@@ -81390,23 +82003,13 @@ define([
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		containerType: "sequence_data",
 		facetFields: ["sequence_type", "topology"],
 		maxGenomeCount: 10000,
 		dataModel: "genome_sequence",
+		primaryKey: "sequence_id",
+		maxDownloadSize: 25000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -81419,13 +82022,55 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
-				true
+				true,
+				"left"
 			]
 		]),
 		// selectionActions: [GridContainer.prototype.selectionActions[0]],
@@ -81640,84 +82285,100 @@ define([
 },
 'p3/widget/app/Annotation':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Annotation.html", "./AppBase",
-	"dojo/_base/lang", "../../WorkspaceManager"
-], function(declare, WidgetBase, on,
-			domClass, Templated, WidgetsInTemplate,
-			Template, AppBase,
-			lang, WorkspaceManager){
+	"dojo/_base/declare","dijit/_WidgetBase","dojo/on",
+	"dojo/dom-class","dijit/_TemplatedMixin","dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Annotation.html","./AppBase",
+	"dojo/_base/lang","../../WorkspaceManager"
+], function(
+	declare, WidgetBase, on,
+	domClass,Templated,WidgetsInTemplate,
+	Template,AppBase,lang,WorkspaceManager
+){
 	return declare([AppBase], {
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
 		required: true,
-		genera_four: ["Acholeplasma", "Entomoplasma", "Hepatoplasma", "Hodgkinia", "Mesoplasma", "Mycoplasma", "Spiroplasma", "Ureaplasma"],
+		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
 		code_four: false,
 		defaultPath: "",
 
 		constructor: function(){
-			this._autoTaxSet = false;
-			this._autoNameSet = false;
+			this._autoTaxSet=false;
+			this._autoNameSet=false;
 		},
 		startup: function(){
-			var _self = this;
-			if(this._started){
-				return;
-			}
-			this.inherited(arguments);
-			_self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-			_self.output_pathWidget.set('value', _self.defaultPath);
-		},
-		changeCode: function(item){
-			this.code_four = false;
+                        var _self=this;
+                        if (this._started) { return; }
+                        this.inherited(arguments);
+                        _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+                        _self.output_pathWidget.set('value', _self.defaultPath);
+                },
+		changeCode: function(item){	
+			this.code_four=false;
 			item.lineage_names.forEach(lang.hitch(this, function(lname){
-				if(dojo.indexOf(this.genera_four, lname) >= 0){
-					this.code_four = true;
-				}
-				;
+				if (dojo.indexOf(this.genera_four, lname)>=0){
+					this.code_four=true;
+				};
 			}));
-			this.code_four ? this.genetic_code.set("value", "4") : this.genetic_code.set("value", "11");
+			this.code_four ? this.genetic_code.set("value","4") : this.genetic_code.set("value","11");
 		},
-
+	
 		onTaxIDChange: function(val){
-			this._autoNameSet = true;
-			var tax_id = this.tax_idWidget.get("item").taxon_id;
-			var sci_name = this.tax_idWidget.get("item").taxon_name;
-			//var tax_obj=this.tax_idWidget.get("item");
-			if(tax_id){
-				var name_promise = this.scientific_nameWidget.store.get(tax_id);
-				name_promise.then(lang.hitch(this, function(tax_obj){
-					if(tax_obj){
-						this.scientific_nameWidget.set('item', tax_obj);
-						this.scientific_nameWidget.validate();
-						this.changeCode(this.tax_idWidget.get("item"));
-					}
-				}));
-				//this.scientific_nameWidget.set('value',sci_name);
-				//this.scientific_nameWidget.set('displayedValue',sci_name);
-				//this.scientific_nameWidget.set("item",tax_obj);
-				//this.scientific_nameWidget.validate();
+            this._autoNameSet=true;
+            var tax_id=this.tax_idWidget.get("item").taxon_id;
+            var sci_name=this.tax_idWidget.get("item").taxon_name;
+            //var tax_obj=this.tax_idWidget.get("item");
+            if(tax_id){
+                var name_promise=this.scientific_nameWidget.store.get(tax_id);
+                name_promise.then(lang.hitch(this, function(tax_obj) {
+                    if(tax_obj){
+                        this.scientific_nameWidget.set('item',tax_obj);
+                        this.scientific_nameWidget.validate();
+			            this.changeCode(this.tax_idWidget.get("item"));
+                    }
+                }));
+                //this.scientific_nameWidget.set('value',sci_name);
+                //this.scientific_nameWidget.set('displayedValue',sci_name);
+                //this.scientific_nameWidget.set("item",tax_obj);
+                //this.scientific_nameWidget.validate();
 
-			}
-			this._autoTaxSet = false;
+            } 
+			this._autoTaxSet=false;
 		},
+
+
+        updateOutputName: function(){
+            var current_output_name = [];
+            var sci_item = this.scientific_nameWidget.get("item");
+            var label_value = this.myLabelWidget.get("value");
+            if(sci_item && sci_item.lineage_names.length > 0){
+                current_output_name.push(sci_item.lineage_names.slice(-1)[0]);
+            }
+            if(label_value.length >0){
+                current_output_name.push(label_value);
+            }
+            if(current_output_name.length > 0){
+                this.output_nameWidget.set("value", current_output_name.join(" "));
+            }
+        },
+
 		onSuggestNameChange: function(val){
-			this._autoTaxSet = true;
-			var tax_id = this.scientific_nameWidget.get("value");
-			if(tax_id){
-				//var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
-				//tax_promise.then(lang.hitch(this, function(tax_obj) {
-				//    if(tax_obj && tax_obj.length){
-				//        this.tax_idWidget.set('item',tax_obj[0]);
-				//    }
-				//}));
-				this.tax_idWidget.set('displayedValue', tax_id);
-				this.tax_idWidget.set('value', tax_id);
-				this.changeCode(this.scientific_nameWidget.get("item"));
-			}
-			this._autoNameSet = false;
+            this._autoTaxSet=true;
+            var tax_id=this.scientific_nameWidget.get("value");
+            if(tax_id){
+                //var tax_promise=this.tax_idWidget.store.get("?taxon_id="+tax_id);
+                //tax_promise.then(lang.hitch(this, function(tax_obj) {
+                //    if(tax_obj && tax_obj.length){
+                //        this.tax_idWidget.set('item',tax_obj[0]);
+                //    }
+                //}));
+                this.tax_idWidget.set('displayedValue',tax_id);
+                this.tax_idWidget.set('value',tax_id);
+			    this.changeCode(this.scientific_nameWidget.get("item"));
+                this.updateOutputName();
+            }
+			this._autoNameSet=false;
 			/*if (val && !this.output_nameWidget.get('value') || (this.output_nameWidget.get('value')&&this._selfSet)  ){
 				var abbrv=this.scientific_nameWidget.get('displayedValue');
 				abbrv=abbrv.match(/[^\s]+$/);
@@ -81726,8 +82387,8 @@ define([
 		},
 		getValues: function(){
 			var values = this.inherited(arguments);
-			values["scientific_name"] = this.output_nameWidget.get('displayedValue');
-			values["taxonomy_id"] = this.tax_idWidget.get('displayedValue');
+			values["scientific_name"]=this.output_nameWidget.get('displayedValue');
+			values["taxonomy_id"]=this.tax_idWidget.get('displayedValue');
 			return values;
 		}
 
@@ -83643,7 +84304,7 @@ return number;
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"Everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<!--<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
@@ -83659,8 +84320,9 @@ return number;
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"seed_id\">SEED ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >PATRIC ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
+'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
@@ -83668,11 +84330,11 @@ return number;
 'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <table style=\"margin:2px;\">\n        <tbody>\n            <tr>\n                <td style=\"width:35%;padding:4px;vertical-align:top;\">\n                    <div class=\"section\">\n                       <!-- <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>-->\n                        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                            Loading Genome Summary...\n                        </div>\n                    </div>\n                </td>\n                <td style=\"width:40%;padding:4px;vertical-align:top;\">\n  \n                    <div class=\"section\" >\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                        <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                          <div data-dojo-attach-point=\"pfSummaryWidgetD\" style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                          <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n                </td>\n                <td style=\"width:25%;padding:4px;vertical-align:top;\">\n                    <div class=\"section \">\n                     <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                      <div  style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting the data types, you can generate and download a ZIP file containing the desired data.</p>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
+'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
-'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 340px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:340px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:340px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genome Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'My bacillus cereus'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy Rank/Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appField\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
+'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",

@@ -1,17 +1,12 @@
 define("p3/store/CorrelatedGenesMemoryStore", [
-	"dojo/_base/declare",
-	"dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
 	"dojo/store/Memory",
-	"dojo/store/util/QueryResults",
-	"dojo/when", "dojo/_base/lang",
-	"dojo/_base/Deferred", "dojo/Stateful"
+	"dojo/store/util/QueryResults"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
+			Memory, QueryResults){
 
-], function(declare,
-			request,
-			Memory,
-			QueryResults,
-			when, lang,
-			Deferred, Stateful){
 	return declare([Memory, Stateful], {
 		baseQuery: {},
 		idProperty: "feature_id",
@@ -35,7 +30,33 @@ define("p3/store/CorrelatedGenesMemoryStore", [
 			if(options.apiServer){
 				this.apiServer = options.apiServer
 			}
+
+			var self = this;
+
+			Topic.subscribe("CorrelatedGenes", lang.hitch(this, function(){
+				// console.log("CorrelatedGenesMemoryStore:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "filter":
+						self.cutoff_value = value.cutoff_value;
+						self.cutoff_dir = value.cutoff_dir;
+						this.reload();
+						break;
+					default:
+						break;
+				}
+			}));
+
 			this.watch("state", lang.hitch(this, "onSetState"))
+		},
+
+		reload: function(){
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
 		},
 
 		query: function(query, opts){
@@ -80,8 +101,8 @@ define("p3/store/CorrelatedGenesMemoryStore", [
 			}
 			var state = this.state || {};
 
-			if(!state.feature){
-				//console.log("No Feature, use empty data set for initial store");
+			if(!state.feature_id){
+				// console.log("No Feature, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -95,9 +116,8 @@ define("p3/store/CorrelatedGenesMemoryStore", [
 				return def.promise;
 			}
 
-			// TODO: read from state later
-			state.cutoff_value = 0.4;
-			state.cutoff_dir = 'pos';
+			_self.cutoff_value = _self.cutoff_value || 0.4;
+			_self.cutoff_dir = _self.cutoff_dir || 'pos';
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/transcriptomics_gene/', {
 				handleAs: 'json',
@@ -109,11 +129,17 @@ define("p3/store/CorrelatedGenesMemoryStore", [
 				},
 				data: {
 					q: 'genome_id:' + state.feature.genome_id,
-					fq: '{!correlation fieldId=refseq_locus_tag fieldCondition=pid fieldValue=log_ratio srcId=' + state.feature.refseq_locus_tag + ' filterCutOff=' + state.cutoff_value + ' filterDir=' + state.cutoff_dir + ' cost=101}',
+					fq: '{!correlation fieldId=refseq_locus_tag fieldCondition=pid fieldValue=log_ratio srcId=' + state.feature.refseq_locus_tag + ' filterCutOff=' + _self.cutoff_value + ' filterDir=' + _self.cutoff_dir + ' cost=101}',
 					rows: 0,
 					'json.nl': 'map'
 				}
 			}), function(response){
+
+				if(response.correlation.length === 0){
+					_self.setData([]);
+					_self._loaded = true;
+					return true;
+				}
 
 				var refseqLocusTagList = [];
 				response.correlation.forEach(function(element){

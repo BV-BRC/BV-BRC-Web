@@ -14,11 +14,10 @@ define([
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		dataModel: "pathway",
-		primaryKey: "pathway_id",
+		primaryKey: "idx",
 		selectionModel: "extended",
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
-		store: null,
 		columns: {
 			// "Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
@@ -86,9 +85,9 @@ define([
 		},
 
 		_setState: function(state){
-			console.log("PMS SET STATE: ", state, this.store)
+			// console.log("PMS SET STATE: ", state, this.store)
 			if(!this.store){
-				console.log("CREATE STORE FROM PMG _setState()")
+				// console.log("CREATE STORE FROM PMG _setState()")
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
 				this.store.set("state", state);
@@ -97,7 +96,7 @@ define([
 		},
 
 		createStore: function(server, token, state){
-			console.log("createStore()")
+			// console.log("createStore()")
 			//console.log("CreateStore() server: ", server);
 			//console.log("CreateStore() token: ", token);
 			//console.log("CreateStore() state: ", state);

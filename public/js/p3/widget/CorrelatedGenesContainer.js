@@ -38,7 +38,7 @@ define([
 		apiServer: window.App.dataServiceURL,
 
 		onSetState: function(attr, oldVal, state){
-			console.log("CorrelatedGenesContainer set STATE.  feature_id: ", state.feature_id, " state: ", state);
+			// console.log("CorrelatedGenesContainer set STATE.  feature_id: ", state.feature_id, " state: ", state);
 
 			if(!state){
 				return;
@@ -48,7 +48,7 @@ define([
 				this.correlatedGenesGrid.set('state', state);
 			}
 
-			console.log("call _set(state) ", state);
+			// console.log("call _set(state) ", state);
 
 			this._set("state", state);
 		},

@@ -2,11 +2,11 @@ define("p3/widget/SpecialtyGeneGridContainer", [
 	"dojo/_base/declare", "./GridContainer",
 	"./SpecialtyGeneGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on, domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -22,18 +22,6 @@ define("p3/widget/SpecialtyGeneGridContainer", [
 		}
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
-
 	return declare([GridContainer], {
 		containerType: "spgene_data",
 		facetFields: ["property", "source", "evidence"],
@@ -41,6 +29,8 @@ define("p3/widget/SpecialtyGeneGridContainer", [
 		dataModel: "sp_gene",
 		getFilterPanel: function(opts){
 		},
+		primaryKey: "id",
+		maxDownloadSize: 250000,
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -53,13 +43,55 @@ define("p3/widget/SpecialtyGeneGridContainer", [
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+							if (window.App.authorizationToken){
+								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
 						orient: ["below"]
 					});
 				},
-				true
+				true,
+				"left"
 			]
 		]),
 		gridCtor: Grid

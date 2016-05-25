@@ -90,28 +90,30 @@ define([
 					label: "Anchor",
 					multiple: false,
 					validType: ["*"],
-					tooltip: "Anchor by genome",
-					tooltipDialog: null
+					tooltip: "Anchor by genome"
 				},
 				function(){
 
 					// dialog for anchoring
 					if(this.containerActionBar._actions.Anchor.options.tooltipDialog == null){
 						this.tooltip_anchoring = new TooltipDialog({
-							content: this._buildPanelAnchoring()/*,
-							onMouseLeave: function(){
-								popup.close(this.tooltip_anchoring);
-							}*/
+							content: this._buildPanelAnchoring()
 						});
 						this.containerActionBar._actions.Anchor.options.tooltipDialog = this.tooltip_anchoring;
 					}
 
-					popup.open({
-						popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
-						around: this.containerActionBar._actions.Anchor.button,
-						orient: ["below"]
-					});
-
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
+							around: this.containerActionBar._actions.Anchor.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
 				},
 				true
 			]
@@ -474,7 +476,8 @@ define([
 			});
 
 			var btnDownloadProteins = new Button({
-				label: 'Download Proteins'
+				label: 'Download Proteins',
+				disabled: (features.length === 0)
 			});
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
@@ -496,7 +499,8 @@ define([
 			});
 
 			var btnShowDetails = new Button({
-				label: 'Show Proteins'
+				label: 'Show Proteins',
+				disabled: (features.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
@@ -509,7 +513,8 @@ define([
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				disabled: (features.length === 0)
 			});
 			var btnCancel = new Button({
 				label: 'Cancel',

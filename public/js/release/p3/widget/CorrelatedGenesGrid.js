@@ -1,12 +1,12 @@
 define("p3/widget/CorrelatedGenesGrid", [
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"dojo/_base/xhr", "dojo/_base/lang", "./Grid", "./formatter", "../store/CorrelatedGenesMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/selector"
-], function(declare, BorderContainer, on, Deferred,
-			domClass, ContentPane, domConstruct,
-			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector){
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/request", "dojo/aspect", "dojo/dom-construct", "dojo/dom-class",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"./PageGrid", "./formatter", "../store/CorrelatedGenesMemoryStore", "dgrid/selector"
+], function(declare, lang, Deferred,
+			on, request, aspect, domConstruct, domClass,
+			BorderContainer, ContentPane,
+			Grid, formatter, Store, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -18,7 +18,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			// "Selection Checkboxes": selector({}), // no selector for now.
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
@@ -44,6 +44,9 @@ define("p3/widget/CorrelatedGenesGrid", [
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.queryOptions = {
+				sort: [{attribute: "correlation", descending: true}]
+			};
 		},
 		startup: function(){
 			var _self = this;
@@ -112,11 +115,14 @@ define("p3/widget/CorrelatedGenesGrid", [
 
 		createStore: function(server, token, state){
 
-			return new Store({
+			var store = new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
+			store.watch("refresh", lang.hitch(this, "refresh"));
+
+			return store;
 		}
 	});
 });

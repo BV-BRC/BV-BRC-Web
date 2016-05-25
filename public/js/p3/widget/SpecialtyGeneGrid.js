@@ -15,10 +15,11 @@ define([
 		apiServer: window.App.dataAPI,
 		store: store,
 		dataModel: "sp_gene",
-		primaryKey: "feature_id",
+		primaryKey: "id",
 		deselectOnRefresh: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
+			id: {label: "ID", field: "id", hidden: true},
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},
