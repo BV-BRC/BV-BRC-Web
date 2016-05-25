@@ -4,13 +4,13 @@ define("p3/widget/viewer/Feature", [
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
-	"../TranscriptomicsContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
+	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
 			ActionBar, ContainerActionBar, PathwaysContainer,
-			TranscriptomicsContainer, CorrelatedGenesContainer, PathJoin){
+			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -130,7 +130,14 @@ define("p3/widget/viewer/Feature", [
 			});
 			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
 			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
+			/*
 			this.transcriptomics = new ContentPane({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_transcriptomics",
+				content: "Transcriptomics"
+			});
+			*/
+			this.transcriptomics = new GeneExpressionContainer({
 				title: "Transcriptomics",
 				id: this.viewer.id + "_transcriptomics",
 				content: "Transcriptomics"

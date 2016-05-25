@@ -1,53 +1,51 @@
-define("p3/widget/CorrelatedGenesGrid", [
+define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/request", "dojo/aspect", "dojo/dom-construct", "dojo/dom-class",
-	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/CorrelatedGenesMemoryStore", "dgrid/selector"
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
+	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore"
 ], function(declare, lang, Deferred,
-			on, request, aspect, domConstruct, domClass,
-			BorderContainer, ContentPane,
-			Grid, formatter, Store, selector){
+			on, domClass, domConstruct, aspect, request, Topic,
+			Grid, formatter, Store){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataServiceURL,
 		store: null,
-		dataModel: "transcriptomics_gene",
-		primaryKey: "feature_id",
+		dataModel: "genome_feature",
+		primaryKey: "idx",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}), // no selector for now.
-			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
-			accession: {label: "Accession", field: "accession", hidden: true},
-			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
-			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
-			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
-			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
-			annotation: {label: "Annotation", field: "annotation", hidden: true},
-			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
-			start: {label: "Start", field: "start", hidden: true},
-			end: {label: "END", field: "end", hidden: true},
-			na_length: {label: "NA Length", field: "na_length", hidden: true},
-			strand: {label: "Strand", field: "strand", hidden: true},
-			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
-			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
-			gene: {label: "Gene Symbol", field: "gene", hidden: false},
-			product: {label: "Product", field: "product", hidden: false},
-
-			correlation: {label: "Correlation", field: "correlation", hidden: false},
-			comparisons: {label: "Comparisons", field: "conditions", hidden: false}
+			// "Selection Checkboxes": selector({}),
+			genome_name: {label: 'Genome Name', field: 'genome_name'},
+			accession: {label: 'Accession', field: 'accession', hidden: true},
+			patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag'},
+			alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true},
+			target: {label: 'Target', field: 'target'},
+			gene: {label: 'Gene', field: 'gene'},
+			// genome_browser: {},
+			annotation: {label: 'Annotation', field: 'annotation', hidden: true},
+			feature_type: {label: 'Feature Type', field: 'feature_type', hidden: true},
+			start: {label: 'Start', field: 'start', hidden: true},
+			end: {label: 'End', field: 'end', hidden: true},
+			length_nt: {label: 'Length(NT)', field: 'na_length', hidden: true},
+			strand: {label: 'Strand', field: 'strand', hidden: true},
+			figfam_id: {label: 'FIGfam ID', field: 'figfam_id'},
+			protein_id: {label: 'Protein ID', field: 'protein_id', hidden: true},
+			length_aa: {label: 'Length(AA)', field: 'aa_length', hidden: true},
+			product: {label: 'Product', field: 'product'}
 		},
 		constructor: function(options){
-			//console.log("CorrelatedGenes Ctor: ", options.state.feature);
+			//console.log("PathwaySummaryGrid Ctor: ", options);
 			if(options && options.apiServer){
 				this.apiServer = options.apiServer;
 			}
 			this.queryOptions = {
-				sort: [{attribute: "correlation", descending: true}]
+				sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
 			};
 		},
+
 		startup: function(){
 			var _self = this;
 
@@ -60,7 +58,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -96,6 +94,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 			this.inherited(arguments);
 			this._started = true;
 		},
+
 		state: null,
 		postCreate: function(){
 			this.inherited(arguments);
@@ -103,16 +102,15 @@ define("p3/widget/CorrelatedGenesGrid", [
 		_setApiServer: function(server){
 			this.apiServer = server;
 		},
-
 		_setState: function(state){
 			if(!this.store){
 				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 			}else{
-				this.store.set("state", state);
+				this.store.set('state', state);
+
 				this.refresh();
 			}
 		},
-
 		createStore: function(server, token, state){
 
 			var store = new Store({
@@ -120,7 +118,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
-			store.watch("refresh", lang.hitch(this, "refresh"));
+			store.watch('refresh', lang.hitch(this, "refresh"));
 
 			return store;
 		}

@@ -11,6 +11,12 @@ define([
 			TitlePane, registry, Form, RadioButton, Select, Button,
 			ContainerActionBar){
 
+	var legend = '<div class="kegg-map-legend-color-box white"></div><div class="kegg-map-legend-label">Not Annotated</div><div class="clear"></div>' +
+		'<div class="kegg-map-legend-color-box green"></div><div class="kegg-map-legend-label">Annotated</div><div class="clear"></div>' +
+		'<div class="kegg-map-legend-color-box darkgreen"></div><div class="kegg-map-legend-label">Present in some genomes</div><div class="clear"></div>' +
+		'<div class="kegg-map-legend-color-box blue"></div><div class="kegg-map-legend-label">Selected</div><div class="clear"></div>' +
+		'<div class="kegg-map-legend-color-box red"></div><div class="kegg-map-legend-label">Selected from EC table</div><div class="clear"></div>';
+
 	return declare([BorderContainer], {
 		gutters: false,
 		region: "center",
@@ -21,7 +27,25 @@ define([
 				"fa icon-bars fa-2x",
 				{label: "Legend", multiple: false, validTypes: ["*"]},
 				function(){
-					console.log("legend");
+					if(this.containerActionBar._actions.Legend.options.tooltipDialog == null){
+						this.tooltip_legend = new TooltipDialog({
+							content: legend
+						});
+						this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
+					}
+
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
+							around: this.containerActionBar._actions.Legend.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
 				},
 				true
 			],

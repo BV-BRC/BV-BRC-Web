@@ -135,7 +135,7 @@ define([
 			var ecNumbers = originalAxis.columnIds;
 			var genomeIds = originalAxis.rowIds;
 
-			var query = "and(in(ec_number,(" + ecNumbers + ")),in(genome_id,(" + genomeIds + ")),eq(annotation,PATRIC))&limit(250000,0)";
+			var query = "and(in(ec_number,(" + ecNumbers + ")),in(genome_id,(" + genomeIds + ")),eq(annotation,PATRIC))&limit(25000,0)";
 
 			request.post(PathJoin(window.App.dataServiceURL, "pathway"), {
 				handleAs: 'json',
@@ -146,7 +146,17 @@ define([
 					'Authorization': (window.App.authorizationToken || '')
 				},
 				data: query
-			}).then(lang.hitch(this, function(features){
+			}).then(lang.hitch(this, function(response){
+
+				// dedupe features
+				var featureSet = {};
+				response.forEach(function(d){
+					if(!featureSet.hasOwnProperty(d.feature_id)){
+						featureSet[d.feature_id] = true;
+					}
+				});
+				var features = Object.keys(featureSet);
+
 				this.dialog.set('content', this._buildPanelCellsSelected(isTransposed, ecNumbers, genomeIds, features));
 				var actionBar = this._buildPanelButtons(colIDs, rowIDs, ecNumbers, genomeIds, features);
 				domConstruct.place(actionBar, this.dialog.containerNode, "last");
@@ -215,6 +225,8 @@ define([
 		},
 		_buildPanelButtons: function(colIDs, rowIDs, ecNumbers, genomeIds, features){
 			var _self = this;
+			var featureIds = (typeof(features[0]) === 'string')? features.join(',') : features.map(function(d){ return d.feature_id;}).join(',');
+
 			var actionBar = domConstruct.create("div", {
 				"class": "dijitDialogPaneActionBar"
 			});
@@ -283,14 +295,13 @@ define([
 			});
 
 			var btnDownloadProteins = new Button({
-				label: 'Download Proteins'
+				label: 'Download Proteins',
+				disabled: (featureIds.length === 0)
 			});
 			on(downloadPT.domNode, "click", function(e){
 				if(e.target.attributes.rel === undefined)return;
 				var rel = e.target.attributes.rel.value;
-				var currentQuery = "?in(feature_id,(" + features.map(function(f){
-						return f.feature_id;
-					}).join(",") + "))";
+				var currentQuery = "?in(feature_id,(" + featureIds + "))";
 
 				window.open(window.App.dataServiceURL + "/genome_feature/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
 				popup.close(downloadPT);
@@ -305,20 +316,16 @@ define([
 			});
 
 			var btnShowDetails = new Button({
-				label: 'Show Proteins'
+				label: 'Show Proteins',
+				disabled: (featureIds.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
-
-				var query = "?in(feature_id,(" + features.map(function(feature){
-						return feature.feature_id;
-					}).join(',') + "))";
-
-				Topic.publish("ProteinFamilies", "showMembersGrid", query);
-				_self.dialog.hide();
+				window.open("/view/FeatureList/?in(feature_id,(" + featureIds + "))");
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				disabled: (featureIds.length === 0)
 			});
 			var btnCancel = new Button({
 				label: 'Cancel',
