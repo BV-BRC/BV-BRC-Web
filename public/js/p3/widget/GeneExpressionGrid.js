@@ -15,11 +15,12 @@ define([
 		store: null,
 		state: null,
 		dataModel: "gene_expression_data",
-		primaryKey: "feature_id",
+		primaryKey: "pid",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
 			//"Selection Checkboxes": selector({}),
+			pid: {label: "pid", field: "pid", hidden: true},
 			feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
 			expname: {label: 'Title', field: 'expname'},

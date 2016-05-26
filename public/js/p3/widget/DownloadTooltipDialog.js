@@ -159,6 +159,12 @@ define([
                               "label": "Pathways",
                               tableData: true  
                         },
+                        "gene_expression_data": {
+                              dataType: "transcriptomics_gene",
+                              pk: "pid",
+                              "label": "Gene Expression",
+                              tableData: true
+                        },
                         "default": {
                               "label": "Items",
                               tableData: true  
