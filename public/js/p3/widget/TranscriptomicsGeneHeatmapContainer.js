@@ -3,13 +3,13 @@ define([
 	"dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/query", "dojo/when", "dojo/request",
 	"dijit/layout/ContentPane", "dijit/layout/BorderContainer", "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup",
 	"dijit/TitlePane", "dijit/registry", "dijit/form/Form", "dijit/form/RadioButton", "dijit/form/Select", "dijit/form/Button",
-	"./ContainerActionBar", "./HeatmapContainer", "../util/PathJoin", "../store/HeatmapDataTypes"
+	"./ContainerActionBar", "./HeatmapContainer", "./SelectionToGroup", "../util/PathJoin", "../store/HeatmapDataTypes"
 
 ], function(declare, lang,
 			on, Topic, domConstruct, dom, Query, when, request,
 			ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
 			TitlePane, registry, Form, RadioButton, Select, Button,
-			ContainerActionBar, HeatmapContainer, PathJoin){
+			ContainerActionBar, HeatmapContainer, SelectionToGroup, PathJoin){
 
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
@@ -449,7 +449,7 @@ define([
 				label: 'Show Genes'
 			});
 			on(btnShowDetails.domNode, "click", function(){
-				if (typeof(geneIds) == "object"){
+				if(typeof(geneIds) == "object"){
 					window.open("/view/FeatureList/?in(feature_id,(" + geneIds + "))");
 				}else{
 					window.open("/view/Feature/?eq(feature_id," + geneIds + ")");
@@ -457,8 +457,29 @@ define([
 			});
 
 			var btnAddToWorkspace = new Button({
-				label: 'Add Proteins to Group'
+				label: 'Add Proteins to Group',
+				onClick: function(){
+					var dlg = new Dialog({title: "Copy Selection to Group"});
+
+					var stg = new SelectionToGroup({
+						selection: geneIds,
+						type: "feature_group",
+						path: this.get("path")
+					});
+
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						}, 2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();
+				}
 			});
+
 			var btnCancel = new Button({
 				label: 'Cancel',
 				onClick: function(){
