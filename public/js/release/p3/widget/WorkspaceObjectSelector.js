@@ -204,22 +204,22 @@ define("p3/widget/WorkspaceObjectSelector", [
 				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
 
 				on(selectionPane.domNode, "i:click", function(evt){
-					console.log("Click: ", evt);
+					// console.log("Click: ", evt);
 					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "upload":
 							_self.dialog.flip();
 							break;
 						case "createFolder":
-							console.log("Create Folder", _self.grid.row(0));
+							// console.log("Create Folder", _self.grid.row(0));
 							var element = _self.grid.row(0).element;
-							console.log("element: ", element);
+							// console.log("element: ", element);
 							_self.grid.addNewFolder({id: "untitled"});
 
 							break;
 					}
 				});
-				var _self = this;
+				// var _self = this;
 				var grid = this.grid = new Grid({
 					region: "center",
 					path: this.path,
@@ -356,11 +356,11 @@ define("p3/widget/WorkspaceObjectSelector", [
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				console.log("Ws Objects: ", items);
+				// console.log("Ws Objects: ", items);
 				var store = new Memory({data: items, idProperty: "path"});
-				console.log('store: ', store);
+				// console.log('store: ', store);
 
-				console.log("SearchBox: ", this.searchBox, "THIS: ", this);
+				// console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
 				if(this.value){
 					this.searchBox.set('value', this.value);

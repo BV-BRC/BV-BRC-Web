@@ -27179,6 +27179,15 @@ define([
 
 			}, true);
 
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
+				label: "VIEW",
+				validTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "View items in this genome group"
+			}, function(selection){
+				Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+			});
+
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["*"],
@@ -27186,7 +27195,7 @@ define([
 				multiple: false,
 				tooltip: "View Genome"
 			}, function(selection){
-				 0 && console.log("selection: ", selection);
+				//  0 && console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
@@ -27781,6 +27790,34 @@ define([
 				},
 				false);
 
+			this.actionPanel.addAction("ProteinFamily", "fa fa-users fa-2x", {
+				label: "ProteinFam",
+				multiple: true,
+				validTypes: ["genome_group"],
+				tooltip: "View protein families"
+			}, function(selection){
+
+				if(selection.length === 1){
+					var path = selection[0].path;
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + path + "#view_tab=proteinFamilies"})
+				}else{
+					// read genome ids
+					var paths = selection.map(function(d){ return d.path});
+					WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function(objs){
+						var genomeIdHash = {};
+						objs.forEach(function(obj){
+							var data = JSON.parse(obj.data);
+							data.id_list.genome_id.forEach(function(d){
+								if(!genomeIdHash.hasOwnProperty(d)){
+									genomeIdHash[d] = true;
+								}
+							})
+						});
+
+						Topic.publish("/navigate", {href:"/view/GenomeList/?in(genome_id,(" + Object.keys(genomeIdHash) + "))#view_tab=proteinFamilies"});
+					}));
+				}
+			}, false);
 //			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
 //				 0 && console.log("Remove Items from Group", selection);
 //			},true);
@@ -82775,22 +82812,22 @@ define([
 				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
 
 				on(selectionPane.domNode, "i:click", function(evt){
-					 0 && console.log("Click: ", evt);
+					//  0 && console.log("Click: ", evt);
 					var rel = domAttr.get(evt.target, "rel");
 					switch(rel){
 						case "upload":
 							_self.dialog.flip();
 							break;
 						case "createFolder":
-							 0 && console.log("Create Folder", _self.grid.row(0));
+							//  0 && console.log("Create Folder", _self.grid.row(0));
 							var element = _self.grid.row(0).element;
-							 0 && console.log("element: ", element);
+							//  0 && console.log("element: ", element);
 							_self.grid.addNewFolder({id: "untitled"});
 
 							break;
 					}
 				});
-				var _self = this;
+				// var _self = this;
 				var grid = this.grid = new Grid({
 					region: "center",
 					path: this.path,
@@ -82927,11 +82964,11 @@ define([
 			}
 			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
 				delete this._refreshing;
-				 0 && console.log("Ws Objects: ", items);
+				//  0 && console.log("Ws Objects: ", items);
 				var store = new Memory({data: items, idProperty: "path"});
-				 0 && console.log('store: ', store);
+				//  0 && console.log('store: ', store);
 
-				 0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
+				//  0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
 				this.searchBox.set("store", store);
 				if(this.value){
 					this.searchBox.set('value', this.value);
