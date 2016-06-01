@@ -286,6 +286,8 @@ th.dgrid-cell.wsItemType {
 
 }
 
+.GeneExpFilterPanel .ActionButtonWrapper:hover,
+.GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
 .BrowserHeader .ActionButtonWrapper:hover,
 .BrowserHeader .ActionButtonWrapper .ActionButton {
 	color: #34698e;
@@ -300,8 +302,14 @@ th.dgrid-cell.wsItemType {
 	overflow: hidden;
 }
 
+.GeneExpFilterPanel .ActionButtonText,
 .BrowserHeader .ActionButtonText {
 	color: #34698e;
+}
+
+.GeneExpFilterPanel .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #345698e;	
 }
 
 .ActionButtonWrapper:hover {
@@ -324,6 +332,21 @@ th.dgrid-cell.wsItemType {
 	vertical-align: bottom;
 }
 
+.GeneExpFilterPanel .ActionButtonWrapper {
+    margin-top: -3px;
+    margin-left: 2px;
+    margin-right: 20px;
+	width: 58px;
+	border: 1px solid #fff;
+	color: #34698e;
+	vertical-align: bottom;
+}
+.GeneExpFilterPanel .ActionButtonWrapper .fa {
+	color: #34698e;
+}
+.GeneExpFilterPanel .ActionButtonWrapper .ActionButton.fa {
+	color: #fff;
+}
 
 .dataItemSelection,
 .workspaceItemSelection,
