@@ -1,94 +1,113 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div style="width: 700px;margin:auto;">
-    <div class="apptitle" id="apptitle">
-                <h3>Comparative Pathway</h3>
-                <p>[placeholder for description]</p>
+        <div class="apptitle" id="apptitle">
+            <h3>Comparative Pathway Tool</h3>
+            <p>[placeholder for description]</p>
+        </div>
+        <div style="width:700px; margin:auto" class="formFieldsContainer">
+            <div style="display: none;">
+                <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
+                       data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000},"/>
+            </div>
+            <table class="assemblyblocks" style="width:100%">
+                <tr>
+                    <td>
+                        <div class="appbox appshadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appboxlabel"> Select Genome</label>
+                                </div>
+                                <div style="width:10%;display:inline-block;">
+                                    <i data-dojo-attach-event="click:onAddGenome"
+                                       class="fa fa-arrow-circle-o-right fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="approw">
+                                <label class="paramlabel">Genome</label><br>
+                                <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome"
+                                     data-dojo-attach-point="genome" style="width: 300px" required="false"></div>
+                            </div>
+                        </div>
+                        <div class="appbox appshadow">
+                            <div class="headerrow">
+                                <div style="width:85%;display:inline-block;">
+                                    <label class="appboxlabel"> Select Genome Group</label>
+                                </div>
+                                <div style="width:10%;display:inline-block;">
+                                    <i data-dojo-attach-event="click:onAddGenomeGroup"
+                                       class="fa fa-arrow-circle-o-right fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="approw">
+                                <label class="paramlabel">Genome Group</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genome_group"
+                                     data-dojo-attach-point="genome_group" style="width:300px" required="false"
+                                     data-dojo-props="type:['genome_group'],multi:true"></div>
+                            </div>
+                        </div>
+
+                        <div class="appbox appshadow">
+                            <div class="headerrow">
+                                <label class="appboxlabel">Parameters</label>
+                                <div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa fa-info-circle fa"></i>
+                                </div>
+                            </div>
+                            <div class="approw">
+                                <br/>
+                                <select data-dojo-type="dijit/form/Select"
+                                        name="search_on" style="width: 25%"
+                                        data-dojo-attach-point="search_on" required="true">
+                                    <option value="keyword">Keyword</option>
+                                    <option value="pathway_id">Pathway ID</option>
+                                    <option value="ec_number">EC Number</option>
+                                </select>
+                                <div data-dojo-type="dijit/form/TextBox"
+                                     name="keyword" style="width: 70%"
+                                     data-dojo-attach-point="keyword"
+                                     data-dojo-props="trim:true,placeHolder:'Keyword'"></div>
+                            </div>
+                            <div class="approw">
+                                <label class="paramlabel">Annotation</label><br>
+                                <select data-dojo-type="dijit/form/Select" name="annotation"
+                                        data-dojo-attach-point="annotation" style="width:300px" required="true">
+                                    <option value="ALL">All</option>
+                                    <option value="PATRIC" selected="selected">PATRIC</option>
+                                    <option value="RefSeq">RefSeq</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="appbox appshadow" style="height:251px; width:330px">
+                            <div class="headerrow">
+                                <label class="appboxlabel">Selected genomes</label>
+                                <div name="selectedinfo" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa fa-info-circle fa"></i>
+                                </div>
+                                <br>
+                                <div class="appsublabel">Place genome(s) here using the arrow buttons.</div>
+                            </div>
+                            <div class="approw" style="width:100%; margin-top:10px; text-align: center;">
+                                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
+                                       style='margin:0 0 0 10px; width:90%;'>
+                                    <tbody data-dojo-attach-point="libsTableBody">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="appSubmissionArea">
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Search</div>
+            </div>
+        </div>
     </div>
-	<div style="width:700px; margin:auto" class="formFieldsContainer">
-		<table class="assemblyblocks" style="width:100%">
-		<tr>
-		<td>
-			<div id="pairedBox" class="appbox appshadow">
-				<div class="headerrow">
-					<label class="appboxlabel"> Select Organism(s)</label>
-					<div name="pairinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa fa-info-circle fa"></i>
-					</div>
-				</div>
-				<div class="approw">
-					<label class="paramlabel" for="taxon_id">Taxonomy</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="taxon_id"
-						 data-dojo-attach-point="read1" style="width:300px" required="false"
-						 data-dojo-props="type:['reads'],multi:false"></div>
-				</div>
-				<div class="approw">- OR -</div>
-				<div class="approw">
-					<label class="paramlabel" for="genome_group">Genome Group</label><br>
-					<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genome_group"
-						 data-dojo-attach-point="single_end_libs" style="width:300px" required="false"
-						 data-dojo-props="type:['reads'],multi:false"></div>
-				</div>
-			</div>
-		</td>
-		<td>
-			<div class="appbox appshadow">
-				<div class="headerrow">
-					<label class="appboxlabel">Parameters</label>
-					<div name="parameterinfo" class="infobox iconbox infobutton dialoginfo">
-						<i class="fa fa-info-circle fa"></i>
-					</div>
-				</div>
-				<div class="approw">
-					<select data-dojo-type="dijit/form/Select"
-							name="type" style="width: 25%"
-							data-dojo-attach-point="family_type" style="width:300px" required="true"
-							data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="keyword">Keyword</option>
-						<option value="pathway_id">Pathway ID</option>
-						<option value="ec_number">EC Number</option>
-					</select>
-				<!--</div>-->
-				<!--<div class="approw">-->
-					<!--<label class="paramlabel">Keyword</label><br>-->
-					<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-						 name="keyword" style="width: 70%"
-						 data-dojo-attach-point="output_file" style="width:300px" required="true"
-						 data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-				</div>
-				<div class="approw">
-					<label for="annotation" class="paramlabel">Annotation</label><br>
-					<select data-dojo-type="dijit/form/Select" name="annotation"
-							data-dojo-attach-point="family_type" style="width:300px" required="true"
-							data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-						<option value="ALL">All</option>
-						<option value="PATRIC">PATRIC</option>
-						<option value="RefSeq">RefSeq</option>
-					</select>
-				</div>
-			</div>
-		</td>
-		</tr>
-		</table>
-	</div>
-
-	<div class="appSubmissionArea">
-		<div style="width:400px; margin:auto" class="workingMessage messageContainer">
-			Submitting Assembly Job
-		</div>
-
-		<div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-			Assembly Job has been queued.
-		</div>
-
-		<div style="width:400px; margin:auto" class="errorMessage messageContainer">
-			<div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
-			<p data-dojo-attach-point="errorMessage">Error</p>
-		</div>
-		
-		<div style="margin-top: 10px; text-align:center;">
-			<div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Search</div>
-		</div>
-	</div>
 </form>
 
