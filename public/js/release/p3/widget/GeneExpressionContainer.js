@@ -3,12 +3,12 @@ define("p3/widget/GeneExpressionContainer", [
 	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog"
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
-			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog){
+			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog, Dialog, popup){
 
 	return declare([BorderContainer], {
 		id: "GEContainer",
@@ -147,9 +147,95 @@ define("p3/widget/GeneExpressionContainer", [
 
 			// other filter items
 			var otherFilterPanel = new ContentPane({
-				region: "top"
+				region: "top",
+				"class": "GeneExpFilterPanel"
 			});
 
+			// download dialog
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+			var downloadTT = new TooltipDialog({
+				content: dfc, onMouseLeave: function(){
+					popup.close(downloadTT);
+				}
+			});
+
+			var _self=this;
+			on(downloadTT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var dataType = "transcriptomics_gene";
+				
+				var uf = _self.tgState.upFold, df = _self.tgState.downFold;
+				var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
+				var keyword= _self.tgState.keyword;
+				var range = "";
+				if (keyword && keyword.length >0)
+				{
+					range += "&keyword(" + encodeURIComponent(keyword) + ")";
+				}
+			
+				if (uf>0 && df<0)
+				{
+					range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+				}
+				else if (uf>0) {
+					range += "&gt(log_ratio,"  + uf + ")";
+				}
+				else if (df<0) {
+					range += "&lt(log_ratio,"  + df+ ")";
+				}
+				if (uz>0 && dz<0)
+				{
+					range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+				}
+				else if (uz>0) {
+					range += "&gt(z_score,"  + uz+ ")";
+				}
+				else if (dz<0) {
+					range += "&lt(z_score,"  + dz+ ")";
+				}
+				var query = _self.state.search + range + "&sort(+pid)&limit(25000)";
+
+				//var query = 	"eq(FOO,bar)";
+				console.log("DownloadQuery: ", dataType, query);				
+						
+				var baseUrl = window.App.dataServiceURL; 
+				if(baseUrl.charAt(-1) !== "/"){
+					 baseUrl = baseUrl + "/";
+				}
+				baseUrl = baseUrl + dataType + "/?";
+
+				if (window.App.authorizationToken){
+					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+				}
+	
+				baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+				console.log("DownloadQuery: baseUrl", baseUrl);
+
+				var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+				form.submit();		
+		
+				
+				popup.close(downloadTT);
+			});
+
+			// download button
+			var wrapper = domConstruct.create("div", {
+				"class": "ActionButtonWrapper",
+				rel: "DownloadTable"
+			});
+			var b = domConstruct.create("div", {"class": "fa fa-download fa-2x"}, wrapper);
+			var t = domConstruct.create("div", {innerHTML: "DOWNLOAD", "class": "ActionButtonText"}, wrapper)
+			on(wrapper, "div:click", function(evt){
+					popup.open({
+						popup: downloadTT,
+						around: wrapper,
+						orient: ["below"]
+					});
+			});
+			
+			domConstruct.place(wrapper, otherFilterPanel.containerNode, "last");
 
 			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
 			var keyword_textbox = new TextBox({
