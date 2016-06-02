@@ -5,14 +5,14 @@ define([
 	"dojo/request", "dojo/_base/lang", "dojo/when",
 	"../ActionBar", "../ContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem", "dijit/TooltipDialog"
+	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang, when,
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
-			DropDownButton, DropDownMenu, MenuItem, TooltipDialog){
+			DropDownButton, DropDownMenu, MenuItem, TooltipDialog, popup){
 
         var schemes = [{
             name: "Zappo", id: "zappo"
@@ -86,13 +86,29 @@ define([
         var colorMenuDivs = [];
 
         schemes.forEach(lang.hitch(this, function(scheme){
-            colorMenuDivs.push(domConstruct.create("div", {rel:scheme.id, innerHTML:scheme.name}));
+            colorMenuDivs.push('<div rel="'+scheme.id+'">'+scheme.name+'</div>');
         }));
 
         var colorMenu = new TooltipDialog({
             content: colorMenuDivs.join(""),
             onMouseLeave:function(){
                 popup.close(colorMenu);
+            }
+        });
+
+
+        var infoMenu = new TooltipDialog({
+            content: "<div> Create groups and download sequences by making a selection in the tree on the left.</div>",
+            onMouseLeave:function(){
+                popup.close(infoMenu);
+            }
+        });
+		
+
+        var idMenu = new TooltipDialog({
+            content: "",
+            onMouseLeave:function(){
+                popup.close(idMenu);
             }
         });
 
@@ -263,6 +279,13 @@ define([
 			//this.tree.setTree(this.data.tree);
             
             this.tree.addLabels(this.alt_labels, "Organism Names");
+            var idMenuDivs=[];
+            Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
+                idMenuDivs.push('<div rel="'+labelAlias+'">'+labelAlias+'</div>');
+            }));
+            idMenu.set("content",idMenuDivs.join(""));
+
+
             this.tree.startup();
 
 			var menuOpts = {};
@@ -295,26 +318,19 @@ define([
                     return d[idType];
                 });
                 m.g.colorscheme.set("scheme", rel)
+                popup.close(colorMenu);
             });
 
 
+            on(idMenu.domNode, "click", lang.hitch(this, function(evt){
+                var rel = evt.target.attributes.rel.value;
+                var sel = idMenu.selection;
+                delete colorMenu.selection;
+                var idType;
 
-
-			var idMenuDom = domConstruct.create("div", {}, menuDiv);
-			var idMenu = new DropDownMenu({style: "display: none;"});
-			Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
-				idMenu.addChild(new MenuItem({
-					label: labelAlias, onClick: lang.hitch(this, function(){
-						this.tree.selectLabels(labelAlias);
-					})
-				}));
-			}));
-			idMenu.startup();
-			var idButton = new DropDownButton({
-				name: "idButton",
-				label: "ID Type",
-				dropDown: idMenu
-			}, idMenuDom).startup();
+			    this.tree.selectLabels(rel);
+                popup.close(idMenu);
+            }));
 
 
 			var groupMenuDom = domConstruct.create("div", {}, menuDiv);
@@ -330,11 +346,11 @@ define([
 				})
 			}));
 			groupMenu.startup();
-			var groupButton = new DropDownButton({
-				name: "groupButton",
-				label: "Add Group",
-				dropDown: groupMenu
-			}, idMenuDom).startup();
+			//var groupButton = new DropDownButton({
+			//	name: "groupButton",
+			//	label: "Add Group",
+			//	dropDown: groupMenu
+			//}, idMenuDom).startup();
 			
             //this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
 			m.render();
@@ -402,13 +418,37 @@ define([
 				currentContainerWidget: this
 			});
 			this.addChild(this.selectionActionBar);
+            this.setupActions();
 		},
 
 
 		selectionActions: [
 			[
-				"ColorSelection",
+				"InfoButton",
 				"fa fa-info-circle fa-2x",
+				{
+					label: "Info",
+					persistent: true,
+					validTypes: ["*"],
+                    validContainerTypes:["*"],
+					tooltip: "MSA Information",
+                    tooltipDialog: infoMenu,
+                    ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.InfoButton.options.tooltipDialog,
+						around: this.selectionActionBar._actions.InfoButton.button,
+						orient: ["below"]
+					});
+				},
+				true
+			],
+			[
+				"ColorSelection",
+				"fa icon-paint-brush fa-2x",
 				{
 					label: "Colors",
 					persistent: true,
@@ -426,6 +466,31 @@ define([
 					popup.open({
 						popup: this.selectionActionBar._actions.ColorSelection.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ColorSelection.button,
+						orient: ["below"]
+					});
+				},
+				true
+			],
+			[
+				"IDSelection",
+				"fa icon-pencil-square fa-2x",
+				{
+					label: "ID Type",
+					persistent: true,
+					validTypes: ["*"],
+                    validContainerTypes:["*"],
+					tooltip: "Set ID Type",
+                    tooltipDialog: idMenu,
+                    ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+					idMenu.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.IDSelection.options.tooltipDialog,
+						around: this.selectionActionBar._actions.IDSelection.button,
 						orient: ["below"]
 					});
 				},
