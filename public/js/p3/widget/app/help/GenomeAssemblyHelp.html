@@ -29,10 +29,15 @@ Defines the orientation of read pairs. Setting Mate Paired to true indicates tha
        <p>Name used to uniquely identify results.</p>
       <h4>Assembly Strategy</h4>
         <p><b>auto</b></p>
+        <p>&nbsp;&nbsp;For short reads:</p>
         <ol>
         <li>Runs BayesHammer on reads</li>
         <li>Assembles with Velvet, IDBA and SPAdes</li>
         <li>Sorts assemblies by ARAST quality score</li>
+        </ol>
+        <p>&nbsp;&nbsp;For long reads (PacBio or Nanopore):</p>
+        <ol>
+        <li>Assembles with MiniASM</li>
         </ol>
         <p><b>fast</b></p>
         <ol>
@@ -55,12 +60,21 @@ Defines the orientation of read pairs. Setting Mate Paired to true indicates tha
         <li>Results are sorted by ARAST quality score.</li>
         <li>Works for Illumina MiSeq reads.</li>
         </ol>
+        <p><b>plasmid</b></p>
+        <ol>
+        <li>Runs BayesHammer on reads and assembles with plasmidSPAdes.</li>
+        </ol>
         <p><b>smart</b></p>
+        <p>&nbsp;&nbsp;For short reads:</p>
         <ol>
         <li>Runs BayesHammer on reads, Kmergenie to choose hash-length for Velvet</li>
         <li>Assembles with Velvet, IDBA and SPAdes</li>
         <li>Sorts assemblies by ALE score</li>
         <li>Merges the two best assemblies with GAM-NGS</li>
+        </ol>
+        <p>&nbsp;&nbsp;For long reads (PacBio or Nanopore):</p>
+        <ol>
+        <li>Assembles with MiniASM</li>
         </ol>
     </div>
     <div class="apphelp" id="pipelineinfo">
