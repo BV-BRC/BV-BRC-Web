@@ -86,12 +86,19 @@ define([
 			if(this.currentPathNode){
 				this.currentPathNode.innerHTML = "Folder: " + val;
 			}
+            this.cancelRefresh();
+            this.refreshWorkspaceItems();
 		},
 		_setTypeAttr: function(type){
 			if(!(type instanceof Array)){
 				type = [type];
 			}
 			this.type = type;
+			if(this.grid){
+				this.grid.set('types', (["folder"].concat(this.type)));
+			}
+            this.cancelRefresh();
+            this.refreshWorkspaceItems();
 		},
 		_setValueAttr: function(value, refresh){
 			this.value = value;
@@ -347,6 +354,12 @@ define([
 			this.dialog.flip("front");
 			this.dialog.show();
 		},
+
+        cancelRefresh: function(){
+            if(this._refreshing){
+                delete this._refreshing;
+            }
+        },
 
 		refreshWorkspaceItems: function(){
 			if(this._refreshing){

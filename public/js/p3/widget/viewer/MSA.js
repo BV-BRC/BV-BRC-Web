@@ -3,16 +3,16 @@ define([
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../formatter", "../TabContainer", "dojo/_base/Deferred",
 	"dojo/request", "dojo/_base/lang", "dojo/when",
-	"../ActionBar", "../ContainerActionBar", "phyloview/PhyloTree",
+	"../ActionBar", "../FilterContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup"
+	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup", "dijit/Dialog", "../ItemDetailPanel"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang, when,
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
-			DropDownButton, DropDownMenu, MenuItem, TooltipDialog, popup){
+			MenuItem, TooltipDialog, popup, SelectionToGroup, Dialog, ItemDetailPanel){
 
         var schemes = [{
             name: "Zappo", id: "zappo"
@@ -86,7 +86,7 @@ define([
         var colorMenuDivs = [];
 
         schemes.forEach(lang.hitch(this, function(scheme){
-            colorMenuDivs.push('<div rel="'+scheme.id+'">'+scheme.name+'</div>');
+            colorMenuDivs.push('<div class="wsActionTooltip"  rel="'+scheme.id+'">'+scheme.name+'</div>');
         }));
 
         var colorMenu = new TooltipDialog({
@@ -123,9 +123,8 @@ define([
 		dataMap: {},
 		tree: null,
 		phylogram: false,
-
 		maxSequences: 500,
-
+        selection: null,
 		onSetLoading: function(attr, oldVal, loading){
 			if(loading){
 				this.contentPane.set("content", "<div>Performing Multiple Sequence Alignment. Please Wait...</div>");
@@ -182,20 +181,44 @@ define([
 			this.render();
 		},
 
+        onSelection: function(){
+
+            var cur = this.selection.map(lang.hitch(this, function(selected){
+                return this.dataMap[selected.id];
+            }));
+            this.selectionActionBar._setSelectionAttr(cur);
+        },
+
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
             this.alt_labels={};
-
+            this.dataMap["idType"]=null;
 			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
 					var match;
 					var headerInfo = regex.exec(line);
+                    var record ={sequence:[]};
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
 						clustal.push(geneID + "\t");
-						this.dataMap[geneID] = {"taxID": headerInfo[2], "geneID": geneID, sequence: []};
+                        if (geneID.startsWith("fig|")){
+                            record["patric_id"]=geneID;
+                            if (this.dataMap["idType"] == null){
+                                this.dataMap["idType"]="patric_id";
+                            }
+
+                        }
+                        else {
+                            record["feature_id"]=geneID;
+                            if (this.dataMap["idType"] == null){
+                                this.dataMap["idType"]="feature_id";
+                            }
+                        }
+                        record["genome_name"]=this.data.map[headerInfo[2]];
+                        record["genome_id"]=headerInfo[2];
+						this.dataMap[geneID] = record;
                         this.alt_labels[geneID]=this.data.map[headerInfo[2]];
 					}
 				}
@@ -213,6 +236,9 @@ define([
 		createViewerData: function(){
 			results = {};
 		},
+
+
+
 
 		render: function(){
 			this.contentPane.set("content", "");
@@ -273,7 +299,7 @@ define([
 			// init msa
 			var m = new msa.msa(opts);
 
-			this.tree = new d3Tree();
+			this.tree = new d3Tree({selectionTarget:this});
 			this.tree.d3Tree("#" + this.id + "tree-container", {phylogram: this.phylogram, fontSize: 12});
 			this.tree.setTree(this.data.tree);
 			//this.tree.setTree(this.data.tree);
@@ -281,7 +307,7 @@ define([
             this.tree.addLabels(this.alt_labels, "Organism Names");
             var idMenuDivs=[];
             Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
-                idMenuDivs.push('<div rel="'+labelAlias+'">'+labelAlias+'</div>');
+                idMenuDivs.push('<div class="wsActionTooltip" rel="'+labelAlias+'">'+labelAlias+'</div>');
             }));
             idMenu.set("content",idMenuDivs.join(""));
 
@@ -333,19 +359,6 @@ define([
             }));
 
 
-			var groupMenuDom = domConstruct.create("div", {}, menuDiv);
-			var groupMenu = new DropDownMenu({style: "display: none;"});
-			groupMenu.addChild(new MenuItem({
-			    label: "Feature Group", onClick: lang.hitch(this, function(){
-					this.tree.selectLabels(labelAlias);
-				})
-			}));
-			groupMenu.addChild(new MenuItem({
-			    label: "Feature Group", onClick: lang.hitch(this, function(){
-					this.tree.selectLabels(labelAlias);
-				})
-			}));
-			groupMenu.startup();
 			//var groupButton = new DropDownButton({
 			//	name: "groupButton",
 			//	label: "Add Group",
@@ -408,6 +421,7 @@ define([
 
 		},
 		postCreate: function(){
+            this.inherited(arguments);
 			this.contentPane = new ContentPane({"region": "center"});
 			this.addChild(this.contentPane)
 			this.selectionActionBar = new ActionBar({
@@ -495,6 +509,45 @@ define([
 					});
 				},
 				true
+			], [
+				"AddGroup",
+				"fa icon-object-group fa-2x",
+				{
+					label: "GROUP",
+					ignoreDataType: true,
+					multiple: true,
+					validTypes: ["*"],
+					tooltip: "Copy selection to a new or existing group",
+                    validContainerTypes:["*"]
+				},
+				function(selection, containerWidget){
+					// console.log("Add Items to Group", selection);
+					var dlg = new Dialog({title: "Copy Selection to Group"});
+					var type = "feature_data";
+
+					if(!type){
+						console.error("Missing type for AddGroup")
+						return;
+					}
+					var stg = new SelectionToGroup({
+						selection: selection,
+						type: type,
+                        inputType: "feature_data",
+                        idType: this.dataMap.idType, 
+						path: null //set by type
+					});
+					on(dlg.domNode, "dialogAction", function(evt){
+						dlg.hide();
+						setTimeout(function(){
+							dlg.destroy();
+						}, 2000);
+					});
+					domConstruct.place(stg.domNode, dlg.containerNode, "first");
+					stg.startup();
+					dlg.startup();
+					dlg.show();
+				},
+				false
 			]
         ],
 
@@ -518,6 +571,7 @@ define([
 
 			this.watch("loading", lang.hitch(this, "onSetLoading"));
 			this.watch("data", lang.hitch(this, "onSetData"));
+			this.watch("selection", lang.hitch(this, "onSelection"));
 
 			this.inherited(arguments);
 		}
