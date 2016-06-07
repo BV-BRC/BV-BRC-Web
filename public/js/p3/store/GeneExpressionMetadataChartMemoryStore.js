@@ -20,7 +20,7 @@ define([
 	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
-		idProperty: "feature_id",
+		idProperty: "pid",
 		state: null,
 		tgState: tgState,
 		feature_id: null,
