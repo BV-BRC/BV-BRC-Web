@@ -113,6 +113,12 @@ define([
         });
 
 
+        var snapMenu = new TooltipDialog({
+            content: "",
+            onMouseLeave:function(){
+                popup.close(snapMenu);
+            }
+        });
 
 	return declare([Base], {
 		"baseClass": "Phylogeny",
@@ -219,7 +225,7 @@ define([
                         record["genome_name"]=this.data.map[headerInfo[2]];
                         record["genome_id"]=headerInfo[2];
 						this.dataMap[geneID] = record;
-                        this.alt_labels[geneID]=this.data.map[headerInfo[2]];
+                        this.alt_labels[geneID]=this.data.map[geneID]["genome_name"];
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
@@ -312,7 +318,13 @@ define([
             idMenu.set("content",idMenuDivs.join(""));
 
 
+            var snapMenuDivs=[];
+            snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA</div>');
+            snapMenu.set("content",snapMenuDivs.join(""));
+
             this.tree.startup();
+            this.tree.selectLabels("Organism Names");
+            this.tree.update();
 
 			var menuOpts = {};
 			menuOpts.el = menuDiv;
@@ -351,11 +363,19 @@ define([
             on(idMenu.domNode, "click", lang.hitch(this, function(evt){
                 var rel = evt.target.attributes.rel.value;
                 var sel = idMenu.selection;
-                delete colorMenu.selection;
-                var idType;
+                delete idMenu.selection;
 
 			    this.tree.selectLabels(rel);
                 popup.close(idMenu);
+            }));
+
+
+            on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
+                var rel = evt.target.attributes.rel.value;
+                var sel = snapMenu.selection;
+                delete snapMenu.selection;
+                msa.utils.export.saveAsImg(m,"patric_msa.png");
+                popup.close(snapMenu);
             }));
 
 
@@ -548,6 +568,30 @@ define([
 					dlg.show();
 				},
 				false
+			], [
+				"Snapshot",
+				"fa icon-camera2 fa-2x",
+				{
+					label: "Capture",
+					persistent: true,
+					validTypes: ["*"],
+                    validContainerTypes:["*"],
+					tooltip: "Save an image",
+                    tooltipDialog: snapMenu,
+                    ignoreDataType: true
+				},
+				function(selection){
+					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+					snapMenu.selection = selection;
+					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+					popup.open({
+						popup: this.selectionActionBar._actions.Snapshot.options.tooltipDialog,
+						around: this.selectionActionBar._actions.Snapshot.button,
+						orient: ["below"]
+					});
+				},
+				true
 			]
         ],
 

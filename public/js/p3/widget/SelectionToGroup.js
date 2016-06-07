@@ -81,14 +81,16 @@ define([
 				this.set("path", WorkspaceManager.getDefaultFolder(this.type));
 			}
 			this.inherited(arguments);
+			this.groupNameBox.set('path', this.path);
+			this.workspaceObjectSelector.set('path', this.path);
+			this.workspaceObjectSelector.set('type', [this.type]);
             if(this.inputType in this.conversionTypes){
                 this.selectType = true;
                 domStyle.set(this.groupTypeBox.domNode, "display", "");
                 this.groupTypeBox.set("options",this.conversionTypes[this.inputType]);
+                this.groupTypeBox.set("value",this.conversionTypes[this.inputType][0]["value"]);
+                this.groupTypeBox.set("displayedValue",this.conversionTypes[this.inputType][0]["label"]);
             }
-			this.groupNameBox.set('path', this.path);
-			this.workspaceObjectSelector.set('path', this.path);
-			this.workspaceObjectSelector.set('type', [this.type]);
 		},
 
 		onCancel: function(evt){
@@ -112,13 +114,13 @@ define([
             }
 			var def;
 			if(this.targetType.get("value") == "existing"){
-				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.map(function(o){
+				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.map(lang.hitch(this, function(o){
 					return o[this.idType];
-				}));
+				})));
 			}else{
-				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.map(function(o){
+				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.map(lang.hitch(this, function(o){
 					return o[this.idType];
-				}));
+				})));
 			}
 			def.then(lang.hitch(this, function(){
 				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});

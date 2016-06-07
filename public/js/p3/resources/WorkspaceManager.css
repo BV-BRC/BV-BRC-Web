@@ -305,7 +305,7 @@ th.dgrid-cell.wsItemType {
 }
 
 
-.dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
+.claro .dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
   /* above or below tooltip, but the arrow appears on the right,
 		and the right edges of target and tooltip are aligned rather than the left.
 		Override above rules for .dijitTooltipBelow, .dijitTooltipAbove */
