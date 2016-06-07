@@ -483,3 +483,30 @@ div.tooltip {
     border-radius: 4px;
     pointer-events: none;
 }
+
+.kegg-map-legend-color-box {
+    float: left;
+    width: 16px;
+    height: 16px;
+    margin: 2px 5px 0 0;
+    border: 1px solid rgba(0, 0, 0, .2);
+}
+.white {
+    background: #ffffff;
+}
+.green {
+    background: #befdbe;
+}
+.darkgreen {
+    background: #d5e6d5;
+}
+.blue {
+    background: #99ccff;
+}
+.red {
+    background: #ff0000;
+}
+.kegg-map-legend-label {
+    float: left;
+    white-space: nowrap;
+}

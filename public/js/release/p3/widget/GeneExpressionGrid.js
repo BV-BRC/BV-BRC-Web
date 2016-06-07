@@ -2,11 +2,11 @@ define("p3/widget/GeneExpressionGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/GeneExpressionMemoryStore"
+	"./PageGrid", "./formatter", "../store/GeneExpressionMemoryStore", "dgrid/selector"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			BorderContainer, ContentPane,
-			Grid, formatter, Store){
+			Grid, formatter, Store, selector){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -15,11 +15,12 @@ define("p3/widget/GeneExpressionGrid", [
 		store: null,
 		state: null,
 		dataModel: "gene_expression_data",
-		primaryKey: "feature_id",
+		primaryKey: "pid",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			//"Selection Checkboxes": selector({}),
+			pid: {label: "pid", field: "pid", hidden: true},
 			feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
 			expname: {label: 'Title', field: 'expname'},

@@ -6,13 +6,6 @@ define([
 			popup, TooltipDialog,
 			GeneExpressionGrid, GridContainer){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
-	var viewFASTATT = new TooltipDialog({
-		content: vfc, onMouseLeave: function(){
-			popup.close(viewFASTATT);
-		}
-	});
-
 	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
 	var downloadTT = new TooltipDialog({
 		content: dfc, onMouseLeave: function(){
