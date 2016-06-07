@@ -30,29 +30,87 @@ define("p3/widget/AdvancedSearch", [
 		searchResults: null,
 
 		formatgenome: function(docs,total){
-			var out=["<div>",'<div style="size:1.1em;border-bottom:1px solid #ddd;"><a href="/view/GenomeList/?',this.state.search,'">Genomes</a>&nbsp;( ', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
 
 			docs.forEach(function(doc){
-				out.push("<div style='margin:8px;margin-left:15px;'>" + doc.genome_name + "</div>");
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a href='/view/Genome/" + doc.genome_id + "'>" + doc.genome_name + "</a></div>");
+
+				out.push("<div class='resultInfo'>");
+				if (doc.plasmids && doc.plasmids > 0){
+					out.push("<span>" + doc.plasmids + " Plasmids</span>");
+				}
+	
+				if (doc.contigs && doc.contigs > 0){
+					if (doc.plasmids) { out.push(" | "); }
+					out.push("<span>" + doc.contigs + " Contigs</span>");
+				}
+
+				out.push("</div>");	
+
+				out.push("<div class='resultInfo'>");
+				if (doc.date_inserted){
+					out.push("<span> SEQUENCED: " + doc.date_inserted + "</span>")
+				}
+
+				if (doc.sequencing_centers){
+
+					out.push("&nbsp;( " + doc.sequencing_centers + " )");
+				}
+				out.push("</div>")
+
+				out.push("<div class='resultInfo'>");
+				if (doc.collection_date){
+					out.push("<span>COLLECTED: " + doc.collection_date + "</span>");
+				}
+				if (doc.host_name){
+					out.push("&nbsp;<span>HOST:  " + doc.host_name + "</span>");
+				}
+
+				out.push("</div>");
+
+				if (doc.comments && doc.comments!="-"){
+					out.push("<div class='resultInfo comments'>" + doc.comments +"</div>")
+				}
+				out.push("</div>");
 			})
 			out.push("</div>");
 			return out.join("");
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div>",'<div style="size:1.1em;border-bottom:1px solid #ddd;"><a href="/view/FeatureList/?',this.state.search,'">Genome Features</a>&nbsp;( ', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features",'">Genome Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
-				out.push("<div style='margin:8px;margin-left:15px;'>" + doc.product + "</div>");
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
+				if (doc.gene) {  out.push(" | " + doc.gene ); }
+				out.push("</div>");
+
+				out.push("<div class='resultInfo'>" + doc.genome_name +  "</div>");
+
+				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
+
+				if (doc.refseq_locus_tag){
+					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
+				}
+
+				if (doc.alt_locus_tag){
+					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);					
+				}
+
+				out.push("</div>");
+				out.push("</div>");
 			})
 			out.push("</div>");
 			return out.join("");
 		},
 
 		formattaxonomy: function(docs,total){
-			var out=["<div>",'<div style="size:1.1em;border-bottom:1px solid #ddd;"><a href="/view/Taxonomy/?',this.state.search,'">Taxonomy</a>&nbsp;( ', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/Taxonomy/?',this.state.search,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
-				out.push("<div style='margin:8px;margin-left:15px;'>" + doc.taxon_name + "</div>");
+				out.push("<div class='resultHead'>" + doc.taxon_name + "</div>");
+
 			})
 			out.push("</div>");
 			return out.join("");
@@ -82,7 +140,14 @@ define("p3/widget/AdvancedSearch", [
 			var self=this;
 
 			this.searchTypes.forEach(function(type){
-				q[type] = {dataType: type, accept: "application/solr+json", query: query + "&limit(3)" }
+				var tq=query;
+				switch(type){
+					case "genome_feature":
+						tq=tq + "&ne(annotation,brc1)&ne(feature_type,source)"
+						break;
+				}
+
+				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)" }
 			})
 
 			console.log("SEARCH: ", q);
@@ -108,7 +173,7 @@ define("p3/widget/AdvancedSearch", [
 			});
 			this.viewer = new ContentPane({
 				region: "center",
-				content: "content"
+				content: "Searching...."
 			});
 
 			this.addChild(this.viewHeader);

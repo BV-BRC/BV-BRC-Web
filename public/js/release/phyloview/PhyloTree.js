@@ -111,7 +111,6 @@ window.PhyloTree = {
     //            .replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"");
             console.log("tree json string: " + nwk);
             var r = JSON.parse(nwk);
-            r.labels=[{}]; //list of objects that map node id to label
             finalizeTree(r);
             return r;
         }
@@ -171,10 +170,8 @@ window.PhyloTree = {
             tree.px = 0;
             visit(tree,                                                                                               
                 function(node){
-                    var tmp_label=[];
                     if(!node.c && node.n) {
                         //try to parse out the genus and species name
-                        node.id = node.n;
                         node.n = node.n.replace(/_/g, " ");
                         var fields = node.n.split(" ");
                         var genusIndex = 0;
@@ -188,14 +185,13 @@ window.PhyloTree = {
                         for(var i = 2; genusIndex+i < fields.length; i++) {
                             species = species + " " + fields[genusIndex+i]
                         }
-                        node.species_strain = species ? species: "";
-                        tmp_label.push(node.genus);
-                        tmp_label.push(node.species_strain);
+                        node.species_strain = species ? species: "";                         
                     } else {
-                        node.id="inode"+nodeId;
                         node.n = ""+nodeId;
+                        nodeId++;
                     }
                     if(node.c) {
+                        
                         node.c.forEach(function(child){
                             child.parent = node;
                             if(child.l) {
@@ -207,13 +203,10 @@ window.PhyloTree = {
                             return b.d - a.d;
                         });                        
                     } else {
-                        node.label = tmp_label.join(" ");
-                        tree.labels[0][node.id]=node.label;
                         leafCount++;
                         node.ti = tipIndex++;
                         node.py = node.ti;
                     }
-                    nodeId++;
                 },
 
                 function(node){
