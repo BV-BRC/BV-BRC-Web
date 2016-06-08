@@ -130,6 +130,7 @@ define([
 		tree: null,
 		phylogram: false,
 		maxSequences: 500,
+        numSequences: 0,
         selection: null,
 		onSetLoading: function(attr, oldVal, loading){
 			if(loading){
@@ -154,6 +155,7 @@ define([
 				console.log("Check Res: ", res.response.numFound)
 				if(res && res.response && (typeof res.response.numFound != 'undefined') && (res.response.numFound < this.maxSequences)){
 					console.log("  Amount OK")
+                    this.numSequences = res.response.numFound;
 					def.resolve(res.response.numFound);
 					return;
 				}
@@ -296,7 +298,7 @@ define([
 				menuFontsize: "12px",
 				autoResize: true,
 				labelNameLength: 150,
-				//alignmentHeight: 4000,
+				alignmentHeight: 14.04*this.numSequences,
 				//alignmentWidth: msa_models.seqs[0].seq.length*15.1,
 				residueFont: "12",
 				rowHeight: 14.04
