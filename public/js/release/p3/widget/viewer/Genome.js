@@ -192,8 +192,8 @@ define("p3/widget/viewer/Genome", [
 			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
-			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.proteinFamilies);
+			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
 		}
 	});

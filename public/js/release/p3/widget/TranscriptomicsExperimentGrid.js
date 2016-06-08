@@ -24,7 +24,7 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 			samples: {label: "Comparisons", field: "samples", hidden: false},
 			genes: {label: "Genes", field: "genes", hidden: false},
 			pubmed: {label: "PubMed", field: "pmid", hidden: false},
-			linkout: {label: "Link Out", field: "", hidden: false},
+			// linkout: {label: "Link Out", field: "", hidden: false},
 			organism: {label: "Organism", field: "organism", hidden: false},
 			strain: {label: "Strain", field: "strain", hidden: false},
 			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},

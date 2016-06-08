@@ -68,7 +68,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 				Topic.publish("ProteinFamilies", "showLoadingMask");
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (ProteinFamiliesGridContainer)");
+				// console.log("No Grid Yet (ProteinFamiliesGridContainer)");
 			}
 
 			this._set("state", state);
@@ -133,7 +133,8 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 							return sel.family_id;
 						}).join(',') + ")))";
 
-					Topic.publish("ProteinFamilies", "showMembersGrid", query);
+					window.open("/view/FeatureList/" + query + "#view_tab=features");
+					// Topic.publish("ProteinFamilies", "showMembersGrid", query);
 				},
 				false
 			]

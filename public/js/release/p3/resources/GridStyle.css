@@ -1,0 +1,55 @@
+/* protein family grid */
+.dgrid-cell.field-family_id {
+    width: 12%;
+}
+
+.dgrid-cell.field-feature_count,
+.dgrid-cell.field-genome_count,
+.dgrid-cell.field-aa_length_min,
+.dgrid-cell.field-aa_length_max,
+.dgrid-cell.field-aa_length_mean,
+.dgrid-cell.field-aa_length_std {
+    width: 8%;
+    text-align: center;
+}
+
+.dgrid-cell.field-description {
+    width: 40%;
+}
+
+/* pathways */
+.dgrid-cell.field-pathway_name,
+.dgrid-cell.field-pathway_class,
+.dgrid-cell.field-ec_description {
+    width: 20%;
+}
+.dgrid-cell.field-gene_count,
+.dgrid-cell.field-ec_count,
+.dgrid-cell.field-ec_cons,
+.dgrid-cell.field-gene_cons {
+    width: 8%;
+    text-align: center;
+}
+.dgrid-cell.field-patric_id,
+.dgrid-cell.field-refseq_locus_tag,
+.dgrid-cell.field-alt_locus_tag {
+    width: 10%
+}
+
+/* transcriptomics */
+.dgrid-cell.field-title,
+.dgrid-cell.field-expname {
+    width: 20%;
+}
+.dgrid-cell.field-pmid {
+    width: 8%;
+}
+.dgrid-cell.field-organism {
+    width: 15%;
+}
+.dgrid-cell.field-samples,
+.dgrid-cell.field-genes,
+.dgrid-cell.field-sig_log_ratio,
+.dgrid-cell.field-sig_z_score {
+    width: 5%
+}
