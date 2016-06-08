@@ -133,15 +133,16 @@ define([
 					var gfs = new FilterStatus();
 					gfs.init(idx, genome.genome_name);
 					_self.pmState.genomeFilterStatus[genome.genome_id] = gfs;
-					_self.pmState.genomeIds.push(genome.genome_id);
+					// _self.pmState.genomeIds.push(genome.genome_id);
 				});
+				_self.pmState.genomeIds = Object.keys(_self.pmState.genomeFilterStatus);
 				// publish pmState & update filter panel
 				Topic.publish("PathwayMap", "updatePmState", _self.pmState);
 
 				// sub query - genome distribution
 				var query = {
 					q: "genome_id:(" + _self.pmState.genomeIds.join(' OR ') + ") AND pathway_id:" + _self.pmState.pathway_id,
-					fq: "annotation:PATRIC",
+					fq: "annotation:" + _self.pmState.annotation,
 					rows: 0,
 					facet: true,
 					'json.facet': '{stat:{type:field,field:ec_number,limit:-1,sort:{index:asc},facet:{families:{type:field,field:genome_id,limit:-1}}}}'

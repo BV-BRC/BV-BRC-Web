@@ -24,15 +24,13 @@ define("p3/widget/SummaryWidget", [
 			style: "border: 0px;"
 		},
 		showChart: function(){
-			console.log("showChart");
 			this.set('view', "chart")
 		},
 		showTable: function(){
-			console.log("showTable");
 			this.set("view", "table")
 		},
 		onSetView: function(attr, oldVal, view){
-			console.log("onSetView ", view)
+			console.log("onSetView ", view);
 			if(oldVal){
 				domClass.remove(this.domNode, oldVal + "View")
 			}
@@ -48,8 +46,8 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		onSetQuery: function(attr, oldVal, query){
-			console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
-			console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
+			// console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
+			// console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
@@ -64,7 +62,7 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		onSetData: function(attr, oldVal, data){
-			console.log("onSetData: ", data);
+			// console.log("onSetData: ", data);
 			this["render_" + this.view]();
 		},
 
@@ -77,7 +75,6 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		render_table: function(){
-			console.log("Render Table");
 			if(!this.grid){
 				var opts = this.gridOptions || {};
 				opts.columns = this.columns;

@@ -600,7 +600,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 						gene.dist = distributionTransformer(gene.dist, comparisonOrderChangeMap);
 					}
 					var order = geneOrderMap[gene.feature_id];
-					cols[order] = createColumn(order, gene.feature_id, gene.alt_locus_tag + " - " + gene.product, gene.dist, meta);
+					cols[order] = createColumn(order, gene.feature_id, gene.product + " - " + gene.patric_id.replace("|", ""), gene.dist, meta);
 				}
 			});
 

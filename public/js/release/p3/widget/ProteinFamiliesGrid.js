@@ -25,8 +25,8 @@ define("p3/widget/ProteinFamiliesGrid", [
 			description: {label: 'Description', field: 'description'},
 			aa_length_min: {label: 'Min AA Length', field: 'aa_length_min'},
 			aa_length_max: {label: 'Max AA Length', field: 'aa_length_max'},
-			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.twoDecimalNumeric},
-			aa_length_std: {label: 'Std', field: 'aa_length_std', formatter: formatter.twoDecimalNumeric}
+			aa_length_avg: {label: 'Mean', field: 'aa_length_mean', formatter: formatter.toInteger},
+			aa_length_std: {label: 'Std Dev', field: 'aa_length_std', formatter: formatter.toInteger}
 		},
 		constructor: function(options){
 			//console.log("ProteinFamiliesGrid Ctor: ", options);
@@ -40,6 +40,7 @@ define("p3/widget/ProteinFamiliesGrid", [
 
 				switch(key){
 					case "updateMainGridOrder":
+						this.set("sort", []);
 						this.store.arrange(value);
 						this.refresh();
 						break;
@@ -115,10 +116,15 @@ define("p3/widget/ProteinFamiliesGrid", [
 				this.refresh();
 			}
 		},
+		_setSort: function(sort){
+			this.inherited(arguments);
+			// console.log("_setSort", sort);
+			this.store.sort = sort;
+		},
 		createStore: function(server, token, state){
 
 			var store = new Store({
-				token: token,
+				token: window.App.authorizationToken,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
