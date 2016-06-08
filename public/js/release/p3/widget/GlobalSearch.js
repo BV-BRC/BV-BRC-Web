@@ -87,6 +87,10 @@ define("p3/widget/GlobalSearch", [
 									finalTerms.push({property: propertyMatch, term: currentTerm});
 									propertyMatch=false;
 								}else{
+									if (currentTerm.match(/[^a-zA-Z\d]/)){
+										currentTerm = '"' + currentTerm + '"'
+									}
+
 									finalTerms.push(currentTerm);
 								}
 								currentTerm="";
@@ -102,6 +106,9 @@ define("p3/widget/GlobalSearch", [
 					if (propertyMatch){
 						finalTerms.push({property: propertyMatch, term: currentTerm});
 					}else{
+						if (currentTerm.match(/[^a-zA-Z\d]/)){
+							currentTerm = '"' + currentTerm + '"'
+						}
 						finalTerms.push(currentTerm);
 					}
 
