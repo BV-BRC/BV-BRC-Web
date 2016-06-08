@@ -161,11 +161,11 @@ define("phyloview/TreeNavSVG", [
     },
 
     getSelectedItems : function() {
-            this.tree.nodes(this.treeData).forEach(function(d){
+            this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
             if(d.selected && !d.c) {
                 this.selected.push(d);
             }
-        },this);
+        }));
         if (this.selectionTarget != null){
             this.selectionTarget.set("selection",this.selected);
         }
