@@ -11,6 +11,8 @@ define('p3/layer/nls/core_zh-cn',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000兆","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000兆","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"先前选项","nextMessage":"更多选项","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} 共 ${total} 条结果","gotoFirst":"首页","gotoNext":"后一页","gotoPrev":"前一页","gotoLast":"末页","gotoPage":"到这页","jumpPage":"跳到页","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"十六进制","huePickerTitle":"色彩选择器","saturationPickerTitle":"饱和度选择器","_localized":{}}

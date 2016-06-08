@@ -11,6 +11,8 @@ define('p3/layer/nls/core_de',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"·","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 Bio","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":".","percentFormat":"#,##0 %","decimalFormat-long":"000 Billionen","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"Vorherige Auswahl","nextMessage":"Weitere Auswahlmöglichkeiten","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} von ${total} Ergebnissen","gotoFirst":"Gehe zu erster Seite","gotoNext":"Gehe zu nächster Seite","gotoPrev":"Gehe zu vorheriger Seite","gotoLast":"Gehe zu letzter Seite","gotoPage":"Gehe zu Seite","jumpPage":"Springe zu Seite","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"h","saturationLabel":"s","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"Farbtonauswahl","saturationPickerTitle":"Sättigungsauswahl","_localized":{}}

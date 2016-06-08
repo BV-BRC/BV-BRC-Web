@@ -11,6 +11,8 @@ define('p3/layer/nls/core_sv',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"·","list":";","percentSign":"%","minusSign":"−","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 bn","currencySpacing-afterCurrency-insertBetween":" ","nan":"¤¤¤","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":" ","percentFormat":"#,##0 %","decimalFormat-long":"000 biljoner","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"×10^","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"Tidigare val","nextMessage":"Fler val","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"g","blueLabel":"b","hueLabel":"n","saturationLabel":"m","valueLabel":"k","degLabel":"°","hexLabel":"hex","huePickerTitle":"Nyans","saturationPickerTitle":"Mättnad","_localized":{}}

@@ -11,6 +11,8 @@ define('p3/layer/nls/core_th',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 ล'.'ล'.'","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"¤#,##0.00;(¤#,##0.00)","perMille":"‰","group":",","percentFormat":"#,##0%","decimalFormat-long":"000 ล้านล้าน","decimalFormat":"#,##0.###","decimal":".","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"การเลือกก่อนหน้า","nextMessage":"การเลือกเพิ่มเติม","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} ของ ${total} ผลลัพธ์","gotoFirst":"ไปหน้าแรก","gotoNext":"ไปหน้าถัดไป","gotoPrev":"ไปหน้าก่อน","gotoLast":"ไปหน้าสุดท้าย","gotoPage":"ไปหน้า","jumpPage":"กระโดดไปหน้า","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"r","greenLabel":"ก.","blueLabel":"b","hueLabel":"ชม.","saturationLabel":"วิ.","valueLabel":"v","degLabel":"°","hexLabel":"hex","huePickerTitle":"ตัวเลือกสี","saturationPickerTitle":"ตัวเลือกความอิ่มของสี","_localized":{}}

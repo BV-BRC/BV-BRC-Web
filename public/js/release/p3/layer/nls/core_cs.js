@@ -11,6 +11,8 @@ define('p3/layer/nls/core_cs',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 bil'.'","currencySpacing-afterCurrency-insertBetween":" ","nan":"NaN","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":" ","percentFormat":"#,##0 %","decimalFormat-long":"000 bilionů","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"Předchozí volby","nextMessage":"Další volby","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"č","greenLabel":"z","blueLabel":"m","hueLabel":"o","saturationLabel":"n","valueLabel":"j","degLabel":"°","hexLabel":"hex","huePickerTitle":"Selektor odstínu","saturationPickerTitle":"Selektor sytosti","_localized":{}}
