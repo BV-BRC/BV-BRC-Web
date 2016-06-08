@@ -55,7 +55,7 @@ define([
 		var selection = idMappingTTDialog.selection;
 		delete idMappingTTDialog.selection;
 
-		var toIdGroup = (["seed_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
+		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
 
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
 
@@ -755,8 +755,8 @@ define([
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
-					console.log("this.currentContainerType: ", this.containerType);
-					console.log("GridContainer selection: ", selection);
+					// console.log("this.currentContainerType: ", this.containerType);
+					// console.log("GridContainer selection: ", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
