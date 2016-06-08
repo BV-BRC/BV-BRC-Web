@@ -5,6 +5,16 @@ define("p3/util/QueryToEnglish", [
 			RQLParser){
 
 	var parseQuery = function(filter){
+		console.log("PARSE: ", filter);
+
+		var parsed = {
+			parsed: _parsed,
+			selected: [],
+			byCategory: {},
+			keywords: [],
+			contains:{}
+		};
+
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -13,13 +23,6 @@ define("p3/util/QueryToEnglish", [
 		}
 
 		var _self = this;
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: []
-		};
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
@@ -30,9 +33,21 @@ define("p3/util/QueryToEnglish", [
 						walk(t);
 					});
 					break;
+				case "in":
+					var f = decodeURIComponent(term.args[0]);
+					var v = decodeURIComponent(term.args[1]);
+					console.log("IN F: ", f, "V: ",v, term)
+					// parsed.selected.push({field: f, value: v});
+					if(!parsed.contains[f]){
+						parsed.contains[f] = [v];
+					}else{
+						parsed.contains[f].push(v);
+					}
+					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
+					console.log("F: ", f, "V: ",f, term)
 					parsed.selected.push({field: f, value: v});
 					if(!parsed.byCategory[f]){
 						parsed.byCategory[f] = [v];
@@ -50,6 +65,7 @@ define("p3/util/QueryToEnglish", [
 
 		walk(_parsed);
 
+
 		return parsed;
 
 	};
@@ -63,6 +79,7 @@ define("p3/util/QueryToEnglish", [
 		var parsed = parseQuery(query);
 		var out = [];
 
+		console.log("PARSED: ", parsed);
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
 			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
@@ -80,6 +97,12 @@ define("p3/util/QueryToEnglish", [
 
 		if(catsEnglish){
 			out.push(" where " + catsEnglish)
+		}
+
+		if (parsed.contains){
+			var ins = Object.keys(parsed.contains).forEach(function(prop){
+				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
+			})
 		}
 
 		var keywords = parsed.keywords.map(valueWrap);

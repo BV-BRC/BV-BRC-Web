@@ -27274,10 +27274,18 @@ define([
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
-				multiple: false,
+				multiple: true,
 				tooltip: "View items in this genome group"
 			}, function(selection){
-				Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+				}
 			});
 
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
@@ -53469,11 +53477,11 @@ define([
 			// }
 
 			var _self = this;
-			// console.log('genomeList setQuery - this.query: ', this.query);
+			console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			// console.log("url: ", url);
+			console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -68410,15 +68418,26 @@ define([
 				{
 					label: "GENOME",
 					validTypes: ["*"],
-					multiple: false,
+					multiple: true,
 					tooltip: "View Genome",
+					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
 				},
 				function(selection){
-					var sel = selection[0];
-					// console.log("sel: ", sel)
-					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+		
+					if (selection.length>1){
+						var map={};
+						selection.forEach(function(sel){
+							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+						})
+						var genome_ids = Object.keys(map);
+						Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+					}else{
+						var sel = selection[0];
+						// console.log("sel: ", sel)
+						// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					}
 				},
 				false
 			], [
@@ -82321,6 +82340,16 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
+		console.log("PARSE: ", filter);
+
+		var parsed = {
+			parsed: _parsed,
+			selected: [],
+			byCategory: {},
+			keywords: [],
+			contains:{}
+		};
+
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -82329,13 +82358,6 @@ define([
 		}
 
 		var _self = this;
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: []
-		};
 
 		function walk(term){
 			// console.log("Walk: ", term.name, " Args: ", term.args);
@@ -82346,9 +82368,21 @@ define([
 						walk(t);
 					});
 					break;
+				case "in":
+					var f = decodeURIComponent(term.args[0]);
+					var v = decodeURIComponent(term.args[1]);
+					console.log("IN F: ", f, "V: ",v, term)
+					// parsed.selected.push({field: f, value: v});
+					if(!parsed.contains[f]){
+						parsed.contains[f] = [v];
+					}else{
+						parsed.contains[f].push(v);
+					}
+					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
+					console.log("F: ", f, "V: ",f, term)
 					parsed.selected.push({field: f, value: v});
 					if(!parsed.byCategory[f]){
 						parsed.byCategory[f] = [v];
@@ -82366,6 +82400,7 @@ define([
 
 		walk(_parsed);
 
+
 		return parsed;
 
 	};
@@ -82379,6 +82414,7 @@ define([
 		var parsed = parseQuery(query);
 		var out = [];
 
+		console.log("PARSED: ", parsed);
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
 			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
@@ -82396,6 +82432,12 @@ define([
 
 		if(catsEnglish){
 			out.push(" where " + catsEnglish)
+		}
+
+		if (parsed.contains){
+			var ins = Object.keys(parsed.contains).forEach(function(prop){
+				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
+			})
 		}
 
 		var keywords = parsed.keywords.map(valueWrap);
@@ -84439,7 +84481,7 @@ return number;
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<!--<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
