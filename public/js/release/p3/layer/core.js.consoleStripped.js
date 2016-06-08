@@ -22548,6 +22548,117 @@ define([
 			this.searchInput.set("value", q);
 		},
 
+		parseQuery: function(query){
+			// var parts = query.split(" ");
+			// var finalTerms=[];
+			// if(parts){
+			// 	var quoted;
+			// 	parts.forEach(function(term){
+			// 		if (!term) { return; }
+
+
+			// 		// check to see if this is quoted term or part of a quoted term
+			// 		if (quoted && term){
+			// 			quoted = quoted + " " + term;
+			// 			if (term[term.length-1] == '"'){
+			// 				finalTerms.push(quoted);
+			// 			}
+			// 			return;
+			// 		} else if (term[0])=='"'){
+			// 			quoted=term
+			// 			return;
+			// 		}
+
+			// 		// check to see if this is a property matcher
+			// 		var tparts = term.split(":");
+			// 		if (tparts.length>)
+
+
+
+
+			// 	}
+			var finalTerms=[]
+			var currentTerm="";
+			var propertyMatch;
+			var quoted;
+			if (query){
+				for (var i=0;i<query.length;i++){
+					var t = query[i];
+
+					switch(t){
+						case ":":
+							propertyMatch = currentTerm;
+							currentTerm="";
+							 0 && console.log("propertyMatch: ", propertyMatch)
+							break;
+						case '"':
+							if (quoted){
+								if (propertyMatch){
+									finalTerms.push({property: propertyMatch, term: currentTerm + t});
+									propertyMatch=false;
+								}else{
+									finalTerms.push(currentTerm + t);
+								}
+								quoted=false;
+								currentTerm = ""
+							}else{
+								currentTerm = currentTerm + t;
+								quoted=true;
+							}
+							break;
+						case " ":
+							if (quoted){
+								currentTerm = currentTerm + t;
+							}else{
+								if (propertyMatch){
+									finalTerms.push({property: propertyMatch, term: currentTerm});
+									propertyMatch=false;
+								}else{
+									if (currentTerm.match(/[^a-zA-Z\d]/)){
+										currentTerm = '"' + currentTerm + '"'
+									}
+
+									finalTerms.push(currentTerm);
+								}
+								currentTerm="";
+							}
+							break;
+						default: 
+							currentTerm = currentTerm + t;
+
+					}
+				}
+
+				if (currentTerm){
+					if (propertyMatch){
+						finalTerms.push({property: propertyMatch, term: currentTerm});
+					}else{
+						if (currentTerm.match(/[^a-zA-Z\d]/)){
+							currentTerm = '"' + currentTerm + '"'
+						}
+						finalTerms.push(currentTerm);
+					}
+
+				}
+
+				finalTerms = finalTerms.map(function(term){
+					if (typeof term == 'string'){
+						return "keyword(" + encodeURIComponent(term) + ")";
+					}else{
+						return "eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")";
+					}
+				})
+
+				if (finalTerms.length>1){
+					return "and(" + finalTerms.join(",") + ")";
+				}else{
+					return finalTerms[0];
+				}
+			} 
+
+			throw Error("No Query Supplied to Query Parser");
+		},
+
 		onKeypress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
@@ -22557,54 +22668,42 @@ define([
 				}
 
 				 0 && console.log("Search Filter: ", searchFilter);
-				var parts = query.split(" ");
-				if(parts){
-					q = parts.map(function(w){
-						return "keyword(" + encodeURIComponent(w) + ")"
-					});
-					 0 && console.log(" Mapped: ", q, "Num Parts: ", parts.length);
-
-					if(parts.length > 1){
-						q = "and(" + q.join(",") + ")";
-					}else{
-						q = q[0]
-					}
-
-					var clear = false;
-					switch(searchFilter){
-						case "amr":
-							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
-							clear = true;
-							break;
-						case "everything":
-							Topic.publish("/navigate", {href: "/search/?" + q});
-							clear = true;
-							break;
-						case "pathways":
-							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
-							clear = true;
-							break;
-						case "sp_genes":
-							Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
-							clear = true;
-							break;
-						case "genome_features":
-							Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
-							clear = true;
-							break;
-						case "genomes":
-							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
-							clear = true;
-							break;
-						default:
-							 0 && console.log("Do Search: ", searchFilter, query);
-					}
-
-					if(clear){
-						this.searchInput.set("value", '');
-					}
-
+				var q = this.parseQuery(query);
+				
+				var clear = false;
+				switch(searchFilter){
+					case "amr":
+						Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
+						clear = true;
+						break;
+					case "everything":
+						Topic.publish("/navigate", {href: "/search/?" + q});
+						clear = true;
+						break;
+					case "pathways":
+						Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
+						clear = true;
+						break;
+					case "sp_genes":
+						Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
+						clear = true;
+						break;
+					case "genome_features":
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						clear = true;
+						break;
+					case "genomes":
+						Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
+						clear = true;
+						break;
+					default:
+						 0 && console.log("Do Search: ", searchFilter, query);
 				}
+
+				if(clear){
+					this.searchInput.set("value", '');
+				}
+
 
 				 0 && console.log("Do Search: ", searchFilter, query);
 			}
@@ -27182,10 +27281,18 @@ define([
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
-				multiple: false,
+				multiple: true,
 				tooltip: "View items in this genome group"
 			}, function(selection){
-				Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+				}
 			});
 
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
@@ -38539,10 +38646,12 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang", "../WorkspaceManager"
+	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang",
+    "../WorkspaceManager", "dojo/dom-style", "dijit/form/Select", "./WorkspaceFilenameValidationTextBox",
+    "./WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, lang, WorkspaceManager){
+			Template, lang, WorkspaceManager, domStyle, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
 		"disabled": false,
@@ -38550,6 +38659,10 @@ define([
 		selection: null,
 		path: null,
 		type: "genome_group",
+	    idType: null,
+        inputType: null,
+        conversionTypes: {"feature_data":[{label:"Feature",value:"feature_group"},{label:"Genome",value:"genome_group"}]},
+        selectType: false,
 		_setTypeAttr: function(t){
 			this.type = t;
 			if(this.workspaceObjectSelector){
@@ -38567,6 +38680,12 @@ define([
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 		},
+        onChangeOutputType: function(){
+            this.set('type',this.groupTypeBox.get('value'));
+			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
+            this.onChangeTarget(this.type);
+        },
+
 		onChangeTarget: function(target){
 			 0 && console.log("onChangeTarget ");
 			if(!this._started){
@@ -38610,6 +38729,13 @@ define([
 			this.groupNameBox.set('path', this.path);
 			this.workspaceObjectSelector.set('path', this.path);
 			this.workspaceObjectSelector.set('type', [this.type]);
+            if(this.inputType in this.conversionTypes){
+                this.selectType = true;
+                domStyle.set(this.groupTypeBox.domNode, "display", "");
+                this.groupTypeBox.set("options",this.conversionTypes[this.inputType]);
+                this.groupTypeBox.set("value",this.conversionTypes[this.inputType][0]["value"]);
+                this.groupTypeBox.set("displayedValue",this.conversionTypes[this.inputType][0]["label"]);
+            }
 		},
 
 		onCancel: function(evt){
@@ -38619,32 +38745,3889 @@ define([
 		onCopy: function(evt){
 			 0 && console.log("Copy Selection: ", this.selection, " to ", this.value);
 			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
-			var idType = "genome_id";
-			if(this.type == "genome_group"){
-				idType = "genome_id";
-			}
-			else if(this.type == "feature_group"){
-				idType = "feature_id";
-			}
-			else if(this.type == "experiment_group"){
-				idType = "eid";
-			}
-			
+            if (!this.idType){
+			    this.idType = "genome_id";
+                if(this.type == "genome_group"){
+                    this.idType = "genome_id";
+                }
+                else if(this.type == "feature_group"){
+                    this.idType = "feature_id";
+                }
+                else if(this.type == "experiment_group"){
+                    this.idType = "eid";
+                }
+            }
 			var def;
 			if(this.targetType.get("value") == "existing"){
-				def = WorkspaceManager.addToGroup(this.value, idType, this.selection.map(function(o){
-					return o[idType];
-				}));
+				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.map(lang.hitch(this, function(o){
+					return o[this.idType];
+				})));
 			}else{
-				def = WorkspaceManager.createGroup(this.value, this.type, this.path, idType, this.selection.map(function(o){
-					return o[idType];
-				}));
+				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.map(lang.hitch(this, function(o){
+					return o[this.idType];
+				})));
 			}
 			def.then(lang.hitch(this, function(){
 				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
 			}));
 		}
 
+	});
+});
+
+},
+'dijit/form/Select':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/dom-class", // domClass.add domClass.remove domClass.toggle
+	"dojo/dom-geometry", // domGeometry.setMarginBox
+	"dojo/i18n", // i18n.getLocalization
+	"dojo/keys",
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"dojo/sniff", // has("ie")
+	"./_FormSelectWidget",
+	"../_HasDropDown",
+	"../DropDownMenu",
+	"../MenuItem",
+	"../MenuSeparator",
+	"../Tooltip",
+	"../_KeyNavMixin",
+	"../registry", // registry.byNode
+	"dojo/text!./templates/Select.html",
+	"dojo/i18n!./nls/validate"
+], function(array, declare, domAttr, domClass, domGeometry, i18n, keys, lang, on, has,
+			_FormSelectWidget, _HasDropDown, DropDownMenu, MenuItem, MenuSeparator, Tooltip, _KeyNavMixin, registry, template){
+
+	// module:
+	//		dijit/form/Select
+
+	var _SelectMenu = declare("dijit.form._SelectMenu", DropDownMenu, {
+		// summary:
+		//		An internally-used menu for dropdown that allows us a vertical scrollbar
+
+		// Override Menu.autoFocus setting so that opening a Select highlights the current value.
+		autoFocus: true,
+
+		buildRendering: function(){
+			this.inherited(arguments);
+
+			this.domNode.setAttribute("role", "listbox");
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// stop mousemove from selecting text on IE to be consistent with other browsers
+			this.own(on(this.domNode, "selectstart", function(evt){
+				evt.preventDefault();
+				evt.stopPropagation();
+			}));
+		},
+
+		focus: function(){
+			// summary:
+			//		Overridden so that the previously selected value will be focused instead of only the first item
+			var found = false,
+				val = this.parentWidget.value;
+			if(lang.isArray(val)){
+				val = val[val.length - 1];
+			}
+			if(val){ // if focus selected
+				array.forEach(this.parentWidget._getChildren(), function(child){
+					if(child.option && (val === child.option.value)){ // find menu item widget with this value
+						found = true;
+						this.focusChild(child, false); // focus previous selection
+					}
+				}, this);
+			}
+			if(!found){
+				this.inherited(arguments); // focus first item by default
+			}
+		}
+	});
+
+	var Select = declare("dijit.form.Select" + (has("dojo-bidi") ? "_NoBidi" : ""), [_FormSelectWidget, _HasDropDown, _KeyNavMixin], {
+		// summary:
+		//		This is a "styleable" select box - it is basically a DropDownButton which
+		//		can take a `<select>` as its input.
+
+		baseClass: "dijitSelect dijitValidationTextBox",
+
+		templateString: template,
+
+		_buttonInputDisabled: has("ie") ? "disabled" : "", // allows IE to disallow focus, but Firefox cannot be disabled for mousedown events
+
+		// required: Boolean
+		//		Can be true or false, default is false.
+		required: false,
+
+		// state: [readonly] String
+		//		"Incomplete" if this select is required but unset (i.e. blank value), "" otherwise
+		state: "",
+
+		// message: String
+		//		Currently displayed error/prompt message
+		message: "",
+
+		// tooltipPosition: String[]
+		//		See description of `dijit/Tooltip.defaultPosition` for details on this parameter.
+		tooltipPosition: [],
+
+		// emptyLabel: string
+		//		What to display in an "empty" dropdown
+		emptyLabel: "&#160;", // &nbsp;
+
+		// _isLoaded: Boolean
+		//		Whether or not we have been loaded
+		_isLoaded: false,
+
+		// _childrenLoaded: Boolean
+		//		Whether or not our children have been loaded
+		_childrenLoaded: false,
+
+		// labelType: String
+		//		Specifies how to interpret the labelAttr in the data store items.
+		//		Can be "html" or "text".
+		labelType: "html",
+
+		_fillContent: function(){
+			// summary:
+			//		Set the value to be the first, or the selected index
+			this.inherited(arguments);
+			// set value from selected option
+			if(this.options.length && !this.value && this.srcNodeRef){
+				var si = this.srcNodeRef.selectedIndex || 0; // || 0 needed for when srcNodeRef is not a SELECT
+				this._set("value", this.options[si >= 0 ? si : 0].value);
+			}
+			// Create the dropDown widget
+			this.dropDown = new _SelectMenu({ id: this.id + "_menu", parentWidget: this });
+			domClass.add(this.dropDown.domNode, this.baseClass.replace(/\s+|$/g, "Menu "));
+		},
+
+		_getMenuItemForOption: function(/*_FormSelectWidget.__SelectOption*/ option){
+			// summary:
+			//		For the given option, return the menu item that should be
+			//		used to display it.  This can be overridden as needed
+			if(!option.value && !option.label){
+				// We are a separator (no label set for it)
+				return new MenuSeparator({ownerDocument: this.ownerDocument});
+			}else{
+				// Just a regular menu option
+				var click = lang.hitch(this, "_setValueAttr", option);
+				var item = new MenuItem({
+					option: option,
+					label: (this.labelType === 'text' ? (option.label || '').toString()
+						.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
+						option.label) || this.emptyLabel,
+					onClick: click,
+					ownerDocument: this.ownerDocument,
+					dir: this.dir,
+					textDir: this.textDir,
+					disabled: option.disabled || false
+				});
+				item.focusNode.setAttribute("role", "option");
+				return item;
+			}
+		},
+
+		_addOptionItem: function(/*_FormSelectWidget.__SelectOption*/ option){
+			// summary:
+			//		For the given option, add an option to our dropdown.
+			//		If the option doesn't have a value, then a separator is added
+			//		in that place.
+			if(this.dropDown){
+				this.dropDown.addChild(this._getMenuItemForOption(option));
+			}
+		},
+
+		_getChildren: function(){
+			if(!this.dropDown){
+				return [];
+			}
+			return this.dropDown.getChildren();
+		},
+
+		focus: function(){
+			// Override _KeyNavMixin::focus(), which calls focusFirstChild().
+			// We just want the standard form widget behavior.
+			if(!this.disabled && this.focusNode.focus){
+				try{
+					this.focusNode.focus();
+				}catch(e){
+					/*squelch errors from hidden nodes*/
+				}
+			}
+		},
+
+		focusChild: function(/*dijit/_WidgetBase*/ widget){
+			// summary:
+			//		Sets the value to the given option, used during search by letter.
+			// widget:
+			//		Reference to option's widget
+			// tags:
+			//		protected
+			if(widget){
+				this.set('value', widget.option);
+			}
+		},
+
+		_getFirst: function(){
+			// summary:
+			//		Returns the first child widget.
+			// tags:
+			//		abstract extension
+			var children = this._getChildren();
+			return children.length ? children[0] : null;
+		},
+
+		_getLast: function(){
+			// summary:
+			//		Returns the last child widget.
+			// tags:
+			//		abstract extension
+			var children = this._getChildren();
+			return children.length ? children[children.length-1] : null;
+		},
+
+		childSelector: function(/*DOMNode*/ node){
+			// Implement _KeyNavMixin.childSelector, to identify focusable child nodes.
+			// If we allowed a dojo/query dependency from this module this could more simply be a string "> *"
+			// instead of this function.
+
+			var node = registry.byNode(node);
+			return node && node.getParent() == this.dropDown;
+		},
+
+		onKeyboardSearch: function(/*dijit/_WidgetBase*/ item, /*Event*/ evt, /*String*/ searchString, /*Number*/ numMatches){
+			// summary:
+			//		When a key is pressed that matches a child item,
+			//		this method is called so that a widget can take appropriate action is necessary.
+			// tags:
+			//		protected
+			if(item){
+				this.focusChild(item);
+			}
+		},
+
+		_loadChildren: function(/*Boolean*/ loadMenuItems){
+			// summary:
+			//		Resets the menu and the length attribute of the button - and
+			//		ensures that the label is appropriately set.
+			// loadMenuItems: Boolean
+			//		actually loads the child menu items - we only do this when we are
+			//		populating for showing the dropdown.
+
+			if(loadMenuItems === true){
+				// this.inherited destroys this.dropDown's child widgets (MenuItems).
+				// Avoid this.dropDown (Menu widget) having a pointer to a destroyed widget (which will cause
+				// issues later in _setSelected). (see #10296)
+				if(this.dropDown){
+					delete this.dropDown.focusedChild;
+					this.focusedChild = null;
+				}
+				if(this.options.length){
+					this.inherited(arguments);
+				}else{
+					// Drop down menu is blank but add one blank entry just so something appears on the screen
+					// to let users know that they are no choices (mimicing native select behavior)
+					array.forEach(this._getChildren(), function(child){
+						child.destroyRecursive();
+					});
+					var item = new MenuItem({
+						ownerDocument: this.ownerDocument,
+						label: this.emptyLabel
+					});
+					this.dropDown.addChild(item);
+				}
+			}else{
+				this._updateSelection();
+			}
+
+			this._isLoaded = false;
+			this._childrenLoaded = true;
+
+			if(!this._loadingStore){
+				// Don't call this if we are loading - since we will handle it later
+				this._setValueAttr(this.value, false);
+			}
+		},
+
+		_refreshState: function(){
+			if(this._started){
+				this.validate(this.focused);
+			}
+		},
+
+		startup: function(){
+			this.inherited(arguments);
+			this._refreshState(); // after all _set* methods have run
+		},
+
+		_setValueAttr: function(value){
+			this.inherited(arguments);
+			domAttr.set(this.valueNode, "value", this.get("value"));
+			this._refreshState();	// to update this.state
+		},
+
+		_setNameAttr: "valueNode",
+
+		_setDisabledAttr: function(/*Boolean*/ value){
+			this.inherited(arguments);
+			this._refreshState();	// to update this.state
+		},
+
+		_setRequiredAttr: function(/*Boolean*/ value){
+			this._set("required", value);
+			this.focusNode.setAttribute("aria-required", value);
+			this._refreshState();	// to update this.state
+		},
+
+		_setOptionsAttr: function(/*Array*/ options){
+			this._isLoaded = false;
+			this._set('options', options);
+		},
+
+		_setDisplay: function(/*String*/ newDisplay){
+			// summary:
+			//		sets the display for the given value (or values)
+
+			var lbl = (this.labelType === 'text' ? (newDisplay || '')
+					.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
+					newDisplay) || this.emptyLabel;
+			this.containerNode.innerHTML = '<span role="option" class="dijitReset dijitInline ' + this.baseClass.replace(/\s+|$/g, "Label ") + '">' + lbl + '</span>';
+		},
+
+		validate: function(/*Boolean*/ isFocused){
+			// summary:
+			//		Called by oninit, onblur, and onkeypress, and whenever required/disabled state changes
+			// description:
+			//		Show missing or invalid messages if appropriate, and highlight textbox field.
+			//		Used when a select is initially set to no value and the user is required to
+			//		set the value.
+
+			var isValid = this.disabled || this.isValid(isFocused);
+			this._set("state", isValid ? "" : (this._hasBeenBlurred ? "Error" : "Incomplete"));
+			this.focusNode.setAttribute("aria-invalid", isValid ? "false" : "true");
+			var message = isValid ? "" : this._missingMsg;
+			if(message && this.focused && this._hasBeenBlurred){
+				Tooltip.show(message, this.domNode, this.tooltipPosition, !this.isLeftToRight());
+			}else{
+				Tooltip.hide(this.domNode);
+			}
+			this._set("message", message);
+			return isValid;
+		},
+
+		isValid: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Whether or not this is a valid value.  The only way a Select
+			//		can be invalid is when it's required but nothing is selected.
+			return (!this.required || this.value === 0 || !(/^\s*$/.test(this.value || ""))); // handle value is null or undefined
+		},
+
+		reset: function(){
+			// summary:
+			//		Overridden so that the state will be cleared.
+			this.inherited(arguments);
+			Tooltip.hide(this.domNode);
+			this._refreshState();	// to update this.state
+		},
+
+		postMixInProperties: function(){
+			// summary:
+			//		set the missing message
+			this.inherited(arguments);
+			this._missingMsg = i18n.getLocalization("dijit.form", "validate", this.lang).missingMessage;
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// stop mousemove from selecting text on IE to be consistent with other browsers
+			this.own(on(this.domNode, "selectstart", function(evt){
+				evt.preventDefault();
+				evt.stopPropagation();
+			}));
+
+			this.domNode.setAttribute("aria-expanded", "false");
+
+			// Prevent _KeyNavMixin from calling stopPropagation() on left and right arrow keys, thus breaking
+			// navigation when Select inside Toolbar.
+			var keyNavCodes = this._keyNavCodes;
+			delete keyNavCodes[keys.LEFT_ARROW];
+			delete keyNavCodes[keys.RIGHT_ARROW];
+		},
+
+		_setStyleAttr: function(/*String||Object*/ value){
+			this.inherited(arguments);
+			domClass.toggle(this.domNode, this.baseClass.replace(/\s+|$/g, "FixedWidth "), !!this.domNode.style.width);
+		},
+
+		isLoaded: function(){
+			return this._isLoaded;
+		},
+
+		loadDropDown: function(/*Function*/ loadCallback){
+			// summary:
+			//		populates the menu
+			this._loadChildren(true);
+			this._isLoaded = true;
+			loadCallback();
+		},
+
+		destroy: function(preserveDom){
+			if(this.dropDown && !this.dropDown._destroyed){
+				this.dropDown.destroyRecursive(preserveDom);
+				delete this.dropDown;
+			}
+			Tooltip.hide(this.domNode);	// in case Select (or enclosing Dialog) destroyed while tooltip shown
+			this.inherited(arguments);
+		},
+
+		_onFocus: function(){
+			this.validate(true);	// show tooltip if second focus of required tooltip, but no selection
+			// Note: not calling superclass _onFocus() to avoid _KeyNavMixin::_onFocus() setting tabIndex --> -1
+		},
+
+		_onBlur: function(){
+			Tooltip.hide(this.domNode);
+			this.inherited(arguments);
+			this.validate(false);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		Select = declare("dijit.form.Select", Select, {
+			_setDisplay: function(/*String*/ newDisplay){
+				this.inherited(arguments);
+				this.applyTextDir(this.containerNode);
+			}
+		});
+	}
+
+	Select._Menu = _SelectMenu;	// for monkey patching
+
+	// generic event helper to ensure the dropdown items are loaded before the real event handler is called
+	function _onEventAfterLoad(method){
+		return function(evt){
+			if(!this._isLoaded){
+				this.loadDropDown(lang.hitch(this, method, evt));
+			}else{
+				this.inherited(method, arguments);
+			}
+		};
+	}
+	Select.prototype._onContainerKeydown = _onEventAfterLoad("_onContainerKeydown");
+	Select.prototype._onContainerKeypress = _onEventAfterLoad("_onContainerKeypress");
+
+	return Select;
+});
+
+},
+'dijit/form/_FormSelectWidget':function(){
+define([
+	"dojo/_base/array", // array.filter array.forEach array.map array.some
+	"dojo/_base/Deferred",
+	"dojo/aspect", // aspect.after
+	"dojo/data/util/sorter", // util.sorter.createSortFunction
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.setSelectable
+	"dojo/dom-class", // domClass.toggle
+	"dojo/_base/kernel",	// _scopeName
+	"dojo/_base/lang", // lang.delegate lang.isArray lang.isObject lang.hitch
+	"dojo/query", // query
+	"dojo/when",
+	"dojo/store/util/QueryResults",
+	"./_FormValueWidget"
+], function(array, Deferred, aspect, sorter, declare, dom, domClass, kernel, lang, query, when,
+			QueryResults, _FormValueWidget){
+
+	// module:
+	//		dijit/form/_FormSelectWidget
+
+	/*=====
+	var __SelectOption = {
+		// value: String
+		//		The value of the option.  Setting to empty (or missing) will
+		//		place a separator at that location
+		// label: String
+		//		The label for our option.  It can contain html tags.
+		// selected: Boolean
+		//		Whether or not we are a selected option
+		// disabled: Boolean
+		//		Whether or not this specific option is disabled
+	};
+	=====*/
+
+	var _FormSelectWidget = declare("dijit.form._FormSelectWidget", _FormValueWidget, {
+		// summary:
+		//		Extends _FormValueWidget in order to provide "select-specific"
+		//		values - i.e., those values that are unique to `<select>` elements.
+		//		This also provides the mechanism for reading the elements from
+		//		a store, if desired.
+
+		// multiple: [const] Boolean
+		//		Whether or not we are multi-valued
+		multiple: false,
+
+		// options: __SelectOption[]
+		//		The set of options for our select item.  Roughly corresponds to
+		//		the html `<option>` tag.
+		options: null,
+
+		// store: dojo/store/api/Store
+		//		A store to use for getting our list of options - rather than reading them
+		//		from the `<option>` html tags.   Should support getIdentity().
+		//		For back-compat store can also be a dojo/data/api/Identity.
+		store: null,
+		_setStoreAttr: function(val){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(val);
+			}
+		},
+
+		// query: object
+		//		A query to use when fetching items from our store
+		query: null,
+		_setQueryAttr: function(query){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(this.store, this.selectedValue, {query: query});
+			}
+		},
+
+		// queryOptions: object
+		//		Query options to use when fetching from the store
+		queryOptions: null,
+		_setQueryOptionsAttr: function(queryOptions){
+			if(this._created){		// don't repeat work that will happen in postCreate()
+				this._deprecatedSetStore(this.store, this.selectedValue, {queryOptions: queryOptions});
+			}
+		},
+
+		// labelAttr: String?
+		//		The entries in the drop down list come from this attribute in the dojo.store items.
+		//		If ``store`` is set, labelAttr must be set too, unless store is an old-style
+		//		dojo.data store rather than a new dojo/store.
+		labelAttr: "",
+
+		// onFetch: Function
+		//		A callback to do with an onFetch - but before any items are actually
+		//		iterated over (i.e. to filter even further what you want to add)
+		onFetch: null,
+
+		// sortByLabel: Boolean
+		//		Flag to sort the options returned from a store by the label of
+		//		the store.
+		sortByLabel: true,
+
+
+		// loadChildrenOnOpen: Boolean
+		//		By default loadChildren is called when the items are fetched from the
+		//		store.  This property allows delaying loadChildren (and the creation
+		//		of the options/menuitems) until the user clicks the button to open the
+		//		dropdown.
+		loadChildrenOnOpen: false,
+
+		// onLoadDeferred: [readonly] dojo.Deferred
+		//		This is the `dojo.Deferred` returned by setStore().
+		//		Calling onLoadDeferred.then() registers your
+		//		callback to be called only once, when the prior setStore completes.
+		onLoadDeferred: null,
+
+		getOptions: function(/*anything*/ valueOrIdx){
+			// summary:
+			//		Returns a given option (or options).
+			// valueOrIdx:
+			//		If passed in as a string, that string is used to look up the option
+			//		in the array of options - based on the value property.
+			//		(See dijit/form/_FormSelectWidget.__SelectOption).
+			//
+			//		If passed in a number, then the option with the given index (0-based)
+			//		within this select will be returned.
+			//
+			//		If passed in a dijit/form/_FormSelectWidget.__SelectOption, the same option will be
+			//		returned if and only if it exists within this select.
+			//
+			//		If passed an array, then an array will be returned with each element
+			//		in the array being looked up.
+			//
+			//		If not passed a value, then all options will be returned
+			//
+			// returns:
+			//		The option corresponding with the given value or index.
+			//		null is returned if any of the following are true:
+			//
+			//		- A string value is passed in which doesn't exist
+			//		- An index is passed in which is outside the bounds of the array of options
+			//		- A dijit/form/_FormSelectWidget.__SelectOption is passed in which is not a part of the select
+
+			// NOTE: the compare for passing in a dijit/form/_FormSelectWidget.__SelectOption checks
+			//		if the value property matches - NOT if the exact option exists
+			// NOTE: if passing in an array, null elements will be placed in the returned
+			//		array when a value is not found.
+			var opts = this.options || [];
+
+			if(valueOrIdx == null){
+				return opts; // __SelectOption[]
+			}
+			if(lang.isArrayLike(valueOrIdx)){
+				return array.map(valueOrIdx, "return this.getOptions(item);", this); // __SelectOption[]
+			}
+			if(lang.isString(valueOrIdx)){
+				valueOrIdx = { value: valueOrIdx };
+			}
+			if(lang.isObject(valueOrIdx)){
+				// We were passed an option - so see if it's in our array (directly),
+				// and if it's not, try and find it by value.
+
+				if(!array.some(opts, function(option, idx){
+					for(var a in valueOrIdx){
+						if(!(a in option) || option[a] != valueOrIdx[a]){ // == and not === so that 100 matches '100'
+							return false;
+						}
+					}
+					valueOrIdx = idx;
+					return true; // stops iteration through opts
+				})){
+					valueOrIdx = -1;
+				}
+			}
+			if(valueOrIdx >= 0 && valueOrIdx < opts.length){
+				return opts[valueOrIdx]; // __SelectOption
+			}
+			return null; // null
+		},
+
+		addOption: function(/*__SelectOption|__SelectOption[]*/ option){
+			// summary:
+			//		Adds an option or options to the end of the select.  If value
+			//		of the option is empty or missing, a separator is created instead.
+			//		Passing in an array of options will yield slightly better performance
+			//		since the children are only loaded once.
+			array.forEach(lang.isArrayLike(option) ? option : [option], function(i){
+				if(i && lang.isObject(i)){
+					this.options.push(i);
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		removeOption: function(/*String|__SelectOption|Number|Array*/ valueOrIdx){
+			// summary:
+			//		Removes the given option or options.  You can remove by string
+			//		(in which case the value is removed), number (in which case the
+			//		index in the options array is removed), or select option (in
+			//		which case, the select option with a matching value is removed).
+			//		You can also pass in an array of those values for a slightly
+			//		better performance since the children are only loaded once.
+			//		For numeric option values, specify {value: number} as the argument.
+			var oldOpts = this.getOptions(lang.isArrayLike(valueOrIdx) ? valueOrIdx : [valueOrIdx]);
+			array.forEach(oldOpts, function(option){
+				// We can get null back in our array - if our option was not found.  In
+				// that case, we don't want to blow up...
+				if(option){
+					this.options = array.filter(this.options, function(node){
+						return (node.value !== option.value || node.label !== option.label);
+					});
+					this._removeOptionItem(option);
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		updateOption: function(/*__SelectOption|__SelectOption[]*/ newOption){
+			// summary:
+			//		Updates the values of the given option.  The option to update
+			//		is matched based on the value of the entered option.  Passing
+			//		in an array of new options will yield better performance since
+			//		the children will only be loaded once.
+			array.forEach(lang.isArrayLike(newOption) ? newOption : [newOption], function(i){
+				var oldOpt = this.getOptions({ value: i.value }), k;
+				if(oldOpt){
+					for(k in i){
+						oldOpt[k] = i[k];
+					}
+				}
+			}, this);
+			this._loadChildren();
+		},
+
+		setStore: function(store, selectedValue, fetchArgs){
+			kernel.deprecated(this.declaredClass+"::setStore(store, selectedValue, fetchArgs) is deprecated. Use set('query', fetchArgs.query), set('queryOptions', fetchArgs.queryOptions), set('store', store), or set('value', selectedValue) instead.", "", "2.0");
+			this._deprecatedSetStore(store, selectedValue, fetchArgs);
+		},
+
+		_deprecatedSetStore: function(store, selectedValue, fetchArgs){
+			// summary:
+			//		Sets the store you would like to use with this select widget.
+			//		The selected value is the value of the new store to set.  This
+			//		function returns the original store, in case you want to reuse
+			//		it or something.
+			// store: dojo/store/api/Store
+			//		The dojo.store you would like to use - it MUST implement getIdentity()
+			//		and MAY implement observe().
+			//		For backwards-compatibility this can also be a data.data store, in which case
+			//		it MUST implement dojo/data/api/Identity,
+			//		and MAY implement dojo/data/api/Notification.
+			// selectedValue: anything?
+			//		The value that this widget should set itself to *after* the store
+			//		has been loaded
+			// fetchArgs: Object?
+			//		Hash of parameters to set filter on store, etc.
+			//
+			//		- query: new value for Select.query,
+			//		- queryOptions: new value for Select.queryOptions,
+			//		- onFetch: callback function for each item in data (Deprecated)
+			var oStore = this.store;
+			fetchArgs = fetchArgs || {};
+
+			if(oStore !== store){
+				// Our store has changed, so cancel any listeners on old store (remove for 2.0)
+				var h;
+				while((h = this._notifyConnections.pop())){
+					h.remove();
+				}
+
+				// For backwards-compatibility, accept dojo.data store in addition to dojo.store.store.  Remove in 2.0.
+				if(!store.get){
+					lang.mixin(store, {
+						_oldAPI: true,
+						get: function(id){
+							// summary:
+							//		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity.
+							//		Like dojo.store.DataStore.get() except returns native item.
+							var deferred = new Deferred();
+							this.fetchItemByIdentity({
+								identity: id,
+								onItem: function(object){
+									deferred.resolve(object);
+								},
+								onError: function(error){
+									deferred.reject(error);
+								}
+							});
+							return deferred.promise;
+						},
+						query: function(query, options){
+							// summary:
+							//		Queries the store for objects.   Like dojo/store/DataStore.query()
+							//		except returned Deferred contains array of native items.
+							var deferred = new Deferred(function(){
+								if(fetchHandle.abort){
+									fetchHandle.abort();
+								}
+							});
+							deferred.total = new Deferred();
+							var fetchHandle = this.fetch(lang.mixin({
+								query: query,
+								onBegin: function(count){
+									deferred.total.resolve(count);
+								},
+								onComplete: function(results){
+									deferred.resolve(results);
+								},
+								onError: function(error){
+									deferred.reject(error);
+								}
+							}, options));
+							return new QueryResults(deferred);
+						}
+					});
+
+					if(store.getFeatures()["dojo.data.api.Notification"]){
+						this._notifyConnections = [
+							aspect.after(store, "onNew", lang.hitch(this, "_onNewItem"), true),
+							aspect.after(store, "onDelete", lang.hitch(this, "_onDeleteItem"), true),
+							aspect.after(store, "onSet", lang.hitch(this, "_onSetItem"), true)
+						];
+					}
+				}
+				this._set("store", store);			// Our store has changed, so update our notifications
+			}
+
+			// Remove existing options (if there are any)
+			if(this.options && this.options.length){
+				this.removeOption(this.options);
+			}
+
+			// Cancel listener for updates to old (dojo.data) store
+			if(this._queryRes && this._queryRes.close){
+				this._queryRes.close();
+			}
+
+			// Cancel listener for updates to new (dojo.store) store
+			if(this._observeHandle && this._observeHandle.remove){
+				this._observeHandle.remove();
+				this._observeHandle = null;
+			}
+
+			// If user has specified new query and query options along with this new store, then use them.
+			if(fetchArgs.query){
+				this._set("query", fetchArgs.query);
+			}
+			if(fetchArgs.queryOptions){
+				this._set("queryOptions", fetchArgs.queryOptions);
+			}
+
+			// Add our new options
+			if(store && store.query){
+				this._loadingStore = true;
+				this.onLoadDeferred = new Deferred();
+
+				// Run query
+				// Save result in this._queryRes so we can cancel the listeners we register below
+				this._queryRes = store.query(this.query, this.queryOptions);
+				when(this._queryRes, lang.hitch(this, function(items){
+
+					if(this.sortByLabel && !fetchArgs.sort && items.length){
+						if(store.getValue){
+							// Old dojo.data API to access items, remove for 2.0
+							items.sort(sorter.createSortFunction([
+								{
+									attribute: store.getLabelAttributes(items[0])[0]
+								}
+							], store));
+						}else{
+							// TODO: remove sortByLabel completely for 2.0?  It can be handled by queryOptions: {sort: ... }.
+							var labelAttr = this.labelAttr;
+							items.sort(function(a, b){
+								return a[labelAttr] > b[labelAttr] ? 1 : b[labelAttr] > a[labelAttr] ? -1 : 0;
+							});
+						}
+					}
+
+					if(fetchArgs.onFetch){
+						items = fetchArgs.onFetch.call(this, items, fetchArgs);
+					}
+
+					// TODO: Add these guys as a batch, instead of separately
+					array.forEach(items, function(i){
+						this._addOptionForItem(i);
+					}, this);
+
+					// Register listener for store updates
+					if(this._queryRes.observe){
+						// observe returns yet another handle that needs its own explicit gc
+						this._observeHandle = this._queryRes.observe(lang.hitch(this, function(object, deletedFrom, insertedInto){
+							if(deletedFrom == insertedInto){
+								this._onSetItem(object);
+							}else{
+								if(deletedFrom != -1){
+									this._onDeleteItem(object);
+								}
+								if(insertedInto != -1){
+									this._onNewItem(object);
+								}
+							}
+						}), true);
+					}
+
+					// Set our value (which might be undefined), and then tweak
+					// it to send a change event with the real value
+					this._loadingStore = false;
+					this.set("value", "_pendingValue" in this ? this._pendingValue : selectedValue);
+					delete this._pendingValue;
+
+					if(!this.loadChildrenOnOpen){
+						this._loadChildren();
+					}else{
+						this._pseudoLoadChildren(items);
+					}
+					this.onLoadDeferred.resolve(true);
+					this.onSetStore();
+				}), function(err){
+					 0 && console.error('dijit.form.Select: ' + err.toString());
+					this.onLoadDeferred.reject(err);
+				});
+			}
+			return oStore;	// dojo/data/api/Identity
+		},
+
+		_setValueAttr: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
+			// summary:
+			//		set the value of the widget.
+			//		If a string is passed, then we set our value from looking it up.
+			if(!this._onChangeActive){
+				priorityChange = null;
+			}
+			if(this._loadingStore){
+				// Our store is loading - so save our value, and we'll set it when
+				// we're done
+				this._pendingValue = newValue;
+				return;
+			}
+			if(newValue == null){
+				return;
+			}
+			if(lang.isArrayLike(newValue)){
+				newValue = array.map(newValue, function(value){
+					return lang.isObject(value) ? value : { value: value };
+				}); // __SelectOption[]
+			}else if(lang.isObject(newValue)){
+				newValue = [newValue];
+			}else{
+				newValue = [
+					{ value: newValue }
+				];
+			}
+			newValue = array.filter(this.getOptions(newValue), function(i){
+				return i && i.value;
+			});
+			var opts = this.getOptions() || [];
+			if(!this.multiple && (!newValue[0] || !newValue[0].value) && !!opts.length){
+				newValue[0] = opts[0];
+			}
+			array.forEach(opts, function(opt){
+				opt.selected = array.some(newValue, function(v){
+					return v.value === opt.value;
+				});
+			});
+			var val = array.map(newValue, function(opt){
+				return opt.value;
+			});
+
+			if(typeof val == "undefined" || typeof val[0] == "undefined"){
+				return;
+			} // not fully initialized yet or a failed value lookup
+			var disp = array.map(newValue, function(opt){
+				return opt.label;
+			});
+			this._setDisplay(this.multiple ? disp : disp[0]);
+			this.inherited(arguments, [ this.multiple ? val : val[0], priorityChange ]);
+			this._updateSelection();
+		},
+
+		_getDisplayedValueAttr: function(){
+			// summary:
+			//		returns the displayed value of the widget
+			var ret = array.map([].concat(this.get('selectedOptions')), function(v){
+				if(v && "label" in v){
+					return v.label;
+				}else if(v){
+					return v.value;
+				}
+				return null;
+			}, this);
+			return this.multiple ? ret : ret[0];
+		},
+
+		_setDisplayedValueAttr: function(label){
+			// summary:
+			//		Sets the displayed value of the widget
+			this.set('value', this.getOptions(typeof label == "string" ? { label: label } : label));
+		},
+
+		_loadChildren: function(){
+			// summary:
+			//		Loads the children represented by this widget's options.
+			//		reset the menu to make it populatable on the next click
+			if(this._loadingStore){
+				return;
+			}
+			array.forEach(this._getChildren(), function(child){
+				child.destroyRecursive();
+			});
+			// Add each menu item
+			array.forEach(this.options, this._addOptionItem, this);
+
+			// Update states
+			this._updateSelection();
+		},
+
+		_updateSelection: function(){
+			// summary:
+			//		Sets the "selected" class on the item for styling purposes
+			this.focusedChild = null;
+			this._set("value", this._getValueFromOpts());
+			var val = [].concat(this.value);
+			if(val && val[0]){
+				var self = this;
+				array.forEach(this._getChildren(), function(child){
+					var isSelected = array.some(val, function(v){
+						return child.option && (v === child.option.value);
+					});
+					if(isSelected && !self.multiple){
+						self.focusedChild = child;
+					}
+					domClass.toggle(child.domNode, this.baseClass.replace(/\s+|$/g, "SelectedOption "), isSelected);
+					child.domNode.setAttribute("aria-selected", isSelected ? "true" : "false");
+				}, this);
+			}
+		},
+
+		_getValueFromOpts: function(){
+			// summary:
+			//		Returns the value of the widget by reading the options for
+			//		the selected flag
+			var opts = this.getOptions() || [];
+			if(!this.multiple && opts.length){
+				// Mirror what a select does - choose the first one
+				var opt = array.filter(opts, function(i){
+					return i.selected;
+				})[0];
+				if(opt && opt.value){
+					return opt.value;
+				}else{
+					opts[0].selected = true;
+					return opts[0].value;
+				}
+			}else if(this.multiple){
+				// Set value to be the sum of all selected
+				return array.map(array.filter(opts, function(i){
+					return i.selected;
+				}), function(i){
+					return i.value;
+				}) || [];
+			}
+			return "";
+		},
+
+		// Internal functions to call when we have store notifications come in
+		_onNewItem: function(/*item*/ item, /*Object?*/ parentInfo){
+			if(!parentInfo || !parentInfo.parent){
+				// Only add it if we are top-level
+				this._addOptionForItem(item);
+			}
+		},
+		_onDeleteItem: function(/*item*/ item){
+			var store = this.store;
+			this.removeOption({value: store.getIdentity(item) });
+		},
+		_onSetItem: function(/*item*/ item){
+			this.updateOption(this._getOptionObjForItem(item));
+		},
+
+		_getOptionObjForItem: function(item){
+			// summary:
+			//		Returns an option object based off the given item.  The "value"
+			//		of the option item will be the identity of the item, the "label"
+			//		of the option will be the label of the item.
+
+			// remove getLabel() call for 2.0 (it's to support the old dojo.data API)
+			var store = this.store,
+				label = (this.labelAttr && this.labelAttr in item) ? item[this.labelAttr] : store.getLabel(item),
+				value = (label ? store.getIdentity(item) : null);
+			return {value: value, label: label, item: item}; // __SelectOption
+		},
+
+		_addOptionForItem: function(/*item*/ item){
+			// summary:
+			//		Creates (and adds) the option for the given item
+			var store = this.store;
+			if(store.isItemLoaded && !store.isItemLoaded(item)){
+				// We are not loaded - so let's load it and add later.
+				// Remove for 2.0 (it's the old dojo.data API)
+				store.loadItem({item: item, onItem: function(i){
+					this._addOptionForItem(i);
+				},
+					scope: this});
+				return;
+			}
+			var newOpt = this._getOptionObjForItem(item);
+			this.addOption(newOpt);
+		},
+
+		constructor: function(params /*===== , srcNodeRef =====*/){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String?
+			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
+
+			//		Saves off our value, if we have an initial one set so we
+			//		can use it if we have a store as well (see startup())
+			this._oValue = (params || {}).value || null;
+			this._notifyConnections = [];	// remove for 2.0
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			dom.setSelectable(this.focusNode, false);
+		},
+
+		_fillContent: function(){
+			// summary:
+			//		Loads our options and sets up our dropdown correctly.  We
+			//		don't want any content, so we don't call any inherit chain
+			//		function.
+			if(!this.options){
+				this.options =
+					this.srcNodeRef
+						? query("> *", this.srcNodeRef).map(
+						function(node){
+							if(node.getAttribute("type") === "separator"){
+								return { value: "", label: "", selected: false, disabled: false };
+							}
+							return {
+								value: (node.getAttribute("data-" + kernel._scopeName + "-value") || node.getAttribute("value")),
+								label: String(node.innerHTML),
+								// FIXME: disabled and selected are not valid on complex markup children (which is why we're
+								// looking for data-dojo-value above.  perhaps we should data-dojo-props="" this whole thing?)
+								// decide before 1.6
+								selected: node.getAttribute("selected") || false,
+								disabled: node.getAttribute("disabled") || false
+							};
+						},
+						this)
+						: [];
+			}
+			if(!this.value){
+				this._set("value", this._getValueFromOpts());
+			}else if(this.multiple && typeof this.value == "string"){
+				this._set("value", this.value.split(","));
+			}
+		},
+
+		postCreate: function(){
+			// summary:
+			//		sets up our event handling that we need for functioning
+			//		as a select
+			this.inherited(arguments);
+
+			// Make our event connections for updating state
+			aspect.after(this, "onChange", lang.hitch(this, "_updateSelection"));
+
+			//		Connects in our store, if we have one defined
+			var store = this.store;
+			if(store && (store.getIdentity || store.getFeatures()["dojo.data.api.Identity"])){
+				// Temporarily set our store to null so that it will get set
+				// and connected appropriately
+				this.store = null;
+				this._deprecatedSetStore(store, this._oValue, {query: this.query, queryOptions: this.queryOptions});
+			}
+
+			this._storeInitialized = true;
+		},
+
+		startup: function(){
+			// summary:
+			this._loadChildren();
+			this.inherited(arguments);
+		},
+
+		destroy: function(){
+			// summary:
+			//		Clean up our connections
+
+			var h;
+			while((h = this._notifyConnections.pop())){
+				h.remove();
+			}
+
+			// Cancel listener for store updates
+			if(this._queryRes && this._queryRes.close){
+				this._queryRes.close();
+			}
+
+			// Cancel listener for updates to new (dojo.store) store
+			if(this._observeHandle && this._observeHandle.remove){
+				this._observeHandle.remove();
+				this._observeHandle = null;
+			}
+
+			this.inherited(arguments);
+		},
+
+		_addOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
+			// summary:
+			//		User-overridable function which, for the given option, adds an
+			//		item to the select.  If the option doesn't have a value, then a
+			//		separator is added in that place.  Make sure to store the option
+			//		in the created option widget.
+		},
+
+		_removeOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
+			// summary:
+			//		User-overridable function which, for the given option, removes
+			//		its item from the select.
+		},
+
+		_setDisplay: function(/*String or String[]*/ /*===== newDisplay =====*/){
+			// summary:
+			//		Overridable function which will set the display for the
+			//		widget.  newDisplay is either a string (in the case of
+			//		single selects) or array of strings (in the case of multi-selects)
+		},
+
+		_getChildren: function(){
+			// summary:
+			//		Overridable function to return the children that this widget contains.
+			return [];
+		},
+
+		_getSelectedOptionsAttr: function(){
+			// summary:
+			//		hooks into this.attr to provide a mechanism for getting the
+			//		option items for the current value of the widget.
+			return this.getOptions({ selected: true });
+		},
+
+		_pseudoLoadChildren: function(/*item[]*/ /*===== items =====*/){
+			// summary:
+			//		a function that will "fake" loading children, if needed, and
+			//		if we have set to not load children until the widget opens.
+			// items:
+			//		An array of items that will be loaded, when needed
+		},
+
+		onSetStore: function(){
+			// summary:
+			//		a function that can be connected to in order to receive a
+			//		notification that the store has finished loading and all options
+			//		from that store are available
+		}
+	});
+
+	/*=====
+	_FormSelectWidget.__SelectOption = __SelectOption;
+	=====*/
+
+	return _FormSelectWidget;
+});
+
+},
+'dojo/data/util/sorter':function(){
+define(["../../_base/lang"], function(lang){
+	// module:
+	//		dojo/data/util/sorter
+	// summary:
+	//		TODOC
+
+var sorter = {};
+lang.setObject("dojo.data.util.sorter", sorter);
+
+sorter.basicComparator = function(	/*anything*/ a,
+													/*anything*/ b){
+	// summary:
+	//		Basic comparison function that compares if an item is greater or less than another item
+	// description:
+	//		returns 1 if a > b, -1 if a < b, 0 if equal.
+	//		'null' values (null, undefined) are treated as larger values so that they're pushed to the end of the list.
+	//		And compared to each other, null is equivalent to undefined.
+
+	//null is a problematic compare, so if null, we set to undefined.
+	//Makes the check logic simple, compact, and consistent
+	//And (null == undefined) === true, so the check later against null
+	//works for undefined and is less bytes.
+	var r = -1;
+	if(a === null){
+		a = undefined;
+	}
+	if(b === null){
+		b = undefined;
+	}
+	if(a == b){
+		r = 0;
+	}else if(a > b || a == null){
+		r = 1;
+	}
+	return r; //int {-1,0,1}
+};
+
+sorter.createSortFunction = function(	/* attributes[] */sortSpec, /*dojo/data/api/Read*/ store){
+	// summary:
+	//		Helper function to generate the sorting function based off the list of sort attributes.
+	// description:
+	//		The sort function creation will look for a property on the store called 'comparatorMap'.  If it exists
+	//		it will look in the mapping for comparisons function for the attributes.  If one is found, it will
+	//		use it instead of the basic comparator, which is typically used for strings, ints, booleans, and dates.
+	//		Returns the sorting function for this particular list of attributes and sorting directions.
+	// sortSpec:
+	//		A JS object that array that defines out what attribute names to sort on and whether it should be descenting or asending.
+	//		The objects should be formatted as follows:
+	// |	{
+	// |		attribute: "attributeName-string" || attribute,
+	// |		descending: true|false;   // Default is false.
+	// |	}
+	// store:
+	//		The datastore object to look up item values from.
+
+	var sortFunctions=[];
+
+	function createSortFunction(attr, dir, comp, s){
+		//Passing in comp and s (comparator and store), makes this
+		//function much faster.
+		return function(itemA, itemB){
+			var a = s.getValue(itemA, attr);
+			var b = s.getValue(itemB, attr);
+			return dir * comp(a,b); //int
+		};
+	}
+	var sortAttribute;
+	var map = store.comparatorMap;
+	var bc = sorter.basicComparator;
+	for(var i = 0; i < sortSpec.length; i++){
+		sortAttribute = sortSpec[i];
+		var attr = sortAttribute.attribute;
+		if(attr){
+			var dir = (sortAttribute.descending) ? -1 : 1;
+			var comp = bc;
+			if(map){
+				if(typeof attr !== "string" && ("toString" in attr)){
+					 attr = attr.toString();
+				}
+				comp = map[attr] || bc;
+			}
+			sortFunctions.push(createSortFunction(attr,
+				dir, comp, store));
+		}
+	}
+	return function(rowA, rowB){
+		var i=0;
+		while(i < sortFunctions.length){
+			var ret = sortFunctions[i++](rowA, rowB);
+			if(ret !== 0){
+				return ret;//int
+			}
+		}
+		return 0; //int
+	}; // Function
+};
+
+return sorter;
+});
+
+},
+'p3/widget/WorkspaceFilenameValidationTextBox':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
+	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
+	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dijit/form/ValidationTextBox"
+
+], function(declare, WidgetBase, on, lang,
+			domClass, Templated, WidgetsInTemplate,
+			Dialog, HasDropDown, ContentPane, TextBox,
+			Grid, domConstr, WorkspaceManager, Memory,
+			Uploader, BorderContainer, domAttr,
+			Button, Deferred, CheckBox, ValidationTextBox){
+
+	return declare([ValidationTextBox], {
+		/*		"baseClass": "WorkspaceObjectSelector",*/
+		declaredClass: "p3.widget.WorkspaceFilenameValidationTextBox",
+		workspace: "",
+		value: "",
+		path: "",
+		disabled: false,
+		required: false,
+		showUnspecified: false,
+		missingMessage: "A valid name is required.",
+		promptMessage: "Type an informative name",
+		nameIsValid: false,
+		placeHolder: "",
+
+		_setPathAttr: function(val){
+			 0 && console.log("_setPathAttr: ", val);
+			this.path = val;
+
+			if(this.value){
+				this.checkForName(val);
+			}
+		},
+
+		postMixinProperties: function(){
+			if(!this.value && this.workspace){
+				this.value = this.workspace;
+			}
+			this.inherited(arguments);
+		},
+
+		checkForName: function(val){
+			if(!this.path){
+				return;
+			}
+			this.externalCheck = "checking";
+			this.externalCheckValue = val;
+			return Deferred.when(WorkspaceManager.getObject(this.path + "/" + val), lang.hitch(this, function(obj){
+				if(obj){
+					 0 && console.log("Found Existing Object", obj);
+					this.externalCheck = "exists";
+					this.set('invalidMessage', "A file with this name already exists in " + this.path);
+					this.validate();
+				}else{
+					this.externalCheck = "empty";
+				}
+//				this.displayMessage();
+			}), lang.hitch(this, function(err){
+				 0 && console.log("FileNot Found...good");
+				this.externalCheck = "empty";
+			}));
+		},
+
+		validator: function(val, constraints){
+			var valid = false;
+			var re = /(\(|\)|\/|\:)/g
+			var match = val.match(re);
+
+			if(this.required && this._isEmpty(val)){
+				return false;
+			}
+
+			if(!this.path){
+				return true;
+				//this.set('invalidMessage', "The output folder has not been selected");
+				//return false;
+			}
+
+			if(val.match(re)){
+				this.set('invalidMessage', "This name contains invalid characters: '" + match[0] + "'")
+				return false;
+			}
+			 0 && console.log("ExternalCheck: ", this.externalCheck);
+			 0 && console.log("Val: ", val, "ExternalCheckVal: ", this.externalCheckValue)
+			if(this.externalCheckValue && val == this.externalCheckValue){
+				if(this.externalCheck == "exists"){
+					return false;
+				}
+				return true;
+			}else if(val){
+				this.checkForName(val);
+			}
+
+			return true;
+		}
+	});
+});
+
+},
+'p3/widget/FlippableDialog':function(){
+define([
+	"dojo/_base/declare", "dijit/Dialog", "dojo/dom-construct",
+	"dojo/dom-geometry", "dojo/dom-style", "dojo/window", "dojo/sniff",
+	"dojo/text!./templates/FlippableDialog.html", "dojo/on", "dojo/dom-class",
+	"dojo/_base/lang", "dijit/layout/utils", "dojo/_base/array"
+
+], function(declare, Dialog, domConstr,
+			domGeometry, domStyle, winUtils, has,
+			template, on, domClass, lang, utils, array){
+	return declare([Dialog], {
+		templateString: template,
+		flip: function(side){
+			if(side == "front"){
+				domClass.remove(this.domNode, "flipped");
+			}else if(side == "back"){
+				domClass.add(this.domNode, "flipped")
+			}else{
+				domClass.toggle(this.domNode, "flipped");
+			}
+		},
+
+		_setBackpaneContentAttr: function(content){
+			this.backPane.innerHTML = content;
+		},
+
+		resize: function(dim){
+			// summary:
+			//         Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
+			//         necessary to keep it visible.
+			//
+			//         Can also be called with an argument (by dojox/layout/ResizeHandle etc.) to explicitly set the
+			//         size of the dialog.
+			// dim: Object?
+			//         Optional dimension object like {w: 200, h: 300}
+
+			if(this.domNode.style.display != "none"){
+
+				this._checkIfSingleChild();
+
+				if(!dim){
+					if(this._shrunk){
+						// If we earlier shrunk the dialog to fit in the viewport, reset it to its natural size
+						if(this._singleChild){
+							if(typeof this._singleChildOriginalStyle != "undefined"){
+								this._singleChild.domNode.style.cssText = this._singleChildOriginalStyle;
+								delete this._singleChildOriginalStyle;
+							}
+						}
+						array.forEach([this.domNode, this.containerNode, this.titleBar], function(node){
+							domStyle.set(node, {
+								position: "static",
+								width: "auto",
+								height: "auto"
+							});
+						});
+						this.domNode.style.position = "absolute";
+					}
+
+					// If necessary, shrink Dialog to fit in viewport and have some space around it
+					// to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
+					var viewport = winUtils.getBox(this.ownerDocument);
+					viewport.w *= this.maxRatio;
+					viewport.h *= this.maxRatio;
+
+					var bb = domGeometry.position(this.domNode);
+					if(bb.w >= viewport.w || bb.h >= viewport.h){
+						dim = {
+							w: Math.min(bb.w, viewport.w),
+							h: Math.min(bb.h, viewport.h)
+						};
+						this._shrunk = true;
+					}else{
+						this._shrunk = false;
+					}
+				}
+
+				// Code to run if user has requested an explicit size, or the shrinking code above set an implicit size
+				if(dim){
+					// Set this.domNode to specified size
+					domGeometry.setMarginBox(this.domNode, dim);
+
+					// And then size this.containerNode
+					var contentDim = utils.marginBox2contentBox(this.domNode, dim),
+						centerSize = {domNode: this.containerNode, region: "center"};
+					utils.layoutChildren(this.domNode, contentDim,
+						[{domNode: this.titleBar, region: "top"}, centerSize]);
+
+					// And then if this.containerNode has a single layout widget child, size it too.
+					// Otherwise, make this.containerNode show a scrollbar if it's overflowing.
+					if(this._singleChild){
+						var cb = utils.marginBox2contentBox(this.containerNode, centerSize);
+						// note: if containerNode has padding singleChildSize will have l and t set,
+						// but don't pass them to resize() or it will doubly-offset the child
+						this._singleChild.resize({w: cb.w, h: cb.h});
+						// TODO: save original size for restoring it on another show()?
+					}else{
+						this.containerNode.style.overflow = "auto";
+						this._layoutChildren();         // send resize() event to all child widgets
+					}
+				}else{
+					this._layoutChildren();         // send resize() event to all child widgets
+
+				}
+				var titleDim = domGeometry.getMarginBox(this.titleBar);
+				 0 && console.log("titleContent: ", titleDim);
+				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
+				var dim = domGeometry.getMarginBox(this.domNode);
+				var contentDim = utils.marginBox2contentBox(this.domNode, dim);
+				utils.layoutChildren(this.domNode, contentDim, [{
+					domNode: this.backpaneTitleBar,
+					region: "top"
+				}, {domNode: this.backPane, region: "center"}]);
+
+				if(!has("touch") && !dim){
+					// If the user has scrolled the viewport then reposition the Dialog.  But don't do it for touch
+					// devices, because it will counteract when a keyboard pops up and then the browser auto-scrolls
+					// the focused node into view.
+					this._position();
+				}
+			}
+		}
+
+	});
+});
+
+
+},
+'p3/widget/Uploader':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/Uploader.html", "dijit/form/Form", "dojo/_base/Deferred",
+	"dijit/ProgressBar", "dojo/dom-construct", "p3/UploadManager", "dojo/query", "dojo/dom-attr",
+	"dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager"
+], function(declare, WidgetBase, on,
+			domClass, Templated, WidgetsInTemplate,
+			Template, FormMixin, Deferred,
+			ProgressBar, domConstruct, UploadManager, Query, domAttr,
+			lang, domGeometry, domStyle, All, WorkspaceManager){
+	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
+		"baseClass": "CreateWorkspace",
+		templateString: Template,
+		path: "",
+		overwrite: false,
+		multiple: false,
+		types: false,
+		pathLabel: "Upload file to: ",
+		buttonLabel: "Select Files",
+		typeLabel: "Upload type: ",
+		knownTypes: {
+			unspecified: {label: "Unspecified", formats: ["*.*"]},
+			contigs: {
+				label: "Contigs",
+				formats: [".fa", ".fasta", ".fna"],
+				description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."
+			},
+			reads: {
+				label: "Reads",
+				formats: [".fq", ".fastq", ".fa", ".fasta", ".gz", ".bz2"],
+				description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."
+			},
+			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv", ".txt", ".xls", ".xlsx"]},
+			diffexp_input_metadata: {
+				label: "Diff. Expression Input Metadata",
+				formats: [".csv", ".txt", ".xls", ".xlsx"]
+			},
+			feature_protein_fasta: {
+				label: "feature_protein_fasta",
+				formats: [".fa", ".fasta", ".faa"],
+				description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."
+			}
+		},
+		_setPathAttr: function(val){
+			this.path = val;
+			this.destinationPath.innerHTML = val;
+		},
+
+		onUploadTypeChanged: function(val){
+			 0 && console.log("UPLOAD TYPE CHANGED: ", val);
+			var formats = this.knownTypes[val].formats;
+			 0 && console.log("formats: ", val, formats);
+			this.formatListNode.innerHTML = formats.join(", ");
+
+			var description = this.knownTypes[val].description;
+
+			if(!this.showAllFormats.get('value')){
+				 0 && console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				if(formats == "*.*"){
+					domClass.add(this.fileFilterContainer, "dijitHidden");
+				}else{
+					domClass.remove(this.fileFilterContainer, "dijitHidden");
+				}
+				 0 && console.log("set formats to: ", formats.join(","));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
+
+			if(description){
+				domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+				this.typeDescriptionContainer.innerHTML = description;
+			}else{
+				domClass.add(this.typeDescriptionContainer, "dijitHidden");
+			}
+		},
+		onChangeShowAllFormats: function(val){
+			 0 && console.log("Show All Formats: ", val);
+			if(!val){
+				 0 && console.log("Accept All formats");
+				domAttr.set(this.fileInput, "accept", "*.*");
+			}else{
+				var type = this.uploadType.get('value');
+				 0 && console.log("uploadType value: ", type);
+				var formats = this.knownTypes[this.uploadType.get('value')].formats;
+				 0 && console.log("uploadType: ", this.uploadType.get('value'));
+				domAttr.set(this.fileInput, "accept", formats.join(","));
+			}
+
+		},
+
+		createUploadTable: function(empty){
+
+			if(!this.uploadTable){
+				var table = domConstruct.create("table", {
+					style: {
+						border: "1px solid #eee",
+						width: "100%"
+					}
+				}, this.fileTableContainer);
+				this.uploadTable = domConstruct.create('tbody', {}, table)
+				var htr = domConstruct.create("tr", {}, this.uploadTable);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "File Selected"
+				}, htr);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "Type"
+				}, htr);
+				domConstruct.create("th", {
+					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
+					innerHTML: "Size"
+				}, htr);
+				domConstruct.create("th", {
+					style: {
+						"background-color": "#eee",
+						"border": "none",
+						"text-align": "right"
+					}
+				}, htr);
+				if(empty){
+					var row = domConstruct.create("tr", {"class": "fileRow"}, this.uploadTable);
+					domConstruct.create("td", {
+						style: {"padding-left": "5px", "text-align": "left"},
+						innerHTML: "<i>None</i>"
+					}, row);
+					domConstruct.create("td", {style: {"text-align": "left"}}, row);
+					domConstruct.create("td", {style: {"text-align": "left"}}, row);
+					domConstruct.create("td", {style: {"text-align": "right"}}, row);
+				}
+			}
+		},
+
+		createNewFileInput: function(){
+			if(this.fileInput){
+				if(!this._previousFileInputs){
+					this._previousFileInputs = [];
+				}
+				if(this.inputHandler){
+					this.inputHandler.remove();
+				}
+				domStyle.set(this.fileInput, "display", "none");
+				this._previousFileInputs.push(this.fileInput);
+			}
+
+			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
+			 0 && console.log("Created fileInput: ", this.fileInput);
+			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
+			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
+
+		},
+		startup: function(){
+			if(this._started){
+				return;
+			}
+
+			this.inherited(arguments);
+			var state = this.get("state")
+			this.createNewFileInput();
+
+			var _self = this;
+			 0 && console.log("Add Dropdown Options");
+			Object.keys(this.knownTypes).filter(function(t){
+				 0 && console.log("CHECKING: ", t);
+				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
+			}).forEach(function(t){
+				 0 && console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
+				_self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
+			});
+
+			var type = this.uploadType.get('value');
+			if(type && this.knownTypes[type]){
+				var description = this.knownTypes[type].description;
+				if(description){
+					domClass.remove(this.typeDescriptionContainer, "dijitHidden");
+					this.typeDescriptionContainer.innerHTML = description;
+				}else{
+					domClass.add(this.typeDescriptionContainer, "dijitHidden");
+				}
+			}else{
+				domClass.add(this.typeDescriptionContainer, "dijitHidden");
+			}
+
+			if(!this.path){
+				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+					 0 && console.log("CURRENT PATH: ", path);
+					_self.set('path', path);
+				});
+			}
+
+			if((state == "Incomplete") || (state == "Error")){
+				this.saveButton.set("disabled", true);
+			}
+
+			this.watch("state", function(prop, val, val2){
+				 0 && console.log("Upload Form State: ", prop, val, val2);
+				if(val2 == "Incomplete" || val2 == "Error"){
+					this.saveButton.set("disabled", true);
+				}else{
+					this.saveButton.set('disabled', false);
+				}
+			});
+			this.createUploadTable(true);
+		},
+		validate: function(){
+			 0 && console.log("this.validate()", this);
+			var valid = this.inherited(arguments);
+			var validFiles = []
+			Query("TR.fileRow", this.uploadTable).map(function(tr){
+				validFiles.push({filename: domAttr.get(tr, "data-filename"), type: domAttr.get(tr, "data-filetype")});
+			})
+			if(!validFiles || validFiles.length < 1){
+				valid = false;
+			}
+
+			if(valid){
+				this.saveButton.set("disabled", false)
+			}else{
+				this.saveButton.set("disabled", true);
+			}
+			return valid;
+		},
+
+		uploadFile: function(file, uploadDirectory, type){
+			if(!this._uploading){
+				this._uploading = []
+			}
+
+			var _self = this;
+			var obj = {path: uploadDirectory, name: file.name, type: type}
+			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
+				domClass.add(_self.domNode, "Working");
+				 0 && console.log("obj: ", obj);
+				 0 && console.log("obj.link_reference: ", obj.link_reference);
+//				 0 && console.log("getUrlRes",getUrlRes, getUrlRes[0]);
+//				var uploadUrl = getUrlRes[0][0][11];
+				var uploadUrl = obj.link_reference;
+//				 0 && console.log("uploadUrl: ", uploadUrl);
+				if(!_self.uploadTable){
+					var table = domConstruct.create("table", {style: {width: "100%"}}, _self.fileTableContainer);
+					_self.uploadTable = domConstruct.create('tbody', {}, table)
+				}
+
+				var row = domConstruct.create("tr", {}, _self.uploadTable);
+				var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
+
+//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
+				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
+				UploadManager.upload(msg, window.App.authorizationToken);
+				return obj;
+			});
+
+		},
+		onFileSelectionChange: function(evt){
+			 0 && console.log("onFileSelectionChange", evt, this.fileInput);
+
+			if(this.uploadTable && !this.multiple){
+				domConstruct.empty(this.uploadTable);
+				delete this.uploadTable;
+			}
+
+			this.createUploadTable(false);
+
+			var files = evt.target.files;
+			 0 && console.log("files: ", files);
+			var _self = this;
+
+			Object.keys(files).forEach(function(idx){
+				 0 && console.log("files key: ", idx);
+				var file = files[idx];
+				if(file && file.name && file.size){
+					 0 && console.log("file: ", file);
+					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
+					 0 && console.log('setfiletype: ', _self.uploadType.get('value'))
+					domAttr.set(row, "data-filename", file.name);
+					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
+					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
+					var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
+					var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'}, row);
+					var handle = on(delNode, "click", lang.hitch(this, function(evt){
+						handle.remove();
+						domConstruct.destroy(row);
+						this.validate()
+					}));
+				}
+			}, this);
+
+			this.createNewFileInput();
+		},
+
+		onSubmit: function(evt){
+			var _self = this;
+			evt.preventDefault();
+			evt.stopPropagation();
+
+			if(!_self.path){
+				 0 && console.error("Missing Path for Upload: ", _self.path);
+				return;
+			}
+
+//			domClass.add(_self.domNode, "working");
+			var validFiles = []
+			var inputFiles = {};
+			var defs = [];
+			var wsFiles = []
+
+			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
+				 0 && console.log("FI: ", FI);
+				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
+					 0 && console.log(" FI FILE KEY: ", key);
+					var f = FI.files[key];
+					 0 && console.log(" f: ", f);
+					if(f.name){
+						 0 && console.log(" f.name: ", f.name);
+						inputFiles[f.name] = f;
+					}
+				}));
+			}));
+
+			 0 && console.log("InputFIles: ", inputFiles);
+			 0 && console.log("uploadTable: ", this.uploadTable);
+			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
+				 0 && console.log("File INPUT Row: ", tr, domAttr.get(tr, "data-filename"), domAttr.get(tr, "data-filetype"));
+//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
+//				 0 && console.log("V: ", v);
+//				validFiles.push(v);
+				if(tr && domAttr.get(tr, "data-filename")){
+					 0 && console.log("Got Name: ", domAttr.get(tr, "data-filename"));
+					var f = inputFiles[domAttr.get(tr, "data-filename")];
+					 0 && console.log("Got File: ", f);
+					if(f.name){
+						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
+							wsFiles.push(res);
+							return true;
+						}));
+					}
+				}
+			}));
+
+			All(defs).then(function(results){
+				 0 && console.log("UPLOAD Create WS files results: ", wsFiles);
+				on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
+			});
+		},
+
+		onCancel: function(evt){
+			 0 && console.log("Cancel/Close Dialog", evt)
+			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
+		},
+		resize: function(changeSize, resultSize){
+			// summary:
+			//              Call this to resize a widget, or after its size has changed.
+			// description:
+			//              ####Change size mode:
+			//
+			//              When changeSize is specified, changes the marginBox of this widget
+			//              and forces it to re-layout its contents accordingly.
+			//              changeSize may specify height, width, or both.
+			//
+			//              If resultSize is specified it indicates the size the widget will
+			//              become after changeSize has been applied.
+			//
+			//              ####Notification mode:
+			//
+			//              When changeSize is null, indicates that the caller has already changed
+			//              the size of the widget, or perhaps it changed because the browser
+			//              window was resized.  Tells widget to re-layout its contents accordingly.
+			//
+			//              If resultSize is also specified it indicates the size the widget has
+			//              become.
+			//
+			//              In either mode, this method also:
+			//
+			//              1. Sets this._borderBox and this._contentBox to the new size of
+			//                      the widget.  Queries the current domNode size if necessary.
+			//              2. Calls layout() to resize contents (and maybe adjust child widgets).
+			// changeSize: Object?
+			//              Sets the widget to this margin-box size and position.
+			//              May include any/all of the following properties:
+			//      |       {w: int, h: int, l: int, t: int}
+			// resultSize: Object?
+			//              The margin-box size of this widget after applying changeSize (if
+			//              changeSize is specified).  If caller knows this size and
+			//              passes it in, we don't need to query the browser to get the size.
+			//      |       {w: int, h: int}
+
+			var node = this.domNode;
+
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+				domGeometry.setMarginBox(node, changeSize);
+			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+		}
+	});
+});
+
+},
+'dijit/form/Form':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/sniff", // has("ie")
+	"../_Widget",
+	"../_TemplatedMixin",
+	"./_FormMixin",
+	"../layout/_ContentPaneResizeMixin"
+], function(declare, domAttr, kernel, has, _Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin){
+
+	// module:
+	//		dijit/form/Form
+
+
+	return declare("dijit.form.Form", [_Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin], {
+		// summary:
+		//		Widget corresponding to HTML form tag, for validation and serialization
+		//
+		// example:
+		//	|	<form data-dojo-type="dijit/form/Form" id="myForm">
+		//	|		Name: <input type="text" name="name" />
+		//	|	</form>
+		//	|	// Example assumes you have required dijit/registry
+		//	|	myObj = {name: "John Doe"};
+		//	|	registry.byId('myForm').set('value', myObj);
+		//	|
+		//	|	myObj=registry.byId('myForm').get('value');
+
+		// HTML <FORM> attributes
+
+		// name: String?
+		//		Name of form for scripting.
+		name: "",
+
+		// action: String?
+		//		Server-side form handler.
+		action: "",
+
+		// method: String?
+		//		HTTP method used to submit the form, either "GET" or "POST".
+		method: "",
+
+		// encType: String?
+		//		Encoding type for the form, ex: application/x-www-form-urlencoded.
+		encType: "",
+
+		// accept-charset: String?
+		//		List of supported charsets.
+		"accept-charset": "",
+
+		// accept: String?
+		//		List of MIME types for file upload.
+		accept: "",
+
+		// target: String?
+		//		Target frame for the document to be opened in.
+		target: "",
+
+		templateString: "<form data-dojo-attach-point='containerNode' data-dojo-attach-event='onreset:_onReset,onsubmit:_onSubmit' ${!nameAttrSetting}></form>",
+
+		postMixInProperties: function(){
+			// Setup name=foo string to be referenced from the template (but only if a name has been specified)
+			// Unfortunately we can't use _setNameAttr to set the name due to IE limitations, see #8660
+			this.nameAttrSetting = this.name ? ("name='" + this.name + "'") : "";
+			this.inherited(arguments);
+		},
+
+		execute: function(/*Object*/ /*===== formContents =====*/){
+			// summary:
+			//		Deprecated: use submit()
+			// tags:
+			//		deprecated
+		},
+
+		onExecute: function(){
+			// summary:
+			//		Deprecated: use onSubmit()
+			// tags:
+			//		deprecated
+		},
+
+		_setEncTypeAttr: function(/*String*/ value){
+			domAttr.set(this.domNode, "encType", value);
+			if(has("ie")){
+				this.domNode.encoding = value;
+			}
+			this._set("encType", value);
+		},
+
+		reset: function(/*Event?*/ e){
+			// summary:
+			//		restores all widget values back to their init values,
+			//		calls onReset() which can cancel the reset by returning false
+
+			// create fake event so we can know if preventDefault() is called
+			var faux = {
+				returnValue: true, // the IE way
+				preventDefault: function(){ // not IE
+					this.returnValue = false;
+				},
+				stopPropagation: function(){
+				},
+				currentTarget: e ? e.target : this.domNode,
+				target: e ? e.target : this.domNode
+			};
+			// if return value is not exactly false, and haven't called preventDefault(), then reset
+			if(!(this.onReset(faux) === false) && faux.returnValue){
+				this.inherited(arguments, []);
+			}
+		},
+
+		onReset: function(/*Event?*/ /*===== e =====*/){
+			// summary:
+			//		Callback when user resets the form. This method is intended
+			//		to be over-ridden. When the `reset` method is called
+			//		programmatically, the return value from `onReset` is used
+			//		to compute whether or not resetting should proceed
+			// tags:
+			//		callback
+			return true; // Boolean
+		},
+
+		_onReset: function(e){
+			this.reset(e);
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		},
+
+		_onSubmit: function(e){
+			var fp = this.constructor.prototype;
+			// TODO: remove this if statement beginning with 2.0
+			if(this.execute != fp.execute || this.onExecute != fp.onExecute){
+				kernel.deprecated("dijit.form.Form:execute()/onExecute() are deprecated. Use onSubmit() instead.", "", "2.0");
+				this.onExecute();
+				this.execute(this.getValues());
+			}
+			if(this.onSubmit(e) === false){ // only exactly false stops submit
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		},
+
+		onSubmit: function(/*Event?*/ /*===== e =====*/){
+			// summary:
+			//		Callback when user submits the form.
+			// description:
+			//		This method is intended to be over-ridden, but by default it checks and
+			//		returns the validity of form elements. When the `submit`
+			//		method is called programmatically, the return value from
+			//		`onSubmit` is used to compute whether or not submission
+			//		should proceed
+			// tags:
+			//		extension
+
+			return this.isValid(); // Boolean
+		},
+
+		submit: function(){
+			// summary:
+			//		programmatically submit form if and only if the `onSubmit` returns true
+			if(!(this.onSubmit() === false)){
+				this.containerNode.submit();
+			}
+		}
+	});
+});
+
+},
+'dijit/ProgressBar':function(){
+define([
+	"require", // require.toUrl
+	"dojo/_base/declare", // declare
+	"dojo/dom-class", // domClass.toggle
+	"dojo/_base/lang", // lang.mixin
+	"dojo/number", // number.format
+	"./_Widget",
+	"./_TemplatedMixin",
+	"dojo/text!./templates/ProgressBar.html"
+], function(require, declare, domClass, lang, number, _Widget, _TemplatedMixin, template){
+
+	// module:
+	//		dijit/ProgressBar
+
+	return declare("dijit.ProgressBar", [_Widget, _TemplatedMixin], {
+		// summary:
+		//		A progress indication widget, showing the amount completed
+		//		(often the percentage completed) of a task.
+
+		// progress: [const] String (Percentage or Number)
+		//		Number or percentage indicating amount of task completed.
+		//		Deprecated.   Use "value" instead.
+		progress: "0",
+
+		// value: String (Percentage or Number)
+		//		Number or percentage indicating amount of task completed.
+		//		With "%": percentage value, 0% <= progress <= 100%, or
+		//		without "%": absolute value, 0 <= progress <= maximum.
+		//		Infinity means that the progress bar is indeterminate.
+		value: "",
+
+		// maximum: [const] Float
+		//		Max sample number
+		maximum: 100,
+
+		// places: [const] Number
+		//		Number of places to show in values; 0 by default
+		places: 0,
+
+		// indeterminate: [const] Boolean
+		//		If false: show progress value (number or percentage).
+		//		If true: show that a process is underway but that the amount completed is unknown.
+		//		Deprecated.   Use "value" instead.
+		indeterminate: false,
+
+		// label: String?
+		//		HTML label on progress bar.   Defaults to percentage for determinate progress bar and
+		//		blank for indeterminate progress bar.
+		label: "",
+
+		// name: String
+		//		this is the field name (for a form) if set. This needs to be set if you want to use
+		//		this widget in a dijit/form/Form widget (such as dijit/Dialog)
+		name: '',
+
+		templateString: template,
+
+		// _indeterminateHighContrastImagePath: [private] URL
+		//		URL to image to use for indeterminate progress bar when display is in high contrast mode
+		_indeterminateHighContrastImagePath: require.toUrl("./themes/a11y/indeterminate_progress.gif"),
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+
+			// Back-compat for when constructor specifies indeterminate or progress, rather than value.   Remove for 2.0.
+			if(!(this.params && "value" in this.params)){
+				this.value = this.indeterminate ? Infinity : this.progress;
+			}
+		},
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			this.indeterminateHighContrastImage.setAttribute("src",
+				this._indeterminateHighContrastImagePath.toString());
+			this.update();
+		},
+
+		_setDirAttr: function(val){
+			// Normally _CssStateMixin takes care of this, but we aren't extending it
+			var rtl = val.toLowerCase() == "rtl";
+			domClass.toggle(this.domNode, "dijitProgressBarRtl", rtl);
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && rtl);
+			this.inherited(arguments);
+		},
+
+		update: function(/*Object?*/attributes){
+			// summary:
+			//		Internal method to change attributes of ProgressBar, similar to set(hash).  Users should call
+			//		set("value", ...) rather than calling this method directly.
+			// attributes:
+			//		May provide progress and/or maximum properties on this parameter;
+			//		see attribute specs for details.
+			// example:
+			//	|	myProgressBar.update({'indeterminate': true});
+			//	|	myProgressBar.update({'progress': 80});
+			//	|	myProgressBar.update({'indeterminate': true, label:"Loading ..." })
+			// tags:
+			//		private
+
+			// TODO: deprecate this method and use set() instead
+
+			lang.mixin(this, attributes || {});
+			var tip = this.internalProgress, ap = this.domNode;
+			var percent = 1;
+			if(this.indeterminate){
+				ap.removeAttribute("aria-valuenow");
+			}else{
+				if(String(this.progress).indexOf("%") != -1){
+					percent = Math.min(parseFloat(this.progress) / 100, 1);
+					this.progress = percent * this.maximum;
+				}else{
+					this.progress = Math.min(this.progress, this.maximum);
+					percent = this.maximum ? this.progress / this.maximum : 0;
+				}
+				ap.setAttribute("aria-valuenow", this.progress);
+			}
+
+			// Even indeterminate ProgressBars should have these attributes
+			ap.setAttribute("aria-labelledby", this.labelNode.id);
+			ap.setAttribute("aria-valuemin", 0);
+			ap.setAttribute("aria-valuemax", this.maximum);
+
+			this.labelNode.innerHTML = this.report(percent);
+
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminate", this.indeterminate);
+			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && !this.isLeftToRight());
+
+			tip.style.width = (percent * 100) + "%";
+			this.onChange();
+		},
+
+		_setValueAttr: function(v){
+			this._set("value", v);
+			if(v == Infinity){
+				this.update({indeterminate: true});
+			}else{
+				this.update({indeterminate: false, progress: v});
+			}
+		},
+
+		_setLabelAttr: function(label){
+			this._set("label", label);
+			this.update();
+		},
+
+		_setIndeterminateAttr: function(indeterminate){
+			// Deprecated, use set("value", ...) instead
+			this._set("indeterminate", indeterminate);
+			this.update();
+		},
+
+		report: function(/*float*/percent){
+			// summary:
+			//		Generates HTML message to show inside progress bar (normally indicating amount of task completed).
+			//		May be overridden.
+			// tags:
+			//		extension
+
+			return this.label ? this.label :
+				(this.indeterminate ? "&#160;" : number.format(percent, { type: "percent", places: this.places, locale: this.lang }));
+		},
+
+		onChange: function(){
+			// summary:
+			//		Callback fired when progress updates.
+			// tags:
+			//		extension
+		}
+	});
+});
+
+},
+'dojo/number':function(){
+define([/*===== "./_base/declare", =====*/ "./_base/lang", "./i18n", "./i18n!./cldr/nls/number", "./string", "./regexp"],
+	function(/*===== declare, =====*/ lang, i18n, nlsNumber, dstring, dregexp){
+
+// module:
+//		dojo/number
+
+var number = {
+	// summary:
+	//		localized formatting and parsing routines for Number
+};
+lang.setObject("dojo.number", number);
+
+/*=====
+number.__FormatOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// places: Number?
+	//		fixed number of decimal places to show.  This overrides any
+	//		information in the provided pattern.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means do not round.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// fractional: Boolean?
+	//		If false, show no decimal places, overriding places and pattern settings.
+});
+=====*/
+
+number.format = function(/*Number*/ value, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Format a Number as a String, using locale-specific settings
+	// description:
+	//		Create a string from a Number using a known localized pattern.
+	//		Formatting patterns appropriate to the locale are chosen from the
+	//		[Common Locale Data Repository](http://unicode.org/cldr) as well as the appropriate symbols and
+	//		delimiters.
+	//		If value is Infinity, -Infinity, or is not a valid JavaScript number, return null.
+	// value:
+	//		the number to be formatted
+
+	options = lang.mixin({}, options || {});
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale);
+	options.customs = bundle;
+	var pattern = options.pattern || bundle[(options.type || "decimal") + "Format"];
+	if(isNaN(value) || Math.abs(value) == Infinity){ return null; } // null
+	return number._applyPattern(value, pattern, options); // String
+};
+
+//number._numberPatternRE = /(?:[#0]*,?)*[#0](?:\.0*#*)?/; // not precise, but good enough
+number._numberPatternRE = /[#0,]*[#0](?:\.0*#*)?/; // not precise, but good enough
+
+number._applyPattern = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatOptions?*/ options){
+	// summary:
+	//		Apply pattern to format value as a string using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted.
+	// pattern:
+	//		a pattern string as described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	// options: number.__FormatOptions?
+	//		_applyPattern is usually called via `dojo/number.format()` which
+	//		populates an extra property in the options parameter, "customs".
+	//		The customs object specifies group and decimal parameters if set.
+
+	//TODO: support escapes
+	options = options || {};
+	var group = options.customs.group,
+		decimal = options.customs.decimal,
+		patternList = pattern.split(';'),
+		positivePattern = patternList[0];
+	pattern = patternList[(value < 0) ? 1 : 0] || ("-" + positivePattern);
+
+	//TODO: only test against unescaped
+	if(pattern.indexOf('%') != -1){
+		value *= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		value *= 1000; // per mille
+	}else if(pattern.indexOf('\u00a4') != -1){
+		group = options.customs.currencyGroup || group;//mixins instead?
+		decimal = options.customs.currencyDecimal || decimal;// Should these be mixins instead?
+		pattern = pattern.replace(/\u00a4{1,3}/, function(match){
+			var prop = ["symbol", "currency", "displayName"][match.length-1];
+			return options[prop] || options.currency || "";
+		});
+	}else if(pattern.indexOf('E') != -1){
+		throw new Error("exponential notation not supported");
+	}
+
+	//TODO: support @ sig figs?
+	var numberPatternRE = number._numberPatternRE;
+	var numberPattern = positivePattern.match(numberPatternRE);
+	if(!numberPattern){
+		throw new Error("unable to find a number expression in pattern: "+pattern);
+	}
+	if(options.fractional === false){ options.places = 0; }
+	return pattern.replace(numberPatternRE,
+		number._formatAbsolute(value, numberPattern[0], {decimal: decimal, group: group, places: options.places, round: options.round}));
+};
+
+number.round = function(/*Number*/ value, /*Number?*/ places, /*Number?*/ increment){
+	// summary:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero
+	// description:
+	//		Rounds to the nearest value with the given number of decimal places, away from zero if equal.
+	//		Similar to Number.toFixed(), but compensates for browser quirks. Rounding can be done by
+	//		fractional increments also, such as the nearest quarter.
+	//		NOTE: Subject to floating point errors.  See dojox/math/round for experimental workaround.
+	// value:
+	//		The number to round
+	// places:
+	//		The number of decimal places where rounding takes place.  Defaults to 0 for whole rounding.
+	//		Must be non-negative.
+	// increment:
+	//		Rounds next place to nearest value of increment/10.  10 by default.
+	// example:
+	// |	>>> number.round(-0.5)
+	// |	-1
+	// |	>>> number.round(162.295, 2)
+	// |	162.29  // note floating point error.  Should be 162.3
+	// |	>>> number.round(10.71, 0, 2.5)
+	// |	10.75
+	var factor = 10 / (increment || 10);
+	return (factor * +value).toFixed(places) / factor; // Number
+};
+
+if((0.9).toFixed() == 0){
+	// (isIE) toFixed() bug workaround: Rounding fails on IE when most significant digit
+	// is just after the rounding place and is >=5
+	var round = number.round;
+	number.round = function(v, p, m){
+		var d = Math.pow(10, -p || 0), a = Math.abs(v);
+		if(!v || a >= d){
+			d = 0;
+		}else{
+			a /= d;
+			if(a < 0.5 || a >= 0.95){
+				d = 0;
+			}
+		}
+		return round(v, p, m) + (v > 0 ? d : -d);
+	};
+
+	// Use "doc hint" so the doc parser ignores this new definition of round(), and uses the one above.
+	/*===== number.round = round; =====*/
+}
+
+/*=====
+number.__FormatAbsoluteOptions = declare(null, {
+	// decimal: String?
+	//		the decimal separator
+	// group: String?
+	//		the group separator
+	// places: Number|String?
+	//		number of decimal places.  the range "n,m" will format to m places.
+	// round: Number?
+	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
+	//		means don't round.
+});
+=====*/
+
+number._formatAbsolute = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatAbsoluteOptions?*/ options){
+	// summary:
+	//		Apply numeric pattern to absolute value using options. Gives no
+	//		consideration to local customs.
+	// value:
+	//		the number to be formatted, ignores sign
+	// pattern:
+	//		the number portion of a pattern (e.g. `#,##0.00`)
+	options = options || {};
+	if(options.places === true){options.places=0;}
+	if(options.places === Infinity){options.places=6;} // avoid a loop; pick a limit
+
+	var patternParts = pattern.split("."),
+		comma = typeof options.places == "string" && options.places.indexOf(","),
+		maxPlaces = options.places;
+	if(comma){
+		maxPlaces = options.places.substring(comma + 1);
+	}else if(!(maxPlaces >= 0)){
+		maxPlaces = (patternParts[1] || []).length;
+	}
+	if(!(options.round < 0)){
+		value = number.round(value, maxPlaces, options.round);
+	}
+
+	var valueParts = String(Math.abs(value)).split("."),
+		fractional = valueParts[1] || "";
+	if(patternParts[1] || options.places){
+		if(comma){
+			options.places = options.places.substring(0, comma);
+		}
+		// Pad fractional with trailing zeros
+		var pad = options.places !== undefined ? options.places : (patternParts[1] && patternParts[1].lastIndexOf("0") + 1);
+		if(pad > fractional.length){
+			valueParts[1] = dstring.pad(fractional, pad, '0', true);
+		}
+
+		// Truncate fractional
+		if(maxPlaces < fractional.length){
+			valueParts[1] = fractional.substr(0, maxPlaces);
+		}
+	}else{
+		if(valueParts[1]){ valueParts.pop(); }
+	}
+
+	// Pad whole with leading zeros
+	var patternDigits = patternParts[0].replace(',', '');
+	pad = patternDigits.indexOf("0");
+	if(pad != -1){
+		pad = patternDigits.length - pad;
+		if(pad > valueParts[0].length){
+			valueParts[0] = dstring.pad(valueParts[0], pad);
+		}
+
+		// Truncate whole
+		if(patternDigits.indexOf("#") == -1){
+			valueParts[0] = valueParts[0].substr(valueParts[0].length - pad);
+		}
+	}
+
+	// Add group separators
+	var index = patternParts[0].lastIndexOf(','),
+		groupSize, groupSize2;
+	if(index != -1){
+		groupSize = patternParts[0].length - index - 1;
+		var remainder = patternParts[0].substr(0, index);
+		index = remainder.lastIndexOf(',');
+		if(index != -1){
+			groupSize2 = remainder.length - index - 1;
+		}
+	}
+	var pieces = [];
+	for(var whole = valueParts[0]; whole;){
+		var off = whole.length - groupSize;
+		pieces.push((off > 0) ? whole.substr(off) : whole);
+		whole = (off > 0) ? whole.slice(0, off) : "";
+		if(groupSize2){
+			groupSize = groupSize2;
+			delete groupSize2;
+		}
+	}
+	valueParts[0] = pieces.reverse().join(options.group || ",");
+
+	return valueParts.join(options.decimal || ".");
+};
+
+/*=====
+number.__RegexpOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// places: Number|String?
+	//		number of decimal places to accept: Infinity, a positive number, or
+	//		a range "n,m".  Defined by pattern or Infinity if pattern not provided.
+});
+=====*/
+number.regexp = function(/*number.__RegexpOptions?*/ options){
+	// summary:
+	//		Builds the regular needed to parse a number
+	// description:
+	//		Returns regular expression with positive and negative match, group
+	//		and decimal separators
+	return number._parseInfo(options).regexp; // String
+};
+
+number._parseInfo = function(/*Object?*/ options){
+	options = options || {};
+	var locale = i18n.normalizeLocale(options.locale),
+		bundle = i18n.getLocalization("dojo.cldr", "number", locale),
+		pattern = options.pattern || bundle[(options.type || "decimal") + "Format"],
+//TODO: memoize?
+		group = bundle.group,
+		decimal = bundle.decimal,
+		factor = 1;
+
+	if(pattern.indexOf('%') != -1){
+		factor /= 100;
+	}else if(pattern.indexOf('\u2030') != -1){
+		factor /= 1000; // per mille
+	}else{
+		var isCurrency = pattern.indexOf('\u00a4') != -1;
+		if(isCurrency){
+			group = bundle.currencyGroup || group;
+			decimal = bundle.currencyDecimal || decimal;
+		}
+	}
+
+	//TODO: handle quoted escapes
+	var patternList = pattern.split(';');
+	if(patternList.length == 1){
+		patternList.push("-" + patternList[0]);
+	}
+
+	var re = dregexp.buildGroupRE(patternList, function(pattern){
+		pattern = "(?:"+dregexp.escapeString(pattern, '.')+")";
+		return pattern.replace(number._numberPatternRE, function(format){
+			var flags = {
+				signed: false,
+				separator: options.strict ? group : [group,""],
+				fractional: options.fractional,
+				decimal: decimal,
+				exponent: false
+				},
+
+				parts = format.split('.'),
+				places = options.places;
+
+			// special condition for percent (factor != 1)
+			// allow decimal places even if not specified in pattern
+			if(parts.length == 1 && factor != 1){
+			    parts[1] = "###";
+			}
+			if(parts.length == 1 || places === 0){
+				flags.fractional = false;
+			}else{
+				if(places === undefined){ places = options.pattern ? parts[1].lastIndexOf('0') + 1 : Infinity; }
+				if(places && options.fractional == undefined){flags.fractional = true;} // required fractional, unless otherwise specified
+				if(!options.places && (places < parts[1].length)){ places += "," + parts[1].length; }
+				flags.places = places;
+			}
+			var groups = parts[0].split(',');
+			if(groups.length > 1){
+				flags.groupSize = groups.pop().length;
+				if(groups.length > 1){
+					flags.groupSize2 = groups.pop().length;
+				}
+			}
+			return "("+number._realNumberRegexp(flags)+")";
+		});
+	}, true);
+
+	if(isCurrency){
+		// substitute the currency symbol for the placeholder in the pattern
+		re = re.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/g, function(match, before, target, after){
+			var prop = ["symbol", "currency", "displayName"][target.length-1],
+				symbol = dregexp.escapeString(options[prop] || options.currency || "");
+			before = before ? "[\\s\\xa0]" : "";
+			after = after ? "[\\s\\xa0]" : "";
+			if(!options.strict){
+				if(before){before += "*";}
+				if(after){after += "*";}
+				return "(?:"+before+symbol+after+")?";
+			}
+			return before+symbol+after;
+		});
+	}
+
+//TODO: substitute localized sign/percent/permille/etc.?
+
+	// normalize whitespace and return
+	return {regexp: re.replace(/[\xa0 ]/g, "[\\s\\xa0]"), group: group, decimal: decimal, factor: factor}; // Object
+};
+
+/*=====
+number.__ParseOptions = declare(null, {
+	// pattern: String?
+	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+	//		with this string.  Default value is based on locale.  Overriding this property will defeat
+	//		localization.  Literal characters in patterns are not supported.
+	// type: String?
+	//		choose a format type based on the locale from the following:
+	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
+	// locale: String?
+	//		override the locale used to determine formatting rules
+	// strict: Boolean?
+	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
+	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
+	// fractional: Boolean|Array?
+	//		Whether to include the fractional portion, where the number of decimal places are implied by pattern
+	//		or explicit 'places' parameter.  The value [true,false] makes the fractional portion optional.
+});
+=====*/
+number.parse = function(/*String*/ expression, /*number.__ParseOptions?*/ options){
+	// summary:
+	//		Convert a properly formatted string to a primitive Number, using
+	//		locale-specific settings.
+	// description:
+	//		Create a Number from a string using a known localized pattern.
+	//		Formatting patterns are chosen appropriate to the locale
+	//		and follow the syntax described by
+	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
+    	//		Note that literal characters in patterns are not supported.
+	// expression:
+	//		A string representation of a Number
+	var info = number._parseInfo(options),
+		results = (new RegExp("^"+info.regexp+"$")).exec(expression);
+	if(!results){
+		return NaN; //NaN
+	}
+	var absoluteMatch = results[1]; // match for the positive expression
+	if(!results[1]){
+		if(!results[2]){
+			return NaN; //NaN
+		}
+		// matched the negative pattern
+		absoluteMatch =results[2];
+		info.factor *= -1;
+	}
+
+	// Transform it to something Javascript can parse as a number.  Normalize
+	// decimal point and strip out group separators or alternate forms of whitespace
+	absoluteMatch = absoluteMatch.
+		replace(new RegExp("["+info.group + "\\s\\xa0"+"]", "g"), "").
+		replace(info.decimal, ".");
+	// Adjust for negative sign, percent, etc. as necessary
+	return absoluteMatch * info.factor; //Number
+};
+
+/*=====
+number.__RealNumberRegexpFlags = declare(null, {
+	// places: Number?
+	//		The integer number of decimal places or a range given as "n,m".  If
+	//		not given, the decimal part is optional and the number of places is
+	//		unlimited.
+	// decimal: String?
+	//		A string for the character used as the decimal point.  Default
+	//		is ".".
+	// fractional: Boolean|Array?
+	//		Whether decimal places are used.  Can be true, false, or [true,
+	//		false].  Default is [true, false] which means optional.
+	// exponent: Boolean|Array?
+	//		Express in exponential notation.  Can be true, false, or [true,
+	//		false]. Default is [true, false], (i.e. will match if the
+	//		exponential part is present are not).
+	// eSigned: Boolean|Array?
+	//		The leading plus-or-minus sign on the exponent.  Can be true,
+	//		false, or [true, false].  Default is [true, false], (i.e. will
+	//		match if it is signed or unsigned).  flags in regexp.integer can be
+	//		applied.
+});
+=====*/
+
+number._realNumberRegexp = function(/*__RealNumberRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression to match a real number in exponential
+	//		notation
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	//TODO: use mixin instead?
+	if(!("places" in flags)){ flags.places = Infinity; }
+	if(typeof flags.decimal != "string"){ flags.decimal = "."; }
+	if(!("fractional" in flags) || /^0/.test(flags.places)){ flags.fractional = [true, false]; }
+	if(!("exponent" in flags)){ flags.exponent = [true, false]; }
+	if(!("eSigned" in flags)){ flags.eSigned = [true, false]; }
+
+	var integerRE = number._integerRegexp(flags),
+		decimalRE = dregexp.buildGroupRE(flags.fractional,
+		function(q){
+			var re = "";
+			if(q && (flags.places!==0)){
+				re = "\\" + flags.decimal;
+				if(flags.places == Infinity){
+					re = "(?:" + re + "\\d+)?";
+				}else{
+					re += "\\d{" + flags.places + "}";
+				}
+			}
+			return re;
+		},
+		true
+	);
+
+	var exponentRE = dregexp.buildGroupRE(flags.exponent,
+		function(q){
+			if(q){ return "([eE]" + number._integerRegexp({ signed: flags.eSigned}) + ")"; }
+			return "";
+		}
+	);
+
+	var realRE = integerRE + decimalRE;
+	// allow for decimals without integers, e.g. .25
+	if(decimalRE){realRE = "(?:(?:"+ realRE + ")|(?:" + decimalRE + "))";}
+	return realRE + exponentRE; // String
+};
+
+/*=====
+number.__IntegerRegexpFlags = declare(null, {
+	// signed: Boolean?
+	//		The leading plus-or-minus sign. Can be true, false, or `[true,false]`.
+	//		Default is `[true, false]`, (i.e. will match if it is signed
+	//		or unsigned).
+	// separator: String?
+	//		The character used as the thousands separator. Default is no
+	//		separator. For more than one symbol use an array, e.g. `[",", ""]`,
+	//		makes ',' optional.
+	// groupSize: Number?
+	//		group size between separators
+	// groupSize2: Number?
+	//		second grouping, where separators 2..n have a different interval than the first separator (for India)
+});
+=====*/
+
+number._integerRegexp = function(/*number.__IntegerRegexpFlags?*/ flags){
+	// summary:
+	//		Builds a regular expression that matches an integer
+
+	// assign default values to missing parameters
+	flags = flags || {};
+	if(!("signed" in flags)){ flags.signed = [true, false]; }
+	if(!("separator" in flags)){
+		flags.separator = "";
+	}else if(!("groupSize" in flags)){
+		flags.groupSize = 3;
+	}
+
+	var signRE = dregexp.buildGroupRE(flags.signed,
+		function(q){ return q ? "[-+]" : ""; },
+		true
+	);
+
+	var numberRE = dregexp.buildGroupRE(flags.separator,
+		function(sep){
+			if(!sep){
+				return "(?:\\d+)";
+			}
+
+			sep = dregexp.escapeString(sep);
+			if(sep == " "){ sep = "\\s"; }
+			else if(sep == "\xa0"){ sep = "\\s\\xa0"; }
+
+			var grp = flags.groupSize, grp2 = flags.groupSize2;
+			//TODO: should we continue to enforce that numbers with separators begin with 1-9?  See #6933
+			if(grp2){
+				var grp2RE = "(?:0|[1-9]\\d{0," + (grp2-1) + "}(?:[" + sep + "]\\d{" + grp2 + "})*[" + sep + "]\\d{" + grp + "})";
+				return ((grp-grp2) > 0) ? "(?:" + grp2RE + "|(?:0|[1-9]\\d{0," + (grp-1) + "}))" : grp2RE;
+			}
+			return "(?:0|[1-9]\\d{0," + (grp-1) + "}(?:[" + sep + "]\\d{" + grp + "})*)";
+		},
+		true
+	);
+
+	return signRE + numberRE; // String
+};
+
+return number;
+});
+
+},
+'p3/UploadManager':function(){
+define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
+	"dojo/_base/Deferred", "dojo/topic", "./WorkspaceManager"
+], function(xhr, declare, lang,
+			Deferred, Topic, WorkspaceManager){
+
+	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+	var UploadManager = (declare([], {
+		constructor: function(){
+			this.activeCount = 0;
+			this.completeCount = 0;
+			this.completedUploads = [];
+			this.errorCount = 0;
+			this.inProgress = {};
+
+			window.addEventListener("beforeunload", lang.hitch(this, function(event){
+				if(this.listenUnload){
+					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads .";
+					(event || window.event).returnValue = msg;
+					return msg;
+				}
+				return;
+			}));
+
+		},
+		token: null,
+		upload: function(files, token){
+			if(token){
+				this.token = token;
+				this.headers = {
+					Authorization: "OAuth " + token
+				}
+			}
+			var _self = this;
+			if(files instanceof Array){
+				files.forEach(function(obj){
+					_self._uploadFile(obj.file, obj.url, obj.uploadDirectory);
+				});
+			}else if(files && files.file){
+				_self._uploadFile(files.file, files.url, files.uploadDirectory);
+			}
+
+			Topic.publish("/refreshWorkspace", {});
+		},
+		getUploadSummary: function(){
+			var def = new Deferred();
+			var _self = this;
+			var summary = {
+				inProgress: _self.activeCount,
+				complete: _self.completeCount,
+				errors: _self.errorCount,
+				completedFiles: _self.completedUploads,
+				activeFiles: this.inProgress,
+				progress: 0
+			}
+			var totalSize = 0;
+			var loadedSize = 0;
+
+			Object.keys(this.inProgress).forEach(function(fname){
+				totalSize += this.inProgress[fname].total;
+				loadedSize += this.inProgress[fname].loaded;
+			}, this)
+
+			if(totalSize > 0){
+				summary.progress = parseInt((loadedSize / totalSize) * 100);
+			}else{
+				summary.progress = 0;
+			}
+			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+
+			var msg = {
+				type: "UploadStatSummary",
+				summary: summary
+			};
+
+			 0 && console.log("Summary message: ", msg)
+			def.resolve(msg);
+			return def.promise;
+		},
+
+		listenUnload: false,
+		unloadPageListener: function(){
+			this.listenUnload = false;
+		},
+
+		loadPageListener: function(){
+			this.listenUnload = true;
+		},
+
+		_uploadFile: function(file, url, workspacePath){
+			var def = new Deferred();
+			var fd = new FormData();
+			fd.append("upload", file);
+			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath: workspacePath}
+			var _self = this;
+			req = new XMLHttpRequest();
+			req.upload.addEventListener("progress", function(evt){
+				 0 && console.log("evt: ", evt);
+				 0 && console.log("progress: ", (evt.loaded / evt.total) * 100);
+				_self.inProgress[file.name].loaded = evt.loaded;
+				_self.inProgress[file.name].total = evt.total;
+				Topic.publish("/upload", {
+					type: "UploadProgress",
+					filename: file.name,
+					event: evt,
+					progress: parseInt((evt.loaded / evt.total) * 100),
+					url: url,
+					workspacePath: workspacePath
+				})
+			});
+
+			req.upload.addEventListener("load", lang.hitch(this, function(data){
+				var p = workspacePath;
+				if(p.charAt(p.length - 1) != "/"){
+					p = p + "/";
+				}
+				p = p + file.name;
+				WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function(){
+					_self.activeCount--;
+					_self.completeCount++
+					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
+					Object.keys(_self.inProgress).some(function(key){
+						if(key == file.name){
+							delete _self.inProgress[key];
+						}
+					})
+
+					Topic.publish("/upload", {
+						type: "UploadComplete",
+						filename: file.name,
+						url: url,
+						workspacePath: workspacePath
+					})
+
+					if(_self.activeCount < 1){
+						_self.unloadPageListener();
+					}
+					def.resolve(data);
+				}));
+			}));
+
+			req.upload.addEventListener("error", function(error){
+				 0 && console.log("Error Uploading File: ", error);
+				_self.activeCount--;
+				_self.errorCount++;
+				def.reject(error);
+			});
+
+			req.open("PUT", url, true);
+
+			for(var prop in this.headers){
+				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
+				req.setRequestHeader(prop, this.headers[prop]);
+			}
+
+			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url, workspacePath: workspacePath})
+			this.activeCount++;
+
+			this.loadPageListener();
+			req.send(fd);
+			return def.promise;
+
+			/*
+			this.headers['X-Requested-With']=null;
+			return xhr.put(url, {
+				headers: this.headers,
+				data:fd
+			}).then(function(data){
+				 0 && console.log("after put data : ", data);
+				return data;
+			}, function(err){
+				 0 && console.log("Error Uploading File: ", err);
+			}, function(evt){
+				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
+			});
+			*/
+		}
+
+	}))();
+
+	return UploadManager;
+});
+
+
+},
+'dijit/form/ValidationTextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/lang",
+	"dojo/i18n", // i18n.getLocalization
+	"./TextBox",
+	"../Tooltip",
+	"dojo/text!./templates/ValidationTextBox.html",
+	"dojo/i18n!./nls/validate"
+], function(declare, kernel, lang, i18n, TextBox, Tooltip, template){
+
+	// module:
+	//		dijit/form/ValidationTextBox
+
+
+	/*=====
+	var __Constraints = {
+		// locale: String
+		//		locale used for validation, picks up value from this widget's lang attribute
+		// _flags_: anything
+		//		various flags passed to pattern function
+	};
+	=====*/
+
+	var ValidationTextBox;
+	return ValidationTextBox = declare("dijit.form.ValidationTextBox", TextBox, {
+		// summary:
+		//		Base class for textbox widgets with the ability to validate content of various types and provide user feedback.
+
+		templateString: template,
+
+		// required: Boolean
+		//		User is required to enter data into this field.
+		required: false,
+
+		// promptMessage: String
+		//		If defined, display this hint string immediately on focus to the textbox, if empty.
+		//		Also displays if the textbox value is Incomplete (not yet valid but will be with additional input).
+		//		Think of this like a tooltip that tells the user what to do, not an error message
+		//		that tells the user what they've done wrong.
+		//
+		//		Message disappears when user starts typing.
+		promptMessage: "",
+
+		// invalidMessage: String
+		//		The message to display if value is invalid.
+		//		The translated string value is read from the message file by default.
+		//		Set to "" to use the promptMessage instead.
+		invalidMessage: "$_unset_$",
+
+		// missingMessage: String
+		//		The message to display if value is empty and the field is required.
+		//		The translated string value is read from the message file by default.
+		//		Set to "" to use the invalidMessage instead.
+		missingMessage: "$_unset_$",
+
+		// message: String
+		//		Currently error/prompt message.
+		//		When using the default tooltip implementation, this will only be
+		//		displayed when the field is focused.
+		message: "",
+
+		// constraints: __Constraints
+		//		user-defined object needed to pass parameters to the validator functions
+		constraints: {},
+
+		// pattern: [extension protected] String|Function(constraints) returning a string.
+		//		This defines the regular expression used to validate the input.
+		//		Do not add leading ^ or $ characters since the widget adds these.
+		//		A function may be used to generate a valid pattern when dependent on constraints or other runtime factors.
+		//		set('pattern', String|Function).
+		pattern: ".*",
+
+		// regExp: Deprecated [extension protected] String.  Use "pattern" instead.
+		regExp: "",
+
+		regExpGen: function(/*__Constraints*/ /*===== constraints =====*/){
+			// summary:
+			//		Deprecated.  Use set('pattern', Function) instead.
+		},
+
+		// state: [readonly] String
+		//		Shows current state (ie, validation result) of input (""=Normal, Incomplete, or Error)
+		state: "",
+
+		// tooltipPosition: String[]
+		//		See description of `dijit/Tooltip.defaultPosition` for details on this parameter.
+		tooltipPosition: [],
+
+		_deprecateRegExp: function(attr, value){
+			if(value != ValidationTextBox.prototype[attr]){
+				kernel.deprecated("ValidationTextBox id="+this.id+", set('" + attr + "', ...) is deprecated.  Use set('pattern', ...) instead.", "", "2.0");
+				this.set('pattern', value);
+			}
+		},
+		_setRegExpGenAttr: function(/*Function*/ newFcn){
+			this._deprecateRegExp("regExpGen", newFcn);
+			this._set("regExpGen", this._computeRegexp); // backward compat with this.regExpGen(this.constraints)
+		},
+		_setRegExpAttr: function(/*String*/ value){
+			this._deprecateRegExp("regExp", value);
+		},
+
+		_setValueAttr: function(){
+			// summary:
+			//		Hook so set('value', ...) works.
+			this.inherited(arguments);
+			this._refreshState();
+		},
+
+		validator: function(/*anything*/ value, /*__Constraints*/ constraints){
+			// summary:
+			//		Overridable function used to validate the text input against the regular expression.
+			// tags:
+			//		protected
+			return (new RegExp("^(?:" + this._computeRegexp(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
+				(!this.required || !this._isEmpty(value)) &&
+				(this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
+		},
+
+		_isValidSubset: function(){
+			// summary:
+			//		Returns true if the value is either already valid or could be made valid by appending characters.
+			//		This is used for validation while the user [may be] still typing.
+			return this.textbox.value.search(this._partialre) == 0;
+		},
+
+		isValid: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Tests if value is valid.
+			//		Can override with your own routine in a subclass.
+			// tags:
+			//		protected
+			return this.validator(this.textbox.value, this.get('constraints'));
+		},
+
+		_isEmpty: function(value){
+			// summary:
+			//		Checks for whitespace
+			return (this.trim ? /^\s*$/ : /^$/).test(value); // Boolean
+		},
+
+		getErrorMessage: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Return an error message to show if appropriate
+			// tags:
+			//		protected
+			var invalid = this.invalidMessage == "$_unset_$" ? this.messages.invalidMessage :
+				!this.invalidMessage ? this.promptMessage : this.invalidMessage;
+			var missing = this.missingMessage == "$_unset_$" ? this.messages.missingMessage :
+				!this.missingMessage ? invalid : this.missingMessage;
+			return (this.required && this._isEmpty(this.textbox.value)) ? missing : invalid; // String
+		},
+
+		getPromptMessage: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Return a hint message to show when widget is first focused
+			// tags:
+			//		protected
+			return this.promptMessage; // String
+		},
+
+		_maskValidSubsetError: true,
+		validate: function(/*Boolean*/ isFocused){
+			// summary:
+			//		Called by oninit, onblur, and onkeypress.
+			// description:
+			//		Show missing or invalid messages if appropriate, and highlight textbox field.
+			// tags:
+			//		protected
+			var message = "";
+			var isValid = this.disabled || this.isValid(isFocused);
+			if(isValid){ this._maskValidSubsetError = true; }
+			var isEmpty = this._isEmpty(this.textbox.value);
+			var isValidSubset = !isValid && isFocused && this._isValidSubset();
+			this._set("state", isValid ? "" : (((((!this._hasBeenBlurred || isFocused) && isEmpty) || isValidSubset) && (this._maskValidSubsetError || (isValidSubset && !this._hasBeenBlurred && isFocused))) ? "Incomplete" : "Error"));
+			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+
+			if(this.state == "Error"){
+				this._maskValidSubsetError = isFocused && isValidSubset; // we want the error to show up after a blur and refocus
+				message = this.getErrorMessage(isFocused);
+			}else if(this.state == "Incomplete"){
+				message = this.getPromptMessage(isFocused); // show the prompt whenever the value is not yet complete
+				this._maskValidSubsetError = !this._hasBeenBlurred || isFocused; // no Incomplete warnings while focused
+			}else if(isEmpty){
+				message = this.getPromptMessage(isFocused); // show the prompt whenever there's no error and no text
+			}
+			this.set("message", message);
+
+			return isValid;
+		},
+
+		displayMessage: function(/*String*/ message){
+			// summary:
+			//		Overridable method to display validation errors/hints.
+			//		By default uses a tooltip.
+			// tags:
+			//		extension
+			if(message && this.focused){
+				Tooltip.show(message, this.domNode, this.tooltipPosition, !this.isLeftToRight());
+			}else{
+				Tooltip.hide(this.domNode);
+			}
+		},
+
+		_refreshState: function(){
+			// Overrides TextBox._refreshState()
+			if(this._created){ // should instead be this._started but that would require all programmatic ValidationTextBox instantiations to call startup()
+				this.validate(this.focused);
+			}
+			this.inherited(arguments);
+		},
+
+		//////////// INITIALIZATION METHODS ///////////////////////////////////////
+
+		constructor: function(params /*===== , srcNodeRef =====*/){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String?
+			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree.
+
+			this.constraints = lang.clone(this.constraints);
+			this.baseClass += ' dijitValidationTextBox';
+		},
+
+		startup: function(){
+			this.inherited(arguments);
+			this._refreshState(); // after all _set* methods have run
+		},
+
+		_setConstraintsAttr: function(/*__Constraints*/ constraints){
+			if(!constraints.locale && this.lang){
+				constraints.locale = this.lang;
+			}
+			this._set("constraints", constraints);
+			this._refreshState();
+		},
+
+		_setPatternAttr: function(/*String|Function*/ pattern){
+			this._set("pattern", pattern); // don't set on INPUT to avoid native HTML5 validation
+			this._refreshState();
+		},
+
+		_computeRegexp: function(/*__Constraints*/ constraints){
+			// summary:
+			//		Hook to get the current regExp and to compute the partial validation RE.
+
+			var p = this.pattern;
+			if(typeof p == "function"){
+				p = p.call(this, constraints);
+			}
+			if(p != this._lastRegExp){
+				var partialre = "";
+				this._lastRegExp = p;
+				// parse the regexp and produce a new regexp that matches valid subsets
+				// if the regexp is .* then there's no use in matching subsets since everything is valid
+				if(p != ".*"){
+					p.replace(/\\.|\[\]|\[.*?[^\\]{1}\]|\{.*?\}|\(\?[=:!]|./g,
+					function(re){
+						switch(re.charAt(0)){
+							case '{':
+							case '+':
+							case '?':
+							case '*':
+							case '^':
+							case '$':
+							case '|':
+							case '(':
+								partialre += re;
+								break;
+							case ")":
+								partialre += "|$)";
+								break;
+							 default:
+								partialre += "(?:"+re+"|$)";
+								break;
+						}
+					});
+				}
+				try{ // this is needed for now since the above regexp parsing needs more test verification
+					"".search(partialre);
+				}catch(e){ // should never be here unless the original RE is bad or the parsing is bad
+					partialre = this.pattern;
+					 0 && console.warn('RegExp error in ' + this.declaredClass + ': ' + this.pattern);
+				} // should never be here unless the original RE is bad or the parsing is bad
+				this._partialre = "^(?:" + partialre + ")$";
+			}
+			return p;
+		},
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			this.messages = i18n.getLocalization("dijit.form", "validate", this.lang);
+			this._setConstraintsAttr(this.constraints); // this needs to happen now (and later) due to codependency on _set*Attr calls attachPoints
+		},
+
+		_setDisabledAttr: function(/*Boolean*/ value){
+			this.inherited(arguments);	// call FormValueWidget._setDisabledAttr()
+			this._refreshState();
+		},
+
+		_setRequiredAttr: function(/*Boolean*/ value){
+			this._set("required", value);
+			this.focusNode.setAttribute("aria-required", value);
+			this._refreshState();
+		},
+
+		_setMessageAttr: function(/*String*/ message){
+			this._set("message", message);
+			this.displayMessage(message);
+		},
+
+		reset:function(){
+			// Overrides dijit/form/TextBox.reset() by also
+			// hiding errors about partial matches
+			this._maskValidSubsetError = true;
+			this.inherited(arguments);
+		},
+
+		_onBlur: function(){
+			// the message still exists but for back-compat, and to erase the tooltip
+			// (if the message is being displayed as a tooltip), call displayMessage('')
+			this.displayMessage('');
+
+			this.inherited(arguments);
+		},
+
+		destroy: function(){
+			Tooltip.hide(this.domNode);	// in case tooltip show when ValidationTextBox (or enclosing Dialog) destroyed
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
+'p3/widget/WorkspaceObjectSelector':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/WorkspaceObjectSelector.html",
+	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
+	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
+	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
+	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
+	"dijit/registry", "dgrid/editor", "./formatter"
+
+], function(declare, WidgetBase, on, lang,
+			domClass, Templated, WidgetsInTemplate,
+			Template, Dialog, HasDropDown, ContentPane, TextBox,
+			Grid, domConstr, WorkspaceManager, Memory,
+			Uploader, BorderContainer, domAttr,
+			Button, Deferred, CheckBox, Topic,
+			registry, editor, formatter){
+
+	return declare([WidgetBase, Templated, WidgetsInTemplate], {
+		"baseClass": "WorkspaceObjectSelector",
+		templateString: Template,
+		workspace: "",
+		selection: "",
+		value: "",
+		path: "",
+		disabled: false,
+		required: false,
+		showUnspecified: false,
+		missingMessage: "A valid workspace item is required.",
+		promptMessage: "Please choose or upload a workspace item",
+		placeHolder: "",
+		reset: function(){
+			this.searchBox.set('value', '');
+		},
+		_setPlaceHolderAttr: function(val){
+			if(this.searchBox){
+				this.searchBox.set('placeHolder', val);
+			}
+		},
+		_setShowUnspecifiedAttr: function(val){
+			this.showUnspecified = val;
+			if(val){
+				if(!(this.type.indexOf("unspecified") >= 0)){
+					this.type.push("unspecified");
+				}
+			}else{
+				this.type = this.type.filter(function(t){
+					return (t != "unspecified");
+				});
+			}
+			if(this.grid){
+				this.grid.set('types', this.type);
+			}
+		},
+
+		_setDisabledAttr: function(val){
+			this.disabled = val;
+			if(val){
+				domClass.add(this.domNode, "disabled");
+			}else{
+				domClass.remove(this.domNode, "disabled");
+			}
+
+			if(this.searchBox){
+				this.searchBox.set("disabled", val);
+			}
+		},
+		_setRequiredAttr: function(val){
+			this.required = val;
+			if(this.searchBox){
+				this.searchBox.set("required", val);
+			}
+		},
+
+		_setPathAttr: function(val){
+			 0 && console.log("_setPathAttr: ", val);
+			this.path = val;
+			if(this.grid){
+				 0 && console.log("set Grid Path: ", val);
+				this.grid.set('path', val);
+			}
+			if(this.uploader){
+				this.uploader.set('path', val);
+			}
+
+			if(this.currentPathNode){
+				this.currentPathNode.innerHTML = "Folder: " + val;
+			}
+            this.cancelRefresh();
+            this.refreshWorkspaceItems();
+		},
+		_setTypeAttr: function(type){
+			if(!(type instanceof Array)){
+				type = [type];
+			}
+			this.type = type;
+			if(this.grid){
+				this.grid.set('types', (["folder"].concat(this.type)));
+			}
+            this.cancelRefresh();
+            this.refreshWorkspaceItems();
+		},
+		_setValueAttr: function(value, refresh){
+			this.value = value;
+			if(this._started){
+				if(refresh){
+					this.refreshWorkspaceItems()
+				}else{
+					this.searchBox.set('value', value);
+				}
+			}
+		},
+
+		_getValueAttr: function(value){
+			return this.searchBox.get('value', value);
+		},
+
+		_setSelectionAttr: function(val){
+			this.selection = val;
+			 0 && console.log("this.selection: ", this.selection);
+			if(!val){
+				this.selValNode.innerHTML = "None.";
+				this.okButton.set('disabled', true);
+			}else{
+				this.selValNode.innerHTML = val.name;
+				this.okButton.set('disabled', false);
+			}
+		},
+
+		postMixinProperties: function(){
+			if(!this.value && this.workspace){
+				this.value = this.workspace;
+			}
+			this.inherited(arguments);
+		},
+
+		createSelectedPane: function(){
+			var wrap = domConstr.create("div", {});
+			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
+			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
+			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
+//			domConstr.place(this.selValNode, sel, "last");
+			var buttonContainer = domConstr.create("div", {
+				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
+				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
+			}, wrap);
+
+			return wrap;
+		},
+		focus: function(){
+			// summary:
+			//		Put focus on this widget
+			if(!this.disabled && this.focusNode.focus){
+				try{
+					this.focusNode.focus();
+				}catch(e){
+				}
+				/*squelch errors from hidden nodes*/
+			}
+		},
+
+		openChooser: function(){
+			if(this.disabled){
+				return;
+			}
+			if(!this.dialog){
+				var _self = this;
+				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
+				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});
+				var backBC = new BorderContainer({
+					style: {
+						width: "500px",
+						height: "400px",
+						"margin": "0",
+						padding: "0px"
+					}
+				});
+				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
+				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
+
+				var selectionPane = new ContentPane({
+					region: "top",
+					content: this.createSelectedPane(),
+					style: "border:0px;"
+				});
+				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
+				var span = domConstr.create("span", {style: {"float": 'left'}});
+				domConstr.place(span, buttonsPane.containerNode, "first");
+				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
+				this.showUnspecifiedWidget.on("change", function(val){
+					 0 && console.log("changed showUnspecifiedwidget: ", val);
+					_self.set("showUnspecified", val);
+				});
+				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
+				domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
+				var cancelButton = new Button({label: "Cancel"});
+				cancelButton.on('click', function(){
+					_self.dialog.hide();
+				});
+				var okButton = this.okButton = new Button({label: "OK"});
+
+				okButton.on("click", function(evt){
+					if(_self.selection){
+						_self.set("value", _self.selection.path);
+					}
+					_self.dialog.hide();
+				});
+				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
+				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
+
+				on(selectionPane.domNode, "i:click", function(evt){
+					//  0 && console.log("Click: ", evt);
+					var rel = domAttr.get(evt.target, "rel");
+					switch(rel){
+						case "upload":
+							_self.dialog.flip();
+							break;
+						case "createFolder":
+							//  0 && console.log("Create Folder", _self.grid.row(0));
+							var element = _self.grid.row(0).element;
+							//  0 && console.log("element: ", element);
+							_self.grid.addNewFolder({id: "untitled"});
+
+							break;
+					}
+				});
+				// var _self = this;
+				var grid = this.grid = new Grid({
+					region: "center",
+					path: this.path,
+					selectionMode: "single",
+					deselectOnRefresh: true,
+					types: this.type ? (["folder"].concat(this.type)) : false,
+					columns: {
+						"type": {
+							label: "",
+							get: function(item){
+								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
+									return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
+								}
+								return item.type;
+							},
+							className: "wsItemType",
+							formatter: formatter.wsItemType,
+							unhidable: true
+						},
+						"name": editor({
+							label: "Name",
+							field: "name",
+							className: "wsItemName",
+							canEdit: function(obj, val){
+								return obj.id == 'untitled';
+							},
+							autoSave: true,
+							editOn: "click",
+							editor: TextBox,
+							editorArgs: {placeHolder: "Untitled Folder", trim: true}
+						}),
+						creation_time: {
+							label: "Created",
+							field: "creation_time",
+							className: "wsItemCreationTime",
+							formatter: formatter.date
+						}
+					}
+				});
+				_self.grid.on("dgrid-datachange", function(evt){
+					var name = evt.value;
+					if(!name){
+						return;
+					}
+					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
+						_self.grid.refreshWorkspace();
+						_self.refreshWorkspaceItems();
+					});
+				});
+				grid.allowSelect = function(row){
+					if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
+						return true;
+					}
+					return false;
+				};
+
+				grid.on("ItemDblClick", function(evt){
+					if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
+						_self.set('path', evt.item_path);
+					}else{
+						if(_self.selection){
+							_self.set('value', _self.selection.path);
+							_self.dialog.hide()
+						}
+					}
+					 0 && console.log("ItemDblClick for chooser: ", evt);
+					//	var row = evt.rows[0];
+					//	var data = row.data;
+					//	 0 && console.log("selected: ", data);
+				});
+
+				grid.on("select", function(evt){
+					var row = evt.rows[0];
+					_self.set("selection", row.data);
+				});
+
+				grid.on("deselect", function(evt){
+					_self.set('selection', "");
+				});
+
+				frontBC.addChild(selectionPane);
+				frontBC.addChild(grid);
+				frontBC.addChild(buttonsPane);
+				frontBC.startup();
+				var backhead = new ContentPane({
+					region: "top",
+					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
+				});
+				on(backhead.domNode, "span:click", function(evt){
+					 0 && console.log("Click: ", evt);
+					var rel = domAttr.get(evt.target, "rel");
+					switch(rel){
+						case "flip":
+							_self.dialog.flip();
+							break;
+					}
+				});
+				var uploader = this.uploader = new Uploader({
+					path: _self.path,
+					region: "center",
+					multiple: false,
+					types: this.type,
+					pathLabel: "Upload file to: ",
+					buttonLabel: "Select File"
+				});
+
+				on(uploader.domNode, "dialogAction", function(evt){
+					 0 && console.log("Uploader Dialog Action: ", evt);
+					if(evt.files && evt.files[0] && evt.action == "close"){
+						var file = evt.files[0];
+						_self.set("selection", file);
+						_self.set('value', file.path, true);
+						_self.dialog.hide();
+					}else{
+						_self.dialog.flip()
+					}
+				});
+
+				uploader.startup();
+
+				backBC.addChild(backhead);
+				backBC.addChild(uploader);
+				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
+				var _self = this;
+
+			}
+			this.dialog.flip("front");
+			this.dialog.show();
+		},
+
+        cancelRefresh: function(){
+            if(this._refreshing){
+                delete this._refreshing;
+            }
+        },
+
+		refreshWorkspaceItems: function(){
+			if(this._refreshing){
+				return;
+			}
+			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
+				delete this._refreshing;
+				//  0 && console.log("Ws Objects: ", items);
+				var store = new Memory({data: items, idProperty: "path"});
+				//  0 && console.log('store: ', store);
+
+				//  0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
+				this.searchBox.set("store", store);
+				if(this.value){
+					this.searchBox.set('value', this.value);
+				}
+			}));
+		},
+		onSearchChange: function(value){
+			this.set("value", value);
+			this.onChange(value);
+			this.validate(true);
+		},
+		onChange: function(){
+		},
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			 0 && console.log("call getObjectsByType(); ", this.type);
+			this.inherited(arguments);
+
+			var _self = this;
+			if(!this.path){
+				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
+					 0 && console.log("CURRENT PATH: ", path);
+					_self.set('path', path);
+					_self.refreshWorkspaceItems();
+				});
+			}else{
+				this.refreshWorkspaceItems();
+			}
+			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
+			this.searchBox.set('disabled', this.disabled);
+			this.searchBox.set('required', this.required);
+			this.searchBox.set('placeHolder', this.placeHolder);
+			this.searchBox.labelFunc = this.labelFunc;
+		},
+
+		labelFunc: function(item, store){
+			var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + "/";
+			var pathParts = item.path.split('/');
+			var workspace = pathParts[2];
+			var labelParts = [workspace];
+			if(pathParts.length - 2 > 3){
+				labelParts.push("...");
+			}
+			if(pathParts.length - 2 > 2){
+				var parentFolder = pathParts[pathParts.length - 2];
+				parentFolder = parentFolder.replace(/^\./, "");
+				labelParts.push(parentFolder);
+			}
+			if(pathParts.length - 1 > 2){
+				var objName = pathParts[pathParts.length - 1];
+				labelParts.push(objName);
+			}
+			labelParts[labelParts.length - 1] = "</br>" + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + "</span></div>";
+			label += labelParts.join("/");
+			return label;
+		},
+
+		validate: function(/*Boolean*/ isFocused){
+			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
+			var message = "";
+			var isValid = this.disabled || this.searchBox.isValid(isFocused);
+			this._set("state", isValid ? "" : this.searchBox.state);
+			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
+			if(isValid){
+				registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
+					obj.validate();
+				});
+			}
+
+			return isValid;
+		}
 	});
 });
 
@@ -51688,191 +55671,6 @@ define([
 });
 
 },
-'p3/UploadManager':function(){
-define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
-	"dojo/_base/Deferred", "dojo/topic", "./WorkspaceManager"
-], function(xhr, declare, lang,
-			Deferred, Topic, WorkspaceManager){
-
-	var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
-	var UploadManager = (declare([], {
-		constructor: function(){
-			this.activeCount = 0;
-			this.completeCount = 0;
-			this.completedUploads = [];
-			this.errorCount = 0;
-			this.inProgress = {};
-
-			window.addEventListener("beforeunload", lang.hitch(this, function(event){
-				if(this.listenUnload){
-					var msg = "You are currently uploading files.  Leaving this page will cancel the uploads .";
-					(event || window.event).returnValue = msg;
-					return msg;
-				}
-				return;
-			}));
-
-		},
-		token: null,
-		upload: function(files, token){
-			if(token){
-				this.token = token;
-				this.headers = {
-					Authorization: "OAuth " + token
-				}
-			}
-			var _self = this;
-			if(files instanceof Array){
-				files.forEach(function(obj){
-					_self._uploadFile(obj.file, obj.url, obj.uploadDirectory);
-				});
-			}else if(files && files.file){
-				_self._uploadFile(files.file, files.url, files.uploadDirectory);
-			}
-
-			Topic.publish("/refreshWorkspace", {});
-		},
-		getUploadSummary: function(){
-			var def = new Deferred();
-			var _self = this;
-			var summary = {
-				inProgress: _self.activeCount,
-				complete: _self.completeCount,
-				errors: _self.errorCount,
-				completedFiles: _self.completedUploads,
-				activeFiles: this.inProgress,
-				progress: 0
-			}
-			var totalSize = 0;
-			var loadedSize = 0;
-
-			Object.keys(this.inProgress).forEach(function(fname){
-				totalSize += this.inProgress[fname].total;
-				loadedSize += this.inProgress[fname].loaded;
-			}, this)
-
-			if(totalSize > 0){
-				summary.progress = parseInt((loadedSize / totalSize) * 100);
-			}else{
-				summary.progress = 0;
-			}
-			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
-
-			var msg = {
-				type: "UploadStatSummary",
-				summary: summary
-			};
-
-			 0 && console.log("Summary message: ", msg)
-			def.resolve(msg);
-			return def.promise;
-		},
-
-		listenUnload: false,
-		unloadPageListener: function(){
-			this.listenUnload = false;
-		},
-
-		loadPageListener: function(){
-			this.listenUnload = true;
-		},
-
-		_uploadFile: function(file, url, workspacePath){
-			var def = new Deferred();
-			var fd = new FormData();
-			fd.append("upload", file);
-			this.inProgress[file.name] = {name: file.name, size: file.size, workspacePath: workspacePath}
-			var _self = this;
-			req = new XMLHttpRequest();
-			req.upload.addEventListener("progress", function(evt){
-				 0 && console.log("evt: ", evt);
-				 0 && console.log("progress: ", (evt.loaded / evt.total) * 100);
-				_self.inProgress[file.name].loaded = evt.loaded;
-				_self.inProgress[file.name].total = evt.total;
-				Topic.publish("/upload", {
-					type: "UploadProgress",
-					filename: file.name,
-					event: evt,
-					progress: parseInt((evt.loaded / evt.total) * 100),
-					url: url,
-					workspacePath: workspacePath
-				})
-			});
-
-			req.upload.addEventListener("load", lang.hitch(this, function(data){
-				var p = workspacePath;
-				if(p.charAt(p.length - 1) != "/"){
-					p = p + "/";
-				}
-				p = p + file.name;
-				WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function(){
-					_self.activeCount--;
-					_self.completeCount++
-					_self.completedUploads.push({filename: file.name, size: file.size, workspacePath: workspacePath});
-					Object.keys(_self.inProgress).some(function(key){
-						if(key == file.name){
-							delete _self.inProgress[key];
-						}
-					})
-
-					Topic.publish("/upload", {
-						type: "UploadComplete",
-						filename: file.name,
-						url: url,
-						workspacePath: workspacePath
-					})
-
-					if(_self.activeCount < 1){
-						_self.unloadPageListener();
-					}
-					def.resolve(data);
-				}));
-			}));
-
-			req.upload.addEventListener("error", function(error){
-				 0 && console.log("Error Uploading File: ", error);
-				_self.activeCount--;
-				_self.errorCount++;
-				def.reject(error);
-			});
-
-			req.open("PUT", url, true);
-
-			for(var prop in this.headers){
-				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
-				req.setRequestHeader(prop, this.headers[prop]);
-			}
-
-			Topic.publish("/upload", {type: "UploadStart", filename: file.name, url: url, workspacePath: workspacePath})
-			this.activeCount++;
-
-			this.loadPageListener();
-			req.send(fd);
-			return def.promise;
-
-			/*
-			this.headers['X-Requested-With']=null;
-			return xhr.put(url, {
-				headers: this.headers,
-				data:fd
-			}).then(function(data){
-				 0 && console.log("after put data : ", data);
-				return data;
-			}, function(err){
-				 0 && console.log("Error Uploading File: ", err);
-			}, function(evt){
-				 0 && console.log("Percent = ", (evt.loaded / evt.total)*100);
-			});
-			*/
-		}
-
-	}))();
-
-	return UploadManager;
-});
-
-
-},
 'p3/widget/UploadStatus':function(){
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
@@ -52017,1324 +55815,6 @@ define([
 });
 
 },
-'dijit/form/Select':function(){
-define([
-	"dojo/_base/array", // array.forEach
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/dom-class", // domClass.add domClass.remove domClass.toggle
-	"dojo/dom-geometry", // domGeometry.setMarginBox
-	"dojo/i18n", // i18n.getLocalization
-	"dojo/keys",
-	"dojo/_base/lang", // lang.hitch
-	"dojo/on",
-	"dojo/sniff", // has("ie")
-	"./_FormSelectWidget",
-	"../_HasDropDown",
-	"../DropDownMenu",
-	"../MenuItem",
-	"../MenuSeparator",
-	"../Tooltip",
-	"../_KeyNavMixin",
-	"../registry", // registry.byNode
-	"dojo/text!./templates/Select.html",
-	"dojo/i18n!./nls/validate"
-], function(array, declare, domAttr, domClass, domGeometry, i18n, keys, lang, on, has,
-			_FormSelectWidget, _HasDropDown, DropDownMenu, MenuItem, MenuSeparator, Tooltip, _KeyNavMixin, registry, template){
-
-	// module:
-	//		dijit/form/Select
-
-	var _SelectMenu = declare("dijit.form._SelectMenu", DropDownMenu, {
-		// summary:
-		//		An internally-used menu for dropdown that allows us a vertical scrollbar
-
-		// Override Menu.autoFocus setting so that opening a Select highlights the current value.
-		autoFocus: true,
-
-		buildRendering: function(){
-			this.inherited(arguments);
-
-			this.domNode.setAttribute("role", "listbox");
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-
-			// stop mousemove from selecting text on IE to be consistent with other browsers
-			this.own(on(this.domNode, "selectstart", function(evt){
-				evt.preventDefault();
-				evt.stopPropagation();
-			}));
-		},
-
-		focus: function(){
-			// summary:
-			//		Overridden so that the previously selected value will be focused instead of only the first item
-			var found = false,
-				val = this.parentWidget.value;
-			if(lang.isArray(val)){
-				val = val[val.length - 1];
-			}
-			if(val){ // if focus selected
-				array.forEach(this.parentWidget._getChildren(), function(child){
-					if(child.option && (val === child.option.value)){ // find menu item widget with this value
-						found = true;
-						this.focusChild(child, false); // focus previous selection
-					}
-				}, this);
-			}
-			if(!found){
-				this.inherited(arguments); // focus first item by default
-			}
-		}
-	});
-
-	var Select = declare("dijit.form.Select" + (has("dojo-bidi") ? "_NoBidi" : ""), [_FormSelectWidget, _HasDropDown, _KeyNavMixin], {
-		// summary:
-		//		This is a "styleable" select box - it is basically a DropDownButton which
-		//		can take a `<select>` as its input.
-
-		baseClass: "dijitSelect dijitValidationTextBox",
-
-		templateString: template,
-
-		_buttonInputDisabled: has("ie") ? "disabled" : "", // allows IE to disallow focus, but Firefox cannot be disabled for mousedown events
-
-		// required: Boolean
-		//		Can be true or false, default is false.
-		required: false,
-
-		// state: [readonly] String
-		//		"Incomplete" if this select is required but unset (i.e. blank value), "" otherwise
-		state: "",
-
-		// message: String
-		//		Currently displayed error/prompt message
-		message: "",
-
-		// tooltipPosition: String[]
-		//		See description of `dijit/Tooltip.defaultPosition` for details on this parameter.
-		tooltipPosition: [],
-
-		// emptyLabel: string
-		//		What to display in an "empty" dropdown
-		emptyLabel: "&#160;", // &nbsp;
-
-		// _isLoaded: Boolean
-		//		Whether or not we have been loaded
-		_isLoaded: false,
-
-		// _childrenLoaded: Boolean
-		//		Whether or not our children have been loaded
-		_childrenLoaded: false,
-
-		// labelType: String
-		//		Specifies how to interpret the labelAttr in the data store items.
-		//		Can be "html" or "text".
-		labelType: "html",
-
-		_fillContent: function(){
-			// summary:
-			//		Set the value to be the first, or the selected index
-			this.inherited(arguments);
-			// set value from selected option
-			if(this.options.length && !this.value && this.srcNodeRef){
-				var si = this.srcNodeRef.selectedIndex || 0; // || 0 needed for when srcNodeRef is not a SELECT
-				this._set("value", this.options[si >= 0 ? si : 0].value);
-			}
-			// Create the dropDown widget
-			this.dropDown = new _SelectMenu({ id: this.id + "_menu", parentWidget: this });
-			domClass.add(this.dropDown.domNode, this.baseClass.replace(/\s+|$/g, "Menu "));
-		},
-
-		_getMenuItemForOption: function(/*_FormSelectWidget.__SelectOption*/ option){
-			// summary:
-			//		For the given option, return the menu item that should be
-			//		used to display it.  This can be overridden as needed
-			if(!option.value && !option.label){
-				// We are a separator (no label set for it)
-				return new MenuSeparator({ownerDocument: this.ownerDocument});
-			}else{
-				// Just a regular menu option
-				var click = lang.hitch(this, "_setValueAttr", option);
-				var item = new MenuItem({
-					option: option,
-					label: (this.labelType === 'text' ? (option.label || '').toString()
-						.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
-						option.label) || this.emptyLabel,
-					onClick: click,
-					ownerDocument: this.ownerDocument,
-					dir: this.dir,
-					textDir: this.textDir,
-					disabled: option.disabled || false
-				});
-				item.focusNode.setAttribute("role", "option");
-				return item;
-			}
-		},
-
-		_addOptionItem: function(/*_FormSelectWidget.__SelectOption*/ option){
-			// summary:
-			//		For the given option, add an option to our dropdown.
-			//		If the option doesn't have a value, then a separator is added
-			//		in that place.
-			if(this.dropDown){
-				this.dropDown.addChild(this._getMenuItemForOption(option));
-			}
-		},
-
-		_getChildren: function(){
-			if(!this.dropDown){
-				return [];
-			}
-			return this.dropDown.getChildren();
-		},
-
-		focus: function(){
-			// Override _KeyNavMixin::focus(), which calls focusFirstChild().
-			// We just want the standard form widget behavior.
-			if(!this.disabled && this.focusNode.focus){
-				try{
-					this.focusNode.focus();
-				}catch(e){
-					/*squelch errors from hidden nodes*/
-				}
-			}
-		},
-
-		focusChild: function(/*dijit/_WidgetBase*/ widget){
-			// summary:
-			//		Sets the value to the given option, used during search by letter.
-			// widget:
-			//		Reference to option's widget
-			// tags:
-			//		protected
-			if(widget){
-				this.set('value', widget.option);
-			}
-		},
-
-		_getFirst: function(){
-			// summary:
-			//		Returns the first child widget.
-			// tags:
-			//		abstract extension
-			var children = this._getChildren();
-			return children.length ? children[0] : null;
-		},
-
-		_getLast: function(){
-			// summary:
-			//		Returns the last child widget.
-			// tags:
-			//		abstract extension
-			var children = this._getChildren();
-			return children.length ? children[children.length-1] : null;
-		},
-
-		childSelector: function(/*DOMNode*/ node){
-			// Implement _KeyNavMixin.childSelector, to identify focusable child nodes.
-			// If we allowed a dojo/query dependency from this module this could more simply be a string "> *"
-			// instead of this function.
-
-			var node = registry.byNode(node);
-			return node && node.getParent() == this.dropDown;
-		},
-
-		onKeyboardSearch: function(/*dijit/_WidgetBase*/ item, /*Event*/ evt, /*String*/ searchString, /*Number*/ numMatches){
-			// summary:
-			//		When a key is pressed that matches a child item,
-			//		this method is called so that a widget can take appropriate action is necessary.
-			// tags:
-			//		protected
-			if(item){
-				this.focusChild(item);
-			}
-		},
-
-		_loadChildren: function(/*Boolean*/ loadMenuItems){
-			// summary:
-			//		Resets the menu and the length attribute of the button - and
-			//		ensures that the label is appropriately set.
-			// loadMenuItems: Boolean
-			//		actually loads the child menu items - we only do this when we are
-			//		populating for showing the dropdown.
-
-			if(loadMenuItems === true){
-				// this.inherited destroys this.dropDown's child widgets (MenuItems).
-				// Avoid this.dropDown (Menu widget) having a pointer to a destroyed widget (which will cause
-				// issues later in _setSelected). (see #10296)
-				if(this.dropDown){
-					delete this.dropDown.focusedChild;
-					this.focusedChild = null;
-				}
-				if(this.options.length){
-					this.inherited(arguments);
-				}else{
-					// Drop down menu is blank but add one blank entry just so something appears on the screen
-					// to let users know that they are no choices (mimicing native select behavior)
-					array.forEach(this._getChildren(), function(child){
-						child.destroyRecursive();
-					});
-					var item = new MenuItem({
-						ownerDocument: this.ownerDocument,
-						label: this.emptyLabel
-					});
-					this.dropDown.addChild(item);
-				}
-			}else{
-				this._updateSelection();
-			}
-
-			this._isLoaded = false;
-			this._childrenLoaded = true;
-
-			if(!this._loadingStore){
-				// Don't call this if we are loading - since we will handle it later
-				this._setValueAttr(this.value, false);
-			}
-		},
-
-		_refreshState: function(){
-			if(this._started){
-				this.validate(this.focused);
-			}
-		},
-
-		startup: function(){
-			this.inherited(arguments);
-			this._refreshState(); // after all _set* methods have run
-		},
-
-		_setValueAttr: function(value){
-			this.inherited(arguments);
-			domAttr.set(this.valueNode, "value", this.get("value"));
-			this._refreshState();	// to update this.state
-		},
-
-		_setNameAttr: "valueNode",
-
-		_setDisabledAttr: function(/*Boolean*/ value){
-			this.inherited(arguments);
-			this._refreshState();	// to update this.state
-		},
-
-		_setRequiredAttr: function(/*Boolean*/ value){
-			this._set("required", value);
-			this.focusNode.setAttribute("aria-required", value);
-			this._refreshState();	// to update this.state
-		},
-
-		_setOptionsAttr: function(/*Array*/ options){
-			this._isLoaded = false;
-			this._set('options', options);
-		},
-
-		_setDisplay: function(/*String*/ newDisplay){
-			// summary:
-			//		sets the display for the given value (or values)
-
-			var lbl = (this.labelType === 'text' ? (newDisplay || '')
-					.replace(/&/g, '&amp;').replace(/</g, '&lt;') :
-					newDisplay) || this.emptyLabel;
-			this.containerNode.innerHTML = '<span role="option" class="dijitReset dijitInline ' + this.baseClass.replace(/\s+|$/g, "Label ") + '">' + lbl + '</span>';
-		},
-
-		validate: function(/*Boolean*/ isFocused){
-			// summary:
-			//		Called by oninit, onblur, and onkeypress, and whenever required/disabled state changes
-			// description:
-			//		Show missing or invalid messages if appropriate, and highlight textbox field.
-			//		Used when a select is initially set to no value and the user is required to
-			//		set the value.
-
-			var isValid = this.disabled || this.isValid(isFocused);
-			this._set("state", isValid ? "" : (this._hasBeenBlurred ? "Error" : "Incomplete"));
-			this.focusNode.setAttribute("aria-invalid", isValid ? "false" : "true");
-			var message = isValid ? "" : this._missingMsg;
-			if(message && this.focused && this._hasBeenBlurred){
-				Tooltip.show(message, this.domNode, this.tooltipPosition, !this.isLeftToRight());
-			}else{
-				Tooltip.hide(this.domNode);
-			}
-			this._set("message", message);
-			return isValid;
-		},
-
-		isValid: function(/*Boolean*/ /*===== isFocused =====*/){
-			// summary:
-			//		Whether or not this is a valid value.  The only way a Select
-			//		can be invalid is when it's required but nothing is selected.
-			return (!this.required || this.value === 0 || !(/^\s*$/.test(this.value || ""))); // handle value is null or undefined
-		},
-
-		reset: function(){
-			// summary:
-			//		Overridden so that the state will be cleared.
-			this.inherited(arguments);
-			Tooltip.hide(this.domNode);
-			this._refreshState();	// to update this.state
-		},
-
-		postMixInProperties: function(){
-			// summary:
-			//		set the missing message
-			this.inherited(arguments);
-			this._missingMsg = i18n.getLocalization("dijit.form", "validate", this.lang).missingMessage;
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-
-			// stop mousemove from selecting text on IE to be consistent with other browsers
-			this.own(on(this.domNode, "selectstart", function(evt){
-				evt.preventDefault();
-				evt.stopPropagation();
-			}));
-
-			this.domNode.setAttribute("aria-expanded", "false");
-
-			// Prevent _KeyNavMixin from calling stopPropagation() on left and right arrow keys, thus breaking
-			// navigation when Select inside Toolbar.
-			var keyNavCodes = this._keyNavCodes;
-			delete keyNavCodes[keys.LEFT_ARROW];
-			delete keyNavCodes[keys.RIGHT_ARROW];
-		},
-
-		_setStyleAttr: function(/*String||Object*/ value){
-			this.inherited(arguments);
-			domClass.toggle(this.domNode, this.baseClass.replace(/\s+|$/g, "FixedWidth "), !!this.domNode.style.width);
-		},
-
-		isLoaded: function(){
-			return this._isLoaded;
-		},
-
-		loadDropDown: function(/*Function*/ loadCallback){
-			// summary:
-			//		populates the menu
-			this._loadChildren(true);
-			this._isLoaded = true;
-			loadCallback();
-		},
-
-		destroy: function(preserveDom){
-			if(this.dropDown && !this.dropDown._destroyed){
-				this.dropDown.destroyRecursive(preserveDom);
-				delete this.dropDown;
-			}
-			Tooltip.hide(this.domNode);	// in case Select (or enclosing Dialog) destroyed while tooltip shown
-			this.inherited(arguments);
-		},
-
-		_onFocus: function(){
-			this.validate(true);	// show tooltip if second focus of required tooltip, but no selection
-			// Note: not calling superclass _onFocus() to avoid _KeyNavMixin::_onFocus() setting tabIndex --> -1
-		},
-
-		_onBlur: function(){
-			Tooltip.hide(this.domNode);
-			this.inherited(arguments);
-			this.validate(false);
-		}
-	});
-
-	if(has("dojo-bidi")){
-		Select = declare("dijit.form.Select", Select, {
-			_setDisplay: function(/*String*/ newDisplay){
-				this.inherited(arguments);
-				this.applyTextDir(this.containerNode);
-			}
-		});
-	}
-
-	Select._Menu = _SelectMenu;	// for monkey patching
-
-	// generic event helper to ensure the dropdown items are loaded before the real event handler is called
-	function _onEventAfterLoad(method){
-		return function(evt){
-			if(!this._isLoaded){
-				this.loadDropDown(lang.hitch(this, method, evt));
-			}else{
-				this.inherited(method, arguments);
-			}
-		};
-	}
-	Select.prototype._onContainerKeydown = _onEventAfterLoad("_onContainerKeydown");
-	Select.prototype._onContainerKeypress = _onEventAfterLoad("_onContainerKeypress");
-
-	return Select;
-});
-
-},
-'dijit/form/_FormSelectWidget':function(){
-define([
-	"dojo/_base/array", // array.filter array.forEach array.map array.some
-	"dojo/_base/Deferred",
-	"dojo/aspect", // aspect.after
-	"dojo/data/util/sorter", // util.sorter.createSortFunction
-	"dojo/_base/declare", // declare
-	"dojo/dom", // dom.setSelectable
-	"dojo/dom-class", // domClass.toggle
-	"dojo/_base/kernel",	// _scopeName
-	"dojo/_base/lang", // lang.delegate lang.isArray lang.isObject lang.hitch
-	"dojo/query", // query
-	"dojo/when",
-	"dojo/store/util/QueryResults",
-	"./_FormValueWidget"
-], function(array, Deferred, aspect, sorter, declare, dom, domClass, kernel, lang, query, when,
-			QueryResults, _FormValueWidget){
-
-	// module:
-	//		dijit/form/_FormSelectWidget
-
-	/*=====
-	var __SelectOption = {
-		// value: String
-		//		The value of the option.  Setting to empty (or missing) will
-		//		place a separator at that location
-		// label: String
-		//		The label for our option.  It can contain html tags.
-		// selected: Boolean
-		//		Whether or not we are a selected option
-		// disabled: Boolean
-		//		Whether or not this specific option is disabled
-	};
-	=====*/
-
-	var _FormSelectWidget = declare("dijit.form._FormSelectWidget", _FormValueWidget, {
-		// summary:
-		//		Extends _FormValueWidget in order to provide "select-specific"
-		//		values - i.e., those values that are unique to `<select>` elements.
-		//		This also provides the mechanism for reading the elements from
-		//		a store, if desired.
-
-		// multiple: [const] Boolean
-		//		Whether or not we are multi-valued
-		multiple: false,
-
-		// options: __SelectOption[]
-		//		The set of options for our select item.  Roughly corresponds to
-		//		the html `<option>` tag.
-		options: null,
-
-		// store: dojo/store/api/Store
-		//		A store to use for getting our list of options - rather than reading them
-		//		from the `<option>` html tags.   Should support getIdentity().
-		//		For back-compat store can also be a dojo/data/api/Identity.
-		store: null,
-		_setStoreAttr: function(val){
-			if(this._created){		// don't repeat work that will happen in postCreate()
-				this._deprecatedSetStore(val);
-			}
-		},
-
-		// query: object
-		//		A query to use when fetching items from our store
-		query: null,
-		_setQueryAttr: function(query){
-			if(this._created){		// don't repeat work that will happen in postCreate()
-				this._deprecatedSetStore(this.store, this.selectedValue, {query: query});
-			}
-		},
-
-		// queryOptions: object
-		//		Query options to use when fetching from the store
-		queryOptions: null,
-		_setQueryOptionsAttr: function(queryOptions){
-			if(this._created){		// don't repeat work that will happen in postCreate()
-				this._deprecatedSetStore(this.store, this.selectedValue, {queryOptions: queryOptions});
-			}
-		},
-
-		// labelAttr: String?
-		//		The entries in the drop down list come from this attribute in the dojo.store items.
-		//		If ``store`` is set, labelAttr must be set too, unless store is an old-style
-		//		dojo.data store rather than a new dojo/store.
-		labelAttr: "",
-
-		// onFetch: Function
-		//		A callback to do with an onFetch - but before any items are actually
-		//		iterated over (i.e. to filter even further what you want to add)
-		onFetch: null,
-
-		// sortByLabel: Boolean
-		//		Flag to sort the options returned from a store by the label of
-		//		the store.
-		sortByLabel: true,
-
-
-		// loadChildrenOnOpen: Boolean
-		//		By default loadChildren is called when the items are fetched from the
-		//		store.  This property allows delaying loadChildren (and the creation
-		//		of the options/menuitems) until the user clicks the button to open the
-		//		dropdown.
-		loadChildrenOnOpen: false,
-
-		// onLoadDeferred: [readonly] dojo.Deferred
-		//		This is the `dojo.Deferred` returned by setStore().
-		//		Calling onLoadDeferred.then() registers your
-		//		callback to be called only once, when the prior setStore completes.
-		onLoadDeferred: null,
-
-		getOptions: function(/*anything*/ valueOrIdx){
-			// summary:
-			//		Returns a given option (or options).
-			// valueOrIdx:
-			//		If passed in as a string, that string is used to look up the option
-			//		in the array of options - based on the value property.
-			//		(See dijit/form/_FormSelectWidget.__SelectOption).
-			//
-			//		If passed in a number, then the option with the given index (0-based)
-			//		within this select will be returned.
-			//
-			//		If passed in a dijit/form/_FormSelectWidget.__SelectOption, the same option will be
-			//		returned if and only if it exists within this select.
-			//
-			//		If passed an array, then an array will be returned with each element
-			//		in the array being looked up.
-			//
-			//		If not passed a value, then all options will be returned
-			//
-			// returns:
-			//		The option corresponding with the given value or index.
-			//		null is returned if any of the following are true:
-			//
-			//		- A string value is passed in which doesn't exist
-			//		- An index is passed in which is outside the bounds of the array of options
-			//		- A dijit/form/_FormSelectWidget.__SelectOption is passed in which is not a part of the select
-
-			// NOTE: the compare for passing in a dijit/form/_FormSelectWidget.__SelectOption checks
-			//		if the value property matches - NOT if the exact option exists
-			// NOTE: if passing in an array, null elements will be placed in the returned
-			//		array when a value is not found.
-			var opts = this.options || [];
-
-			if(valueOrIdx == null){
-				return opts; // __SelectOption[]
-			}
-			if(lang.isArrayLike(valueOrIdx)){
-				return array.map(valueOrIdx, "return this.getOptions(item);", this); // __SelectOption[]
-			}
-			if(lang.isString(valueOrIdx)){
-				valueOrIdx = { value: valueOrIdx };
-			}
-			if(lang.isObject(valueOrIdx)){
-				// We were passed an option - so see if it's in our array (directly),
-				// and if it's not, try and find it by value.
-
-				if(!array.some(opts, function(option, idx){
-					for(var a in valueOrIdx){
-						if(!(a in option) || option[a] != valueOrIdx[a]){ // == and not === so that 100 matches '100'
-							return false;
-						}
-					}
-					valueOrIdx = idx;
-					return true; // stops iteration through opts
-				})){
-					valueOrIdx = -1;
-				}
-			}
-			if(valueOrIdx >= 0 && valueOrIdx < opts.length){
-				return opts[valueOrIdx]; // __SelectOption
-			}
-			return null; // null
-		},
-
-		addOption: function(/*__SelectOption|__SelectOption[]*/ option){
-			// summary:
-			//		Adds an option or options to the end of the select.  If value
-			//		of the option is empty or missing, a separator is created instead.
-			//		Passing in an array of options will yield slightly better performance
-			//		since the children are only loaded once.
-			array.forEach(lang.isArrayLike(option) ? option : [option], function(i){
-				if(i && lang.isObject(i)){
-					this.options.push(i);
-				}
-			}, this);
-			this._loadChildren();
-		},
-
-		removeOption: function(/*String|__SelectOption|Number|Array*/ valueOrIdx){
-			// summary:
-			//		Removes the given option or options.  You can remove by string
-			//		(in which case the value is removed), number (in which case the
-			//		index in the options array is removed), or select option (in
-			//		which case, the select option with a matching value is removed).
-			//		You can also pass in an array of those values for a slightly
-			//		better performance since the children are only loaded once.
-			//		For numeric option values, specify {value: number} as the argument.
-			var oldOpts = this.getOptions(lang.isArrayLike(valueOrIdx) ? valueOrIdx : [valueOrIdx]);
-			array.forEach(oldOpts, function(option){
-				// We can get null back in our array - if our option was not found.  In
-				// that case, we don't want to blow up...
-				if(option){
-					this.options = array.filter(this.options, function(node){
-						return (node.value !== option.value || node.label !== option.label);
-					});
-					this._removeOptionItem(option);
-				}
-			}, this);
-			this._loadChildren();
-		},
-
-		updateOption: function(/*__SelectOption|__SelectOption[]*/ newOption){
-			// summary:
-			//		Updates the values of the given option.  The option to update
-			//		is matched based on the value of the entered option.  Passing
-			//		in an array of new options will yield better performance since
-			//		the children will only be loaded once.
-			array.forEach(lang.isArrayLike(newOption) ? newOption : [newOption], function(i){
-				var oldOpt = this.getOptions({ value: i.value }), k;
-				if(oldOpt){
-					for(k in i){
-						oldOpt[k] = i[k];
-					}
-				}
-			}, this);
-			this._loadChildren();
-		},
-
-		setStore: function(store, selectedValue, fetchArgs){
-			kernel.deprecated(this.declaredClass+"::setStore(store, selectedValue, fetchArgs) is deprecated. Use set('query', fetchArgs.query), set('queryOptions', fetchArgs.queryOptions), set('store', store), or set('value', selectedValue) instead.", "", "2.0");
-			this._deprecatedSetStore(store, selectedValue, fetchArgs);
-		},
-
-		_deprecatedSetStore: function(store, selectedValue, fetchArgs){
-			// summary:
-			//		Sets the store you would like to use with this select widget.
-			//		The selected value is the value of the new store to set.  This
-			//		function returns the original store, in case you want to reuse
-			//		it or something.
-			// store: dojo/store/api/Store
-			//		The dojo.store you would like to use - it MUST implement getIdentity()
-			//		and MAY implement observe().
-			//		For backwards-compatibility this can also be a data.data store, in which case
-			//		it MUST implement dojo/data/api/Identity,
-			//		and MAY implement dojo/data/api/Notification.
-			// selectedValue: anything?
-			//		The value that this widget should set itself to *after* the store
-			//		has been loaded
-			// fetchArgs: Object?
-			//		Hash of parameters to set filter on store, etc.
-			//
-			//		- query: new value for Select.query,
-			//		- queryOptions: new value for Select.queryOptions,
-			//		- onFetch: callback function for each item in data (Deprecated)
-			var oStore = this.store;
-			fetchArgs = fetchArgs || {};
-
-			if(oStore !== store){
-				// Our store has changed, so cancel any listeners on old store (remove for 2.0)
-				var h;
-				while((h = this._notifyConnections.pop())){
-					h.remove();
-				}
-
-				// For backwards-compatibility, accept dojo.data store in addition to dojo.store.store.  Remove in 2.0.
-				if(!store.get){
-					lang.mixin(store, {
-						_oldAPI: true,
-						get: function(id){
-							// summary:
-							//		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity.
-							//		Like dojo.store.DataStore.get() except returns native item.
-							var deferred = new Deferred();
-							this.fetchItemByIdentity({
-								identity: id,
-								onItem: function(object){
-									deferred.resolve(object);
-								},
-								onError: function(error){
-									deferred.reject(error);
-								}
-							});
-							return deferred.promise;
-						},
-						query: function(query, options){
-							// summary:
-							//		Queries the store for objects.   Like dojo/store/DataStore.query()
-							//		except returned Deferred contains array of native items.
-							var deferred = new Deferred(function(){
-								if(fetchHandle.abort){
-									fetchHandle.abort();
-								}
-							});
-							deferred.total = new Deferred();
-							var fetchHandle = this.fetch(lang.mixin({
-								query: query,
-								onBegin: function(count){
-									deferred.total.resolve(count);
-								},
-								onComplete: function(results){
-									deferred.resolve(results);
-								},
-								onError: function(error){
-									deferred.reject(error);
-								}
-							}, options));
-							return new QueryResults(deferred);
-						}
-					});
-
-					if(store.getFeatures()["dojo.data.api.Notification"]){
-						this._notifyConnections = [
-							aspect.after(store, "onNew", lang.hitch(this, "_onNewItem"), true),
-							aspect.after(store, "onDelete", lang.hitch(this, "_onDeleteItem"), true),
-							aspect.after(store, "onSet", lang.hitch(this, "_onSetItem"), true)
-						];
-					}
-				}
-				this._set("store", store);			// Our store has changed, so update our notifications
-			}
-
-			// Remove existing options (if there are any)
-			if(this.options && this.options.length){
-				this.removeOption(this.options);
-			}
-
-			// Cancel listener for updates to old (dojo.data) store
-			if(this._queryRes && this._queryRes.close){
-				this._queryRes.close();
-			}
-
-			// Cancel listener for updates to new (dojo.store) store
-			if(this._observeHandle && this._observeHandle.remove){
-				this._observeHandle.remove();
-				this._observeHandle = null;
-			}
-
-			// If user has specified new query and query options along with this new store, then use them.
-			if(fetchArgs.query){
-				this._set("query", fetchArgs.query);
-			}
-			if(fetchArgs.queryOptions){
-				this._set("queryOptions", fetchArgs.queryOptions);
-			}
-
-			// Add our new options
-			if(store && store.query){
-				this._loadingStore = true;
-				this.onLoadDeferred = new Deferred();
-
-				// Run query
-				// Save result in this._queryRes so we can cancel the listeners we register below
-				this._queryRes = store.query(this.query, this.queryOptions);
-				when(this._queryRes, lang.hitch(this, function(items){
-
-					if(this.sortByLabel && !fetchArgs.sort && items.length){
-						if(store.getValue){
-							// Old dojo.data API to access items, remove for 2.0
-							items.sort(sorter.createSortFunction([
-								{
-									attribute: store.getLabelAttributes(items[0])[0]
-								}
-							], store));
-						}else{
-							// TODO: remove sortByLabel completely for 2.0?  It can be handled by queryOptions: {sort: ... }.
-							var labelAttr = this.labelAttr;
-							items.sort(function(a, b){
-								return a[labelAttr] > b[labelAttr] ? 1 : b[labelAttr] > a[labelAttr] ? -1 : 0;
-							});
-						}
-					}
-
-					if(fetchArgs.onFetch){
-						items = fetchArgs.onFetch.call(this, items, fetchArgs);
-					}
-
-					// TODO: Add these guys as a batch, instead of separately
-					array.forEach(items, function(i){
-						this._addOptionForItem(i);
-					}, this);
-
-					// Register listener for store updates
-					if(this._queryRes.observe){
-						// observe returns yet another handle that needs its own explicit gc
-						this._observeHandle = this._queryRes.observe(lang.hitch(this, function(object, deletedFrom, insertedInto){
-							if(deletedFrom == insertedInto){
-								this._onSetItem(object);
-							}else{
-								if(deletedFrom != -1){
-									this._onDeleteItem(object);
-								}
-								if(insertedInto != -1){
-									this._onNewItem(object);
-								}
-							}
-						}), true);
-					}
-
-					// Set our value (which might be undefined), and then tweak
-					// it to send a change event with the real value
-					this._loadingStore = false;
-					this.set("value", "_pendingValue" in this ? this._pendingValue : selectedValue);
-					delete this._pendingValue;
-
-					if(!this.loadChildrenOnOpen){
-						this._loadChildren();
-					}else{
-						this._pseudoLoadChildren(items);
-					}
-					this.onLoadDeferred.resolve(true);
-					this.onSetStore();
-				}), function(err){
-					 0 && console.error('dijit.form.Select: ' + err.toString());
-					this.onLoadDeferred.reject(err);
-				});
-			}
-			return oStore;	// dojo/data/api/Identity
-		},
-
-		_setValueAttr: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
-			// summary:
-			//		set the value of the widget.
-			//		If a string is passed, then we set our value from looking it up.
-			if(!this._onChangeActive){
-				priorityChange = null;
-			}
-			if(this._loadingStore){
-				// Our store is loading - so save our value, and we'll set it when
-				// we're done
-				this._pendingValue = newValue;
-				return;
-			}
-			if(newValue == null){
-				return;
-			}
-			if(lang.isArrayLike(newValue)){
-				newValue = array.map(newValue, function(value){
-					return lang.isObject(value) ? value : { value: value };
-				}); // __SelectOption[]
-			}else if(lang.isObject(newValue)){
-				newValue = [newValue];
-			}else{
-				newValue = [
-					{ value: newValue }
-				];
-			}
-			newValue = array.filter(this.getOptions(newValue), function(i){
-				return i && i.value;
-			});
-			var opts = this.getOptions() || [];
-			if(!this.multiple && (!newValue[0] || !newValue[0].value) && !!opts.length){
-				newValue[0] = opts[0];
-			}
-			array.forEach(opts, function(opt){
-				opt.selected = array.some(newValue, function(v){
-					return v.value === opt.value;
-				});
-			});
-			var val = array.map(newValue, function(opt){
-				return opt.value;
-			});
-
-			if(typeof val == "undefined" || typeof val[0] == "undefined"){
-				return;
-			} // not fully initialized yet or a failed value lookup
-			var disp = array.map(newValue, function(opt){
-				return opt.label;
-			});
-			this._setDisplay(this.multiple ? disp : disp[0]);
-			this.inherited(arguments, [ this.multiple ? val : val[0], priorityChange ]);
-			this._updateSelection();
-		},
-
-		_getDisplayedValueAttr: function(){
-			// summary:
-			//		returns the displayed value of the widget
-			var ret = array.map([].concat(this.get('selectedOptions')), function(v){
-				if(v && "label" in v){
-					return v.label;
-				}else if(v){
-					return v.value;
-				}
-				return null;
-			}, this);
-			return this.multiple ? ret : ret[0];
-		},
-
-		_setDisplayedValueAttr: function(label){
-			// summary:
-			//		Sets the displayed value of the widget
-			this.set('value', this.getOptions(typeof label == "string" ? { label: label } : label));
-		},
-
-		_loadChildren: function(){
-			// summary:
-			//		Loads the children represented by this widget's options.
-			//		reset the menu to make it populatable on the next click
-			if(this._loadingStore){
-				return;
-			}
-			array.forEach(this._getChildren(), function(child){
-				child.destroyRecursive();
-			});
-			// Add each menu item
-			array.forEach(this.options, this._addOptionItem, this);
-
-			// Update states
-			this._updateSelection();
-		},
-
-		_updateSelection: function(){
-			// summary:
-			//		Sets the "selected" class on the item for styling purposes
-			this.focusedChild = null;
-			this._set("value", this._getValueFromOpts());
-			var val = [].concat(this.value);
-			if(val && val[0]){
-				var self = this;
-				array.forEach(this._getChildren(), function(child){
-					var isSelected = array.some(val, function(v){
-						return child.option && (v === child.option.value);
-					});
-					if(isSelected && !self.multiple){
-						self.focusedChild = child;
-					}
-					domClass.toggle(child.domNode, this.baseClass.replace(/\s+|$/g, "SelectedOption "), isSelected);
-					child.domNode.setAttribute("aria-selected", isSelected ? "true" : "false");
-				}, this);
-			}
-		},
-
-		_getValueFromOpts: function(){
-			// summary:
-			//		Returns the value of the widget by reading the options for
-			//		the selected flag
-			var opts = this.getOptions() || [];
-			if(!this.multiple && opts.length){
-				// Mirror what a select does - choose the first one
-				var opt = array.filter(opts, function(i){
-					return i.selected;
-				})[0];
-				if(opt && opt.value){
-					return opt.value;
-				}else{
-					opts[0].selected = true;
-					return opts[0].value;
-				}
-			}else if(this.multiple){
-				// Set value to be the sum of all selected
-				return array.map(array.filter(opts, function(i){
-					return i.selected;
-				}), function(i){
-					return i.value;
-				}) || [];
-			}
-			return "";
-		},
-
-		// Internal functions to call when we have store notifications come in
-		_onNewItem: function(/*item*/ item, /*Object?*/ parentInfo){
-			if(!parentInfo || !parentInfo.parent){
-				// Only add it if we are top-level
-				this._addOptionForItem(item);
-			}
-		},
-		_onDeleteItem: function(/*item*/ item){
-			var store = this.store;
-			this.removeOption({value: store.getIdentity(item) });
-		},
-		_onSetItem: function(/*item*/ item){
-			this.updateOption(this._getOptionObjForItem(item));
-		},
-
-		_getOptionObjForItem: function(item){
-			// summary:
-			//		Returns an option object based off the given item.  The "value"
-			//		of the option item will be the identity of the item, the "label"
-			//		of the option will be the label of the item.
-
-			// remove getLabel() call for 2.0 (it's to support the old dojo.data API)
-			var store = this.store,
-				label = (this.labelAttr && this.labelAttr in item) ? item[this.labelAttr] : store.getLabel(item),
-				value = (label ? store.getIdentity(item) : null);
-			return {value: value, label: label, item: item}; // __SelectOption
-		},
-
-		_addOptionForItem: function(/*item*/ item){
-			// summary:
-			//		Creates (and adds) the option for the given item
-			var store = this.store;
-			if(store.isItemLoaded && !store.isItemLoaded(item)){
-				// We are not loaded - so let's load it and add later.
-				// Remove for 2.0 (it's the old dojo.data API)
-				store.loadItem({item: item, onItem: function(i){
-					this._addOptionForItem(i);
-				},
-					scope: this});
-				return;
-			}
-			var newOpt = this._getOptionObjForItem(item);
-			this.addOption(newOpt);
-		},
-
-		constructor: function(params /*===== , srcNodeRef =====*/){
-			// summary:
-			//		Create the widget.
-			// params: Object|null
-			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
-			//		and functions, typically callbacks like onClick.
-			//		The hash can contain any of the widget's properties, excluding read-only properties.
-			// srcNodeRef: DOMNode|String?
-			//		If a srcNodeRef (DOM node) is specified, replace srcNodeRef with my generated DOM tree
-
-			//		Saves off our value, if we have an initial one set so we
-			//		can use it if we have a store as well (see startup())
-			this._oValue = (params || {}).value || null;
-			this._notifyConnections = [];	// remove for 2.0
-		},
-
-		buildRendering: function(){
-			this.inherited(arguments);
-			dom.setSelectable(this.focusNode, false);
-		},
-
-		_fillContent: function(){
-			// summary:
-			//		Loads our options and sets up our dropdown correctly.  We
-			//		don't want any content, so we don't call any inherit chain
-			//		function.
-			if(!this.options){
-				this.options =
-					this.srcNodeRef
-						? query("> *", this.srcNodeRef).map(
-						function(node){
-							if(node.getAttribute("type") === "separator"){
-								return { value: "", label: "", selected: false, disabled: false };
-							}
-							return {
-								value: (node.getAttribute("data-" + kernel._scopeName + "-value") || node.getAttribute("value")),
-								label: String(node.innerHTML),
-								// FIXME: disabled and selected are not valid on complex markup children (which is why we're
-								// looking for data-dojo-value above.  perhaps we should data-dojo-props="" this whole thing?)
-								// decide before 1.6
-								selected: node.getAttribute("selected") || false,
-								disabled: node.getAttribute("disabled") || false
-							};
-						},
-						this)
-						: [];
-			}
-			if(!this.value){
-				this._set("value", this._getValueFromOpts());
-			}else if(this.multiple && typeof this.value == "string"){
-				this._set("value", this.value.split(","));
-			}
-		},
-
-		postCreate: function(){
-			// summary:
-			//		sets up our event handling that we need for functioning
-			//		as a select
-			this.inherited(arguments);
-
-			// Make our event connections for updating state
-			aspect.after(this, "onChange", lang.hitch(this, "_updateSelection"));
-
-			//		Connects in our store, if we have one defined
-			var store = this.store;
-			if(store && (store.getIdentity || store.getFeatures()["dojo.data.api.Identity"])){
-				// Temporarily set our store to null so that it will get set
-				// and connected appropriately
-				this.store = null;
-				this._deprecatedSetStore(store, this._oValue, {query: this.query, queryOptions: this.queryOptions});
-			}
-
-			this._storeInitialized = true;
-		},
-
-		startup: function(){
-			// summary:
-			this._loadChildren();
-			this.inherited(arguments);
-		},
-
-		destroy: function(){
-			// summary:
-			//		Clean up our connections
-
-			var h;
-			while((h = this._notifyConnections.pop())){
-				h.remove();
-			}
-
-			// Cancel listener for store updates
-			if(this._queryRes && this._queryRes.close){
-				this._queryRes.close();
-			}
-
-			// Cancel listener for updates to new (dojo.store) store
-			if(this._observeHandle && this._observeHandle.remove){
-				this._observeHandle.remove();
-				this._observeHandle = null;
-			}
-
-			this.inherited(arguments);
-		},
-
-		_addOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
-			// summary:
-			//		User-overridable function which, for the given option, adds an
-			//		item to the select.  If the option doesn't have a value, then a
-			//		separator is added in that place.  Make sure to store the option
-			//		in the created option widget.
-		},
-
-		_removeOptionItem: function(/*__SelectOption*/ /*===== option =====*/){
-			// summary:
-			//		User-overridable function which, for the given option, removes
-			//		its item from the select.
-		},
-
-		_setDisplay: function(/*String or String[]*/ /*===== newDisplay =====*/){
-			// summary:
-			//		Overridable function which will set the display for the
-			//		widget.  newDisplay is either a string (in the case of
-			//		single selects) or array of strings (in the case of multi-selects)
-		},
-
-		_getChildren: function(){
-			// summary:
-			//		Overridable function to return the children that this widget contains.
-			return [];
-		},
-
-		_getSelectedOptionsAttr: function(){
-			// summary:
-			//		hooks into this.attr to provide a mechanism for getting the
-			//		option items for the current value of the widget.
-			return this.getOptions({ selected: true });
-		},
-
-		_pseudoLoadChildren: function(/*item[]*/ /*===== items =====*/){
-			// summary:
-			//		a function that will "fake" loading children, if needed, and
-			//		if we have set to not load children until the widget opens.
-			// items:
-			//		An array of items that will be loaded, when needed
-		},
-
-		onSetStore: function(){
-			// summary:
-			//		a function that can be connected to in order to receive a
-			//		notification that the store has finished loading and all options
-			//		from that store are available
-		}
-	});
-
-	/*=====
-	_FormSelectWidget.__SelectOption = __SelectOption;
-	=====*/
-
-	return _FormSelectWidget;
-});
-
-},
-'dojo/data/util/sorter':function(){
-define(["../../_base/lang"], function(lang){
-	// module:
-	//		dojo/data/util/sorter
-	// summary:
-	//		TODOC
-
-var sorter = {};
-lang.setObject("dojo.data.util.sorter", sorter);
-
-sorter.basicComparator = function(	/*anything*/ a,
-													/*anything*/ b){
-	// summary:
-	//		Basic comparison function that compares if an item is greater or less than another item
-	// description:
-	//		returns 1 if a > b, -1 if a < b, 0 if equal.
-	//		'null' values (null, undefined) are treated as larger values so that they're pushed to the end of the list.
-	//		And compared to each other, null is equivalent to undefined.
-
-	//null is a problematic compare, so if null, we set to undefined.
-	//Makes the check logic simple, compact, and consistent
-	//And (null == undefined) === true, so the check later against null
-	//works for undefined and is less bytes.
-	var r = -1;
-	if(a === null){
-		a = undefined;
-	}
-	if(b === null){
-		b = undefined;
-	}
-	if(a == b){
-		r = 0;
-	}else if(a > b || a == null){
-		r = 1;
-	}
-	return r; //int {-1,0,1}
-};
-
-sorter.createSortFunction = function(	/* attributes[] */sortSpec, /*dojo/data/api/Read*/ store){
-	// summary:
-	//		Helper function to generate the sorting function based off the list of sort attributes.
-	// description:
-	//		The sort function creation will look for a property on the store called 'comparatorMap'.  If it exists
-	//		it will look in the mapping for comparisons function for the attributes.  If one is found, it will
-	//		use it instead of the basic comparator, which is typically used for strings, ints, booleans, and dates.
-	//		Returns the sorting function for this particular list of attributes and sorting directions.
-	// sortSpec:
-	//		A JS object that array that defines out what attribute names to sort on and whether it should be descenting or asending.
-	//		The objects should be formatted as follows:
-	// |	{
-	// |		attribute: "attributeName-string" || attribute,
-	// |		descending: true|false;   // Default is false.
-	// |	}
-	// store:
-	//		The datastore object to look up item values from.
-
-	var sortFunctions=[];
-
-	function createSortFunction(attr, dir, comp, s){
-		//Passing in comp and s (comparator and store), makes this
-		//function much faster.
-		return function(itemA, itemB){
-			var a = s.getValue(itemA, attr);
-			var b = s.getValue(itemB, attr);
-			return dir * comp(a,b); //int
-		};
-	}
-	var sortAttribute;
-	var map = store.comparatorMap;
-	var bc = sorter.basicComparator;
-	for(var i = 0; i < sortSpec.length; i++){
-		sortAttribute = sortSpec[i];
-		var attr = sortAttribute.attribute;
-		if(attr){
-			var dir = (sortAttribute.descending) ? -1 : 1;
-			var comp = bc;
-			if(map){
-				if(typeof attr !== "string" && ("toString" in attr)){
-					 attr = attr.toString();
-				}
-				comp = map[attr] || bc;
-			}
-			sortFunctions.push(createSortFunction(attr,
-				dir, comp, store));
-		}
-	}
-	return function(rowA, rowB){
-		var i=0;
-		while(i < sortFunctions.length){
-			var ret = sortFunctions[i++](rowA, rowB);
-			if(ret !== 0){
-				return ret;//int
-			}
-		}
-		return 0; //int
-	}; // Function
-};
-
-return sorter;
-});
-
-},
 'p3/widget/viewer/GenomeList':function(){
 define([
 	"dojo/_base/declare", "./_GenomeList"
@@ -53377,11 +55857,11 @@ define([
 			// }
 
 			var _self = this;
-			//  0 && console.log('genomeList setQuery - this.query: ', this.query);
+			 0 && console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			//  0 && console.log("url: ", url);
+			 0 && console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -68318,15 +70798,26 @@ define([
 				{
 					label: "GENOME",
 					validTypes: ["*"],
-					multiple: false,
+					multiple: true,
 					tooltip: "View Genome",
+					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
 				},
 				function(selection){
-					var sel = selection[0];
-					//  0 && console.log("sel: ", sel)
-					//  0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+		
+					if (selection.length>1){
+						var map={};
+						selection.forEach(function(sel){
+							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+						})
+						var genome_ids = Object.keys(map);
+						Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+					}else{
+						var sel = selection[0];
+						//  0 && console.log("sel: ", sel)
+						//  0 && console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					}
 				},
 				false
 			], [
@@ -76302,177 +78793,6 @@ define([
 });
 
 },
-'dijit/form/Form':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/_base/kernel", // kernel.deprecated
-	"dojo/sniff", // has("ie")
-	"../_Widget",
-	"../_TemplatedMixin",
-	"./_FormMixin",
-	"../layout/_ContentPaneResizeMixin"
-], function(declare, domAttr, kernel, has, _Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin){
-
-	// module:
-	//		dijit/form/Form
-
-
-	return declare("dijit.form.Form", [_Widget, _TemplatedMixin, _FormMixin, _ContentPaneResizeMixin], {
-		// summary:
-		//		Widget corresponding to HTML form tag, for validation and serialization
-		//
-		// example:
-		//	|	<form data-dojo-type="dijit/form/Form" id="myForm">
-		//	|		Name: <input type="text" name="name" />
-		//	|	</form>
-		//	|	// Example assumes you have required dijit/registry
-		//	|	myObj = {name: "John Doe"};
-		//	|	registry.byId('myForm').set('value', myObj);
-		//	|
-		//	|	myObj=registry.byId('myForm').get('value');
-
-		// HTML <FORM> attributes
-
-		// name: String?
-		//		Name of form for scripting.
-		name: "",
-
-		// action: String?
-		//		Server-side form handler.
-		action: "",
-
-		// method: String?
-		//		HTTP method used to submit the form, either "GET" or "POST".
-		method: "",
-
-		// encType: String?
-		//		Encoding type for the form, ex: application/x-www-form-urlencoded.
-		encType: "",
-
-		// accept-charset: String?
-		//		List of supported charsets.
-		"accept-charset": "",
-
-		// accept: String?
-		//		List of MIME types for file upload.
-		accept: "",
-
-		// target: String?
-		//		Target frame for the document to be opened in.
-		target: "",
-
-		templateString: "<form data-dojo-attach-point='containerNode' data-dojo-attach-event='onreset:_onReset,onsubmit:_onSubmit' ${!nameAttrSetting}></form>",
-
-		postMixInProperties: function(){
-			// Setup name=foo string to be referenced from the template (but only if a name has been specified)
-			// Unfortunately we can't use _setNameAttr to set the name due to IE limitations, see #8660
-			this.nameAttrSetting = this.name ? ("name='" + this.name + "'") : "";
-			this.inherited(arguments);
-		},
-
-		execute: function(/*Object*/ /*===== formContents =====*/){
-			// summary:
-			//		Deprecated: use submit()
-			// tags:
-			//		deprecated
-		},
-
-		onExecute: function(){
-			// summary:
-			//		Deprecated: use onSubmit()
-			// tags:
-			//		deprecated
-		},
-
-		_setEncTypeAttr: function(/*String*/ value){
-			domAttr.set(this.domNode, "encType", value);
-			if(has("ie")){
-				this.domNode.encoding = value;
-			}
-			this._set("encType", value);
-		},
-
-		reset: function(/*Event?*/ e){
-			// summary:
-			//		restores all widget values back to their init values,
-			//		calls onReset() which can cancel the reset by returning false
-
-			// create fake event so we can know if preventDefault() is called
-			var faux = {
-				returnValue: true, // the IE way
-				preventDefault: function(){ // not IE
-					this.returnValue = false;
-				},
-				stopPropagation: function(){
-				},
-				currentTarget: e ? e.target : this.domNode,
-				target: e ? e.target : this.domNode
-			};
-			// if return value is not exactly false, and haven't called preventDefault(), then reset
-			if(!(this.onReset(faux) === false) && faux.returnValue){
-				this.inherited(arguments, []);
-			}
-		},
-
-		onReset: function(/*Event?*/ /*===== e =====*/){
-			// summary:
-			//		Callback when user resets the form. This method is intended
-			//		to be over-ridden. When the `reset` method is called
-			//		programmatically, the return value from `onReset` is used
-			//		to compute whether or not resetting should proceed
-			// tags:
-			//		callback
-			return true; // Boolean
-		},
-
-		_onReset: function(e){
-			this.reset(e);
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
-		},
-
-		_onSubmit: function(e){
-			var fp = this.constructor.prototype;
-			// TODO: remove this if statement beginning with 2.0
-			if(this.execute != fp.execute || this.onExecute != fp.onExecute){
-				kernel.deprecated("dijit.form.Form:execute()/onExecute() are deprecated. Use onSubmit() instead.", "", "2.0");
-				this.onExecute();
-				this.execute(this.getValues());
-			}
-			if(this.onSubmit(e) === false){ // only exactly false stops submit
-				e.stopPropagation();
-				e.preventDefault();
-			}
-		},
-
-		onSubmit: function(/*Event?*/ /*===== e =====*/){
-			// summary:
-			//		Callback when user submits the form.
-			// description:
-			//		This method is intended to be over-ridden, but by default it checks and
-			//		returns the validity of form elements. When the `submit`
-			//		method is called programmatically, the return value from
-			//		`onSubmit` is used to compute whether or not submission
-			//		should proceed
-			// tags:
-			//		extension
-
-			return this.isValid(); // Boolean
-		},
-
-		submit: function(){
-			// summary:
-			//		programmatically submit form if and only if the `onSubmit` returns true
-			if(!(this.onSubmit() === false)){
-				this.containerNode.submit();
-			}
-		}
-	});
-});
-
-},
 'p3/widget/HeatmapContainer':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
@@ -82229,6 +84549,16 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
+		 0 && console.log("PARSE: ", filter);
+
+		var parsed = {
+			parsed: _parsed,
+			selected: [],
+			byCategory: {},
+			keywords: [],
+			contains:{}
+		};
+
 		try{
 			var _parsed = RQLParser.parse(filter)
 		}catch(err){
@@ -82237,13 +84567,6 @@ define([
 		}
 
 		var _self = this;
-
-		var parsed = {
-			parsed: _parsed,
-			selected: [],
-			byCategory: {},
-			keywords: []
-		};
 
 		function walk(term){
 			//  0 && console.log("Walk: ", term.name, " Args: ", term.args);
@@ -82254,9 +84577,21 @@ define([
 						walk(t);
 					});
 					break;
+				case "in":
+					var f = decodeURIComponent(term.args[0]);
+					var v = decodeURIComponent(term.args[1]);
+					 0 && console.log("IN F: ", f, "V: ",v, term)
+					// parsed.selected.push({field: f, value: v});
+					if(!parsed.contains[f]){
+						parsed.contains[f] = [v];
+					}else{
+						parsed.contains[f].push(v);
+					}
+					break;
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
+					 0 && console.log("F: ", f, "V: ",f, term)
 					parsed.selected.push({field: f, value: v});
 					if(!parsed.byCategory[f]){
 						parsed.byCategory[f] = [v];
@@ -82274,6 +84609,7 @@ define([
 
 		walk(_parsed);
 
+
 		return parsed;
 
 	};
@@ -82287,6 +84623,7 @@ define([
 		var parsed = parseQuery(query);
 		var out = [];
 
+		 0 && console.log("PARSED: ", parsed);
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
 			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
@@ -82304,6 +84641,12 @@ define([
 
 		if(catsEnglish){
 			out.push(" where " + catsEnglish)
+		}
+
+		if (parsed.contains){
+			var ins = Object.keys(parsed.contains).forEach(function(prop){
+				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
+			})
 		}
 
 		var keywords = parsed.keywords.map(valueWrap);
@@ -82613,1731 +84956,6 @@ define([
 });
 
 },
-'p3/widget/WorkspaceObjectSelector':function(){
-define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/_base/lang",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/WorkspaceObjectSelector.html",
-	"./FlippableDialog", "dijit/_HasDropDown", "dijit/layout/ContentPane", "dijit/form/TextBox",
-	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
-	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
-	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
-	"dijit/registry", "dgrid/editor", "./formatter"
-
-], function(declare, WidgetBase, on, lang,
-			domClass, Templated, WidgetsInTemplate,
-			Template, Dialog, HasDropDown, ContentPane, TextBox,
-			Grid, domConstr, WorkspaceManager, Memory,
-			Uploader, BorderContainer, domAttr,
-			Button, Deferred, CheckBox, Topic,
-			registry, editor, formatter){
-
-	return declare([WidgetBase, Templated, WidgetsInTemplate], {
-		"baseClass": "WorkspaceObjectSelector",
-		templateString: Template,
-		workspace: "",
-		selection: "",
-		value: "",
-		path: "",
-		disabled: false,
-		required: false,
-		showUnspecified: false,
-		missingMessage: "A valid workspace item is required.",
-		promptMessage: "Please choose or upload a workspace item",
-		placeHolder: "",
-		reset: function(){
-			this.searchBox.set('value', '');
-		},
-		_setPlaceHolderAttr: function(val){
-			if(this.searchBox){
-				this.searchBox.set('placeHolder', val);
-			}
-		},
-		_setShowUnspecifiedAttr: function(val){
-			this.showUnspecified = val;
-			if(val){
-				if(!(this.type.indexOf("unspecified") >= 0)){
-					this.type.push("unspecified");
-				}
-			}else{
-				this.type = this.type.filter(function(t){
-					return (t != "unspecified");
-				});
-			}
-			if(this.grid){
-				this.grid.set('types', this.type);
-			}
-		},
-
-		_setDisabledAttr: function(val){
-			this.disabled = val;
-			if(val){
-				domClass.add(this.domNode, "disabled");
-			}else{
-				domClass.remove(this.domNode, "disabled");
-			}
-
-			if(this.searchBox){
-				this.searchBox.set("disabled", val);
-			}
-		},
-		_setRequiredAttr: function(val){
-			this.required = val;
-			if(this.searchBox){
-				this.searchBox.set("required", val);
-			}
-		},
-
-		_setPathAttr: function(val){
-			 0 && console.log("_setPathAttr: ", val);
-			this.path = val;
-			if(this.grid){
-				 0 && console.log("set Grid Path: ", val);
-				this.grid.set('path', val);
-			}
-			if(this.uploader){
-				this.uploader.set('path', val);
-			}
-
-			if(this.currentPathNode){
-				this.currentPathNode.innerHTML = "Folder: " + val;
-			}
-		},
-		_setTypeAttr: function(type){
-			if(!(type instanceof Array)){
-				type = [type];
-			}
-			this.type = type;
-		},
-		_setValueAttr: function(value, refresh){
-			this.value = value;
-			if(this._started){
-				if(refresh){
-					this.refreshWorkspaceItems()
-				}else{
-					this.searchBox.set('value', value);
-				}
-			}
-		},
-
-		_getValueAttr: function(value){
-			return this.searchBox.get('value', value);
-		},
-
-		_setSelectionAttr: function(val){
-			this.selection = val;
-			 0 && console.log("this.selection: ", this.selection);
-			if(!val){
-				this.selValNode.innerHTML = "None.";
-				this.okButton.set('disabled', true);
-			}else{
-				this.selValNode.innerHTML = val.name;
-				this.okButton.set('disabled', false);
-			}
-		},
-
-		postMixinProperties: function(){
-			if(!this.value && this.workspace){
-				this.value = this.workspace;
-			}
-			this.inherited(arguments);
-		},
-
-		createSelectedPane: function(){
-			var wrap = domConstr.create("div", {});
-			this.currentPathNode = domConstr.create("div", {innerHTML: "Folder: " + this.path}, wrap);
-			var sel = domConstr.create("span", {innerHTML: "Selection: ", style: "text-align: right"}, wrap);
-			this.selValNode = domConstr.create('span', {innerHTML: "None."}, sel);
-//			domConstr.place(this.selValNode, sel, "last");
-			var buttonContainer = domConstr.create("div", {
-				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
-				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
-			}, wrap);
-
-			return wrap;
-		},
-		focus: function(){
-			// summary:
-			//		Put focus on this widget
-			if(!this.disabled && this.focusNode.focus){
-				try{
-					this.focusNode.focus();
-				}catch(e){
-				}
-				/*squelch errors from hidden nodes*/
-			}
-		},
-
-		openChooser: function(){
-			if(this.disabled){
-				return;
-			}
-			if(!this.dialog){
-				var _self = this;
-				this.dialog = new Dialog({title: "Choose or Upload a Workspace Object", draggable: true});
-				var frontBC = new BorderContainer({style: {width: "500px", height: "400px"}});
-				var backBC = new BorderContainer({
-					style: {
-						width: "500px",
-						height: "400px",
-						"margin": "0",
-						padding: "0px"
-					}
-				});
-				this.dialog.backpaneTitleBar.innerHTML = "Upload files to Workspace";
-				domConstr.place(frontBC.domNode, this.dialog.containerNode, "first");
-
-				var selectionPane = new ContentPane({
-					region: "top",
-					content: this.createSelectedPane(),
-					style: "border:0px;"
-				});
-				var buttonsPane = new ContentPane({region: "bottom", style: "text-align: right;border:0px;"});
-				var span = domConstr.create("span", {style: {"float": 'left'}});
-				domConstr.place(span, buttonsPane.containerNode, "first");
-				this.showUnspecifiedWidget = new CheckBox({value: this.showUnspecified, checked: this.showUnspecified});
-				this.showUnspecifiedWidget.on("change", function(val){
-					 0 && console.log("changed showUnspecifiedwidget: ", val);
-					_self.set("showUnspecified", val);
-				});
-				domConstr.place(this.showUnspecifiedWidget.domNode, span, "first");
-				domConstr.create("span", {innerHTML: "Show files with an unspecified type"}, span);
-				var cancelButton = new Button({label: "Cancel"});
-				cancelButton.on('click', function(){
-					_self.dialog.hide();
-				});
-				var okButton = this.okButton = new Button({label: "OK"});
-
-				okButton.on("click", function(evt){
-					if(_self.selection){
-						_self.set("value", _self.selection.path);
-					}
-					_self.dialog.hide();
-				});
-				domConstr.place(okButton.domNode, buttonsPane.containerNode, "last");
-				domConstr.place(cancelButton.domNode, buttonsPane.containerNode, "last");
-
-				on(selectionPane.domNode, "i:click", function(evt){
-					//  0 && console.log("Click: ", evt);
-					var rel = domAttr.get(evt.target, "rel");
-					switch(rel){
-						case "upload":
-							_self.dialog.flip();
-							break;
-						case "createFolder":
-							//  0 && console.log("Create Folder", _self.grid.row(0));
-							var element = _self.grid.row(0).element;
-							//  0 && console.log("element: ", element);
-							_self.grid.addNewFolder({id: "untitled"});
-
-							break;
-					}
-				});
-				// var _self = this;
-				var grid = this.grid = new Grid({
-					region: "center",
-					path: this.path,
-					selectionMode: "single",
-					deselectOnRefresh: true,
-					types: this.type ? (["folder"].concat(this.type)) : false,
-					columns: {
-						"type": {
-							label: "",
-							get: function(item){
-								if(item.type == "job_result" && item.autoMeta && item.autoMeta.app){
-									return item.type + "_" + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
-								}
-								return item.type;
-							},
-							className: "wsItemType",
-							formatter: formatter.wsItemType,
-							unhidable: true
-						},
-						"name": editor({
-							label: "Name",
-							field: "name",
-							className: "wsItemName",
-							canEdit: function(obj, val){
-								return obj.id == 'untitled';
-							},
-							autoSave: true,
-							editOn: "click",
-							editor: TextBox,
-							editorArgs: {placeHolder: "Untitled Folder", trim: true}
-						}),
-						creation_time: {
-							label: "Created",
-							field: "creation_time",
-							className: "wsItemCreationTime",
-							formatter: formatter.date
-						}
-					}
-				});
-				_self.grid.on("dgrid-datachange", function(evt){
-					var name = evt.value;
-					if(!name){
-						return;
-					}
-					Deferred.when(WorkspaceManager.createFolder(_self.path + "/" + name), function(){
-						_self.grid.refreshWorkspace();
-						_self.refreshWorkspaceItems();
-					});
-				});
-				grid.allowSelect = function(row){
-					if(row.data.type && (_self.type.indexOf(row.data.type) >= 0)){
-						return true;
-					}
-					return false;
-				};
-
-				grid.on("ItemDblClick", function(evt){
-					if(evt.item && evt.item.type == "folder" || evt.item.type == "parentfolder"){
-						_self.set('path', evt.item_path);
-					}else{
-						if(_self.selection){
-							_self.set('value', _self.selection.path);
-							_self.dialog.hide()
-						}
-					}
-					 0 && console.log("ItemDblClick for chooser: ", evt);
-					//	var row = evt.rows[0];
-					//	var data = row.data;
-					//	 0 && console.log("selected: ", data);
-				});
-
-				grid.on("select", function(evt){
-					var row = evt.rows[0];
-					_self.set("selection", row.data);
-				});
-
-				grid.on("deselect", function(evt){
-					_self.set('selection', "");
-				});
-
-				frontBC.addChild(selectionPane);
-				frontBC.addChild(grid);
-				frontBC.addChild(buttonsPane);
-				frontBC.startup();
-				var backhead = new ContentPane({
-					region: "top",
-					content: '<span rel="flip" class="fa fa-1.5x fa-reply">&nbsp;Browse Workspace</span>'
-				});
-				on(backhead.domNode, "span:click", function(evt){
-					 0 && console.log("Click: ", evt);
-					var rel = domAttr.get(evt.target, "rel");
-					switch(rel){
-						case "flip":
-							_self.dialog.flip();
-							break;
-					}
-				});
-				var uploader = this.uploader = new Uploader({
-					path: _self.path,
-					region: "center",
-					multiple: false,
-					types: this.type,
-					pathLabel: "Upload file to: ",
-					buttonLabel: "Select File"
-				});
-
-				on(uploader.domNode, "dialogAction", function(evt){
-					 0 && console.log("Uploader Dialog Action: ", evt);
-					if(evt.files && evt.files[0] && evt.action == "close"){
-						var file = evt.files[0];
-						_self.set("selection", file);
-						_self.set('value', file.path, true);
-						_self.dialog.hide();
-					}else{
-						_self.dialog.flip()
-					}
-				});
-
-				uploader.startup();
-
-				backBC.addChild(backhead);
-				backBC.addChild(uploader);
-				domConstr.place(backBC.domNode, this.dialog.backPane, "first");
-				var _self = this;
-
-			}
-			this.dialog.flip("front");
-			this.dialog.show();
-		},
-
-		refreshWorkspaceItems: function(){
-			if(this._refreshing){
-				return;
-			}
-			this._refreshing = WorkspaceManager.getObjectsByType(this.type, true).then(lang.hitch(this, function(items){
-				delete this._refreshing;
-				//  0 && console.log("Ws Objects: ", items);
-				var store = new Memory({data: items, idProperty: "path"});
-				//  0 && console.log('store: ', store);
-
-				//  0 && console.log("SearchBox: ", this.searchBox, "THIS: ", this);
-				this.searchBox.set("store", store);
-				if(this.value){
-					this.searchBox.set('value', this.value);
-				}
-			}));
-		},
-		onSearchChange: function(value){
-			this.set("value", value);
-			this.onChange(value);
-			this.validate(true);
-		},
-		onChange: function(){
-		},
-		startup: function(){
-			if(this._started){
-				return;
-			}
-			 0 && console.log("call getObjectsByType(); ", this.type);
-			this.inherited(arguments);
-
-			var _self = this;
-			if(!this.path){
-				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-					 0 && console.log("CURRENT PATH: ", path);
-					_self.set('path', path);
-					_self.refreshWorkspaceItems();
-				});
-			}else{
-				this.refreshWorkspaceItems();
-			}
-			Topic.subscribe("/refreshWorkspace", lang.hitch(this, "refreshWorkspaceItems"));
-			this.searchBox.set('disabled', this.disabled);
-			this.searchBox.set('required', this.required);
-			this.searchBox.set('placeHolder', this.placeHolder);
-			this.searchBox.labelFunc = this.labelFunc;
-		},
-
-		labelFunc: function(item, store){
-			var label = "<div style='font-size:1em; border-bottom:1px solid grey;'>" + "/";
-			var pathParts = item.path.split('/');
-			var workspace = pathParts[2];
-			var labelParts = [workspace];
-			if(pathParts.length - 2 > 3){
-				labelParts.push("...");
-			}
-			if(pathParts.length - 2 > 2){
-				var parentFolder = pathParts[pathParts.length - 2];
-				parentFolder = parentFolder.replace(/^\./, "");
-				labelParts.push(parentFolder);
-			}
-			if(pathParts.length - 1 > 2){
-				var objName = pathParts[pathParts.length - 1];
-				labelParts.push(objName);
-			}
-			labelParts[labelParts.length - 1] = "</br>" + "<span style='font-size:1.05em; font-weight:bold;'>" + labelParts[labelParts.length - 1] + "</span></div>";
-			label += labelParts.join("/");
-			return label;
-		},
-
-		validate: function(/*Boolean*/ isFocused){
-			//possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
-			var message = "";
-			var isValid = this.disabled || this.searchBox.isValid(isFocused);
-			this._set("state", isValid ? "" : this.searchBox.state);
-			this.focusNode.setAttribute("aria-invalid", this.state == "Error" ? "true" : "false");
-			if(isValid){
-				registry.byClass("p3.widget.WorkspaceFilenameValidationTextBox").forEach(function(obj){
-					obj.validate();
-				});
-			}
-
-			return isValid;
-		}
-	});
-});
-
-},
-'p3/widget/FlippableDialog':function(){
-define([
-	"dojo/_base/declare", "dijit/Dialog", "dojo/dom-construct",
-	"dojo/dom-geometry", "dojo/dom-style", "dojo/window", "dojo/sniff",
-	"dojo/text!./templates/FlippableDialog.html", "dojo/on", "dojo/dom-class",
-	"dojo/_base/lang", "dijit/layout/utils", "dojo/_base/array"
-
-], function(declare, Dialog, domConstr,
-			domGeometry, domStyle, winUtils, has,
-			template, on, domClass, lang, utils, array){
-	return declare([Dialog], {
-		templateString: template,
-		flip: function(side){
-			if(side == "front"){
-				domClass.remove(this.domNode, "flipped");
-			}else if(side == "back"){
-				domClass.add(this.domNode, "flipped")
-			}else{
-				domClass.toggle(this.domNode, "flipped");
-			}
-		},
-
-		_setBackpaneContentAttr: function(content){
-			this.backPane.innerHTML = content;
-		},
-
-		resize: function(dim){
-			// summary:
-			//         Called with no argument when viewport scrolled or viewport size changed.  Adjusts Dialog as
-			//         necessary to keep it visible.
-			//
-			//         Can also be called with an argument (by dojox/layout/ResizeHandle etc.) to explicitly set the
-			//         size of the dialog.
-			// dim: Object?
-			//         Optional dimension object like {w: 200, h: 300}
-
-			if(this.domNode.style.display != "none"){
-
-				this._checkIfSingleChild();
-
-				if(!dim){
-					if(this._shrunk){
-						// If we earlier shrunk the dialog to fit in the viewport, reset it to its natural size
-						if(this._singleChild){
-							if(typeof this._singleChildOriginalStyle != "undefined"){
-								this._singleChild.domNode.style.cssText = this._singleChildOriginalStyle;
-								delete this._singleChildOriginalStyle;
-							}
-						}
-						array.forEach([this.domNode, this.containerNode, this.titleBar], function(node){
-							domStyle.set(node, {
-								position: "static",
-								width: "auto",
-								height: "auto"
-							});
-						});
-						this.domNode.style.position = "absolute";
-					}
-
-					// If necessary, shrink Dialog to fit in viewport and have some space around it
-					// to indicate that it's a popup.  This will also compensate for possible scrollbars on viewport.
-					var viewport = winUtils.getBox(this.ownerDocument);
-					viewport.w *= this.maxRatio;
-					viewport.h *= this.maxRatio;
-
-					var bb = domGeometry.position(this.domNode);
-					if(bb.w >= viewport.w || bb.h >= viewport.h){
-						dim = {
-							w: Math.min(bb.w, viewport.w),
-							h: Math.min(bb.h, viewport.h)
-						};
-						this._shrunk = true;
-					}else{
-						this._shrunk = false;
-					}
-				}
-
-				// Code to run if user has requested an explicit size, or the shrinking code above set an implicit size
-				if(dim){
-					// Set this.domNode to specified size
-					domGeometry.setMarginBox(this.domNode, dim);
-
-					// And then size this.containerNode
-					var contentDim = utils.marginBox2contentBox(this.domNode, dim),
-						centerSize = {domNode: this.containerNode, region: "center"};
-					utils.layoutChildren(this.domNode, contentDim,
-						[{domNode: this.titleBar, region: "top"}, centerSize]);
-
-					// And then if this.containerNode has a single layout widget child, size it too.
-					// Otherwise, make this.containerNode show a scrollbar if it's overflowing.
-					if(this._singleChild){
-						var cb = utils.marginBox2contentBox(this.containerNode, centerSize);
-						// note: if containerNode has padding singleChildSize will have l and t set,
-						// but don't pass them to resize() or it will doubly-offset the child
-						this._singleChild.resize({w: cb.w, h: cb.h});
-						// TODO: save original size for restoring it on another show()?
-					}else{
-						this.containerNode.style.overflow = "auto";
-						this._layoutChildren();         // send resize() event to all child widgets
-					}
-				}else{
-					this._layoutChildren();         // send resize() event to all child widgets
-
-				}
-				var titleDim = domGeometry.getMarginBox(this.titleBar);
-				 0 && console.log("titleContent: ", titleDim);
-				domGeometry.setMarginBox(this.backpaneTitleBar, titleDim);
-				var dim = domGeometry.getMarginBox(this.domNode);
-				var contentDim = utils.marginBox2contentBox(this.domNode, dim);
-				utils.layoutChildren(this.domNode, contentDim, [{
-					domNode: this.backpaneTitleBar,
-					region: "top"
-				}, {domNode: this.backPane, region: "center"}]);
-
-				if(!has("touch") && !dim){
-					// If the user has scrolled the viewport then reposition the Dialog.  But don't do it for touch
-					// devices, because it will counteract when a keyboard pops up and then the browser auto-scrolls
-					// the focused node into view.
-					this._position();
-				}
-			}
-		}
-
-	});
-});
-
-
-},
-'p3/widget/Uploader':function(){
-define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/Uploader.html", "dijit/form/Form", "dojo/_base/Deferred",
-	"dijit/ProgressBar", "dojo/dom-construct", "p3/UploadManager", "dojo/query", "dojo/dom-attr",
-	"dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/promise/all", "../WorkspaceManager"
-], function(declare, WidgetBase, on,
-			domClass, Templated, WidgetsInTemplate,
-			Template, FormMixin, Deferred,
-			ProgressBar, domConstruct, UploadManager, Query, domAttr,
-			lang, domGeometry, domStyle, All, WorkspaceManager){
-	return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
-		"baseClass": "CreateWorkspace",
-		templateString: Template,
-		path: "",
-		overwrite: false,
-		multiple: false,
-		types: false,
-		pathLabel: "Upload file to: ",
-		buttonLabel: "Select Files",
-		typeLabel: "Upload type: ",
-		knownTypes: {
-			unspecified: {label: "Unspecified", formats: ["*.*"]},
-			contigs: {
-				label: "Contigs",
-				formats: [".fa", ".fasta", ".fna"],
-				description: "Contigs must be provided in fasta format (typically .fa, .fasta, .fna). Genbank formatted files are not currently accepted."
-			},
-			reads: {
-				label: "Reads",
-				formats: [".fq", ".fastq", ".fa", ".fasta", ".gz", ".bz2"],
-				description: "Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted."
-			},
-			diffexp_input_data: {label: "Diff. Expression Input Data", formats: [".csv", ".txt", ".xls", ".xlsx"]},
-			diffexp_input_metadata: {
-				label: "Diff. Expression Input Metadata",
-				formats: [".csv", ".txt", ".xls", ".xlsx"]
-			},
-			feature_protein_fasta: {
-				label: "feature_protein_fasta",
-				formats: [".fa", ".fasta", ".faa"],
-				description: "Protein sequences must be provided in fasta format (typically .fa, .fasta, .faa). Genbank formatted files are not currently accepted."
-			}
-		},
-		_setPathAttr: function(val){
-			this.path = val;
-			this.destinationPath.innerHTML = val;
-		},
-
-		onUploadTypeChanged: function(val){
-			 0 && console.log("UPLOAD TYPE CHANGED: ", val);
-			var formats = this.knownTypes[val].formats;
-			 0 && console.log("formats: ", val, formats);
-			this.formatListNode.innerHTML = formats.join(", ");
-
-			var description = this.knownTypes[val].description;
-
-			if(!this.showAllFormats.get('value')){
-				 0 && console.log("Accept All formats");
-				domAttr.set(this.fileInput, "accept", "*.*");
-			}else{
-				//var formats = this.knownTypes[this.uploadType.get('value')].formats;
-				if(formats == "*.*"){
-					domClass.add(this.fileFilterContainer, "dijitHidden");
-				}else{
-					domClass.remove(this.fileFilterContainer, "dijitHidden");
-				}
-				 0 && console.log("set formats to: ", formats.join(","));
-				domAttr.set(this.fileInput, "accept", formats.join(","));
-			}
-
-			if(description){
-				domClass.remove(this.typeDescriptionContainer, "dijitHidden");
-				this.typeDescriptionContainer.innerHTML = description;
-			}else{
-				domClass.add(this.typeDescriptionContainer, "dijitHidden");
-			}
-		},
-		onChangeShowAllFormats: function(val){
-			 0 && console.log("Show All Formats: ", val);
-			if(!val){
-				 0 && console.log("Accept All formats");
-				domAttr.set(this.fileInput, "accept", "*.*");
-			}else{
-				var type = this.uploadType.get('value');
-				 0 && console.log("uploadType value: ", type);
-				var formats = this.knownTypes[this.uploadType.get('value')].formats;
-				 0 && console.log("uploadType: ", this.uploadType.get('value'));
-				domAttr.set(this.fileInput, "accept", formats.join(","));
-			}
-
-		},
-
-		createUploadTable: function(empty){
-
-			if(!this.uploadTable){
-				var table = domConstruct.create("table", {
-					style: {
-						border: "1px solid #eee",
-						width: "100%"
-					}
-				}, this.fileTableContainer);
-				this.uploadTable = domConstruct.create('tbody', {}, table)
-				var htr = domConstruct.create("tr", {}, this.uploadTable);
-				domConstruct.create("th", {
-					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-					innerHTML: "File Selected"
-				}, htr);
-				domConstruct.create("th", {
-					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-					innerHTML: "Type"
-				}, htr);
-				domConstruct.create("th", {
-					style: {"background-color": "#eee", "border": "none", "text-align": "left"},
-					innerHTML: "Size"
-				}, htr);
-				domConstruct.create("th", {
-					style: {
-						"background-color": "#eee",
-						"border": "none",
-						"text-align": "right"
-					}
-				}, htr);
-				if(empty){
-					var row = domConstruct.create("tr", {"class": "fileRow"}, this.uploadTable);
-					domConstruct.create("td", {
-						style: {"padding-left": "5px", "text-align": "left"},
-						innerHTML: "<i>None</i>"
-					}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "left"}}, row);
-					domConstruct.create("td", {style: {"text-align": "right"}}, row);
-				}
-			}
-		},
-
-		createNewFileInput: function(){
-			if(this.fileInput){
-				if(!this._previousFileInputs){
-					this._previousFileInputs = [];
-				}
-				if(this.inputHandler){
-					this.inputHandler.remove();
-				}
-				domStyle.set(this.fileInput, "display", "none");
-				this._previousFileInputs.push(this.fileInput);
-			}
-
-			this.fileInput = domConstruct.create("input", {type: "file", multiple: this.multiple});
-			 0 && console.log("Created fileInput: ", this.fileInput);
-			domConstruct.place(this.fileInput, this.fileUploadButton, "last");
-			this.inputHandler = on(this.fileInput, "change", lang.hitch(this, "onFileSelectionChange"));
-
-		},
-		startup: function(){
-			if(this._started){
-				return;
-			}
-
-			this.inherited(arguments);
-			var state = this.get("state")
-			this.createNewFileInput();
-
-			var _self = this;
-			 0 && console.log("Add Dropdown Options");
-			Object.keys(this.knownTypes).filter(function(t){
-				 0 && console.log("CHECKING: ", t);
-				return (!_self.types || (_self.types == "*") || ((_self.types instanceof Array) && (_self.types.indexOf(t) >= 0)))
-			}).forEach(function(t){
-				 0 && console.log("Add OPTION: ", t, _self.knownTypes[t], _self.uploadType, _self.uploadType.addOption);
-				_self.uploadType.addOption({disabled: false, label: _self.knownTypes[t].label, value: t});
-			});
-
-			var type = this.uploadType.get('value');
-			if(type && this.knownTypes[type]){
-				var description = this.knownTypes[type].description;
-				if(description){
-					domClass.remove(this.typeDescriptionContainer, "dijitHidden");
-					this.typeDescriptionContainer.innerHTML = description;
-				}else{
-					domClass.add(this.typeDescriptionContainer, "dijitHidden");
-				}
-			}else{
-				domClass.add(this.typeDescriptionContainer, "dijitHidden");
-			}
-
-			if(!this.path){
-				Deferred.when(WorkspaceManager.get("currentPath"), function(path){
-					 0 && console.log("CURRENT PATH: ", path);
-					_self.set('path', path);
-				});
-			}
-
-			if((state == "Incomplete") || (state == "Error")){
-				this.saveButton.set("disabled", true);
-			}
-
-			this.watch("state", function(prop, val, val2){
-				 0 && console.log("Upload Form State: ", prop, val, val2);
-				if(val2 == "Incomplete" || val2 == "Error"){
-					this.saveButton.set("disabled", true);
-				}else{
-					this.saveButton.set('disabled', false);
-				}
-			});
-			this.createUploadTable(true);
-		},
-		validate: function(){
-			 0 && console.log("this.validate()", this);
-			var valid = this.inherited(arguments);
-			var validFiles = []
-			Query("TR.fileRow", this.uploadTable).map(function(tr){
-				validFiles.push({filename: domAttr.get(tr, "data-filename"), type: domAttr.get(tr, "data-filetype")});
-			})
-			if(!validFiles || validFiles.length < 1){
-				valid = false;
-			}
-
-			if(valid){
-				this.saveButton.set("disabled", false)
-			}else{
-				this.saveButton.set("disabled", true);
-			}
-			return valid;
-		},
-
-		uploadFile: function(file, uploadDirectory, type){
-			if(!this._uploading){
-				this._uploading = []
-			}
-
-			var _self = this;
-			var obj = {path: uploadDirectory, name: file.name, type: type}
-			return Deferred.when(WorkspaceManager.create(obj, true), function(obj){
-				domClass.add(_self.domNode, "Working");
-				 0 && console.log("obj: ", obj);
-				 0 && console.log("obj.link_reference: ", obj.link_reference);
-//				 0 && console.log("getUrlRes",getUrlRes, getUrlRes[0]);
-//				var uploadUrl = getUrlRes[0][0][11];
-				var uploadUrl = obj.link_reference;
-//				 0 && console.log("uploadUrl: ", uploadUrl);
-				if(!_self.uploadTable){
-					var table = domConstruct.create("table", {style: {width: "100%"}}, _self.fileTableContainer);
-					_self.uploadTable = domConstruct.create('tbody', {}, table)
-				}
-
-				var row = domConstruct.create("tr", {}, _self.uploadTable);
-				var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
-
-//					window._uploader.postMessage({file: file, uploadDirectory: uploadDirectory, url: uploadUrl});
-				var msg = {file: file, uploadDirectory: uploadDirectory, url: uploadUrl};
-				UploadManager.upload(msg, window.App.authorizationToken);
-				return obj;
-			});
-
-		},
-		onFileSelectionChange: function(evt){
-			 0 && console.log("onFileSelectionChange", evt, this.fileInput);
-
-			if(this.uploadTable && !this.multiple){
-				domConstruct.empty(this.uploadTable);
-				delete this.uploadTable;
-			}
-
-			this.createUploadTable(false);
-
-			var files = evt.target.files;
-			 0 && console.log("files: ", files);
-			var _self = this;
-
-			Object.keys(files).forEach(function(idx){
-				 0 && console.log("files key: ", idx);
-				var file = files[idx];
-				if(file && file.name && file.size){
-					 0 && console.log("file: ", file);
-					var row = domConstruct.create("tr", {"class": "fileRow"}, _self.uploadTable);
-					 0 && console.log('setfiletype: ', _self.uploadType.get('value'))
-					domAttr.set(row, "data-filename", file.name);
-					domAttr.set(row, "data-filetype", _self.uploadType.get('value'));
-					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
-					var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
-					var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
-					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'}, row);
-					var handle = on(delNode, "click", lang.hitch(this, function(evt){
-						handle.remove();
-						domConstruct.destroy(row);
-						this.validate()
-					}));
-				}
-			}, this);
-
-			this.createNewFileInput();
-		},
-
-		onSubmit: function(evt){
-			var _self = this;
-			evt.preventDefault();
-			evt.stopPropagation();
-
-			if(!_self.path){
-				 0 && console.error("Missing Path for Upload: ", _self.path);
-				return;
-			}
-
-//			domClass.add(_self.domNode, "working");
-			var validFiles = []
-			var inputFiles = {};
-			var defs = [];
-			var wsFiles = []
-
-			this._previousFileInputs.forEach(lang.hitch(this, function(FI){
-				 0 && console.log("FI: ", FI);
-				Object.keys(FI.files).forEach(lang.hitch(this, function(key){
-					 0 && console.log(" FI FILE KEY: ", key);
-					var f = FI.files[key];
-					 0 && console.log(" f: ", f);
-					if(f.name){
-						 0 && console.log(" f.name: ", f.name);
-						inputFiles[f.name] = f;
-					}
-				}));
-			}));
-
-			 0 && console.log("InputFIles: ", inputFiles);
-			 0 && console.log("uploadTable: ", this.uploadTable);
-			Query("TR.fileRow", this.uploadTable).forEach(lang.hitch(this, function(tr){
-				 0 && console.log("File INPUT Row: ", tr, domAttr.get(tr, "data-filename"), domAttr.get(tr, "data-filetype"));
-//				var v = {fileInput: tr.fileInput,filename: domAttr.get(tr,"data-filename"), type: domAttr.get(tr, "data-filetype")};
-//				 0 && console.log("V: ", v);
-//				validFiles.push(v);
-				if(tr && domAttr.get(tr, "data-filename")){
-					 0 && console.log("Got Name: ", domAttr.get(tr, "data-filename"));
-					var f = inputFiles[domAttr.get(tr, "data-filename")];
-					 0 && console.log("Got File: ", f);
-					if(f.name){
-						defs.push(Deferred.when(this.uploadFile(f, _self.path, domAttr.get(tr, "data-filetype")), function(res){
-							wsFiles.push(res);
-							return true;
-						}));
-					}
-				}
-			}));
-
-			All(defs).then(function(results){
-				 0 && console.log("UPLOAD Create WS files results: ", wsFiles);
-				on.emit(_self.domNode, "dialogAction", {action: "close", files: wsFiles, bubbles: true});
-			});
-		},
-
-		onCancel: function(evt){
-			 0 && console.log("Cancel/Close Dialog", evt)
-			on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
-		},
-		resize: function(changeSize, resultSize){
-			// summary:
-			//              Call this to resize a widget, or after its size has changed.
-			// description:
-			//              ####Change size mode:
-			//
-			//              When changeSize is specified, changes the marginBox of this widget
-			//              and forces it to re-layout its contents accordingly.
-			//              changeSize may specify height, width, or both.
-			//
-			//              If resultSize is specified it indicates the size the widget will
-			//              become after changeSize has been applied.
-			//
-			//              ####Notification mode:
-			//
-			//              When changeSize is null, indicates that the caller has already changed
-			//              the size of the widget, or perhaps it changed because the browser
-			//              window was resized.  Tells widget to re-layout its contents accordingly.
-			//
-			//              If resultSize is also specified it indicates the size the widget has
-			//              become.
-			//
-			//              In either mode, this method also:
-			//
-			//              1. Sets this._borderBox and this._contentBox to the new size of
-			//                      the widget.  Queries the current domNode size if necessary.
-			//              2. Calls layout() to resize contents (and maybe adjust child widgets).
-			// changeSize: Object?
-			//              Sets the widget to this margin-box size and position.
-			//              May include any/all of the following properties:
-			//      |       {w: int, h: int, l: int, t: int}
-			// resultSize: Object?
-			//              The margin-box size of this widget after applying changeSize (if
-			//              changeSize is specified).  If caller knows this size and
-			//              passes it in, we don't need to query the browser to get the size.
-			//      |       {w: int, h: int}
-
-			var node = this.domNode;
-
-			// set margin box size, unless it wasn't specified, in which case use current size
-			if(changeSize){
-				domGeometry.setMarginBox(node, changeSize);
-			}
-
-			// If either height or width wasn't specified by the user, then query node for it.
-			// But note that setting the margin box and then immediately querying dimensions may return
-			// inaccurate results, so try not to depend on it.
-			var mb = resultSize || {};
-			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-			if(!("h" in mb) || !("w" in mb)){
-				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-			}
-
-			// Compute and save the size of my border box and content box
-			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-			var cs = domStyle.getComputedStyle(node);
-			var me = domGeometry.getMarginExtents(node, cs);
-			var be = domGeometry.getBorderExtents(node, cs);
-			var bb = (this._borderBox = {
-				w: mb.w - (me.w + be.w),
-				h: mb.h - (me.h + be.h)
-			});
-			var pe = domGeometry.getPadExtents(node, cs);
-			this._contentBox = {
-				l: domStyle.toPixelValue(node, cs.paddingLeft),
-				t: domStyle.toPixelValue(node, cs.paddingTop),
-				w: bb.w - pe.w,
-				h: bb.h - pe.h
-			};
-
-		}
-	});
-});
-
-},
-'dijit/ProgressBar':function(){
-define([
-	"require", // require.toUrl
-	"dojo/_base/declare", // declare
-	"dojo/dom-class", // domClass.toggle
-	"dojo/_base/lang", // lang.mixin
-	"dojo/number", // number.format
-	"./_Widget",
-	"./_TemplatedMixin",
-	"dojo/text!./templates/ProgressBar.html"
-], function(require, declare, domClass, lang, number, _Widget, _TemplatedMixin, template){
-
-	// module:
-	//		dijit/ProgressBar
-
-	return declare("dijit.ProgressBar", [_Widget, _TemplatedMixin], {
-		// summary:
-		//		A progress indication widget, showing the amount completed
-		//		(often the percentage completed) of a task.
-
-		// progress: [const] String (Percentage or Number)
-		//		Number or percentage indicating amount of task completed.
-		//		Deprecated.   Use "value" instead.
-		progress: "0",
-
-		// value: String (Percentage or Number)
-		//		Number or percentage indicating amount of task completed.
-		//		With "%": percentage value, 0% <= progress <= 100%, or
-		//		without "%": absolute value, 0 <= progress <= maximum.
-		//		Infinity means that the progress bar is indeterminate.
-		value: "",
-
-		// maximum: [const] Float
-		//		Max sample number
-		maximum: 100,
-
-		// places: [const] Number
-		//		Number of places to show in values; 0 by default
-		places: 0,
-
-		// indeterminate: [const] Boolean
-		//		If false: show progress value (number or percentage).
-		//		If true: show that a process is underway but that the amount completed is unknown.
-		//		Deprecated.   Use "value" instead.
-		indeterminate: false,
-
-		// label: String?
-		//		HTML label on progress bar.   Defaults to percentage for determinate progress bar and
-		//		blank for indeterminate progress bar.
-		label: "",
-
-		// name: String
-		//		this is the field name (for a form) if set. This needs to be set if you want to use
-		//		this widget in a dijit/form/Form widget (such as dijit/Dialog)
-		name: '',
-
-		templateString: template,
-
-		// _indeterminateHighContrastImagePath: [private] URL
-		//		URL to image to use for indeterminate progress bar when display is in high contrast mode
-		_indeterminateHighContrastImagePath: require.toUrl("./themes/a11y/indeterminate_progress.gif"),
-
-		postMixInProperties: function(){
-			this.inherited(arguments);
-
-			// Back-compat for when constructor specifies indeterminate or progress, rather than value.   Remove for 2.0.
-			if(!(this.params && "value" in this.params)){
-				this.value = this.indeterminate ? Infinity : this.progress;
-			}
-		},
-
-		buildRendering: function(){
-			this.inherited(arguments);
-			this.indeterminateHighContrastImage.setAttribute("src",
-				this._indeterminateHighContrastImagePath.toString());
-			this.update();
-		},
-
-		_setDirAttr: function(val){
-			// Normally _CssStateMixin takes care of this, but we aren't extending it
-			var rtl = val.toLowerCase() == "rtl";
-			domClass.toggle(this.domNode, "dijitProgressBarRtl", rtl);
-			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && rtl);
-			this.inherited(arguments);
-		},
-
-		update: function(/*Object?*/attributes){
-			// summary:
-			//		Internal method to change attributes of ProgressBar, similar to set(hash).  Users should call
-			//		set("value", ...) rather than calling this method directly.
-			// attributes:
-			//		May provide progress and/or maximum properties on this parameter;
-			//		see attribute specs for details.
-			// example:
-			//	|	myProgressBar.update({'indeterminate': true});
-			//	|	myProgressBar.update({'progress': 80});
-			//	|	myProgressBar.update({'indeterminate': true, label:"Loading ..." })
-			// tags:
-			//		private
-
-			// TODO: deprecate this method and use set() instead
-
-			lang.mixin(this, attributes || {});
-			var tip = this.internalProgress, ap = this.domNode;
-			var percent = 1;
-			if(this.indeterminate){
-				ap.removeAttribute("aria-valuenow");
-			}else{
-				if(String(this.progress).indexOf("%") != -1){
-					percent = Math.min(parseFloat(this.progress) / 100, 1);
-					this.progress = percent * this.maximum;
-				}else{
-					this.progress = Math.min(this.progress, this.maximum);
-					percent = this.maximum ? this.progress / this.maximum : 0;
-				}
-				ap.setAttribute("aria-valuenow", this.progress);
-			}
-
-			// Even indeterminate ProgressBars should have these attributes
-			ap.setAttribute("aria-labelledby", this.labelNode.id);
-			ap.setAttribute("aria-valuemin", 0);
-			ap.setAttribute("aria-valuemax", this.maximum);
-
-			this.labelNode.innerHTML = this.report(percent);
-
-			domClass.toggle(this.domNode, "dijitProgressBarIndeterminate", this.indeterminate);
-			domClass.toggle(this.domNode, "dijitProgressBarIndeterminateRtl", this.indeterminate && !this.isLeftToRight());
-
-			tip.style.width = (percent * 100) + "%";
-			this.onChange();
-		},
-
-		_setValueAttr: function(v){
-			this._set("value", v);
-			if(v == Infinity){
-				this.update({indeterminate: true});
-			}else{
-				this.update({indeterminate: false, progress: v});
-			}
-		},
-
-		_setLabelAttr: function(label){
-			this._set("label", label);
-			this.update();
-		},
-
-		_setIndeterminateAttr: function(indeterminate){
-			// Deprecated, use set("value", ...) instead
-			this._set("indeterminate", indeterminate);
-			this.update();
-		},
-
-		report: function(/*float*/percent){
-			// summary:
-			//		Generates HTML message to show inside progress bar (normally indicating amount of task completed).
-			//		May be overridden.
-			// tags:
-			//		extension
-
-			return this.label ? this.label :
-				(this.indeterminate ? "&#160;" : number.format(percent, { type: "percent", places: this.places, locale: this.lang }));
-		},
-
-		onChange: function(){
-			// summary:
-			//		Callback fired when progress updates.
-			// tags:
-			//		extension
-		}
-	});
-});
-
-},
-'dojo/number':function(){
-define([/*===== "./_base/declare", =====*/ "./_base/lang", "./i18n", "./i18n!./cldr/nls/number", "./string", "./regexp"],
-	function(/*===== declare, =====*/ lang, i18n, nlsNumber, dstring, dregexp){
-
-// module:
-//		dojo/number
-
-var number = {
-	// summary:
-	//		localized formatting and parsing routines for Number
-};
-lang.setObject("dojo.number", number);
-
-/*=====
-number.__FormatOptions = declare(null, {
-	// pattern: String?
-	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
-	//		with this string.  Default value is based on locale.  Overriding this property will defeat
-	//		localization.  Literal characters in patterns are not supported.
-	// type: String?
-	//		choose a format type based on the locale from the following:
-	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
-	// places: Number?
-	//		fixed number of decimal places to show.  This overrides any
-	//		information in the provided pattern.
-	// round: Number?
-	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
-	//		means do not round.
-	// locale: String?
-	//		override the locale used to determine formatting rules
-	// fractional: Boolean?
-	//		If false, show no decimal places, overriding places and pattern settings.
-});
-=====*/
-
-number.format = function(/*Number*/ value, /*number.__FormatOptions?*/ options){
-	// summary:
-	//		Format a Number as a String, using locale-specific settings
-	// description:
-	//		Create a string from a Number using a known localized pattern.
-	//		Formatting patterns appropriate to the locale are chosen from the
-	//		[Common Locale Data Repository](http://unicode.org/cldr) as well as the appropriate symbols and
-	//		delimiters.
-	//		If value is Infinity, -Infinity, or is not a valid JavaScript number, return null.
-	// value:
-	//		the number to be formatted
-
-	options = lang.mixin({}, options || {});
-	var locale = i18n.normalizeLocale(options.locale),
-		bundle = i18n.getLocalization("dojo.cldr", "number", locale);
-	options.customs = bundle;
-	var pattern = options.pattern || bundle[(options.type || "decimal") + "Format"];
-	if(isNaN(value) || Math.abs(value) == Infinity){ return null; } // null
-	return number._applyPattern(value, pattern, options); // String
-};
-
-//number._numberPatternRE = /(?:[#0]*,?)*[#0](?:\.0*#*)?/; // not precise, but good enough
-number._numberPatternRE = /[#0,]*[#0](?:\.0*#*)?/; // not precise, but good enough
-
-number._applyPattern = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatOptions?*/ options){
-	// summary:
-	//		Apply pattern to format value as a string using options. Gives no
-	//		consideration to local customs.
-	// value:
-	//		the number to be formatted.
-	// pattern:
-	//		a pattern string as described by
-	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
-	// options: number.__FormatOptions?
-	//		_applyPattern is usually called via `dojo/number.format()` which
-	//		populates an extra property in the options parameter, "customs".
-	//		The customs object specifies group and decimal parameters if set.
-
-	//TODO: support escapes
-	options = options || {};
-	var group = options.customs.group,
-		decimal = options.customs.decimal,
-		patternList = pattern.split(';'),
-		positivePattern = patternList[0];
-	pattern = patternList[(value < 0) ? 1 : 0] || ("-" + positivePattern);
-
-	//TODO: only test against unescaped
-	if(pattern.indexOf('%') != -1){
-		value *= 100;
-	}else if(pattern.indexOf('\u2030') != -1){
-		value *= 1000; // per mille
-	}else if(pattern.indexOf('\u00a4') != -1){
-		group = options.customs.currencyGroup || group;//mixins instead?
-		decimal = options.customs.currencyDecimal || decimal;// Should these be mixins instead?
-		pattern = pattern.replace(/\u00a4{1,3}/, function(match){
-			var prop = ["symbol", "currency", "displayName"][match.length-1];
-			return options[prop] || options.currency || "";
-		});
-	}else if(pattern.indexOf('E') != -1){
-		throw new Error("exponential notation not supported");
-	}
-
-	//TODO: support @ sig figs?
-	var numberPatternRE = number._numberPatternRE;
-	var numberPattern = positivePattern.match(numberPatternRE);
-	if(!numberPattern){
-		throw new Error("unable to find a number expression in pattern: "+pattern);
-	}
-	if(options.fractional === false){ options.places = 0; }
-	return pattern.replace(numberPatternRE,
-		number._formatAbsolute(value, numberPattern[0], {decimal: decimal, group: group, places: options.places, round: options.round}));
-};
-
-number.round = function(/*Number*/ value, /*Number?*/ places, /*Number?*/ increment){
-	// summary:
-	//		Rounds to the nearest value with the given number of decimal places, away from zero
-	// description:
-	//		Rounds to the nearest value with the given number of decimal places, away from zero if equal.
-	//		Similar to Number.toFixed(), but compensates for browser quirks. Rounding can be done by
-	//		fractional increments also, such as the nearest quarter.
-	//		NOTE: Subject to floating point errors.  See dojox/math/round for experimental workaround.
-	// value:
-	//		The number to round
-	// places:
-	//		The number of decimal places where rounding takes place.  Defaults to 0 for whole rounding.
-	//		Must be non-negative.
-	// increment:
-	//		Rounds next place to nearest value of increment/10.  10 by default.
-	// example:
-	// |	>>> number.round(-0.5)
-	// |	-1
-	// |	>>> number.round(162.295, 2)
-	// |	162.29  // note floating point error.  Should be 162.3
-	// |	>>> number.round(10.71, 0, 2.5)
-	// |	10.75
-	var factor = 10 / (increment || 10);
-	return (factor * +value).toFixed(places) / factor; // Number
-};
-
-if((0.9).toFixed() == 0){
-	// (isIE) toFixed() bug workaround: Rounding fails on IE when most significant digit
-	// is just after the rounding place and is >=5
-	var round = number.round;
-	number.round = function(v, p, m){
-		var d = Math.pow(10, -p || 0), a = Math.abs(v);
-		if(!v || a >= d){
-			d = 0;
-		}else{
-			a /= d;
-			if(a < 0.5 || a >= 0.95){
-				d = 0;
-			}
-		}
-		return round(v, p, m) + (v > 0 ? d : -d);
-	};
-
-	// Use "doc hint" so the doc parser ignores this new definition of round(), and uses the one above.
-	/*===== number.round = round; =====*/
-}
-
-/*=====
-number.__FormatAbsoluteOptions = declare(null, {
-	// decimal: String?
-	//		the decimal separator
-	// group: String?
-	//		the group separator
-	// places: Number|String?
-	//		number of decimal places.  the range "n,m" will format to m places.
-	// round: Number?
-	//		5 rounds to nearest .5; 0 rounds to nearest whole (default). -1
-	//		means don't round.
-});
-=====*/
-
-number._formatAbsolute = function(/*Number*/ value, /*String*/ pattern, /*number.__FormatAbsoluteOptions?*/ options){
-	// summary:
-	//		Apply numeric pattern to absolute value using options. Gives no
-	//		consideration to local customs.
-	// value:
-	//		the number to be formatted, ignores sign
-	// pattern:
-	//		the number portion of a pattern (e.g. `#,##0.00`)
-	options = options || {};
-	if(options.places === true){options.places=0;}
-	if(options.places === Infinity){options.places=6;} // avoid a loop; pick a limit
-
-	var patternParts = pattern.split("."),
-		comma = typeof options.places == "string" && options.places.indexOf(","),
-		maxPlaces = options.places;
-	if(comma){
-		maxPlaces = options.places.substring(comma + 1);
-	}else if(!(maxPlaces >= 0)){
-		maxPlaces = (patternParts[1] || []).length;
-	}
-	if(!(options.round < 0)){
-		value = number.round(value, maxPlaces, options.round);
-	}
-
-	var valueParts = String(Math.abs(value)).split("."),
-		fractional = valueParts[1] || "";
-	if(patternParts[1] || options.places){
-		if(comma){
-			options.places = options.places.substring(0, comma);
-		}
-		// Pad fractional with trailing zeros
-		var pad = options.places !== undefined ? options.places : (patternParts[1] && patternParts[1].lastIndexOf("0") + 1);
-		if(pad > fractional.length){
-			valueParts[1] = dstring.pad(fractional, pad, '0', true);
-		}
-
-		// Truncate fractional
-		if(maxPlaces < fractional.length){
-			valueParts[1] = fractional.substr(0, maxPlaces);
-		}
-	}else{
-		if(valueParts[1]){ valueParts.pop(); }
-	}
-
-	// Pad whole with leading zeros
-	var patternDigits = patternParts[0].replace(',', '');
-	pad = patternDigits.indexOf("0");
-	if(pad != -1){
-		pad = patternDigits.length - pad;
-		if(pad > valueParts[0].length){
-			valueParts[0] = dstring.pad(valueParts[0], pad);
-		}
-
-		// Truncate whole
-		if(patternDigits.indexOf("#") == -1){
-			valueParts[0] = valueParts[0].substr(valueParts[0].length - pad);
-		}
-	}
-
-	// Add group separators
-	var index = patternParts[0].lastIndexOf(','),
-		groupSize, groupSize2;
-	if(index != -1){
-		groupSize = patternParts[0].length - index - 1;
-		var remainder = patternParts[0].substr(0, index);
-		index = remainder.lastIndexOf(',');
-		if(index != -1){
-			groupSize2 = remainder.length - index - 1;
-		}
-	}
-	var pieces = [];
-	for(var whole = valueParts[0]; whole;){
-		var off = whole.length - groupSize;
-		pieces.push((off > 0) ? whole.substr(off) : whole);
-		whole = (off > 0) ? whole.slice(0, off) : "";
-		if(groupSize2){
-			groupSize = groupSize2;
-			delete groupSize2;
-		}
-	}
-	valueParts[0] = pieces.reverse().join(options.group || ",");
-
-	return valueParts.join(options.decimal || ".");
-};
-
-/*=====
-number.__RegexpOptions = declare(null, {
-	// pattern: String?
-	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
-	//		with this string.  Default value is based on locale.  Overriding this property will defeat
-	//		localization.
-	// type: String?
-	//		choose a format type based on the locale from the following:
-	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
-	// locale: String?
-	//		override the locale used to determine formatting rules
-	// strict: Boolean?
-	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
-	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
-	// places: Number|String?
-	//		number of decimal places to accept: Infinity, a positive number, or
-	//		a range "n,m".  Defined by pattern or Infinity if pattern not provided.
-});
-=====*/
-number.regexp = function(/*number.__RegexpOptions?*/ options){
-	// summary:
-	//		Builds the regular needed to parse a number
-	// description:
-	//		Returns regular expression with positive and negative match, group
-	//		and decimal separators
-	return number._parseInfo(options).regexp; // String
-};
-
-number._parseInfo = function(/*Object?*/ options){
-	options = options || {};
-	var locale = i18n.normalizeLocale(options.locale),
-		bundle = i18n.getLocalization("dojo.cldr", "number", locale),
-		pattern = options.pattern || bundle[(options.type || "decimal") + "Format"],
-//TODO: memoize?
-		group = bundle.group,
-		decimal = bundle.decimal,
-		factor = 1;
-
-	if(pattern.indexOf('%') != -1){
-		factor /= 100;
-	}else if(pattern.indexOf('\u2030') != -1){
-		factor /= 1000; // per mille
-	}else{
-		var isCurrency = pattern.indexOf('\u00a4') != -1;
-		if(isCurrency){
-			group = bundle.currencyGroup || group;
-			decimal = bundle.currencyDecimal || decimal;
-		}
-	}
-
-	//TODO: handle quoted escapes
-	var patternList = pattern.split(';');
-	if(patternList.length == 1){
-		patternList.push("-" + patternList[0]);
-	}
-
-	var re = dregexp.buildGroupRE(patternList, function(pattern){
-		pattern = "(?:"+dregexp.escapeString(pattern, '.')+")";
-		return pattern.replace(number._numberPatternRE, function(format){
-			var flags = {
-				signed: false,
-				separator: options.strict ? group : [group,""],
-				fractional: options.fractional,
-				decimal: decimal,
-				exponent: false
-				},
-
-				parts = format.split('.'),
-				places = options.places;
-
-			// special condition for percent (factor != 1)
-			// allow decimal places even if not specified in pattern
-			if(parts.length == 1 && factor != 1){
-			    parts[1] = "###";
-			}
-			if(parts.length == 1 || places === 0){
-				flags.fractional = false;
-			}else{
-				if(places === undefined){ places = options.pattern ? parts[1].lastIndexOf('0') + 1 : Infinity; }
-				if(places && options.fractional == undefined){flags.fractional = true;} // required fractional, unless otherwise specified
-				if(!options.places && (places < parts[1].length)){ places += "," + parts[1].length; }
-				flags.places = places;
-			}
-			var groups = parts[0].split(',');
-			if(groups.length > 1){
-				flags.groupSize = groups.pop().length;
-				if(groups.length > 1){
-					flags.groupSize2 = groups.pop().length;
-				}
-			}
-			return "("+number._realNumberRegexp(flags)+")";
-		});
-	}, true);
-
-	if(isCurrency){
-		// substitute the currency symbol for the placeholder in the pattern
-		re = re.replace(/([\s\xa0]*)(\u00a4{1,3})([\s\xa0]*)/g, function(match, before, target, after){
-			var prop = ["symbol", "currency", "displayName"][target.length-1],
-				symbol = dregexp.escapeString(options[prop] || options.currency || "");
-			before = before ? "[\\s\\xa0]" : "";
-			after = after ? "[\\s\\xa0]" : "";
-			if(!options.strict){
-				if(before){before += "*";}
-				if(after){after += "*";}
-				return "(?:"+before+symbol+after+")?";
-			}
-			return before+symbol+after;
-		});
-	}
-
-//TODO: substitute localized sign/percent/permille/etc.?
-
-	// normalize whitespace and return
-	return {regexp: re.replace(/[\xa0 ]/g, "[\\s\\xa0]"), group: group, decimal: decimal, factor: factor}; // Object
-};
-
-/*=====
-number.__ParseOptions = declare(null, {
-	// pattern: String?
-	//		override [formatting pattern](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
-	//		with this string.  Default value is based on locale.  Overriding this property will defeat
-	//		localization.  Literal characters in patterns are not supported.
-	// type: String?
-	//		choose a format type based on the locale from the following:
-	//		decimal, scientific (not yet supported), percent, currency. decimal by default.
-	// locale: String?
-	//		override the locale used to determine formatting rules
-	// strict: Boolean?
-	//		strict parsing, false by default.  Strict parsing requires input as produced by the format() method.
-	//		Non-strict is more permissive, e.g. flexible on white space, omitting thousands separators
-	// fractional: Boolean|Array?
-	//		Whether to include the fractional portion, where the number of decimal places are implied by pattern
-	//		or explicit 'places' parameter.  The value [true,false] makes the fractional portion optional.
-});
-=====*/
-number.parse = function(/*String*/ expression, /*number.__ParseOptions?*/ options){
-	// summary:
-	//		Convert a properly formatted string to a primitive Number, using
-	//		locale-specific settings.
-	// description:
-	//		Create a Number from a string using a known localized pattern.
-	//		Formatting patterns are chosen appropriate to the locale
-	//		and follow the syntax described by
-	//		[unicode.org TR35](http://www.unicode.org/reports/tr35/#Number_Format_Patterns)
-    	//		Note that literal characters in patterns are not supported.
-	// expression:
-	//		A string representation of a Number
-	var info = number._parseInfo(options),
-		results = (new RegExp("^"+info.regexp+"$")).exec(expression);
-	if(!results){
-		return NaN; //NaN
-	}
-	var absoluteMatch = results[1]; // match for the positive expression
-	if(!results[1]){
-		if(!results[2]){
-			return NaN; //NaN
-		}
-		// matched the negative pattern
-		absoluteMatch =results[2];
-		info.factor *= -1;
-	}
-
-	// Transform it to something Javascript can parse as a number.  Normalize
-	// decimal point and strip out group separators or alternate forms of whitespace
-	absoluteMatch = absoluteMatch.
-		replace(new RegExp("["+info.group + "\\s\\xa0"+"]", "g"), "").
-		replace(info.decimal, ".");
-	// Adjust for negative sign, percent, etc. as necessary
-	return absoluteMatch * info.factor; //Number
-};
-
-/*=====
-number.__RealNumberRegexpFlags = declare(null, {
-	// places: Number?
-	//		The integer number of decimal places or a range given as "n,m".  If
-	//		not given, the decimal part is optional and the number of places is
-	//		unlimited.
-	// decimal: String?
-	//		A string for the character used as the decimal point.  Default
-	//		is ".".
-	// fractional: Boolean|Array?
-	//		Whether decimal places are used.  Can be true, false, or [true,
-	//		false].  Default is [true, false] which means optional.
-	// exponent: Boolean|Array?
-	//		Express in exponential notation.  Can be true, false, or [true,
-	//		false]. Default is [true, false], (i.e. will match if the
-	//		exponential part is present are not).
-	// eSigned: Boolean|Array?
-	//		The leading plus-or-minus sign on the exponent.  Can be true,
-	//		false, or [true, false].  Default is [true, false], (i.e. will
-	//		match if it is signed or unsigned).  flags in regexp.integer can be
-	//		applied.
-});
-=====*/
-
-number._realNumberRegexp = function(/*__RealNumberRegexpFlags?*/ flags){
-	// summary:
-	//		Builds a regular expression to match a real number in exponential
-	//		notation
-
-	// assign default values to missing parameters
-	flags = flags || {};
-	//TODO: use mixin instead?
-	if(!("places" in flags)){ flags.places = Infinity; }
-	if(typeof flags.decimal != "string"){ flags.decimal = "."; }
-	if(!("fractional" in flags) || /^0/.test(flags.places)){ flags.fractional = [true, false]; }
-	if(!("exponent" in flags)){ flags.exponent = [true, false]; }
-	if(!("eSigned" in flags)){ flags.eSigned = [true, false]; }
-
-	var integerRE = number._integerRegexp(flags),
-		decimalRE = dregexp.buildGroupRE(flags.fractional,
-		function(q){
-			var re = "";
-			if(q && (flags.places!==0)){
-				re = "\\" + flags.decimal;
-				if(flags.places == Infinity){
-					re = "(?:" + re + "\\d+)?";
-				}else{
-					re += "\\d{" + flags.places + "}";
-				}
-			}
-			return re;
-		},
-		true
-	);
-
-	var exponentRE = dregexp.buildGroupRE(flags.exponent,
-		function(q){
-			if(q){ return "([eE]" + number._integerRegexp({ signed: flags.eSigned}) + ")"; }
-			return "";
-		}
-	);
-
-	var realRE = integerRE + decimalRE;
-	// allow for decimals without integers, e.g. .25
-	if(decimalRE){realRE = "(?:(?:"+ realRE + ")|(?:" + decimalRE + "))";}
-	return realRE + exponentRE; // String
-};
-
-/*=====
-number.__IntegerRegexpFlags = declare(null, {
-	// signed: Boolean?
-	//		The leading plus-or-minus sign. Can be true, false, or `[true,false]`.
-	//		Default is `[true, false]`, (i.e. will match if it is signed
-	//		or unsigned).
-	// separator: String?
-	//		The character used as the thousands separator. Default is no
-	//		separator. For more than one symbol use an array, e.g. `[",", ""]`,
-	//		makes ',' optional.
-	// groupSize: Number?
-	//		group size between separators
-	// groupSize2: Number?
-	//		second grouping, where separators 2..n have a different interval than the first separator (for India)
-});
-=====*/
-
-number._integerRegexp = function(/*number.__IntegerRegexpFlags?*/ flags){
-	// summary:
-	//		Builds a regular expression that matches an integer
-
-	// assign default values to missing parameters
-	flags = flags || {};
-	if(!("signed" in flags)){ flags.signed = [true, false]; }
-	if(!("separator" in flags)){
-		flags.separator = "";
-	}else if(!("groupSize" in flags)){
-		flags.groupSize = 3;
-	}
-
-	var signRE = dregexp.buildGroupRE(flags.signed,
-		function(q){ return q ? "[-+]" : ""; },
-		true
-	);
-
-	var numberRE = dregexp.buildGroupRE(flags.separator,
-		function(sep){
-			if(!sep){
-				return "(?:\\d+)";
-			}
-
-			sep = dregexp.escapeString(sep);
-			if(sep == " "){ sep = "\\s"; }
-			else if(sep == "\xa0"){ sep = "\\s\\xa0"; }
-
-			var grp = flags.groupSize, grp2 = flags.groupSize2;
-			//TODO: should we continue to enforce that numbers with separators begin with 1-9?  See #6933
-			if(grp2){
-				var grp2RE = "(?:0|[1-9]\\d{0," + (grp2-1) + "}(?:[" + sep + "]\\d{" + grp2 + "})*[" + sep + "]\\d{" + grp + "})";
-				return ((grp-grp2) > 0) ? "(?:" + grp2RE + "|(?:0|[1-9]\\d{0," + (grp-1) + "}))" : grp2RE;
-			}
-			return "(?:0|[1-9]\\d{0," + (grp-1) + "}(?:[" + sep + "]\\d{" + grp + "})*)";
-		},
-		true
-	);
-
-	return signRE + numberRE; // String
-};
-
-return number;
-});
-
-},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
 'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
@@ -84347,7 +84965,7 @@ return number;
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\t\t\t\t\t\t<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<!--<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
@@ -84362,14 +84980,19 @@ return number;
 'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\t<div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n    \n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeBox\"  style=\"display:none;width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    \n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n    \n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
+'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
+'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
+'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
+'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
+'url:dijit/form/templates/ValidationTextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
+'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <table style=\"margin:2px;\">\n        <tbody>\n            <tr>\n                <td style=\"width:35%;padding:4px;vertical-align:top;\">\n                    <div class=\"section\">\n                       <!-- <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>-->\n                        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                            Loading Genome Summary...\n                        </div>\n                    </div>\n                </td>\n                <td style=\"width:40%;padding:4px;vertical-align:top;\">\n  \n                    <div class=\"section\" >\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                        <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                          <div data-dojo-attach-point=\"pfSummaryWidgetD\" style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                          <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\" style=\"height:205px;margin:4px;\">\n                        </div>\n                    </div>\n\n                </td>\n                <td style=\"width:25%;padding:4px;vertical-align:top;\">\n                    <div class=\"section \">\n                     <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                      <div  style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
@@ -84379,10 +85002,6 @@ return number;
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/WorkspaceObjectSelector.html':"<div style=\"padding:0px;\" data-dojo-attach-point=\"focusNode\">\n\t<input type=\"hidden\"/>\n\t<input type=\"text\" data-dojo-attach-point=\"searchBox\" data-dojo-type=\"dijit/form/FilteringSelect\" data-dojo-attach-event=\"onChange:onSearchChange\" data-dojo-props=\"labelType: 'html', promptMessage: '${promptMessage}', missingMessage: '${missingMessage}', searchAttr: 'name'\"  value=\"${value}\" style=\"width:85%\"/>&nbsp;<i data-dojo-attach-event=\"click:openChooser\" class=\"fa fa-folder-open fa-1x\" />\n</div>\n",
-'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
-'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
-'url:dijit/templates/ProgressBar.html':"<div class=\"dijitProgressBar dijitProgressBarEmpty\" role=\"progressbar\"\n\t><div  data-dojo-attach-point=\"internalProgress\" class=\"dijitProgressBarFull\"\n\t\t><div class=\"dijitProgressBarTile\" role=\"presentation\"></div\n\t\t><span style=\"visibility:hidden\">&#160;</span\n\t></div\n\t><div data-dojo-attach-point=\"labelNode\" class=\"dijitProgressBarLabel\" id=\"${id}_label\"></div\n\t><span data-dojo-attach-point=\"indeterminateHighContrastImage\"\n\t\t   class=\"dijitInline dijitProgressBarIndeterminateHighContrastImage\"></span\n></div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/core", [], 1);

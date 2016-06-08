@@ -292,15 +292,26 @@ define("p3/widget/GridContainer", [
 				{
 					label: "GENOME",
 					validTypes: ["*"],
-					multiple: false,
+					multiple: true,
 					tooltip: "View Genome",
+					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
 				},
 				function(selection){
-					var sel = selection[0];
-					// console.log("sel: ", sel)
-					// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+		
+					if (selection.length>1){
+						var map={};
+						selection.forEach(function(sel){
+							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+						})
+						var genome_ids = Object.keys(map);
+						Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+					}else{
+						var sel = selection[0];
+						// console.log("sel: ", sel)
+						// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+					}
 				},
 				false
 			], [

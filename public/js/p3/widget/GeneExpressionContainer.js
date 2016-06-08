@@ -249,8 +249,8 @@ define([
 
 
 			var select_log_ratio = new Select({
-				name: "selectLogRatio",
-				id: "selectLogRatio",
+				name: "selectGeneLogRatio",
+				id: "selectGeneLogRatio",
 				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
 					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
 					{value: 3, label: "3"}
@@ -263,8 +263,8 @@ define([
 			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
 
 			var select_z_score = new Select({
-				name: "selectZScore",
-				id: "selectZScore",
+				name: "selectGeneZScore",
+				id: "selectGeneZScore",
 				options: [{value: 0, label: "0", selected: true }, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
 					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
 					{value: 3, label: "3"}

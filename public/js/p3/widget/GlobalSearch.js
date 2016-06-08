@@ -19,6 +19,117 @@ define([
 			this.searchInput.set("value", q);
 		},
 
+		parseQuery: function(query){
+			// var parts = query.split(" ");
+			// var finalTerms=[];
+			// if(parts){
+			// 	var quoted;
+			// 	parts.forEach(function(term){
+			// 		if (!term) { return; }
+
+
+			// 		// check to see if this is quoted term or part of a quoted term
+			// 		if (quoted && term){
+			// 			quoted = quoted + " " + term;
+			// 			if (term[term.length-1] == '"'){
+			// 				finalTerms.push(quoted);
+			// 			}
+			// 			return;
+			// 		} else if (term[0])=='"'){
+			// 			quoted=term
+			// 			return;
+			// 		}
+
+			// 		// check to see if this is a property matcher
+			// 		var tparts = term.split(":");
+			// 		if (tparts.length>)
+
+
+
+
+			// 	}
+			var finalTerms=[]
+			var currentTerm="";
+			var propertyMatch;
+			var quoted;
+			if (query){
+				for (var i=0;i<query.length;i++){
+					var t = query[i];
+
+					switch(t){
+						case ":":
+							propertyMatch = currentTerm;
+							currentTerm="";
+							console.log("propertyMatch: ", propertyMatch)
+							break;
+						case '"':
+							if (quoted){
+								if (propertyMatch){
+									finalTerms.push({property: propertyMatch, term: currentTerm + t});
+									propertyMatch=false;
+								}else{
+									finalTerms.push(currentTerm + t);
+								}
+								quoted=false;
+								currentTerm = ""
+							}else{
+								currentTerm = currentTerm + t;
+								quoted=true;
+							}
+							break;
+						case " ":
+							if (quoted){
+								currentTerm = currentTerm + t;
+							}else{
+								if (propertyMatch){
+									finalTerms.push({property: propertyMatch, term: currentTerm});
+									propertyMatch=false;
+								}else{
+									if (currentTerm.match(/[^a-zA-Z\d]/)){
+										currentTerm = '"' + currentTerm + '"'
+									}
+
+									finalTerms.push(currentTerm);
+								}
+								currentTerm="";
+							}
+							break;
+						default: 
+							currentTerm = currentTerm + t;
+
+					}
+				}
+
+				if (currentTerm){
+					if (propertyMatch){
+						finalTerms.push({property: propertyMatch, term: currentTerm});
+					}else{
+						if (currentTerm.match(/[^a-zA-Z\d]/)){
+							currentTerm = '"' + currentTerm + '"'
+						}
+						finalTerms.push(currentTerm);
+					}
+
+				}
+
+				finalTerms = finalTerms.map(function(term){
+					if (typeof term == 'string'){
+						return "keyword(" + encodeURIComponent(term) + ")";
+					}else{
+						return "eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")";
+					}
+				})
+
+				if (finalTerms.length>1){
+					return "and(" + finalTerms.join(",") + ")";
+				}else{
+					return finalTerms[0];
+				}
+			} 
+
+			throw Error("No Query Supplied to Query Parser");
+		},
+
 		onKeypress: function(evt){
 			if(evt.charOrCode == keys.ENTER){
 				var query = this.searchInput.get('value');
@@ -28,54 +139,42 @@ define([
 				}
 
 				console.log("Search Filter: ", searchFilter);
-				var parts = query.split(" ");
-				if(parts){
-					q = parts.map(function(w){
-						return "keyword(" + encodeURIComponent(w) + ")"
-					});
-					console.log(" Mapped: ", q, "Num Parts: ", parts.length);
-
-					if(parts.length > 1){
-						q = "and(" + q.join(",") + ")";
-					}else{
-						q = q[0]
-					}
-
-					var clear = false;
-					switch(searchFilter){
-						case "amr":
-							Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
-							clear = true;
-							break;
-						case "everything":
-							Topic.publish("/navigate", {href: "/search/?" + q});
-							clear = true;
-							break;
-						case "pathways":
-							Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
-							clear = true;
-							break;
-						case "sp_genes":
-							Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
-							clear = true;
-							break;
-						case "genome_features":
-							Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
-							clear = true;
-							break;
-						case "genomes":
-							Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
-							clear = true;
-							break;
-						default:
-							console.log("Do Search: ", searchFilter, query);
-					}
-
-					if(clear){
-						this.searchInput.set("value", '');
-					}
-
+				var q = this.parseQuery(query);
+				
+				var clear = false;
+				switch(searchFilter){
+					case "amr":
+						Topic.publish("/navigate", {href: "/view/GenomeList/?and(or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))," + q + ")"});
+						clear = true;
+						break;
+					case "everything":
+						Topic.publish("/navigate", {href: "/search/?" + q});
+						clear = true;
+						break;
+					case "pathways":
+						Topic.publish("/navigate", {href: "/view/PathwayList/?" + q});
+						clear = true;
+						break;
+					case "sp_genes":
+						Topic.publish("/navigate", {href: "/view/SpecialtyGeneList/?" + q});
+						clear = true;
+						break;
+					case "genome_features":
+						Topic.publish("/navigate", {href: "/view/FeatureList/?" + q});
+						clear = true;
+						break;
+					case "genomes":
+						Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
+						clear = true;
+						break;
+					default:
+						console.log("Do Search: ", searchFilter, query);
 				}
+
+				if(clear){
+					this.searchInput.set("value", '');
+				}
+
 
 				console.log("Do Search: ", searchFilter, query);
 			}
