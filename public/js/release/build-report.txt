@@ -1,4 +1,4 @@
-Build started: Wed Jun 08 2016 14:13:34 GMT-0500 (CDT)
+Build started: Wed Jun 08 2016 15:20:57 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js (compile time:0.922s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.415s)
-	/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js (compile time:5.165s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.438s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js (compile time:9.96s)
+	/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js (compile time:1.291s)
+	/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/p3user.js (compile time:4.888s)
+	/Users/anwarren/Sites/p3-web/public/js/release/dojo/dojo.js (compile time:5.959s)
+	/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/globalWSObject.js (compile time:6.104s)
+	/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/core.js (compile time:11.607s)
 info(107) Package Version:
 	package: dojo; version: 1.11.0-pre
 	package: dijit; version: 1.11.0-pre
@@ -734,11 +734,11 @@ warn(205) Module not tagged as pure AMD yet it contains AMD API applications.
 	module: swfobject/swfobject
 	module: phyloview/TreeNavSVG
 warn(209) Missing or empty package.json.
-	filename: /Users/hsyoo/dev/p3_web/public/js/FileSaver/package.json
-	filename: /Users/hsyoo/dev/p3_web/public/js/circulus/package.json
-	filename: /Users/hsyoo/dev/p3_web/public/js/lazyload/package.json
-	filename: /Users/hsyoo/dev/p3_web/public/js/jDataView/src/package.json
-	filename: /Users/hsyoo/dev/p3_web/public/js/phyloview/package.json
+	filename: /Users/anwarren/Sites/p3-web/public/js/FileSaver/package.json
+	filename: /Users/anwarren/Sites/p3-web/public/js/circulus/package.json
+	filename: /Users/anwarren/Sites/p3-web/public/js/lazyload/package.json
+	filename: /Users/anwarren/Sites/p3-web/public/js/jDataView/src/package.json
+	filename: /Users/anwarren/Sites/p3-web/public/js/phyloview/package.json
 warn(216) dojo/has plugin resource could not be resolved during build-time.
 	plugin resource id: dom-addeventlistener?:./aspect; reference module id: dojo/on
 	plugin resource id: host-browser?dom-addeventlistener?:../on:; reference module id: dojo/request/watch
@@ -809,8 +809,6 @@ warn(224) A plugin dependency was encountered but there was no build-time plugin
 warn(226) A package without a profile could throw errors or warnings.
 	package: d3
 	package: swfobject-amd
-error(311) Missing dependency.
-	module: JBrowse/main; dependency: xstyle/load-css
 Layer Contents:
 dojo/dojo:
 	dojo/dojo
@@ -1358,11 +1356,11 @@ p3/layer/globalWSObject:
 	dojo/promise/all
 
 Optimizer Messages:
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.922s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.922s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.291s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.291s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
@@ -1376,10 +1374,10 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.415s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.922s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
+Done (compile time:4.888s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.291s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
@@ -1393,8 +1391,8 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.415s)
-/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
+Done (compile time:4.888s)
+/Users/anwarren/Sites/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
 	       ^
@@ -1516,10 +1514,10 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.165s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.922s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
+Done (compile time:5.959s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.291s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
@@ -1533,8 +1531,8 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.415s)
-/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
+Done (compile time:4.888s)
+/Users/anwarren/Sites/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
 	       ^
@@ -1656,8 +1654,8 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.165s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js:
+Done (compile time:5.959s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
 	       ^
@@ -1783,10 +1781,10 @@ globalWSObject.js.uncompressed.js:17149: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.438s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.922s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
+Done (compile time:6.104s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/panels.js:
+Done (compile time:1.291s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
@@ -1800,8 +1798,8 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.415s)
-/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
+Done (compile time:4.888s)
+/Users/anwarren/Sites/p3-web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
 	       ^
@@ -1923,8 +1921,8 @@ dojo.js.uncompressed.js:15640: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.165s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js:
+Done (compile time:5.959s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
 	       ^
@@ -2050,8 +2048,8 @@ globalWSObject.js.uncompressed.js:17149: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.438s)
-/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
+Done (compile time:6.104s)
+/Users/anwarren/Sites/p3-web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:584: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
@@ -2249,7 +2247,7 @@ core.js.uncompressed.js:82219: WARNING - unreachable code
 			^
 
 0 error(s), 49 warning(s)
-Done (compile time:9.96s)
+Done (compile time:11.607s)
 
 
 Has Features Detected
@@ -3178,6 +3176,6 @@ Has Features Detected
 
 
 Process finished normally
-	errors: 1
+	errors: 0
 	warnings: 82
-	build time: 75.534 seconds
+	build time: 82.855 seconds
