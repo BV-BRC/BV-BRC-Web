@@ -62,6 +62,15 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
+				label: "VIEW",
+				validTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "View items in this genome group"
+			}, function(selection){
+				Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+			});
+
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["*"],
@@ -69,7 +78,7 @@ define("p3/widget/WorkspaceBrowser", [
 				multiple: false,
 				tooltip: "View Genome"
 			}, function(selection){
-				console.log("selection: ", selection);
+				// console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
@@ -664,6 +673,34 @@ define("p3/widget/WorkspaceBrowser", [
 				},
 				false);
 
+			this.actionPanel.addAction("ProteinFamily", "fa fa-users fa-2x", {
+				label: "ProteinFam",
+				multiple: true,
+				validTypes: ["genome_group"],
+				tooltip: "View protein families"
+			}, function(selection){
+
+				if(selection.length === 1){
+					var path = selection[0].path;
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + path + "#view_tab=proteinFamilies"})
+				}else{
+					// read genome ids
+					var paths = selection.map(function(d){ return d.path});
+					WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function(objs){
+						var genomeIdHash = {};
+						objs.forEach(function(obj){
+							var data = JSON.parse(obj.data);
+							data.id_list.genome_id.forEach(function(d){
+								if(!genomeIdHash.hasOwnProperty(d)){
+									genomeIdHash[d] = true;
+								}
+							})
+						});
+
+						Topic.publish("/navigate", {href:"/view/GenomeList/?in(genome_id,(" + Object.keys(genomeIdHash) + "))#view_tab=proteinFamilies"});
+					}));
+				}
+			}, false);
 //			this.actionPanel.addAction("Table", "fa icon-table fa-2x", {multiple: true, validTypes:["*"]}, function(selection){
 //				console.log("Remove Items from Group", selection);
 //			},true);

@@ -1,0 +1,31 @@
+.resultTypeHeader {
+	font-size:1.5em;
+	border-bottom:1px solid #ddd;
+}
+
+.resultTypeHeader A:hover{
+	color: orange;
+}
+.resultHead {
+	font-size: 1.2em;
+	font-weight: 700;
+	color: #0038b7;
+}
+
+.resultHead A:hover {
+	color: orange;
+}
+
+.resultInfo {
+	padding-left: 5px;
+}
+
+.resultInfo.comments {
+	margin: 5px;
+}
+
+.searchResult {
+	padding-left: 15px;
+	margin-bottom: 10px;
+
+}

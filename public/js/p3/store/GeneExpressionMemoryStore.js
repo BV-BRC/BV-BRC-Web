@@ -20,7 +20,7 @@ define([
 	return declare([ArrangeableMemoryStore, Stateful], {
 		baseQuery: {},
 		apiServer: window.App.dataServiceURL,
-		idProperty: "feature_id",
+		idProperty: "pid",
 		state: null,
 		tgState: tgState,
 		feature_id: null,
@@ -261,7 +261,8 @@ define([
 			else if (dz<0) {
 				range += "&lt(z_score,"  + dz+ ")";
 			}
-			var q = this.state.search + range + "&select(feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
+			//var q = this.state.search + range + "&select(pid,feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
+			var q = this.state.search + range + "&sort(+expname)&limit(25000)";
 			
 			console.log("In MemoryStore query: q:", q);
 			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
