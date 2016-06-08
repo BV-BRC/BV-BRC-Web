@@ -1,10 +1,12 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
-	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang", "../WorkspaceManager"
+	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang",
+    "../WorkspaceManager", "dojo/dom-style", "dijit/form/Select", "./WorkspaceFilenameValidationTextBox",
+    "./WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, lang, WorkspaceManager){
+			Template, lang, WorkspaceManager, domStyle, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
 		"disabled": false,
@@ -12,6 +14,10 @@ define([
 		selection: null,
 		path: null,
 		type: "genome_group",
+	    idType: null,
+        inputType: null,
+        conversionTypes: {"feature_data":[{label:"Feature",value:"feature_group"},{label:"Genome",value:"genome_group"}]},
+        selectType: false,
 		_setTypeAttr: function(t){
 			this.type = t;
 			if(this.workspaceObjectSelector){
@@ -29,6 +35,12 @@ define([
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 		},
+        onChangeOutputType: function(){
+            this.set('type',this.groupTypeBox.get('value'));
+			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
+            this.onChangeTarget(this.type);
+        },
+
 		onChangeTarget: function(target){
 			console.log("onChangeTarget ");
 			if(!this._started){
@@ -72,6 +84,13 @@ define([
 			this.groupNameBox.set('path', this.path);
 			this.workspaceObjectSelector.set('path', this.path);
 			this.workspaceObjectSelector.set('type', [this.type]);
+            if(this.inputType in this.conversionTypes){
+                this.selectType = true;
+                domStyle.set(this.groupTypeBox.domNode, "display", "");
+                this.groupTypeBox.set("options",this.conversionTypes[this.inputType]);
+                this.groupTypeBox.set("value",this.conversionTypes[this.inputType][0]["value"]);
+                this.groupTypeBox.set("displayedValue",this.conversionTypes[this.inputType][0]["label"]);
+            }
 		},
 
 		onCancel: function(evt){
@@ -81,26 +100,27 @@ define([
 		onCopy: function(evt){
 			console.log("Copy Selection: ", this.selection, " to ", this.value);
 			//var idType = (this.type == "genome_group") ? "genome_id" : "feature_id"
-			var idType = "genome_id";
-			if(this.type == "genome_group"){
-				idType = "genome_id";
-			}
-			else if(this.type == "feature_group"){
-				idType = "feature_id";
-			}
-			else if(this.type == "experiment_group"){
-				idType = "eid";
-			}
-			
+            if (!this.idType){
+			    this.idType = "genome_id";
+                if(this.type == "genome_group"){
+                    this.idType = "genome_id";
+                }
+                else if(this.type == "feature_group"){
+                    this.idType = "feature_id";
+                }
+                else if(this.type == "experiment_group"){
+                    this.idType = "eid";
+                }
+            }
 			var def;
 			if(this.targetType.get("value") == "existing"){
-				def = WorkspaceManager.addToGroup(this.value, idType, this.selection.map(function(o){
-					return o[idType];
-				}));
+				def = WorkspaceManager.addToGroup(this.value, this.idType, this.selection.map(lang.hitch(this, function(o){
+					return o[this.idType];
+				})));
 			}else{
-				def = WorkspaceManager.createGroup(this.value, this.type, this.path, idType, this.selection.map(function(o){
-					return o[idType];
-				}));
+				def = WorkspaceManager.createGroup(this.value, this.type, this.path, this.idType, this.selection.map(lang.hitch(this, function(o){
+					return o[this.idType];
+				})));
 			}
 			def.then(lang.hitch(this, function(){
 				on.emit(this.domNode, "dialogAction", {action: "close", bubbles: true});
