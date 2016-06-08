@@ -160,7 +160,7 @@ define([
 					validContainerTypes: ["pathway_data"]
 				},
 				function(selection){
-					console.log(selection, this.type, this.state);
+					// console.log(selection, this.type, this.state);
 					var url = {annotation: 'PATRIC'};
 
 					if(this.state.hasOwnProperty('taxon_id')){
