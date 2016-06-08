@@ -63,10 +63,18 @@ define([
 			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
-				multiple: false,
+				multiple: true,
 				tooltip: "View items in this genome group"
 			}, function(selection){
-				Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+				}
 			});
 
 			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
