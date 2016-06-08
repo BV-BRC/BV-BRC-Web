@@ -12,7 +12,7 @@ define([
 			selected: [],
 			byCategory: {},
 			keywords: [],
-			in:{}
+			contains:{}
 		};
 
 		try{
@@ -37,11 +37,11 @@ define([
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
 					console.log("IN F: ", f, "V: ",v, term)
-					parsed.selected.push({field: f, value: v});
-					if(!parsed.in[f]){
-						parsed.in[f] = [v];
+					// parsed.selected.push({field: f, value: v});
+					if(!parsed.contains[f]){
+						parsed.contains[f] = [v];
 					}else{
-						parsed.in[f].push(v);
+						parsed.contains[f].push(v);
 					}
 					break;
 				case "eq":
@@ -99,9 +99,9 @@ define([
 			out.push(" where " + catsEnglish)
 		}
 
-		if (parsed.in){
-			var ins = Object.keys(parsed.in).forEach(function(prop){
-				out.push("in " + parsed.in[prop].map(valueWrap).join(" OR "));
+		if (parsed.contains){
+			var ins = Object.keys(parsed.contains).forEach(function(prop){
+				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
 			})
 		}
 
