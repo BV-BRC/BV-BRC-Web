@@ -8,7 +8,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 	"./WorkspaceExplorerView", "dojo/dom-construct", "../WorkspaceManager", "dojo/store/Memory",
 	"./Uploader", "dijit/layout/BorderContainer", "dojo/dom-attr",
 	"dijit/form/Button", "dojo/_base/Deferred", "dijit/form/CheckBox", "dojo/topic",
-	"dijit/registry", "dgrid/editor", "./formatter"
+	"dijit/registry", "dgrid/editor", "./formatter", "dijit/form/FilteringSelect"
 
 ], function(declare, WidgetBase, on, lang,
 			domClass, Templated, WidgetsInTemplate,
@@ -16,7 +16,7 @@ define("p3/widget/WorkspaceObjectSelector", [
 			Grid, domConstr, WorkspaceManager, Memory,
 			Uploader, BorderContainer, domAttr,
 			Button, Deferred, CheckBox, Topic,
-			registry, editor, formatter){
+			registry, editor, formatter, FilteringSelect){
 
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "WorkspaceObjectSelector",

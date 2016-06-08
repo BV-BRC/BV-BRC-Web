@@ -11,6 +11,8 @@ define('p3/layer/nls/core_ru',{
 ,
 'dojo/cldr/nls/number':{"scientificFormat":"#E0","currencySpacing-afterCurrency-currencyMatch":"[:^S:]","infinity":"∞","superscriptingExponent":"×","list":";","percentSign":"%","minusSign":"-","currencySpacing-beforeCurrency-surroundingMatch":"[:digit:]","decimalFormat-short":"000 трлн","currencySpacing-afterCurrency-insertBetween":" ","nan":"не число","plusSign":"+","currencySpacing-afterCurrency-surroundingMatch":"[:digit:]","currencySpacing-beforeCurrency-currencyMatch":"[:^S:]","currencyFormat":"#,##0.00 ¤","perMille":"‰","group":" ","percentFormat":"#,##0 %","decimalFormat-long":"000 триллиона","decimalFormat":"#,##0.###","decimal":",","currencySpacing-beforeCurrency-insertBetween":" ","exponential":"E","_localized":{}}
 ,
+'dijit/form/nls/ComboBox':{"previousMessage":"Предыдущие варианты","nextMessage":"Следующие варианты","_localized":{}}
+,
 'dgrid/extensions/nls/pagination':{"status":"${start} - ${end} of ${total} results","gotoFirst":"Go to first page","gotoNext":"Go to next page","gotoPrev":"Go to previous page","gotoLast":"Go to last page","gotoPage":"Go to page","jumpPage":"Jump to page","rowsPerPage":"Number of rows per page","_localized":{}}
 ,
 'dojox/widget/nls/ColorPicker':{"redLabel":"к","greenLabel":"з","blueLabel":"с","hueLabel":"о","saturationLabel":"н","valueLabel":"з","degLabel":"°","hexLabel":"шест","huePickerTitle":"Выбор оттенка","saturationPickerTitle":"Выбор насыщенности","_localized":{}}
