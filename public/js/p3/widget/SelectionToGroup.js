@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
 	"dojo/text!./templates/SelectionToGroup.html", "dojo/_base/lang",
-    "../WorkspaceManager", "dojo/dom-style", "dijit/form/Select", "./WorkspaceFilenameValidationTextBox",
+    "../WorkspaceManager", "dojo/dom-style", "dojo/parser", "dijit/form/Select", "./WorkspaceFilenameValidationTextBox",
     "./WorkspaceObjectSelector"
 ], function(declare, WidgetBase, on,
 			domClass, Templated, WidgetsInTemplate,
-			Template, lang, WorkspaceManager, domStyle, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
+			Template, lang, WorkspaceManager, domStyle, Parser, Select, WorkspaceFilenameValidationTextBox, WorkspaceObjectSelector){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		"baseClass": "Panel",
 		"disabled": false,
