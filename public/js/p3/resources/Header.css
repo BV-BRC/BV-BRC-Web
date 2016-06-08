@@ -110,7 +110,7 @@
 .P3Header A,
 .P3Header A:visited {
 	text-decoration:none;
-};
+}
 
 .patric .TopMenuBar *:focus{
     outline: 0;

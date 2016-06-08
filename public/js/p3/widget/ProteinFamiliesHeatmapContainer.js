@@ -105,7 +105,7 @@ define([
 					if(this.isPopupOpen){
 						this.isPopupOpen = false;
 						popup.close();
-					}else {
+					}else{
 						popup.open({
 							parent: this,
 							popup: this.containerActionBar._actions.Anchor.options.tooltipDialog,
@@ -388,20 +388,25 @@ define([
 
 			var self = this;
 			var pfState = self.pfState;
-			var options = pfState.genomeIds.map(function(genomeId){
+			var options = [{value:'', label:'Select a genome'}];
+			options = options.concat(pfState.genomeIds.map(function(genomeId){
 				return {
 					value: genomeId,
 					label: pfState.genomeFilterStatus[genomeId].getLabel()
 				};
-			});
+			}).sort(function(a, b){
+				return a.label - b.label;
+			}));
 
 			var anchor = new Select({
 				name: "anchor",
 				options: options
 			});
 			anchor.on('change', function(genomeId){
-				Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
-				popup.close(self.tooltip_anchoring);
+				if(genomeId !== ''){
+					Topic.publish("ProteinFamilies", "anchorByGenome", genomeId);
+					popup.close(self.tooltip_anchoring);
+				}
 			});
 
 			return anchor;
@@ -504,11 +509,15 @@ define([
 			});
 			on(btnShowDetails.domNode, "click", function(){
 
-				var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
-						return feature.feature_id;
-					}).join(',') + ")))";
+				// var query = "?and(in(genome_id,(" + genomeIds.join(',') + ")),in(" + _self.pfState.familyType + "_id,(" + familyIds.join(',') + ")),in(feature_id,(" + features.map(function(feature){
+				// 		return feature.feature_id;
+				// 	}).join(',') + ")))";
+				//
+				// Topic.publish("ProteinFamilies", "showMembersGrid", query);
 
-				Topic.publish("ProteinFamilies", "showMembersGrid", query);
+				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
+				window.open("/view/FeatureList/" + query + "#view_tab=features");
+
 				_self.dialog.hide();
 			});
 

@@ -8,6 +8,18 @@ define([
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, easing){
+
+	var sourcePropertyMap = {
+		"PATRIC_VF": "Virulence Factor",
+			"Victors": "Virulence Factor",
+			"VFDB": "Virulence Factor",
+			"DrugBank": "Drug Target",
+			"TTD": "Drug Target",
+			"Human": "Human Homolog",
+			"CARD": "Antibiotic Resistance",
+			"ARDB": "Antibiotic Resistance"
+	};
+
 	return declare([SummaryWidget], {
 		dataModel: "sp_gene",
 		query: "",
@@ -15,25 +27,25 @@ define([
 		columns: [
 			{
 				label: " ", field: "text", renderCell: function(obj, val, node){
-				node.innerHTML = ""
-			}
+					node.innerHTML = sourcePropertyMap[val]
+				}
 			},
 			{label: "Source", field: "text"},
 			{label: "Genes", field: "y"}
 		],
 		processData: function(res){
 			this._chartLabels = [];
-			console.log("Data: ", res);
+			// console.log("Data: ", res);
 			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
-				console.log("INVALID SUMMARY DATA");
+				console.error("INVALID SUMMARY DATA");
 				return;
 			}
 			var d = res.facet_counts.facet_fields.source;
-			var data = []
+			var data = [];
 			var idx = 0;
 			for(var i = 0; i < d.length; i += 2){
 				data.push({text: d[i], x: idx, y: d[i + 1]});
-				this._chartLabels.push({value: idx, text: d[i]});
+				// this._chartLabels.push({value: idx, text: d[i]});
 				idx++;
 			}
 
@@ -49,7 +61,7 @@ define([
 				this.chart.setTheme(Theme);
 
 				this.chart.addPlot("default", {
-					type: "Columns",
+					type: "StackedColumns",
 					markers: true,
 					gap: 5,
 					maxBarSize: 20,
@@ -71,7 +83,7 @@ define([
 
 				new ChartTooltip(this.chart, "default", {
 					text: function(o){
-						console.log("O: ", o)
+						// console.log("O: ", o)
 						var d = o.run.data[o.index];
 						return d.text + " (" + d.y + ")"
 					}
@@ -79,7 +91,7 @@ define([
 
 				this.chart.addSeries("source", this.data);
 
-				console.log("Render GF DATA", this.chart);
+				// console.log("Render GF DATA", this.chart);
 				this.chart.render();
 			}else{
 
@@ -90,7 +102,7 @@ define([
 
 		render_table: function(){
 			this.inherited(arguments);
-			console.log("RenderArray: ", this._tableData);
+			// console.log("RenderArray: ", this._tableData);
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}

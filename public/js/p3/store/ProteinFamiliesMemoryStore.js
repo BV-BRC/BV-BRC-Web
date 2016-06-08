@@ -15,6 +15,7 @@ define([
 		genomeFilterStatus: {},
 		clusterRowOrder: [],
 		clusterColumnOrder: [],
+		keyword: '',
 		perfectFamMatch: 'A',
 		min_member_count: null,
 		max_member_count: null,
@@ -28,6 +29,14 @@ define([
 		idProperty: "family_id",
 		state: null,
 		pfState: pfState,
+
+		onSetState: function(attr, oldVal, state){
+			// console.warn("onSetState", state, state.genome_ids);
+			if(state && state.genome_ids){
+				this._loaded = false;
+				delete this._loadingDeferred;
+			}
+		},
 
 		constructor: function(options){
 			this._loaded = false;
@@ -45,8 +54,10 @@ define([
 					case "setFamilyType":
 						self.pfState.familyType = value;
 						self.reload();
-						self.currentData = self.getHeatmapData(self.pfState);
-						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
+						Topic.publish("ProteinFamilies", "showMainGrid");
+						// TODO: need to wait until data is loaded and update heatmap data
+						// self.currentData = self.getHeatmapData(self.pfState);
+						// Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "anchorByGenome":
 						self.anchorByGenome(value);
@@ -67,6 +78,8 @@ define([
 						break;
 				}
 			});
+
+			this.watch("state", lang.hitch(this, "onSetState"));
 		},
 		conditionFilter: function(pfState){
 			var self = this;
@@ -79,6 +92,8 @@ define([
 			var gfs = pfState.genomeFilterStatus;
 
 			// var tsStart = window.performance.now();
+			var keywordRegex = pfState.keyword.trim().toLowerCase().replace(/,/g, "~").replace(/\n/g, "~").replace(/ /g, "~").split("~");
+
 			data.forEach(function(family){
 
 				var skip = false;
@@ -95,6 +110,13 @@ define([
 						skip = true;
 					}
 				});
+
+				// keyword search
+				if(pfState.keyword !== ''){
+					skip = !keywordRegex.some(function(needle){
+						return needle && (family.description.toLowerCase().indexOf(needle) >= 0 || family.family_id.toLowerCase().indexOf(needle) >= 0);
+					});
+				}
 
 				// perfect family
 				if(pfState.perfectFamMatch === 'Y'){
@@ -209,15 +231,16 @@ define([
 					var gfs = new FilterStatus();
 					gfs.init(idx, genome.genome_name);
 					_self.pfState.genomeFilterStatus[genome.genome_id] = gfs;
-					_self.pfState.genomeIds.push(genome.genome_id);
+					// _self.pfState.genomeIds.push(genome.genome_id);
 				});
+				_self.pfState.genomeIds = Object.keys(_self.pfState.genomeFilterStatus);
 				// publish pfState & update filter panel
 				Topic.publish("ProteinFamilies", "updatePfState", _self.pfState);
 				Topic.publish("ProteinFamilies", "updateFilterGrid", genomes);
 
 				// _self.pfState, _self.token
 				var opts = {
-					token: ""
+					token: window.App.authorizationToken || ""
 				};
 				return when(window.App.api.data("proteinFamily", [_self.pfState, opts]), lang.hitch(this, function(data){
 					_self.setData(data);
@@ -481,8 +504,12 @@ define([
 			});
 
 			// cols - families
-			//console.warn(this);
-			var data = this.query("", {});
+			// console.warn(this);
+			var opts = {};
+			if(this.sort.length > 0){
+				opts.sort = this.sort;
+			}
+			var data = this.query("", opts);
 
 			var familyOrderMap = {};
 			if(familyOrder !== [] && familyOrder.length > 0){

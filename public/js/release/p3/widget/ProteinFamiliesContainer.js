@@ -4,15 +4,13 @@ define("p3/widget/ProteinFamiliesContainer", [
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button",
 	"dojox/widget/Standby",
 	"./ActionBar", "./ContainerActionBar",
-	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer",
-	"./ProteinFamiliesMembersGridContainer"
+	"./ProteinFamiliesGridContainer", "./ProteinFamiliesFilterGrid", "./ProteinFamiliesHeatmapContainer"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button,
 			Standby,
 			ActionBar, ContainerActionBar,
-			MainGridContainer, FilterGrid, HeatmapContainer,
-			MembersGridContainer){
+			MainGridContainer, FilterGrid, HeatmapContainer){
 
 	return declare([BorderContainer], {
 		id: "PFContainer",
@@ -30,9 +28,8 @@ define("p3/widget/ProteinFamiliesContainer", [
 				var key = arguments[0], value = arguments[1];
 
 				switch(key){
-					case "showMembersGrid":
-						self.membersGridContainer.set("query", value);
-						self.tabContainer.selectChild(self.membersGridContainer);
+					case "showMainGrid":
+						self.tabContainer.selectChild(self.mainGridContainer);
 						break;
 					case "updatePfState":
 						self.pfState = value;
@@ -75,9 +72,6 @@ define("p3/widget/ProteinFamiliesContainer", [
 			if(this.heatmapContainer){
 				this.heatmapContainer.set('visible', true);
 			}
-			if(this.membersGridContainer){
-				this.membersGridContainer.set('visible', true);
-			}
 		},
 
 		onFirstView: function(){
@@ -107,17 +101,10 @@ define("p3/widget/ProteinFamiliesContainer", [
 				content: "Heatmap"
 			});
 
-			this.membersGridContainer = new MembersGridContainer({
-				title: "", // hide tab
-				content: "Protein Family Members",
-				state: this.state
-			});
-
 			this.watch("state", lang.hitch(this, "onSetState"));
 
 			this.tabContainer.addChild(this.mainGridContainer);
 			this.tabContainer.addChild(this.heatmapContainer);
-			this.tabContainer.addChild(this.membersGridContainer);
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.addChild(filterPanel);
@@ -187,16 +174,16 @@ define("p3/widget/ProteinFamiliesContainer", [
 			var otherFilterPanel = new ContentPane({
 				region: "bottom"
 			});
-			/*
+
 			var ta_keyword = new TextArea({
 				style: "width:215px; min-height:75px"
 			});
 			var label_keyword = domConstruct.create("label", {innerHTML: "Filter by one or more keywords"});
 			domConstruct.place(label_keyword, otherFilterPanel.containerNode, "last");
 			domConstruct.place(ta_keyword.domNode, otherFilterPanel.containerNode, "last");
-			*/
+
 			//
-			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var rb_perfect_match = new RadioButton({
 				name: "familyMatch",
@@ -222,9 +209,11 @@ define("p3/widget/ProteinFamiliesContainer", [
 				checked: true
 			});
 
-			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families<br/>"});
+			var label_rb_all_match = domConstruct.create("label", {innerHTML: " All Families"});
 			domConstruct.place(rb_all_match.domNode, otherFilterPanel.containerNode, "last");
 			domConstruct.place(label_rb_all_match, otherFilterPanel.containerNode, "last");
+
+			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var label_num_protein_family = domConstruct.create("label", {innerHTML: "Number of Proteins per Family<br/>"});
 			var tb_num_protein_family_min = new TextBox({
@@ -259,7 +248,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place("<span> to </span>", otherFilterPanel.containerNode, "last");
 			domConstruct.place(tb_num_genome_family_max.domNode, otherFilterPanel.containerNode, "last");
 
-			domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var defaultFilterValue = {
 				min_member_count: null,
@@ -268,11 +257,35 @@ define("p3/widget/ProteinFamiliesContainer", [
 				max_genome_count: null
 			};
 
+			var btn_reset = new Button({
+				label: "Reset",
+				onClick: lang.hitch(this, function(){
+
+					// rb_plfam.reset();
+					// rb_pgfam.reset();
+					// rb_figfam.reset();
+
+					ta_keyword.set('value', '');
+
+					rb_perfect_match.reset();
+					rb_non_perfect_match.reset();
+					rb_all_match.reset();
+
+					tb_num_protein_family_min.set('value', '');
+					tb_num_protein_family_max.set('value', '');
+					tb_num_genome_family_min.set('value', '');
+					tb_num_genome_family_max.set('value', '');
+				})
+			});
+			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
+
 			var btn_submit = new Button({
 				label: "Filter",
 				onClick: lang.hitch(this, function(){
 
 					var filter = {};
+
+					filter.keyword = ta_keyword.get('value');
 
 					if(rb_perfect_match.get('value')){
 						filter.perfectFamMatch = 'Y';
@@ -294,7 +307,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
-					// console.log(this.pfState);
+					console.log(this.pfState);
 					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});

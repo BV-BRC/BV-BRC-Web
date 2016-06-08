@@ -14,37 +14,39 @@ define("p3/widget/GenomeFeatureSummary", [
 		dataModel: "genome_feature",
 		query: "",
 		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
-		columns: [
-			{
-				label: " ", field: "feature_type", renderCell: function(obj, val, node){
+		columns: [{
+			label: " ",
+			field: "feature_type",
+			renderCell: function(obj, val, node){
 				node.innerHTML = '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"
 			}
-			},
-			{
-				label: "PATRIC", field: "PATRIC", renderCell: function(obj, val, node){
+		}, {
+			label: "PATRIC",
+			field: "PATRIC",
+			renderCell: function(obj, val, node){
 				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
 			}
-			},
-			{
-				label: "RefSeq", field: "RefSeq", renderCell: function(obj, val, node){
+		}, {
+			label: "RefSeq",
+			field: "RefSeq",
+			renderCell: function(obj, val, node){
 				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
 			}
-			}
-		],
+		}],
 		processData: function(data){
-			console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
+			// console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
 
 			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']){
 				console.log("INVALID SUMMARY DATA", data);
 				return;
 			}
-			data = data.facet_counts.facet_pivot['annotation,feature_type']
-			var gfData = {}
-			this._chartLabels = []
-			var byFeature = {}
+			data = data.facet_counts.facet_pivot['annotation,feature_type'];
+			var gfData = {};
+			this._chartLabels = [];
+			var byFeature = {};
 
-			var values = {}
-			console.log("SummarY: ", data)
+			var values = {};
+			// console.log("SummarY: ", data)
 
 			data.forEach(function(summary){
 				summary.pivot.forEach(function(pv, idx){
@@ -57,7 +59,7 @@ define("p3/widget/GenomeFeatureSummary", [
 
 			values.forEach(function(val, idx){
 				this._chartLabels.push({text: val, value: idx})
-			}, this)
+			}, this);
 
 			data.forEach(function(summary){
 				if(!gfData[summary.value]){
@@ -73,8 +75,8 @@ define("p3/widget/GenomeFeatureSummary", [
 									y: Math.log(pv.count) / LOG10,
 									count: pv.count,
 									annotation: summary.value
-								})
-								byFeature[pv.value][summary.value] = pv.count
+								});
+								byFeature[pv.value][summary.value] = pv.count;
 								return true;
 							}
 							return false;
@@ -86,13 +88,13 @@ define("p3/widget/GenomeFeatureSummary", [
 
 			this._tableData = Object.keys(byFeature).map(function(f){
 				return byFeature[f];
-			})
+			});
 
 			this.set('data', gfData);
 		},
 
 		render_chart: function(){
-			console.log("RENDER CHART")
+			// console.log("RENDER CHART");
 			if(!this.chart){
 				this.chart = new Chart2D(this.chartNode);
 				this.chart.setTheme(Theme);
@@ -152,13 +154,13 @@ define("p3/widget/GenomeFeatureSummary", [
 					}
 				});
 
-				console.log("Data to Render: ", this.data)
+				// console.log("Data to Render: ", this.data);
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
 					this.chart.addSeries(key, this.data[key]);
 				}));
 
-				console.log("Render GF DATA", this.chart);
+				// console.log("Render GF DATA", this.chart);
 				this.chart.render();
 			}else{
 
@@ -172,7 +174,7 @@ define("p3/widget/GenomeFeatureSummary", [
 
 		render_table: function(){
 			this.inherited(arguments);
-			console.log("RenderArray: ", this._tableData);
+			// console.log("RenderArray: ", this._tableData);
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}

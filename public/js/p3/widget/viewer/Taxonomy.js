@@ -112,7 +112,7 @@ define([
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active: ", active, "state: ", this.state);
+			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -154,7 +154,7 @@ define([
 					}
 					break;
 			}
-			console.log("Set Active State COMPLETE");
+			// console.log("Set Active State COMPLETE");
 		},
 
 		buildHeaderContent: function(taxon){
@@ -163,7 +163,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
+			// console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
 
 			if(this.filteredTaxon){
 				out.push(this.filteredTaxon);
@@ -197,7 +197,7 @@ define([
 				parts.push(evt.filter)
 			}
 
-			console.log("parts: ", parts);
+			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
 				q = "?and(" + parts.join(",") + ")"
@@ -207,7 +207,7 @@ define([
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
+			// console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
 			var hp;
 
 			if(this.state.hashParams && this.state.hashParams.view_tab){
@@ -218,7 +218,7 @@ define([
 
 			hp.filter = "false";
 
-			console.log("HP: ", JSON.stringify(hp));
+			// console.log("HP: ", JSON.stringify(hp));
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");

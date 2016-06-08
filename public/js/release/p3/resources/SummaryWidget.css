@@ -37,5 +37,6 @@ TH.dgrid-cell.field-feature_type {
 
 .dgrid-cell.field-PATRIC,
 .dgrid-cell.field-RefSeq {
-	text-align: center;
+	width: 20%;
+	text-align: right;
 }
