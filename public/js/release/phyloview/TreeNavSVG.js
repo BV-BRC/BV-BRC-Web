@@ -21,6 +21,7 @@ define("phyloview/TreeNavSVG", [
     tipLinkPrefix : "http://www.google.com/search?q:",
     tipLinkSuffix : "",
     fontWidthForMargin : null,
+    selectionTarget: null,
     containerName: null,
     tipToColors  : null,
     treeData : null,
@@ -131,7 +132,12 @@ define("phyloview/TreeNavSVG", [
 
     selectLabels: function(labelAlias){
         if (labelAlias in this.labelLabels){
-            this.set('labelIndex', this.labelLabels[labelAlias]);
+            var labelIndex = this.labelLabels[labelAlias];
+            this.maxLabelLength = 10;
+            Object.keys(this.treeData.labels[labelIndex]).forEach(lang.hitch(this, function(leafID){
+                this.maxLabelLength = Math.max(this.treeData.labels[labelIndex][leafID].length, this.maxLabelLength);
+            }));
+            this.set('labelIndex', labelIndex);
         }
     },
 
@@ -159,8 +165,10 @@ define("phyloview/TreeNavSVG", [
             if(d.selected && !d.c) {
                 this.selected.push(d);
             }
-        });
-        return this.selected;
+        },this);
+        if (this.selectionTarget != null){
+            this.selectionTarget.set("selection",this.selected);
+        }
     },
 
     clearSelections : function() {

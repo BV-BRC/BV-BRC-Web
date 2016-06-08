@@ -293,6 +293,10 @@ th.dgrid-cell.wsItemType {
 	color: #34698e;
 }
 
+.ActionButton.fa.ActiveActionButton {
+    color: #abd6ff;
+}
+
 .ActionButtonText {
 	font-size: .1em;
 	color: #fff;
@@ -305,6 +309,15 @@ th.dgrid-cell.wsItemType {
 .GeneExpFilterPanel .ActionButtonText,
 .BrowserHeader .ActionButtonText {
 	color: #34698e;
+}
+
+.claro .dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
+  /* above or below tooltip, but the arrow appears on the right,
+		and the right edges of target and tooltip are aligned rather than the left.
+		Override above rules for .dijitTooltipBelow, .dijitTooltipAbove */
+
+  left: auto;
+  right: 3px;
 }
 
 .GeneExpFilterPanel .ActionButtonWrapper:hover {
