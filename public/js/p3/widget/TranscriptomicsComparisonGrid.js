@@ -26,7 +26,7 @@ define([
 			sigLogRation: {label: "Significant Genes (Log Ratio)", field: "sig_log_ratio", hidden: false},
 			sigZScore: {label: "Significant Genes (Z Score)", field: "sig_z_score", hidden: false},
 			pubmed: {label: "PubMed", field: "pmid", hidden: false},
-			linkout: {label: "Link Out", field: "", hidden: false},
+			// linkout: {label: "Link Out", field: "", hidden: false},
 			organism: {label: "Organism", field: "organism", hidden: false},
 			strain: {label: "Strain", field: "strain", hidden: false},
 			geneMod: {label: "Gene Modification", field: "mutant", hidden: false},
