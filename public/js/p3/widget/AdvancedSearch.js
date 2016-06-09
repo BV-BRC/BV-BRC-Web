@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-construct",
 	"dojo/dom-class", "./viewer/Base", "./Button", "dijit/registry", "dojo/_base/lang",
 	"dojo/dom", "dojo/topic", "dijit/form/TextBox", "dojo/keys", "dijit/_FocusMixin", "dijit/focus",
-	"dijit/layout/ContentPane","dojo/request"
+	"dijit/layout/ContentPane","dojo/request","../util/QueryToSearchInput","./GlobalSearch"
 ], function(declare, WidgetBase, on, domConstruct,
 			domClass,base, Button, Registry, lang,
 			dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-			ContentPane,Request
+			ContentPane,Request,queryToSearchInput,GlobalSearch
 ){
 	return declare([base], {
 		"baseClass": "AdvancedSearch",
@@ -17,17 +17,19 @@ define([
 
 			if (state.search){
 				if (this.viewHeader){
-					this.viewHeader.set("content", state.search);
+					this.searchBox.set("value", queryToSearchInput(state.search));
 				}
 
 				this.search(state.search);
 
 			}else{
-
+				this.searchBox.set("value", "");
+				this.viewer.set("content","");
 
 			}
 		},
 		searchResults: null,
+		parseQuery: GlobalSearch.prototype.parseQuery,
 
 		formatgenome: function(docs,total){
 			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
@@ -109,8 +111,10 @@ define([
 			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/Taxonomy/?',this.state.search,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
-				out.push("<div class='resultHead'>" + doc.taxon_name + "</div>");
-
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a href='/view/Taxonomy/" + doc.taxon_id + "'>" + doc.taxon_name + "</a></div>");
+				//out.push("<div class='resultInfo'>" + doc.genomes +  " Genomes</div>");
+				out.push("</div>")
 			})
 			out.push("</div>");
 			return out.join("");
@@ -119,19 +123,28 @@ define([
 		_setSearchResultsAttr: function(val){
 			this.searchResults=val;
 			console.log("Search Results: ", val);
+			var foundContent=false;
 			var content = Object.keys(val).map(function(type){
 				var tRes = val[type];
 				var total = (tRes&&tRes.result&&tRes.result.response)?tRes.result.response.numFound:0
 				var out = ["<div><div>",type, "(",total,")</div>"];
 				if (total>0){
+					foundContent=true;
 					var docs = tRes.result.response.docs;
 					if (this["format" + type]){
 						return this["format" + type](docs,total);
 					}
 				}
 			},this)
+
+
+
 			if (this.viewer){
-				this.viewer.set('content', content.join(""));
+				if (foundContent){
+					this.viewer.set('content', content.join(""));
+				}else{
+					this.viewer.set("content", "No Results Found.")
+				}
 			}
 		},
 
@@ -151,7 +164,7 @@ define([
 			})
 
 			console.log("SEARCH: ", q);
-
+			this.viewer.set("content", "Searching...");
 			Request.post(window.App.dataAPI + "query/", {
 				headers: {
 					accept: "application/json",
@@ -167,10 +180,17 @@ define([
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			this.viewHeader = new ContentPane({
-				content: "Top",
-				region: "top"
-			});
+			// this.viewHeader = new ContentPane({
+			// 	region: "top"
+			// });
+
+			this.viewHeader = this.searchBox = new TextBox({region:"top",style: "margin:4px;font-size:1.4em;padding:4px;color:#ddd;border-radius:4px;"});
+			// domConstruct.place(this.searchBox.domNode, this.viewHeader.containerNode,"first");
+			// this.searchBox.startup();
+
+			this.searchBox.on("keypress", lang.hitch(this,"onKeyPress"));
+
+		
 			this.viewer = new ContentPane({
 				region: "center",
 				content: "Searching...."
@@ -178,6 +198,17 @@ define([
 
 			this.addChild(this.viewHeader);
 			this.addChild(this.viewer);
+		},
+		onKeyPress: function(evt){
+			if(evt.charOrCode == keys.ENTER){
+				var query = this.searchBox.get('value');
+
+				if (!query){
+					this.viewer.set("content","");
+				}
+
+				Topic.publish("/navigate", {href: "/search/?" + this.parseQuery(query)});
+			}
 		}
 	});
 });
