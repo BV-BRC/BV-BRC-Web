@@ -602,12 +602,25 @@ define([
 				var thisB = this;
 				console.log("refSeqs url: ", this.config.refSeqs.url)
 				request(this.config.refSeqs.url, {handleAs: 'text'})
-					.then(function(o){
+					.then(lang.hitch(this,function(o){
+                            var refseqConfig = dojo.fromJson(o);
+                            if (refseqConfig.length > 0 && !("defaultLocation" in this.config)){
+                                var initSize = Math.min(100000,refseqConfig[0]["length"]);
+                                this.config["defaultLocation"]=refseqConfig[0]["accn"]+":1.."+initSize.toString();
+                            }
+
+                            refseqConfig.forEach(function(seq){
+                                if(seq["seqChunkSize"] > 20000){
+                                    seq["seqChunkSize"] = 20000;
+                                }
+                            });
+
 							console.log(" call addREfseqs fromJson: ", o);
-							thisB.addRefseqs(dojo.fromJson(o));
+							thisB.addRefseqs(refseqConfig);
+							//thisB.addRefseqs(dojo.fromJson(o));
 							console.log("After Add RefSeqs fromJson")
 							deferred.resolve({success: true});
-						},
+						}),
 						function(e){
 							deferred.reject('Could not load reference sequence definitions. ' + e);
 						}
@@ -766,6 +779,14 @@ define([
 
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
+
+            //hack for now
+            if(state && state.hashParams){
+                Object.keys(state.hashParams).forEach(function(attr){
+                    state.hashParams[attr]=decodeURIComponent(state.hashParams[attr]);
+                });
+            }
+
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
 				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
