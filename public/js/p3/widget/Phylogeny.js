@@ -42,9 +42,9 @@ define([
 			}, typeMenuDom);
 			this.typeButton.startup();
 			//this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
-			this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
-			this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
-			this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
+			//this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
+			//this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
+			//this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
 			this.treeDiv = domConstruct.create("div", {id: this.id + "tree-container"}, this.containerNode);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("taxon_id", lang.hitch(this, "onSetTaxonId"))
