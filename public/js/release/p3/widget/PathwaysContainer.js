@@ -121,7 +121,7 @@ define("p3/widget/PathwaysContainer", [
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				facetFields: ["annotation", "pathway_class"],
 				queryOptions: {
 					sort: [{attribute: "pathway_id"}]
 				},
@@ -129,68 +129,71 @@ define("p3/widget/PathwaysContainer", [
 				visible: true
 			});
 
-			this.ecNumbersGrid = new PathwaysGridContainer({
-				title: "EC Numbers",
-				type: "ec_number",
-				state: this.state,
-				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: {
-					idx: {label: 'Index', field:'idx', hidden: true},
-					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-					annotation: {label: 'Annotation', field: 'annotation'},
-					ec_number: {label: 'EC Number', field: 'ec_number'},
-					description: {label: 'Description', field: 'ec_description'},
-					genome_count: {label: 'Genome Count', field: 'genome_count'},
-					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
-				},
-				store: ecNumberStore,
-				enableFilterPanel: true,
-				queryOptions: {
-					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
-				}
-			});
-
-			this.genesGrid = new PathwaysGridContainer({
-				title: "Genes",
-				type: "gene",
-				state: this.state,
-				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: {
-					idx: {label: 'Index', field:'idx', hidden: true},
-					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
-					genome_name: {label: 'Genome Name', field: 'genome_name'},
-					accession: {label: 'Accession', field: 'accession', hidden: true},
-					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
-					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
-					gene: {label: 'Gene', field: 'gene'},
-					product: {label: 'Product', field: 'product'},
-					annotation: {label: 'Annotation', field: 'annotation'},
-					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-					ec_number: {label: 'EC Number', field: 'ec_number'},
-					ec_description: {label: 'EC Description', field: 'ec_description'}
-				},
-				store: geneStore,
-				enableFilterPanel: true,
-				queryOptions: {
-					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
-				}
-			});
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.pathwaysGrid);
-			this.tabContainer.addChild(this.ecNumbersGrid);
-			this.tabContainer.addChild(this.genesGrid);
 
+			setTimeout(lang.hitch(this,function(){
+				this.ecNumbersGrid = new PathwaysGridContainer({
+					title: "EC Numbers",
+					type: "ec_number",
+					state: this.state,
+					apiServer: this.apiServer,
+					defaultFilter: this.defaultFilter,
+					facetFields: ["annotation", "pathway_class"],
+					columns: {
+						idx: {label: 'Index', field:'idx', hidden: true},
+						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+						pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+						annotation: {label: 'Annotation', field: 'annotation'},
+						ec_number: {label: 'EC Number', field: 'ec_number'},
+						description: {label: 'Description', field: 'ec_description'},
+						genome_count: {label: 'Genome Count', field: 'genome_count'},
+						gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+					},
+					store: ecNumberStore,
+					enableFilterPanel: true,
+					queryOptions: {
+						sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
+					}
+				});
+
+				this.genesGrid = new PathwaysGridContainer({
+					title: "Genes",
+					type: "gene",
+					state: this.state,
+					apiServer: this.apiServer,
+					defaultFilter: this.defaultFilter,
+					facetFields: ["annotation", "pathway_class"],
+					columns: {
+						idx: {label: 'Index', field:'idx', hidden: true},
+						feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+						genome_name: {label: 'Genome Name', field: 'genome_name'},
+						accession: {label: 'Accession', field: 'accession', hidden: true},
+						patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+						alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+						gene: {label: 'Gene', field: 'gene'},
+						product: {label: 'Product', field: 'product'},
+						annotation: {label: 'Annotation', field: 'annotation'},
+						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+						ec_number: {label: 'EC Number', field: 'ec_number'},
+						ec_description: {label: 'EC Description', field: 'ec_description'}
+					},
+					store: geneStore,
+					enableFilterPanel: true,
+					queryOptions: {
+						sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
+					}
+				});
+
+				
+				this.tabContainer.addChild(this.ecNumbersGrid);
+				this.tabContainer.addChild(this.genesGrid);
+			}),10000);
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
 			this._firstView = true;
 		}
 

@@ -22,34 +22,6 @@ define("p3/widget/GlobalSearch", [
 		},
 
 		parseQuery: function(query){
-			// var parts = query.split(" ");
-			// var finalTerms=[];
-			// if(parts){
-			// 	var quoted;
-			// 	parts.forEach(function(term){
-			// 		if (!term) { return; }
-
-
-			// 		// check to see if this is quoted term or part of a quoted term
-			// 		if (quoted && term){
-			// 			quoted = quoted + " " + term;
-			// 			if (term[term.length-1] == '"'){
-			// 				finalTerms.push(quoted);
-			// 			}
-			// 			return;
-			// 		} else if (term[0])=='"'){
-			// 			quoted=term
-			// 			return;
-			// 		}
-
-			// 		// check to see if this is a property matcher
-			// 		var tparts = term.split(":");
-			// 		if (tparts.length>)
-
-
-
-
-			// 	}
 			var finalTerms=[]
 			var currentTerm="";
 			var propertyMatch;
@@ -114,18 +86,22 @@ define("p3/widget/GlobalSearch", [
 
 				}
 
-				finalTerms = finalTerms.map(function(term){
+				var finalt=[]
+
+				finalTerms.forEach(function(term){
+					if (!term) { return; }
+
 					if (typeof term == 'string'){
-						return "keyword(" + encodeURIComponent(term) + ")";
+						finalt.push("keyword(" + encodeURIComponent(term) + ")");
 					}else{
-						return "eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")";
+						finalt.push("eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")");
 					}
 				})
 
-				if (finalTerms.length>1){
-					return "and(" + finalTerms.join(",") + ")";
+				if (finalt.length>1){
+					return "and(" + finalt.join(",") + ")";
 				}else{
-					return finalTerms[0];
+					return finalt[0];
 				}
 			} 
 

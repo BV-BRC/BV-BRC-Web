@@ -22549,34 +22549,6 @@ define([
 		},
 
 		parseQuery: function(query){
-			// var parts = query.split(" ");
-			// var finalTerms=[];
-			// if(parts){
-			// 	var quoted;
-			// 	parts.forEach(function(term){
-			// 		if (!term) { return; }
-
-
-			// 		// check to see if this is quoted term or part of a quoted term
-			// 		if (quoted && term){
-			// 			quoted = quoted + " " + term;
-			// 			if (term[term.length-1] == '"'){
-			// 				finalTerms.push(quoted);
-			// 			}
-			// 			return;
-			// 		} else if (term[0])=='"'){
-			// 			quoted=term
-			// 			return;
-			// 		}
-
-			// 		// check to see if this is a property matcher
-			// 		var tparts = term.split(":");
-			// 		if (tparts.length>)
-
-
-
-
-			// 	}
 			var finalTerms=[]
 			var currentTerm="";
 			var propertyMatch;
@@ -22641,18 +22613,22 @@ define([
 
 				}
 
-				finalTerms = finalTerms.map(function(term){
+				var finalt=[]
+
+				finalTerms.forEach(function(term){
+					if (!term) { return; }
+
 					if (typeof term == 'string'){
-						return "keyword(" + encodeURIComponent(term) + ")";
+						finalt.push("keyword(" + encodeURIComponent(term) + ")");
 					}else{
-						return "eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")";
+						finalt.push("eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")");
 					}
 				})
 
-				if (finalTerms.length>1){
-					return "and(" + finalTerms.join(",") + ")";
+				if (finalt.length>1){
+					return "and(" + finalt.join(",") + ")";
 				}else{
-					return finalTerms[0];
+					return finalt[0];
 				}
 			} 
 
@@ -75974,7 +75950,7 @@ define([
 				apiServer: this.apiServer,
 				defaultFilter: this.defaultFilter,
 				store: pathwayStore,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
+				facetFields: ["annotation", "pathway_class"],
 				queryOptions: {
 					sort: [{attribute: "pathway_id"}]
 				},
@@ -75982,68 +75958,71 @@ define([
 				visible: true
 			});
 
-			this.ecNumbersGrid = new PathwaysGridContainer({
-				title: "EC Numbers",
-				type: "ec_number",
-				state: this.state,
-				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: {
-					idx: {label: 'Index', field:'idx', hidden: true},
-					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-					annotation: {label: 'Annotation', field: 'annotation'},
-					ec_number: {label: 'EC Number', field: 'ec_number'},
-					description: {label: 'Description', field: 'ec_description'},
-					genome_count: {label: 'Genome Count', field: 'genome_count'},
-					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
-				},
-				store: ecNumberStore,
-				enableFilterPanel: true,
-				queryOptions: {
-					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
-				}
-			});
-
-			this.genesGrid = new PathwaysGridContainer({
-				title: "Genes",
-				type: "gene",
-				state: this.state,
-				apiServer: this.apiServer,
-				defaultFilter: this.defaultFilter,
-				facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number", "gene"],
-				columns: {
-					idx: {label: 'Index', field:'idx', hidden: true},
-					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
-					genome_name: {label: 'Genome Name', field: 'genome_name'},
-					accession: {label: 'Accession', field: 'accession', hidden: true},
-					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
-					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
-					gene: {label: 'Gene', field: 'gene'},
-					product: {label: 'Product', field: 'product'},
-					annotation: {label: 'Annotation', field: 'annotation'},
-					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-					ec_number: {label: 'EC Number', field: 'ec_number'},
-					ec_description: {label: 'EC Description', field: 'ec_description'}
-				},
-				store: geneStore,
-				enableFilterPanel: true,
-				queryOptions: {
-					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
-				}
-			});
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.pathwaysGrid);
-			this.tabContainer.addChild(this.ecNumbersGrid);
-			this.tabContainer.addChild(this.genesGrid);
 
+			setTimeout(lang.hitch(this,function(){
+				this.ecNumbersGrid = new PathwaysGridContainer({
+					title: "EC Numbers",
+					type: "ec_number",
+					state: this.state,
+					apiServer: this.apiServer,
+					defaultFilter: this.defaultFilter,
+					facetFields: ["annotation", "pathway_class"],
+					columns: {
+						idx: {label: 'Index', field:'idx', hidden: true},
+						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+						pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+						annotation: {label: 'Annotation', field: 'annotation'},
+						ec_number: {label: 'EC Number', field: 'ec_number'},
+						description: {label: 'Description', field: 'ec_description'},
+						genome_count: {label: 'Genome Count', field: 'genome_count'},
+						gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+					},
+					store: ecNumberStore,
+					enableFilterPanel: true,
+					queryOptions: {
+						sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
+					}
+				});
+
+				this.genesGrid = new PathwaysGridContainer({
+					title: "Genes",
+					type: "gene",
+					state: this.state,
+					apiServer: this.apiServer,
+					defaultFilter: this.defaultFilter,
+					facetFields: ["annotation", "pathway_class"],
+					columns: {
+						idx: {label: 'Index', field:'idx', hidden: true},
+						feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+						genome_name: {label: 'Genome Name', field: 'genome_name'},
+						accession: {label: 'Accession', field: 'accession', hidden: true},
+						patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+						alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+						gene: {label: 'Gene', field: 'gene'},
+						product: {label: 'Product', field: 'product'},
+						annotation: {label: 'Annotation', field: 'annotation'},
+						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+						ec_number: {label: 'EC Number', field: 'ec_number'},
+						ec_description: {label: 'EC Description', field: 'ec_description'}
+					},
+					store: geneStore,
+					enableFilterPanel: true,
+					queryOptions: {
+						sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
+					}
+				});
+
+				
+				this.tabContainer.addChild(this.ecNumbersGrid);
+				this.tabContainer.addChild(this.genesGrid);
+			}),10000);
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
 			this._firstView = true;
 		}
 
@@ -76630,12 +76609,12 @@ define([
 						//  0 && console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
 						lang.mixin(doc, map[pv] || {});
 						if(doc.genome_ec && doc.genome_count){
-							doc.ec_cons = (doc.genome_ec / doc.genome_count / doc.ec_count * 100).toFixed(2);
+							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
 						}else{
 							doc.ec_cons = 0;
 						}
 						if(doc.gene_count && doc.genome_count){
-							doc.gene_cons = (doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+							doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
 						}else{
 							doc.gene_cons = 0;
 						}
@@ -86549,9 +86528,9 @@ define([
 
 	};
 
-	function valueWrap(val){
+	function valueWrap(val,alt){
 		val = decodeURIComponent(val);
-		return '<span class="queryValue">' + val + "</span>";
+		return '<span class="queryValue" title="' + (alt||"") + '">' + val + "</span>";
 	}
 
 	return function(query){
@@ -86580,7 +86559,15 @@ define([
 
 		if (parsed.contains){
 			var ins = Object.keys(parsed.contains).forEach(function(prop){
-				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
+
+				out.push(" where <span class='queryField'>" + prop + "</span> is in ");
+				out.push(parsed.contains[prop].map(function(val){
+					if (val.length > 25){
+						return valueWrap(val.slice(0,25) + "...", val);
+					}else{
+						return valueWrap(val,val);
+					}
+				}).join(" OR "));
 			})
 		}
 
@@ -86915,7 +86902,7 @@ define([
 'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n    \n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeBox\"  style=\"display:none;width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    \n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n    \n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n     \n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeBox\"  style=\"display:none;width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    \n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n    \n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",

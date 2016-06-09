@@ -70,9 +70,9 @@ define("p3/util/QueryToEnglish", [
 
 	};
 
-	function valueWrap(val){
+	function valueWrap(val,alt){
 		val = decodeURIComponent(val);
-		return '<span class="queryValue">' + val + "</span>";
+		return '<span class="queryValue" title="' + (alt||"") + '">' + val + "</span>";
 	}
 
 	return function(query){
@@ -101,7 +101,15 @@ define("p3/util/QueryToEnglish", [
 
 		if (parsed.contains){
 			var ins = Object.keys(parsed.contains).forEach(function(prop){
-				out.push("contains " + prop + " " + parsed.contains[prop].map(valueWrap).join(" OR "));
+
+				out.push(" where <span class='queryField'>" + prop + "</span> is in ");
+				out.push(parsed.contains[prop].map(function(val){
+					if (val.length > 25){
+						return valueWrap(val.slice(0,25) + "...", val);
+					}else{
+						return valueWrap(val,val);
+					}
+				}).join(" OR "));
 			})
 		}
 
