@@ -74,6 +74,9 @@ define("p3/widget/formatter", ["dojo/date/locale", "dojo/dom-construct", "dojo/d
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
+		toInteger: function(obj){
+			return decimalFormatter(obj, 0);
+		},
 		twoDecimalNumeric: function(obj){
 			return decimalFormatter(obj, 2);
 		},

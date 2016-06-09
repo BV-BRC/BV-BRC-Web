@@ -216,8 +216,8 @@ define("p3/widget/viewer/_GenomeList", [
 			this.viewer.addChild(this.sequences);
 			this.viewer.addChild(this.features);
 			this.viewer.addChild(this.specialtyGenes);
-			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.proteinFamilies);
+			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
 
 			// on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){

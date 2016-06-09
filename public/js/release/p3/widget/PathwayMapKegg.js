@@ -180,7 +180,7 @@ define("p3/widget/PathwayMapKegg", [
 					'X-Requested-With': null,
 					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 				},
-				data: 'q=genome_id:(' + pmState.genomeIds.join(' OR ') + ') AND pathway_id:(' + pmState.pathway_id + ')&rows=0&facet=true&json.facet={stat:{field:{field:ec_number,limit:-1,facet:{genome_count:"unique(genome_id)"}}}}'
+				data: 'q=genome_id:(' + pmState.genomeIds.join(' OR ') + ') AND pathway_id:(' + pmState.pathway_id + ') AND annotation:(' + pmState.annotation + ')&rows=0&facet=true&json.facet={stat:{field:{field:ec_number,limit:-1,facet:{genome_count:"unique(genome_id)"}}}}'
 			}), function(response){
 
 				var facets = response.facets.stat.buckets;
@@ -201,7 +201,7 @@ define("p3/widget/PathwayMapKegg", [
 						'X-Requested-With': null,
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
-					data: 'q=pathway_id:(' + pmState.pathway_id + ') AND map_type:enzyme AND ec_number:(' + ecNumbers.join(' OR ') + ')&fl=ec_number,ec_description,map_location'
+					data: 'q=pathway_id:' + pmState.pathway_id + ' AND map_type:enzyme AND ec_number:(' + ecNumbers.join(' OR ') + ')&fl=ec_number,ec_description,map_location'
 				}), function(response){
 
 					var ref = {};

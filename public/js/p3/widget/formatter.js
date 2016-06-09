@@ -74,6 +74,9 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		dateOnly: function(obj){
 			return dateFormatter(obj, {selector: "date", formatLength: "short"});
 		},
+		toInteger: function(obj){
+			return decimalFormatter(obj, 0);
+		},
 		twoDecimalNumeric: function(obj){
 			return decimalFormatter(obj, 2);
 		},

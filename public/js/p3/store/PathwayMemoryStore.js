@@ -239,12 +239,12 @@ define([
 						// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
 						lang.mixin(doc, map[pv] || {});
 						if(doc.genome_ec && doc.genome_count){
-							doc.ec_cons = (doc.genome_ec / doc.genome_count / doc.ec_count * 100).toFixed(2);
+							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
 						}else{
 							doc.ec_cons = 0;
 						}
 						if(doc.gene_count && doc.genome_count){
-							doc.gene_cons = (doc.gene_count / doc.genome_count / doc.ec_count).toFixed(2);
+							doc.gene_cons = Math.round(doc.gene_count / doc.genome_count / doc.ec_count * 100) / 100;
 						}else{
 							doc.gene_cons = 0;
 						}

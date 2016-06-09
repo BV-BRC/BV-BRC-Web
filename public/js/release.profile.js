@@ -110,7 +110,8 @@ var profile = {
 				"p3/widget/GlobalSearch",
 				"p3/widget/WorkspaceManager",
 				"p3/widget/viewer/GenomeList",
-				"p3/widget/app/Annotation"
+				"p3/widget/app/Annotation",
+                "p3/widget/SelectionToGroup"
 			]
 		},
 		"p3/layer/panels": {
