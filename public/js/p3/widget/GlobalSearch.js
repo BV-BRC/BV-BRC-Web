@@ -20,34 +20,6 @@ define([
 		},
 
 		parseQuery: function(query){
-			// var parts = query.split(" ");
-			// var finalTerms=[];
-			// if(parts){
-			// 	var quoted;
-			// 	parts.forEach(function(term){
-			// 		if (!term) { return; }
-
-
-			// 		// check to see if this is quoted term or part of a quoted term
-			// 		if (quoted && term){
-			// 			quoted = quoted + " " + term;
-			// 			if (term[term.length-1] == '"'){
-			// 				finalTerms.push(quoted);
-			// 			}
-			// 			return;
-			// 		} else if (term[0])=='"'){
-			// 			quoted=term
-			// 			return;
-			// 		}
-
-			// 		// check to see if this is a property matcher
-			// 		var tparts = term.split(":");
-			// 		if (tparts.length>)
-
-
-
-
-			// 	}
 			var finalTerms=[]
 			var currentTerm="";
 			var propertyMatch;
