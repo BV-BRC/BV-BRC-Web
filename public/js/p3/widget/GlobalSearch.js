@@ -84,18 +84,22 @@ define([
 
 				}
 
-				finalTerms = finalTerms.map(function(term){
+				var final=[]
+
+				finalTerms.forEach(function(term){
+					if (!term) { return; }
+
 					if (typeof term == 'string'){
-						return "keyword(" + encodeURIComponent(term) + ")";
+						final.push("keyword(" + encodeURIComponent(term) + ")");
 					}else{
-						return "eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")";
+						final.push("eq(" + encodeURIComponent(term.property) + "," + encodeURIComponent(term.term) + ")");
 					}
 				})
 
-				if (finalTerms.length>1){
-					return "and(" + finalTerms.join(",") + ")";
+				if (final.length>1){
+					return "and(" + final.join(",") + ")";
 				}else{
-					return finalTerms[0];
+					return final[0];
 				}
 			} 
 
