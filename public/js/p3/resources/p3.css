@@ -334,6 +334,25 @@ body.patric *:focus {
 	padding: 0px;
 }
 
+body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
+	background-image: none;
+	border-top: 5px solid #629821;
+	background: #fff;
+	padding-top: 2px;
+}
+
+body.patric .dijitTabContainerTop-tabs .dijitTabActive,
+body.patric .dijitTabContainerTop-tabs .dijitTabHover {
+	background-image: none;
+	background-color: #dfe4ff;
+	color: #000;
+}
+
+body.patric .dijitTabContainerTop-tabs .dijitTabActive {
+	border-color: #34698e;
+}
+
+
 .TextTabButtons {
 	margin: 0px;
 	padding: 4px;
@@ -371,6 +390,7 @@ body.patric *:focus {
 .TextTabButtons .dijitTab.dijitChecked {
 	border-bottom: 4px solid #34698e;
 }
+
 
 .TextTabButtons .dijitTab .tabLabel:hover {
 	color: black; 
