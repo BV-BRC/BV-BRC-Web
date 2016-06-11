@@ -1,7 +1,7 @@
 var profile = {
 	basePath: "./",
 	layerOptimize: "closure",
-	cssOptimize: false, //"comments.keepLines",
+	cssOptimize: "comments.keepLines",
 	releaseDir: "./release",
 	stripConsole: "all",
 	mini: true,
@@ -104,14 +104,15 @@ var profile = {
 				"dijit/form/RadioButton",
 				"dijit/CheckedMenuItem",
 				"dojo/dnd/AutoSource",
-				"dijit/TooltipDialog",
+				"p3/widget/TooltipDialog",
 				"dijit/PopupMenuItem",
 				"dijit/MenuSeparator",
 				"p3/widget/GlobalSearch",
 				"p3/widget/WorkspaceManager",
 				"p3/widget/viewer/GenomeList",
 				"p3/widget/app/Annotation",
-                "p3/widget/SelectionToGroup"
+		                "p3/widget/SelectionToGroup",
+				"dojo/fx/Toggler"
 			]
 		},
 		"p3/layer/panels": {
