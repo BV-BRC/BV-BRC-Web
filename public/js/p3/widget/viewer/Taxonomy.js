@@ -140,11 +140,10 @@ define([
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
+						// console.log("Found Genome_IDS in state object");
 						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
-
+						// console.log("Active Query State: ", activeQueryState);
 					}
 
 					if(activeQueryState){
