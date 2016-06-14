@@ -2,41 +2,51 @@
 .SummaryWidget .chartNode,
 .chartView .tableNode,
 .tableView .chartNode {
-	display: none;
+    display: none;
 }
 
 .tableView .chartNode {
-	border: 1px solid #aaa;
+    border: 1px solid #aaa;
 }
 
 .SummaryWidget.chartView .chartNode,
 .SummaryWidget.tableView .tableNode {
-	display: block;
+    display: block;
 }
 
 .SummaryWidget .actionButtons .fa {
-	color: #333;
+    color: #333;
 }
 
 .SummaryWidget .actionButtions .fa:hover {
-	color: orange;
+    color: orange;
 }
 
 .SummaryWidget.tableView .actionButtons .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .ChartButton.fa {
-	color: green;
+    color: green;
 }
 
 .SummaryWidget .dgrid-scroller {
-	overflow-y: auto;
+    overflow-y: auto;
 }
 
 TH.dgrid-cell.field-feature_type {
-	border-left: 0px;
+    border-left: 0px;
 }
 
 .dgrid-cell.field-PATRIC,
 .dgrid-cell.field-RefSeq {
-	width: 20%;
-	text-align: right;
+    width: 20%;
+    text-align: right;
+}
+
+.SummaryWidget div.chartNode,
+.SummaryWidget div.tableNode {
+    height: 175px;
+}
+
+#GO_PFSummary div.chartNode,
+#GO_PFSummary div.tableNode {
+    height: 250px;
 }

@@ -24,15 +24,13 @@ define([
 		_setStateAttr: function(state){
 			this._set("state", state);
 
-			console.log("TAXON OVERVIEW SET STATE: ", state)
 			if(state.taxonomy){
 				this.set("taxonomy", state.taxonomy);
 			}
 
 			searchName = this.genome.taxon_name;
-			console.log("pubmed search term = ", searchName);
 
-			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
+			var sumWidgets = ["spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
