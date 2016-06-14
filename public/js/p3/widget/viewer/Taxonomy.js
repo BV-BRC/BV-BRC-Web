@@ -44,7 +44,7 @@ define([
 		},
 
 		_setTaxon_idAttr: function(id){
-			console.log("*** SET TAXON ID ", id);
+			// console.log("*** SET TAXON ID ", id);
 			this.taxon_id = id;
 
 			var state = this.state || {};

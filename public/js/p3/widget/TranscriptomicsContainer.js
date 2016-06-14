@@ -37,23 +37,23 @@ define([
 				postData: query,
 				handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
-				console.log("eids: ", eids);
+				// console.log("eids: ", eids);
 				eids = eids.map(function(x){
 					return x.eid
 				});
-				console.log("EIDS: ", eids);
+				// console.log("EIDS: ", eids);
 				this.set("eids", eids)
 			}))
 
 		},
 		onSetEIDS: function(attr, oldVal, eids){
-			console.log("set eids: ", eids);
+			// console.log("set eids: ", eids);
 			if(this.comparisonsGrid && eids && eids.length > 0){
 				this.comparisonsGrid.set("state", lang.mixin({}, this.state, {search: "&in(eid,(" + eids.join(",") + "))"}))
 			}
 		},
 		onSetState: function(attr, oldVal, state){
-			console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			// console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
 			var q = [];
 
@@ -68,7 +68,7 @@ define([
 			}
 
 			if(this.filterPanel){
-				console.log("SET FILTERPANEL STATE: ", state)
+				// console.log("SET FILTERPANEL STATE: ", state)
 				this.filterPanel.set("state", state);
 			}
 
@@ -94,7 +94,7 @@ define([
 			// 	}
 			// }
 
-			console.log("call _set(state) ", state);
+			// console.log("call _set(state) ", state);
 
 		},
 		visible: false,
@@ -112,13 +112,13 @@ define([
 			}
 		},
 		_setStateAttr: function(val){
-			console.log("GenomeContainer onSetStateAttr: ", val);
+			// console.log("GenomeContainer onSetStateAttr: ", val);
 			this._set("state", val ? lang.mixin({}, val) : val);
-			console.log("After internal set")
+			// console.log("After internal set")
 		},
 
 		postCreate: function(){
-			console.log("GENOME CONTAINER POSTCREATE");
+			// console.log("GENOME CONTAINER POSTCREATE");
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("query", lang.hitch(this, "onSetQuery"));
