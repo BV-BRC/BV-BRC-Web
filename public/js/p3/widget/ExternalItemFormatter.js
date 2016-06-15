@@ -23,7 +23,7 @@ define([
 
 		"pubmed_data": function(item, options, shownode){
 			options = options || {};
-			var taxonName = item.taxon_name;
+			var taxonName = item.taxon_name || item.genome_name;
 			var eutilSeaarchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
 			// console.log("taxon_name = " + taxonName);
 			var div = domConstruct.create("div");

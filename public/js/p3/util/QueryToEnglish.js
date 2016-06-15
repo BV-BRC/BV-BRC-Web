@@ -5,7 +5,7 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
-		console.log("PARSE: ", filter);
+		// console.log("PARSE: ", filter);
 
 		var parsed = {
 			parsed: _parsed,
@@ -36,7 +36,7 @@ define([
 				case "in":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					console.log("IN F: ", f, "V: ",v, term)
+					// console.log("IN F: ", f, "V: ",v, term)
 					// parsed.selected.push({field: f, value: v});
 					if(!parsed.contains[f]){
 						parsed.contains[f] = [v];
@@ -47,7 +47,7 @@ define([
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					console.log("F: ", f, "V: ",f, term)
+					// console.log("F: ", f, "V: ",f, term)
 					parsed.selected.push({field: f, value: v});
 					if(!parsed.byCategory[f]){
 						parsed.byCategory[f] = [v];
@@ -79,7 +79,7 @@ define([
 		var parsed = parseQuery(query);
 		var out = [];
 
-		console.log("PARSED: ", parsed);
+		// console.log("PARSED: ", parsed);
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
 			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
@@ -124,7 +124,7 @@ define([
 			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
 		}
 
-		console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
+		// console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
 
 		return out.join(" ");
 		//console.log("parsed query: ", parsed);

@@ -5,24 +5,38 @@
         <tr>
             <td style="width:35%;padding:7px;vertical-align:top;">
                 <div class="section">
-                    <!-- <h3 class="section-title normal-case close2x"><span class="wrap">Genome Summary</span></h3>-->
                     <div style="padding:7px" data-dojo-attach-point="taxonomySummaryNode">
                         Loading Genome Summary...
                     </div>
                 </div>
+                <h3 class="section-title normal-case close2x"><span class="wrap">Reference/Representative Genomes</span></h3>
+                <div class="section">
+                    <div style="padding:7px" data-dojo-attach-point="rgSummaryWidget"
+                         data-dojo-type="p3/widget/ReferenceGenomeSummary">
+                    </div>
+                </div>
             </td>
-            <td style="width:40%;padding:7px;vertical-align:top;">
+            <td rowspan="2" style="width:65%;padding:7px;vertical-align:top;">
 
-                <div class="section ">
+                <div class="section">
+                    <h3 class="section-title normal-case close2x"><span class="wrap">Genome Metadata Top 5</span></h3>
+                    <div  id="GenomeMetaSummary"  data-dojo-attach-point="gmSummaryWidget" data-dojo-type="p3/widget/GenomeMetaSummary"
+                         style="margin:4px;">
+                    </div>
+                </div>
+
+                <div class="section">
                     <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
                     <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary"
-                         style="height:205px;margin:4px;">
+                         style="margin:4px;">
                     </div>
                 </div>
 
             </td>
-            <td style="width:25%;padding:7px;vertical-align:top;">
-                <div class="section ">
+        </tr>
+        <tr>
+            <td style="width:35%;padding:7px;vertical-align:top;">
+                <div class="section">
                     <h3 class="section-title normal-case close2x"><span class="wrap">Recent PubMed Articles</span></h3>
                     <div data-dojo-attach-point="pubmedSummaryNode" style="margin:4px;padding:8px;margin-radius:4px;">
                         This feature will be returning soon.

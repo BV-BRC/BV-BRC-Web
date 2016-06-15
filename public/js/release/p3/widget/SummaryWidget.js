@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n"}});
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\">\n\t\t</div>\n\t</div>\n</div>\n"}});
 define("p3/widget/SummaryWidget", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
@@ -30,11 +30,11 @@ define("p3/widget/SummaryWidget", [
 			this.set("view", "table")
 		},
 		onSetView: function(attr, oldVal, view){
-			console.log("onSetView ", view);
+			// console.log("onSetView ", view);
 			if(oldVal){
 				domClass.remove(this.domNode, oldVal + "View")
 			}
-			domClass.add(this.domNode, view + "View")
+			domClass.add(this.domNode, view + "View");
 			this["render_" + this.view]();
 		},
 
@@ -46,23 +46,14 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		onSetQuery: function(attr, oldVal, query){
-			// console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
-			// console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
 				data: this.query + this.baseQuery
 			}).then(lang.hitch(this, "processData"));
-
-			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
-			// 	handleAs: "json",
-			// 	headers: this.headers
-			// }).then(lang.hitch(this,"processData")) 
-
 		},
 
 		onSetData: function(attr, oldVal, data){
-			// console.log("onSetData: ", data);
 			this["render_" + this.view]();
 		},
 
@@ -71,7 +62,6 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		render_chart: function(){
-
 		},
 
 		render_table: function(){

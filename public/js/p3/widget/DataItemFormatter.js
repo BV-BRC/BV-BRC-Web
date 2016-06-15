@@ -1291,7 +1291,7 @@ define([
 
 		}
 
-		console.log("diaplayColumns[column]=", diaplayColumns);
+		// console.log("diaplayColumns[column]=", diaplayColumns);
 
 		var additional = 0;
 

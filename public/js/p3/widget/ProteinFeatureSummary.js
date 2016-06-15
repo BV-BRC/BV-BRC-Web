@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/promise/all", "dojo/when",
 	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on, All, when,
@@ -11,6 +11,7 @@ define([
 
 	var labels = ["Hypothetical proteins", "Proteins with functional assignments", "Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
 	var shortLabels = ["Hypothetical", "Functional", "EC assigned", "GO assigned", "Pathway assigned", "PLfam assigned", "PGfam assigned", "FIGfam assigned"];
+	var filters = ["eq(product,hypothetical+protein),eq(feature_type,CDS)", "ne(product,hypothetical+protein),eq(feature_type,CDS)", "eq(ec,*)", "eq(go,*)", "eq(pathway,*)", "eq(plfam_id,*)", "eq(pgfam_id,*)", "eq(figfam_id,*)"];
 
 	return declare([SummaryWidget], {
 		dataModel: "genome_feature",
@@ -23,13 +24,13 @@ define([
 			label: "PATRIC",
 			field: "PATRIC",
 			renderCell: function(obj, val, node){
-				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,PATRIC),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
 			}
 		}, {
 			label: "RefSeq",
 			field: "RefSeq",
 			renderCell: function(obj, val, node){
-				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,RefSeq),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
 			}
 		}],
 		onSetQuery: function(attr, oldVal, query){
@@ -106,6 +107,7 @@ define([
 
 			this._tableData = results.map(function(row, idx){
 				row["label"] = labels[idx];
+				row["filter"] = filters[idx];
 				return row;
 			});
 

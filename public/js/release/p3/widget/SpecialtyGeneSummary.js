@@ -1,98 +1,95 @@
 define("p3/widget/SpecialtyGeneSummary", [
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
+	"dojo/fx/easing",
+	"dijit/_WidgetBase",
+	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Tooltip",
+	"dojox/charting/plot2d/Bars", "./SummaryWidget"
 
-], function(declare, WidgetBase, on,
-			domClass, SummaryWidget,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, easing){
+], function(declare, lang,
+			domClass, domConstruct, on, xhr,
+			easing,
+			WidgetBase,
+			Chart2D, Theme, MoveSlice, ChartTooltip,
+			Bars, SummaryWidget){
 
 	var sourcePropertyMap = {
 		"PATRIC_VF": "Virulence Factor",
-			"Victors": "Virulence Factor",
-			"VFDB": "Virulence Factor",
-			"DrugBank": "Drug Target",
-			"TTD": "Drug Target",
-			"Human": "Human Homolog",
-			"CARD": "Antibiotic Resistance",
-			"ARDB": "Antibiotic Resistance"
+		"Victors": "Virulence Factor",
+		"VFDB": "Virulence Factor",
+		"DrugBank": "Drug Target",
+		"TTD": "Drug Target",
+		"Human": "Human Homolog",
+		"CARD": "Antibiotic Resistance",
+		"ARDB": "Antibiotic Resistance"
 	};
 
 	return declare([SummaryWidget], {
 		dataModel: "sp_gene",
 		query: "",
-		baseQuery: "&limit(1)&facet((field,source),(mincount,1))",
+		baseQuery: "&limit(1)&facet((field,source),(mincount,1))&json(nl,map)",
 		columns: [
-			{
-				label: " ", field: "text", renderCell: function(obj, val, node){
-					node.innerHTML = sourcePropertyMap[val]
-				}
-			},
-			{label: "Source", field: "text"},
-			{label: "Genes", field: "y"}
+			{label: " ", field: "category"},
+			{label: "Source", field: "source"},
+			{label: "Genes", field: "y", renderCell: function(obj, val, node){
+				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=eq(source,' + obj.source + ')" target="_blank">' + val + "</a>";
+			}}
 		],
 		processData: function(res){
-			this._chartLabels = [];
-			// console.log("Data: ", res);
+			var chartLabels = this._chartLabels = [];
+
 			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
 				console.error("INVALID SUMMARY DATA");
 				return;
 			}
-			var d = res.facet_counts.facet_fields.source;
-			var data = [];
-			var idx = 0;
-			for(var i = 0; i < d.length; i += 2){
-				data.push({text: d[i], x: idx, y: d[i + 1]});
-				// this._chartLabels.push({value: idx, text: d[i]});
-				idx++;
-			}
+			var d = res.facet_counts.facet_fields.source; // now key-value pair
 
-			this._tableData = data;
+			var data = this._tableData = [];
+			Object.keys(d).forEach(function(key, idx){
+				chartLabels.push({text: key, value: idx+1});
+				var cat = sourcePropertyMap[key];
+				data.push({source: key, category: cat, y: d[key]});
+			});
 
 			this.set('data', data);
 		},
 
 		render_chart: function(){
-			console.log("RENDER CHART")
+
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode);
-				this.chart.setTheme(Theme);
-
-				this.chart.addPlot("default", {
-					type: "StackedColumns",
-					markers: true,
-					gap: 5,
-					maxBarSize: 20,
-					labels: true,
-					labelStyle: "outside",
-					animate: {duration: 1000, easing: easing.linear}
-				});
-
-				this.chart.addAxis("x", {
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: this._chartLabels
-
-				});
-
-				this.chart.addAxis("y", {vertical: true, majorTicketStep: 4, title: "Gene Count"});
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: Bars,
+						markers: true,
+						gap: 3,
+						// maxBarSize: 20,
+						// labels: true,
+						// labelOffset: 20,
+						// labelStyle: "outside",
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						vertical: true,
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						minorTicks: false
+					})
+					.addSeries("source", this.data);
 
 				new ChartTooltip(this.chart, "default", {
 					text: function(o){
-						// console.log("O: ", o)
 						var d = o.run.data[o.index];
-						return d.text + " (" + d.y + ")"
+						return d.source + " (" + d.y + ")"
 					}
 				});
 
-				this.chart.addSeries("source", this.data);
-
-				// console.log("Render GF DATA", this.chart);
-				this.chart.render();
+				this.chart.render()
 			}else{
 
 				this.chart.updateSeries("source", this.data);
@@ -102,10 +99,9 @@ define("p3/widget/SpecialtyGeneSummary", [
 
 		render_table: function(){
 			this.inherited(arguments);
-			// console.log("RenderArray: ", this._tableData);
+
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}
-
 	})
 });

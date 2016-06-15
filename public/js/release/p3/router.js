@@ -55,11 +55,11 @@ define("p3/router", ["dojo/_base/declare", "dojo/router/RouterBase"
 	return declare([Router], {
 
 		go: function(href, state){
-			console.log("go(" + href + ")", state)
+			// console.log("go(" + href + ")", state)
 
 			state = state || {};
 
-			console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
+			// console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 
 			if (href.length>4000){
 				var parts = href.split("?");

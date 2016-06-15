@@ -1,22 +1,22 @@
 define("p3/widget/ProteinFeatureSummary", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/promise/all", "dojo/when",
 	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on, All, when,
 			domClass, SummaryWidget,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, easing){
-	var LOG10 = Math.log(10);
 
-	var labels = ["Hypothetical proteins", "Proteins with functional assignments","Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
+	var labels = ["Hypothetical proteins", "Proteins with functional assignments", "Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
+	var shortLabels = ["Hypothetical", "Functional", "EC assigned", "GO assigned", "Pathway assigned", "PLfam assigned", "PGfam assigned", "FIGfam assigned"];
+	var filters = ["eq(product,hypothetical+protein),eq(feature_type,CDS)", "ne(product,hypothetical+protein),eq(feature_type,CDS)", "eq(ec,*)", "eq(go,*)", "eq(pathway,*)", "eq(plfam_id,*)", "eq(pgfam_id,*)", "eq(figfam_id,*)"];
 
 	return declare([SummaryWidget], {
-		id: "GO_PFSummary",
 		dataModel: "genome_feature",
 		query: "",
-		baseQuery: "&in(annotation,(PATRIC,RefSeq))&limit(1)&facet((field,annotation),(mincount,1))",
+		baseQuery: "&in(annotation,(PATRIC,RefSeq))&limit(1)&facet((field,annotation),(mincount,1))&json(nl,map)",
 		columns: [{
 			label: " ",
 			field: "label"
@@ -24,22 +24,16 @@ define("p3/widget/ProteinFeatureSummary", [
 			label: "PATRIC",
 			field: "PATRIC",
 			renderCell: function(obj, val, node){
-				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,PATRIC),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
 			}
 		}, {
 			label: "RefSeq",
 			field: "RefSeq",
 			renderCell: function(obj, val, node){
-				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,RefSeq),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
 			}
 		}],
 		onSetQuery: function(attr, oldVal, query){
-
-			// return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
-			// 	handleAs: "json",
-			// 	headers: this.headers,
-			// 	data: this.query + this.baseQuery
-			// }).then(lang.hitch(this, "processData"));
 
 			var url = PathJoin(this.apiServiceUrl, this.dataModel) + "/";
 
@@ -86,7 +80,7 @@ define("p3/widget/ProteinFeatureSummary", [
 			var defPLfamAssigned = when(xhr.post(url, {
 				handleAs: "json",
 				headers: this.headers,
-				data: this.query + "&eq(go,*)" + this.baseQuery
+				data: this.query + "&eq(plfam_id,*)" + this.baseQuery
 			}), function(response){
 				return response.facet_counts.facet_fields.annotation;
 			});
@@ -94,7 +88,7 @@ define("p3/widget/ProteinFeatureSummary", [
 			var defPGfamAssigned = when(xhr.post(url, {
 				handleAs: "json",
 				headers: this.headers,
-				data: this.query + "&eq(go,*)" + this.baseQuery
+				data: this.query + "&eq(pgfam_id,*)" + this.baseQuery
 			}), function(response){
 				return response.facet_counts.facet_fields.annotation;
 			});
@@ -110,79 +104,63 @@ define("p3/widget/ProteinFeatureSummary", [
 			return when(All([defHypothetical, defFunctional, defECAssigned, defGOAssigned, defPathwayAssigned, defPLfamAssigned, defPGfamAssigned, defFigfamAssigned]), lang.hitch(this, "processData"));
 		},
 		processData: function(results){
-			// console.warn(results);
 
-			// this._chartLabels = [];
-
-			var data = results.map(function(row, idx){
-				var item = {"label": labels[idx]};
-				item[row[0]] = row[1];
-				item[row[2]] = row[3];
-
-				return item;
+			this._tableData = results.map(function(row, idx){
+				row["label"] = labels[idx];
+				row["filter"] = filters[idx];
+				return row;
 			});
 
-			this._tableData = data;
+			var data = {PATRIC:[], RefSeq:[]};
+			results.forEach(function(row, idx){
+				data['PATRIC'].push({label: labels[idx], y: row.PATRIC || 0});
+				data['RefSeq'].push({label: labels[idx], y: row.RefSeq || 0});
+			});
 
 			this.set('data', data);
 		},
 
 		render_chart: function(){
-			// console.log("RENDER CHART")
+
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode);
-				this.chart.setTheme(Theme);
+				var chart = this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredBars",
+						markers: true,
+						gap: 3,
+						// labels: true,
+						minBarSize: 10,
+						labelStyle: "outside",
+						labelOffset: 20,
+						// labelFunc: function(o){
+						// 	return o.annotation;
+						// },
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						vertical: true,
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: shortLabels.map(function(val, idx){ return {text: val, value: idx+1}; })
+					}).addAxis("y", {
+						minorTicks: false
+					});
 
-				this.chart.addPlot("default", {
-					type: "Columns",
-					markers: true,
-					gap: 3,
-					labels: true,
-					// minBarSize: 5,
-					labelStyle: "inside",
-					//labelOffset: 20,
-					// labelFunc: function(o){
-					// 	return o.annotation;
-					// },
-					animate: {duration: 1000, easing: easing.linear}
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						var d = o.run.data[o.index];
+						return "[" + o.run.name + "] " + d.label + "s (" + d.y + ")"
+					}
 				});
-
-				this.chart.addAxis("x", {
-					title: "Annotation",
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: false,
-					microTicks: false
-				});
-
-				this.chart.addAxis("y", {
-					title: "",
-					vertical: true,
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: true,
-					microTicks: true,
-					natural: true,
-					includeZero: true,
-					labels: labels
-				});
-
-				// new ChartTooltip(this.chart, "default", {
-				// 	text: function(o){
-				// 		console.log("O: ", o);
-				// 		var d = o.run.data[o.index];
-				// 		return d.annotation + " " + d.text + "s (" + d.count + ")"
-				// 	}
-				// });
-
-				console.log("Data to Render: ", this.data);
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.addSeries(key, this.data[key]);
+					chart.addSeries(key, this.data[key]);
 				}));
 
-				// console.log("Render GF DATA", this.chart);
-				this.chart.render();
+				chart.render();
 			}else{
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
@@ -195,10 +173,9 @@ define("p3/widget/ProteinFeatureSummary", [
 
 		render_table: function(){
 			this.inherited(arguments);
-			// console.log("RenderArray: ", this._tableData);
+
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}
-
 	})
 });
