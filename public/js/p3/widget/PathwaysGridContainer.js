@@ -37,7 +37,7 @@ define([
 	return declare([GridContainer], {
 		containerType: "pathway_data",
 		facetFields: ["annotation", "pathway_class", "pathway_name", "ec_number"],
-		maxGenomeCount: 5000,
+		maxGenomeCount: 500,
 		dataModel: "pathway",
 		getFilterPanel: function(opts){
 		},

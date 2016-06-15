@@ -1,9 +1,14 @@
-@import "../common/domButtons/DomButtonWhiteCross-compat.css";
-/* dojox.mobile.TabBar */
+
+.mblDomButtonWhiteCross, .mblDomButtonCross {
+	background-image: url("../common/domButtons/compat/mblDomButtonWhiteCross.png");
+	background-repeat: no-repeat;
+}
+.mblDomButtonWhiteCross div, .mblDomButtonCross div {
+	display: none;
+}
 .dj_ie6 .mblTabBar .mblTabBarButton {
   display: inline;
 }
-/* barType="tabBar" */
 .mblTabBarTabBar {
   background-color: rgba(0, 0, 0, 0);
   background-image: none;
@@ -13,7 +18,6 @@
 .dj_ff3 .mblTabBarTabBar .mblTabBarButtonSelected {
   -moz-border-radius: 3px;
 }
-/* barType="segmentedControl" | "standardTab" */
 .mblTabBarSegmentedControl,
 .mblTabBarStandardTab {
   background-image: url(compat/heading-bg.png);
@@ -38,7 +42,6 @@
   -moz-border-radius-topleft: 4px;
   -moz-border-radius-topright: 4px;
 }
-/* barType="slimTab" */
 .mblTabBarSlimTab {
   background-image: url(compat/tab-slim-bar-bg.png);
 }
@@ -51,8 +54,6 @@
 .dj_gecko .mblTabBarSlimTab .mblTabBarButtonSelected {
   background-image: -moz-linear-gradient(top, #313031 0%, #5a555a 50%, #616161 50%, #959595 100%);
 }
-/* barType="flatTab" */
-/* barType="tallTab" */
 .mblTabBarTallTab {
   background-image: url(compat/tab-tall-bar-bg.png);
 }
@@ -67,14 +68,3 @@
 .mblTabBarStandardTab .mblTabBarButton {
   background-image: none;
 }
-/*
-.mblTabBarSegmentedControl, .mblTabBarStandardTab {
-  background-image: url(compat/heading-bg.png);
-  .mblTabBarButton {
-    background-image: none;
-  }
-  .mblTabBarButtonSelected {
-    background-image: none;
-  }
-}
-*/

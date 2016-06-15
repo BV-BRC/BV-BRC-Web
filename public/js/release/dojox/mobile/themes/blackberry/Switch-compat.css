@@ -1,5 +1,4 @@
-/* dojox.mobile.Switch */
-/* Switch - common */
+
 .dj_gecko .mblSwitchBg {
   -moz-box-sizing: border-box;
 }
@@ -30,7 +29,6 @@
   background-repeat: no-repeat;
   border: none;
 }
-/* Square Shape */
 .mblSwSquareShape .mblSwitchBg {
   -moz-border-radius: 6px;
 }
@@ -44,7 +42,6 @@
   -moz-border-radius: 6px;
   background-image: url(compat/switch-square-k.gif);
 }
-/* Round Shape1 */
 .mblSwRoundShape1 .mblSwitchBg {
   -moz-border-radius: 14px;
 }
@@ -58,7 +55,6 @@
   -moz-border-radius: 13px;
   background-image: url(compat/switch-round1-k.gif);
 }
-/* Round Shape2 */
 .mblSwRoundShape2 .mblSwitchBg {
   -moz-border-radius: 14px;
 }
@@ -72,7 +68,6 @@
   -moz-border-radius: 13px;
   background-image: url(compat/switch-round2-k.gif);
 }
-/* Arc Shape1 */
 .mblSwArcShape1 .mblSwitchBg {
   -moz-border-radius: 5px/14px;
 }
@@ -86,7 +81,6 @@
   -moz-border-radius: 5px/13px;
   background-image: url(compat/switch-arc1-k.gif);
 }
-/* Switch - Arc Shape2 */
 .mblSwArcShape2 .mblSwitchBg {
   -moz-border-radius: 5px/14px;
 }
@@ -100,7 +94,6 @@
   -moz-border-radius: 5px/13px;
   background-image: url(compat/switch-arc2-k.gif);
 }
-/* Default Shape */
 .mblSwDefaultShape .mblSwitchBg {
   -moz-border-radius: 6px;
 }

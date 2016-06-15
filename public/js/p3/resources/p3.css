@@ -3,6 +3,7 @@
 @import url("../../dojox/widget/Toaster/Toaster.css");
 
 /* CSS for JBrowse */
+/*
 @import url("../../jbrowse.repo/main.css");
 @import url("../../jbrowse.repo/sequence.css");
 @import url("../../jbrowse.repo/menubar.css");
@@ -11,15 +12,9 @@
 @import url("../../jbrowse.repo/file_dialog.css");
 @import url("../../jbrowse.repo/combination_tracks.css");
 @import url("../../jbrowse.repo/export_dialog.css");
+*/
+@import url("./jbrowse/main.css");
 
-/* CSS styles for the various types of feature glyphs */
-/*@import url("../../jbrowse.repo/track_styles.css");*/
-@import url("/public/js/p3/resources/jbrowse/track_styles.css");
-@import url("../../jbrowse.repo/hierarchical_track_selector.css");
-@import url("../../jbrowse.repo/faceted_track_selector.css");
-
-/* CSS styles specifically for MAKER output */
-@import url("../../jbrowse.repo/maker.css");
 
 @import url("Footer.css");
 @import url("Header.css");
@@ -334,6 +329,25 @@ body.patric *:focus {
 	padding: 0px;
 }
 
+body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
+	background-image: none;
+	border-top: 5px solid #629821;
+	background: #fff;
+	padding-top: 2px;
+}
+
+body.patric .dijitTabContainerTop-tabs .dijitTabActive,
+body.patric .dijitTabContainerTop-tabs .dijitTabHover {
+	background-image: none;
+	background-color: #dfe4ff;
+	color: #000;
+}
+
+body.patric .dijitTabContainerTop-tabs .dijitTabActive {
+	border-color: #34698e;
+}
+
+
 .TextTabButtons {
 	margin: 0px;
 	padding: 4px;
@@ -371,6 +385,7 @@ body.patric *:focus {
 .TextTabButtons .dijitTab.dijitChecked {
 	border-bottom: 4px solid #34698e;
 }
+
 
 .TextTabButtons .dijitTab .tabLabel:hover {
 	color: black; 

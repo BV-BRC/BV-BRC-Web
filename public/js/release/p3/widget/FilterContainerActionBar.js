@@ -303,7 +303,7 @@ define("p3/widget/FilterContainerActionBar", [
 			if(this.enableAnchorButton){
 				this.addAction("AnchorCurrentFilters", "fa icon-anchor fa-1x", {
 					style: {"font-size": ".5em"},
-					label: "APPLY FITLERS",
+					label: "ANCHOR FITLERS",
 					validType: ["*"],
 					tooltip: "Anchor the active filter to update the current context."
 				}, setAnchor, true, this.rightButtons);

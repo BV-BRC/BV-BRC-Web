@@ -1,5 +1,4 @@
-/* dojox.mobile.Switch Rtl */
-/* Switch - common Rtl */
+
 .mblSwitchRtl {
   text-align: right;
 }
@@ -19,7 +18,6 @@
 .mblSwitchTextRightRtl {
   left: -40px;
 }
-/* Square Shape Rtl*/
 .mblSwitchRtl.mblSwSquareShape.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }
@@ -38,7 +36,6 @@
 .mblSwSquareShape .mblSwitchTextRightRtl {
   left: -40px;
 }
-/* Round Shape1 Rtl */
 .mblSwitchRtl.mblSwRoundShape1.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }
@@ -51,7 +48,6 @@
 .mblSwRoundShape1 .mblSwitchTextRightRtl {
   left: -26px;
 }
-/* Round Shape2 Rtl */
 .mblSwitchRtl.mblSwRoundShape2.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }
@@ -67,7 +63,6 @@
 .mblSwRoundShape2 .mblSwitchTextRightRtl {
   left: -42px;
 }
-/* Arc Shape1 Rtl */
 .mblSwitchRtl.mblSwArcShape1.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }
@@ -80,7 +75,6 @@
 .mblSwArcShape1 .mblSwitchTextRightRtl {
   left: -26px;
 }
-/* Arc Shape2 Rtl */
 .mblSwitchRtl.mblSwArcShape2.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }
@@ -96,7 +90,6 @@
 .mblSwArcShape2 .mblSwitchTextRightRtl {
   left: -42px;
 }
-/* Default Shape Rtl */
 .mblSwitchRtl.mblSwDefaultShape.mblSwitchOff .mblSwitchInner {
   left: 0px;
 }

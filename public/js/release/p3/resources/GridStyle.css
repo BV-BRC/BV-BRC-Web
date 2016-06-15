@@ -1,8 +1,7 @@
-/* protein family grid */
+
 .dgrid-cell.field-family_id {
     width: 12%;
 }
-
 .dgrid-cell.field-feature_count,
 .dgrid-cell.field-genome_count,
 .dgrid-cell.field-aa_length_min,
@@ -12,12 +11,9 @@
     width: 8%;
     text-align: center;
 }
-
 .dgrid-cell.field-description {
     width: 40%;
 }
-
-/* pathways */
 .dgrid-cell.field-pathway_name,
 .dgrid-cell.field-pathway_class,
 .dgrid-cell.field-ec_description {
@@ -35,8 +31,6 @@
 .dgrid-cell.field-alt_locus_tag {
     width: 10%
 }
-
-/* transcriptomics */
 .dgrid-cell.field-title,
 .dgrid-cell.field-expname {
     width: 20%;

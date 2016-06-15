@@ -4,64 +4,51 @@
 .tableView .chartNode {
     display: none;
 }
-
 .tableView .chartNode {
     border: 1px solid #aaa;
 }
-
 .SummaryWidget.chartView .chartNode,
 .SummaryWidget.tableView .tableNode {
     display: block;
 }
-
 .SummaryWidget .actionButtons .fa {
     color: #333;
 }
-
 .SummaryWidget .actionButtions .fa:hover {
     color: orange;
 }
-
 .SummaryWidget.tableView .actionButtons .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .ChartButton.fa {
     color: green;
 }
-
 .SummaryWidget .dgrid-scroller {
     overflow-y: auto;
 }
-
 TH.dgrid-cell.field-feature_type {
     border-left: 0px;
 }
-
 .dgrid-cell.field-PATRIC,
 .dgrid-cell.field-RefSeq {
     width: 20%;
     text-align: right;
 }
-
 .SummaryWidget div.chartNode,
 .SummaryWidget div.tableNode {
     height: 175px;
 }
-
 #GO_PFSummary div.chartNode,
 #GO_PFSummary div.tableNode {
     height: 250px;
 }
-
 #GenomeMetaSummary div.chartNode,
 #GenomeMetaSummary div.tableNode {
     height: 500px;
 }
-
 .pie-chart-widget {
     display: inline-block;
     width: 350px;
     height: 200px;
 }
-
 .SummaryWidget .field-reference_genome {
     width: 40px;
 }

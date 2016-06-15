@@ -1,7 +1,6 @@
 .PanelForm {
 	overflow: auto;
 }
-
 .PanelForm .messageContainer{
 	text-align: center;
 	margin: 4px;
@@ -12,25 +11,20 @@
 	display: none;
 	width: 300px;
 }
-
 .PanelForm .submittedMessage,
 .PanelForm .workingMessage {
 	color: green;
 	border-color: green;
 }
-
 .PanelForm .errorMessage {
 	color: red;
 	border-color: red;
 }
-
 .PanelForm.Submitted .submittedMessage,
 .PanelForm.Working .workingMessage,
 .PanelForm.Error .errorMessage{
 	display: block;
 }
-
-
 .formFieldsContainer {
 	text-align:center;
 }
@@ -38,14 +32,11 @@
 	font-size: 1.1em;
 	margin-top: 10px;
 }
-
 .App {
 }
-
 .App .TitleSection {
 	width:420px;margin:auto;margin-top:10px;padding:10px;
 }
-
 .App LABEL {
 	font-size: .65em;
 	text-transform: uppercase;

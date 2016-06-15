@@ -2,7 +2,6 @@
 	position: absolute;
 	overflow: hidden;
 }
-
 .mblPageTurningPage {
 	position: absolute;
 	overflow: hidden;
@@ -10,7 +9,6 @@
 	-webkit-transition-property: -webkit-transform; 
 	-webkit-transition-duration: 0s;
 }
-
 .mblPageTurningFront {
 	position: absolute;
 	overflow: hidden;
@@ -19,7 +17,6 @@
 	-webkit-transition-property: -webkit-transform, -webkit-transform-origin;
 	-webkit-transition-duration: 0s;
 }
-
 .mblPageTurningBack {
 	position: absolute;
 	background: white;
@@ -29,7 +26,6 @@
 	-webkit-transition-property: -webkit-transform, -webkit-transform-origin;
 	-webkit-transition-duration: 0s;
 }
-
 .mblPageTurningShadow {
 	position: absolute;
 	top: 0px;
