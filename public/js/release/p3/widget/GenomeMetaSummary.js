@@ -188,9 +188,27 @@ define("p3/widget/GenomeMetaSummary", [
 			}else{
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					// this.chart.updateSeries(key, this.data[key]);
+					switch(key){
+						case "host_name":
+							this.host_chart.addSeries(key, this.data[key]);
+							this.host_chart.render();
+							break;
+						case "disease":
+							this.disease_chart.addSeries(key, this.data[key]);
+							this.disease_chart.render();
+							break;
+						case "isolation_country":
+							this.isolation_country_chart.addSeries(key, this.data[key]);
+							this.isolation_country_chart.render();
+							break;
+						case "genome_status":
+							this.genome_status_chart.addSeries(key, this.data[key]);
+							this.genome_status_chart.render();
+							break;
+						default:
+							break;
+					}
 				}));
-				// this.chart.render();
 
 			}
 		},
