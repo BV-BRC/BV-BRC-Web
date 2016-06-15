@@ -19,12 +19,12 @@ define("p3/widget/viewer/TabViewerBase", [
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
 		onSetState: function(attr, oldState, state){
-			console.log("TabViewerBase onSetState()", state);
+			// console.log("TabViewerBase onSetState()", state);
 			if(!state){
 				return;
 			}
 
-			console.log("    Cal setActivePanelState");
+			// console.log("    Cal setActivePanelState");
 			this.setActivePanelState();
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
@@ -33,19 +33,19 @@ define("p3/widget/viewer/TabViewerBase", [
 					state.hashParams = {"view_tab": this.defaultTab}
 				}
 			}
-			console.log("    Check for Hash Params: ", state.hashParams);
+			// console.log("    Check for Hash Params: ", state.hashParams);
 			if(state.hashParams){
 				if(!state.hashParams.view_tab){
 					state.hashParams.view_tab = this.defaultTab;
 				}
 
-				console.log("Looking for Active Tab: ", state.hashParams.view_tab);
+				// console.log("Looking for Active Tab: ", state.hashParams.view_tab);
 
 				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
-					console.log("Found View Tab")
+					// console.log("Found View Tab")
 					vt.set("visible", true);
-					console.log("Select View Tab")
+					// console.log("Select View Tab")
 					this.viewer.selectChild(vt);
 				}else{
 					console.log("No view-tab supplied in State Object");

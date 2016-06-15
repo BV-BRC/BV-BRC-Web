@@ -1291,7 +1291,7 @@ define("p3/widget/DataItemFormatter", [
 
 		}
 
-		console.log("diaplayColumns[column]=", diaplayColumns);
+		// console.log("diaplayColumns[column]=", diaplayColumns);
 
 		var additional = 0;
 

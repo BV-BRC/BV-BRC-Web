@@ -16508,7 +16508,7 @@ define([
 					this.userWorkspaces = [hws];
 					return [hws];
 				}, function(err){
-					console.log("Error Creating User's home workspace: ", err);
+					console.error("Error Creating User's home workspace: ", err);
 					// console.error("Unable to create user's 'home' workspace: ", err);
 					return [];
 				}));
@@ -16518,18 +16518,18 @@ define([
 
 		create: function(obj, createUploadNode, overwrite){
 			var _self = this;
-			console.log("WorkspaceManager.create(): ", obj);
+			// console.log("WorkspaceManager.create(): ", obj);
 			if(obj.path.charAt(obj.path.length - 1) != "/"){
 				obj.path = obj.path + "/";
 			}
-			console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
+			// console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
 			return Deferred.when(this.api("Workspace.create", [{
 				objects: [[(obj.path + obj.name), (obj.type || "unspecified"), obj.userMeta || {}, (obj.content || "")]],
 				createUploadNodes: createUploadNode,
 				overwrite: overwrite
 			}]), function(results){
 				var res;
-				console.log("Create Results: ", results);
+				// console.log("Create Results: ", results);
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
@@ -16608,15 +16608,15 @@ define([
 				if(typeof res.data == "string"){
 					res.data = JSON.parse(res.data);
 				}
-				console.log("Data: ", res.data);
+				// console.log("Data: ", res.data);
 				if(res && res.data && res.data.id_list && res.data.id_list[idType]){
-					console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					// console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
 						return (ids.indexOf(id) < 0);
 					});
-					console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					// console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
-						console.log("Publish remove from group notification message");
+						// console.log("Publish remove from group notification message");
 						Topic.publish("/Notification", {
 							message: ids.length + " Item removed from group " + groupPath,
 							type: "message",
@@ -16640,10 +16640,10 @@ define([
 			var group = {
 				name: name,
 				id_list: {}
-			}
+			};
 			group.id_list[idType] = ids;
 
-			console.log("Creating Group: ", group);
+			// console.log("Creating Group: ", group);
 			return this.create({
 				path: path,
 				name: name,
@@ -16766,7 +16766,7 @@ define([
 
 		getObjectsByType: function(types, showHidden){
 			types = (types instanceof Array) ? types : [types];
-			console.log("Get ObjectsByType: ", types);
+			// console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
 				//console.log("current: ", current, current.path);
@@ -16831,7 +16831,7 @@ define([
 
 		downloadFile: function(path){
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
-				console.log("download Urls: ", urls);
+				// console.log("download Urls: ", urls);
 				window.open(urls[0]);
 			});
 		},
@@ -16841,7 +16841,7 @@ define([
 				throw new Error("Invalid Path(s) to delete");
 			}
 			path = decodeURIComponent(path);
-			console.log('getObjects: ', path, "metadata_only:", metadataOnly);
+			// console.log('getObjects: ', path, "metadata_only:", metadataOnly);
 			return Deferred.when(this.api("Workspace.get", [{
 				objects: [path],
 				metadata_only: metadataOnly
@@ -16849,7 +16849,7 @@ define([
 				if(!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]){
 					throw new Error("Object not found: ");
 				}
-				console.log("results[0]", results[0]);
+				// console.log("results[0]", results[0]);
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -16872,7 +16872,7 @@ define([
 					metadata: meta,
 					data: results[0][0][1]
 				};
-				console.log("getObjects() res", res);
+				// console.log("getObjects() res", res);
 				return res;
 			});
 
@@ -16892,11 +16892,11 @@ define([
 				objects: paths,
 				metadata_only: metadataOnly
 			}]), function(results){
-				console.log("results[0]", results[0]);
+				// console.log("results[0]", results[0]);
 				var objs = results[0];
 				var fin = [];
 				var defs = objs.map(function(obj){
-					console.log("obj: ", obj);
+					// console.log("obj: ", obj);
 					var meta = {
 						name: obj[0][0],
 						type: obj[0][1],
@@ -16943,7 +16943,7 @@ define([
 							});
 							return true;
 						}, function(err){
-							console.log("Error Retrieving data object from shock :", err, meta.link_reference);
+							console.error("Error Retrieving data object from shock :", err, meta.link_reference);
 						});
 					}
 				});
@@ -16956,6 +16956,7 @@ define([
 		},
 
 		getFolderContents: function(path, showHidden, recursive){
+			var _self = this;
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
 					includeSubDirs: false,
@@ -17050,7 +17051,7 @@ define([
 			this.userId = userId;
 			if(userId && token){
 				Deferred.when(this.get("currentPath"), function(cwsp){
-					console.log("Current Workspace Path: ", cwsp)
+					// console.log("Current Workspace Path: ", cwsp)
 				});
 			}else{
 				this.currentPath = "/";

@@ -31,11 +31,11 @@ define("p3/widget/viewer/_GenomeList", [
 			// }
 
 			var _self = this;
-			console.log('genomeList setQuery - this.query: ', this.query);
+			// console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			console.log("url: ", url);
+			// console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
