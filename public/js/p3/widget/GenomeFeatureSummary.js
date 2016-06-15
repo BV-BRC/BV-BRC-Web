@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
@@ -46,7 +46,6 @@ define([
 			var byFeature = {};
 
 			var values = {};
-			// console.log("SummarY: ", data)
 
 			data.forEach(function(summary){
 				summary.pivot.forEach(function(pv, idx){
@@ -58,7 +57,7 @@ define([
 			var values = Object.keys(values);
 
 			values.forEach(function(val, idx){
-				this._chartLabels.push({text: val, value: idx})
+				this._chartLabels.push({text: val, value: idx + 1})
 			}, this);
 
 			data.forEach(function(summary){
@@ -94,73 +93,57 @@ define([
 		},
 
 		render_chart: function(){
-			// console.log("RENDER CHART");
+
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode);
-				this.chart.setTheme(Theme);
-
-				this.chart.addPlot("default", {
-					type: "ClusteredColumns",
-					markers: true,
-					gap: 3,
-					labels: true,
-					// minBarSize: 5,
-					labelStyle: "inside",
-					//labelOffset: 20,
-					labelFunc: function(o){
-						return o.annotation;
-					},
-					animate: {duration: 1000, easing: easing.linear}
-				});
-
-				this.chart.addAxis("x", {
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: false,
-					microTicks: false,
-					labels: [this._chartLabels]
-				});
-
-				this.chart.addAxis("y", {
-					title: "Feature Count",
-					vertical: true,
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: true,
-					microTicks: true,
-					natural: true,
-					includeZero: true,
-					labels: [
-						{value: 0, text: "1"},
-						{value: 1, text: "10"},
-						{value: 2, text: "100"},
-						{value: 3, text: "1000"},
-						{value: 4, text: "10^4"},
-						{value: 5, text: "10^5"},
-						{value: 6, text: "10^6"},
-						{value: 7, text: "10^7"},
-						{value: 8, text: "10^8"},
-						{value: 9, text: "10^9"}
-					]
-
-				});
-				// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredColumns",
+						markers: true,
+						gap: 3,
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						majorLabels: false,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						title: "Feature Count",
+						vertical: true,
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: true,
+						microTicks: true,
+						natural: true,
+						includeZero: true,
+						labels: [
+							{value: 0, text: "1"},
+							{value: 1, text: "10"},
+							{value: 2, text: "100"},
+							{value: 3, text: "1000"},
+							{value: 4, text: "10^4"},
+							{value: 5, text: "10^5"},
+							{value: 6, text: "10^6"},
+							{value: 7, text: "10^7"},
+							{value: 8, text: "10^8"},
+							{value: 9, text: "10^9"}
+						]
+					});
 
 				new ChartTooltip(this.chart, "default", {
 					text: function(o){
-						console.log("O: ", o);
 						var d = o.run.data[o.index];
-						return d.annotation + " " + d.text + "s (" + d.count + ")"
+						return "[" + d.annotation + "] " + d.text + "s (" + d.count + ")"
 					}
 				});
-
-				// console.log("Data to Render: ", this.data);
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
 					this.chart.addSeries(key, this.data[key]);
 				}));
 
-				// console.log("Render GF DATA", this.chart);
 				this.chart.render();
 			}else{
 
@@ -178,6 +161,5 @@ define([
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}
-
 	})
 });

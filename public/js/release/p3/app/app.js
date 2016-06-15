@@ -299,7 +299,7 @@ define("p3/app/app", [
 				var cur = _self.getCurrentContainer();
 				if(cur instanceof ctor){
 					instance = cur;
-					console.log("newNavState: ", newNavState);
+					// console.log("newNavState: ", newNavState);
 
 					instance.set('state', newNavState);
 
@@ -368,7 +368,7 @@ define("p3/app/app", [
 						});*/
 		},
 		navigate: function(msg){
-			console.log("Navigate to ", msg);
+			// console.log("Navigate to ", msg);
 			if(!msg.href){
 				if(msg.id){
 					msg.href = msg.id;

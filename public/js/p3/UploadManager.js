@@ -65,14 +65,14 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			}else{
 				summary.progress = 0;
 			}
-			console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+			// console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
 
 			var msg = {
 				type: "UploadStatSummary",
 				summary: summary
 			};
 
-			console.log("Summary message: ", msg)
+			// console.log("Summary message: ", msg)
 			def.resolve(msg);
 			return def.promise;
 		},
@@ -94,8 +94,8 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			var _self = this;
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
-				console.log("evt: ", evt);
-				console.log("progress: ", (evt.loaded / evt.total) * 100);
+				// console.log("evt: ", evt);
+				// console.log("progress: ", (evt.loaded / evt.total) * 100);
 				_self.inProgress[file.name].loaded = evt.loaded;
 				_self.inProgress[file.name].total = evt.total;
 				Topic.publish("/upload", {
@@ -122,14 +122,14 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 						if(key == file.name){
 							delete _self.inProgress[key];
 						}
-					})
+					});
 
 					Topic.publish("/upload", {
 						type: "UploadComplete",
 						filename: file.name,
 						url: url,
 						workspacePath: workspacePath
-					})
+					});
 
 					if(_self.activeCount < 1){
 						_self.unloadPageListener();
@@ -139,7 +139,7 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			}));
 
 			req.upload.addEventListener("error", function(error){
-				console.log("Error Uploading File: ", error);
+				// console.log("Error Uploading File: ", error);
 				_self.activeCount--;
 				_self.errorCount++;
 				def.reject(error);
@@ -148,7 +148,7 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			req.open("PUT", url, true);
 
 			for(var prop in this.headers){
-				console.log("Set Request Header: ", prop, this.headers[prop]);
+				// console.log("Set Request Header: ", prop, this.headers[prop]);
 				req.setRequestHeader(prop, this.headers[prop]);
 			}
 

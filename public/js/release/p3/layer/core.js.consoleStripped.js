@@ -146,7 +146,7 @@ define([
 
 				newState.href = path;
 				newState.prev = params.oldPath;
-				 0 && console.log("parser getState: ", parser);
+				//  0 && console.log("parser getState: ", parser);
 				if (newState.search){
 
 				}else if(parser.search){
@@ -155,7 +155,7 @@ define([
 					newState.search = "";
 				}
 
-				 0 && console.log("New State Search: ", newState.search);
+				//  0 && console.log("New State Search: ", newState.search);
 				newState.hash = parser.hash;
 				newState.pathname = parser.pathname
 
@@ -177,7 +177,7 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				 0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+				//  0 && console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
 				//  0 && console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
@@ -187,7 +187,7 @@ define([
 				var type = parts.shift();
 
 				newState.widgetClass = "p3/widget/viewer/" + type;
-				 0 && console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
+				//  0 && console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
 				_self.navigate(newState);
 			});
 
@@ -270,7 +270,7 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			 0 && console.log("updateUserWorkspaceList: ", data);
+			//  0 && console.log("updateUserWorkspaceList: ", data);
 			domConstruct.empty("YourWorkspaces");
 			data.forEach(function(ws){
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, dom.byId("YourWorkspaces"));
@@ -5134,7 +5134,7 @@ define([
 				var cur = _self.getCurrentContainer();
 				if(cur instanceof ctor){
 					instance = cur;
-					 0 && console.log("newNavState: ", newNavState);
+					//  0 && console.log("newNavState: ", newNavState);
 
 					instance.set('state', newNavState);
 
@@ -5203,7 +5203,7 @@ define([
 						});*/
 		},
 		navigate: function(msg){
-			 0 && console.log("Navigate to ", msg);
+			//  0 && console.log("Navigate to ", msg);
 			if(!msg.href){
 				if(msg.id){
 					msg.href = msg.id;
@@ -10747,11 +10747,11 @@ define(["dojo/_base/declare", "dojo/router/RouterBase"
 	return declare([Router], {
 
 		go: function(href, state){
-			 0 && console.log("go(" + href + ")", state)
+			//  0 && console.log("go(" + href + ")", state)
 
 			state = state || {};
 
-			 0 && console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
+			//  0 && console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 
 			if (href.length>4000){
 				var parts = href.split("?");
@@ -14316,7 +14316,7 @@ define([
 					this.userWorkspaces = [hws];
 					return [hws];
 				}, function(err){
-					 0 && console.log("Error Creating User's home workspace: ", err);
+					 0 && console.error("Error Creating User's home workspace: ", err);
 					//  0 && console.error("Unable to create user's 'home' workspace: ", err);
 					return [];
 				}));
@@ -14326,18 +14326,18 @@ define([
 
 		create: function(obj, createUploadNode, overwrite){
 			var _self = this;
-			 0 && console.log("WorkspaceManager.create(): ", obj);
+			//  0 && console.log("WorkspaceManager.create(): ", obj);
 			if(obj.path.charAt(obj.path.length - 1) != "/"){
 				obj.path = obj.path + "/";
 			}
-			 0 && console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
+			//  0 && console.log("Workspace.create: ", obj.path, obj.path + obj.name, "Overwrite: ", overwrite);
 			return Deferred.when(this.api("Workspace.create", [{
 				objects: [[(obj.path + obj.name), (obj.type || "unspecified"), obj.userMeta || {}, (obj.content || "")]],
 				createUploadNodes: createUploadNode,
 				overwrite: overwrite
 			}]), function(results){
 				var res;
-				 0 && console.log("Create Results: ", results);
+				//  0 && console.log("Create Results: ", results);
 				if(!results[0][0] || !results[0][0]){
 					throw new Error("Error Creating Object");
 				}else{
@@ -14416,15 +14416,15 @@ define([
 				if(typeof res.data == "string"){
 					res.data = JSON.parse(res.data);
 				}
-				 0 && console.log("Data: ", res.data);
+				//  0 && console.log("Data: ", res.data);
 				if(res && res.data && res.data.id_list && res.data.id_list[idType]){
-					 0 && console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					//  0 && console.log("Group Length Before: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					res.data.id_list[idType] = res.data.id_list[idType].filter(function(id){
 						return (ids.indexOf(id) < 0);
 					});
-					 0 && console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
+					//  0 && console.log("Group Length After: ", res.data.id_list[idType].length, res.data.id_list[idType]);
 					return Deferred.when(_self.updateObject(res.metadata, res.data), function(r){
-						 0 && console.log("Publish remove from group notification message");
+						//  0 && console.log("Publish remove from group notification message");
 						Topic.publish("/Notification", {
 							message: ids.length + " Item removed from group " + groupPath,
 							type: "message",
@@ -14448,10 +14448,10 @@ define([
 			var group = {
 				name: name,
 				id_list: {}
-			}
+			};
 			group.id_list[idType] = ids;
 
-			 0 && console.log("Creating Group: ", group);
+			//  0 && console.log("Creating Group: ", group);
 			return this.create({
 				path: path,
 				name: name,
@@ -14574,7 +14574,7 @@ define([
 
 		getObjectsByType: function(types, showHidden){
 			types = (types instanceof Array) ? types : [types];
-			 0 && console.log("Get ObjectsByType: ", types);
+			//  0 && console.log("Get ObjectsByType: ", types);
 
 			return Deferred.when(this.get("currentWorkspace"), lang.hitch(this, function(current){
 				// 0 && console.log("current: ", current, current.path);
@@ -14639,7 +14639,7 @@ define([
 
 		downloadFile: function(path){
 			return Deferred.when(this.api("Workspace.get_download_url", [{objects: [path]}]), function(urls){
-				 0 && console.log("download Urls: ", urls);
+				//  0 && console.log("download Urls: ", urls);
 				window.open(urls[0]);
 			});
 		},
@@ -14649,7 +14649,7 @@ define([
 				throw new Error("Invalid Path(s) to delete");
 			}
 			path = decodeURIComponent(path);
-			 0 && console.log('getObjects: ', path, "metadata_only:", metadataOnly);
+			//  0 && console.log('getObjects: ', path, "metadata_only:", metadataOnly);
 			return Deferred.when(this.api("Workspace.get", [{
 				objects: [path],
 				metadata_only: metadataOnly
@@ -14657,7 +14657,7 @@ define([
 				if(!results || !results[0] || !results[0][0] || !results[0][0][0] || !results[0][0][0][4]){
 					throw new Error("Object not found: ");
 				}
-				 0 && console.log("results[0]", results[0]);
+				//  0 && console.log("results[0]", results[0]);
 				var meta = {
 					name: results[0][0][0][0],
 					type: results[0][0][0][1],
@@ -14680,7 +14680,7 @@ define([
 					metadata: meta,
 					data: results[0][0][1]
 				};
-				 0 && console.log("getObjects() res", res);
+				//  0 && console.log("getObjects() res", res);
 				return res;
 			});
 
@@ -14700,11 +14700,11 @@ define([
 				objects: paths,
 				metadata_only: metadataOnly
 			}]), function(results){
-				 0 && console.log("results[0]", results[0]);
+				//  0 && console.log("results[0]", results[0]);
 				var objs = results[0];
 				var fin = [];
 				var defs = objs.map(function(obj){
-					 0 && console.log("obj: ", obj);
+					//  0 && console.log("obj: ", obj);
 					var meta = {
 						name: obj[0][0],
 						type: obj[0][1],
@@ -14751,7 +14751,7 @@ define([
 							});
 							return true;
 						}, function(err){
-							 0 && console.log("Error Retrieving data object from shock :", err, meta.link_reference);
+							 0 && console.error("Error Retrieving data object from shock :", err, meta.link_reference);
 						});
 					}
 				});
@@ -14764,6 +14764,7 @@ define([
 		},
 
 		getFolderContents: function(path, showHidden, recursive){
+			var _self = this;
 			return Deferred.when(this.api("Workspace.ls", [{
 					paths: [path],
 					includeSubDirs: false,
@@ -14858,7 +14859,7 @@ define([
 			this.userId = userId;
 			if(userId && token){
 				Deferred.when(this.get("currentPath"), function(cwsp){
-					 0 && console.log("Current Workspace Path: ", cwsp)
+					//  0 && console.log("Current Workspace Path: ", cwsp)
 				});
 			}else{
 				this.currentPath = "/";
@@ -37322,7 +37323,7 @@ define([
 
 		}
 
-		 0 && console.log("diaplayColumns[column]=", diaplayColumns);
+		//  0 && console.log("diaplayColumns[column]=", diaplayColumns);
 
 		var additional = 0;
 
@@ -41702,14 +41703,14 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			}else{
 				summary.progress = 0;
 			}
-			 0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
+			//  0 && console.log("Summary.progress: ", summary, summary.progress, loadedSize, totalSize);
 
 			var msg = {
 				type: "UploadStatSummary",
 				summary: summary
 			};
 
-			 0 && console.log("Summary message: ", msg)
+			//  0 && console.log("Summary message: ", msg)
 			def.resolve(msg);
 			return def.promise;
 		},
@@ -41731,8 +41732,8 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			var _self = this;
 			req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(evt){
-				 0 && console.log("evt: ", evt);
-				 0 && console.log("progress: ", (evt.loaded / evt.total) * 100);
+				//  0 && console.log("evt: ", evt);
+				//  0 && console.log("progress: ", (evt.loaded / evt.total) * 100);
 				_self.inProgress[file.name].loaded = evt.loaded;
 				_self.inProgress[file.name].total = evt.total;
 				Topic.publish("/upload", {
@@ -41759,14 +41760,14 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 						if(key == file.name){
 							delete _self.inProgress[key];
 						}
-					})
+					});
 
 					Topic.publish("/upload", {
 						type: "UploadComplete",
 						filename: file.name,
 						url: url,
 						workspacePath: workspacePath
-					})
+					});
 
 					if(_self.activeCount < 1){
 						_self.unloadPageListener();
@@ -41776,7 +41777,7 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			}));
 
 			req.upload.addEventListener("error", function(error){
-				 0 && console.log("Error Uploading File: ", error);
+				//  0 && console.log("Error Uploading File: ", error);
 				_self.activeCount--;
 				_self.errorCount++;
 				def.reject(error);
@@ -41785,7 +41786,7 @@ define(["dojo/request", "dojo/_base/declare", "dojo/_base/lang",
 			req.open("PUT", url, true);
 
 			for(var prop in this.headers){
-				 0 && console.log("Set Request Header: ", prop, this.headers[prop]);
+				//  0 && console.log("Set Request Header: ", prop, this.headers[prop]);
 				req.setRequestHeader(prop, this.headers[prop]);
 			}
 
@@ -57860,11 +57861,11 @@ define([
 			// }
 
 			var _self = this;
-			 0 && console.log('genomeList setQuery - this.query: ', this.query);
+			//  0 && console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			 0 && console.log("url: ", url);
+			//  0 && console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -58166,12 +58167,12 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
 		onSetState: function(attr, oldState, state){
-			 0 && console.log("TabViewerBase onSetState()", state);
+			//  0 && console.log("TabViewerBase onSetState()", state);
 			if(!state){
 				return;
 			}
 
-			 0 && console.log("    Cal setActivePanelState");
+			//  0 && console.log("    Cal setActivePanelState");
 			this.setActivePanelState();
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
@@ -58180,19 +58181,19 @@ define([
 					state.hashParams = {"view_tab": this.defaultTab}
 				}
 			}
-			 0 && console.log("    Check for Hash Params: ", state.hashParams);
+			//  0 && console.log("    Check for Hash Params: ", state.hashParams);
 			if(state.hashParams){
 				if(!state.hashParams.view_tab){
 					state.hashParams.view_tab = this.defaultTab;
 				}
 
-				 0 && console.log("Looking for Active Tab: ", state.hashParams.view_tab);
+				//  0 && console.log("Looking for Active Tab: ", state.hashParams.view_tab);
 
 				if(this[state.hashParams.view_tab]){
 					var vt = this[state.hashParams.view_tab];
-					 0 && console.log("Found View Tab")
+					//  0 && console.log("Found View Tab")
 					vt.set("visible", true);
-					 0 && console.log("Select View Tab")
+					//  0 && console.log("Select View Tab")
 					this.viewer.selectChild(vt);
 				}else{
 					 0 && console.log("No view-tab supplied in State Object");
@@ -58471,13 +58472,13 @@ define([
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter",
-	"./SpecialtyGeneSummary"
+	"./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-			SpecialtyGeneSummary){
+			ExternalItemFormatter){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
@@ -58511,6 +58512,8 @@ define([
 		"createSummary": function(genome){
 			domConstruct.empty(this.genomeSummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {hideExtra: true}), this.genomeSummaryNode, "first");
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {hideExtra: true}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
 		},
 
 		startup: function(){
@@ -71914,7 +71917,7 @@ define(["dijit/Tooltip", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/wi
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
 
 ], function(declare, WidgetBase, on,
@@ -71959,7 +71962,6 @@ define([
 			var byFeature = {};
 
 			var values = {};
-			//  0 && console.log("SummarY: ", data)
 
 			data.forEach(function(summary){
 				summary.pivot.forEach(function(pv, idx){
@@ -71971,7 +71973,7 @@ define([
 			var values = Object.keys(values);
 
 			values.forEach(function(val, idx){
-				this._chartLabels.push({text: val, value: idx})
+				this._chartLabels.push({text: val, value: idx + 1})
 			}, this);
 
 			data.forEach(function(summary){
@@ -72007,73 +72009,57 @@ define([
 		},
 
 		render_chart: function(){
-			//  0 && console.log("RENDER CHART");
+
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode);
-				this.chart.setTheme(Theme);
-
-				this.chart.addPlot("default", {
-					type: "ClusteredColumns",
-					markers: true,
-					gap: 3,
-					labels: true,
-					// minBarSize: 5,
-					labelStyle: "inside",
-					//labelOffset: 20,
-					labelFunc: function(o){
-						return o.annotation;
-					},
-					animate: {duration: 1000, easing: easing.linear}
-				});
-
-				this.chart.addAxis("x", {
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: false,
-					microTicks: false,
-					labels: [this._chartLabels]
-				});
-
-				this.chart.addAxis("y", {
-					title: "Feature Count",
-					vertical: true,
-					majorLabels: true,
-					minorTicks: true,
-					minorLabels: true,
-					microTicks: true,
-					natural: true,
-					includeZero: true,
-					labels: [
-						{value: 0, text: "1"},
-						{value: 1, text: "10"},
-						{value: 2, text: "100"},
-						{value: 3, text: "1000"},
-						{value: 4, text: "10^4"},
-						{value: 5, text: "10^5"},
-						{value: 6, text: "10^6"},
-						{value: 7, text: "10^7"},
-						{value: 8, text: "10^8"},
-						{value: 9, text: "10^9"}
-					]
-
-				});
-				// this.chart.addAxis("y", { vertical: true, majorTicketStep: 4, title: "Feature Count"});
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredColumns",
+						markers: true,
+						gap: 3,
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						majorLabels: false,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						title: "Feature Count",
+						vertical: true,
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: true,
+						microTicks: true,
+						natural: true,
+						includeZero: true,
+						labels: [
+							{value: 0, text: "1"},
+							{value: 1, text: "10"},
+							{value: 2, text: "100"},
+							{value: 3, text: "1000"},
+							{value: 4, text: "10^4"},
+							{value: 5, text: "10^5"},
+							{value: 6, text: "10^6"},
+							{value: 7, text: "10^7"},
+							{value: 8, text: "10^8"},
+							{value: 9, text: "10^9"}
+						]
+					});
 
 				new ChartTooltip(this.chart, "default", {
 					text: function(o){
-						 0 && console.log("O: ", o);
 						var d = o.run.data[o.index];
-						return d.annotation + " " + d.text + "s (" + d.count + ")"
+						return "[" + d.annotation + "] " + d.text + "s (" + d.count + ")"
 					}
 				});
-
-				//  0 && console.log("Data to Render: ", this.data);
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
 					this.chart.addSeries(key, this.data[key]);
 				}));
 
-				//  0 && console.log("Render GF DATA", this.chart);
 				this.chart.render();
 			}else{
 
@@ -72091,7 +72077,6 @@ define([
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
 		}
-
 	})
 });
 },
@@ -72126,11 +72111,11 @@ define([
 			this.set("view", "table")
 		},
 		onSetView: function(attr, oldVal, view){
-			 0 && console.log("onSetView ", view);
+			//  0 && console.log("onSetView ", view);
 			if(oldVal){
 				domClass.remove(this.domNode, oldVal + "View")
 			}
-			domClass.add(this.domNode, view + "View")
+			domClass.add(this.domNode, view + "View");
 			this["render_" + this.view]();
 		},
 
@@ -72142,23 +72127,14 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, query){
-			//  0 && console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
-			//  0 && console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
 				data: this.query + this.baseQuery
 			}).then(lang.hitch(this, "processData"));
-
-			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
-			// 	handleAs: "json",
-			// 	headers: this.headers
-			// }).then(lang.hitch(this,"processData")) 
-
 		},
 
 		onSetData: function(attr, oldVal, data){
-			//  0 && console.log("onSetData: ", data);
 			this["render_" + this.view]();
 		},
 
@@ -72167,7 +72143,6 @@ define([
 		},
 
 		render_chart: function(){
-
 		},
 
 		render_table: function(){
@@ -72299,118 +72274,128 @@ define([
 });
 
 },
-'p3/widget/SpecialtyGeneSummary':function(){
+'p3/widget/PATRICTheme':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+	"dojox/charting/SimpleTheme",
+	"dojox/charting/themes/common"
+], function(SimpleTheme, themes){
 
-], function(declare, WidgetBase, on,
-			domClass, SummaryWidget,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, easing){
+	themes.PATRIC = new SimpleTheme({
+		colors: [
+			"#1f497d", "#4f81bd", "#4bacc6", "#f79646", "#9bbb59"
+		]
+	});
 
-	var sourcePropertyMap = {
-		"PATRIC_VF": "Virulence Factor",
-			"Victors": "Virulence Factor",
-			"VFDB": "Virulence Factor",
-			"DrugBank": "Drug Target",
-			"TTD": "Drug Target",
-			"Human": "Human Homolog",
-			"CARD": "Antibiotic Resistance",
-			"ARDB": "Antibiotic Resistance"
+	return themes.PATRIC;
+});
+},
+'p3/widget/ExternalItemFormatter':function(){
+define([
+	"dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
+	"dijit/form/Button", "../JobManager", "dijit/TitlePane", "dojo/request", "dojo/_base/lang"
+], function(locale, domConstruct, domClass,
+			Button, JobManager, TitlePane, xhr, lang){
+
+	var formatters = {
+		"default": function(item, options, shownode){
+			//  0 && console.log("item: ", item);
+			options = options || {};
+
+			var table = domConstruct.create("table");
+			var tbody = domConstruct.create("tbody", {}, table);
+
+			Object.keys(item).sort().forEach(function(key){
+				var tr = domConstruct.create("tr", {}, tbody);
+				var tda = domConstruct.create("td", {innerHTML: key}, tr);
+				var tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+			}, this);
+
+			return table;
+		},
+
+		"pubmed_data": function(item, options, shownode){
+			options = options || {};
+			var taxonName = item.taxon_name || item.genome_name;
+			var eutilSeaarchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
+			//  0 && console.log("taxon_name = " + taxonName);
+			var div = domConstruct.create("div");
+			//  0 && console.log("Create Display Pubmed");
+			var table = domConstruct.create("table", {}, div);
+			var tbody = domConstruct.create("tbody", {}, table);
+
+			xhr.get(eutilSeaarchURL, {
+				headers: {
+					accept: "application/json",
+					'X-Requested-With': null
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(pubmedList){
+				//  0 && console.log("pubmedList=", pubmedList);
+				if(pubmedList.esearchresult.count > 0){
+					var pmids = pubmedList.esearchresult.idlist;
+					var retmax = 5;
+					var eutilSummaryURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax + "&retmode=json";
+					if(options.hideExtra == false){
+						eutilSummaryURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmode=json";
+					}
+					xhr.get(eutilSummaryURL, {
+						headers: {
+							accept: "application/json",
+							'X-Requested-With': null
+						},
+						handleAs: "json"
+					}).then(lang.hitch(this, function(pubmedSummary){
+						//  0 && console.log("pubmedSummary=", pubmedSummary);
+						for(var i = 0; i < pubmedSummary.result.uids.length; i++){
+							var value = pubmedSummary.result.uids[i];
+							//  0 && console.log("pubmedSummary value=", value);
+							var tr = domConstruct.create("tr", {}, tbody);
+							var td = domConstruct.create("td", {innerHTML: pubmedSummary.result[value].pubdate}, tr);
+							tr = domConstruct.create("tr", {}, tbody);
+							td = domConstruct.create("td", {innerHTML: "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + value + "' target ='_blank'>" + pubmedSummary.result[value].title + "</a>"}, tr);
+							tr = domConstruct.create("tr", {}, tbody);
+							var author = pubmedSummary.result[value].lastauthor + " et al.";
+
+							if(pubmedSummary.result[value].authors.length == 1){
+								author = pubmedSummary.result[value].lastauthor;
+							}
+							else if(pubmedSummary.result[value].authors.length == 2){
+								author = pubmedSummary.result[value].authors[0].name + " and " + pubmedSummary.result[value].authors[1].name;
+							}
+
+							td = domConstruct.create("td", {innerHTML: author}, tr);
+							tr = domConstruct.create("tr", {}, tbody);
+							td = domConstruct.create("td", {innerHTML: pubmedSummary.result[value].source}, tr);
+							tr = domConstruct.create("tr", {}, tbody);
+							td = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
+
+						}
+					}));
+				}
+				else{
+					var tr = domConstruct.create("tr", {}, tbody);
+					var td = domConstruct.create("td", {innerHTML: "No recent articles found."}, tr);
+					shownode.style.display = 'none';
+				}
+			}));
+			return div;
+		}
 	};
 
-	return declare([SummaryWidget], {
-		dataModel: "sp_gene",
-		query: "",
-		baseQuery: "&limit(1)&facet((field,source),(mincount,1))",
-		columns: [
-			{
-				label: " ", field: "text", renderCell: function(obj, val, node){
-					node.innerHTML = sourcePropertyMap[val]
-				}
-			},
-			{label: "Source", field: "text"},
-			{label: "Genes", field: "y"}
-		],
-		processData: function(res){
-			this._chartLabels = [];
-			//  0 && console.log("Data: ", res);
-			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
-				 0 && console.error("INVALID SUMMARY DATA");
-				return;
-			}
-			var d = res.facet_counts.facet_fields.source;
-			var data = [];
-			var idx = 0;
-			for(var i = 0; i < d.length; i += 2){
-				data.push({text: d[i], x: idx, y: d[i + 1]});
-				// this._chartLabels.push({value: idx, text: d[i]});
-				idx++;
-			}
-
-			this._tableData = data;
-
-			this.set('data', data);
-		},
-
-		render_chart: function(){
-			 0 && console.log("RENDER CHART")
-			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode);
-				this.chart.setTheme(Theme);
-
-				this.chart.addPlot("default", {
-					type: "StackedColumns",
-					markers: true,
-					gap: 5,
-					maxBarSize: 20,
-					labels: true,
-					labelStyle: "outside",
-					animate: {duration: 1000, easing: easing.linear}
-				});
-
-				this.chart.addAxis("x", {
-					majorLabels: true,
-					minorTicks: false,
-					minorLabels: false,
-					microTicks: false,
-					labels: this._chartLabels
-
-				});
-
-				this.chart.addAxis("y", {vertical: true, majorTicketStep: 4, title: "Gene Count"});
-
-				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						//  0 && console.log("O: ", o)
-						var d = o.run.data[o.index];
-						return d.text + " (" + d.y + ")"
-					}
-				});
-
-				this.chart.addSeries("source", this.data);
-
-				//  0 && console.log("Render GF DATA", this.chart);
-				this.chart.render();
-			}else{
-
-				this.chart.updateSeries("source", this.data);
-				this.chart.render();
-			}
-		},
-
-		render_table: function(){
-			this.inherited(arguments);
-			//  0 && console.log("RenderArray: ", this._tableData);
-			this.grid.refresh();
-			this.grid.renderArray(this._tableData);
+	return function(item, type, options, shownode){
+		//  0 && console.log("Format Data: ", type, item);
+		var out;
+		if(type && formatters[type]){
+			out = formatters[type](item, options, shownode)
+		}else{
+			out = formatters["default"](item, options, shownode);
 		}
 
-	})
+		//  0 && console.log("output: ", out);
+		return out;
+	}
 });
+
 },
 'p3/widget/FeatureGridContainer':function(){
 define([
@@ -85517,23 +85502,23 @@ define([
 				postData: query,
 				handleAs: "json"
 			}).then(lang.hitch(this, function(eids){
-				 0 && console.log("eids: ", eids);
+				//  0 && console.log("eids: ", eids);
 				eids = eids.map(function(x){
 					return x.eid
 				});
-				 0 && console.log("EIDS: ", eids);
+				//  0 && console.log("EIDS: ", eids);
 				this.set("eids", eids)
 			}))
 
 		},
 		onSetEIDS: function(attr, oldVal, eids){
-			 0 && console.log("set eids: ", eids);
+			//  0 && console.log("set eids: ", eids);
 			if(this.comparisonsGrid && eids && eids.length > 0){
 				this.comparisonsGrid.set("state", lang.mixin({}, this.state, {search: "&in(eid,(" + eids.join(",") + "))"}))
 			}
 		},
 		onSetState: function(attr, oldVal, state){
-			 0 && console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//  0 && console.log("TranscriptomicsContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
 
 			var q = [];
 
@@ -85548,7 +85533,7 @@ define([
 			}
 
 			if(this.filterPanel){
-				 0 && console.log("SET FILTERPANEL STATE: ", state)
+				//  0 && console.log("SET FILTERPANEL STATE: ", state)
 				this.filterPanel.set("state", state);
 			}
 
@@ -85574,7 +85559,7 @@ define([
 			// 	}
 			// }
 
-			 0 && console.log("call _set(state) ", state);
+			//  0 && console.log("call _set(state) ", state);
 
 		},
 		visible: false,
@@ -85592,13 +85577,13 @@ define([
 			}
 		},
 		_setStateAttr: function(val){
-			 0 && console.log("GenomeContainer onSetStateAttr: ", val);
+			//  0 && console.log("GenomeContainer onSetStateAttr: ", val);
 			this._set("state", val ? lang.mixin({}, val) : val);
-			 0 && console.log("After internal set")
+			//  0 && console.log("After internal set")
 		},
 
 		postCreate: function(){
-			 0 && console.log("GENOME CONTAINER POSTCREATE");
+			//  0 && console.log("GENOME CONTAINER POSTCREATE");
 			this.inherited(arguments);
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.watch("query", lang.hitch(this, "onSetQuery"));
@@ -86463,7 +86448,7 @@ define([
 			RQLParser){
 
 	var parseQuery = function(filter){
-		 0 && console.log("PARSE: ", filter);
+		//  0 && console.log("PARSE: ", filter);
 
 		var parsed = {
 			parsed: _parsed,
@@ -86494,7 +86479,7 @@ define([
 				case "in":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					 0 && console.log("IN F: ", f, "V: ",v, term)
+					//  0 && console.log("IN F: ", f, "V: ",v, term)
 					// parsed.selected.push({field: f, value: v});
 					if(!parsed.contains[f]){
 						parsed.contains[f] = [v];
@@ -86505,7 +86490,7 @@ define([
 				case "eq":
 					var f = decodeURIComponent(term.args[0]);
 					var v = decodeURIComponent(term.args[1]);
-					 0 && console.log("F: ", f, "V: ",f, term)
+					//  0 && console.log("F: ", f, "V: ",f, term)
 					parsed.selected.push({field: f, value: v});
 					if(!parsed.byCategory[f]){
 						parsed.byCategory[f] = [v];
@@ -86537,7 +86522,7 @@ define([
 		var parsed = parseQuery(query);
 		var out = [];
 
-		 0 && console.log("PARSED: ", parsed);
+		//  0 && console.log("PARSED: ", parsed);
 		var catsEnglish = Object.keys(parsed.byCategory).map(function(cat){
 			var cout = ['<span class="queryField">' + cat + '</span> is'];
 			var C = parsed.byCategory[cat];
@@ -86582,7 +86567,7 @@ define([
 			out.push("that match all of the keywords " + keywords.slice(0, keywords.length - 1).join(", ") + ', <span class="queryOperator"> AND </span> ' + keywords[keywords.length - 1])
 		}
 
-		 0 && console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
+		//  0 && console.log(" ENGLISH OUT: ", out.join(' <span class="queryOperator"> AND </span> '));
 
 		return out.join(" ");
 		// 0 && console.log("parsed query: ", parsed);
@@ -86916,8 +86901,8 @@ define([
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n\n    <table style=\"margin:2px;\">\n        <tbody>\n            <tr>\n                <td style=\"width:35%;padding:4px;vertical-align:top;\">\n                    <div class=\"section\">\n                       <!-- <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Summary</span></h3>-->\n                        <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                            Loading Genome Summary...\n                        </div>\n                    </div>\n                </td>\n                <td style=\"width:40%;padding:4px;vertical-align:top;\">\n  \n                    <div class=\"section\" >\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                        <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\" style=\"height:205px;margin:4px;\"></div>\n                    </div>\n\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                          <div data-dojo-attach-point=\"pfSummaryWidget\" data-dojo-type=\"p3/widget/ProteinFeatureSummary\" style=\"margin:4px;\"></div>\n                    </div>\n\n                    <div class=\"section \">\n                        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                          <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\" style=\"height:205px;margin:4px;\"></div>\n                    </div>\n\n                </td>\n                <td style=\"width:25%;padding:4px;vertical-align:top;\">\n                    <div class=\"section \">\n                     <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                      <div  style=\"background:#FFF889;margin:4px;padding:8px;margin-radius:4px;\">\n                          This feature will be returning soon.\n                        </div>\n                    </div>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n</div>\n",
-'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point-\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\" style=\"height:175px;\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\" style=\"height:175px;\">\n\t\t</div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n            </td>\n            <td style=\"width:40%;padding:7px;vertical-align:top;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                    <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\"\n                         style=\"height:205px;margin:4px;\"></div>\n                </div>\n\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                    <div id=\"GO_PFSummary\" data-dojo-attach-point=\"pfSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ProteinFeatureSummary\" style=\"margin:4px;\"></div>\n                </div>\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\"></div>\n                </div>\n\n            </td>\n            <td style=\"width:25%;padding:7px;vertical-align:top;\">\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\" style=\"margin:4px;padding:8px;display:block\">\n                        <!--<div>Show more <i data-dojo-attach-event=\"click:onShowMore\" class=\"fa icon-plus-circle fa-lg\"></i></div>-->\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
 'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",

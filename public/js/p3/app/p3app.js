@@ -144,7 +144,7 @@ define([
 
 				newState.href = path;
 				newState.prev = params.oldPath;
-				console.log("parser getState: ", parser);
+				// console.log("parser getState: ", parser);
 				if (newState.search){
 
 				}else if(parser.search){
@@ -153,7 +153,7 @@ define([
 					newState.search = "";
 				}
 
-				console.log("New State Search: ", newState.search);
+				// console.log("New State Search: ", newState.search);
 				newState.hash = parser.hash;
 				newState.pathname = parser.pathname
 
@@ -175,7 +175,7 @@ define([
 			}
 
 			Router.register("\/view(\/.*)", function(params, path){
-				console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
+				// console.log("'/view/' Route Handler.  Params: ", params, " \n PATH: ", path, arguments);
 				var newState = getState(params, path);
 
 				// console.log("newState from getState in /view/: ", JSON.stringify(newState,null,4));
@@ -185,7 +185,7 @@ define([
 				var type = parts.shift();
 
 				newState.widgetClass = "p3/widget/viewer/" + type;
-				console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
+				// console.log("'/view/' New Navigation State: ", JSON.stringify(newState,null,4));
 				_self.navigate(newState);
 			});
 
@@ -268,7 +268,7 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			console.log("updateUserWorkspaceList: ", data);
+			// console.log("updateUserWorkspaceList: ", data);
 			domConstruct.empty("YourWorkspaces");
 			data.forEach(function(ws){
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, dom.byId("YourWorkspaces"));

@@ -28,11 +28,11 @@ define([
 			this.set("view", "table")
 		},
 		onSetView: function(attr, oldVal, view){
-			console.log("onSetView ", view);
+			// console.log("onSetView ", view);
 			if(oldVal){
 				domClass.remove(this.domNode, oldVal + "View")
 			}
-			domClass.add(this.domNode, view + "View")
+			domClass.add(this.domNode, view + "View");
 			this["render_" + this.view]();
 		},
 
@@ -44,23 +44,14 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, query){
-			// console.log("SummaryWidget endpoint : ", PathJoin(this.apiServiceUrl, this.dataModel) + "/");
-			// console.log("Do SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
 				data: this.query + this.baseQuery
 			}).then(lang.hitch(this, "processData"));
-
-			// return xhr.get(PathJoin(this.apiServiceUrl,this.dataModel)+"/?" + this.query + this.baseQuery,{
-			// 	handleAs: "json",
-			// 	headers: this.headers
-			// }).then(lang.hitch(this,"processData")) 
-
 		},
 
 		onSetData: function(attr, oldVal, data){
-			// console.log("onSetData: ", data);
 			this["render_" + this.view]();
 		},
 
@@ -69,7 +60,6 @@ define([
 		},
 
 		render_chart: function(){
-
 		},
 
 		render_table: function(){

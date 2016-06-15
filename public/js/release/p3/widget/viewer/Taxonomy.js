@@ -44,7 +44,7 @@ define("p3/widget/viewer/Taxonomy", [
 		},
 
 		_setTaxon_idAttr: function(id){
-			console.log("*** SET TAXON ID ", id);
+			// console.log("*** SET TAXON ID ", id);
 			this.taxon_id = id;
 
 			var state = this.state || {};
@@ -79,7 +79,7 @@ define("p3/widget/viewer/Taxonomy", [
 			console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
 			if(!state){
 				throw Error("No State Set");
-				return;
+				// return;
 			}
 
 			var parts = state.pathname.split("/");
@@ -127,24 +127,20 @@ define("p3/widget/viewer/Taxonomy", [
 					break;
 				case "phylogeny":
 				case "genomes":
-					console.log("setting ", active, " state: ", this.state);
+					// console.log("setting ", active, " state: ", this.state);
 					activeTab.set("state", this.state);
 					break;
 				case "proteinFamilies":
-					console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					// console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
 					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}));
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
-						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
-
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 					}
 
 					if(activeQueryState){
