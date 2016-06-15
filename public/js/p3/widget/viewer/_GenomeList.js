@@ -232,8 +232,8 @@ define([
 			var hasDisabled = false;
 
 			this.viewer.getChildren().forEach(function(child){
-				// console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
-				if(child.maxGenomeCount && (newVal > this.maxGenomesPerList)){
+				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
+				if(child.maxGenomeCount && ((newVal > this.maxGenomesPerList) || (newVal > child.maxGenomeCount))){
 					// console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
 					child.set("disabled", true);

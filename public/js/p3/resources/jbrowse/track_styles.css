@@ -8,7 +8,7 @@
        pixel-perfect accuracy.
 */
 
-div.basic,
+.basic,
 .plus-basic,
 .minus-basic {
     position: absolute;
@@ -51,8 +51,8 @@ div.hist {
     -ms-box-sizing: border-box;
 }
 
-.plus-feature { background-image: url('/public/js/jbrowse.repo/img/plus-chevron3.png'); }
-.minus-feature { background-image: url('/public/js/jbrowse.repo/img/minus-chevron3.png'); }
+.plus-feature { background-image: url('img/plus-chevron3.png'); }
+.minus-feature { background-image: url('img/minus-chevron3.png'); }
 
 .subfeature,
 .plus-subfeature,
@@ -86,7 +86,7 @@ div.hist {
     background-color: #898FD8;
 }
 .alignment.missing_mate, .plus-alignment.missing_mate, .minus-alignment.missing_mate {
-    background-image: url('/public/js/jbrowse.repo/img/red_crosshatch_bg.png');
+    background-image: url('img/red_crosshatch_bg.png');
 }
 
 .alignment > .mismatch, .minus-alignment > .mismatch, .plus-alignment > .mismatch  {
@@ -105,7 +105,7 @@ div.hist {
     height: 100%;
 }
 .alignment > .skip, .plus-alignment > .skip, .minus-alignment > .skip {
-    background: url('/public/js/jbrowse.repo/img/dark_20x3.png') repeat-x 0 50% white;
+    background: url('img/dark_20x3.png') repeat-x 0 50% white;
     height: 100%;
     opacity: 0.7;
 }
@@ -215,7 +215,7 @@ div.est-hist {
 .minus-dblhelix {
     position:absolute;
     height: 11px;
-    background-image: url('/public/js/jbrowse.repo/img/dblhelix-red.png');
+    background-image: url('img/dblhelix-red.png');
     background-repeat: repeat-x;
     min-width: 1px;
     cursor: pointer;
@@ -231,7 +231,7 @@ div.dblhelix-hist {
 .minus-helix {
     position:absolute;
     height: 11px;
-    background-image: url('/public/js/jbrowse.repo/img/helix3-green.png');
+    background-image: url('img/helix3-green.png');
     background-repeat: repeat-x;
     min-width: 1px;
     cursor: pointer;
@@ -246,7 +246,7 @@ div.helix-hist {
 .loops, .minus-loops, .plus-loops {
     position:absolute;
     height: 13px;
-    background-image: url('/public/js/jbrowse.repo/img/loops.png');
+    background-image: url('img/loops.png');
     background-repeat: repeat-x;
     cursor: pointer;
 }
@@ -256,7 +256,7 @@ div.helix-hist {
 
     position:absolute;
     height: 13px;
-    background-image: url('/public/js/jbrowse.repo/img/glyph-diamond.png');
+    background-image: url('img/glyph-diamond.png');
     background-repeat: repeat-x;
     cursor: pointer;
 }
@@ -269,12 +269,12 @@ div.helix-hist {
     min-width: 1px;
 }
 
-.plus-cds_phase0 { background-image: url('/public/js/jbrowse.repo/img/plus-cds0.png'); }
-.plus-cds_phase1 { background-image: url('/public/js/jbrowse.repo/img/plus-cds1.png'); }
-.plus-cds_phase2 { background-image: url('/public/js/jbrowse.repo/img/plus-cds2.png'); }
-.minus-cds_phase0 { background-image: url('/public/js/jbrowse.repo/img/minus-cds0.png'); }
-.minus-cds_phase1 { background-image: url('/public/js/jbrowse.repo/img/minus-cds1.png'); }
-.minus-cds_phase2 { background-image: url('/public/js/jbrowse.repo/img/minus-cds2.png'); }
+.plus-cds_phase0 { background-image: url('img/plus-cds0.png'); }
+.plus-cds_phase1 { background-image: url('img/plus-cds1.png'); }
+.plus-cds_phase2 { background-image: url('img/plus-cds2.png'); }
+.minus-cds_phase0 { background-image: url('img/minus-cds0.png'); }
+.minus-cds_phase1 { background-image: url('img/minus-cds1.png'); }
+.minus-cds_phase2 { background-image: url('img/minus-cds2.png'); }
 
 div.cds-hist {
     background-color: #fcc;
@@ -357,7 +357,7 @@ div.transcript-hist {
 .minus-transcript {
     position: absolute;
     height: 11px;
-    background: url('/public/js/jbrowse.repo/img/dark_20x3.png') repeat-x 0 4px white;
+    background: url('img/dark_20x3.png') repeat-x 0 4px white;
     z-index: 6;
     min-width: 1px;
     cursor: pointer;
@@ -368,7 +368,7 @@ div.transcript-hist {
     position: absolute;
     width: 9px;
     height: 5px;
-    background-image: url('/public/js/jbrowse.repo/img/plus-arrowhead.png');
+    background-image: url('img/plus-arrowhead.png');
     background-repeat: no-repeat;
     z-index: 100;
 }
@@ -378,7 +378,7 @@ div.transcript-hist {
     position: absolute;
     width: 9px;
     height: 5px;
-    background-image: url('/public/js/jbrowse.repo/img/minus-arrowhead.png');
+    background-image: url('img/minus-arrowhead.png');
     background-repeat: no-repeat;
     z-index: 100;
 }
