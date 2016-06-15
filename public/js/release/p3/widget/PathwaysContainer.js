@@ -36,7 +36,7 @@ define("p3/widget/PathwaysContainer", [
 	return declare([BorderContainer], {
 		gutters: false,
 		state: null,
-		maxGenomeCount: 10000,
+		maxGenomeCount: 500,
 		apiServer: window.App.dataServiceURL,
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
 

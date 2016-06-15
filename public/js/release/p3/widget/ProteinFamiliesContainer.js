@@ -18,7 +18,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 		state: null,
 		pfState: null,
 		loadingMask: null,
-		maxGenomeCount: 10000,
+		maxGenomeCount: 1400,
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;

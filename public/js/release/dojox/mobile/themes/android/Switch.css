@@ -1,5 +1,4 @@
-/* dojox.mobile.Switch */
-/* Switch - common */
+
 .mblSwitch {
   margin: 0;
   position: relative;
@@ -80,7 +79,6 @@
 .mblSwitchTextRight {
   left: 40px;
 }
-/* Square Shape */
 .mblSwSquareShape {
   width: 94px;
 }
@@ -104,7 +102,6 @@
 .mblSwSquareShape .mblSwitchTextRight {
   left: 40px;
 }
-/* Round Shape1 */
 .mblSwRoundShape1 {
   width: 77px;
 }
@@ -129,7 +126,6 @@
 .mblSwRoundShape1 .mblSwitchTextRight {
   left: 26px;
 }
-/* Round Shape2 */
 .mblSwRoundShape2 {
   width: 94px;
 }
@@ -153,7 +149,6 @@
 .mblSwRoundShape2 .mblSwitchTextRight {
   left: 42px;
 }
-/* Arc Shape1 */
 .mblSwArcShape1 {
   width: 77px;
 }
@@ -178,7 +173,6 @@
 .mblSwArcShape1 .mblSwitchTextRight {
   left: 26px;
 }
-/* Arc Shape2 */
 .mblSwArcShape2 {
   width: 94px;
 }
@@ -202,7 +196,6 @@
 .mblSwArcShape2 .mblSwitchTextRight {
   left: 42px;
 }
-/* Default Shape */
 .mblSwDefaultShape {
   width: 94px;
 }

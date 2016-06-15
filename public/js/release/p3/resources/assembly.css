@@ -1,35 +1,25 @@
 .appshadow{
 	border: 1px solid #aaa;
-/*box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--webkit-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--moz-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--o-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;*/
 }
-
 .appsetup{
 margin-top:0px;
 padding:15px 50px 10px 10px;
 text-align: right;
 background-color: #F0F1F3;
 }
-
 .appSubmissionArea{
 margin-bottom:20px;
 }
-
 .nonModal_underlay {
     display:none
 }
-
 .appField{
 width:300px;
 }
-
 .apptitle{
 margin-top:20px;
 margin-left:20px;
 }
-
 .paramlabel {
 	font-size: .65em;
 	text-transform: uppercase;
@@ -39,7 +29,6 @@ label.largelabel {
 	text-transform: uppercase;
 	vertical-align: middle;
 }
-
 td.iconcol{
     margin-right:10px;
 }
@@ -48,14 +37,12 @@ td.textcol{
 	min-height:23px;
     width:85%;
 }
-
 table.appHelpTable th{
 	border: none;
 }
 a.appHelpLink {
 color: #004c99;
 }
-
 .librarytable{
 	width: 300px;
 	border-collapse:collapse;
@@ -63,62 +50,50 @@ color: #004c99;
         font-size: 13px;
 }
 table.assemblyblocks td{vertical-align:top;}
-
 table.librarytable.disabled{
-    opacity: 0.4; /* Real browsers */
+    opacity: 0.4; 
     filter: alpha(opacity = 60);
     font-color: #ccc;
 }
-
 .apphelp a{
     text-decoration: underline;
     color: #06C;
 }
-
 table.librarytable tr:nth-child(odd)	{background-color:#ffffff;}
 table.librarytable tr:nth-child(even)	{background-color:#f5f5f5;}
 .emptyrow {min-height:23px;
 	   max-height:23px;}
 .libraryrow {max-height:23px;
             min-height:23px;}
-
-
 .headerrow{
 width: 100%;
 display:inline-block;
 margin-top:5px;
 padding-left:10px;
 }
-
 .approw{
 width: 100%;
 margin-top:5px;
 }
-
 .halfAppRow{
 width:150px;
 display:inline-block;
 }
-
 .half2AppRow{
 width:150px;
 display:inline-block;
 margin-left:10px;
 }
-
 .infobuttoninfo{
 overflow: auto;
 }
-
 .dijitDialogPopup{
 min-width: 400px;
 max-height: 500px;
 }
-
 .claro .dijitDialogTitleBar{
 background-color: #F0F1F3;
 }
-
 .appbox{
 background-color: #F0F1F3;
 margin: 0 0 10px 10px;
@@ -126,19 +101,14 @@ width: auto;
 padding: 5px 0px 10px 10px;
 text-align: left;
 }
-
 .approwsegment{
 display:inline-block;
 text-align: center;
 margin: 0 0 0 15px;
 }
-
-
-
 .insertspinner{
 width:80px;
 }
-
 .readbutton {
 font: 1.5em "Georgia", "Apple Symbols", serif;
 line-height: .8;
@@ -147,23 +117,16 @@ text-align: center;
 padding: auto;
 margin:5px 0px 5px 5px;
 }
-
 .readbuttons{
 text-align: left;
 margin:10px 0 0 10px;
 }
-
-
-
 .iconbox{
 display:inline-block;
 margin-left:5px;
 vertical-align:middle;
 }
-
 div.infobox i{color: rgb(52, 105, 142);}
-
-
 label.appboxlabel {
 text-align:left;
 margin: 10px 0 10px 0px;
@@ -172,11 +135,9 @@ line-height: 16px;
 text-transform: none;
 font-weight: bold;
 }
-
 div.appsublabel{
 font-size: 12px;
 }
-
 .round-button {
     display:block;
     width:30px;
@@ -186,16 +147,15 @@ font-size: 12px;
     color:#f5f5f5;
     text-align:center;
     text-decoration:none;
-    /*background: #464646;*/
+    
     box-shadow: 0 0 3px gray;
     font-size:20px;
     font-weight:bold;
     padding: 0 0 15px 0;
 }
 .round-button:hover {
-    /*background: #262626;*/
+    
 }
-
 .onoffswitch {
     position: relative; width: 55px;
     -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;

@@ -5,7 +5,6 @@
 .dijitEditorRtlDisabled .dijitEditorIcon.dijitEditorIconParaLeftToRight {
 	background-image: url('../images/bidiIconsDisabled_rtl.png');
 }
-
 .dijitEditorRtl .dijitEditorIcon.dijitEditorIconParaRightToLeft {
 	background-image: url('../images/bidiIconsEnabled_rtl.png');
 	background-position: -828px;

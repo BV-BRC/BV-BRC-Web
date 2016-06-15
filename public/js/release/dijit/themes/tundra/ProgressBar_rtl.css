@@ -2,7 +2,6 @@
 	border-left-width: 1px;
 	border-right: 0px;
 }
-
 .tundra .dijitProgressBarIndeterminateRtl .dijitProgressBarTile {
 	-moz-transform: scaleX(-1);
 	-o-transform: scaleX(-1);
@@ -11,4 +10,3 @@
 	filter: FlipH;
 	-ms-filter: "FlipH";
 }
-

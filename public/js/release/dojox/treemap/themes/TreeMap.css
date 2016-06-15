@@ -2,37 +2,26 @@
 	background-color: #EBEADB;
 	font-family: Geneva, Arial, Helvetica, sans-serif;
 }
-
 .dojoxTreeMapLeaf {
 	border: 1px solid black;
 	padding: 3px;
 }
-
 .dojoxTreeMapGroup {
 }
-
 .dojoxTreeMapGroupContent {
 }
-
 .dojoxTreeMapHeader {
 	background-color: white;
 	border: 1px solid black;
 }
-
-/* on desktop recent browsers you may prefer to use :hover pseudo-class instead
-   of dojoxTreeMapHovered */
-
 .dojoxTreeMapLeaf.dojoxTreeMapHovered {
 	border-color: white;
 }
-
 .dojoxTreeMapGroup.dojoxTreeMapHovered {
 }
-
 .dojoxTreeMapSelected {
 	border-color: red;
 }
-
 .dojoxTreeMapSelected:before {
 	content: '';
 	position: absolute;
@@ -44,7 +33,6 @@
 	pointer-events: none;
 	z-index: 20;
 }
-
 .dojoxTreeMapGroup.dojoxTreeMapSelected:before {
 	content: '';
 	position: absolute;
@@ -56,7 +44,6 @@
 	pointer-events: none;
 	z-index: 20;
 }
-
 .dojoxTreeMapSelected:before {
 	content: '';
 	position: absolute;
@@ -68,11 +55,9 @@
 	pointer-events: none;
 	z-index: 20;
 }
-
 .dojoxTreeMapGroup.dojoxTreeMapSelected{
 	border:2px dashed red;
 }
-
 .dj_iequircks .dojoxTreeMapIEHack.dojoxTreeMapSelected,
 .dj_ie7 .dojoxTreeMapIEHack.dojoxTreeMapSelected + div,
 .dj_ie8 .dojoxTreeMapIEHack.dojoxTreeMapSelected + div {

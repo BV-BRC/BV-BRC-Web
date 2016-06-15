@@ -2,17 +2,14 @@
 .WorkspaceGlobalController {
 	padding: 4px;
 }
-
 .WorkspaceController {
 	background:#ddd;
 	border-top: #227194;
 }
-
 .BrowserHeader {
 	padding:0px;
 	vertical-align:bottom;
 }
-
 a.HelpLink {
   color: #09456f;
 }
@@ -29,7 +26,6 @@ a.HelpLink:hover {
 a.HelpLink:active {
   color: #09456f;
 }
-
 .wsBreadCrumb {
 	font-size:1.2em;
 	margin:2px;
@@ -41,21 +37,17 @@ a.HelpLink:active {
 .wsActionTooltip {
 	padding: 2px;
 }
-
 .wsActionTooltip:hover{
 	background:#d2d2d2;
 	cursor: pointer;
 }
-
 .idMappingTable td:hover{
 background:#d2d2d2;
 cursor: pointer;
 }
-
 .idMappingHeader{
 color:#fff;font-weight:600;background:#34698e;
 }
-
 .patric .BrowserHeader A,
 .patric .wsBreadCrumb A {
 	color: #123d75;
@@ -63,12 +55,10 @@ color:#fff;font-weight:600;background:#34698e;
 	font-weight: 600;
 	vertical-align: bottom;
 }
-
 .UploadComplete {
 	color: green;
 	border: 1px solid green;
 }
-
 .UploadingButton {
 	display: inline-block;
 	margin: 2px;
@@ -76,7 +66,6 @@ color:#fff;font-weight:600;background:#34698e;
 	padding:2px;
 	border: 1px solid gray;
 }
-
 .TypeContainer {
 	display: inline-block;
 	width: 80;
@@ -84,7 +73,6 @@ color:#fff;font-weight:600;background:#34698e;
 	border:1px solid gray;
 	padding:4px;
 }
-
 .ItemDetailAttribute{
 	display: inline-block;
 }
@@ -98,20 +86,18 @@ color:#fff;font-weight:600;background:#34698e;
 	margin-top:10px;
 	margin-bottom:10px;
 }
-
 .ItemDetailHeader{
 	font-size:1.5em;font-weight:900;
 	margin-left:20px;
 }
-
 .claro .ItemDetailPanel {
 	background:#eee;
 	color:#333;
 	padding:4px;
 	margin-left: -1px;
 	border-left: 0px solid #888;
-	border-top: 2px solid #76a72d; /*#34698e;*/
-	/*box-shadow:0px 0px 1px;*/
+	border-top: 2px solid #76a72d; 
+	
 	overflow: auto;
 }
 .ItemTypeIcon {
@@ -120,30 +106,24 @@ color:#fff;font-weight:600;background:#34698e;
 	margin:auto;
 	border: 1px solid gray;
 }
-
 .TypeContainer > DIV {
 	text-align: center;
 }
-
 .WorkspaceExplorerView .dgrid-row {
 	font-size: 1.2em;
 	cursor: pointer;
 }
-
 .dgrid-cell.wsItemType,
 .wsItemType {
 	width: 32px;
 	text-align: center;
 }
-
 .WorkspaceExplorerView .dgrid-cell {
 	border: 0px;
 }
 .wsItemName {
-/*	width: 450px;*/
 	white-space: nowrap;
 }
-
 th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreationTime, th.dgrid-cell.wsItemOwnerId {
 	border-right: 1px solid #C0C0C0;
 }
@@ -154,15 +134,12 @@ th.dgrid-cell.wsItemType {
 .dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
 }
-
 .wsItemOwnerId {
 	width: 90px;
 }
-
 .wsItemSize {
 	width: 150px;
 }
-
 .wsItemCreationTime {
 	width: 150px;
 }
@@ -176,30 +153,13 @@ th.dgrid-cell.wsItemType {
 	color:#333;
 	font-size: 1.1em;
 }
-
 .JobStatusButton {
 	cursor: pointer;
 }
-/*div.JobStatusButton a {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        text-decoration: none;
-        z-index: 10; 
-        background-color: #FFF;
-        opacity: 0;
-        filter: alpha(opacity=1);
-    }
-*/
-
-
 .JobStatusButton > A:first-child,
 .JobStatusButton > SPAN:first-child {
 	color:#fff;margin:2px;padding:2px
 }
-
 .UploadStatusArea > SPAN {
 	color:#fff;margin:2px;padding:2px;margin-left:0px;padding-left:0px;
 }
@@ -211,29 +171,24 @@ th.dgrid-cell.wsItemType {
 	display:inline-block;
 	margin:2px;padding:2px;margin-right:0px;padding-right:0px;	
 }
-
 .UploadStatusUpload .fa {
 	color: #ddd;
 }
-
 .JobStatusCount,
 .UploadStatusCount {
 	display:inline-block;background:#efefef;border-radius:2px;margin:2px;padding:2px;
-
 }
 .JobsComplete,
 .UploadingComplete{
 	color: blue;
 	margin:0px;
 }
-
 .JobsRunning,
 .UploadingProgress,
 .UploadingActive{
 	color: green;
 	margin:0px;
 }
-
 .JobsRunning::before,
 .JobsQueued::before,
 .JobsSuspended::before,
@@ -241,22 +196,18 @@ th.dgrid-cell.wsItemType {
 	content:"\00b7";
 	color: #333;
 }
-
 .UploadingProgress::before{
 	content:"\00b7";
 	color: #333;
 }
-
 .JobsQueued {
 	color: orange;
 	margin: 0px;
 }
-
 .JobsSuspended {
 	color: red;
 	margin:0px;
 }
-
 .ActionButtonWrapper {
 	font-size: 1.1em;
 	display: inline-block;
@@ -267,7 +218,6 @@ th.dgrid-cell.wsItemType {
 	border-radius: 4px;
 	border: 1px solid #76a72d;
 }
-
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;
@@ -276,27 +226,22 @@ th.dgrid-cell.wsItemType {
 	vertical-align: bottom;
 	bottom: 2px;
 }
-
 .ActionButtonWrapper .ActionButton.fa {
 	margin:0px;
 	color: #fff;
 	margin: 5px;
 	margin-top: 2px;
 	margin-bottom: 2px;
-
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
 .BrowserHeader .ActionButtonWrapper:hover,
 .BrowserHeader .ActionButtonWrapper .ActionButton {
 	color: #34698e;
 }
-
 .ActionButton.fa.ActiveActionButton {
     color: #abd6ff;
 }
-
 .ActionButtonText {
 	font-size: .1em;
 	color: #fff;
@@ -305,37 +250,28 @@ th.dgrid-cell.wsItemType {
 	white-space: normal;
 	overflow: hidden;
 }
-
 .GeneExpFilterPanel .ActionButtonText,
 .BrowserHeader .ActionButtonText {
 	color: #34698e;
 }
-
 .claro .dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
-  /* above or below tooltip, but the arrow appears on the right,
-		and the right edges of target and tooltip are aligned rather than the left.
-		Override above rules for .dijitTooltipBelow, .dijitTooltipAbove */
-
+  
   left: auto;
   right: 3px;
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
 	color: #345698e;	
 }
-
 .ActionButtonWrapper:hover {
 	border: 1px solid #fff;
 	border-radius: 4px;
 	color: #fff;
 }
-
 .BrowserHeader .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
 	color: #345698e;	
 }
-
 .BrowserHeader .ActionButtonWrapper {
         margin-top: -3px;
         margin-left: 2px;
@@ -344,7 +280,6 @@ th.dgrid-cell.wsItemType {
 	width: 58px;
 	vertical-align: bottom;
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper {
     margin-top: -3px;
     margin-left: 2px;
@@ -360,7 +295,6 @@ th.dgrid-cell.wsItemType {
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton.fa {
 	color: #fff;
 }
-
 .dataItemSelection,
 .workspaceItemSelection,
 .multipleItemSelection,
@@ -368,13 +302,10 @@ th.dgrid-cell.wsItemType {
 .noItemSelection {
 	display: block;
 }
-
 .multipleItemSelection,
 .noItemSelection {
 	text-align: center;
 }
-
-
 .dataItem .singleItemSelection .workspaceItemSelection,
 .workspaceItem .singleItemSelection .dataItemSelection,
 .multipleSelection .noItemSelection,
@@ -385,11 +316,9 @@ th.dgrid-cell.wsItemType {
 .noSelection .multipleItemSelection {
 	display: none;
 }
-
 .resultContentSection{
 	display:block;
 }
-
 .job_result .resultContentSection{
 	display:none;
 }
@@ -399,16 +328,13 @@ th.dgrid-cell.wsItemType {
 .containerContentSection {
 	display: none;
 }
-
 .folder .containerContentSection.folder {
 	display: block;
 }
-
 .dataItemSelection {
 	font-size: .85em;
 	
 }
-
 .tip {
 	border: 2px dotted #aaa;
 	margin-top: 10px;	
@@ -420,11 +346,9 @@ th.dgrid-cell.wsItemType {
 	padding-top:4px;
 	padding-bottom:4px
 }
-
 .tip > p {
 	margin:4px;
 }
-
 .tipHeader > span {
 	font-size: 1em;
 	font-weight: 600;
