@@ -1,14 +1,14 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./SpecialtyGeneSummary", "./ExternalItemFormatter"
+	"dojo/request", "dojo/_base/lang",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
 			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
+			xhr, lang,
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-			SpecialtyGeneSummary, ExternalItemFormatter){
+			ExternalItemFormatter){
 
 	var searchName = null;
 
@@ -30,7 +30,7 @@ define([
 
 			searchName = this.genome.taxon_name;
 
-			var sumWidgets = ["spgSummaryWidget"];
+			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
