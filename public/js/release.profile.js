@@ -112,7 +112,12 @@ var profile = {
 				"p3/widget/viewer/GenomeList",
 				"p3/widget/app/Annotation",
 		                "p3/widget/SelectionToGroup",
-				"dojo/fx/Toggler"
+				"dojo/fx/Toggler",
+				"p3/widget/viewer/Taxonomy",
+				"p3/widget/viewer/Genome",
+				"p3/widget/viewer/GenomeList",
+				"p3/widget/viewer/Feature",
+				"p3/widget/viewer/FeatureList"
 			]
 		},
 		"p3/layer/panels": {
