@@ -100,6 +100,7 @@ var profile = {
 				"dijit/layout/BorderContainer",
 				"put-selector/put",
 				"dijit/_base",
+				"dijit/InlineEditBox",
 				"dijit/form/ComboButton",
 				"dijit/form/RadioButton",
 				"dijit/CheckedMenuItem",
@@ -117,7 +118,8 @@ var profile = {
 				"p3/widget/viewer/Genome",
 				"p3/widget/viewer/GenomeList",
 				"p3/widget/viewer/Feature",
-				"p3/widget/viewer/FeatureList"
+				"p3/widget/viewer/FeatureList",
+				"p3/widget/JobStatus"
 			]
 		},
 		"p3/layer/panels": {

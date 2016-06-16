@@ -113,7 +113,7 @@ define([
 				new MoveSlice(this.host_chart, "default");
 				new ChartTooltip(this.host_chart, "default");
 
-				var cpDiseaseNode = domConstruct.create("div", {class: "pie-chart-widget"});
+				var cpDiseaseNode = domConstruct.create("div", {"class": "pie-chart-widget"});
 				domConstruct.place(cpDiseaseNode, this.chartNode, "last");
 
 				this.disease_chart = new Chart2D(cpDiseaseNode, {
