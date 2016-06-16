@@ -1,7 +1,7 @@
 define("p3/widget/GenomeBrowser", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "JBrowse/Browser",
 	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry",
-	"dojo/dom-style", "dojo/dom-construct", 'dojo/_base/array',
+	"dojo/dom-style", 'dojo/_base/array',
 	"dojo/_base/Deferred", "dojo/DeferredList", "lazyload",
 	"dojo/request", "dojo/on",
 	'dijit/form/ComboBox',
@@ -20,7 +20,7 @@ define("p3/widget/GenomeBrowser", [
 	'JBrowse/GenomeView'
 ], function(declare, WidgetBase, JBrowser,
 			domConstruct, lang, domGeometry,
-			domStyle, domConstruct, array,
+			domStyle, array,
 			Deferred, DeferredList, lazyLoad,
 			request, on,
 			dijitComboBox,
