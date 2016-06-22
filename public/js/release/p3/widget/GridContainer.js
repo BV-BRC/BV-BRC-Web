@@ -782,7 +782,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					tooltip: "View Selected Taxonomy",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["taxonomy_data"]
+					validContainerTypes: ["taxonomy_data","taxon_data"]
 				},
 				function(selection){
 					var sel = selection[0];

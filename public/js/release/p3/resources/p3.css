@@ -5128,14 +5128,6 @@ table {  font-size:100%; }
 	margin: 0px;
 	font:0.75em;
 }
-html, body {
-    height: 100%;
-    width: 100%;
-    padding: 0;
-    border: 0;
-    font-size: 12px;
-    font-family: Univers,Trebuchet MS,Helvetica,Arial,sans-serif;
-}
 .tundra .dijitDialogTitleBar {
     padding-right: 25px;
 }
@@ -9751,15 +9743,18 @@ body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
 	border-top: 5px solid #629821;
 	background: #fff;
 	padding-top: 2px;
+	transition-duration: 0s;
 }
 body.patric .dijitTabContainerTop-tabs .dijitTabActive,
 body.patric .dijitTabContainerTop-tabs .dijitTabHover {
 	background-image: none;
 	background-color: #dfe4ff;
 	color: #000;
+	transition-duration: 0s;
 }
 body.patric .dijitTabContainerTop-tabs .dijitTabActive {
 	border-color: #34698e;
+	transition-duration: 0s;
 }
 .TextTabButtons {
 	margin: 0px;

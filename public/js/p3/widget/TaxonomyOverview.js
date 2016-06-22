@@ -2,13 +2,16 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
 	"dojo/request", "dojo/_base/lang",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter",
+	"p3/widget/ReferenceGenomeSummary","p3/widget/GenomeMetaSummary","p3/widget/SpecialtyGeneSummary"
 
 ], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang,
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter){
+			ExternalItemFormatter,
+			ReferenceGenomeSummary,GenomeMetaSummary,SpecialtyGeneSummary
+){
 
 	var searchName = null;
 
@@ -28,7 +31,7 @@ define([
 				this.set("taxonomy", state.taxonomy);
 			}
 
-			searchName = this.genome.taxon_name;
+			searchName = this.genome.taxon_name; 
 
 			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget"];
 

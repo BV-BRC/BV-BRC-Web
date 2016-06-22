@@ -18643,193 +18643,664 @@ define([
 });
 
 },
-'dijit/form/ComboButton':function(){
+'dijit/InlineEditBox':function(){
 define([
+	"require",
+	"dojo/_base/array", // array.forEach
+	"dojo/aspect",
 	"dojo/_base/declare", // declare
-	"dojo/keys", // keys
-	"../focus", // focus.focus()
-	"./DropDownButton",
-	"dojo/text!./templates/ComboButton.html",
-	"../a11yclick"	// template uses ondijitclick
-], function(declare, keys, focus, DropDownButton, template){
+	"dojo/dom-attr", // domAttr.set domAttr.get
+	"dojo/dom-class", // domClass.add domClass.remove domClass.toggle
+	"dojo/dom-construct", // domConstruct.create domConstruct.destroy
+	"dojo/dom-style", // domStyle.getComputedStyle domStyle.set domStyle.get
+	"dojo/i18n", // i18n.getLocalization
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/keys", // keys.ENTER keys.ESCAPE
+	"dojo/_base/lang", // lang.getObject
+	"dojo/on",
+	"dojo/sniff", // has("ie")
+	"dojo/when",
+	"./a11yclick",
+	"./focus",
+	"./_Widget",
+	"./_TemplatedMixin",
+	"./_WidgetsInTemplateMixin",
+	"./_Container",
+	"./form/Button",
+	"./form/_TextBoxMixin",
+	"./form/TextBox",
+	"dojo/text!./templates/InlineEditBox.html",
+	"dojo/i18n!./nls/common"
+], function(require, array, aspect, declare, domAttr, domClass, domConstruct, domStyle, i18n, kernel, keys, lang, on, has, when, a11yclick, fm, _Widget, _TemplatedMixin, _WidgetsInTemplateMixin, _Container, Button, _TextBoxMixin, TextBox, template){
 
 	// module:
-	//		dijit/form/ComboButton
+	//		dijit/InlineEditBox
 
-	return declare("dijit.form.ComboButton", DropDownButton, {
+	var InlineEditor = declare("dijit._InlineEditor", [_Widget, _TemplatedMixin, _WidgetsInTemplateMixin], {
 		// summary:
-		//		A combination button and drop-down button.
-		//		Users can click one side to "press" the button, or click an arrow
-		//		icon to display the drop down.
+		//		Internal widget used by InlineEditBox, displayed when in editing mode
+		//		to display the editor and maybe save/cancel buttons.  Calling code should
+		//		connect to save/cancel methods to detect when editing is finished
 		//
-		// example:
-		// |	<button data-dojo-type="dijit/form/ComboButton" onClick="...">
-		// |		<span>Hello world</span>
-		// |		<div data-dojo-type="dijit/Menu">...</div>
-		// |	</button>
+		//		Has mainly the same parameters as InlineEditBox, plus these values:
 		//
-		// example:
-		// |	var button1 = new ComboButton({label: "hello world", onClick: foo, dropDown: "myMenu"});
-		// |	dojo.body().appendChild(button1.domNode);
+		// style: Object
+		//		Set of CSS attributes of display node, to replicate in editor
 		//
+		// value: String
+		//		Value as an HTML string or plain text string, depending on renderAsHTML flag
 
 		templateString: template,
 
-		// Map widget attributes to DOMNode attributes.
-		_setIdAttr: "", // override _FormWidgetMixin which puts id on the focusNode
-		_setTabIndexAttr: ["focusNode", "titleNode"],
-		_setTitleAttr: "titleNode",
+		contextRequire: require,
 
-		// optionsTitle: String
-		//		Text that describes the options menu (accessibility)
-		optionsTitle: "",
-
-		baseClass: "dijitComboButton",
-
-		// Set classes like dijitButtonContentsHover or dijitArrowButtonActive depending on
-		// mouse action over specified node
-		cssStateNodes: {
-			"buttonNode": "dijitButtonNode",
-			"titleNode": "dijitButtonContents",
-			"_popupStateNode": "dijitDownArrowButton"
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			this.messages = i18n.getLocalization("dijit", "common", this.lang);
+			array.forEach(["buttonSave", "buttonCancel"], function(prop){
+				if(!this[prop]){
+					this[prop] = this.messages[prop];
+				}
+			}, this);
 		},
 
-		_focusedNode: null,
+		buildRendering: function(){
+			this.inherited(arguments);
 
-		_onButtonKeyDown: function(/*Event*/ evt){
-			// summary:
-			//		Handler for right arrow key when focus is on left part of button
-			if(evt.keyCode == keys[this.isLeftToRight() ? "RIGHT_ARROW" : "LEFT_ARROW"]){
-				focus.focus(this._popupStateNode);
-				evt.stopPropagation();
-				evt.preventDefault();
+			// Create edit widget in place in the template
+			// TODO: remove getObject() for 2.0
+			var Cls = typeof this.editor == "string" ? (lang.getObject(this.editor) || require(this.editor)) : this.editor;
+
+			// Copy the style from the source
+			// Don't copy ALL properties though, just the necessary/applicable ones.
+			// wrapperStyle/destStyle code is to workaround IE bug where getComputedStyle().fontSize
+			// is a relative value like 200%, rather than an absolute value like 24px, and
+			// the 200% can refer *either* to a setting on the node or it's ancestor (see #11175)
+			var srcStyle = this.sourceStyle,
+				editStyle = "line-height:" + srcStyle.lineHeight + ";",
+				destStyle = domStyle.getComputedStyle(this.domNode);
+			array.forEach(["Weight", "Family", "Size", "Style"], function(prop){
+				var textStyle = srcStyle["font" + prop],
+					wrapperStyle = destStyle["font" + prop];
+				if(wrapperStyle != textStyle){
+					editStyle += "font-" + prop + ":" + srcStyle["font" + prop] + ";";
+				}
+			}, this);
+			array.forEach(["marginTop", "marginBottom", "marginLeft", "marginRight", "position", "left", "top", "right", "bottom", "float", "clear", "display"], function(prop){
+				this.domNode.style[prop] = srcStyle[prop];
+			}, this);
+			var width = this.inlineEditBox.width;
+			if(width == "100%"){
+				// block mode
+				editStyle += "width:100%;";
+				this.domNode.style.display = "block";
+			}else{
+				// inline-block mode
+				editStyle += "width:" + (width + (Number(width) == width ? "px" : "")) + ";";
+			}
+			var editorParams = lang.delegate(this.inlineEditBox.editorParams, {
+				style: editStyle,
+				dir: this.dir,
+				lang: this.lang,
+				textDir: this.textDir
+			});
+			// set the value in onLoadDeferred instead so the widget has time to finish initializing
+			//editorParams[("displayedValue" in Cls.prototype || "_setDisplayedValueAttr" in Cls.prototype) ? "displayedValue" : "value"] = this.value;
+			this.editWidget = new Cls(editorParams, this.editorPlaceholder);
+
+			if(this.inlineEditBox.autoSave){
+				// Remove the save/cancel buttons since saving is done by simply tabbing away or
+				// selecting a value from the drop down list
+				this.saveButton.destroy();
+				this.cancelButton.destroy();
+				this.saveButton = this.cancelButton = null;
+				domConstruct.destroy(this.buttonContainer);
 			}
 		},
 
-		_onArrowKeyDown: function(/*Event*/ evt){
-			// summary:
-			//		Handler for left arrow key when focus is on right part of button
-			if(evt.keyCode == keys[this.isLeftToRight() ? "LEFT_ARROW" : "RIGHT_ARROW"]){
-				focus.focus(this.titleNode);
-				evt.stopPropagation();
-				evt.preventDefault();
-			}
-		},
+		postCreate: function(){
+			this.inherited(arguments);
 
-		focus: function(/*String*/ position){
-			// summary:
-			//		Focuses this widget to according to position, if specified,
-			//		otherwise on arrow node
-			// position:
-			//		"start" or "end"
-			if(!this.disabled){
-				focus.focus(position == "start" ? this.titleNode : this._popupStateNode);
-			}
-		}
-	});
-});
+			var ew = this.editWidget;
 
-},
-'dijit/form/DropDownButton':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/_base/lang", // hitch
-	"dojo/query", // query
-	"../registry", // registry.byNode
-	"../popup", // dijit.popup2.hide
-	"./Button",
-	"../_Container",
-	"../_HasDropDown",
-	"dojo/text!./templates/DropDownButton.html",
-	"../a11yclick"	// template uses ondijitclick
-], function(declare, lang, query, registry, popup, Button, _Container, _HasDropDown, template){
+			if(this.inlineEditBox.autoSave){
+				this.own(
+					// Selecting a value from a drop down list causes an onChange event and then we save
+					aspect.after(ew, "onChange", lang.hitch(this, "_onChange"), true),
 
-	// module:
-	//		dijit/form/DropDownButton
-
-	return declare("dijit.form.DropDownButton", [Button, _Container, _HasDropDown], {
-		// summary:
-		//		A button with a drop down
-		//
-		// example:
-		// |	<button data-dojo-type="dijit/form/DropDownButton">
-		// |		Hello world
-		// |		<div data-dojo-type="dijit/Menu">...</div>
-		// |	</button>
-		//
-		// example:
-		// |	var button1 = new DropDownButton({ label: "hi", dropDown: new dijit.Menu(...) });
-		// |	win.body().appendChild(button1);
-		//
-
-		baseClass: "dijitDropDownButton",
-
-		templateString: template,
-
-		_fillContent: function(){
-			// Overrides Button._fillContent().
-			//
-			// My inner HTML contains both the button contents and a drop down widget, like
-			// <DropDownButton>  <span>push me</span>  <Menu> ... </Menu> </DropDownButton>
-			// The first node is assumed to be the button content. The widget is the popup.
-
-			if(this.srcNodeRef){ // programatically created buttons might not define srcNodeRef
-				//FIXME: figure out how to filter out the widget and use all remaining nodes as button
-				//	content, not just nodes[0]
-				var nodes = query("*", this.srcNodeRef);
-				this.inherited(arguments, [nodes[0]]);
-
-				// save pointer to srcNode so we can grab the drop down widget after it's instantiated
-				this.dropDownContainer = this.srcNodeRef;
+					// ESC and TAB should cancel and save.
+					on(ew, "keydown", lang.hitch(this, "_onKeyDown"))
+				);
+			}else{
+				// If possible, enable/disable save button based on whether the user has changed the value
+				if("intermediateChanges" in ew){
+					ew.set("intermediateChanges", true);
+					this.own(aspect.after(ew, "onChange", lang.hitch(this, "_onIntermediateChange"), true));
+					this.saveButton.set("disabled", true);
+				}
 			}
 		},
 
 		startup: function(){
-			if(this._started){
-				return;
-			}
-
-			// the child widget from srcNodeRef is the dropdown widget.  Insert it in the page DOM,
-			// make it invisible, and store a reference to pass to the popup code.
-			if(!this.dropDown && this.dropDownContainer){
-				var dropDownNode = query("[widgetId]", this.dropDownContainer)[0];
-				if(dropDownNode){
-					this.dropDown = registry.byNode(dropDownNode);
-				}
-				delete this.dropDownContainer;
-			}
-			if(this.dropDown){
-				popup.hide(this.dropDown);
-			}
-
+			this.editWidget.startup();
 			this.inherited(arguments);
 		},
 
-		isLoaded: function(){
-			// Returns whether or not we are loaded - if our dropdown has an href,
-			// then we want to check that.
-			var dropDown = this.dropDown;
-			return (!!dropDown && (!dropDown.href || dropDown.isLoaded));
+		_onIntermediateChange: function(/*===== val =====*/){
+			// summary:
+			//		Called for editor widgets that support the intermediateChanges=true flag as a way
+			//		to detect when to enable/disabled the save button
+			this.saveButton.set("disabled", (this.getValue() == this._resetValue) || !this.enableSave());
 		},
 
-		loadDropDown: function(/*Function*/ callback){
-			// Default implementation assumes that drop down already exists,
-			// but hasn't loaded it's data (ex: ContentPane w/href).
-			// App must override if the drop down is lazy-created.
-			var dropDown = this.dropDown;
-			var handler = dropDown.on("load", lang.hitch(this, function(){
-				handler.remove();
-				callback();
-			}));
-			dropDown.refresh();		// tell it to load
+		destroy: function(){
+			this.editWidget.destroy(true); // let the parent wrapper widget clean up the DOM
+			this.inherited(arguments);
 		},
 
-		isFocusable: function(){
-			// Overridden so that focus is handled by the _HasDropDown mixin, not by
-			// the _FormWidget mixin.
-			return this.inherited(arguments) && !this._mouseDown;
+		getValue: function(){
+			// summary:
+			//		Return the [display] value of the edit widget
+			var ew = this.editWidget;
+			return String(ew.get(("displayedValue" in ew || "_getDisplayedValueAttr" in ew) ? "displayedValue" : "value"));
+		},
+
+		_onKeyDown: function(e){
+			// summary:
+			//		Handler for keydown in the edit box in autoSave mode.
+			// description:
+			//		For autoSave widgets, if Esc/Enter, call cancel/save.
+			// tags:
+			//		private
+
+			if(this.inlineEditBox.autoSave && this.inlineEditBox.editing){
+				if(e.altKey || e.ctrlKey){
+					return;
+				}
+				// If Enter/Esc pressed, treat as save/cancel.
+				if(e.keyCode == keys.ESCAPE){
+					e.stopPropagation();
+					e.preventDefault();
+					this.cancel(true); // sets editing=false which short-circuits _onBlur processing
+				}else if(e.keyCode == keys.ENTER && e.target.tagName == "INPUT"){
+					e.stopPropagation();
+					e.preventDefault();
+					this._onChange(); // fire _onBlur and then save
+				}
+
+				// _onBlur will handle TAB automatically by allowing
+				// the TAB to change focus before we mess with the DOM: #6227
+				// Expounding by request:
+				//	The current focus is on the edit widget input field.
+				//	save() will hide and destroy this widget.
+				//	We want the focus to jump from the currently hidden
+				//	displayNode, but since it's hidden, it's impossible to
+				//	unhide it, focus it, and then have the browser focus
+				//	away from it to the next focusable element since each
+				//	of these events is asynchronous and the focus-to-next-element
+				//	is already queued.
+				//	So we allow the browser time to unqueue the move-focus event
+				//	before we do all the hide/show stuff.
+			}
+		},
+
+		_onBlur: function(){
+			// summary:
+			//		Called when focus moves outside the editor
+			// tags:
+			//		private
+
+			this.inherited(arguments);
+			if(this.inlineEditBox.autoSave && this.inlineEditBox.editing){
+				if(this.getValue() == this._resetValue){
+					this.cancel(false);
+				}else if(this.enableSave()){
+					this.save(false);
+				}
+			}
+		},
+
+		_onChange: function(){
+			// summary:
+			//		Called when the underlying widget fires an onChange event,
+			//		such as when the user selects a value from the drop down list of a ComboBox,
+			//		which means that the user has finished entering the value and we should save.
+			// tags:
+			//		private
+
+			if(this.inlineEditBox.autoSave && this.inlineEditBox.editing && this.enableSave()){
+				fm.focus(this.inlineEditBox.displayNode); // fires _onBlur which will save the formatted value
+			}
+		},
+
+		enableSave: function(){
+			// summary:
+			//		User overridable function returning a Boolean to indicate
+			//		if the Save button should be enabled or not - usually due to invalid conditions
+			// tags:
+			//		extension
+			return this.editWidget.isValid ? this.editWidget.isValid() : true;
+		},
+
+		focus: function(){
+			// summary:
+			//		Focus the edit widget.
+			// tags:
+			//		protected
+
+			this.editWidget.focus();
+
+			if(this.editWidget.focusNode){
+				// IE can take 30ms to report the focus event, but focus manager needs to know before a 0ms timeout.
+				fm._onFocusNode(this.editWidget.focusNode);
+
+				if(this.editWidget.focusNode.tagName == "INPUT"){
+					this.defer(function(){
+						_TextBoxMixin.selectInputText(this.editWidget.focusNode);
+					});
+				}
+			}
 		}
 	});
+
+
+	var InlineEditBox = declare("dijit.InlineEditBox" + (has("dojo-bidi") ? "_NoBidi" : ""), _Widget, {
+		// summary:
+		//		An element with in-line edit capabilities
+		//
+		// description:
+		//		Behavior for an existing node (`<p>`, `<div>`, `<span>`, etc.) so that
+		//		when you click it, an editor shows up in place of the original
+		//		text.  Optionally, Save and Cancel button are displayed below the edit widget.
+		//		When Save is clicked, the text is pulled from the edit
+		//		widget and redisplayed and the edit widget is again hidden.
+		//		By default a plain Textarea widget is used as the editor (or for
+		//		inline values a TextBox), but you can specify an editor such as
+		//		dijit.Editor (for editing HTML) or a Slider (for adjusting a number).
+		//		An edit widget must support the following API to be used:
+		//
+		//		- displayedValue or value as initialization parameter,
+		//			and available through set('displayedValue') / set('value')
+		//		- void focus()
+		//		- DOM-node focusNode = node containing editable text
+
+		// editing: [readonly] Boolean
+		//		Is the node currently in edit mode?
+		editing: false,
+
+		// autoSave: [const] Boolean
+		//		Changing the value automatically saves it; don't have to push save button
+		//		(and save button isn't even displayed)
+		autoSave: true,
+
+		// buttonSave: String
+		//		Save button label
+		buttonSave: "",
+
+		// buttonCancel: String
+		//		Cancel button label
+		buttonCancel: "",
+
+		// renderAsHtml: Boolean
+		//		Set this to true if the specified Editor's value should be interpreted as HTML
+		//		rather than plain text (ex: `dijit.Editor`)
+		renderAsHtml: false,
+
+		// editor: String|Function
+		//		MID (ex: "dijit/form/TextBox") or constructor for editor widget
+		editor: TextBox,
+
+		// editorWrapper: String|Function
+		//		Class name (or reference to the Class) for widget that wraps the editor widget, displaying save/cancel
+		//		buttons.
+		editorWrapper: InlineEditor,
+
+		// editorParams: Object
+		//		Set of parameters for editor, like {required: true}
+		editorParams: {},
+
+		// disabled: Boolean
+		//		If true, clicking the InlineEditBox to edit it will have no effect.
+		disabled: false,
+
+		onChange: function(/*===== value =====*/){
+			// summary:
+			//		Set this handler to be notified of changes to value.
+			// tags:
+			//		callback
+		},
+
+		onCancel: function(){
+			// summary:
+			//		Set this handler to be notified when editing is cancelled.
+			// tags:
+			//		callback
+		},
+
+		// width: String
+		//		Width of editor.  By default it's width=100% (ie, block mode).
+		width: "100%",
+
+		// value: String
+		//		The display value of the widget in read-only mode
+		value: "",
+
+		// noValueIndicator: [const] String
+		//		The text that gets displayed when there is no value (so that the user has a place to click to edit)
+		noValueIndicator: has("ie") <= 6 ? // font-family needed on IE6 but it messes up IE8
+			"<span style='font-family: wingdings; text-decoration: underline;'>&#160;&#160;&#160;&#160;&#x270d;&#160;&#160;&#160;&#160;</span>" :
+			"<span style='text-decoration: underline;'>&#160;&#160;&#160;&#160;&#x270d;&#160;&#160;&#160;&#160;</span>", // &#160; == &nbsp;
+
+		constructor: function(/*===== params, srcNodeRef =====*/){
+			// summary:
+			//		Create the widget.
+			// params: Object|null
+			//		Hash of initialization parameters for widget, including scalar values (like title, duration etc.)
+			//		and functions, typically callbacks like onClick.
+			//		The hash can contain any of the widget's properties, excluding read-only properties.
+			// srcNodeRef: DOMNode|String?
+			//		If a srcNodeRef (DOM node) is specified:
+			//
+			//		- use srcNodeRef.innerHTML as my value
+			//		- replace srcNodeRef with my generated DOM tree
+
+			this.editorParams = {};
+		},
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+
+			// save pointer to original source node, since Widget nulls-out srcNodeRef
+			this.displayNode = this.srcNodeRef;
+
+			// connect handlers to the display node
+			this.own(
+				on(this.displayNode, a11yclick, lang.hitch(this, "_onClick")),
+				on(this.displayNode, "mouseover, focus", lang.hitch(this, "_onMouseOver")),
+				on(this.displayNode, "mouseout, blur", lang.hitch(this, "_onMouseOut"))
+			);
+
+			this.displayNode.setAttribute("role", "button");
+			if(!this.displayNode.getAttribute("tabIndex")){
+				this.displayNode.setAttribute("tabIndex", 0);
+			}
+
+			if(!this.value && !("value" in this.params)){ // "" is a good value if specified directly so check params){
+				this.value = lang.trim(this.renderAsHtml ? this.displayNode.innerHTML :
+					(this.displayNode.innerText || this.displayNode.textContent || ""));
+			}
+			if(!this.value){
+				this.displayNode.innerHTML = this.noValueIndicator;
+			}
+
+			domClass.add(this.displayNode, 'dijitInlineEditBoxDisplayMode');
+		},
+
+		setDisabled: function(/*Boolean*/ disabled){
+			// summary:
+			//		Deprecated.   Use set('disabled', ...) instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated("dijit.InlineEditBox.setDisabled() is deprecated.  Use set('disabled', bool) instead.", "", "2.0");
+			this.set('disabled', disabled);
+		},
+
+		_setDisabledAttr: function(/*Boolean*/ disabled){
+			// summary:
+			//		Hook to make set("disabled", ...) work.
+			//		Set disabled state of widget.
+			this.domNode.setAttribute("aria-disabled", disabled ? "true" : "false");
+			if(disabled){
+				this.displayNode.removeAttribute("tabIndex");
+			}else{
+				this.displayNode.setAttribute("tabIndex", 0);
+			}
+			domClass.toggle(this.displayNode, "dijitInlineEditBoxDisplayModeDisabled", disabled);
+			this._set("disabled", disabled);
+		},
+
+		_onMouseOver: function(){
+			// summary:
+			//		Handler for onmouseover and onfocus event.
+			// tags:
+			//		private
+			if(!this.disabled){
+				domClass.add(this.displayNode, "dijitInlineEditBoxDisplayModeHover");
+			}
+		},
+
+		_onMouseOut: function(){
+			// summary:
+			//		Handler for onmouseout and onblur event.
+			// tags:
+			//		private
+			domClass.remove(this.displayNode, "dijitInlineEditBoxDisplayModeHover");
+		},
+
+		_onClick: function(/*Event*/ e){
+			// summary:
+			//		Handler for onclick event.
+			// tags:
+			//		private
+			if(this.disabled){
+				return;
+			}
+			if(e){
+				e.stopPropagation();
+				e.preventDefault();
+			}
+			this._onMouseOut();
+
+			// Since FF gets upset if you move a node while in an event handler for that node...
+			this.defer("edit");
+		},
+
+		edit: function(){
+			// summary:
+			//		Display the editor widget in place of the original (read only) markup.
+			// tags:
+			//		private
+
+			if(this.disabled || this.editing){
+				return;
+			}
+			this._set('editing', true);
+
+			// save some display node values that can be restored later
+			this._savedTabIndex = domAttr.get(this.displayNode, "tabIndex") || "0";
+
+			if(!this.wrapperWidget){
+				// Placeholder for edit widget
+				// Put place holder (and eventually editWidget) before the display node so that it's positioned correctly
+				// when Calendar dropdown appears, which happens automatically on focus.
+				var placeholder = domConstruct.create("span", null, this.domNode, "before");
+
+				// Create the editor wrapper (the thing that holds the editor widget and the save/cancel buttons)
+				var Ewc = typeof this.editorWrapper == "string" ? lang.getObject(this.editorWrapper) : this.editorWrapper;
+				this.wrapperWidget = new Ewc({
+					value: this.value,
+					buttonSave: this.buttonSave,
+					buttonCancel: this.buttonCancel,
+					dir: this.dir,
+					lang: this.lang,
+					tabIndex: this._savedTabIndex,
+					editor: this.editor,
+					inlineEditBox: this,
+					sourceStyle: domStyle.getComputedStyle(this.displayNode),
+					save: lang.hitch(this, "save"),
+					cancel: lang.hitch(this, "cancel"),
+					textDir: this.textDir
+				}, placeholder);
+				if(!this.wrapperWidget._started){
+					this.wrapperWidget.startup();
+				}
+				if(!this._started){
+					this.startup();
+				}
+			}
+			var ww = this.wrapperWidget;
+
+			// to avoid screen jitter, we first create the editor with position: absolute, visibility: hidden,
+			// and then when it's finished rendering, we switch from display mode to editor
+			// position: absolute releases screen space allocated to the display node
+			// opacity:0 is the same as visibility: hidden but is still focusable
+			// visibility: hidden removes focus outline
+
+			domClass.add(this.displayNode, "dijitOffScreen");
+			domClass.remove(ww.domNode, "dijitOffScreen");
+			domStyle.set(ww.domNode, { visibility: "visible" });
+			domAttr.set(this.displayNode, "tabIndex", "-1"); // needed by WebKit for TAB from editor to skip displayNode
+
+			// After edit widget has finished initializing (in particular need to wait for dijit.Editor),
+			// or immediately if there is no onLoadDeferred Deferred,
+			// replace the display widget with edit widget, leaving them both displayed for a brief time so that
+			// focus can be shifted without incident.
+			var ew = ww.editWidget;
+			var self = this;
+			when(ew.onLoadDeferred, lang.hitch(ww, function(){
+				// set value again in case the edit widget's value is just now valid
+				ew.set(("displayedValue" in ew || "_setDisplayedValueAttr" in ew) ? "displayedValue" : "value", self.value);
+				this.defer(function(){ // defer needed so that the change of focus doesn't happen on mousedown which also sets focus
+					// the saveButton should start out disabled in most cases but the above set could have fired onChange
+					if(ww.saveButton){
+						ww.saveButton.set("disabled", "intermediateChanges" in ew);
+					}
+					this.focus(); // both nodes are showing, so we can switch focus safely
+					this._resetValue = this.getValue();
+				});
+			}));
+		},
+
+		_onBlur: function(){
+			// summary:
+			//		Called when focus moves outside the InlineEditBox.
+			//		Performs garbage collection.
+			// tags:
+			//		private
+
+			this.inherited(arguments);
+			if(!this.editing){
+				/* causes IE focus problems, see TooltipDialog_a11y.html...
+				 this.defer(function(){
+				 if(this.wrapperWidget){
+				 this.wrapperWidget.destroy();
+				 delete this.wrapperWidget;
+				 }
+				 });
+				 */
+			}
+		},
+
+		destroy: function(){
+			if(this.wrapperWidget && !this.wrapperWidget._destroyed){
+				this.wrapperWidget.destroy();
+				delete this.wrapperWidget;
+			}
+			this.inherited(arguments);
+		},
+
+		_showText: function(/*Boolean*/ focus){
+			// summary:
+			//		Revert to display mode, and optionally focus on display node
+			// tags:
+			//		private
+
+			var ww = this.wrapperWidget;
+			domStyle.set(ww.domNode, { visibility: "hidden" }); // hide the editor from mouse/keyboard events
+			domClass.add(ww.domNode, "dijitOffScreen");
+			domClass.remove(this.displayNode, "dijitOffScreen");
+			domAttr.set(this.displayNode, "tabIndex", this._savedTabIndex);
+			if(focus){
+				fm.focus(this.displayNode);
+			}
+		},
+
+		save: function(/*Boolean*/ focus){
+			// summary:
+			//		Save the contents of the editor and revert to display mode.
+			// focus: Boolean
+			//		Focus on the display mode text
+			// tags:
+			//		private
+
+			if(this.disabled || !this.editing){
+				return;
+			}
+			this._set('editing', false);
+
+			var ww = this.wrapperWidget;
+			var value = ww.getValue();
+			this.set('value', value); // display changed, formatted value
+
+			this._showText(focus); // set focus as needed
+		},
+
+		setValue: function(/*String*/ val){
+			// summary:
+			//		Deprecated.   Use set('value', ...) instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated("dijit.InlineEditBox.setValue() is deprecated.  Use set('value', ...) instead.", "", "2.0");
+			return this.set("value", val);
+		},
+
+		_setValueAttr: function(/*String*/ val){
+			// summary:
+			//		Hook to make set("value", ...) work.
+			//		Inserts specified HTML value into this node, or an "input needed" character if node is blank.
+
+			val = lang.trim(val);
+			var renderVal = this.renderAsHtml ? val : val.replace(/&/gm, "&amp;").replace(/</gm, "&lt;").replace(/>/gm, "&gt;").replace(/"/gm, "&quot;").replace(/\n/g, "<br>");
+			this.displayNode.innerHTML = renderVal || this.noValueIndicator;
+			this._set("value", val);
+
+			if(this._started){
+				// tell the world that we have changed
+				this.defer(function(){
+					this.onChange(val);
+				}); // defer prevents browser freeze for long-running event handlers
+			}
+		},
+
+		getValue: function(){
+			// summary:
+			//		Deprecated.   Use get('value') instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated("dijit.InlineEditBox.getValue() is deprecated.  Use get('value') instead.", "", "2.0");
+			return this.get("value");
+		},
+
+		cancel: function(/*Boolean*/ focus){
+			// summary:
+			//		Revert to display mode, discarding any changes made in the editor
+			// tags:
+			//		private
+
+			if(this.disabled || !this.editing){
+				return;
+			}
+			this._set('editing', false);
+
+			// tell the world that we have no changes
+			this.defer("onCancel"); // defer prevents browser freeze for long-running event handlers
+
+			this._showText(focus);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		InlineEditBox = declare("dijit.InlineEditBox", InlineEditBox, {
+			_setValueAttr: function(){
+				this.inherited(arguments);
+				this.applyTextDir(this.displayNode);
+			}
+		});
+	}
+
+	InlineEditBox._InlineEditor = InlineEditor;	// for monkey patching
+
+	return InlineEditBox;
 });
 
 },
@@ -19394,6 +19865,1022 @@ define([
 	}
 
 	return ButtonMixin;
+});
+
+},
+'dijit/form/_TextBoxMixin':function(){
+define([
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.byId
+	"dojo/has",
+	"dojo/keys", // keys.ALT keys.CAPS_LOCK keys.CTRL keys.META keys.SHIFT
+	"dojo/_base/lang", // lang.mixin
+	"dojo/on", // on
+	"../main"    // for exporting dijit._setSelectionRange, dijit.selectInputText
+], function(array, declare, dom, has, keys, lang, on, dijit){
+
+	// module:
+	//		dijit/form/_TextBoxMixin
+
+	var _TextBoxMixin = declare("dijit.form._TextBoxMixin" + (has("dojo-bidi") ? "_NoBidi" : ""), null, {
+		// summary:
+		//		A mixin for textbox form input widgets
+
+		// trim: Boolean
+		//		Removes leading and trailing whitespace if true.  Default is false.
+		trim: false,
+
+		// uppercase: Boolean
+		//		Converts all characters to uppercase if true.  Default is false.
+		uppercase: false,
+
+		// lowercase: Boolean
+		//		Converts all characters to lowercase if true.  Default is false.
+		lowercase: false,
+
+		// propercase: Boolean
+		//		Converts the first character of each word to uppercase if true.
+		propercase: false,
+
+		// maxLength: String
+		//		HTML INPUT tag maxLength declaration.
+		maxLength: "",
+
+		// selectOnClick: [const] Boolean
+		//		If true, all text will be selected when focused with mouse
+		selectOnClick: false,
+
+		// placeHolder: String
+		//		Defines a hint to help users fill out the input field (as defined in HTML 5).
+		//		This should only contain plain text (no html markup).
+		placeHolder: "",
+
+		_getValueAttr: function(){
+			// summary:
+			//		Hook so get('value') works as we like.
+			// description:
+			//		For `dijit/form/TextBox` this basically returns the value of the `<input>`.
+			//
+			//		For `dijit/form/MappedTextBox` subclasses, which have both
+			//		a "displayed value" and a separate "submit value",
+			//		This treats the "displayed value" as the master value, computing the
+			//		submit value from it via this.parse().
+			return this.parse(this.get('displayedValue'), this.constraints);
+		},
+
+		_setValueAttr: function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
+			// summary:
+			//		Hook so set('value', ...) works.
+			//
+			// description:
+			//		Sets the value of the widget to "value" which can be of
+			//		any type as determined by the widget.
+			//
+			// value:
+			//		The visual element value is also set to a corresponding,
+			//		but not necessarily the same, value.
+			//
+			// formattedValue:
+			//		If specified, used to set the visual element value,
+			//		otherwise a computed visual value is used.
+			//
+			// priorityChange:
+			//		If true, an onChange event is fired immediately instead of
+			//		waiting for the next blur event.
+
+			var filteredValue;
+			if(value !== undefined){
+				// TODO: this is calling filter() on both the display value and the actual value.
+				// I added a comment to the filter() definition about this, but it should be changed.
+				filteredValue = this.filter(value);
+				if(typeof formattedValue != "string"){
+					if(filteredValue !== null && ((typeof filteredValue != "number") || !isNaN(filteredValue))){
+						formattedValue = this.filter(this.format(filteredValue, this.constraints));
+					}else{
+						formattedValue = '';
+					}
+					// Ensure the filtered value does not change after being formatted. See track #17955.
+					//
+					// This check is only applied when the formatted value is not specified by the caller in order to allow the 
+					// behavior to be overriden. This is needed whenever value synonyms cannot be determined using parse/compare. For
+					// example, dijit/form/FilteringSelect determines the formatted value asynchronously and applies it using a 
+					// callback to this method.
+					//
+					// TODO: Should developers be warned that they broke the round trip on format?
+					if (this.compare(filteredValue, this.filter(this.parse(formattedValue, this.constraints))) != 0){
+						formattedValue = null;
+					}
+				}
+			}
+			if(formattedValue != null /* and !undefined */ && ((typeof formattedValue) != "number" || !isNaN(formattedValue)) && this.textbox.value != formattedValue){
+				this.textbox.value = formattedValue;
+				this._set("displayedValue", this.get("displayedValue"));
+			}
+
+			this.inherited(arguments, [filteredValue, priorityChange]);
+		},
+
+		// displayedValue: String
+		//		For subclasses like ComboBox where the displayed value
+		//		(ex: Kentucky) and the serialized value (ex: KY) are different,
+		//		this represents the displayed value.
+		//
+		//		Setting 'displayedValue' through set('displayedValue', ...)
+		//		updates 'value', and vice-versa.  Otherwise 'value' is updated
+		//		from 'displayedValue' periodically, like onBlur etc.
+		//
+		//		TODO: move declaration to MappedTextBox?
+		//		Problem is that ComboBox references displayedValue,
+		//		for benefit of FilteringSelect.
+		displayedValue: "",
+
+		_getDisplayedValueAttr: function(){
+			// summary:
+			//		Hook so get('displayedValue') works.
+			// description:
+			//		Returns the displayed value (what the user sees on the screen),
+			//		after filtering (ie, trimming spaces etc.).
+			//
+			//		For some subclasses of TextBox (like ComboBox), the displayed value
+			//		is different from the serialized value that's actually
+			//		sent to the server (see `dijit/form/ValidationTextBox.serialize()`)
+
+			// TODO: maybe we should update this.displayedValue on every keystroke so that we don't need
+			// this method
+			// TODO: this isn't really the displayed value when the user is typing
+			return this.filter(this.textbox.value);
+		},
+
+		_setDisplayedValueAttr: function(/*String*/ value){
+			// summary:
+			//		Hook so set('displayedValue', ...) works.
+			// description:
+			//		Sets the value of the visual element to the string "value".
+			//		The widget value is also set to a corresponding,
+			//		but not necessarily the same, value.
+
+			if(value == null /* or undefined */){
+				value = ''
+			}
+			else if(typeof value != "string"){
+				value = String(value)
+			}
+
+			this.textbox.value = value;
+
+			// sets the serialized value to something corresponding to specified displayedValue
+			// (if possible), and also updates the textbox.value, for example converting "123"
+			// to "123.00"
+			this._setValueAttr(this.get('value'), undefined);
+
+			this._set("displayedValue", this.get('displayedValue'));
+		},
+
+		format: function(value /*=====, constraints =====*/){
+			// summary:
+			//		Replaceable function to convert a value to a properly formatted string.
+			// value: String
+			// constraints: Object
+			// tags:
+			//		protected extension
+			return value == null /* or undefined */ ? "" : (value.toString ? value.toString() : value);
+		},
+
+		parse: function(value /*=====, constraints =====*/){
+			// summary:
+			//		Replaceable function to convert a formatted string to a value
+			// value: String
+			// constraints: Object
+			// tags:
+			//		protected extension
+
+			return value;	// String
+		},
+
+		_refreshState: function(){
+			// summary:
+			//		After the user types some characters, etc., this method is
+			//		called to check the field for validity etc.  The base method
+			//		in `dijit/form/TextBox` does nothing, but subclasses override.
+			// tags:
+			//		protected
+		},
+
+		 onInput: function(/*===== event =====*/){
+			 // summary:
+			 //		Connect to this function to receive notifications of various user data-input events.
+			 //		Return false to cancel the event and prevent it from being processed.
+			 // event:
+			 //		keydown | keypress | cut | paste | input
+			 // tags:
+			 //		callback
+		 },
+
+		__skipInputEvent: false,
+		_onInput: function(/*Event*/ evt){
+			// summary:
+			//		Called AFTER the input event has happened
+
+			this._processInput(evt);
+
+			if(this.intermediateChanges){
+				// allow the key to post to the widget input box
+				this.defer(function(){
+					this._handleOnChange(this.get('value'), false);
+				});
+			}
+		},
+
+		_processInput: function(/*Event*/ evt){
+			// summary:
+			//		Default action handler for user input events
+
+			this._refreshState();
+
+			// In case someone is watch()'ing for changes to displayedValue
+			this._set("displayedValue", this.get("displayedValue"));
+		},
+
+		postCreate: function(){
+			// setting the value here is needed since value="" in the template causes "undefined"
+			// and setting in the DOM (instead of the JS object) helps with form reset actions
+			this.textbox.setAttribute("value", this.textbox.value); // DOM and JS values should be the same
+
+			this.inherited(arguments);
+
+			// normalize input events to reduce spurious event processing
+			//	onkeydown: do not forward modifier keys
+			//		       set charOrCode to numeric keycode
+			//	onkeypress: do not forward numeric charOrCode keys (already sent through onkeydown)
+			//	onpaste & oncut: set charOrCode to 229 (IME)
+			//	oninput: if primary event not already processed, set charOrCode to 229 (IME), else do not forward
+			function handleEvent(e){
+				var charOrCode;
+				if(e.type == "keydown"){
+					charOrCode = e.keyCode;
+					switch(charOrCode){ // ignore state keys
+						case keys.SHIFT:
+						case keys.ALT:
+						case keys.CTRL:
+						case keys.META:
+						case keys.CAPS_LOCK:
+						case keys.NUM_LOCK:
+						case keys.SCROLL_LOCK:
+							return;
+					}
+					if(!e.ctrlKey && !e.metaKey && !e.altKey){ // no modifiers
+						switch(charOrCode){ // ignore location keys
+							case keys.NUMPAD_0:
+							case keys.NUMPAD_1:
+							case keys.NUMPAD_2:
+							case keys.NUMPAD_3:
+							case keys.NUMPAD_4:
+							case keys.NUMPAD_5:
+							case keys.NUMPAD_6:
+							case keys.NUMPAD_7:
+							case keys.NUMPAD_8:
+							case keys.NUMPAD_9:
+							case keys.NUMPAD_MULTIPLY:
+							case keys.NUMPAD_PLUS:
+							case keys.NUMPAD_ENTER:
+							case keys.NUMPAD_MINUS:
+							case keys.NUMPAD_PERIOD:
+							case keys.NUMPAD_DIVIDE:
+								return;
+						}
+						if((charOrCode >= 65 && charOrCode <= 90) || (charOrCode >= 48 && charOrCode <= 57) || charOrCode == keys.SPACE){
+							return; // keypress will handle simple non-modified printable keys
+						}
+						var named = false;
+						for(var i in keys){
+							if(keys[i] === e.keyCode){
+								named = true;
+								break;
+							}
+						}
+						if(!named){
+							return;
+						} // only allow named ones through
+					}
+				}
+				charOrCode = e.charCode >= 32 ? String.fromCharCode(e.charCode) : e.charCode;
+				if(!charOrCode){
+					charOrCode = (e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 48 && e.keyCode <= 57) || e.keyCode == keys.SPACE ? String.fromCharCode(e.keyCode) : e.keyCode;
+				}
+				if(!charOrCode){
+					charOrCode = 229; // IME
+				}
+				if(e.type == "keypress"){
+					if(typeof charOrCode != "string"){
+						return;
+					}
+					if((charOrCode >= 'a' && charOrCode <= 'z') || (charOrCode >= 'A' && charOrCode <= 'Z') || (charOrCode >= '0' && charOrCode <= '9') || (charOrCode === ' ')){
+						if(e.ctrlKey || e.metaKey || e.altKey){
+							return;
+						} // can only be stopped reliably in keydown
+					}
+				}
+				if(e.type == "input"){
+					if(this.__skipInputEvent){ // duplicate event
+						this.__skipInputEvent = false;
+						return;
+					}
+				}else{
+					this.__skipInputEvent = true;
+				}
+				// create fake event to set charOrCode and to know if preventDefault() was called
+				var faux = { faux: true }, attr;
+				for(attr in e){
+					if(!/^(layer[XY]|returnValue|keyLocation)$/.test(attr)){ // prevent WebKit warnings
+						var v = e[attr];
+						if(typeof v != "function" && typeof v != "undefined"){
+							faux[attr] = v;
+						}
+					}
+				}
+				lang.mixin(faux, {
+					charOrCode: charOrCode,
+					_wasConsumed: false,
+					preventDefault: function(){
+						faux._wasConsumed = true;
+						e.preventDefault();
+					},
+					stopPropagation: function(){
+						e.stopPropagation();
+					}
+				});
+				// give web page author a chance to consume the event
+				//console.log(faux.type + ', charOrCode = (' + (typeof charOrCode) + ') ' + charOrCode + ', ctrl ' + !!faux.ctrlKey + ', alt ' + !!faux.altKey + ', meta ' + !!faux.metaKey + ', shift ' + !!faux.shiftKey);
+				if(this.onInput(faux) === false){ // return false means stop
+					faux.preventDefault();
+					faux.stopPropagation();
+				}
+				if(faux._wasConsumed){
+					return;
+				} // if preventDefault was called
+				this.defer(function(){
+					this._onInput(faux);
+				}); // widget notification after key has posted
+			}
+			this.own(
+				on(this.textbox, "keydown, keypress, paste, cut, input, compositionend", lang.hitch(this, handleEvent)),
+
+				// Allow keypress to bubble to this.domNode, so that TextBox.on("keypress", ...) works,
+				// but prevent it from further propagating, so that typing into a TextBox inside a Toolbar doesn't
+				// trigger the Toolbar's letter key navigation.
+				on(this.domNode, "keypress", function(e){ e.stopPropagation(); })
+			);
+		},
+
+		_blankValue: '', // if the textbox is blank, what value should be reported
+		filter: function(val){
+			// summary:
+			//		Auto-corrections (such as trimming) that are applied to textbox
+			//		value on blur or form submit.
+			// description:
+			//		For MappedTextBox subclasses, this is called twice
+			//
+			//		- once with the display value
+			//		- once the value as set/returned by set('value', ...)
+			//
+			//		and get('value'), ex: a Number for NumberTextBox.
+			//
+			//		In the latter case it does corrections like converting null to NaN.  In
+			//		the former case the NumberTextBox.filter() method calls this.inherited()
+			//		to execute standard trimming code in TextBox.filter().
+			//
+			//		TODO: break this into two methods in 2.0
+			//
+			// tags:
+			//		protected extension
+			if(val === null){
+				return this._blankValue;
+			}
+			if(typeof val != "string"){
+				return val;
+			}
+			if(this.trim){
+				val = lang.trim(val);
+			}
+			if(this.uppercase){
+				val = val.toUpperCase();
+			}
+			if(this.lowercase){
+				val = val.toLowerCase();
+			}
+			if(this.propercase){
+				val = val.replace(/[^\s]+/g, function(word){
+					return word.substring(0, 1).toUpperCase() + word.substring(1);
+				});
+			}
+			return val;
+		},
+
+		_setBlurValue: function(){
+			// Format the displayed value, for example (for NumberTextBox) convert 1.4 to 1.400,
+			// or (for CurrencyTextBox) 2.50 to $2.50
+
+			this._setValueAttr(this.get('value'), true);
+		},
+
+		_onBlur: function(e){
+			if(this.disabled){
+				return;
+			}
+			this._setBlurValue();
+			this.inherited(arguments);
+		},
+
+		_isTextSelected: function(){
+			return this.textbox.selectionStart != this.textbox.selectionEnd;
+		},
+
+		_onFocus: function(/*String*/ by){
+			if(this.disabled || this.readOnly){
+				return;
+			}
+
+			// Select all text on focus via click if nothing already selected.
+			// Since mouse-up will clear the selection, need to defer selection until after mouse-up.
+			// Don't do anything on focus by tabbing into the widget since there's no associated mouse-up event.
+			if(this.selectOnClick && by == "mouse"){
+				// Use on.once() to only select all text on first click only; otherwise users would have no way to clear
+				// the selection.
+				this._selectOnClickHandle = on.once(this.domNode, "mouseup, touchend", lang.hitch(this, function(evt){
+					// Check if the user selected some text manually (mouse-down, mouse-move, mouse-up)
+					// and if not, then select all the text
+					if(!this._isTextSelected()){
+						_TextBoxMixin.selectInputText(this.textbox);
+					}
+				}));
+				this.own(this._selectOnClickHandle);
+
+				// in case the mouseup never comes
+				this.defer(function(){
+					if(this._selectOnClickHandle){
+						this._selectOnClickHandle.remove();
+						this._selectOnClickHandle = null;
+					}
+				}, 500); // if mouseup not received soon, then treat it as some gesture
+			}
+			// call this.inherited() before refreshState(), since this.inherited() will possibly scroll the viewport
+			// (to scroll the TextBox into view), which will affect how _refreshState() positions the tooltip
+			this.inherited(arguments);
+
+			this._refreshState();
+		},
+
+		reset: function(){
+			// Overrides `dijit/_FormWidget/reset()`.
+			// Additionally resets the displayed textbox value to ''
+			this.textbox.value = '';
+			this.inherited(arguments);
+		}
+	});
+
+	if(has("dojo-bidi")){
+		_TextBoxMixin = declare("dijit.form._TextBoxMixin", _TextBoxMixin, {
+			_setValueAttr: function(){
+				this.inherited(arguments);
+				this.applyTextDir(this.focusNode);
+			},
+			_setDisplayedValueAttr: function(){
+				this.inherited(arguments);
+				this.applyTextDir(this.focusNode);
+			},
+			_onInput: function(){
+				this.applyTextDir(this.focusNode);
+				this.inherited(arguments);
+			}
+		});
+	}
+
+	_TextBoxMixin._setSelectionRange = dijit._setSelectionRange = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
+		if(element.setSelectionRange){
+			element.setSelectionRange(start, stop);
+		}
+	};
+
+	_TextBoxMixin.selectInputText = dijit.selectInputText = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
+		// summary:
+		//		Select text in the input element argument, from start (default 0), to stop (default end).
+
+		// TODO: use functions in _editor/selection.js?
+		element = dom.byId(element);
+		if(isNaN(start)){
+			start = 0;
+		}
+		if(isNaN(stop)){
+			stop = element.value ? element.value.length : 0;
+		}
+		try{
+			element.focus();
+			_TextBoxMixin._setSelectionRange(element, start, stop);
+		}catch(e){ /* squelch random errors (esp. on IE) from unexpected focus changes or DOM nodes being hidden */
+		}
+	};
+
+	return _TextBoxMixin;
+});
+
+},
+'dijit/form/TextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-construct", // domConstruct.create
+	"dojo/dom-style", // domStyle.getComputedStyle
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/lang", // lang.hitch
+	"dojo/on",
+	"dojo/sniff", // has("ie") has("mozilla")
+	"./_FormValueWidget",
+	"./_TextBoxMixin",
+	"dojo/text!./templates/TextBox.html",
+	"../main"	// to export dijit._setSelectionRange, remove in 2.0
+], function(declare, domConstruct, domStyle, kernel, lang, on, has,
+			_FormValueWidget, _TextBoxMixin, template, dijit){
+
+	// module:
+	//		dijit/form/TextBox
+
+	var TextBox = declare("dijit.form.TextBox" + (has("dojo-bidi") ? "_NoBidi" : ""), [_FormValueWidget, _TextBoxMixin], {
+		// summary:
+		//		A base class for textbox form inputs
+
+		templateString: template,
+		_singleNodeTemplate: '<input class="dijit dijitReset dijitLeft dijitInputField" data-dojo-attach-point="textbox,focusNode" autocomplete="off" type="${type}" ${!nameAttrSetting} />',
+
+		_buttonInputDisabled: has("ie") ? "disabled" : "", // allows IE to disallow focus, but Firefox cannot be disabled for mousedown events
+
+		baseClass: "dijitTextBox",
+
+		postMixInProperties: function(){
+			var type = this.type.toLowerCase();
+			if(this.templateString && this.templateString.toLowerCase() == "input" || ((type == "hidden" || type == "file") && this.templateString == this.constructor.prototype.templateString)){
+				this.templateString = this._singleNodeTemplate;
+			}
+			this.inherited(arguments);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			if(has("ie") < 9){
+				// IE INPUT tag fontFamily has to be set directly using STYLE
+				// the defer gives IE a chance to render the TextBox and to deal with font inheritance
+				this.defer(function(){
+					try{
+						var s = domStyle.getComputedStyle(this.domNode); // can throw an exception if widget is immediately destroyed
+						if(s){
+							var ff = s.fontFamily;
+							if(ff){
+								var inputs = this.domNode.getElementsByTagName("INPUT");
+								if(inputs){
+									for(var i=0; i < inputs.length; i++){
+										inputs[i].style.fontFamily = ff;
+									}
+								}
+							}
+						}
+					}catch(e){/*when used in a Dialog, and this is called before the dialog is
+					 shown, s.fontFamily would trigger "Invalid Argument" error.*/}
+				});
+			}
+		},
+
+		_setPlaceHolderAttr: function(v){
+			this._set("placeHolder", v);
+			if(!this._phspan){
+				this._attachPoints.push('_phspan');
+				this._phspan = domConstruct.create('span', {
+					// dijitInputField class gives placeHolder same padding as the input field
+					// parent node already has dijitInputField class but it doesn't affect this <span>
+					// since it's position: absolute.
+					className: 'dijitPlaceHolder dijitInputField'
+				}, this.textbox, 'after');
+				this.own(
+					on(this._phspan, "mousedown", function(evt){ evt.preventDefault(); }),
+					on(this._phspan, "touchend, pointerup, MSPointerUp", lang.hitch(this, function(){
+						// If the user clicks placeholder rather than the <input>, need programmatic focus.  Normally this
+						// is done in _FormWidgetMixin._onFocus() but after [30663] it's done on a delay, which is ineffective.
+						this.focus();
+					}))
+				);
+			}
+			this._phspan.innerHTML="";
+			this._phspan.appendChild(this._phspan.ownerDocument.createTextNode(v));
+			this._updatePlaceHolder();
+		},
+
+		_onInput: function(/*Event*/ evt){
+			// summary:
+			//		Called AFTER the input event has happened
+			//		See if the placeHolder text should be removed or added while editing.
+			this.inherited(arguments);
+			this._updatePlaceHolder();
+		},
+
+		_updatePlaceHolder: function(){
+			if(this._phspan){
+				this._phspan.style.display = (this.placeHolder && !this.textbox.value) ? "" : "none";
+			}
+		},
+
+		_setValueAttr: function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
+			this.inherited(arguments);
+			this._updatePlaceHolder();
+		},
+
+		getDisplayedValue: function(){
+			// summary:
+			//		Deprecated.  Use get('displayedValue') instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated(this.declaredClass+"::getDisplayedValue() is deprecated. Use get('displayedValue') instead.", "", "2.0");
+			return this.get('displayedValue');
+		},
+
+		setDisplayedValue: function(/*String*/ value){
+			// summary:
+			//		Deprecated.  Use set('displayedValue', ...) instead.
+			// tags:
+			//		deprecated
+			kernel.deprecated(this.declaredClass+"::setDisplayedValue() is deprecated. Use set('displayedValue', ...) instead.", "", "2.0");
+			this.set('displayedValue', value);
+		},
+
+		_onBlur: function(e){
+			if(this.disabled){ return; }
+			this.inherited(arguments);
+			this._updatePlaceHolder();
+
+			if(has("mozilla")){
+				if(this.selectOnClick){
+					// clear selection so that the next mouse click doesn't reselect
+					this.textbox.selectionStart = this.textbox.selectionEnd = undefined;
+				}
+			}
+		},
+
+		_onFocus: function(/*String*/ by){
+			if(this.disabled || this.readOnly){ return; }
+			this.inherited(arguments);
+			this._updatePlaceHolder();
+		}
+	});
+
+	if(has("ie") < 9){
+		TextBox.prototype._isTextSelected = function(){
+			var range = this.ownerDocument.selection.createRange();
+			var parent = range.parentElement();
+			return parent == this.textbox && range.text.length > 0;
+		};
+
+		// Overrides definition of _setSelectionRange from _TextBoxMixin (TODO: move to _TextBoxMixin.js?)
+		dijit._setSelectionRange = _TextBoxMixin._setSelectionRange = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
+			if(element.createTextRange){
+				var r = element.createTextRange();
+				r.collapse(true);
+				r.moveStart("character", -99999); // move to 0
+				r.moveStart("character", start); // delta from 0 is the correct position
+				r.moveEnd("character", stop-start);
+				r.select();
+			}
+		}
+	}
+
+	if(has("dojo-bidi")){
+		TextBox = declare("dijit.form.TextBox", TextBox, {
+			_setPlaceHolderAttr: function(v){
+				this.inherited(arguments);
+				this.applyTextDir(this._phspan);
+			}
+		});
+	}
+
+	return TextBox;
+});
+
+},
+'dijit/form/_FormValueWidget':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/sniff", // has("ie")
+	"./_FormWidget",
+	"./_FormValueMixin"
+], function(declare, has, _FormWidget, _FormValueMixin){
+
+	// module:
+	//		dijit/form/_FormValueWidget
+
+	return declare("dijit.form._FormValueWidget", [_FormWidget, _FormValueMixin], {
+		// summary:
+		//		Base class for widgets corresponding to native HTML elements such as `<input>` or `<select>`
+		//		that have user changeable values.
+		// description:
+		//		Each _FormValueWidget represents a single input value, and has a (possibly hidden) `<input>` element,
+		//		to which it serializes it's input value, so that form submission (either normal submission or via FormBind?)
+		//		works as expected.
+
+		// Don't attempt to mixin the 'type', 'name' attributes here programatically -- they must be declared
+		// directly in the template as read by the parser in order to function. IE is known to specifically
+		// require the 'name' attribute at element creation time.  See #8484, #8660.
+
+		_layoutHackIE7: function(){
+			// summary:
+			//		Work around table sizing bugs on IE7 by forcing redraw
+
+			if(has("ie") == 7){ // fix IE7 layout bug when the widget is scrolled out of sight
+				var domNode = this.domNode;
+				var parent = domNode.parentNode;
+				var pingNode = domNode.firstChild || domNode; // target node most unlikely to have a custom filter
+				var origFilter = pingNode.style.filter; // save custom filter, most likely nothing
+				var _this = this;
+				while(parent && parent.clientHeight == 0){ // search for parents that haven't rendered yet
+					(function ping(){
+						var disconnectHandle = _this.connect(parent, "onscroll",
+							function(){
+								_this.disconnect(disconnectHandle); // only call once
+								pingNode.style.filter = (new Date()).getMilliseconds(); // set to anything that's unique
+								_this.defer(function(){
+									pingNode.style.filter = origFilter;
+								}); // restore custom filter, if any
+							}
+						);
+					})();
+					parent = parent.parentNode;
+				}
+			}
+		}
+	});
+});
+
+},
+'dijit/form/_FormValueMixin':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom-attr", // domAttr.set
+	"dojo/keys", // keys.ESCAPE
+	"dojo/_base/lang",
+	"dojo/on",
+	"./_FormWidgetMixin"
+], function(declare, domAttr, keys, lang, on, _FormWidgetMixin){
+
+	// module:
+	//		dijit/form/_FormValueMixin
+
+	return declare("dijit.form._FormValueMixin", _FormWidgetMixin, {
+		// summary:
+		//		Mixin for widgets corresponding to native HTML elements such as `<input>` or `<select>`
+		//		that have user changeable values.
+		// description:
+		//		Each _FormValueMixin represents a single input value, and has a (possibly hidden) `<input>` element,
+		//		to which it serializes it's input value, so that form submission (either normal submission or via FormBind?)
+		//		works as expected.
+
+		// readOnly: Boolean
+		//		Should this widget respond to user input?
+		//		In markup, this is specified as "readOnly".
+		//		Similar to disabled except readOnly form values are submitted.
+		readOnly: false,
+
+		_setReadOnlyAttr: function(/*Boolean*/ value){
+			domAttr.set(this.focusNode, 'readOnly', value);
+			this._set("readOnly", value);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// Update our reset value if it hasn't yet been set (because this.set()
+			// is only called when there *is* a value)
+			if(this._resetValue === undefined){
+				this._lastValueReported = this._resetValue = this.value;
+			}
+		},
+
+		_setValueAttr: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Hook so set('value', value) works.
+			// description:
+			//		Sets the value of the widget.
+			//		If the value has changed, then fire onChange event, unless priorityChange
+			//		is specified as null (or false?)
+			this._handleOnChange(newValue, priorityChange);
+		},
+
+		_handleOnChange: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Called when the value of the widget has changed.  Saves the new value in this.value,
+			//		and calls onChange() if appropriate.   See _FormWidget._handleOnChange() for details.
+			this._set("value", newValue);
+			this.inherited(arguments);
+		},
+
+		undo: function(){
+			// summary:
+			//		Restore the value to the last value passed to onChange
+			this._setValueAttr(this._lastValueReported, false);
+		},
+
+		reset: function(){
+			// summary:
+			//		Reset the widget's value to what it was at initialization time
+			this._hasBeenBlurred = false;
+			this._setValueAttr(this._resetValue, true);
+		}
+	});
+});
+
+},
+'dijit/form/ComboButton':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/keys", // keys
+	"../focus", // focus.focus()
+	"./DropDownButton",
+	"dojo/text!./templates/ComboButton.html",
+	"../a11yclick"	// template uses ondijitclick
+], function(declare, keys, focus, DropDownButton, template){
+
+	// module:
+	//		dijit/form/ComboButton
+
+	return declare("dijit.form.ComboButton", DropDownButton, {
+		// summary:
+		//		A combination button and drop-down button.
+		//		Users can click one side to "press" the button, or click an arrow
+		//		icon to display the drop down.
+		//
+		// example:
+		// |	<button data-dojo-type="dijit/form/ComboButton" onClick="...">
+		// |		<span>Hello world</span>
+		// |		<div data-dojo-type="dijit/Menu">...</div>
+		// |	</button>
+		//
+		// example:
+		// |	var button1 = new ComboButton({label: "hello world", onClick: foo, dropDown: "myMenu"});
+		// |	dojo.body().appendChild(button1.domNode);
+		//
+
+		templateString: template,
+
+		// Map widget attributes to DOMNode attributes.
+		_setIdAttr: "", // override _FormWidgetMixin which puts id on the focusNode
+		_setTabIndexAttr: ["focusNode", "titleNode"],
+		_setTitleAttr: "titleNode",
+
+		// optionsTitle: String
+		//		Text that describes the options menu (accessibility)
+		optionsTitle: "",
+
+		baseClass: "dijitComboButton",
+
+		// Set classes like dijitButtonContentsHover or dijitArrowButtonActive depending on
+		// mouse action over specified node
+		cssStateNodes: {
+			"buttonNode": "dijitButtonNode",
+			"titleNode": "dijitButtonContents",
+			"_popupStateNode": "dijitDownArrowButton"
+		},
+
+		_focusedNode: null,
+
+		_onButtonKeyDown: function(/*Event*/ evt){
+			// summary:
+			//		Handler for right arrow key when focus is on left part of button
+			if(evt.keyCode == keys[this.isLeftToRight() ? "RIGHT_ARROW" : "LEFT_ARROW"]){
+				focus.focus(this._popupStateNode);
+				evt.stopPropagation();
+				evt.preventDefault();
+			}
+		},
+
+		_onArrowKeyDown: function(/*Event*/ evt){
+			// summary:
+			//		Handler for left arrow key when focus is on right part of button
+			if(evt.keyCode == keys[this.isLeftToRight() ? "LEFT_ARROW" : "RIGHT_ARROW"]){
+				focus.focus(this.titleNode);
+				evt.stopPropagation();
+				evt.preventDefault();
+			}
+		},
+
+		focus: function(/*String*/ position){
+			// summary:
+			//		Focuses this widget to according to position, if specified,
+			//		otherwise on arrow node
+			// position:
+			//		"start" or "end"
+			if(!this.disabled){
+				focus.focus(position == "start" ? this.titleNode : this._popupStateNode);
+			}
+		}
+	});
+});
+
+},
+'dijit/form/DropDownButton':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // hitch
+	"dojo/query", // query
+	"../registry", // registry.byNode
+	"../popup", // dijit.popup2.hide
+	"./Button",
+	"../_Container",
+	"../_HasDropDown",
+	"dojo/text!./templates/DropDownButton.html",
+	"../a11yclick"	// template uses ondijitclick
+], function(declare, lang, query, registry, popup, Button, _Container, _HasDropDown, template){
+
+	// module:
+	//		dijit/form/DropDownButton
+
+	return declare("dijit.form.DropDownButton", [Button, _Container, _HasDropDown], {
+		// summary:
+		//		A button with a drop down
+		//
+		// example:
+		// |	<button data-dojo-type="dijit/form/DropDownButton">
+		// |		Hello world
+		// |		<div data-dojo-type="dijit/Menu">...</div>
+		// |	</button>
+		//
+		// example:
+		// |	var button1 = new DropDownButton({ label: "hi", dropDown: new dijit.Menu(...) });
+		// |	win.body().appendChild(button1);
+		//
+
+		baseClass: "dijitDropDownButton",
+
+		templateString: template,
+
+		_fillContent: function(){
+			// Overrides Button._fillContent().
+			//
+			// My inner HTML contains both the button contents and a drop down widget, like
+			// <DropDownButton>  <span>push me</span>  <Menu> ... </Menu> </DropDownButton>
+			// The first node is assumed to be the button content. The widget is the popup.
+
+			if(this.srcNodeRef){ // programatically created buttons might not define srcNodeRef
+				//FIXME: figure out how to filter out the widget and use all remaining nodes as button
+				//	content, not just nodes[0]
+				var nodes = query("*", this.srcNodeRef);
+				this.inherited(arguments, [nodes[0]]);
+
+				// save pointer to srcNode so we can grab the drop down widget after it's instantiated
+				this.dropDownContainer = this.srcNodeRef;
+			}
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+
+			// the child widget from srcNodeRef is the dropdown widget.  Insert it in the page DOM,
+			// make it invisible, and store a reference to pass to the popup code.
+			if(!this.dropDown && this.dropDownContainer){
+				var dropDownNode = query("[widgetId]", this.dropDownContainer)[0];
+				if(dropDownNode){
+					this.dropDown = registry.byNode(dropDownNode);
+				}
+				delete this.dropDownContainer;
+			}
+			if(this.dropDown){
+				popup.hide(this.dropDown);
+			}
+
+			this.inherited(arguments);
+		},
+
+		isLoaded: function(){
+			// Returns whether or not we are loaded - if our dropdown has an href,
+			// then we want to check that.
+			var dropDown = this.dropDown;
+			return (!!dropDown && (!dropDown.href || dropDown.isLoaded));
+		},
+
+		loadDropDown: function(/*Function*/ callback){
+			// Default implementation assumes that drop down already exists,
+			// but hasn't loaded it's data (ex: ContentPane w/href).
+			// App must override if the drop down is lazy-created.
+			var dropDown = this.dropDown;
+			var handler = dropDown.on("load", lang.hitch(this, function(){
+				handler.remove();
+				callback();
+			}));
+			dropDown.refresh();		// tell it to load
+		},
+
+		isFocusable: function(){
+			// Overridden so that focus is handled by the _HasDropDown mixin, not by
+			// the _FormWidget mixin.
+			return this.inherited(arguments) && !this._mouseDown;
+		}
+	});
 });
 
 },
@@ -22815,832 +24302,6 @@ define([
 			}
 		}
 	});
-});
-
-},
-'dijit/form/TextBox':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-construct", // domConstruct.create
-	"dojo/dom-style", // domStyle.getComputedStyle
-	"dojo/_base/kernel", // kernel.deprecated
-	"dojo/_base/lang", // lang.hitch
-	"dojo/on",
-	"dojo/sniff", // has("ie") has("mozilla")
-	"./_FormValueWidget",
-	"./_TextBoxMixin",
-	"dojo/text!./templates/TextBox.html",
-	"../main"	// to export dijit._setSelectionRange, remove in 2.0
-], function(declare, domConstruct, domStyle, kernel, lang, on, has,
-			_FormValueWidget, _TextBoxMixin, template, dijit){
-
-	// module:
-	//		dijit/form/TextBox
-
-	var TextBox = declare("dijit.form.TextBox" + (has("dojo-bidi") ? "_NoBidi" : ""), [_FormValueWidget, _TextBoxMixin], {
-		// summary:
-		//		A base class for textbox form inputs
-
-		templateString: template,
-		_singleNodeTemplate: '<input class="dijit dijitReset dijitLeft dijitInputField" data-dojo-attach-point="textbox,focusNode" autocomplete="off" type="${type}" ${!nameAttrSetting} />',
-
-		_buttonInputDisabled: has("ie") ? "disabled" : "", // allows IE to disallow focus, but Firefox cannot be disabled for mousedown events
-
-		baseClass: "dijitTextBox",
-
-		postMixInProperties: function(){
-			var type = this.type.toLowerCase();
-			if(this.templateString && this.templateString.toLowerCase() == "input" || ((type == "hidden" || type == "file") && this.templateString == this.constructor.prototype.templateString)){
-				this.templateString = this._singleNodeTemplate;
-			}
-			this.inherited(arguments);
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-
-			if(has("ie") < 9){
-				// IE INPUT tag fontFamily has to be set directly using STYLE
-				// the defer gives IE a chance to render the TextBox and to deal with font inheritance
-				this.defer(function(){
-					try{
-						var s = domStyle.getComputedStyle(this.domNode); // can throw an exception if widget is immediately destroyed
-						if(s){
-							var ff = s.fontFamily;
-							if(ff){
-								var inputs = this.domNode.getElementsByTagName("INPUT");
-								if(inputs){
-									for(var i=0; i < inputs.length; i++){
-										inputs[i].style.fontFamily = ff;
-									}
-								}
-							}
-						}
-					}catch(e){/*when used in a Dialog, and this is called before the dialog is
-					 shown, s.fontFamily would trigger "Invalid Argument" error.*/}
-				});
-			}
-		},
-
-		_setPlaceHolderAttr: function(v){
-			this._set("placeHolder", v);
-			if(!this._phspan){
-				this._attachPoints.push('_phspan');
-				this._phspan = domConstruct.create('span', {
-					// dijitInputField class gives placeHolder same padding as the input field
-					// parent node already has dijitInputField class but it doesn't affect this <span>
-					// since it's position: absolute.
-					className: 'dijitPlaceHolder dijitInputField'
-				}, this.textbox, 'after');
-				this.own(
-					on(this._phspan, "mousedown", function(evt){ evt.preventDefault(); }),
-					on(this._phspan, "touchend, pointerup, MSPointerUp", lang.hitch(this, function(){
-						// If the user clicks placeholder rather than the <input>, need programmatic focus.  Normally this
-						// is done in _FormWidgetMixin._onFocus() but after [30663] it's done on a delay, which is ineffective.
-						this.focus();
-					}))
-				);
-			}
-			this._phspan.innerHTML="";
-			this._phspan.appendChild(this._phspan.ownerDocument.createTextNode(v));
-			this._updatePlaceHolder();
-		},
-
-		_onInput: function(/*Event*/ evt){
-			// summary:
-			//		Called AFTER the input event has happened
-			//		See if the placeHolder text should be removed or added while editing.
-			this.inherited(arguments);
-			this._updatePlaceHolder();
-		},
-
-		_updatePlaceHolder: function(){
-			if(this._phspan){
-				this._phspan.style.display = (this.placeHolder && !this.textbox.value) ? "" : "none";
-			}
-		},
-
-		_setValueAttr: function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
-			this.inherited(arguments);
-			this._updatePlaceHolder();
-		},
-
-		getDisplayedValue: function(){
-			// summary:
-			//		Deprecated.  Use get('displayedValue') instead.
-			// tags:
-			//		deprecated
-			kernel.deprecated(this.declaredClass+"::getDisplayedValue() is deprecated. Use get('displayedValue') instead.", "", "2.0");
-			return this.get('displayedValue');
-		},
-
-		setDisplayedValue: function(/*String*/ value){
-			// summary:
-			//		Deprecated.  Use set('displayedValue', ...) instead.
-			// tags:
-			//		deprecated
-			kernel.deprecated(this.declaredClass+"::setDisplayedValue() is deprecated. Use set('displayedValue', ...) instead.", "", "2.0");
-			this.set('displayedValue', value);
-		},
-
-		_onBlur: function(e){
-			if(this.disabled){ return; }
-			this.inherited(arguments);
-			this._updatePlaceHolder();
-
-			if(has("mozilla")){
-				if(this.selectOnClick){
-					// clear selection so that the next mouse click doesn't reselect
-					this.textbox.selectionStart = this.textbox.selectionEnd = undefined;
-				}
-			}
-		},
-
-		_onFocus: function(/*String*/ by){
-			if(this.disabled || this.readOnly){ return; }
-			this.inherited(arguments);
-			this._updatePlaceHolder();
-		}
-	});
-
-	if(has("ie") < 9){
-		TextBox.prototype._isTextSelected = function(){
-			var range = this.ownerDocument.selection.createRange();
-			var parent = range.parentElement();
-			return parent == this.textbox && range.text.length > 0;
-		};
-
-		// Overrides definition of _setSelectionRange from _TextBoxMixin (TODO: move to _TextBoxMixin.js?)
-		dijit._setSelectionRange = _TextBoxMixin._setSelectionRange = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
-			if(element.createTextRange){
-				var r = element.createTextRange();
-				r.collapse(true);
-				r.moveStart("character", -99999); // move to 0
-				r.moveStart("character", start); // delta from 0 is the correct position
-				r.moveEnd("character", stop-start);
-				r.select();
-			}
-		}
-	}
-
-	if(has("dojo-bidi")){
-		TextBox = declare("dijit.form.TextBox", TextBox, {
-			_setPlaceHolderAttr: function(v){
-				this.inherited(arguments);
-				this.applyTextDir(this._phspan);
-			}
-		});
-	}
-
-	return TextBox;
-});
-
-},
-'dijit/form/_FormValueWidget':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/sniff", // has("ie")
-	"./_FormWidget",
-	"./_FormValueMixin"
-], function(declare, has, _FormWidget, _FormValueMixin){
-
-	// module:
-	//		dijit/form/_FormValueWidget
-
-	return declare("dijit.form._FormValueWidget", [_FormWidget, _FormValueMixin], {
-		// summary:
-		//		Base class for widgets corresponding to native HTML elements such as `<input>` or `<select>`
-		//		that have user changeable values.
-		// description:
-		//		Each _FormValueWidget represents a single input value, and has a (possibly hidden) `<input>` element,
-		//		to which it serializes it's input value, so that form submission (either normal submission or via FormBind?)
-		//		works as expected.
-
-		// Don't attempt to mixin the 'type', 'name' attributes here programatically -- they must be declared
-		// directly in the template as read by the parser in order to function. IE is known to specifically
-		// require the 'name' attribute at element creation time.  See #8484, #8660.
-
-		_layoutHackIE7: function(){
-			// summary:
-			//		Work around table sizing bugs on IE7 by forcing redraw
-
-			if(has("ie") == 7){ // fix IE7 layout bug when the widget is scrolled out of sight
-				var domNode = this.domNode;
-				var parent = domNode.parentNode;
-				var pingNode = domNode.firstChild || domNode; // target node most unlikely to have a custom filter
-				var origFilter = pingNode.style.filter; // save custom filter, most likely nothing
-				var _this = this;
-				while(parent && parent.clientHeight == 0){ // search for parents that haven't rendered yet
-					(function ping(){
-						var disconnectHandle = _this.connect(parent, "onscroll",
-							function(){
-								_this.disconnect(disconnectHandle); // only call once
-								pingNode.style.filter = (new Date()).getMilliseconds(); // set to anything that's unique
-								_this.defer(function(){
-									pingNode.style.filter = origFilter;
-								}); // restore custom filter, if any
-							}
-						);
-					})();
-					parent = parent.parentNode;
-				}
-			}
-		}
-	});
-});
-
-},
-'dijit/form/_FormValueMixin':function(){
-define([
-	"dojo/_base/declare", // declare
-	"dojo/dom-attr", // domAttr.set
-	"dojo/keys", // keys.ESCAPE
-	"dojo/_base/lang",
-	"dojo/on",
-	"./_FormWidgetMixin"
-], function(declare, domAttr, keys, lang, on, _FormWidgetMixin){
-
-	// module:
-	//		dijit/form/_FormValueMixin
-
-	return declare("dijit.form._FormValueMixin", _FormWidgetMixin, {
-		// summary:
-		//		Mixin for widgets corresponding to native HTML elements such as `<input>` or `<select>`
-		//		that have user changeable values.
-		// description:
-		//		Each _FormValueMixin represents a single input value, and has a (possibly hidden) `<input>` element,
-		//		to which it serializes it's input value, so that form submission (either normal submission or via FormBind?)
-		//		works as expected.
-
-		// readOnly: Boolean
-		//		Should this widget respond to user input?
-		//		In markup, this is specified as "readOnly".
-		//		Similar to disabled except readOnly form values are submitted.
-		readOnly: false,
-
-		_setReadOnlyAttr: function(/*Boolean*/ value){
-			domAttr.set(this.focusNode, 'readOnly', value);
-			this._set("readOnly", value);
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-
-			// Update our reset value if it hasn't yet been set (because this.set()
-			// is only called when there *is* a value)
-			if(this._resetValue === undefined){
-				this._lastValueReported = this._resetValue = this.value;
-			}
-		},
-
-		_setValueAttr: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
-			// summary:
-			//		Hook so set('value', value) works.
-			// description:
-			//		Sets the value of the widget.
-			//		If the value has changed, then fire onChange event, unless priorityChange
-			//		is specified as null (or false?)
-			this._handleOnChange(newValue, priorityChange);
-		},
-
-		_handleOnChange: function(/*anything*/ newValue, /*Boolean?*/ priorityChange){
-			// summary:
-			//		Called when the value of the widget has changed.  Saves the new value in this.value,
-			//		and calls onChange() if appropriate.   See _FormWidget._handleOnChange() for details.
-			this._set("value", newValue);
-			this.inherited(arguments);
-		},
-
-		undo: function(){
-			// summary:
-			//		Restore the value to the last value passed to onChange
-			this._setValueAttr(this._lastValueReported, false);
-		},
-
-		reset: function(){
-			// summary:
-			//		Reset the widget's value to what it was at initialization time
-			this._hasBeenBlurred = false;
-			this._setValueAttr(this._resetValue, true);
-		}
-	});
-});
-
-},
-'dijit/form/_TextBoxMixin':function(){
-define([
-	"dojo/_base/array", // array.forEach
-	"dojo/_base/declare", // declare
-	"dojo/dom", // dom.byId
-	"dojo/has",
-	"dojo/keys", // keys.ALT keys.CAPS_LOCK keys.CTRL keys.META keys.SHIFT
-	"dojo/_base/lang", // lang.mixin
-	"dojo/on", // on
-	"../main"    // for exporting dijit._setSelectionRange, dijit.selectInputText
-], function(array, declare, dom, has, keys, lang, on, dijit){
-
-	// module:
-	//		dijit/form/_TextBoxMixin
-
-	var _TextBoxMixin = declare("dijit.form._TextBoxMixin" + (has("dojo-bidi") ? "_NoBidi" : ""), null, {
-		// summary:
-		//		A mixin for textbox form input widgets
-
-		// trim: Boolean
-		//		Removes leading and trailing whitespace if true.  Default is false.
-		trim: false,
-
-		// uppercase: Boolean
-		//		Converts all characters to uppercase if true.  Default is false.
-		uppercase: false,
-
-		// lowercase: Boolean
-		//		Converts all characters to lowercase if true.  Default is false.
-		lowercase: false,
-
-		// propercase: Boolean
-		//		Converts the first character of each word to uppercase if true.
-		propercase: false,
-
-		// maxLength: String
-		//		HTML INPUT tag maxLength declaration.
-		maxLength: "",
-
-		// selectOnClick: [const] Boolean
-		//		If true, all text will be selected when focused with mouse
-		selectOnClick: false,
-
-		// placeHolder: String
-		//		Defines a hint to help users fill out the input field (as defined in HTML 5).
-		//		This should only contain plain text (no html markup).
-		placeHolder: "",
-
-		_getValueAttr: function(){
-			// summary:
-			//		Hook so get('value') works as we like.
-			// description:
-			//		For `dijit/form/TextBox` this basically returns the value of the `<input>`.
-			//
-			//		For `dijit/form/MappedTextBox` subclasses, which have both
-			//		a "displayed value" and a separate "submit value",
-			//		This treats the "displayed value" as the master value, computing the
-			//		submit value from it via this.parse().
-			return this.parse(this.get('displayedValue'), this.constraints);
-		},
-
-		_setValueAttr: function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
-			// summary:
-			//		Hook so set('value', ...) works.
-			//
-			// description:
-			//		Sets the value of the widget to "value" which can be of
-			//		any type as determined by the widget.
-			//
-			// value:
-			//		The visual element value is also set to a corresponding,
-			//		but not necessarily the same, value.
-			//
-			// formattedValue:
-			//		If specified, used to set the visual element value,
-			//		otherwise a computed visual value is used.
-			//
-			// priorityChange:
-			//		If true, an onChange event is fired immediately instead of
-			//		waiting for the next blur event.
-
-			var filteredValue;
-			if(value !== undefined){
-				// TODO: this is calling filter() on both the display value and the actual value.
-				// I added a comment to the filter() definition about this, but it should be changed.
-				filteredValue = this.filter(value);
-				if(typeof formattedValue != "string"){
-					if(filteredValue !== null && ((typeof filteredValue != "number") || !isNaN(filteredValue))){
-						formattedValue = this.filter(this.format(filteredValue, this.constraints));
-					}else{
-						formattedValue = '';
-					}
-					// Ensure the filtered value does not change after being formatted. See track #17955.
-					//
-					// This check is only applied when the formatted value is not specified by the caller in order to allow the 
-					// behavior to be overriden. This is needed whenever value synonyms cannot be determined using parse/compare. For
-					// example, dijit/form/FilteringSelect determines the formatted value asynchronously and applies it using a 
-					// callback to this method.
-					//
-					// TODO: Should developers be warned that they broke the round trip on format?
-					if (this.compare(filteredValue, this.filter(this.parse(formattedValue, this.constraints))) != 0){
-						formattedValue = null;
-					}
-				}
-			}
-			if(formattedValue != null /* and !undefined */ && ((typeof formattedValue) != "number" || !isNaN(formattedValue)) && this.textbox.value != formattedValue){
-				this.textbox.value = formattedValue;
-				this._set("displayedValue", this.get("displayedValue"));
-			}
-
-			this.inherited(arguments, [filteredValue, priorityChange]);
-		},
-
-		// displayedValue: String
-		//		For subclasses like ComboBox where the displayed value
-		//		(ex: Kentucky) and the serialized value (ex: KY) are different,
-		//		this represents the displayed value.
-		//
-		//		Setting 'displayedValue' through set('displayedValue', ...)
-		//		updates 'value', and vice-versa.  Otherwise 'value' is updated
-		//		from 'displayedValue' periodically, like onBlur etc.
-		//
-		//		TODO: move declaration to MappedTextBox?
-		//		Problem is that ComboBox references displayedValue,
-		//		for benefit of FilteringSelect.
-		displayedValue: "",
-
-		_getDisplayedValueAttr: function(){
-			// summary:
-			//		Hook so get('displayedValue') works.
-			// description:
-			//		Returns the displayed value (what the user sees on the screen),
-			//		after filtering (ie, trimming spaces etc.).
-			//
-			//		For some subclasses of TextBox (like ComboBox), the displayed value
-			//		is different from the serialized value that's actually
-			//		sent to the server (see `dijit/form/ValidationTextBox.serialize()`)
-
-			// TODO: maybe we should update this.displayedValue on every keystroke so that we don't need
-			// this method
-			// TODO: this isn't really the displayed value when the user is typing
-			return this.filter(this.textbox.value);
-		},
-
-		_setDisplayedValueAttr: function(/*String*/ value){
-			// summary:
-			//		Hook so set('displayedValue', ...) works.
-			// description:
-			//		Sets the value of the visual element to the string "value".
-			//		The widget value is also set to a corresponding,
-			//		but not necessarily the same, value.
-
-			if(value == null /* or undefined */){
-				value = ''
-			}
-			else if(typeof value != "string"){
-				value = String(value)
-			}
-
-			this.textbox.value = value;
-
-			// sets the serialized value to something corresponding to specified displayedValue
-			// (if possible), and also updates the textbox.value, for example converting "123"
-			// to "123.00"
-			this._setValueAttr(this.get('value'), undefined);
-
-			this._set("displayedValue", this.get('displayedValue'));
-		},
-
-		format: function(value /*=====, constraints =====*/){
-			// summary:
-			//		Replaceable function to convert a value to a properly formatted string.
-			// value: String
-			// constraints: Object
-			// tags:
-			//		protected extension
-			return value == null /* or undefined */ ? "" : (value.toString ? value.toString() : value);
-		},
-
-		parse: function(value /*=====, constraints =====*/){
-			// summary:
-			//		Replaceable function to convert a formatted string to a value
-			// value: String
-			// constraints: Object
-			// tags:
-			//		protected extension
-
-			return value;	// String
-		},
-
-		_refreshState: function(){
-			// summary:
-			//		After the user types some characters, etc., this method is
-			//		called to check the field for validity etc.  The base method
-			//		in `dijit/form/TextBox` does nothing, but subclasses override.
-			// tags:
-			//		protected
-		},
-
-		 onInput: function(/*===== event =====*/){
-			 // summary:
-			 //		Connect to this function to receive notifications of various user data-input events.
-			 //		Return false to cancel the event and prevent it from being processed.
-			 // event:
-			 //		keydown | keypress | cut | paste | input
-			 // tags:
-			 //		callback
-		 },
-
-		__skipInputEvent: false,
-		_onInput: function(/*Event*/ evt){
-			// summary:
-			//		Called AFTER the input event has happened
-
-			this._processInput(evt);
-
-			if(this.intermediateChanges){
-				// allow the key to post to the widget input box
-				this.defer(function(){
-					this._handleOnChange(this.get('value'), false);
-				});
-			}
-		},
-
-		_processInput: function(/*Event*/ evt){
-			// summary:
-			//		Default action handler for user input events
-
-			this._refreshState();
-
-			// In case someone is watch()'ing for changes to displayedValue
-			this._set("displayedValue", this.get("displayedValue"));
-		},
-
-		postCreate: function(){
-			// setting the value here is needed since value="" in the template causes "undefined"
-			// and setting in the DOM (instead of the JS object) helps with form reset actions
-			this.textbox.setAttribute("value", this.textbox.value); // DOM and JS values should be the same
-
-			this.inherited(arguments);
-
-			// normalize input events to reduce spurious event processing
-			//	onkeydown: do not forward modifier keys
-			//		       set charOrCode to numeric keycode
-			//	onkeypress: do not forward numeric charOrCode keys (already sent through onkeydown)
-			//	onpaste & oncut: set charOrCode to 229 (IME)
-			//	oninput: if primary event not already processed, set charOrCode to 229 (IME), else do not forward
-			function handleEvent(e){
-				var charOrCode;
-				if(e.type == "keydown"){
-					charOrCode = e.keyCode;
-					switch(charOrCode){ // ignore state keys
-						case keys.SHIFT:
-						case keys.ALT:
-						case keys.CTRL:
-						case keys.META:
-						case keys.CAPS_LOCK:
-						case keys.NUM_LOCK:
-						case keys.SCROLL_LOCK:
-							return;
-					}
-					if(!e.ctrlKey && !e.metaKey && !e.altKey){ // no modifiers
-						switch(charOrCode){ // ignore location keys
-							case keys.NUMPAD_0:
-							case keys.NUMPAD_1:
-							case keys.NUMPAD_2:
-							case keys.NUMPAD_3:
-							case keys.NUMPAD_4:
-							case keys.NUMPAD_5:
-							case keys.NUMPAD_6:
-							case keys.NUMPAD_7:
-							case keys.NUMPAD_8:
-							case keys.NUMPAD_9:
-							case keys.NUMPAD_MULTIPLY:
-							case keys.NUMPAD_PLUS:
-							case keys.NUMPAD_ENTER:
-							case keys.NUMPAD_MINUS:
-							case keys.NUMPAD_PERIOD:
-							case keys.NUMPAD_DIVIDE:
-								return;
-						}
-						if((charOrCode >= 65 && charOrCode <= 90) || (charOrCode >= 48 && charOrCode <= 57) || charOrCode == keys.SPACE){
-							return; // keypress will handle simple non-modified printable keys
-						}
-						var named = false;
-						for(var i in keys){
-							if(keys[i] === e.keyCode){
-								named = true;
-								break;
-							}
-						}
-						if(!named){
-							return;
-						} // only allow named ones through
-					}
-				}
-				charOrCode = e.charCode >= 32 ? String.fromCharCode(e.charCode) : e.charCode;
-				if(!charOrCode){
-					charOrCode = (e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 48 && e.keyCode <= 57) || e.keyCode == keys.SPACE ? String.fromCharCode(e.keyCode) : e.keyCode;
-				}
-				if(!charOrCode){
-					charOrCode = 229; // IME
-				}
-				if(e.type == "keypress"){
-					if(typeof charOrCode != "string"){
-						return;
-					}
-					if((charOrCode >= 'a' && charOrCode <= 'z') || (charOrCode >= 'A' && charOrCode <= 'Z') || (charOrCode >= '0' && charOrCode <= '9') || (charOrCode === ' ')){
-						if(e.ctrlKey || e.metaKey || e.altKey){
-							return;
-						} // can only be stopped reliably in keydown
-					}
-				}
-				if(e.type == "input"){
-					if(this.__skipInputEvent){ // duplicate event
-						this.__skipInputEvent = false;
-						return;
-					}
-				}else{
-					this.__skipInputEvent = true;
-				}
-				// create fake event to set charOrCode and to know if preventDefault() was called
-				var faux = { faux: true }, attr;
-				for(attr in e){
-					if(!/^(layer[XY]|returnValue|keyLocation)$/.test(attr)){ // prevent WebKit warnings
-						var v = e[attr];
-						if(typeof v != "function" && typeof v != "undefined"){
-							faux[attr] = v;
-						}
-					}
-				}
-				lang.mixin(faux, {
-					charOrCode: charOrCode,
-					_wasConsumed: false,
-					preventDefault: function(){
-						faux._wasConsumed = true;
-						e.preventDefault();
-					},
-					stopPropagation: function(){
-						e.stopPropagation();
-					}
-				});
-				// give web page author a chance to consume the event
-				//console.log(faux.type + ', charOrCode = (' + (typeof charOrCode) + ') ' + charOrCode + ', ctrl ' + !!faux.ctrlKey + ', alt ' + !!faux.altKey + ', meta ' + !!faux.metaKey + ', shift ' + !!faux.shiftKey);
-				if(this.onInput(faux) === false){ // return false means stop
-					faux.preventDefault();
-					faux.stopPropagation();
-				}
-				if(faux._wasConsumed){
-					return;
-				} // if preventDefault was called
-				this.defer(function(){
-					this._onInput(faux);
-				}); // widget notification after key has posted
-			}
-			this.own(
-				on(this.textbox, "keydown, keypress, paste, cut, input, compositionend", lang.hitch(this, handleEvent)),
-
-				// Allow keypress to bubble to this.domNode, so that TextBox.on("keypress", ...) works,
-				// but prevent it from further propagating, so that typing into a TextBox inside a Toolbar doesn't
-				// trigger the Toolbar's letter key navigation.
-				on(this.domNode, "keypress", function(e){ e.stopPropagation(); })
-			);
-		},
-
-		_blankValue: '', // if the textbox is blank, what value should be reported
-		filter: function(val){
-			// summary:
-			//		Auto-corrections (such as trimming) that are applied to textbox
-			//		value on blur or form submit.
-			// description:
-			//		For MappedTextBox subclasses, this is called twice
-			//
-			//		- once with the display value
-			//		- once the value as set/returned by set('value', ...)
-			//
-			//		and get('value'), ex: a Number for NumberTextBox.
-			//
-			//		In the latter case it does corrections like converting null to NaN.  In
-			//		the former case the NumberTextBox.filter() method calls this.inherited()
-			//		to execute standard trimming code in TextBox.filter().
-			//
-			//		TODO: break this into two methods in 2.0
-			//
-			// tags:
-			//		protected extension
-			if(val === null){
-				return this._blankValue;
-			}
-			if(typeof val != "string"){
-				return val;
-			}
-			if(this.trim){
-				val = lang.trim(val);
-			}
-			if(this.uppercase){
-				val = val.toUpperCase();
-			}
-			if(this.lowercase){
-				val = val.toLowerCase();
-			}
-			if(this.propercase){
-				val = val.replace(/[^\s]+/g, function(word){
-					return word.substring(0, 1).toUpperCase() + word.substring(1);
-				});
-			}
-			return val;
-		},
-
-		_setBlurValue: function(){
-			// Format the displayed value, for example (for NumberTextBox) convert 1.4 to 1.400,
-			// or (for CurrencyTextBox) 2.50 to $2.50
-
-			this._setValueAttr(this.get('value'), true);
-		},
-
-		_onBlur: function(e){
-			if(this.disabled){
-				return;
-			}
-			this._setBlurValue();
-			this.inherited(arguments);
-		},
-
-		_isTextSelected: function(){
-			return this.textbox.selectionStart != this.textbox.selectionEnd;
-		},
-
-		_onFocus: function(/*String*/ by){
-			if(this.disabled || this.readOnly){
-				return;
-			}
-
-			// Select all text on focus via click if nothing already selected.
-			// Since mouse-up will clear the selection, need to defer selection until after mouse-up.
-			// Don't do anything on focus by tabbing into the widget since there's no associated mouse-up event.
-			if(this.selectOnClick && by == "mouse"){
-				// Use on.once() to only select all text on first click only; otherwise users would have no way to clear
-				// the selection.
-				this._selectOnClickHandle = on.once(this.domNode, "mouseup, touchend", lang.hitch(this, function(evt){
-					// Check if the user selected some text manually (mouse-down, mouse-move, mouse-up)
-					// and if not, then select all the text
-					if(!this._isTextSelected()){
-						_TextBoxMixin.selectInputText(this.textbox);
-					}
-				}));
-				this.own(this._selectOnClickHandle);
-
-				// in case the mouseup never comes
-				this.defer(function(){
-					if(this._selectOnClickHandle){
-						this._selectOnClickHandle.remove();
-						this._selectOnClickHandle = null;
-					}
-				}, 500); // if mouseup not received soon, then treat it as some gesture
-			}
-			// call this.inherited() before refreshState(), since this.inherited() will possibly scroll the viewport
-			// (to scroll the TextBox into view), which will affect how _refreshState() positions the tooltip
-			this.inherited(arguments);
-
-			this._refreshState();
-		},
-
-		reset: function(){
-			// Overrides `dijit/_FormWidget/reset()`.
-			// Additionally resets the displayed textbox value to ''
-			this.textbox.value = '';
-			this.inherited(arguments);
-		}
-	});
-
-	if(has("dojo-bidi")){
-		_TextBoxMixin = declare("dijit.form._TextBoxMixin", _TextBoxMixin, {
-			_setValueAttr: function(){
-				this.inherited(arguments);
-				this.applyTextDir(this.focusNode);
-			},
-			_setDisplayedValueAttr: function(){
-				this.inherited(arguments);
-				this.applyTextDir(this.focusNode);
-			},
-			_onInput: function(){
-				this.applyTextDir(this.focusNode);
-				this.inherited(arguments);
-			}
-		});
-	}
-
-	_TextBoxMixin._setSelectionRange = dijit._setSelectionRange = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
-		if(element.setSelectionRange){
-			element.setSelectionRange(start, stop);
-		}
-	};
-
-	_TextBoxMixin.selectInputText = dijit.selectInputText = function(/*DomNode*/ element, /*Number?*/ start, /*Number?*/ stop){
-		// summary:
-		//		Select text in the input element argument, from start (default 0), to stop (default end).
-
-		// TODO: use functions in _editor/selection.js?
-		element = dom.byId(element);
-		if(isNaN(start)){
-			start = 0;
-		}
-		if(isNaN(stop)){
-			stop = element.value ? element.value.length : 0;
-		}
-		try{
-			element.focus();
-			_TextBoxMixin._setSelectionRange(element, start, stop);
-		}catch(e){ /* squelch random errors (esp. on IE) from unexpected focus changes or DOM nodes being hidden */
-		}
-	};
-
-	return _TextBoxMixin;
 });
 
 },
@@ -57868,7 +58529,7 @@ define([
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
-		warningContent: 'Your query returned too many results for detailed analysis.  On the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to reduce the results to a manageble set ( {{maxGenomesPerList}} Genomes or below).<br> When you are satisfied, click APPLY FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view (Protein Families - 1400, Pathways - 500).  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes.<br> When you are satisfied, click ANCHOR FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			// console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -58079,9 +58740,8 @@ define([
 			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 			var hasDisabled = false;
-
+			var disabledTabs={};
 			this.viewer.getChildren().forEach(function(child){
-				console.log("child.maxGenomeCount: ", child.maxGenomeCount, " NEW TOTAL COUNT: ", newVal);
 				if(child.maxGenomeCount && ((newVal > this.maxGenomesPerList) || (newVal > child.maxGenomeCount))){
 					// console.log("\t\tDisable Child: ", child.id);
 					hasDisabled = true;
@@ -58107,11 +58767,17 @@ define([
 			if(!this.warningPanel){
 				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
-					style: "margin:0px; padding: 0px;margin-top: -10px;",
-					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div>",
+					style: "margin:0px; padding: 0px;margin-top: -10px;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;",
+					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-times-circle-o close'></td></tr></table>",
 					region: "top",
 					layoutPriority: 3
 				});
+
+				var _self=this;
+				on(this.warningPanel, ".close:click", function(){
+					_self.removeChild(_self.warningPanel);
+				})
+
 			}
 			this.addChild(this.warningPanel);
 		},
@@ -73306,7 +73972,7 @@ define([
 					validTypes: ["*"],
 					tooltip: "View Selected Taxonomy",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["taxonomy_data"]
+					validContainerTypes: ["taxonomy_data","taxon_data"]
 				},
 				function(selection){
 					var sel = selection[0];
@@ -86987,8 +87653,24683 @@ return declare("dojo.fx.Toggler", null, {
 });
 
 },
+'p3/widget/viewer/Taxonomy':function(){
+define([
+	"dojo/_base/declare", "./_GenomeList", "dojo/on",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"../formatter", "dijit/layout/TabContainer", "../GenomeOverview",
+	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
+	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
+	"../TranscriptomicsContainer", "../Phylogeny", "../../util/PathJoin", "../DataItemFormatter",
+	"../TaxonomyTreeGridContainer", "../TaxonomyOverview", "dojo/topic", "../../util/QueryToEnglish"
+], function(declare, GenomeList, on,
+			domClass, ContentPane, domConstruct,
+			formatter, TabContainer, GenomeOverview,
+			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
+			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
+			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
+			TranscriptomicsContainer, Phylogeny, PathJoin, DataItemFormatter,
+			TaxonomyTreeGrid, TaxonomyOverview, Topic, QueryToEnglish){
+	return declare([GenomeList], {
+		params: null,
+		taxon_id: "",
+		apiServiceUrl: window.App.dataAPI,
+		taxonomy: null,
+		
+		postCreate: function(){
+			this.inherited(arguments);
+
+			this.phylogeny = new Phylogeny({
+				title: "Phylogeny",
+				id: this.viewer.id + "_" + "phylogeny",
+				state: this.state
+			});
+
+			this.taxontree = new TaxonomyTreeGrid({
+				title: "Taxonomy",
+				id: this.viewer.id + "_" + "taxontree",
+				state: this.state
+				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
+			});
+			this.viewer.addChild(this.phylogeny, 1);
+			this.viewer.addChild(this.taxontree, 2);
+			domConstruct.empty(this.queryNode);
+
+			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
+		},
+
+		_setTaxon_idAttr: function(id){
+			// console.log("*** SET TAXON ID ", id);
+			this.taxon_id = id;
+
+			var state = this.state || {};
+
+			state.taxon_id = id;
+
+			// if (id && this.taxontree){
+			// 	console.log("set taxontree query: ", "eq(taxon_id," + id + ")");
+			// 	this.taxontree.set('query',"eq(taxon_id," + id + ")")
+			// }
+
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", id), {
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(taxonomy){
+				this.set("taxonomy", taxonomy);
+			}));
+
+		},
+
+		onSetTaxonomy: function(attr, oldVal, taxonomy){
+			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
+
+			this.overview.set('taxonomy', taxonomy);
+		},
+		onSetQuery: function(attr, oldVal, newVal){
+			//prevent default action
+		},
+		onSetState: function(attr, oldVal, state){
+			console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
+			if(!state){
+				throw Error("No State Set");
+				// return;
+			}
+
+			var parts = state.pathname.split("/");
+
+			this.set("taxon_id", parts[parts.length - 1]);
+			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
+
+			if(state.search){
+				console.log("GENERATE ENGLISH QUERY for ", state.search);
+				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
+				state.search = s + "&" + state.search;
+
+			}else{
+				state.search = s;
+				this.filteredTaxon = false;
+			}
+			//console.log("GenomeList onSetState()");
+			this.inherited(arguments);
+			// this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			// var activeTab = this[active];
+			// switch(active){
+			// 	case "genomes":
+			// 		activeTab.set("state", lang.mixin({}, this.state, {search: "eq(taxon_lineage_ids," + this.taxon_id + ")"}));
+			// 		break;
+			// }
+		},
+
+		setActivePanelState: function(){
+
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			// console.log("Active: ", active, "state: ", this.state);
+
+			var activeTab = this[active];
+
+			if(!activeTab){
+				console.log("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
+			switch(active){
+				case "taxontree":
+					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")"}));
+					break;
+				case "phylogeny":
+				case "genomes":
+					// console.log("setting ", active, " state: ", this.state);
+					activeTab.set("state", this.state);
+					break;
+				case "proteinFamilies":
+					// console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}));
+					break;
+				default:
+					var activeQueryState;
+					if(this.state && this.state.genome_ids){
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+					}
+
+					if(activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
+					break;
+			}
+			// console.log("Set Active State COMPLETE");
+		},
+
+		buildHeaderContent: function(taxon){
+			var taxon_lineage_names = taxon.lineage_names.slice(1);
+			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
+			var out = taxon_lineage_names.map(function(id, idx){
+				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+			});
+			// console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
+
+			if(this.filteredTaxon){
+				out.push(this.filteredTaxon);
+			}
+
+			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
+		},
+
+		createOverviewPanel: function(){
+			return new TaxonomyOverview({
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview"
+			});
+		},
+
+		onSetAnchor: function(evt){
+			console.log("onSetAnchor: ", evt, evt.filter);
+			evt.stopPropagation();
+			evt.preventDefault();
+			var f = evt.filter;
+			var parts = [];
+
+			// if(this.query){
+			// 	var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+			// 	if(q != "keyword(*)"){
+			// 		parts.push(q)
+			// 	}
+			// }
+
+			if(evt.filter && evt.filter != "false"){
+				parts.push(evt.filter)
+			}
+
+			// console.log("parts: ", parts);
+
+			if(parts.length > 1){
+				q = "?and(" + parts.join(",") + ")"
+			}else if(parts.length == 1){
+				q = "?" + parts[0]
+			}else{
+				q = "";
+			}
+
+			// console.log("SetAnchor to: ", q, "Current View: ", this.state.hashParams);
+			var hp;
+
+			if(this.state.hashParams && this.state.hashParams.view_tab){
+				hp = {view_tab: this.state.hashParams.view_tab}
+			}else{
+				hp = {}
+			}
+
+			hp.filter = "false";
+
+			// console.log("HP: ", JSON.stringify(hp));
+			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
+					return key + "=" + hp[key]
+				}, this).join("&");
+
+			console.log(" NavigateTo: ", l);
+			Topic.publish("/navigate", {href: l});
+		}
+	});
+});
+
+},
+'p3/widget/Phylogeny':function(){
+define([
+	"dojo/_base/declare", "phyloview/PhyloTree", "phyloview/TreeNavSVG",
+	"dijit/_WidgetBase", "dojo/request", "dojo/dom-construct", "dojo/_base/lang",
+	"dojo/dom-geometry", "dojo/dom-style", "d3/d3", "../util/PathJoin",
+	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/MenuItem"
+], function(declare, PhyloTree, TreeNavSVG,
+			WidgetBase, request, domConstruct,
+			lang, domGeometry, domStyle, d3, PathJoin,
+			DropDownButton, DropDownMenu, MenuItem){
+
+	return declare([WidgetBase], {
+		"baseClass": "Phylogeny",
+		type: "rectangular",
+		state: null,
+		taxon_id: null,
+		newick: null,
+		jsonTree: null,
+		tree: null,
+		apiServer: window.App.dataAPI,
+		phylogram: false,
+
+		postCreate: function(){
+			this.containerNode = this.canvasNode = domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
+			var menuDiv = domConstruct.create("div", {}, this.containerNode);
+			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
+			var typeMenu = new DropDownMenu({style: "display: none;"});
+			typeMenu.addChild(new MenuItem({
+				label: "phylogram", onClick: lang.hitch(this, function(){
+					this.setTreeType("phylogram")
+				})
+			}));
+			typeMenu.addChild(new MenuItem({
+				label: "cladogram", onClick: lang.hitch(this, function(){
+					this.setTreeType("cladogram")
+				})
+			}));
+			typeMenu.startup();
+			this.typeButton = new DropDownButton({
+				name: "typeButton",
+				label: this.phylogram ? "phylogram" : "cladogram",
+				dropDown: typeMenu
+			}, typeMenuDom);
+			this.typeButton.startup();
+			//this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
+			//this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
+			//this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
+			//this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
+			this.treeDiv = domConstruct.create("div", {id: this.id + "tree-container"}, this.containerNode);
+			this.watch("state", lang.hitch(this, "onSetState"));
+			this.watch("taxon_id", lang.hitch(this, "onSetTaxonId"))
+			this.watch("newick", lang.hitch(this, "processTree"))
+
+		},
+
+		onSetState: function(attr, oldVal, state){
+			console.log("Phylogeny onSetState: ", state);
+			if(!state){
+				return;
+			}
+
+			if(state.taxon_id){
+				this.set('taxon_id', state.taxon_id)
+			}else if(state.genome){
+				this.set("taxon_id", state.genome.taxon_id);
+			}else if(state.taxonomy){
+				this.set("taxon_id", state.taxonomy.taxon_id);
+			}
+		},
+
+		onSetTaxonId: function(attr, oldVal, taxonId){
+			console.log("taxonId: ", taxonId);
+
+			request.get(PathJoin(this.apiServer, "taxonomy", taxonId), {
+				headers: {accept: "application/newick"}
+			}).then(lang.hitch(this, function(newick){
+				console.log("Set Newick");
+				if(!newick){
+					console.log("No Newick in Request Response");
+					return;
+				}
+				this.set('newick', newick);
+			}), function(err){
+				console.log("Error Retreiving newick for Taxon: ", err)
+			});
+		},
+
+		processTree: function(){
+			if(!this.newick){
+				console.log("No Newick File To Render")
+				return;
+			}
+			if(!this.tree){
+				this.tree = new TreeNavSVG();
+				this.tree.d3Tree("#" + this.id + "tree-container", {
+					phylogram: this.phylogram,
+					fontSize: 10,
+					colorGenus: true
+				});
+			}
+
+			this.tree.setTree(this.newick);
+		},
+
+		setTreeType: function(treeType){
+			if(this.phylogram && treeType == "cladogram"){
+				this.togglePhylo();
+			}
+			else if((!this.phylogram) && treeType == "phylogram"){
+				this.togglePhylo();
+			}
+		},
+
+		togglePhylo: function(){
+			this.phylogram = !this.phylogram;
+			this.tree.setPhylogram(this.phylogram);
+			this.typeButton.set("label", this.phylogram ? "phylogram" : "cladogram");
+		},
+
+		updateTree: function(){
+			if(!this.tree){
+				console.log("No tree to update")
+				return;
+			}
+			//this.tree.update();
+		},
+
+		renderTree: function(){
+			if(!this.newick){
+				console.log("No Newick File To Render")
+				return;
+			}
+			console.log("D3: ", d3);
+		},
+
+		onFirstView: function(){
+			this.updateTree();
+		},
+		resize: function(changeSize, resultSize){
+			var node = this.domNode;
+
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+
+				domGeometry.setMarginBox(node, changeSize);
+			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+			if(this.debounceTimer){
+				clearTimeout(this.debounceTimer);
+			}
+			this.debounceTimer = setTimeout(lang.hitch(this, function(){
+				this.updateTree();
+			}), 250);
+
+		}
+
+	});
+});
+
+},
+'phyloview/PhyloTree':function(){
+// wrapped by build app
+define(["dojo","dijit","dojox"], function(dojo,dijit,dojox){
+window.PhyloTree = {
+
+    PhyloTree: function(treeString) {
+        //console.log("new PhyloTree for: " + treeString);
+        var leafCount = 0;
+        var jsonTree;
+        if(treeString[0] == "(" ){
+            console.log("tree looks like newick");
+            jsonTree = newickToJSON(treeString);
+        } else {
+            jsonTree = eval("("+treeString+")");
+            finalizeTree(jsonTree);
+        }
+
+        this.getJSONTree = function() {
+            return jsonTree;
+        }
+
+        this.getLeafCount = function() {
+            return leafCount;
+        }
+
+        this.getTipCount = function() {
+
+        }
+
+        this.getTipLabels = function() {
+            var tipLabels = new Array();
+            visit(this.getJSONTree(), function(node) { 
+                if(!node.c || node.c.length == 0) {
+                    tipLabels.push(node.n);
+                }
+            });
+            return tipLabels;
+        }
+
+        function visit(parent, visitFn, childrenFn) {
+            if (!parent) return;
+  
+            visitFn(parent);
+ 
+            var children = childrenFn ? childrenFn(parent) : parent.c;
+            if (children) {
+                var count = children.length;
+                for (var i = 0; i < count; i++) {
+                    visit(children[i], visitFn, childrenFn);
+                }
+            }
+        }
+
+        function newickToJSON_biojs (s) {
+            var ancestors = [];
+            var tree = {};
+            var tokens = s.split(/\s*(;|\(|\)|,|:)\s*/);
+            for (var i=0; i<tokens.length; i++) {
+                var token = tokens[i];
+                switch (token) {
+                    case '(': // new children
+                        var subtree = {};
+                        tree.c = [subtree];
+                        ancestors.push(tree);
+                        tree = subtree;
+                        break;
+                    case ',': // another branch
+                        var subtree = {};
+                        ancestors[ancestors.length-1].c.push(subtree);
+                        tree = subtree;
+                        break;
+                    case ')': // optional name next
+                        tree = ancestors.pop();
+                        break;
+                    case ':': // optional length next
+                        break;
+                    default:
+                        var x = tokens[i-1];
+                        if (x == ')' || x == '(' || x == ',') {
+                            tree.s = parseInt(token);
+                        } else if (x == ':') {
+                            tree.l = parseFloat(token);
+                        }
+                }
+            }
+            finalizeTree(tree);
+            return tree;
+        }
+
+        function newickToJSON(nwk) {
+            var commaProtect = "&&";
+            nwk=nwk.trim();
+            if(nwk.substr(-1) != ";"){
+                nwk=nwk+";";
+            }
+            nwk = nwk.replace(/;/, "}")
+                .replace(/\=/g,"")
+                .replace(/\'/g,"")
+                .replace(/\#/g,"")
+                .replace(/\)$/g, "}]}")
+                .replace(/,([\w+\|\.\/-]+)/g, ",\"n\":\"$1\"")
+                .replace(/\(([\w+\|\.\/-]+)/g, "\(\"n\":\"$1\"")
+                .replace(/^\(/, "{\"c\":[{")
+                .replace(/:([-+]?[0-9]*\.?[0-9]+)/g, commaProtect + "\"l\":$1")
+                .replace(/\)(\d*)/g, ")" + commaProtect + "\"s\":$1")
+                .replace(/&&\"s\":&&/g, "&&\"s\":0&&")
+                .replace(/\(/g, "\"c\":[{")
+                .replace(/\)/g, "}]")
+                .replace(/,/g, "},{")
+                .replace(/\"s\":\}/,"\"s\":0}")
+                .replace(/&&/g, ",");
+    //            .replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"");
+            console.log("tree json string: " + nwk);
+            var r = JSON.parse(nwk);
+            r.labels=[{}]; //list of objects that map node id to label
+            finalizeTree(r);
+            return r;
+        }
+
+        function setInternalNodeYs(node) {
+            var r = 0;
+            if(node.c) {
+                var childYSum = 0;
+                node.c.forEach(function(child){
+                    childYSum += setInternalNodeYs(child)
+                });
+                r = childYSum / node.c.length;
+                node.py = r;
+            } else {
+                r = node.py;
+            }
+
+            return r;
+        }
+
+        function setNodeMaxStepsToTip(node) {
+            var r = 0;
+            if(node.c) {
+                var maxChildSteps = 0;
+                node.c.forEach(function(child){
+                    maxChildSteps = Math.max(maxChildSteps, setNodeMaxStepsToTip(child));
+                });
+                r = maxChildSteps +1;
+                node.cx = r;
+            } else {
+                r = 0;
+                node.cx = 0;
+            }
+
+            return r;
+        }
+
+        function countNodeDescendants(node) {
+            var r = 0;
+            if(node.c) {
+                node.c.forEach(function(child){
+                    r += countNodeDescendants(child)
+                });
+                node.d = r;
+            } else {
+                r = 1;
+                node.d = 0;
+            }
+
+            return r;
+        }
+
+        function finalizeTree(tree){
+            var tipIndex = 0;
+            countNodeDescendants(tree);
+            var nodeId = 0;
+            tree.px = 0;
+            visit(tree,                                                                                               
+                function(node){
+                    var tmp_label=[];
+                    if(!node.c && node.n) {
+                        //try to parse out the genus and species name
+                        node.id = node.n;
+                        node.n = node.n.replace(/_/g, " ");
+                        var fields = node.n.split(" ");
+                        var genusIndex = 0;
+                        if(fields[0] == "Candidatus") {
+                            genusIndex++;
+                            node.prefix = fields[0];
+                        }
+                        node.genus = fields[genusIndex];
+                        var species = fields[genusIndex+1];
+                        node.species = species ? species : "";
+                        for(var i = 2; genusIndex+i < fields.length; i++) {
+                            species = species + " " + fields[genusIndex+i]
+                        }
+                        node.species_strain = species ? species: "";
+                        tmp_label.push(node.genus);
+                        tmp_label.push(node.species_strain);
+                    } else {
+                        node.id="inode"+nodeId;
+                        node.n = ""+nodeId;
+                    }
+                    if(node.c) {
+                        node.c.forEach(function(child){
+                            child.parent = node;
+                            if(child.l) {
+                                child.px = node.px + child.l;
+                            }
+                        });
+
+                        node.c.sort(function(a,b){
+                            return b.d - a.d;
+                        });                        
+                    } else {
+                        node.label = tmp_label.join(" ");
+                        tree.labels[0][node.id]=node.label;
+                        leafCount++;
+                        node.ti = tipIndex++;
+                        node.py = node.ti;
+                    }
+                    nodeId++;
+                },
+
+                function(node){
+                    var r = node.c ? node.c : null;
+                    return r;
+                 });
+            setInternalNodeYs(tree);
+            setNodeMaxStepsToTip(tree);
+        }
+
+    }
+
+
+}
+
+
+});
+
+},
+'phyloview/TreeNavSVG':function(){
+
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase",
+	"dojo/dom-construct","dojo/_base/lang", "dojo/request","dojo/dom-style", "./PhyloTree" 
+],function(
+	declare,WidgetBase,
+	domConstruct,lang,request,domStyle,PhyloParse
+){
+
+    return declare([WidgetBase], {
+    options: null,
+    totalNodes : 0,
+    maxLabelLength : 0,
+    maxNodeDistanceToRoot : 0,
+    maxNodeDepth : 0,
+    leafCount : 0,
+    heightPerLeaf :  null,
+    topMargin : 20,
+    colorSpecies : null,
+    colorGenus : null,
+    tipLinkPrefix : "http://www.google.com/search?q:",
+    tipLinkSuffix : "",
+    fontWidthForMargin : null,
+    selectionTarget: null,
+    containerName: null,
+    tipToColors  : null,
+    treeData : null,
+    labelIndex: 0,
+    labelLabels: {"PATRIC ID":0},
+    tree : null,
+    selected: [],
+    svgContainer : null, 
+    visit: function(parent, visitFn, childrenFn)
+    {
+        if (!parent) return;
+
+        visitFn(parent);
+
+        var children = childrenFn ? childrenFn(parent) : parent.children;
+        if (children) {
+            var count = children.length;
+            for (var i = 0; i < count; i++) {
+                this.visit(children[i], visitFn, childrenFn);
+            }
+        }
+    },
+
+    startup: function(){
+        if(this._started){
+            return;
+        }
+
+        this.watch("labelIndex", lang.hitch(this, "update"));
+
+        this.inherited(arguments);
+    },
+
+
+    d3Tree: function(containerName, customOptions)
+{
+    this.options= {iNodeRadius: 3, tipNodeRadius: 3, fontSize: 12, phylogram:true, supportCutoff:100};
+    // build the options object
+    this.options = dojo.mixin(this.options, customOptions);
+    this.heightPerLeaf = this.options.fontSize + 2;
+    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 9),
+    this.colorSpecies = customOptions.colorSpecies;
+    this.colorGenus = customOptions.colorGenus;
+    this.containerName=containerName;
+
+    // Calculate total nodes, max label length
+
+    console.log(this.options);
+    console.log(this.colorSpecies + ", " + this.colorGenus);
+    // size of the diagram
+    var canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
+    var size = { width:dojo.position(dojo.query(containerName)[0]).w, height: canvasHeight};
+    
+    },
+    setTree : function(treeString) {
+        _self=this;
+        phylotree = new PhyloTree.PhyloTree(treeString);
+        this.treeData = phylotree.getJSONTree();
+
+        this.leafCount = phylotree.getLeafCount();
+        this.maxNodeDepth = this.treeData.cx;
+        this.visit(this.treeData, function(d)
+        {
+            _self.totalNodes++;
+            if(d.n) {
+                _self.maxLabelLength = Math.max(d.n.length, _self.maxLabelLength);
+            }
+            var toRoot = d.px ? d.px : 0;
+            _self.maxNodeDistanceToRoot = Math.max(toRoot, _self.maxNodeDistanceToRoot);
+        }, function(d)
+        {
+            return d.c && d.c.length > 0 ? d.c : null;
+        });
+        canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
+        size = { width:dojo.position(dojo.query(this.containerName)[0]).w, height: canvasHeight};
+
+        this.tree = d3.layout.tree()
+            .sort(null)
+            .size([size.height, size.width - this.maxLabelLength*this.fontWidthForMargin])
+            .children(function(d)
+            {
+                return (!d.c || d.c.length === 0) ? null : d.c;
+            });
+
+        this.tipToColors  = this.getTipColors(this.colorGenus, this.colorSpecies);
+
+    /*
+        <svg>
+            <g class="container" />
+        </svg>
+     */
+        this.svgContainer = d3.select(this.containerName)
+        .html("")
+        .append("svg:svg").attr("width", size.width).attr("height", size.height)
+        .append("svg:g")
+        .attr("class", "container")
+        .attr("transform", "translate(" + this.maxLabelLength + ",0)")
+        ;
+
+        this.init();
+        this.update();
+    },
+
+    addLabels: function(labelMap, labelAlias){ //object map for IDs to labels and a category name for the label
+        this.labelLabels[labelAlias]=this.treeData.labels.length;
+        this.treeData.labels.push(labelMap);
+    },
+
+    selectLabels: function(labelAlias){
+        if (labelAlias in this.labelLabels){
+            var labelIndex = this.labelLabels[labelAlias];
+            this.maxLabelLength = 10;
+            Object.keys(this.treeData.labels[labelIndex]).forEach(lang.hitch(this, function(leafID){
+                this.maxLabelLength = Math.max(this.treeData.labels[labelIndex][leafID].length, this.maxLabelLength);
+            }));
+            this.set('labelIndex', labelIndex);
+        }
+    },
+
+
+    getDataURL : function() {
+        var svgs = d3.select("svg")
+            .attr("version", 1.1)
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .node().parentNode.innerHTML;
+        return svgs;
+    },
+
+    setPhylogram : function(p) {
+        this.options.phylogram = p;
+        this.update();
+    },
+
+    setSupportValueCutoff : function(sv) {
+        this.options.supportCutoff = sv;
+        this.update();
+    },
+
+    getSelectedItems : function() {
+            this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
+            if(d.selected && !d.c) {
+                this.selected.push(d);
+            }
+        }));
+        if (this.selectionTarget != null){
+            this.selectionTarget.set("selection",this.selected);
+        }
+    },
+
+    clearSelections : function() {
+        this.tree.nodes(this.treeData).forEach(function(d){
+            d.selected = false;
+        });
+        this.selected = [];
+    },
+
+    startingBranch : function(d){
+        var source = d.source;;
+        var target = d.target;
+
+        var r = "M0," + source.x
+               + "C0," + target.x 
+               + ",0," + target.x 
+               + ",0," + target.x;
+        return r;
+    },
+
+    curvedBranch : function (d){
+        var source = d.source;;
+        var target = d.target;
+        var r = "M" + source.y + "," + source.x
+               + "L" + source.y + "," + target.x 
+               + "," + source.y + "," + target.x 
+               + "," + target.y + "," + target.x;
+        return r;
+    },
+
+    squareBranch : function (d){
+        var source = d.source;
+        var target = d.target;
+        var r = "M" + source.y + "," + source.x
+               + "L" + source.y + "," + target.x 
+               + "," + source.y + "," + target.x 
+               + "," + target.y + "," + target.x;
+        return r;
+    },
+
+    branch : function(d){
+        return _self.squareBranch(d);
+    },
+
+    getDescendants: function(d) {
+        var descendants = new Array();
+        if(d.c) {
+            for(var i = d.c.length-1; i >=0; i--) {
+                getDescendants(d.c[i]).forEach(function(d){descendants.push(d);});;
+            }
+        } else {
+            descendants.push(d);
+        }
+        return descendants;
+    },
+
+    hover: function(d) {
+        d = d.target ? d.target : d;
+        _self.visit(d, function(d){
+            d.hover = true;
+        });
+
+        _self.update();
+    },
+
+    mouseout: function (d) {
+        d = d.target ? d.target : d;
+        _self.visit(d, function(d){
+            d.hover = false;
+        });
+        _self.update();
+    },
+
+    click: function(d) {
+        if(!d.n) {
+            //click was on a branch, not a node, so get the target node for the branch and
+            //treat it as though that node was clicked
+            d = d.target;
+        }
+        var toggleTo = !d.selected;
+        var mouseEvent = d3.event;
+        var keepSelections = mouseEvent.ctrlKey || mouseEvent.metaKey;
+        if(!keepSelections) {
+            _self.clearSelections();
+        }
+        _self.visit(d, function(d){
+            d.selected = toggleTo;
+        });
+        x = _self.getSelectedItems();
+        _self.update();
+    },
+
+    update: function() {
+        _self=this;
+       //console.log("update()");
+        var nodes = this.tree.nodes(this.treeData);
+        var links = this.tree.links(nodes);
+        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
+ 
+        //adjust y values (because x and y are reversed) for nodes based on the branch lengths
+        for(var i = nodes.length-1; i >=0; i--) {
+            var d = nodes[i];
+            var toRoot = d.px ? d.px : 0;
+            //console.log("toRoot: " + toRoot);
+            if(this.options.phylogram) {
+                d.y = treeWidth * toRoot / this.maxNodeDistanceToRoot; //for phylogram
+            } else {
+                d.y = treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth; //for cladogram
+            }
+            d.x = d.py*this.heightPerLeaf + this.topMargin;
+        }
+
+    var nodeGroup = this.svgContainer.selectAll("g.node");
+    nodeGroup.selectAll("text").remove();
+    var anchors = nodeGroup.append("svg:text")
+        .attr("width", function(d){
+            var r = d.n.length * _self.options.fontSize + 10;
+            return r;
+        })
+        .attr("height", _self.heightPerLeaf*2)
+        .attr("x", function(d)
+        {
+            var r = 4 * _self.options.tipNodeRadius;
+            if(d.c && d.c.length > 0) {
+                r = -4 * _self.options.iNodeRadius;;
+            }
+            r = 5;
+            return r;
+        })
+        .attr("y", function(d)
+        {
+            var r = 10;
+            if(d.c && d.children.length > 0) {
+                r= -2;
+            }
+            r = 0;
+            r = +(_self.heightPerLeaf/4);
+            return r;
+        });
+    if(_self.createLinks){
+        anchors.append("svg:a")
+        .attr("xlink:href", function(d){
+            var r = "";
+            if(!d.c || d.children.length == 0) {
+                r = _self.tipLinkPrefix + d.n + _self.tipLinkSuffix;
+            }
+            return r;
+        });
+    }
+
+    var fullLabels = anchors
+        .append("svg:tspan")
+        .style("opacity", "1")
+        .attr("class", function(d){
+            var r = "fl";//full label
+            if(d.selected) {
+                r += " selected";
+                if(!d.prevSelected) {
+                    r += " ns"; //new selection
+                }
+            } else {
+                if(d.prevSelected) {
+                    r += " ds"; //de-selected
+                }
+            }
+            return r;
+        })
+        ;
+
+    fullLabels
+        .append("svg:tspan")
+        .text(function(d){
+            var r = "";
+            if((!d.c || d.c.length == 0) &&d.selected) {
+                r = "\u2713";
+            } 
+            return r;
+        })
+        .attr("class", function(d){
+            var r = "ch";
+            if(d.selected) {
+                r += " selected";
+            }
+            return r;
+        })
+        ;
+
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var prefixColor = "#000000";
+            return prefixColor;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.prefix) {
+                r += d.prefix + " ";
+            }
+        })
+        ;
+
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var r = "";
+            var colorKey = d.genus + " " + d.species;
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][0];
+            }            
+            return r;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.id && _self.treeData.labels.length && d.id in _self.treeData.labels[_self.labelIndex]){
+                r = _self.treeData.labels[_self.labelIndex][d.id];
+            }
+            else if(d.label) {
+                r = d.label
+            }
+            return r;
+        })
+        .attr("id", function(d){
+            var r = "";
+            if(d.id){
+                r = d.id;
+            }
+            return r;
+        })
+        ;
+
+
+        nodeGroup
+            .transition()
+            .duration(1200)
+            .attr("transform", function(d)
+            {
+                return "translate(" + d.y + "," + d.x + ")";
+            })
+            ;
+
+        this.svgContainer.selectAll("path.link")
+            .transition()
+            .duration(1200)
+            .attr("d", _self.branch)
+            .attr("class", function(d){
+                var r = "link";
+                if(d.target.selected) {
+                    r += " selected";
+                }
+                if(d.hover || d.target.hover) {
+                    r += " hover";
+                }
+                return r;
+            })
+            ;
+
+
+    //add support value labels
+    nodeGroup.append("svg:text")
+        .attr("class", function(d)
+        {
+            var r = "";
+            if(d.c && d.c.length > 0) {
+                 r="support_label";
+            }
+            return r;
+        })
+        .attr("text-anchor", function(d)
+        {
+            var r = d.c ? "end" : "start";
+            return r;
+        })
+        .attr("dx", function(d)
+        {
+            var r = 4 * _self.options.tipNodeRadius;
+            if(d.c && d.c.length > 0) {
+                r = -4 * _self.options.iNodeRadius;
+            }
+            return r;
+        })
+        .attr("dy", function(d)
+        {
+            var r = 3;
+            if(d.c && d.c.length > 0) {
+                r= -2;
+            } 
+            return r;
+        })
+        .text(function(d)
+        {
+            var r = "";
+            if(d.c && d.c.length > 0) {
+                r = "";
+                if(d.s && d.s < _self.options.supportCutoff) {
+                    r = d.s;
+                }
+            }
+            return r;
+        });
+
+
+        for(var i = nodes.length; i >= 0; --i) {
+            if(nodes[i]) {
+                nodes[i].prevSelected = nodes[i].selected; 
+            }
+        }
+    },
+
+
+    init: function() {
+        _self=this;
+        //console.log("init()");
+        var nodes = this.tree.nodes(this.treeData);
+        var links = this.tree.links(nodes);
+
+        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
+
+    //adjust y values (because x and y are reversed) for nodes based on the branch lengths
+    for(var i = nodes.length-1; i >=0; i--) {
+        var d = nodes[i];
+        var toRoot = d.px ? d.px : 0;
+        if(this.options.phylogram) {
+            d.y = treeWidth * toRoot / this.maxNodeDistanceToRoot; //for phylogram
+        } else {
+            d.y = treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth; //for cladogram
+            //console.log("cladogram d.cx: " + d.cx + " d.y: " + d.y);
+        }
+
+        d.x = d.py*this.heightPerLeaf + this.topMargin;
+        //console.log("d.x: " + d.x + " d.y: " + d.y);
+    }
+
+    var pathLinks = this.svgContainer.selectAll("path.link")
+        .data(links)
+        .enter();
+
+    pathLinks.append("svg:path")
+        .attr("class", function(d){
+            var r = "link";
+            if(d.target.selected) {
+                r = "link selected";
+            }
+            return r;
+        })
+        .style("stroke-width", "10")
+        .style("stroke", "white")
+        .style("opacity", "0.1")
+        .on("click", this.click)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
+        .attr("d", this.startingBranch)
+        ;
+
+    pathLinks.append("svg:path")
+        .attr("class", function(d){
+            var r = "link";
+            if(d.target.selected) {
+                r = "link selected";
+            }
+            return r;
+        })
+        .style("stroke-linejoin", "round")
+        .on("click", this.click)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
+        .attr("d", this.startingBranch)
+        ;
+
+    /*
+        Nodes as
+        <g class="node">
+            <circle class="node-dot" />
+            <text />
+        </g>
+     */
+    var nodeGroup = this.svgContainer.selectAll("g.node")
+        .data(nodes)
+        .enter()
+        .append("svg:g")
+        .attr("class", function(d){
+            var r = "node";
+            if(d.selected) {
+                r = r + " selected";
+            }
+            if(d.c && d.c.length == 0) {
+                r = r + " leaf";
+            }
+            return r;
+        })
+        .attr("transform", function(d)
+        {
+            //return "translate(" + d.y + "," + d.x + ")";
+            return "translate(" + 0 + "," + d.x + ")";
+        })
+        .on("click", this.click);
+
+    nodeGroup.append("svg:circle")
+        .attr("class", function(d)
+        {
+             var r = "tip-dot"
+            if(d.c && d.c.length > 0) {
+                r = "inode-dot";
+            }
+            if(d.selected) {
+                r = r + " selected";
+            } 
+            return r;
+        })
+        .attr("r", function(d)
+        {
+            var r = _self.options.tipNodeRadius;
+            if(d.c && d.c.length > 0) {
+                r = _self.options.iNodeRadius;;
+            }
+            return r;
+        },_self)
+        .on("mouseover", this.hover)
+        .on("mouseout", this.mouseout)
+        ;
+
+    var anchors = nodeGroup.append("svg:text")
+        .attr("width", function(d){
+            var r = d.n.length * _self.options.fontSize + 10;
+            return r;
+        })
+        .attr("height", this.heightPerLeaf*2)
+        .attr("x", function(d)
+        {
+            var r = 4 * _self.options.tipNodeRadius;
+            if(d.c && d.c.length > 0) {
+                r = -4 * _self.options.iNodeRadius;;
+            }
+            r = 5;
+            return r;
+        })
+        .attr("y", function(d)
+        {
+            var r = 10;
+            if(d.c && d.c.length > 0) {
+                r= -2;
+            }
+            r = 0;
+            r = +(_self.heightPerLeaf/4);
+            return r;
+        })
+        .append("svg:a")
+        .attr("xlink:href", function(d){
+            var r = "";
+            if(!d.c || d.c.length == 0) {
+                r = _self.tipLinkPrefix + d.n + _self.tipLinkSuffix + "'>";
+            }
+            return r;
+        });
+
+    var fullLabels = anchors
+        .append("svg:tspan")
+        .text(function(d) {
+            var r = "";
+            if(!d.c || d.c.length == 0)
+            {
+                if(d.selected) {
+                    r += "&#10003 ";
+                }
+            }
+            return r;
+        })
+        .attr("class", function(d){
+            var r = "";
+            if(d.selected) {
+                r = "selected";
+            }
+        })
+    ;
+
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var prefixColor = "#000000";
+            return prefixColor;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.prefix) {
+                r += d.prefix + " ";
+            }
+            return r;
+        })
+        ;
+
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var r = "";
+            var colorKey = d.genus + " " + d.species;
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][0];
+            }            
+            return r;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.genus) {
+                r = d.genus + " ";
+            }
+            return r;
+        })
+        ;
+
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var r = "";
+            var colorKey = d.genus + " " + d.species;
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][1];
+            }
+            return r;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.species_strain) {
+                r = d.species_strain;
+            }
+            return r;
+        })
+        ;
+
+    //add support value labels
+    nodeGroup.append("svg:text")
+        .attr("class", function(d)
+        {
+            var r = "";
+            if(d.c && d.c.length > 0) {
+                 r="support_label";
+            }
+            return r;
+        })
+        .attr("text-anchor", function(d)
+        {
+            var r = d.c ? "end" : "start";
+            return r;
+        })
+        .attr("dx", function(d)
+        {
+            var r = 4 * _self.options.tipNodeRadius;
+            if(d.c && d.c.length > 0) {
+                r = -4 * _self.options.iNodeRadius;
+            }
+            return r;
+        })
+        .attr("dy", function(d)
+        {
+            var r = 3;
+            if(d.c && d.c.length > 0) {
+                r= -2;
+            }
+            return r;
+        })
+        .text(function(d)
+        {
+            var r = "";
+            if(d.c && d.c.length > 0) {
+                r = "";
+                if(d.s && d.s < _self.options.supportCutoff) {
+                    r = d.s;
+                }
+            }
+            return r;
+        });
+
+
+    },
+    getRGBRainbow: function(n, offset) {
+                var r;
+                var rainbowLength;
+                var fullRainbow = new Array();
+                fullRainbow[0] = [255,0,0];   
+                fullRainbow[1] = [255,51,0];
+                fullRainbow[2] = [255,102,0];
+                fullRainbow[3] = [255,153,0];
+                fullRainbow[4] = [0,150,0];  
+                fullRainbow[5] = [0,100,100];
+                fullRainbow[6] = [0,255,102];
+                fullRainbow[7] = [0,255,153];
+                fullRainbow[8] = [0,153,255];
+                fullRainbow[9] = [1,102,255];
+                fullRainbow[10] = [0,51,255];
+                fullRainbow[11] = [0,0,255]; 
+                fullRainbow[12] = [51,0,255];
+                fullRainbow[13] = [102,0,255];
+                fullRainbow[14] = [153,0,255];
+                fullRainbow[15] = [204,0,255];
+                fullRainbow[16] = [210,0,210];
+                fullRainbow[17] = [255,0,204];
+                fullRainbow[18] = [255,0,153];
+                fullRainbow[19] = [255,0,102];
+                fullRainbow[20] = [255,0,51]; 
+                
+                rainbowLength = fullRainbow.length;
+                var spacing = Math.floor(rainbowLength / (n));
+                spacing = Math.max(spacing, 1);
+                var subRainbow = new Array();  
+                for(var i = 0; i < n; i++) { 
+                        var index = spacing * i;
+                        index = (index + offset) % rainbowLength;
+                        subRainbow[i] = fullRainbow[index];
+                }
+                 
+                //populate return array with non-adjacent entries from subRainbow
+                r = new Array();
+                var subLength = subRainbow.length;
+                var desiredDistance = Math.ceil(subLength/3);
+                var indexUsed = new Array();  
+                var index = 0;
+                for(var i = 0; i < subLength; i++) {
+                        while(indexUsed[index]) {
+                                index++;
+                        }
+                        r[i] = subRainbow[index];
+                        indexUsed[index] = true;
+                        index = (index + desiredDistance) % subLength;
+                }
+                
+                return r;
+        },
+
+        getGenusSpeciesSets: function(minToInclude) {
+                var genusSets = new Array();
+                var genusToSpecies = new Array();
+                var genusToSpeciesSeen = new Array();
+                var speciesSets = new Array();
+                var uniqueList = new Array();
+                              
+                var tipList = phylotree.getTipLabels();
+                        //console.log("tips: " + tipList.length);
+	                for(var i = tipList.length-1; i >=0; i--) {
+                        var genusIndex = 0;
+                        //tipList[i] = tipList[i].replace(/_/g, " ");
+                        //console.log(tipList[i]);
+                        var fields = tipList[i].split(" "); 
+                        if(fields[0] == "Candidatus") {
+                            genusIndex++;
+                        }
+                        var genus = fields[genusIndex];
+                        var species = genus;
+                        if(fields.length > 1) {  
+                                species = fields[genusIndex]+" "+fields[genusIndex+1];
+                        }
+                         
+                        if(genusSets[genus] == undefined) {
+                                uniqueList.push(genus);
+                                genusSets[genus] = new Array();
+                                genusSets[genus].push(tipList[i]);
+                                genusToSpecies[genus] = new Array();
+                                genusToSpeciesSeen[genus] = new Array();
+                                genusToSpecies[genus].push(species);
+                                genusToSpeciesSeen[genus][species] = 1;
+                        } else {
+                                genusSets[genus].push(tipList[i]);
+                                if(genusToSpeciesSeen[genus][species] == undefined) {
+                                        genusToSpecies[genus].push(species);
+                                        genusToSpeciesSeen[genus][species] = 1;
+                                } else {
+                                        genusToSpeciesSeen[genus][species]++;
+                                }
+                        }
+                }
+                
+                //sort genera by occurrence
+                function sortGeneraFunc(a, b) {
+                        var r = genusSets[b].length - genusSets[a].length;
+                        return r;
+                }
+                uniqueList = uniqueList.sort(sortGeneraFunc);
+                
+                //remove any genera that don't occur the required number of times
+                for(var i = uniqueList.length-1; i >= 0; i--) {
+                        if(genusSets[uniqueList[i]].length < minToInclude) {
+                                uniqueList.splice(i, 1);
+                        } else {
+                                //sort species within genus by occurrence
+                                //sort species by occurrence
+                                function sortSpeciesFunc(a, b) {
+                                        var r = genusToSpeciesSeen[uniqueList[i]][b] - genusToSpeciesSeen[uniqueList[i]][a];
+                                        return r;
+                                }
+                                genusToSpecies[uniqueList[i]] = genusToSpecies[uniqueList[i]].sort(sortSpeciesFunc);
+                        }
+                }
+                
+                return [uniqueList, genusToSpecies];
+        },
+                
+
+        getTipColors: function(colorGenus, colorSpecies) {
+                var colorTips = colorGenus | colorSpecies;
+                var genusSets = this.getGenusSpeciesSets(2);
+                var commonGenera = genusSets[0];
+                var genusToSpecies = genusSets[1];
+                 
+                var rainbow = this.getRGBRainbow(commonGenera.length, 21);
+                var speciesToColor = new Array();
+                 
+                var length = Math.min(commonGenera.length, rainbow.length);
+        
+                if(colorTips) {
+                        for(var i = 0; i < length; i++ ) {
+                                var genusColor =
+                                        this.getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
+                                var speciesInGenus = genusToSpecies[commonGenera[i]];
+                                var speciesRainbow = this.getRGBRainbow(speciesInGenus.length+1, 16);
+                                var sLength = speciesInGenus.length;
+                                var sColorIndex = 0;
+                                for(var j = 0; j < sLength; j++) {
+                                        var speciesColor =
+                                                this.getColorHex(speciesRainbow[sColorIndex][0],
+                                                                speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
+                                        if(speciesColor == genusColor) {
+                                                sColorIndex++;
+                                                speciesColor =
+                                                        this.getColorHex(speciesRainbow[sColorIndex][0],
+                                                                        speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
+                                        }
+                                        sColorIndex++;
+                                        if(colorSpecies) {
+                                            speciesToColor[speciesInGenus[j]] = [genusColor, speciesColor];
+                                        } else if(colorGenus) {
+                                            speciesToColor[speciesInGenus[j]] = [genusColor, genusColor];
+                                        }
+                                }
+                        }
+                } else {   
+                        for(var i = 0; i < length; i++ ) {
+                                var speciesInGenus = genusToSpecies[commonGenera[i]];
+                                var genusColor = this.getColorHex(rainbow[i][0], rainbow[i][1], rainbow[i][2]);
+                                var sLength = speciesInGenus.length;
+                                for(var j = 0; j < sLength; j++) {
+                                        speciesToColor[speciesInGenus[j]] = genusColor;
+                                }
+                        }
+
+                }
+
+                var tipLabels = phylotree.getTipLabels();
+                for(var i = tipLabels.length-1; i >= 0; i--) {
+                        var fields = tipLabels[i].split("_");
+                        if(fields.length > 1) {
+                                var species = fields[0]+"_"+fields[1];
+                                var speciesColor = speciesToColor[species];
+                                if(speciesColor != undefined) {
+                                        this.setLabelColor(tipLabels[i], speciesColor);
+                                }
+                        }
+                }
+             return speciesToColor;
+        },
+
+        /**
+         * Converts integer R, G, and B values to hex color strings.
+         */
+        getColorHex : function(r, g, b) {
+            var hexCodes = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D",
+                        "E","F"];
+                //get values for r
+                var r1 = Math.floor(r/16)%16;
+                var r2 = r % 16;
+                                 
+                //get values for g
+                var g2 = g % 16;
+                var g1 = Math.floor(g/16) %16;
+         
+                //get values for b
+                var b2 = b % 16;
+                var b1 = Math.floor(b/16) %16;
+                
+                //assemble the hex string
+                var hex = "#" + hexCodes[r1] + hexCodes[r2] +
+                hexCodes[g1] + hexCodes[g2] +
+                hexCodes[b1] + hexCodes[b2];
+                return hex;
+        }
+                
+    });
+});
+
+
+
+},
+'p3/widget/TaxonomyTreeGridContainer':function(){
+define([
+	"dojo/_base/declare", "./GridContainer",
+	"./TaxonomyTreeGrid", "dijit/popup",
+	"dijit/TooltipDialog", "./FacetFilterPanel",
+	"dojo/_base/lang", "dojo/on"
+], function(declare, GridContainer,
+			Grid, popup,
+			TooltipDialog, FacetFilterPanel,
+			lang, on){
+
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		// console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
+		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+		// console.log("selection: ", selection);
+		// console.log("DownloadQuery: ", dataType, currentQuery );
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		popup.close(downloadTT);
+	});
+
+	return declare([GridContainer], {
+		facetFields: [],
+		enableFilterPanel: false,
+		dataModel: "taxonomy",
+		containerType: "taxonomy_data",
+		onSetState: function(attr, oldState, state){
+			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			if(!state){
+				// console.log("!state in grid container; return;")
+				return;
+			}
+
+			if(state && state.search){
+				this.set("query", state.search);
+			}
+		},
+		getFilterPanel: function(opts){
+		},
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"ToggleFilters",
+				"fa icon-filter fa-2x",
+				{
+					label: "FILTERS",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Toggle Filters",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					on.emit(this.domNode, "ToggleFilters", {});
+				},
+				true
+			],
+			[
+				"DownloadTable",
+				"fa fa-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+		]),
+		gridCtor: Grid
+
+	});
+});
+
+},
+'p3/widget/TaxonomyTreeGrid':function(){
+define([
+	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang"
+
+], function(declare, Grid, Tree, on, Selection,
+			Store, DijitRegistryExt, lang){
+	return declare([Grid, DijitRegistryExt, Selection], {
+		constructor: function(){
+			this.queryOptions = {
+				sort: [{attribute: "taxon_name", descending: false}]
+			};
+			console.log("this.queryOptions: ", this.queryOptions);
+		},
+		store: new Store({}),
+		columns: [
+			Tree({
+				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
+					return (prevExpanded || (level < 1))
+				}
+			}),
+			{label: "Rank", field: "taxon_rank"},
+			{label: "Genomes", field: "genomes", style: "width:50px;"}
+		],
+		startup: function(){
+			var _self = this;
+			//sort: [{attribute: "taxon_name"}];
+
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				//console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				console.log("CLICK TREE ITEM: ", row.data);
+			});
+
+			this.on("dgrid-select", function(evt){
+				// console.log('dgrid-select: ', evt);
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "select", newEvt);
+				//console.log("dgrid-select");
+				//var rows = evt.rows;
+				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
+				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
+				//Topic.publish("/select", sel);
+			});
+
+			this.on("dgrid-deselect", function(evt){
+				// console.log("dgrid-select");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+				return;
+			});
+
+			// this.on("dgrid-refresh-complete", lang.hitch(this,function(){
+			// 	console.log("Refresh complete, expand first row");
+			// 	setTimeout(lang.hitch(this, function(){
+			// 		this.expand(0,true);
+			// 	}),250);
+			// }))
+
+			this.inherited(arguments);
+		}
+
+	});
+});
+
+},
+'dgrid/tree':function(){
+define([
+	"dojo/_base/declare",
+	"dojo/_base/array",
+	"dojo/_base/Deferred",
+	"dojo/query",
+	"dojo/on",
+	"dojo/aspect",
+	"./util/has-css3",
+	"./Grid",
+	"dojo/has!touch?./util/touch",
+	"put-selector/put"
+], function(declare, arrayUtil, Deferred, querySelector, on, aspect, has, Grid, touchUtil, put){
+
+function defaultRenderExpando(level, hasChildren, expanded, object){
+	// summary:
+	//		Provides default implementation for column.renderExpando.
+	
+	var dir = this.grid.isRTL ? "right" : "left",
+		cls = ".dgrid-expando-icon",
+		node;
+	if(hasChildren){
+		cls += ".ui-icon.ui-icon-triangle-1-" + (expanded ? "se" : "e");
+	}
+	node = put("div" + cls + "[style=margin-" + dir + ": " +
+		(level * (this.indentWidth || 9)) + "px; float: " + dir + "]");
+	node.innerHTML = "&nbsp;"; // for opera to space things properly
+	return node;
+}
+
+function ontransitionend(event){
+	var container = this,
+		height = this.style.height;
+	if(height){
+		// After expansion, ensure display is correct;
+		// after collapse, set display to none to improve performance
+		this.style.display = height == "0px" ? "none" : "block";
+	}
+	
+	// Reset height to be auto, so future height changes (from children
+	// expansions, for example), will expand to the right height.
+	if(event){
+		// For browsers with CSS transition support, setting the height to
+		// auto or "" will cause an animation to zero height for some
+		// reason, so temporarily set the transition to be zero duration
+		put(this, ".dgrid-tree-resetting");
+		setTimeout(function(){
+			// Turn off the zero duration transition after we have let it render
+			put(container, "!dgrid-tree-resetting");
+		});
+	}
+	// Now set the height to auto
+	this.style.height = "";
+}
+
+function tree(column){
+	// summary:
+	//		Adds tree navigation capability to a column.
+	
+	var originalRenderCell = column.renderCell || Grid.defaultRenderCell;
+	
+	var currentLevel, // tracks last rendered item level (for aspected insertRow)
+		clicked; // tracks row that was clicked (for expand dblclick event handling)
+		
+	if(!column){ column = {}; }
+	
+	column.shouldExpand = column.shouldExpand || function(row, level, previouslyExpanded){
+		// summary:
+		//		Function called after each row is inserted to determine whether
+		//		expand(rowElement, true) should be automatically called.
+		//		The default implementation re-expands any rows that were expanded
+		//		the last time they were rendered (if applicable).
+		
+		return previouslyExpanded;
+	};
+	
+	aspect.after(column, "init", function(){
+		var grid = column.grid,
+			colSelector = ".dgrid-content .dgrid-column-" + column.id,
+			listeners = []; // to be removed when this column is destroyed
+
+		// Turn off automatic cleanup of empty observers, to prevent confusion
+		// due to observers operating at multiple hierarchy levels.
+		grid.cleanEmptyObservers = false;
+		
+		if(!grid.store){
+			throw new Error("dgrid tree column plugin requires a store to operate.");
+		}
+		
+		if (!column.renderExpando){
+			column.renderExpando = defaultRenderExpando;
+		}
+		
+		// Set up the event listener once and use event delegation for better memory use.
+		listeners.push(grid.on(
+			column.expandOn || ".dgrid-expando-icon:click," + colSelector + ":dblclick," + colSelector + ":keydown",
+			function(event){
+				var row = grid.row(event);	
+				if((!grid.store.mayHaveChildren || grid.store.mayHaveChildren(row.data)) &&
+						(event.type != "keydown" || event.keyCode == 32) &&
+						!(event.type == "dblclick" && clicked && clicked.count > 1 &&
+							row.id == clicked.id && event.target.className.indexOf("dgrid-expando-icon") > -1)){
+					grid.expand(row);
+				}
+				
+				// If the expando icon was clicked, update clicked object to prevent
+				// potential over-triggering on dblclick (all tested browsers but IE < 9).
+				if(event.target.className.indexOf("dgrid-expando-icon") > -1){
+					if(clicked && clicked.id == grid.row(event).id){
+						clicked.count++;
+					}else{
+						clicked = {
+							id: grid.row(event).id,
+							count: 1
+						};
+					}
+				}
+			})
+		);
+		
+		if(has("touch")){
+			// Also listen on double-taps of the cell.
+			listeners.push(grid.on(touchUtil.selector(colSelector, touchUtil.dbltap),
+				function(){ grid.expand(this); }));
+		}
+		
+		// Set up hash to store IDs of expanded rows
+		if(!grid._expanded){ grid._expanded = {}; }
+		
+		listeners.push(aspect.after(grid, "insertRow", function(rowElement){
+			// Auto-expand (shouldExpand) considerations
+			var row = this.row(rowElement),
+				expanded = column.shouldExpand(row, currentLevel, this._expanded[row.id]);
+			
+			if(expanded){ this.expand(rowElement, true, true); }
+			return rowElement; // pass return value through
+		}));
+		
+		listeners.push(aspect.before(grid, "removeRow", function(rowElement, justCleanup){
+			var connected = rowElement.connected;
+			if(connected){
+				// if it has a connected expando node, we process the children
+				querySelector(">.dgrid-row", connected).forEach(function(element){
+					grid.removeRow(element, true);
+				});
+				// now remove the connected container node
+				if(!justCleanup){
+					put(connected, "!");
+				}
+			}
+		}));
+		
+		if(column.collapseOnRefresh){
+			// Clear out the _expanded hash on each call to cleanup
+			// (which generally coincides with refreshes, as well as destroy).
+			listeners.push(aspect.after(grid, "cleanup", function(){
+				this._expanded = {};
+			}));
+		}
+		
+		grid._calcRowHeight = function(rowElement){
+			// we override this method so we can provide row height measurements that
+			// include the children of a row
+			var connected = rowElement.connected;
+			// if connected, need to consider this in the total row height
+			return rowElement.offsetHeight + (connected ? connected.offsetHeight : 0); 
+		};
+		
+		grid.expand = function(target, expand, noTransition){
+			// summary:
+			//		Expands the row corresponding to the given target.
+			// target: Object
+			//		Row object (or something resolvable to one) to expand/collapse.
+			// expand: Boolean?
+			//		If specified, designates whether to expand or collapse the row;
+			//		if unspecified, toggles the current state.
+			
+			var row = target.element ? target : grid.row(target),
+				hasTransitionend = has("transitionend"),
+				dfd = new Deferred(),
+				promise = dfd.promise;
+			
+			// Resolve initial promise immediately;
+			// promise will be reassigned later if necessary to only resolve
+			// after data is retrieved
+			dfd.resolve();
+			
+			target = row.element;
+			target = target.className.indexOf("dgrid-expando-icon") > -1 ? target :
+				querySelector(".dgrid-expando-icon", target)[0];
+			
+			noTransition = noTransition || column.enableTransitions === false;
+			
+			if(target && target.mayHaveChildren &&
+					(noTransition || expand !== !!this._expanded[row.id])){
+				// toggle or set expand/collapsed state based on optional 2nd argument
+				var expanded = expand === undefined ? !this._expanded[row.id] : expand;
+				
+				// update the expando display
+				put(target, ".ui-icon-triangle-1-" + (expanded ? "se" : "e") +
+					"!ui-icon-triangle-1-" + (expanded ? "e" : "se"));
+				
+				var rowElement = row.element,
+					container = rowElement.connected,
+					containerStyle,
+					scrollHeight,
+					options = {
+						originalQuery: this.query
+					};
+				
+				if(!container){
+					// if the children have not been created, create a container, a preload node and do the 
+					// query for the children
+					container = options.container = rowElement.connected =
+						put(rowElement, '+div.dgrid-tree-container');
+					var query = function(options){
+						return grid.store.getChildren(row.data, options);
+					};
+					if(column.allowDuplicates){
+						// If allowDuplicates is specified, include parentId in options
+						// in order to facilitate unique IDs for each occurrence of the
+						// same item under multiple different parents.
+						options.parentId = row.id;
+					}
+					// Include level information on query for renderQuery case
+					if("level" in target){
+						query.level = target.level;
+					}
+					// Add the query to the promise chain.
+					promise = promise.then(function(){
+						if(grid.renderQuery){
+							return grid.renderQuery(query, options);
+						}
+						
+						// If not using OnDemandList, we don't need preload nodes,
+						// but we still need a beforeNode to pass to renderArray,
+						// so create a temporary one
+						var firstChild = put(container, "div");
+						var rows = grid.renderArray(query(options), firstChild,
+							"level" in query ? { queryLevel: query.level } : {});
+						Deferred.when(rows, function(){
+							put(firstChild, "!");
+						});
+						return rows;
+					});
+					
+					if(hasTransitionend){
+						on(container, hasTransitionend, ontransitionend);
+					}else{
+						ontransitionend.call(container);
+					}
+				}
+				
+				// Show or hide all the children.
+				
+				container.hidden = !expanded;
+				containerStyle = container.style;
+				
+				// make sure it is visible so we can measure it
+				if(!hasTransitionend || noTransition){
+					containerStyle.display = expanded ? "block" : "none";
+					containerStyle.height = "";
+				}else{
+					if(expanded){
+						containerStyle.display = "block";
+						scrollHeight = container.scrollHeight;
+						containerStyle.height = "0px";
+					}
+					else{
+						// if it will be hidden we need to be able to give a full height
+						// without animating it, so it has the right starting point to animate to zero
+						put(container, ".dgrid-tree-resetting");
+						containerStyle.height = container.scrollHeight + "px";
+					}
+					// Perform a transition for the expand or collapse.
+					setTimeout(function(){
+						put(container, "!dgrid-tree-resetting");
+						containerStyle.height =
+							expanded ? (scrollHeight ? scrollHeight + "px" : "auto") : "0px";
+					});
+				}
+				
+				// Update _expanded map.
+				if(expanded){
+					this._expanded[row.id] = true;
+				}else{
+					delete this._expanded[row.id];
+				}
+			}
+			return promise;
+		}; // end function grid.expand
+		
+		// Set up a destroy function on column to tear down the listeners/aspects
+		// established above if the grid's columns are redefined later.
+		aspect.after(column, "destroy", function(){
+			arrayUtil.forEach(listeners, function(l){ l.remove(); });
+			// Delete methods we added/overrode on the instance.
+			delete grid.expand;
+			delete grid._calcRowHeight;
+		});
+	});
+	
+	column.renderCell = function(object, value, td, options){
+		// summary:
+		//		Renders a cell that can be expanded, creating more rows
+		
+		var grid = column.grid,
+			level = Number(options && options.queryLevel) + 1,
+			mayHaveChildren = !grid.store.mayHaveChildren || grid.store.mayHaveChildren(object),
+			parentId = options.parentId,
+			expando, node;
+		
+		level = currentLevel = isNaN(level) ? 0 : level;
+		expando = column.renderExpando(level, mayHaveChildren,
+			grid._expanded[(parentId ? parentId + "-" : "") + grid.store.getIdentity(object)], object);
+		expando.level = level;
+		expando.mayHaveChildren = mayHaveChildren;
+		
+		node = originalRenderCell.call(column, object, value, td, options);
+		if(node && node.nodeType){
+			put(td, expando);
+			put(td, node);
+		}else{
+			td.insertBefore(expando, td.firstChild);
+		}
+	};
+	return column;
+}
+
+tree.defaultRenderExpando = defaultRenderExpando;
+return tree;
+});
+
+},
+'dgrid/util/has-css3':function(){
+define(["dojo/has"],
+function(has){
+	// This module defines feature tests for CSS3 features such as transitions.
+	// The css-transitions, css-transforms, and css-transforms3d has-features
+	// can report either boolean or string:
+	// * false indicates no support
+	// * true indicates prefix-less support
+	// * string indicates the vendor prefix under which the feature is supported
+
+	var cssPrefixes = ["ms", "O", "Moz", "Webkit"];
+	
+	function testStyle(element, property) {
+		var style = element.style,
+			i;
+		
+		if (property in style) {
+			// Standard, no prefix
+			return true;
+		}
+		property = property.slice(0, 1).toUpperCase() + property.slice(1);
+		for (i = cssPrefixes.length; i--;) {
+			if ((cssPrefixes[i] + property) in style) {
+				// Vendor-specific css property prefix
+				return cssPrefixes[i];
+			}
+		}
+		
+		// Otherwise, not supported
+		return false;
+	}
+	
+	has.add("css-transitions", function(global, doc, element){
+		return testStyle(element, "transitionProperty");
+	});
+	
+	has.add("css-transforms", function(global, doc, element){
+		return testStyle(element, "transform");
+	});
+	
+	has.add("css-transforms3d", function(global, doc, element){
+		return testStyle(element, "perspective");
+	});
+	
+	has.add("transitionend", function(){
+		// Infer transitionend event name based on CSS transitions has-feature.
+		var tpfx = has("css-transitions");
+		if(!tpfx){ return false; }
+		if(tpfx === true){ return "transitionend"; }
+		return {
+			ms: "MSTransitionEnd",
+			O: "oTransitionEnd",
+			Moz: "transitionend",
+			Webkit: "webkitTransitionEnd"
+		}[tpfx];
+	});
+	
+	return has;
+});
+
+},
+'p3/store/TaxonomyJsonRest':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/Deferred",
+	"./P3JsonRest", "dojo/when", "dojo/store/util/QueryResults"
+], function(declare, defer,
+			Store, when, QueryResults){
+	//["no rank","varietas","forma","tribe",
+
+	//var ranks = ["domain","superkingom","kingdom","superphylum", "phylum","subphylum", "class","subclass","order","suborder", "family","subfamily","genus","subgenus", "speciesgroup", "species","speciessubgroup","subspecies","no rank"]
+	return declare([Store], {
+		dataModel: "taxonomy",
+		idProperty: "taxon_id",
+		facetFields: [],
+		mayHaveChildren: function(parent){
+			return (parent.taxon_rank != "no rank") && (parent.taxon_rank != "species")
+		},
+		getChildren: function(parentItem, opts){
+			if(!parentItem.genomes || parentItem.genomes < 1){
+				return false;
+			}
+
+			var prank = parentItem.taxon_rank
+			var nextRank, nextRankQ;
+			var _self = this;
+			switch(prank){
+				case "domain":
+					nextRank = "superkingdom";
+					nextRankQ = "or(eq(taxon_rank,superkingdom),eq(taxon_rank,kingdom))";
+					break;
+				case "superkingdom":
+					nextRank = "kingdom";
+					nextRankQ = "or(eq(taxon_rank,kingdom),eq(taxon_rank,superphylum),eq(taxon_rank,phylum))";
+					break;
+				case "kingdom":
+					nextRank = "superphylum";
+					nextRankQ = "or(eq(taxon_rank,superphylum),eq(taxon_rank,phylum))";
+					break;
+				case "superphylum":
+					nextRank = "phylum";
+					nextRankQ = "eq(taxon_rank,phylum)";
+					break;
+				case "phylum":
+					nextRank = "subphylum";
+					nextRankQ = "or(eq(taxon_rank,subphylum),eq(taxon_rank,class))";
+					break;
+				case "subphylum":
+					nextRank = "class"
+					nextRankQ = "eq(taxon_rank,class)";
+					break;
+				case "class":
+					nextRank = "subclass";
+					nextRankQ = "or(eq(taxon_rank,subclass),eq(taxon_rank,order))";
+					break;
+				case "subclass":
+					nextRank = "order";
+					nextRankQ = "eq(taxon_rank,order)";
+					break;
+				case "order":
+					nextRank = "suborder";
+					nextRankQ = "or(eq(taxon_rank,suborder),eq(taxon_rank,family))";
+					break;
+				case "suborder":
+					nextRank = "family";
+					nextRankQ = "eq(taxon_rank,family)";
+					break;
+				case "family":
+					nextRank = "subfamily";
+					nextRankQ = "or(eq(taxon_rank,subfamily),eq(taxon_rank,genus))";
+					break;
+				case "subfamily":
+					nextRank = "genus";
+					nextRankQ = "or(eq(taxon_rank,subfamily),eq(taxon_rank,genus))";
+					break;
+
+				case "genus":
+					nextRank = "subgenus";
+					nextRankQ = "or(eq(taxon_rank,subgenus),eq(taxon_rank,\%22species%20group\%22),eq(taxon_rank,species))";
+					break;
+				case "subgenus":
+					nextRank = "species group";
+					nextRankQ = "or(eq(taxon_rank,subgenus),eq(taxon_rank,\%22species%20group\%22),eq(taxon_rank,species))";
+					break;
+				case "species group":
+					nextRank = "species";
+					nextRankQ = "or(eq(taxon_rank,species),eq(taxon_rank,\%22no%20rank\%22))";
+					break;
+				case "species":
+					nextRank = "subspecies";
+					nextRankQ = "or(eq(taxon_rank,subspecies),eq(taxon_rank,\%22no%20rank\%22))";
+					break;
+				case "subspecies":
+					nextRank = "no rank";
+					nextRankQ = "eq(taxon_rank,\%22no rank\%22)";
+					break;
+				case "no rank":
+					nextRank = false;
+					nextRankQ = false;
+				// return false;
+			}
+
+			// if (!nextRank) { return false; }
+			// nextRankQ = "eq(taxon_rank,\%22" + nextRank.replace(" ","%20") + "\%22)";
+
+			var query = "and(gt(genomes,0)," + nextRankQ + ",eq(lineage_ids," + parentItem.taxon_id + "))"
+
+			console.log("TaxonTreeGrid Query: ", query)
+			var def = new defer();
+			def.total = new defer();
+
+			var q = this.query(query, opts)
+
+			when(q.total, function(total){
+				if(total < 1 && nextRank){
+					console.log("SHOULD RECURSE HERE: ", nextRank);
+					var rec = _self.getChildren({
+						genomes: parentItem.genomes,
+						taxon_id: parentItem.taxon_id,
+						taxon_rank: nextRank
+					}, opts);
+					when(rec.total, function(tot){
+						def.total.resolve(tot);
+					})
+					when(rec, function(res){
+						def.resolve(res);
+					}, function(err){
+						def.reject(err);
+					});
+
+				}else{
+					def.total.resolve(total)
+					when(q, function(res){
+						def.resolve(res)
+					}, function(err){
+						def.reject(err);
+					})
+				}
+			})
+
+			return QueryResults(def);
+		}
+	});
+});
+
+
+},
+'p3/widget/TaxonomyOverview':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
+	"dojo/request", "dojo/_base/lang",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter",
+	"p3/widget/ReferenceGenomeSummary","p3/widget/GenomeMetaSummary","p3/widget/SpecialtyGeneSummary"
+
+], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
+			domClass, Templated, Template,
+			xhr, lang,
+			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
+			ExternalItemFormatter,
+			ReferenceGenomeSummary,GenomeMetaSummary,SpecialtyGeneSummary
+){
+
+	var searchName = null;
+
+	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
+		baseClass: "TaxonomyOverview",
+		disabled: false,
+		templateString: Template,
+		apiServiceUrl: window.App.dataAPI,
+		genome: null,
+		state: null,
+		genome_ids: null,
+
+		_setStateAttr: function(state){
+			this._set("state", state);
+
+			if(state.taxonomy){
+				this.set("taxonomy", state.taxonomy);
+			}
+
+			searchName = this.genome.taxon_name; 
+
+			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget"];
+
+			sumWidgets.forEach(function(w){
+				if(this[w]){
+					this[w].set('query', this.state.search)
+				}
+			}, this)
+		},
+
+		"_setTaxonomyAttr": function(genome){
+			this.genome = genome;
+			this.createSummary(genome);
+
+		},
+
+		"createSummary": function(genome){
+			domConstruct.empty(this.taxonomySummaryNode);
+			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {hideExtra: true}), this.taxonomySummaryNode, "first");
+			if(searchName != genome.taxon_name){
+				domConstruct.empty(this.pubmedSummaryNode);
+				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {hideExtra: true}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
+				this.pubmedSummaryNode2.style.display = 'block';
+			}
+		},
+
+		onShowMore: function(){
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data", {hideExtra: false}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
+			this.pubmedSummaryNode2.style.display = 'none';
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+
+			if(this.genome){
+				this.set("genome", this.genome);
+			}
+		}
+	});
+});
+
+},
+'p3/widget/ReferenceGenomeSummary':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
+	"dojo/fx/easing",
+	"dijit/_WidgetBase",
+	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Tooltip",
+	"dojox/charting/plot2d/Bars", "./SummaryWidget"
+
+], function(declare, lang,
+			domClass, domConstruct, on, xhr,
+			easing,
+			WidgetBase,
+			Chart2D, Theme, MoveSlice, ChartTooltip,
+			Bars, SummaryWidget){
+
+	return declare([SummaryWidget], {
+		dataModel: "genome",
+		query: "",
+		view: "table",
+		baseQuery: "&eq(reference_genome,*)&select(reference_genome,genome_name,genome_id)&limit(25000)&facet((field,reference_genome),(mincount,1))&json(nl,map)",
+		columns: [
+			{label: "Type", field: "reference_genome"},
+			{label: "Genome Name", field: "genome_name", renderCell: function(obj, val, node){
+				node.innerHTML = '<a href="/view/Genome/' + obj.genome_id + '" target=_blank">' + val + '</a>';
+			}}
+		],
+		processData: function(res){
+			var chartLabels = this._chartLabels = [];
+
+			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.reference_genome){
+				console.error("INVALID SUMMARY DATA");
+				return;
+			}
+
+			this._tableData = res.response.docs;
+			var d = res.facet_counts.facet_fields.reference_genome; // now key-value pair
+
+			var data = {};
+			Object.keys(d).forEach(function(key){
+				data[key] = [{source: key, x: 1, y: d[key]}];
+			});
+
+			// console.log(data);
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredColumns",
+						markers: true,
+						gap: 3,
+						label: true,
+						labelStyle: "outside",
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						majorLabels: false,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						vertical: true,
+						majorTicks: false,
+						natural: true,
+						minorTicks: false
+					});
+					// .addSeries("source", this.data);
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.addSeries(key, this.data[key]);
+				}));
+
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						var d = o.run.data[o.index];
+						return d.source + " (" + d.y + ")"
+					}
+				});
+
+				this.chart.render();
+			}else{
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.updateSeries(key, this.data[key]);
+				}));
+				this.chart.render();
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
+	})
+});
+},
+'p3/widget/GenomeMetaSummary':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/promise/all", "dojo/when",
+	"dojo/dom-class", "./SummaryWidget", "dijit/layout/ContentPane",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/plot2d/Pie",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+
+], function(declare, WidgetBase, on, All, when,
+			domClass, SummaryWidget, ContentPane,
+			xhr, lang, Chart2D, Theme, MoveSlice, Pie,
+			ChartTooltip, domConstruct, PathJoin, easing){
+
+	var categoryName = {"host_name": "Host Name", "disease": "Disease", "reference_genome": "Reference Genome", "genome_status": "Genome Status", "isolation_country": "Isolation Country"};
+
+	return declare([SummaryWidget], {
+		dataModel: "genome",
+		query: "",
+		baseQuery: "&limit(1)&json(nl,map)",
+		columns: [{
+			label: "Metadata Category",
+			field: "category",
+			renderCell: function(obj, val, node){
+				node.innerHTML = categoryName[val];
+			}
+		}, {
+			label: "",
+			field: "value",
+			renderCell: function(obj, val, node){
+				node.innerHTML = val.map(function(d){
+					return '<a href="#view_tab=genomes&filter=eq(' + obj.category + ',' + encodeURIComponent(d.split('(')[0]) + ')">' + d + '</a>';
+				}).join("<br/>")
+			}
+		}],
+		onSetQuery: function(attr, oldVal, query){
+
+			var url = PathJoin(this.apiServiceUrl, this.dataModel) + "/";
+
+			var defMetadata = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&facet((field,host_name),(field,disease),(field,reference_genome),(field,genome_status),(field,isolation_country),(mincount,1),(limit,5))" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields;
+			});
+
+			// var defCompletion = when(xhr.post(url, {
+			// 	handleAs: "json",
+			// 	headers: this.headers,
+			// 	data: this.query + "&facet((field,disease),(mincount,1),(limit,5))" + this.baseQuery
+			// }), function(response){
+			// 	return response.facet_counts.facet_ranges;
+			// });
+
+			return when(All([defMetadata]), lang.hitch(this, "processData"));
+		},
+		processData: function(results){
+
+			this._tableData = Object.keys(results[0]).map(function(cat){
+				var values = Object.keys(results[0][cat]).map(function(d){
+					return d + "(" + results[0][cat][d] + ")";
+				});
+				return {category: cat, value: values}
+			});
+			// console.log(this._tableData);
+
+			var data = {};
+			Object.keys(results[0]).forEach(function(key){
+				var m = results[0][key];
+				data[key] = Object.keys(m).map(function(val){
+					return {text: val, tooltip: val + " (" + m[val] + ")", x: val, y: m[val]};
+				})
+			});
+
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+
+			if(!this.DonutChart){
+				this.DonutChart = declare(Pie, {
+					render: function(dim, offsets){
+						this.inherited(arguments);
+
+						var rx = (dim.width - offsets.l - offsets.r) / 2,
+							ry = (dim.height - offsets.t - offsets.b) / 2,
+							r = Math.min(rx, ry) / 2;
+						var circle = {
+							cx: offsets.l + rx,
+							cy: offsets.t + ry,
+							r: "20px"
+						};
+						var s = this.group;
+
+						s.createCircle(circle).setFill("#fff").setStroke("#fff");
+					}
+				})
+			}
+
+			if(!this.host_chart){
+				var cpHostNode = domConstruct.create("div", {"class": "pie-chart-widget"});
+				domConstruct.place(cpHostNode, this.chartNode, "last");
+
+				this.host_chart = new Chart2D(cpHostNode, {
+					title: "Host Name",
+					titlePos: "bottom"
+				})
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						labelStyle: "columns"
+					});
+				new MoveSlice(this.host_chart, "default");
+				new ChartTooltip(this.host_chart, "default");
+
+				var cpDiseaseNode = domConstruct.create("div", {"class": "pie-chart-widget"});
+				domConstruct.place(cpDiseaseNode, this.chartNode, "last");
+
+				this.disease_chart = new Chart2D(cpDiseaseNode, {
+					title: "Disease",
+					titlePos: "bottom"
+				})
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						labelStyle: "columns"
+					});
+				new MoveSlice(this.disease_chart, "default");
+				new ChartTooltip(this.disease_chart, "default");
+
+				var cpIsolationCountry = domConstruct.create("div", {"class": "pie-chart-widget"});
+				domConstruct.place(cpIsolationCountry, this.chartNode, "last");
+				this.isolation_country_chart = new Chart2D(cpIsolationCountry, {
+					title: "Isolation Country",
+					titlePos: "bottom"
+				})
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						labelStyle: "columns"
+					});
+				new MoveSlice(this.isolation_country_chart, "default");
+				new ChartTooltip(this.isolation_country_chart, "default");
+
+				var cpGenomeStatus = domConstruct.create("div", {"class": "pie-chart-widget"});
+				domConstruct.place(cpGenomeStatus, this.chartNode, "last");
+				this.genome_status_chart = new Chart2D(cpGenomeStatus, {
+					title: "Genome Status",
+					titlePos: "bottom"
+				})
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						labelStyle: "columns"
+					});
+				new MoveSlice(this.genome_status_chart, "default");
+				new ChartTooltip(this.genome_status_chart, "default");
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					switch(key){
+						case "host_name":
+							this.host_chart.addSeries(key, this.data[key]);
+							this.host_chart.render();
+							break;
+						case "disease":
+							this.disease_chart.addSeries(key, this.data[key]);
+							this.disease_chart.render();
+							break;
+						case "isolation_country":
+							this.isolation_country_chart.addSeries(key, this.data[key]);
+							this.isolation_country_chart.render();
+							break;
+						case "genome_status":
+							this.genome_status_chart.addSeries(key, this.data[key]);
+							this.genome_status_chart.render();
+							break;
+						default:
+							break;
+					}
+				}));
+
+			}else{
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					switch(key){
+						case "host_name":
+							this.host_chart.addSeries(key, this.data[key]);
+							this.host_chart.render();
+							break;
+						case "disease":
+							this.disease_chart.addSeries(key, this.data[key]);
+							this.disease_chart.render();
+							break;
+						case "isolation_country":
+							this.isolation_country_chart.addSeries(key, this.data[key]);
+							this.isolation_country_chart.render();
+							break;
+						case "genome_status":
+							this.genome_status_chart.addSeries(key, this.data[key]);
+							this.genome_status_chart.render();
+							break;
+						default:
+							break;
+					}
+				}));
+
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
+	})
+});
+
+},
+'p3/widget/SpecialtyGeneSummary':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
+	"dojo/fx/easing",
+	"dijit/_WidgetBase",
+	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Tooltip",
+	"dojox/charting/plot2d/Bars", "./SummaryWidget"
+
+], function(declare, lang,
+			domClass, domConstruct, on, xhr,
+			easing,
+			WidgetBase,
+			Chart2D, Theme, MoveSlice, ChartTooltip,
+			Bars, SummaryWidget){
+
+	var sourcePropertyMap = {
+		"PATRIC_VF": "Virulence Factor",
+		"Victors": "Virulence Factor",
+		"VFDB": "Virulence Factor",
+		"DrugBank": "Drug Target",
+		"TTD": "Drug Target",
+		"Human": "Human Homolog",
+		"CARD": "Antibiotic Resistance",
+		"ARDB": "Antibiotic Resistance"
+	};
+
+	return declare([SummaryWidget], {
+		dataModel: "sp_gene",
+		query: "",
+		baseQuery: "&limit(1)&facet((field,source),(mincount,1))&json(nl,map)",
+		columns: [
+			{label: " ", field: "category"},
+			{label: "Source", field: "source"},
+			{label: "Genes", field: "y", renderCell: function(obj, val, node){
+				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=eq(source,' + obj.source + ')" target="_blank">' + val + "</a>";
+			}}
+		],
+		processData: function(res){
+			var chartLabels = this._chartLabels = [];
+
+			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.source){
+				console.error("INVALID SUMMARY DATA");
+				return;
+			}
+			var d = res.facet_counts.facet_fields.source; // now key-value pair
+
+			var data = this._tableData = [];
+			Object.keys(d).forEach(function(key, idx){
+				chartLabels.push({text: key, value: idx+1});
+				var cat = sourcePropertyMap[key];
+				data.push({source: key, category: cat, y: d[key]});
+			});
+
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: Bars,
+						markers: true,
+						gap: 3,
+						// maxBarSize: 20,
+						// labels: true,
+						// labelOffset: 20,
+						// labelStyle: "outside",
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						vertical: true,
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						minorTicks: false
+					})
+					.addSeries("source", this.data);
+
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						var d = o.run.data[o.index];
+						return d.source + " (" + d.y + ")"
+					}
+				});
+
+				this.chart.render()
+			}else{
+
+				this.chart.updateSeries("source", this.data);
+				this.chart.render();
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
+	})
+});
+},
+'p3/widget/viewer/Genome':function(){
+define([
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"../formatter", "../TabContainer", "../GenomeOverview",
+	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
+	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
+	"../TranscriptomicsContainer", "../InteractionsContainer", "../Phylogeny", "../GenomeBrowser",
+	"../SequenceGridContainer", "../../util/PathJoin"
+], function(declare, TabViewerBase, on, Topic,
+			domClass, ContentPane, domConstruct,
+			formatter, TabContainer, GenomeOverview,
+			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
+			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
+			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
+			TranscriptomicsContainer, InteractionsContainer, Phylogeny, GenomeBrowser,
+			SequenceGridContainer, PathJoin){
+	return declare([TabViewerBase], {
+		"baseClass": "GenomeGroup",
+		"disabled": false,
+		"query": null,
+		containerType: "genome_group",
+		genome_id: "",
+		apiServiceUrl: window.App.dataAPI,
+
+		_setGenome_idAttr: function(id){
+			//console.log("_setGenome_IDAttr: ", id, this.genome_id, this.state);
+			if(!id){
+				return;
+			}
+			var state = this.state = this.state || {};
+			this.genome_id = id;
+			this.state.genome_ids = [id];
+
+			xhr.get(PathJoin(this.apiServiceUrl, "genome", id), {
+				headers: {
+					accept: "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(genome){
+				this.set("genome", genome)
+			}));
+			var activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + id + ")"});
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+					break;
+				case "phlyogeny":
+				case "proteinFamilies":
+				case "pathways":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
+					break;
+				case "transcriptomics":
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
+					break;
+				default:
+					activeTab.set("state", activeQueryState);
+					break;
+			}
+		},
+
+		buildHeaderContent: function(genome){
+			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
+			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
+			var out = taxon_lineage_names.map(function(id, idx){
+				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+			});
+			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
+		},
+
+		_setGenomeAttr: function(genome){
+			var state = this.state || {};
+
+			state.genome = genome;
+
+			this.viewHeader.set("content", this.buildHeaderContent(genome));
+
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "phylogeny":
+				case "overview":
+					activeTab.set("state", state);
+					break;
+				default:
+					break;
+			}
+
+			this._set("genome", genome);
+
+			this.resize();
+		},
+
+		createOverviewPanel: function(){
+			return new GenomeOverview({
+				title: "Overview",
+				style: "overflow:auto;",
+				id: this.viewer.id + "_" + "overview",
+				state: this.state
+			});
+		},
+
+		onSetState: function(attr, oldVal, state){
+
+			var parts = this.state.pathname.split("/");
+			this.set("genome_id", parts[parts.length - 1]);
+
+			if(!state){
+				return;
+			}
+
+			if(state.hashParams && state.hashParams.view_tab){
+
+				if(this[state.hashParams.view_tab]){
+					var vt = this[state.hashParams.view_tab];
+					vt.set("visible", true);
+					this.viewer.selectChild(vt);
+				}else{
+					// console.log("No view-tab supplied in State Object");
+				}
+			}
+			// console.log("viewer/Genome onSetState() after set genome_id")
+		},
+
+		postCreate: function(){
+			if(!this.state){
+				this.state = {};
+			}
+
+			this.inherited(arguments);
+
+			this.overview = this.createOverviewPanel();
+			this.phylogeny = new Phylogeny({
+				title: "Phylogeny",
+				id: this.viewer.id + "_" + "phylogeny"
+			});
+
+			this.sequences = new SequenceGridContainer({
+				title: "Sequences",
+				id: this.viewer.id + "_" + "sequences",
+				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+			});
+
+			this.features = new FeatureGridContainer({
+				title: "Features",
+				id: this.viewer.id + "_" + "features",
+				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+			});
+
+			this.browser = new GenomeBrowser({
+				title: "Browser",
+				id: this.viewer.id + "_" + "browser",
+				state: lang.mixin({}, this.state)
+			});
+
+			this.circular = new CircularViewerContainer({
+				title: "Circular Viewer",
+				id: this.viewer.id + "_" + "circular",
+				state: lang.mixin({}, this.state)
+			});
+
+			this.specialtyGenes = new SpecialtyGeneGridContainer({
+				title: "Specialty Genes",
+				id: this.viewer.id + "_" + "specialtyGenes",
+				state: lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"})
+			});
+			this.pathways = new PathwaysContainer({
+				apiServer: this.apiServiceUrl,
+				title: "Pathways",
+				id: this.viewer.id + "_" + "pathways",
+				state: this.state
+			});
+			this.proteinFamilies = new ProteinFamiliesContainer({
+				title: "Protein Families",
+				id: this.viewer.id + "_" + "proteinFamilies",
+				state: this.state
+			});
+			this.transcriptomics = new TranscriptomicsContainer({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_" + "transcriptomics",
+				state: this.state
+			});
+			this.viewer.addChild(this.overview);
+			this.viewer.addChild(this.phylogeny);
+			this.viewer.addChild(this.browser);
+			this.viewer.addChild(this.circular);
+			this.viewer.addChild(this.sequences);
+			this.viewer.addChild(this.features);
+			this.viewer.addChild(this.specialtyGenes);
+			this.viewer.addChild(this.proteinFamilies);
+			this.viewer.addChild(this.pathways);
+			this.viewer.addChild(this.transcriptomics);
+		}
+	});
+});
+
+},
+'p3/widget/GenomeBrowser':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "JBrowse/Browser",
+	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry",
+	"dojo/dom-style", 'dojo/_base/array',
+	"dojo/_base/Deferred", "dojo/DeferredList", "lazyload",
+	"dojo/request", "dojo/on",
+	'dijit/form/ComboBox',
+	'dijit/form/Button',
+	'dijit/form/Select',
+	'dijit/form/ToggleButton',
+	'dijit/form/DropDownButton',
+	'dijit/DropDownMenu',
+	'dijit/MenuItem',
+	'dojox/form/TriStateCheckBox',
+	'dijit/layout/ContentPane',
+	'dijit/layout/BorderContainer',
+	"JBrowse/Util",
+	'JBrowse/View/InfoDialog',
+	'JBrowse/View/FileDialog',
+	'JBrowse/GenomeView'
+], function(declare, WidgetBase, JBrowser,
+			domConstruct, lang, domGeometry,
+			domStyle, array,
+			Deferred, DeferredList, lazyLoad,
+			request, on,
+			dijitComboBox,
+			dijitButton,
+			dijitSelectBox,
+			dijitToggleButton,
+			dijitDropDownButton,
+			dijitDropDownMenu,
+			dijitMenuItem,
+			dojoxTriStateCheckBox,
+			dijitContentPane,
+			dijitBorderContainer,
+			Util,
+			InfoDialog,
+			FileDialog,
+			GenomeView){
+
+	var Browser = declare([JBrowser], {
+		makeFullViewLink: function(){
+			return domConstruct.create("span", {});
+		},
+
+		createNavBox: function(parent){
+			var thisB = this;
+			var navbox = dojo.create('div', {
+				"class": "navbox",
+				style: {'text-align': 'center', "position": "relative"}
+			}, parent);
+
+			// container adds a white backdrop to the locationTrap.
+			var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox);
+
+			this.locationTrap = dojo.create('div', {className: 'locationTrap'}, locationTrapContainer);
+
+			var four_nbsp = String.fromCharCode(160);
+			four_nbsp = four_nbsp + four_nbsp + four_nbsp + four_nbsp;
+			navbox.appendChild(document.createTextNode(four_nbsp));
+
+			// var moveLeft = document.createElement("i");
+			//moveLeft.type = "image";
+			// moveLeft.src = this.resolveUrl( "img/Empty.png" );
+			// moveLeft.id = "moveLeft";
+			// moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
+			// navbox.appendChild(moveLeft);
+			var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left2 fa-2x"}, navbox);
+			dojo.connect(moveLeft, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.slide(0.9);
+				});
+
+			var moveRight = document.createElement("i");
+			//moveRight.type = "image";
+			// moveRight.src = this.resolveUrl( "img/Empty.png" );
+			// moveRight.id="moveRight";
+			moveRight.className = "fa icon-arrow-right2 fa-2x"; //"icon nav";
+			navbox.appendChild(moveRight);
+			dojo.connect(moveRight, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.slide(-0.9);
+				});
+
+			var bigZoomOut = domConstruct.create("I", {
+				"class": "fa icon-search-minus",
+				style: {"font-size": "2.5em"}
+			}, navbox);
+			dojo.connect(bigZoomOut, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.zoomOut(undefined, undefined, 2);
+				});
+
+			var zoomOut = domConstruct.create("I", {"class": "fa icon-search-minus fa-2x"}, navbox);
+			dojo.connect(zoomOut, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.zoomOut();
+				});
+
+			var zoomIn = domConstruct.create("I", {"class": "fa icon-search-plus fa-2x"}, navbox);
+			dojo.connect(zoomIn, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.zoomIn();
+				});
+
+			var bigZoomIn = domConstruct.create("I", {
+				"class": "fa icon-search-plus",
+				style: {"font-size": "2.5em"}
+			}, navbox);
+			dojo.connect(bigZoomIn, "click", this,
+				function(event){
+					dojo.stopEvent(event);
+					this.view.zoomIn(undefined, undefined, 2);
+				});
+
+			// if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
+			// set in the config, then put in a dropdown box for selecting
+			// reference sequences
+			var refSeqSelectBoxPlaceHolder = dojo.create('div', {style: "display:inline-block;"}, navbox);
+
+			// make the location box
+			this.locationBox = new dijitComboBox(
+				{
+					name: "location",
+					style: {width: '75px'},
+					maxLength: 400,
+					searchAttr: "name"
+				},
+				dojo.create('input', {}, navbox));
+			this.afterMilestone('loadNames', dojo.hitch(this, function(){
+				if(this.nameStore)
+					this.locationBox.set('store', this.nameStore);
+			}));
+
+			this.locationBox.focusNode.spellcheck = false;
+			dojo.query('div.dijitArrowButton', this.locationBox.domNode).orphan();
+			dojo.connect(this.locationBox.focusNode, "keydown", this, function(event){
+				if(event.keyCode == keys.ESCAPE){
+					this.locationBox.set('value', '');
+				}
+				else if(event.keyCode == keys.ENTER){
+					this.locationBox.closeDropDown(false);
+					this.navigateTo(this.locationBox.get('value'));
+					this.goButton.set('disabled', true);
+					dojo.stopEvent(event);
+				}else{
+					this.goButton.set('disabled', false);
+				}
+			});
+			dojo.connect(navbox, 'onselectstart', function(evt){
+				evt.stopPropagation();
+				return true;
+			});
+			// monkey-patch the combobox code to make a few modifications
+			(function(){
+
+				// add a moreMatches class to our hacked-in "more options" option
+				var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+				var oldCreateOption = dropDownProto._createOption;
+				dropDownProto._createOption = function(item){
+					var option = oldCreateOption.apply(this, arguments);
+					if(item.hitLimit)
+						dojo.addClass(option, 'moreMatches');
+					return option;
+				};
+
+				// prevent the "more matches" option from being clicked
+				var oldOnClick = dropDownProto.onClick;
+				dropDownProto.onClick = function(node){
+					if(dojo.hasClass(node, 'moreMatches'))
+						return null;
+					return oldOnClick.apply(this, arguments);
+				};
+			}).call(this);
+
+			// make the 'Go' button'
+			this.goButton = new dijitButton(
+				{
+					label: 'Go',
+					onClick: dojo.hitch(this, function(event){
+						this.navigateTo(this.locationBox.get('value'));
+						this.goButton.set('disabled', true);
+						dojo.stopEvent(event);
+					})
+				}, dojo.create('button', {}, navbox));
+			this.highlightButtonPreviousState = false;
+			this.highlightButton = new dojoxTriStateCheckBox({
+				//label: 'Highlight',
+				title: 'highlight a region',
+				states: [false, true, "mixed"],
+				onChange: function(){
+					if(this.get('checked') == true){
+						thisB.view._rubberStop();
+						thisB.view.behaviorManager.swapBehaviors('normalMouse', 'highlightingMouse');
+					}else if(this.get('checked') == false){
+						var h = thisB.getHighlight();
+						if(h){
+							thisB.clearHighlight();
+							thisB.view.redrawRegion(h);
+						}
+					}
+					else{ // mixed
+						// Uncheck since user is cycling three-state instead
+						// of programmatically landing in mixed state
+						if(thisB.highlightButtonPreviousState != true){
+							thisB.highlightButton.set('checked', false);
+						}
+						else{
+							thisB.highlightButtonPreviousState = false;
+						}
+						thisB.view._rubberStop();
+						thisB.view.behaviorManager.swapBehaviors('highlightingMouse', 'normalMouse');
+					}
+				}
+			}, dojo.create('button', {}, navbox));
+
+			this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
+				function(){
+					thisB.highlightButton.set('checked', false);
+				});
+
+			this.afterMilestone('loadRefSeqs', dojo.hitch(this, function(){
+
+				// make the refseq selection dropdown
+				if(this.refSeqOrder && this.refSeqOrder.length){
+					var max = this.config.refSeqSelectorMaxSize || 30;
+					var numrefs = Math.min(max, this.refSeqOrder.length);
+					var options = [];
+					for(var i = 0; i < numrefs; i++){
+						options.push({label: this.refSeqOrder[i], value: this.refSeqOrder[i]});
+					}
+					var tooManyMessage = '(first ' + numrefs + ' ref seqs)';
+					if(this.refSeqOrder.length > max){
+						options.push({label: tooManyMessage, value: tooManyMessage, disabled: true});
+					}
+					this.refSeqSelectBox = new dijitSelectBox({
+						name: 'refseq',
+						value: this.refSeq ? this.refSeq.name : null,
+						options: options,
+						onChange: dojo.hitch(this, function(newRefName){
+							// don't trigger nav if it's the too-many message
+							if(newRefName == tooManyMessage){
+								this.refSeqSelectBox.set('value', this.refSeq.name);
+								return;
+							}
+
+							// only trigger navigation if actually switching sequences
+							if(newRefName != this.refSeq.name){
+								this.navigateToLocation({ref: newRefName});
+							}
+						})
+					}).placeAt(refSeqSelectBoxPlaceHolder);
+				}
+
+				// calculate how big to make the location box:  make it big enough to hold the
+				var locLength = this.config.locationBoxLength || function(){
+
+						// if we have no refseqs, just use 20 chars
+						if(!this.refSeqOrder.length)
+							return 20;
+
+						// if there are not tons of refseqs, pick the longest-named
+						// one.  otherwise just pick the last one
+						var ref = this.refSeqOrder.length < 1000
+							&& function(){
+								var longestNamedRef;
+								array.forEach(this.refSeqOrder, function(name){
+									var ref = this.allRefs[name];
+									if(!ref.length)
+										ref.length = ref.end - ref.start + 1;
+									if(!longestNamedRef || longestNamedRef.length < ref.length)
+										longestNamedRef = ref;
+								}, this);
+								return longestNamedRef;
+							}.call(this)
+							|| this.refSeqOrder.length && this.allRefs[this.refSeqOrder[this.refSeqOrder.length - 1]]
+							|| 20;
+
+						var locstring = Util.assembleLocStringWithLength({
+							ref: ref.name,
+							start: ref.end - 1,
+							end: ref.end,
+							length: ref.length
+						});
+						//console.log( locstring, locstring.length );
+						return locstring.length;
+					}.call(this) || 20;
+
+				this.locationBox.domNode.style.width = locLength + 'ex';
+			}));
+
+			return navbox;
+		},
+		initView: function(){
+			var thisObj = this;
+			return this._milestoneFunction('initView', function(deferred){
+
+				//set up top nav/overview pane and main GenomeView pane
+				dojo.addClass(this.container, "jbrowse"); // browser container has an overall .jbrowse class
+				dojo.addClass(document.body, this.config.theme || "tundra"); //< tundra dijit theme
+
+				var topPane = dojo.create('div', {style: {overflow: 'hidden'}}, this.container);
+
+				var about = this.browserMeta();
+				var aboutDialog = new InfoDialog(
+					{
+						title: 'About ' + about.title,
+						content: about.description,
+						className: 'about-dialog'
+					});
+
+				// make our top menu bar
+				var menuBar = dojo.create(
+					'div',
+					{
+						className: this.config.show_nav ? 'menuBar' : 'topLink'
+					}
+				);
+				thisObj.menuBar = menuBar;
+				if(this.config.show_menu){
+					( this.config.show_nav ? topPane : this.container ).appendChild(menuBar);
+				}
+
+				var overview = dojo.create('div', {className: 'overview', id: 'overview'}, topPane);
+				this.overviewDiv = overview;
+				// overview=0 hides the overview, but we still need it to exist
+				if(!this.config.show_overview)
+					overview.style.cssText = "display: none";
+
+				if(this.config.show_nav){
+					this.navbox = this.createNavBox(topPane);
+
+					if(this.config.datasets && !this.config.dataset_id){
+						console.warn("In JBrowse configuration, datasets specified, but dataset_id not set.  Dataset selector will not be shown.");
+					}
+					if(this.config.datasets && this.config.dataset_id){
+						this.renderDatasetSelect(menuBar);
+					}else{
+
+						this.poweredByLink = dojo.create('a', {
+							className: 'powered_by',
+							innerHTML: this.browserMeta().title,
+							title: 'powered by JBrowse'
+						}, menuBar);
+						thisObj.poweredBy_clickHandle = dojo.connect(this.poweredByLink, "onclick", dojo.hitch(aboutDialog, 'show'));
+					}
+
+					// make the file menu
+					this.addGlobalMenuItem('file',
+						new dijitMenuItem(
+							{
+								// id: 'menubar_fileopen',
+								label: 'Open',
+								iconClass: 'dijitIconFolderOpen',
+								onClick: dojo.hitch(this, 'openFileDialog')
+							})
+					);
+
+					this.fileDialog = new FileDialog({browser: this});
+
+					this.addGlobalMenuItem('file', new dijitMenuItem(
+						{
+							// id: 'menubar_combotrack',
+							label: 'Add combination track',
+							iconClass: 'dijitIconSample',
+							onClick: dojo.hitch(this, 'createCombinationTrack')
+						}));
+
+					this.renderGlobalMenu('file', {text: 'File'}, menuBar);
+
+					// make the view menu
+					this.addGlobalMenuItem('view', new dijitMenuItem({
+						// id: 'menubar_sethighlight',
+						label: 'Set highlight',
+						iconClass: 'dijitIconFilter',
+						onClick: function(){
+							new SetHighlightDialog({
+								browser: thisObj,
+								setCallback: dojo.hitch(thisObj, 'setHighlightAndRedraw')
+							}).show();
+						}
+					}));
+					// make the menu item for clearing the current highlight
+					this._highlightClearButton = new dijitMenuItem(
+						{
+							// id: 'menubar_clearhighlight',
+							label: 'Clear highlight',
+							iconClass: 'dijitIconFilter',
+							onClick: dojo.hitch(this, function(){
+								var h = this.getHighlight();
+								if(h){
+									this.clearHighlight();
+									this.view.redrawRegion(h);
+								}
+							})
+						});
+					this._updateHighlightClearButton();  //< sets the label and disabled status
+					// update it every time the highlight changes
+					this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
+						dojo.hitch(this, '_updateHighlightClearButton'));
+
+					this.addGlobalMenuItem('view', this._highlightClearButton);
+
+					// add a global menu item for resizing all visible quantitative tracks
+					this.addGlobalMenuItem('view', new dijitMenuItem({
+						label: 'Resize quant. tracks',
+						// id: 'menubar_settrackheight',
+						title: 'Set all visible quantitative tracks to a new height',
+						iconClass: 'jbrowseIconVerticalResize',
+						onClick: function(){
+							new SetTrackHeightDialog({
+								setCallback: function(height){
+									var tracks = thisObj.view.visibleTracks();
+									array.forEach(tracks, function(track){
+										// operate only on XYPlot or Density tracks
+										if(!/\b(XYPlot|Density)/.test(track.config.type))
+											return;
+
+										track.trackHeightChanged = true;
+										track.updateUserStyles({height: height});
+									});
+								}
+							}).show();
+						}
+					}));
+
+					this.renderGlobalMenu('view', {text: 'View'}, menuBar);
+
+					// make the options menu
+					this.renderGlobalMenu('options', {text: 'Options', title: 'configure JBrowse'}, menuBar);
+				}
+
+				if(this.config.show_nav){
+					// make the help menu
+					this.addGlobalMenuItem('help',
+						new dijitMenuItem(
+							{
+								// id: 'menubar_about',
+								label: 'About',
+								//iconClass: 'dijitIconFolderOpen',
+								onClick: dojo.hitch(aboutDialog, 'show')
+							})
+					);
+
+					function showHelp(){
+						new HelpDialog(lang.mixin(thisObj.config.quickHelp || {}, {browser: thisObj})).show();
+					}
+
+					this.setGlobalKeyboardShortcut('?', showHelp);
+					this.addGlobalMenuItem('help',
+						new dijitMenuItem(
+							{
+								// id: 'menubar_generalhelp',
+								label: 'General',
+								iconClass: 'jbrowseIconHelp',
+								onClick: showHelp
+							})
+					);
+
+					this.renderGlobalMenu('help', {}, menuBar);
+				}
+
+				if(this.config.show_nav && this.config.show_tracklist && this.config.show_overview){
+					var shareLink = this.makeShareLink();
+					if(shareLink){
+						menuBar.appendChild(shareLink);
+					}
+				}
+				else
+					menuBar.appendChild(this.makeFullViewLink());
+
+				this.viewElem = document.createElement("div");
+				this.viewElem.className = "dragWindow";
+				this.container.appendChild(this.viewElem);
+
+				this.containerWidget = new dijitBorderContainer({
+					liveSplitters: false,
+					design: "sidebar",
+					gutters: false
+				}, this.container);
+				var contentWidget =
+					new dijitContentPane({region: "top"}, topPane);
+
+				// hook up GenomeView
+				this.view = this.viewElem.view =
+					new GenomeView(
+						{
+							browser: this,
+							elem: this.viewElem,
+							config: this.config.view,
+							stripeWidth: 250,
+							refSeq: this.refSeq,
+							zoomLevel: 1 / 200
+						});
+
+				dojo.connect(this.view, "onFineMove", this, "onFineMove");
+				dojo.connect(this.view, "onCoarseMove", this, "onCoarseMove");
+
+				this.browserWidget =
+					new dijitContentPane({region: "center"}, this.viewElem);
+				dojo.connect(this.browserWidget, "resize", this, 'onResize');
+				dojo.connect(this.browserWidget, "resize", this.view, 'onResize');
+
+				//connect events to update the URL in the location bar
+				function updateLocationBar(){
+					var shareURL = thisObj.makeCurrentViewURL();
+					if(thisObj.config.updateBrowserURL && window.history && window.history.replaceState)
+						window.history.replaceState({}, "", shareURL);
+					//document.title = thisObj.browserMeta().title + ' ' + thisObj.view.visibleRegionLocString();
+				};
+				dojo.connect(this, "onCoarseMove", updateLocationBar);
+				this.subscribe('/jbrowse/v1/n/tracks/visibleChanged', updateLocationBar);
+				this.subscribe('/jbrowse/v1/n/globalHighlightChanged', updateLocationBar);
+
+				//set initial location
+				this.afterMilestone('loadRefSeqs', dojo.hitch(this, function(){
+					this.afterMilestone('initTrackMetadata', dojo.hitch(this, function(){
+						this.createTrackList().then(dojo.hitch(this, function(){
+
+							this.containerWidget.startup();
+							this.onResize();
+
+							// make our global keyboard shortcut handler
+							on(document.body, 'keypress', dojo.hitch(this, 'globalKeyHandler'));
+
+							// configure our event routing
+							this._initEventRouting();
+
+							// done with initView
+							deferred.resolve({success: true});
+						}));
+					}));
+				}));
+			});
+		},
+
+		makeGlobalMenu: function(menuName){
+			var items = ( this._globalMenuItems || {} )[menuName] || [];
+			if(!items.length)
+				return null;
+
+			var menu = new dijitDropDownMenu({leftClickToOpen: true});
+			dojo.forEach(items, function(item){
+				menu.addChild(item);
+			});
+			dojo.addClass(menu.domNode, 'globalMenu');
+			dojo.addClass(menu.domNode, menuName);
+			menu.startup();
+			return menu;
+		},
+		createTrackList: function(){
+			return this._milestoneFunction('createTrack', function(deferred){
+				// find the tracklist class to use
+				var tl_class = !this.config.show_tracklist ? 'Null' :
+					(this.config.trackSelector || {}).type ? this.config.trackSelector.type :
+						'Hierarchical';
+				// if( ! /\//.test( tl_class ) )
+				//     tl_class = 'JBrowse/View/TrackList/'+tl_class;
+				var tl_class = "p3/widget/HierarchicalTrackList";
+
+				// load all the classes we need
+				require([tl_class],
+					dojo.hitch(this, function(trackListClass){
+						// instantiate the tracklist and the track metadata object
+						this.trackListView = new trackListClass(
+							dojo.mixin(
+								dojo.clone(this.config.trackSelector) || {},
+								{
+									trackConfigs: this.config.tracks,
+									browser: this,
+									trackMetaData: this.trackMetaDataStore
+								}
+							)
+						);
+
+						// bind the 't' key as a global keyboard shortcut
+						this.setGlobalKeyboardShortcut('t', this.trackListView, 'toggle');
+
+						// listen for track-visibility-changing messages from
+						// views and update our tracks cookie
+						this.subscribe('/jbrowse/v1/n/tracks/visibleChanged', dojo.hitch(this, function(){
+							this.cookie("tracks",
+								this.view.visibleTrackNames().join(','),
+								{expires: 60});
+						}));
+
+						deferred.resolve({success: true});
+					}));
+			});
+		},
+
+		loadRefSeqs: function(){
+			return this._milestoneFunction('loadRefSeqs', function(deferred){
+				// load our ref seqs
+				if(typeof this.config.refSeqs == 'string')
+					this.config.refSeqs = {url: this.resolveUrl(this.config.refSeqs)};
+				var thisB = this;
+				console.log("refSeqs url: ", this.config.refSeqs.url)
+				request(this.config.refSeqs.url, {handleAs: 'text'})
+					.then(lang.hitch(this,function(o){
+                            var refseqConfig = dojo.fromJson(o);
+                            if (refseqConfig.length > 0 && !("defaultLocation" in this.config)){
+                                var initSize = Math.min(100000,refseqConfig[0]["length"]);
+                                this.config["defaultLocation"]=refseqConfig[0]["accn"]+":1.."+initSize.toString();
+                            }
+
+                            refseqConfig.forEach(function(seq){
+                                if(seq["seqChunkSize"] > 20000){
+                                    seq["seqChunkSize"] = 20000;
+                                }
+                            });
+
+							console.log(" call addREfseqs fromJson: ", o);
+							thisB.addRefseqs(refseqConfig);
+							//thisB.addRefseqs(dojo.fromJson(o));
+							console.log("After Add RefSeqs fromJson")
+							deferred.resolve({success: true});
+						}),
+						function(e){
+							deferred.reject('Could not load reference sequence definitions. ' + e);
+						}
+					);
+			});
+		},
+		_loadCSS: function(css){
+			var deferred = new Deferred();
+			if(typeof css == 'string'){
+				// if it has '{' in it, it probably is not a URL, but is a string of CSS statements
+				if(css.indexOf('{') > -1){
+					dojo.create('style', {
+						"data-from": 'JBrowse Config',
+						type: 'text/css',
+						innerHTML: css
+					}, document.head);
+					console.log("Resolve CSS");
+					deferred.resolve(true);
+				}
+				// otherwise, it must be a URL
+				else{
+					css = {url: css};
+				}
+			}
+			if(typeof css == 'object'){
+				LazyLoad.css(css.url, function(){
+					console.log("LazyLoad.css callback");
+					deferred.resolve(true);
+				});
+			}
+			return deferred;
+		},
+		initPlugins: function(){
+			return this._milestoneFunction('initPlugins', function(deferred){
+				this.plugins = {};
+
+				var plugins = this.config.plugins || this.config.Plugins || {};
+
+				// coerce plugins to array of objects
+				if(!lang.isArray(plugins) && !plugins.name){
+					// plugins like  { Foo: {...}, Bar: {...} }
+					plugins = function(){
+						var newplugins = [];
+						for(var pname in plugins){
+							if(!( 'name' in plugins[pname] )){
+								plugins[pname].name = pname;
+							}
+							newplugins.push(plugins[pname]);
+						}
+						return newplugins;
+					}.call(this);
+				}
+				if(!lang.isArray(plugins))
+					plugins = [plugins];
+
+				plugins.unshift.apply(plugins, this._corePlugins());
+
+				// coerce string plugin names to {name: 'Name'}
+				plugins = array.map(plugins, function(p){
+					return typeof p == 'object' ? p : {'name': p};
+				});
+
+				if(!plugins){
+					deferred.resolve({success: true});
+					return;
+				}
+
+				// set default locations for each plugin
+				array.forEach(plugins, function(p){
+					if(!( 'location' in p ))
+						p.location = 'plugins/' + p.name;
+
+					var resolved = this.resolveUrl(p.location);
+					console.log("RESOLVED: ", resolved)
+					// figure out js path
+					if(!( 'js' in p ))
+						p.js = resolved + "/js"; //URL resolution for this is taken care of by the JS loader
+					if(p.js.charAt(0) != '/' && !/^https?:/i.test(p.js))
+						p.js = '../' + p.js;
+
+					// figure out css path
+					if(!( 'css' in p ))
+						p.css = resolved + "/css";
+
+					console.log("P: ", p)
+				}, this);
+
+				var pluginDeferreds = array.map(plugins, function(p){
+					return new Deferred();
+				});
+
+				// fire the "all plugins done" deferred when all of the plugins are done loading
+				(new DeferredList(pluginDeferreds))
+					.then(function(){
+						deferred.resolve({success: true});
+					});
+
+				console.log("Call Require: ", plugins)
+				require({
+						packages: array.map(plugins, function(p){
+							return {
+								name: p.name,
+								location: p.js
+							};
+						}, this)
+					},
+					array.map(plugins, function(p){
+						return p.name;
+					}),
+					dojo.hitch(this, function(){
+						console.log("callback forEach: ", this, arguments)
+						array.forEach(arguments, function(pluginClass, i){
+							console.log("pluginClass: ", pluginClass, " i: ", i);
+							var plugin = plugins[i];
+							var thisPluginDone = pluginDeferreds[i];
+
+							if(typeof pluginClass == 'string'){
+								console.error("could not load plugin " + plugin.name + ": " + pluginClass);
+							}else{
+								// make the plugin's arguments out of
+								// its little obj in 'plugins', and
+								// also anything in the top-level
+								// conf under its plugin name
+								var args = dojo.mixin(
+									dojo.clone(plugins[i]),
+									{config: this.config[plugin.name] || {}});
+								args.browser = this;
+								args = dojo.mixin(args, {browser: this});
+
+								// load its css
+
+								var cssLoaded = this._loadCSS(
+									{url: plugin.css + '/main.css'}
+								);
+								cssLoaded.then(function(){
+									thisPluginDone.resolve({success: true});
+								});
+
+								// give the plugin access to the CSS
+								// promise so it can know when its
+								// CSS is ready
+								args.cssLoaded = cssLoaded;
+
+								// instantiate the plugin
+								this.plugins[plugin.name] = new pluginClass(args);
+							}
+						}, this);
+					}));
+			});
+		}
+	});
+
+	return declare([WidgetBase], {
+		state: null,
+		jbrowseConfig: null,
+
+		onSetState: function(attr, oldVal, state){
+			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
+
+            //hack for now
+            if(state && state.hashParams){
+                Object.keys(state.hashParams).forEach(function(attr){
+                    state.hashParams[attr]=decodeURIComponent(state.hashParams[attr]);
+                });
+            }
+
+			var jbrowseConfig = {
+				containerID: this.id + "_browserContainer",
+				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
+				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (state.genome_id || state.genome_ids[0]),
+				// dataRoot: "sample_data/json/volvox",
+				browserRoot: "/public/js/jbrowse.repo/",
+				baseUrl: "/public/js/jbrowse.repo/",
+				refSeqs: "{dataRoot}/refseqs",
+				queryParams: (state && state.hashParams) ? state.hashParams : {},
+				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
+				forceTracks: ["PATRICGenes", "RefSeqGenes"].join(","),
+				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
+				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
+				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
+				show_overview: (state && state.hashParams && (typeof state.hashParams.show_overview != 'undefined')) ? state.hashParams.show_overview : true,
+				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined')) ? state.hashParams.show_menu : false,
+				stores: {url: {type: "JBrowse/Store/SeqFeature/FromConfig", features: []}},
+				updateBrowserURL: false,
+				trackSelector: {type: "p3/widget/HierarchicalTrackList"}
+				// "trackSelector": {
+				// 	"type": "Faceted",
+				// 	"displayColumns": [
+				// 	  "key"
+				// 	]
+				// }
+			}
+
+			console.log("JBrowse CONFIG: ", jbrowseConfig);
+			if(state && state.hashParams && state.hashParams.addFeatures){
+				jbrowseConfig.stores.url.features = JSON.parse(state.hashParams.addFeatures)
+			}
+
+			if(state && state.hashParams && state.hashParams.addTracks){
+				jbrowseConfig.tracks = JSON.parse(state.hashParams.addTracks);
+			}
+			// if there is ?addStores in the query params, add
+			// those store configurations to our initial
+			// configuration
+			if(state && state.hashParams && state.hashParams.addStores){
+				jbrowseConfig.stores = JSON.parse(state.hashParams.addStores);
+			}
+
+			console.log("jbrowseConfig", jbrowseConfig);
+
+			this.set("jbrowseConfig", jbrowseConfig)
+
+		},
+
+		onSetJBrowseConfig: function(attr, oldVal, config){
+			if(!config){
+				return;
+			}
+			if(!this.visible){
+				return;
+			}
+
+			if(!this._browser){
+				console.log("Browser config: ", config);
+
+				this._browser = new Browser(config)
+			}else{
+				console.log("Browser Already Exists");
+			}
+		},
+		postCreate: function(){
+			this.inherited(arguments);
+			this.containerNode = domConstruct.create("div", {
+				id: this.id + "_browserContainer",
+				style: {padding: "0px", margin: "0px", border: "0px"}
+			}, this.domNode);
+			this.watch("state", lang.hitch(this, "onSetState"));
+			this.watch("jbrowseConfig", lang.hitch(this, "onSetJBrowseConfig"));
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			// console.log("GridContainer setVisible: ", visible)
+			this.visible = visible;
+			if(this.visible && !this._firstView){
+				// console.log("Trigger First View: ", this.id)
+				this.onFirstView();
+			}
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+			if(!this._browser){
+				this._browser = new Browser(this.jbrowseConfig)
+			}
+		},
+
+		resize: function(changeSize, resultSize){
+			var node = this.domNode;
+
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+
+				domGeometry.setMarginBox(node, changeSize);
+			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+			domGeometry.setMarginBox(this.containerNode, this._contentBox)
+			// this._browser.resize();
+		}
+	});
+});
+
+},
+'JBrowse/Browser':function(){
+var _gaq = _gaq || []; // global task queue for Google Analytics
+
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/lang',
+            'dojo/on',
+            'dojo/keys',
+            'dojo/Deferred',
+            'dojo/DeferredList',
+            'dojo/topic',
+            'dojo/aspect',
+            'dojo/request',
+            'JBrowse/has',
+            'dojo/_base/array',
+            'dijit/layout/ContentPane',
+            'dijit/layout/BorderContainer',
+            'dijit/Dialog',
+            'dijit/form/ComboBox',
+            'dijit/form/Button',
+            'dijit/form/Select',
+            'dijit/form/ToggleButton',
+            'dijit/form/DropDownButton',
+            'dijit/DropDownMenu',
+            'dijit/MenuItem',
+            'dojox/form/TriStateCheckBox',
+            'JBrowse/Util',
+            'JBrowse/Store/LazyTrie',
+            'JBrowse/Store/Names/LazyTrieDojoData',
+            'dojo/store/DataStore',
+            'JBrowse/FeatureFiltererMixin',
+            'JBrowse/GenomeView',
+            'JBrowse/TouchScreenSupport',
+            'JBrowse/ConfigManager',
+            'JBrowse/View/InfoDialog',
+            'JBrowse/View/FileDialog',
+            'JBrowse/Model/Location',
+            'JBrowse/View/LocationChoiceDialog',
+            'JBrowse/View/Dialog/SetHighlight',
+            'JBrowse/View/Dialog/SetTrackHeight',
+            'JBrowse/View/Dialog/QuickHelp',
+            'JBrowse/View/StandaloneDatasetList',
+            'dijit/focus',
+            'lazyload', // for dynamic CSS loading
+            'dojo/domReady!'
+        ],
+        function(
+            declare,
+            lang,
+            on,
+            keys,
+            Deferred,
+            DeferredList,
+            topic,
+            aspect,
+            request,
+            has,
+            array,
+            dijitContentPane,
+            dijitBorderContainer,
+            dijitDialog,
+            dijitComboBox,
+            dijitButton,
+            dijitSelectBox,
+            dijitToggleButton,
+            dijitDropDownButton,
+            dijitDropDownMenu,
+            dijitMenuItem,
+            dojoxTriStateCheckBox,
+            Util,
+            LazyTrie,
+            NamesLazyTrieDojoDataStore,
+            DojoDataStore,
+            FeatureFiltererMixin,
+            GenomeView,
+            Touch,
+            ConfigManager,
+            InfoDialog,
+            FileDialog,
+            Location,
+            LocationChoiceDialog,
+            SetHighlightDialog,
+            SetTrackHeightDialog,
+            HelpDialog,
+            StandaloneDatasetList,
+            dijitFocus,
+            LazyLoad
+        ) {
+
+
+var dojof = Util.dojof;
+
+/**
+ * Construct a new Browser object.
+ * @class This class is the main interface between JBrowse and embedders
+ * @constructor
+ * @param params an object with the following properties:<br>
+ * <ul>
+ * <li><code>config</code> - list of objects with "url" property that points to a config JSON file</li>
+ * <li><code>containerID</code> - ID of the HTML element that contains the browser</li>
+ * <li><code>refSeqs</code> - object with "url" property that is the URL to list of reference sequence information items</li>
+ * <li><code>browserRoot</code> - (optional) URL prefix for the browser code</li>
+ * <li><code>tracks</code> - (optional) comma-delimited string containing initial list of tracks to view</li>
+ * <li><code>location</code> - (optional) string describing the initial location</li>
+ * <li><code>defaultTracks</code> - (optional) comma-delimited string containing initial list of tracks to view if there are no cookies and no "tracks" parameter</li>
+ * <li><code>defaultLocation</code> - (optional) string describing the initial location if there are no cookies and no "location" parameter</li>
+ * <li><code>show_nav</code> - (optional) string describing the on/off state of navigation box</li>
+ * <li><code>show_tracklist</code> - (optional) string describing the on/off state of track bar</li>
+ * <li><code>show_overview</code> - (optional) string describing the on/off state of overview</li>
+ * </ul>
+ */
+
+return declare( FeatureFiltererMixin, {
+
+constructor: function(params) {
+    this.globalKeyboardShortcuts = {};
+
+    this.config = params || {};
+
+    // if we're in the unit tests, stop here and don't do any more initialization
+    if( this.config.unitTestMode )
+        return;
+
+    this.startTime = new Date();
+
+    // start the initialization process
+    var thisB = this;
+    dojo.addOnLoad( function() {
+        thisB.loadConfig().then( function() {
+
+            thisB.container = dojo.byId( thisB.config.containerID );
+            thisB.container.onselectstart = function() { return false; };
+
+            // initialize our highlight if one was set in the config
+            if( thisB.config.initialHighlight && thisB.config.initialHighlight != "/" )
+                thisB.setHighlight( new Location( thisB.config.initialHighlight ) );
+
+            thisB.loadNames();
+            thisB.initPlugins().then( function() {
+                thisB.loadUserCSS().then( function() {
+
+                    thisB.initTrackMetadata();
+                    thisB.loadRefSeqs().then( function() {
+
+                       // figure out our initial location
+                       var initialLocString = thisB._initialLocation();
+                       var initialLoc = Util.parseLocString( initialLocString );
+                       if (initialLoc && initialLoc.ref && thisB.allRefs[initialLoc.ref]) {
+                           thisB.refSeq = thisB.allRefs[initialLoc.ref];
+                       }
+
+                       thisB.initView().then( function() {
+                           Touch.loadTouch(); // init touch device support
+                           if( initialLocString )
+                               thisB.navigateTo( initialLocString );
+
+                           // figure out what initial track list we will use:
+                           var tracksToShow = [];
+                           // always add alwaysOnTracks, regardless of any other track params                   
+                           if (thisB.config.alwaysOnTracks) { tracksToShow = tracksToShow.concat(thisB.config.alwaysOnTracks.split(",")); }
+                           // add tracks specified in URL track param, 
+                           //    if no URL track param then add last viewed tracks via tracks cookie
+                           //    if no URL param and no tracks cookie, then use defaultTracks 
+                           if (thisB.config.forceTracks)   { tracksToShow = tracksToShow.concat(thisB.config.forceTracks.split(",")); } 
+                           else if (thisB.cookie("tracks")) { tracksToShow = tracksToShow.concat(thisB.cookie("tracks").split(",")); }
+                           else if (thisB.config.defaultTracks) { tracksToShow = tracksToShow.concat(thisB.config.defaultTracks.split(",")); }
+                           // currently, force "DNA" _only_ if no other guides as to what to show?
+                           //    or should this be changed to always force DNA to show?
+                           if (tracksToShow.length == 0) { tracksToShow.push("DNA"); }
+                           // eliminate track duplicates (may have specified in both alwaysOnTracks and defaultTracks)
+                           tracksToShow = Util.uniq(tracksToShow);
+                           thisB.showTracks( tracksToShow );
+
+                           thisB.passMilestone( 'completely initialized', { success: true } );
+                       });
+                       thisB.reportUsageStats();
+                    });
+                });
+            });
+        });
+    });
+},
+
+_initialLocation: function() {
+    var oldLocMap = dojo.fromJson( this.cookie('location') ) || {};
+    if( this.config.location ) {
+        return this.config.location;
+    } else if( oldLocMap[this.refSeq.name] ) {
+        return oldLocMap[this.refSeq.name].l || oldLocMap[this.refSeq.name];
+    } else if( this.config.defaultLocation ){
+        return this.config.defaultLocation;
+    } else {
+        return Util.assembleLocString({
+                                          ref:   this.refSeq.name,
+                                          start: 0.4 * ( this.refSeq.start + this.refSeq.end ),
+                                          end:   0.6 * ( this.refSeq.start + this.refSeq.end )
+                                      });
+    }
+},
+
+version: function() {
+    // when a build is put together, the build system assigns a string
+    // to the variable below.
+    var BUILD_SYSTEM_JBROWSE_VERSION;
+    return BUILD_SYSTEM_JBROWSE_VERSION || 'development';
+}.call(),
+
+
+/**
+ * Get a plugin, if it is present.  Note that, if plugin
+ * initialization is not yet complete, it may be a while before the
+ * callback is called.
+ *
+ * Callback is called with one parameter, the desired plugin object,
+ * or undefined if it does not exist.
+ */
+getPlugin: function( name, callback ) {
+    this.afterMilestone( 'initPlugins', dojo.hitch( this, function() {
+        callback( this.plugins[name] );
+    }));
+},
+
+_corePlugins: function() {
+    return [ 'RegexSequenceSearch' ];
+},
+
+/**
+ * Load and instantiate any plugins defined in the configuration.
+ */
+initPlugins: function() {
+    return this._milestoneFunction( 'initPlugins', function( deferred ) {
+        this.plugins = {};
+
+        var plugins = this.config.plugins || this.config.Plugins || {};
+
+        // coerce plugins to array of objects
+        if( ! lang.isArray(plugins) && ! plugins.name ) {
+            // plugins like  { Foo: {...}, Bar: {...} }
+            plugins = function() {
+                var newplugins = [];
+                for( var pname in plugins ) {
+                    if( !( 'name' in plugins[pname] ) ) {
+                        plugins[pname].name = pname;
+                    }
+                    newplugins.push( plugins[pname] );
+                }
+                return newplugins;
+            }.call(this);
+        }
+        if( ! lang.isArray( plugins ) )
+            plugins = [ plugins ];
+
+        plugins.unshift.apply( plugins, this._corePlugins() );
+
+        // coerce string plugin names to {name: 'Name'}
+        plugins = array.map( plugins, function( p ) {
+            return typeof p == 'object' ? p : { 'name': p };
+        });
+
+        if( ! plugins ) {
+            deferred.resolve({success: true});
+            return;
+        }
+
+        // set default locations for each plugin
+        array.forEach( plugins, function(p) {
+            if( !( 'location' in p ))
+                p.location = 'plugins/'+p.name;
+
+            var resolved = this.resolveUrl( p.location );
+
+            // figure out js path
+            if( !( 'js' in p ))
+                p.js = p.location+"/js"; //URL resolution for this is taken care of by the JS loader
+            if( p.js.charAt(0) != '/' && ! /^https?:/i.test( p.js ) )
+                p.js = '../'+p.js;
+
+            // figure out css path
+            if( !( 'css' in p ))
+                p.css = resolved+"/css";
+        },this);
+
+        var pluginDeferreds = array.map( plugins, function(p) {
+            return new Deferred();
+        });
+
+        // fire the "all plugins done" deferred when all of the plugins are done loading
+        (new DeferredList( pluginDeferreds ))
+            .then( function() { deferred.resolve({success: true}); });
+
+        require( {
+                     packages: array.map( plugins, function(p) {
+                                              return {
+                                                  name: p.name,
+                                                  location: p.js
+                                              };
+                                          }, this )
+                 },
+                 array.map( plugins, function(p) { return p.name; } ),
+                 dojo.hitch( this, function() {
+                     array.forEach( arguments, function( pluginClass, i ) {
+                             var plugin = plugins[i];
+                             var thisPluginDone = pluginDeferreds[i];
+                             if( typeof pluginClass == 'string' ) {
+                                 console.error("could not load plugin "+plugin.name+": "+pluginClass);
+                             } else {
+                                 // make the plugin's arguments out of
+                                 // its little obj in 'plugins', and
+                                 // also anything in the top-level
+                                 // conf under its plugin name
+                                 var args = dojo.mixin(
+                                     dojo.clone( plugins[i] ),
+                                     { config: this.config[ plugin.name ]||{} });
+                                 args.browser = this;
+                                 args = dojo.mixin( args, { browser: this } );
+
+                                 // load its css
+                                 var cssLoaded = this._loadCSS(
+                                     { url: plugin.css+'/main.css' }
+                                 );
+                                 cssLoaded.then( function() {
+                                     thisPluginDone.resolve({success:true});
+                                 });
+
+                                 // give the plugin access to the CSS
+                                 // promise so it can know when its
+                                 // CSS is ready
+                                 args.cssLoaded = cssLoaded;
+
+                                 // instantiate the plugin
+                                 this.plugins[ plugin.name ] = new pluginClass( args );
+                             }
+                         }, this );
+                  }));
+    });
+},
+
+/**
+ * Resolve a URL relative to the browserRoot.
+ */
+resolveUrl: function( url ) {
+    var browserRoot = this.config.browserRoot || "";
+    if( browserRoot && browserRoot.charAt( browserRoot.length - 1 ) != '/' )
+        browserRoot += '/';
+
+    return Util.resolveUrl( browserRoot, url );
+},
+
+/**
+ * Main error handler.  Displays links to configuration help or a
+ * dataset selector in the main window.  Called when the main browser
+ * cannot run at all, because of configuration errors or whatever.
+ */
+fatalError: function( error ) {
+
+    function formatError(error) {
+        if( error ) {
+            console.error( error.stack || ''+error );
+            error = error+'';
+            if( ! /\.$/.exec(error) )
+                error = error + '.';
+        }
+        return error;
+    }
+
+    if( ! this.renderedFatalErrors ) {
+        // if the error is just that there are no ref seqs defined,
+        // and there are datasets defined in the conf file, then just
+        // show a little HTML list of available datasets
+        if( /^Could not load reference sequence/.test( error )
+            && this.config.datasets
+            && ! this.config.datasets._DEFAULT_EXAMPLES
+          ) {
+            new StandaloneDatasetList({ datasets: this.config.datasets })
+                  .placeAt( this.container );
+        } else {
+            var container = this.container || document.body;
+            container.innerHTML = ''
+                + '<div class="fatal_error">'
+                + '  <h1>Congratulations, JBrowse is on the web!</h1>'
+                + "  <p>However, JBrowse could not start, either because it has not yet been configured"
+                + "     and loaded with data, or because of an error.</p>"
+                + "  <p style=\"font-size: 110%; font-weight: bold\">If this is your first time running JBrowse, <a title=\"View the tutorial\" href=\"docs/tutorial/\" target=\"_blank\">click here to follow the Quick-start Tutorial to show your data in JBrowse.</a></p>"
+                + '  <p id="volvox_data_placeholder"></p>'
+                + "  <p>Otherwise, please refer to the following resources for help in setting up JBrowse to show your data.</p>"
+                + '  <ul><li><a target="_blank" href="docs/tutorial/">Quick-start tutorial</a> - get your data visible quickly with minimum fuss</li>'
+                + '      <li><a target="_blank" href="http://gmod.org/wiki/JBrowse_Configuration_Guide">JBrowse Configuration Guide</a> - a comprehensive reference</li>'
+                + '      <li><a target="_blank" href="http://gmod.org/wiki/JBrowse">JBrowse wiki main page</a></li>'
+                + '      <li><a target="_blank" href="docs/config.html"><code>biodb-to-json.pl</code> configuration reference</a></li>'
+                + '      <li><a target="_blank" href="docs/featureglyphs.html">HTMLFeatures CSS class reference</a> - prepackaged styles (CSS classes) for HTMLFeatures tracks</li>'
+                + '  </ul>'
+                + '  <div id="fatal_error_list" class="errors"> <h2>Error message(s):</h2>'
+                + ( error ? '<div class="error"> '+formatError(error)+'</div>' : '' )
+                + '  </div>'
+                + '</div>'
+                ;
+            request( 'sample_data/json/volvox/successfully_run' )
+            .then( function() {
+                       try {
+                           document.getElementById('volvox_data_placeholder')
+                               .innerHTML = 'However, it appears you have successfully run <code>./setup.sh</code>, so you can see the <a href="?data=sample_data/json/volvox" target="_blank">Volvox test data here</a>.';
+                       } catch(e) {}
+                   });
+
+            this.renderedFatalErrors = true;
+        }
+    } else {
+        var errors_div = dojo.byId('fatal_error_list') || document.body;
+        dojo.create('div', { className: 'error', innerHTML: formatError(error)+'' }, errors_div );
+    }
+},
+
+loadRefSeqs: function() {
+    return this._milestoneFunction( 'loadRefSeqs', function( deferred ) {
+        // load our ref seqs
+        if( typeof this.config.refSeqs == 'string' )
+            this.config.refSeqs = { url: this.config.refSeqs };
+        var thisB = this;
+        request(this.config.refSeqs.url, { handleAs: 'text' } )
+            .then( function(o) {
+                       thisB.addRefseqs( dojo.fromJson(o) );
+                       deferred.resolve({success:true});
+                   },
+                   function( e ) {
+                       deferred.reject( 'Could not load reference sequence definitions. '+e );
+                   }
+                 );
+    });
+},
+
+loadUserCSS: function() {
+    return this._milestoneFunction( 'loadUserCSS', function( deferred ) {
+        if( this.config.css && ! lang.isArray( this.config.css ) )
+            this.config.css = [ this.config.css ];
+
+        var css = this.config.css || [];
+        if( ! css.length ) {
+            deferred.resolve({success:true});
+            return;
+        }
+
+        var that = this;
+        var cssDeferreds = array.map( css, function( css ) {
+            return that._loadCSS( css );
+        });
+
+        new DeferredList(cssDeferreds)
+            .then( function() { deferred.resolve({success:true}); } );
+   });
+},
+
+_loadCSS: function( css ) {
+    var deferred = new Deferred();
+    if( typeof css == 'string' ) {
+        // if it has '{' in it, it probably is not a URL, but is a string of CSS statements
+        if( css.indexOf('{') > -1 ) {
+            dojo.create('style', { "data-from": 'JBrowse Config', type: 'text/css', innerHTML: css }, document.head );
+            deferred.resolve(true);
+        }
+        // otherwise, it must be a URL
+        else {
+            css = { url: css };
+        }
+    }
+    if( typeof css == 'object' ) {
+        LazyLoad.css( css.url, function() { deferred.resolve(true); } );
+    }
+    return deferred;
+},
+
+/**
+ * Load our name index.
+ */
+loadNames: function() {
+    return this._milestoneFunction( 'loadNames', function( deferred ) {
+        var conf = dojo.mixin( dojo.clone( this.config.names || {} ),
+                               this.config.autocomplete || {} );
+        if( ! conf.url )
+            conf.url = this.config.nameUrl || 'data/names/';
+
+        if( conf.baseUrl )
+            conf.url = Util.resolveUrl( conf.baseUrl, conf.url );
+
+        var type;
+        if(( type = conf.type )) {
+            var thisB = this;
+            if( type.indexOf('/') == -1 )
+                type = 'JBrowse/Store/Names/'+type;
+            require ([type], function (CLASS){
+                thisB.nameStore = new CLASS( dojo.mixin({ browser: thisB }, conf) );
+                deferred.resolve({success: true});
+            });
+        }
+        // no name type setting, must be the legacy store
+        else {
+            // wrap the older LazyTrieDojoDataStore with
+            // dojo.store.DataStore to conform with the dojo/store API
+            this.nameStore = new DojoDataStore({
+                store: new NamesLazyTrieDojoDataStore({
+                    browser: this,
+                    namesTrie: new LazyTrie( conf.url, "lazy-{Chunk}.json"),
+                    stopPrefixes: conf.stopPrefixes,
+                    resultLimit:  conf.resultLimit || 15,
+                    tooManyMatchesMessage: conf.tooManyMatchesMessage
+                })
+            });
+            deferred.resolve({success: true});
+        }
+    });
+},
+
+/**
+ * Compare two reference sequence names, returning -1, 0, or 1
+ * depending on the result.  Case insensitive, insensitive to the
+ * presence or absence of prefixes like 'chr', 'chrom', 'ctg',
+ * 'contig', 'scaffold', etc
+ */
+compareReferenceNames: function( a, b ) {
+    return this.regularizeReferenceName(a).localeCompare( this.regularizeReferenceName( b ) );
+},
+
+/**
+ * Regularize the reference sequence name in a location.
+ */
+regularizeLocation: function( location ) {
+    var ref = this.findReferenceSequence( location.ref || location.objectName );
+    if( ref )
+        location.ref = ref.name;
+    return location;
+},
+
+regularizeReferenceName: function( refname ) {
+
+    if( this.config.exactReferenceSequenceNames )
+        return refname;
+
+    refname = refname.toLowerCase()
+                     .replace(/^chro?m?(osome)?/,'chr')
+                     .replace(/^co?n?ti?g/,'ctg')
+                     .replace(/^scaff?o?l?d?/,'scaffold')
+                     .replace(/^([a-z]*)0+/,'$1')
+                     .replace(/^(\d+)$/, 'chr$1' );
+
+    return refname;
+},
+
+initView: function() {
+    var thisObj = this;
+    return this._milestoneFunction('initView', function( deferred ) {
+
+        //set up top nav/overview pane and main GenomeView pane
+        dojo.addClass( this.container, "jbrowse"); // browser container has an overall .jbrowse class
+        dojo.addClass( document.body, this.config.theme || "tundra"); //< tundra dijit theme
+
+        var topPane = dojo.create( 'div',{ style: {overflow: 'hidden'}}, this.container );
+
+        var about = this.browserMeta();
+        var aboutDialog = new InfoDialog(
+            {
+                title: 'About '+about.title,
+                content: about.description,
+                className: 'about-dialog'
+            });
+
+
+        // make our top menu bar
+        var menuBar = dojo.create(
+            'div',
+            {
+                className: this.config.show_nav ? 'menuBar' : 'topLink'
+            }
+            );
+        thisObj.menuBar = menuBar;
+        if( this.config.show_menu ) {
+            ( this.config.show_nav ? topPane : this.container ).appendChild( menuBar );
+        }
+
+        var overview = dojo.create( 'div', { className: 'overview', id: 'overview' }, topPane );
+        this.overviewDiv = overview;
+        // overview=0 hides the overview, but we still need it to exist
+        if( ! this.config.show_overview )
+            overview.style.cssText = "display: none";
+
+        if( this.config.show_nav ) {
+            this.navbox = this.createNavBox( topPane );
+
+            if( this.config.datasets && ! this.config.dataset_id ) {
+                console.warn("In JBrowse configuration, datasets specified, but dataset_id not set.  Dataset selector will not be shown.");
+            }
+            if( this.config.datasets && this.config.dataset_id ) {
+                this.renderDatasetSelect( menuBar );
+            } else {
+
+                this.poweredByLink = dojo.create('a', {
+                                className: 'powered_by',
+                                innerHTML: this.browserMeta().title,
+                                title: 'powered by JBrowse'
+                            }, menuBar );
+                thisObj.poweredBy_clickHandle = dojo.connect(this.poweredByLink, "onclick", dojo.hitch( aboutDialog, 'show') );
+            }
+
+            // make the file menu
+            this.addGlobalMenuItem( 'file',
+                                    new dijitMenuItem(
+                                        {
+                                            id: 'menubar_fileopen', 
+                                            label: 'Open',
+                                            iconClass: 'dijitIconFolderOpen',
+                                            onClick: dojo.hitch( this, 'openFileDialog' )
+                                        })
+                                  );
+
+            this.fileDialog = new FileDialog({ browser: this });
+
+            this.addGlobalMenuItem( 'file', new dijitMenuItem(
+                {
+                    id: 'menubar_combotrack', 
+                    label: 'Add combination track',
+                    iconClass: 'dijitIconSample',
+                    onClick: dojo.hitch(this, 'createCombinationTrack')
+                }));
+
+            this.renderGlobalMenu( 'file', {text: 'File'}, menuBar );
+
+            // make the view menu
+            this.addGlobalMenuItem( 'view', new dijitMenuItem({
+                id: 'menubar_sethighlight', 
+                label: 'Set highlight',
+                iconClass: 'dijitIconFilter',
+                onClick: function() {
+                    new SetHighlightDialog({
+                            browser: thisObj,
+                            setCallback: dojo.hitch( thisObj, 'setHighlightAndRedraw' )
+                        }).show();
+                }
+            }));
+            // make the menu item for clearing the current highlight
+            this._highlightClearButton = new dijitMenuItem(
+                {
+                    id: 'menubar_clearhighlight',
+                    label: 'Clear highlight',
+                    iconClass: 'dijitIconFilter',
+                    onClick: dojo.hitch( this, function() {
+                                             var h = this.getHighlight();
+                                             if( h ) {
+                                                 this.clearHighlight();
+                                                 this.view.redrawRegion( h );
+                                             }
+                                         })
+                });
+            this._updateHighlightClearButton();  //< sets the label and disabled status
+            // update it every time the highlight changes
+            this.subscribe( '/jbrowse/v1/n/globalHighlightChanged',
+                            dojo.hitch( this, '_updateHighlightClearButton' ) );
+
+            this.addGlobalMenuItem( 'view', this._highlightClearButton );
+
+            // add a global menu item for resizing all visible quantitative tracks
+            this.addGlobalMenuItem( 'view', new dijitMenuItem({
+                label: 'Resize quant. tracks',
+                id: 'menubar_settrackheight',
+                title: 'Set all visible quantitative tracks to a new height',
+                iconClass: 'jbrowseIconVerticalResize',
+                onClick: function() {
+                    new SetTrackHeightDialog({
+                        setCallback: function( height ) {
+                            var tracks = thisObj.view.visibleTracks();
+                            array.forEach( tracks, function( track ) {
+                                // operate only on XYPlot or Density tracks
+                                if( ! /\b(XYPlot|Density)/.test( track.config.type ) )
+                                    return;
+
+                                track.trackHeightChanged=true;
+                                track.updateUserStyles({ height: height });
+                            });
+                        }
+                    }).show();
+                }
+            }));
+
+            this.renderGlobalMenu( 'view', {text: 'View'}, menuBar );
+
+            // make the options menu
+            this.renderGlobalMenu( 'options', { text: 'Options', title: 'configure JBrowse' }, menuBar );
+        }
+
+        if( this.config.show_nav ) {
+            // make the help menu
+            this.addGlobalMenuItem( 'help',
+                                    new dijitMenuItem(
+                                        {
+                                            id: 'menubar_about', 
+                                            label: 'About',
+                                            //iconClass: 'dijitIconFolderOpen',
+                                            onClick: dojo.hitch( aboutDialog, 'show' )
+                                        })
+                                  );
+
+            function showHelp() {
+                new HelpDialog( lang.mixin(thisObj.config.quickHelp || {}, { browser: thisObj } )).show();
+            }
+            this.setGlobalKeyboardShortcut( '?', showHelp );
+            this.addGlobalMenuItem( 'help',
+                                    new dijitMenuItem(
+                                        {
+                                            id: 'menubar_generalhelp', 
+                                            label: 'General',
+                                            iconClass: 'jbrowseIconHelp',
+                                            onClick: showHelp
+                                        })
+                                  );
+
+            this.renderGlobalMenu( 'help', {}, menuBar );
+        }
+
+        if( this.config.show_nav && this.config.show_tracklist && this.config.show_overview ) {
+            var shareLink = this.makeShareLink();
+            if (shareLink) { menuBar.appendChild( shareLink ); }
+        }
+        else
+            menuBar.appendChild( this.makeFullViewLink() );
+
+
+        this.viewElem = document.createElement("div");
+        this.viewElem.className = "dragWindow";
+        this.container.appendChild( this.viewElem);
+
+        this.containerWidget = new dijitBorderContainer({
+            liveSplitters: false,
+            design: "sidebar",
+            gutters: false
+        }, this.container);
+        var contentWidget =
+            new dijitContentPane({region: "top"}, topPane);
+
+        // hook up GenomeView
+        this.view = this.viewElem.view =
+            new GenomeView(
+                { browser: this,
+                  elem: this.viewElem,
+                  config: this.config.view,
+                  stripeWidth: 250,
+                  refSeq: this.refSeq,
+                  zoomLevel: 1/200
+                });
+
+        dojo.connect( this.view, "onFineMove",   this, "onFineMove"   );
+        dojo.connect( this.view, "onCoarseMove", this, "onCoarseMove" );
+
+        this.browserWidget =
+            new dijitContentPane({region: "center"}, this.viewElem);
+        dojo.connect( this.browserWidget, "resize", this,      'onResize' );
+        dojo.connect( this.browserWidget, "resize", this.view, 'onResize' );
+
+        //connect events to update the URL in the location bar
+        function updateLocationBar() {
+            var shareURL = thisObj.makeCurrentViewURL();
+            if( thisObj.config.updateBrowserURL && window.history && window.history.replaceState )
+                window.history.replaceState( {},"", shareURL );
+            document.title = thisObj.browserMeta().title + ' ' + thisObj.view.visibleRegionLocString();
+        };
+        dojo.connect( this, "onCoarseMove",                     updateLocationBar );
+        this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged',  updateLocationBar );
+        this.subscribe( '/jbrowse/v1/n/globalHighlightChanged', updateLocationBar );
+
+        //set initial location
+        this.afterMilestone( 'loadRefSeqs', dojo.hitch( this, function() {
+            this.afterMilestone( 'initTrackMetadata', dojo.hitch( this, function() {
+                this.createTrackList().then( dojo.hitch( this, function() {
+
+                    this.containerWidget.startup();
+                    this.onResize();
+
+                    // make our global keyboard shortcut handler
+                    on( document.body, 'keypress', dojo.hitch( this, 'globalKeyHandler' ));
+
+                    // configure our event routing
+                    this._initEventRouting();
+
+                    // done with initView
+                    deferred.resolve({ success: true });
+               }));
+            }));
+        }));
+    });
+},
+
+createCombinationTrack: function() {
+    if(this._combinationTrackCount === undefined) this._combinationTrackCount = 0;
+    var d = new Deferred();
+    var storeConf = {
+        browser: this,
+        refSeq: this.refSeq,
+        type: 'JBrowse/Store/SeqFeature/Combination'
+    };
+    var storeName = this.addStoreConfig(undefined, storeConf);
+    storeConf.name = storeName;
+    this.getStore(storeName, function(store) {
+        d.resolve(true);
+    });
+    var thisB = this;
+    d.promise.then(function(){
+        var combTrackConfig = {
+            type: 'JBrowse/View/Track/Combination',
+            label: "combination_track" + (thisB._combinationTrackCount++),
+            key: "Combination Track " + (thisB._combinationTrackCount),
+            metadata: {Description: "Drag-and-drop interface that creates a track out of combinations of other tracks."},
+            store: storeName
+        };
+        // send out a message about how the user wants to create the new tracks
+        thisB.publish( '/jbrowse/v1/v/tracks/new', [combTrackConfig] );
+
+        // Open the track immediately
+        thisB.publish( '/jbrowse/v1/v/tracks/show', [combTrackConfig] );
+    });
+},
+
+renderDatasetSelect: function( parent ) {
+    var dsconfig = this.config.datasets || {};
+    var datasetChoices = [];
+    for( var id in dsconfig ) {
+        if( ! /^_/.test(id) )
+            datasetChoices.push( dojo.mixin({ id: id }, dsconfig[id] ) );
+    }
+
+    new dijitSelectBox(
+        {
+            name: 'dataset',
+            className: 'dataset_select',
+            value: this.config.dataset_id,
+            options: array.map(
+                datasetChoices,
+                function( dataset ) {
+                    return { label: dataset.name, value: dataset.id };
+                }),
+            onChange: dojo.hitch(this, function( dsID ) {
+                                     var ds = (this.config.datasets||{})[dsID];
+                                     if( ds )
+                                         window.location = ds.url;
+                                     return false;
+                                 })
+        }).placeAt( parent );
+},
+
+/**
+ * Get object like { title: "title", description: "description", ... }
+ * that contains metadata describing this browser.
+ */
+browserMeta: function() {
+    var about = this.config.aboutThisBrowser || {};
+    about.title = about.title || 'JBrowse';
+
+    var verstring = this.version && this.version.match(/^\d/)
+        ? this.version : '(development version)';
+
+    if( about.description ) {
+        about.description += '<div class="powered_by">'
+            + 'Powered by <a target="_blank" href="http://jbrowse.org">JBrowse '+verstring+'</a>.'
+            + '</div>';
+    }
+    else {
+        about.description = '<div class="default_about">'
+            + '  <img class="logo" src="'+this.resolveUrl('img/JBrowseLogo_small.png')+'">'
+            + '  <h1>JBrowse '+verstring+'</h1>'
+            + '  <div class="tagline">A next-generation genome browser<br> built with JavaScript and HTML5.</div>'
+            + '  <a class="mainsite" target="_blank" href="http://jbrowse.org">JBrowse website</a>'
+            + '  <div class="gmod">JBrowse is a <a target="_blank" href="http://gmod.org">GMOD</a> project.</div>'
+            + '  <div class="copyright">&copy; 2013 The Evolutionary Software Foundation</div>'
+            + '</div>';
+    }
+    return about;
+},
+
+/**
+ * Track type registry, used by GUI elements that need to offer
+ * options regarding selecting track types.  Can register a track
+ * type, and get the data structure describing what track types are
+ * known.
+ */
+registerTrackType: function( args ) {
+
+    var types = this.getTrackTypes();
+    var typeName   = args.type;
+    var defaultFor = args.defaultForStoreTypes || [];
+    var humanLabel = args.label;
+
+    // add it to known track types
+    types.knownTrackTypes.push( typeName );
+
+    // add its label
+    if( args.label )
+        types.trackTypeLabels[typeName] = args.label;
+
+    // uniqify knownTrackTypes
+    var seen = {};
+    types.knownTrackTypes = array.filter( types.knownTrackTypes, function( type ) {
+        var s = seen[type];
+        seen[type] = true;
+        return !s;
+    });
+
+    // set it as default for the indicated types, if any
+    array.forEach( defaultFor, function( storeName ) {
+        types.trackTypeDefaults[storeName] = typeName;
+    });
+
+    // store the whole structure in this object
+    this._knownTrackTypes = types;
+},
+getTrackTypes: function() {
+    // create the default types if necessary
+    if( ! this._knownTrackTypes )
+        this._knownTrackTypes = {
+            // map of store type -> default track type to use for the store
+            trackTypeDefaults: {
+                'JBrowse/Store/SeqFeature/BAM'        : 'JBrowse/View/Track/Alignments2',
+                'JBrowse/Store/SeqFeature/NCList'     : 'JBrowse/View/Track/CanvasFeatures',
+                'JBrowse/Store/SeqFeature/BigWig'     : 'JBrowse/View/Track/Wiggle/XYPlot',
+                'JBrowse/Store/Sequence/StaticChunked': 'JBrowse/View/Track/Sequence',
+                'JBrowse/Store/SeqFeature/VCFTabix'   : 'JBrowse/View/Track/CanvasVariants',
+                'JBrowse/Store/SeqFeature/GFF3'       : 'JBrowse/View/Track/CanvasFeatures',
+                'JBrowse/Store/SeqFeature/GTF'       : 'JBrowse/View/Track/CanvasFeatures'
+            },
+
+            knownTrackTypes: [
+                'JBrowse/View/Track/Alignments',
+                'JBrowse/View/Track/Alignments2',
+                'JBrowse/View/Track/FeatureCoverage',
+                'JBrowse/View/Track/SNPCoverage',
+                'JBrowse/View/Track/HTMLFeatures',
+                'JBrowse/View/Track/CanvasFeatures',
+                'JBrowse/View/Track/HTMLVariants',
+                'JBrowse/View/Track/CanvasVariants',
+                'JBrowse/View/Track/Wiggle/XYPlot',
+                'JBrowse/View/Track/Wiggle/Density',
+                'JBrowse/View/Track/Sequence'
+            ],
+
+            trackTypeLabels: {
+            }
+        };
+
+    return this._knownTrackTypes;
+},
+
+
+
+openFileDialog: function() {
+    this.fileDialog
+        .show({
+            openCallback: dojo.hitch( this, function( results ) {
+                var confs = results.trackConfs || [];
+                if( confs.length ) {
+
+                    // tuck away each of the store configurations in
+                    // our store configuration, and replace them with
+                    // their names.
+                    array.forEach( confs, function( conf ) {
+                        // do it for conf.store
+                        var storeConf = conf.store;
+                        if( storeConf && typeof storeConf == 'object' ) {
+                            delete conf.store;
+                            var name = this.addStoreConfig( storeConf.name, storeConf );
+                            conf.store = name;
+                        }
+
+                        // do it for conf.histograms.store, if it exists
+                        storeConf = conf.histograms && conf.histograms.store;
+                        if( storeConf && typeof storeConf == 'object' ) {
+                            delete conf.histograms.store;
+                            var name = this.addStoreConfig( storeConf.name, storeConf );
+                            conf.histograms.store = name;
+                        }
+                    },this);
+
+                    // send out a message about how the user wants to create the new tracks
+                    this.publish( '/jbrowse/v1/v/tracks/new', confs );
+
+                    // if requested, send out another message that the user wants to show them
+                    if( results.trackDisposition == 'openImmediately' )
+                        this.publish( '/jbrowse/v1/v/tracks/show', confs );
+                }
+            })
+        });
+},
+
+addTracks: function( confs ) {
+    // just register the track configurations right now
+    this._addTrackConfigs( confs );
+},
+replaceTracks: function( confs ) {
+    // just add-or-replace the track configurations
+    this._replaceTrackConfigs( confs );
+},
+deleteTracks: function( confs ) {
+    // de-register the track configurations
+    this._deleteTrackConfigs( confs );
+},
+
+renderGlobalMenu: function( menuName, args, parent ) {
+    this.afterMilestone( 'initView', function() {
+        var menu = this.makeGlobalMenu( menuName );
+        if( menu ) {
+            args = dojo.mixin(
+                {
+                    className: menuName,
+                    innerHTML: '<span class="icon"></span> '+ ( args.text || Util.ucFirst(menuName)),
+                    dropDown: menu,
+                    id: 'dropdownbutton_'+menuName
+                },
+                args || {}
+            );
+
+            var menuButton = new dijitDropDownButton( args );
+            dojo.addClass( menuButton.domNode, 'menu' );
+            parent.appendChild( menuButton.domNode );
+        }
+    },this);
+},
+
+makeGlobalMenu: function( menuName ) {
+    var items = ( this._globalMenuItems || {} )[menuName] || [];
+    if( ! items.length )
+        return null;
+
+    var menu = new dijitDropDownMenu({ id: 'dropdownmenu_'+menuName , leftClickToOpen: true });
+    dojo.forEach( items, function( item ) {
+        menu.addChild( item );
+    });
+    dojo.addClass( menu.domNode, 'globalMenu' );
+    dojo.addClass( menu.domNode, menuName );
+    menu.startup();
+    return menu;
+},
+
+addGlobalMenuItem: function( menuName, item ) {
+    if( ! this._globalMenuItems )
+        this._globalMenuItems = {};
+    if( ! this._globalMenuItems[ menuName ] )
+        this._globalMenuItems[ menuName ] = [];
+    this._globalMenuItems[ menuName ].push( item );
+},
+
+/**
+ * Initialize our message routing, subscribing to messages, forwarding
+ * them around, and so forth.
+ *
+ * "v" (view)
+ *   Requests from the user.  These go only to the browser, which is
+ *   the central point forx deciding what to do about them.  This is
+ *   usually just forwarding the command as one or more "c" messages.
+ *
+ * "c" (command)
+ *   Commands from authority, like the Browser object.  These cause
+ *   things to actually happen in the UI: things to be shown or
+ *   hidden, actions taken, and so forth.
+ *
+ * "n" (notification)
+ *   Notification that something just happened.
+ *
+ * @private
+ */
+_initEventRouting: function() {
+    var that = this;
+
+    that.subscribe('/jbrowse/v1/v/store/new', function( storeConfigs ) {
+        array.forEach( storeConfigs, function( storeConfig ) {
+                           storeConfig = lang.mixin( {}, storeConfig );
+                           var name = storeConfig.name;
+                           delete storeConfig.name;
+                           that.addStoreConfig( name, storeConfig );
+                       });
+    });
+
+
+
+    that.subscribe('/jbrowse/v1/v/tracks/hide', function( trackConfigs ) {
+        that.publish( '/jbrowse/v1/c/tracks/hide', trackConfigs );
+    });
+    that.subscribe('/jbrowse/v1/v/tracks/show', function( trackConfigs ) {
+        that.addRecentlyUsedTracks( dojo.map(trackConfigs, function(c){ return c.label;}) );
+        that.publish( '/jbrowse/v1/c/tracks/show', trackConfigs );
+    });
+
+    that.subscribe('/jbrowse/v1/v/tracks/new', function( trackConfigs ) {
+        that.addTracks( trackConfigs );
+        that.publish( '/jbrowse/v1/c/tracks/new', trackConfigs );
+        that.publish( '/jbrowse/v1/n/tracks/new', trackConfigs );
+    });
+    that.subscribe('/jbrowse/v1/v/tracks/replace', function( trackConfigs ) {
+        that.replaceTracks( trackConfigs );
+        that.publish( '/jbrowse/v1/c/tracks/replace', trackConfigs );
+        that.publish( '/jbrowse/v1/n/tracks/replace', trackConfigs );
+    });
+    that.subscribe('/jbrowse/v1/v/tracks/delete', function( trackConfigs ) {
+        that.deleteTracks( trackConfigs );
+        that.publish( '/jbrowse/v1/c/tracks/delete', trackConfigs );
+        that.publish( '/jbrowse/v1/n/tracks/delete', trackConfigs );
+    });
+
+    that.subscribe('/jbrowse/v1/v/tracks/pin', function( trackNames ) {
+        that.publish( '/jbrowse/v1/c/tracks/pin', trackNames );
+        that.publish( '/jbrowse/v1/n/tracks/pin', trackNames );
+    });
+
+    that.subscribe('/jbrowse/v1/v/tracks/unpin', function( trackNames ) {
+        that.publish( '/jbrowse/v1/c/tracks/unpin', trackNames );
+        that.publish( '/jbrowse/v1/n/tracks/unpin', trackNames );
+    });
+},
+
+/**
+ * Reports some anonymous usage statistics about this browsing
+ * instance.  Currently reports the number of tracks in the instance
+ * and their type (feature, wiggle, etc), and the number of reference
+ * sequences and their average length.
+ */
+reportUsageStats: function() {
+    if( this.config.suppressUsageStatistics )
+        return;
+
+    var stats = this._calculateClientStats();
+    this._reportGoogleUsageStats( stats );
+    this._reportCustomUsageStats( stats );
+},
+
+// phones home to google analytics
+_reportGoogleUsageStats: function( stats ) {
+    _gaq.push.apply( _gaq, [
+        ['_setAccount', 'UA-7115575-2'],
+        ['_setDomainName', 'none'],
+        ['_setAllowLinker', true],
+        ['_setCustomVar', 1, 'tracks-count', stats['tracks-count'], 3 ],
+        ['_setCustomVar', 2, 'refSeqs-count', stats['refSeqs-count'], 3 ],
+        ['_setCustomVar', 3, 'refSeqs-avgLen', stats['refSeqs-avgLen'], 3 ],
+        ['_setCustomVar', 4, 'jbrowse-version', stats['ver'], 3 ],
+        ['_setCustomVar', 5, 'loadTime', stats['loadTime'], 3 ],
+        ['_trackPageview']
+    ]);
+
+    var ga = document.createElement('script');
+    ga.type = 'text/javascript';
+    ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
+             + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(ga, s);
+},
+
+// phones home to custom analytics at jbrowse.org
+_reportCustomUsageStats: function(stats) {
+    // phone home with a GET request made by a script tag
+    dojo.create(
+        'img',
+        { style: {
+              display: 'none'
+          },
+          src: 'http://jbrowse.org/analytics/clientReport?'
+               + dojo.objectToQuery( stats )
+        },
+        document.body
+    );
+},
+
+
+/**
+ * Get a store object from the store registry, loading its code and
+ * instantiating it if necessary.
+ */
+getStore: function( storeName, callback ) {
+    if( !callback ) throw 'invalid arguments';
+
+    var storeCache = this._storeCache || {};
+    this._storeCache = storeCache;
+
+    var storeRecord = storeCache[ storeName ];
+    if( storeRecord ) {
+        storeRecord.refCount++;
+        callback( storeRecord.store );
+        return;
+    }
+
+    var conf = this.config.stores[storeName];
+    if( ! conf ) {
+        console.warn( "store '"+storeName+"' not found" );
+        callback( null );
+        return;
+    }
+
+    var storeClassName = conf.type;
+    if( ! storeClassName ) {
+        console.warn( "store "+storeName+" has no type defined" );
+        callback( null );
+        return;
+    }
+
+    require( [ storeClassName ], dojo.hitch( this, function( storeClass ) {
+                 var storeArgs = {};
+                 dojo.mixin( storeArgs, conf );
+                 dojo.mixin( storeArgs,
+                             {
+                                 config: conf,
+                                 browser: this,
+                                 refSeq: this.refSeq
+                             });
+
+                 var store = new storeClass( storeArgs );
+                 this._storeCache[ storeName ] = { refCount: 1, store: store };
+                 callback( store );
+                 // release the callback because apparently require
+                 // doesn't release this function
+                 callback = undefined;
+             }));
+},
+
+/**
+ * Add a store configuration to the browser.  If name is falsy, will
+ * autogenerate one.
+ * @private
+ */
+uniqCounter: 0,
+addStoreConfig: function( /**String*/ name, /**Object*/ storeConfig ) {
+    name = name || 'addStore'+this.uniqCounter++;
+
+    if( ! this.config.stores )
+        this.config.stores = {};
+    if( ! this._storeCache )
+        this._storeCache = {};
+
+    if( this.config.stores[name] || this._storeCache[name] ) {
+        throw "store "+name+" already exists!";
+    }
+
+    this.config.stores[name] = storeConfig;
+    return name;
+},
+
+clearStores: function() {
+    this._storeCache = {};
+},
+
+/**
+ * Notifies the browser that the given named store is no longer being
+ * used by the calling component.  Decrements the store's reference
+ * count, and if the store's reference count reaches zero, the store
+ * object will be discarded, to be recreated again later if needed.
+ */
+// not actually being used yet
+releaseStore: function( storeName ) {
+    var storeRecord = this._storeCache[storeName];
+    if( storeRecord && ! --storeRecord.refCount )
+        delete this._storeCache[storeName];
+},
+
+_calculateClientStats: function() {
+
+    var scn = screen || window.screen;
+
+    // make a flat (i.e. non-nested) object for the stats, so that it
+    // encodes compactly in the query string
+    var date = new Date();
+    var stats = {
+        ver: this.version || 'dev',
+        'refSeqs-count': this.refSeqOrder.length,
+        'refSeqs-avgLen':
+          ! this.refSeqOrder.length
+            ? null
+            : dojof.reduce(
+                dojo.map( this.refSeqOrder,
+                          function(name) {
+                              var ref = this.allRefs[name];
+                              if( !ref )
+                                  return 0;
+                              return ref.end - ref.start;
+                          },
+                          this
+                        ),
+                '+'
+            ),
+        'tracks-count': this.config.tracks.length,
+        'plugins': dojof.keys( this.plugins ).sort().join(','),
+
+        // screen geometry
+        'scn-h': scn ? scn.height : null,
+        'scn-w': scn ? scn.width  : null,
+        // window geometry
+        'win-h':document.body.offsetHeight,
+        'win-w': document.body.offsetWidth,
+        // container geometry
+        'el-h': this.container.offsetHeight,
+        'el-w': this.container.offsetWidth,
+
+        // time param to prevent caching
+        t: date.getTime()/1000,
+
+        // also get local time zone offset
+        tzoffset: date.getTimezoneOffset(),
+
+        loadTime: (date.getTime() - this.startTime)/1000
+    };
+
+    // count the number and types of tracks
+    dojo.forEach( this.config.tracks, function(trackConfig) {
+        var typeKey = 'track-types-'+ trackConfig.type || 'null';
+        stats[ typeKey ] =
+          ( stats[ typeKey ] || 0 ) + 1;
+    });
+
+    return stats;
+},
+
+publish: function() {
+    if( this.config.logMessages )
+        console.log( arguments );
+
+    return topic.publish.apply( topic, arguments );
+},
+subscribe: function() {
+    return topic.subscribe.apply( topic, arguments );
+},
+
+onResize: function() {
+    if( this.navbox )
+        this.view.locationTrapHeight = dojo.marginBox( this.navbox ).h;
+},
+
+/**
+ * Get the list of the most recently used tracks, stored for this user
+ * in a cookie.
+ * @returns {Array[Object]} as <code>[{ time: (integer), label: (track label)}]</code>
+ */
+getRecentlyUsedTracks: function() {
+    return dojo.fromJson( this.cookie( 'recentTracks' ) || '[]' );
+},
+
+/**
+ * Add the given list of tracks as being recently used.
+ * @param trackLabels {Array[String]} array of track labels to add
+ */
+addRecentlyUsedTracks: function( trackLabels ) {
+    var seen = {};
+    var newRecent =
+        Util.uniq(
+            dojo.map( trackLabels, function(label) {
+                          return {
+                              label: label,
+                              time: Math.round( new Date() / 1000 ) // secs since epoch
+                          };
+                      },this)
+                .concat( dojo.fromJson( this.cookie('recentTracks'))  || [] ),
+            function(entry) {
+                return entry.label;
+            }
+        )
+        // limit by default to 20 recent tracks
+        .slice( 0, this.config.maxRecentTracks || 10 );
+
+    // set the recentTracks cookie, good for one year
+    this.cookie( 'recentTracks', newRecent, { expires: 365 } );
+
+    return newRecent;
+},
+
+/**
+ * Run a function that will eventually resolve the named Deferred
+ * (milestone).
+ * @param {String} name the name of the Deferred
+ */
+_milestoneFunction: function( /**String*/ name, func ) {
+
+    var thisB = this;
+    var args = Array.prototype.slice.call( arguments, 2 );
+
+    var d = thisB._getDeferred( name );
+    args.unshift( d );
+    try {
+        func.apply( thisB, args ) ;
+    } catch(e) {
+        console.error( e, e.stack );
+        d.reject(e);
+    }
+
+    return d;
+},
+
+/**
+ * Fetch or create a named Deferred, which is how milestones are implemented.
+ */
+_getDeferred: function( name ) {
+    if( ! this._deferred )
+        this._deferred = {};
+    return this._deferred[name] || ( this._deferred[name] = function() {
+        var d = new Deferred();
+        d.then( null, lang.hitch( this, 'fatalError' ));
+        return d;
+    }.call(this));
+},
+/**
+ * Attach a callback to a milestone.
+ */
+afterMilestone: function( name, func, ctx ) {
+    return this._getDeferred(name)
+        .then( function() {
+                   try {
+                       func.call( ctx || this );
+                   } catch( e ) {
+                       console.error( ''+e, e.stack, e );
+                   }
+               });
+},
+/**
+ * Indicate that we've reached a milestone in the initalization
+ * process.  Will run all the callbacks associated with that
+ * milestone.
+ */
+passMilestone: function( name, result ) {
+    return this._getDeferred(name).resolve( result );
+},
+/**
+ * Return true if we have reached the named milestone, false otherwise.
+ */
+reachedMilestone: function( name ) {
+    return this._getDeferred(name).isResolved();
+},
+
+
+/**
+ *  Load our configuration file(s) based on the parameters thex
+ *  constructor was passed.  Does not return until all files are
+ *  loaded and merged in.
+ *  @returns nothing meaningful
+ */
+loadConfig: function () {
+    return this._milestoneFunction( 'loadConfig', function( deferred ) {
+        var c = new ConfigManager({ bootConfig: this.config, defaults: this._configDefaults(), browser: this });
+        c.getFinalConfig()
+         .then( dojo.hitch(this, function( finishedConfig ) {
+                               this.config = finishedConfig;
+
+                               //apply document.domain from a loaded conf file
+                               if( this.config.documentDomain )
+                                   document.domain=this.config.documentDomain;
+
+                               // pass the tracks configurations through
+                               // addTrackConfigs so that it will be indexed and such
+                               var tracks = finishedConfig.tracks || [];
+                               delete finishedConfig.tracks;
+                               this._addTrackConfigs( tracks );
+
+                               // coerce some config keys to boolean
+                               dojo.forEach( ['show_tracklist','show_nav','show_overview','show_menu'], function(v) {
+                                                 this.config[v] = this._coerceBoolean( this.config[v] );
+                                             },this);
+
+                               // set empty tracks array if we have none
+                               if( ! this.config.tracks )
+                                   this.config.tracks = [];
+
+                               deferred.resolve({success:true});
+                           }),
+                deferred.reject
+              );
+    });
+},
+
+/**
+ * Add new track configurations.
+ * @private
+ */
+_addTrackConfigs: function( /**Array*/ configs ) {
+
+    if( ! this.config.tracks )
+        this.config.tracks = [];
+    if( ! this.trackConfigsByName )
+        this.trackConfigsByName = {};
+
+    array.forEach( configs, function(conf){
+
+        // if( this.trackConfigsByName[ conf.label ] ) {
+        //     console.warn("track with label "+conf.label+" already exists, skipping");
+        //     return;
+        // }
+
+        this.trackConfigsByName[conf.label] = conf;
+        this.config.tracks.push( conf );
+
+    },this);
+
+    return configs;
+},
+/**
+ * Replace existing track configurations.
+ * @private
+ */
+_replaceTrackConfigs: function( /**Array*/ newConfigs ) {
+    if( ! this.trackConfigsByName )
+        this.trackConfigsByName = {};
+
+    array.forEach( newConfigs, function( conf ) {
+        if( ! this.trackConfigsByName[ conf.label ] ) {
+            console.warn("track with label "+conf.label+" does not exist yet.  creating a new one.");
+        }
+
+        this.trackConfigsByName[conf.label] =
+                           dojo.mixin( this.trackConfigsByName[ conf.label ] || {}, conf );
+   },this);
+},
+/**
+ * Delete existing track configs.
+ * @private
+ */
+_deleteTrackConfigs: function( configsToDelete ) {
+    // remove from this.config.tracks
+    this.config.tracks = array.filter( this.config.tracks || [], function( conf ) {
+        return ! array.some( configsToDelete, function( toDelete ) {
+            return toDelete.label == conf.label;
+        });
+    });
+
+    // remove from trackConfigsByName
+    array.forEach( configsToDelete, function( toDelete ) {
+        if( ! this.trackConfigsByName[ toDelete.label ] ) {
+            console.warn( "track "+toDelete.label+" does not exist, cannot delete" );
+            return;
+        }
+
+        delete this.trackConfigsByName[ toDelete.label ];
+    },this);
+},
+
+_configDefaults: function() {
+    return {
+        tracks: [],
+
+        containerID: 'GenomeBrowser',
+        dataRoot: 'data',
+        show_tracklist: true,
+        show_nav: true,
+        show_menu: true,
+        show_overview: true,
+
+        refSeqs: "{dataRoot}/seq/refSeqs.json",
+        include: [
+            'jbrowse.conf',
+            'jbrowse_conf.json'
+        ],
+        nameUrl: "{dataRoot}/names/root.json",
+
+        datasets: {
+            _DEFAULT_EXAMPLES: true,
+            volvox:    { url: '?data=sample_data/json/volvox',    name: 'Volvox Example'    },
+            modencode: { url: '?data=sample_data/json/modencode', name: 'MODEncode Example' },
+            yeast:     { url: '?data=sample_data/json/yeast',     name: 'Yeast Example'     }
+        },
+
+        highlightSearchedRegions: false,
+        highResolutionMode: 'disabled'
+    };
+},
+
+/**
+ * Coerce a value of unknown type to a boolean, treating string 'true'
+ * and 'false' as the values they indicate, and string numbers as
+ * numbers.
+ * @private
+ */
+_coerceBoolean: function(val) {
+    if( typeof val == 'string' ) {
+        val = val.toLowerCase();
+        if( val == 'true' ) {
+            return true;
+        }
+        else if( val == 'false' )
+            return false;
+        else
+            return parseInt(val);
+    }
+    else if( typeof val == 'boolean' ) {
+        return val;
+    }
+    else if( typeof val == 'number' ) {
+        return !!val;
+    }
+    else {
+        return true;
+    }
+},
+
+/**
+ * @param refSeqs {Array} array of refseq records to add to the browser
+ */
+addRefseqs: function( refSeqs ) {
+    var allrefs = this.allRefs = this.allRefs || {};
+    dojo.forEach( refSeqs, function(r) {
+        this.allRefs[r.name] = r;
+    },this);
+
+    // generate refSeqOrder
+    this.refSeqOrder =
+        function() {
+            var order;
+            if( ! this.config.refSeqOrder ) {
+                order = refSeqs;
+            }
+            else {
+                order = refSeqs.slice(0);
+                order.sort(
+                    this.config.refSeqOrder == 'length' || this.config.refSeqOrder == 'length ascending'
+                                                                   ? function( a, b ) { return a.length - b.length;  }  :
+                    this.config.refSeqOrder == 'length descending' ? function( a, b ) { return b.length - a.length;  }  :
+                    this.config.refSeqOrder == 'name descending'   ? function( a, b ) { return b.name.localeCompare( a.name ); } :
+                                                                     function( a, b ) { return a.name.localeCompare( b.name ); }
+                );
+            }
+            return array.map( order, function( r ) {
+                                  return r.name;
+                              });
+        }.call(this);
+
+    var refCookie = this.cookie('refseq');
+    this.refSeq = this.refSeq || this.allRefs[refCookie] || this.allRefs[ this.refSeqOrder[0] ];
+},
+
+
+/**
+ * Get the refseq object { name, start, end, .. } with the given name,
+ * or the currently shown ref seq if no name is given.
+ */
+getRefSeq: function( name ) {
+    if( typeof name != 'string' )
+        return this.refSeq || undefined;
+
+    return this.allRefs[ name ];
+},
+
+/**
+ * @private
+ */
+onFineMove: function(startbp, endbp) {
+
+    if( this.locationTrap ) {
+        var length = this.view.ref.end - this.view.ref.start;
+        var trapLeft = Math.round((((startbp - this.view.ref.start) / length)
+                                   * this.view.overviewBox.w) + this.view.overviewBox.l);
+        var trapRight = Math.round((((endbp - this.view.ref.start) / length)
+                                    * this.view.overviewBox.w) + this.view.overviewBox.l);
+        dojo.style( this.locationTrap, {
+                        width: (trapRight - trapLeft) + "px",
+                        borderBottomWidth: this.view.locationTrapHeight + "px",
+                        borderLeftWidth: trapLeft + "px",
+                        borderRightWidth: (this.view.overviewBox.w - trapRight) + "px"
+        });
+    }
+},
+
+/**
+ * Asynchronously initialize our track metadata.
+ */
+initTrackMetadata: function( callback ) {
+    return this._milestoneFunction( 'initTrackMetadata', function( deferred ) {
+        var metaDataSourceClasses = dojo.map(
+                                    (this.config.trackMetadata||{}).sources || [],
+                                    function( sourceDef ) {
+                                        var url  = sourceDef.url || 'trackMeta.csv';
+                                        var type = sourceDef.type || (
+                                                /\.csv$/i.test(url)     ? 'csv'  :
+                                                /\.js(on)?$/i.test(url) ? 'json' :
+                                                'csv'
+                                        );
+                                        var storeClass = sourceDef['class']
+                                            || { csv: 'dojox/data/CsvStore', json: 'dojox/data/JsonRestStore' }[type];
+                                        if( !storeClass ) {
+                                            console.error( "No store class found for type '"
+                                                           +type+"', cannot load track metadata from URL "+url);
+                                            return null;
+                                        }
+                                        return { class_: storeClass, url: url };
+                                    });
+
+
+        require( Array.prototype.concat.apply( ['JBrowse/Store/TrackMetaData'],
+                                               dojo.map( metaDataSourceClasses, function(c) { return c.class_; } ) ),
+                 dojo.hitch(this,function( MetaDataStore ) {
+                     var mdStores = [];
+                     for( var i = 1; i<arguments.length; i++ ) {
+                         mdStores.push( new (arguments[i])({url: metaDataSourceClasses[i-1].url}) );
+                     }
+
+                     this.trackMetaDataStore =  new MetaDataStore(
+                         dojo.mixin( dojo.clone(this.config.trackMetadata || {}), {
+                                         trackConfigs: this.config.tracks,
+                                         browser: this,
+                                         metadataStores: mdStores
+                                     })
+                     );
+
+                     deferred.resolve({success:true});
+        }));
+    });
+},
+
+/**
+ * Asynchronously create the track list.
+ * @private
+ */
+createTrackList: function() {
+    return this._milestoneFunction('createTrack', function( deferred ) {
+        // find the tracklist class to use
+        var tl_class = !this.config.show_tracklist           ? 'Null'                         :
+                       (this.config.trackSelector||{}).type  ? this.config.trackSelector.type :
+                                                               'Hierarchical';
+        if( ! /\//.test( tl_class ) )
+            tl_class = 'JBrowse/View/TrackList/'+tl_class;
+
+        // load all the classes we need
+        require( [ tl_class ],
+                 dojo.hitch( this, function( trackListClass ) {
+                     // instantiate the tracklist and the track metadata object
+                     this.trackListView = new trackListClass(
+                         dojo.mixin(
+                             dojo.clone( this.config.trackSelector ) || {},
+                             {
+                                 trackConfigs: this.config.tracks,
+                                 browser: this,
+                                 trackMetaData: this.trackMetaDataStore
+                             }
+                         )
+                     );
+
+                     // bind the 't' key as a global keyboard shortcut
+                     this.setGlobalKeyboardShortcut( 't', this.trackListView, 'toggle' );
+
+                     // listen for track-visibility-changing messages from
+                     // views and update our tracks cookie
+                     this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged', dojo.hitch( this, function() {
+                         this.cookie( "tracks",
+                                      this.view.visibleTrackNames().join(','),
+                                      {expires: 60});
+                     }));
+
+                     deferred.resolve({ success: true });
+        }));
+    });
+},
+
+/**
+ * @private
+ */
+
+onVisibleTracksChanged: function() {
+},
+
+
+/**
+ * Like <code>navigateToLocation()</code>, except it attempts to display the given
+ * location with a little bit of flanking sequence to each side, if
+ * possible.
+ */
+showRegion: function( location ) {
+    var flank   = Math.round( ( location.end - location.start ) * 0.2 );
+    //go to location, with some flanking region
+    this.navigateToLocation({ ref: location.ref,
+                               start: location.start - flank,
+                               end: location.end + flank
+                             });
+
+    // if the location has a track associated with it, show it
+    if( location.tracks ) {
+        this.showTracks( array.map( location.tracks, function( t ) { return t && (t.label || t.name) || t; } ));
+    }
+},
+
+/**
+ * navigate to a given location
+ * @example
+ * gb=dojo.byId("GenomeBrowser").genomeBrowser
+ * gb.navigateTo("ctgA:100..200")
+ * gb.navigateTo("f14")
+ * @param loc can be either:<br>
+ * &lt;chromosome&gt;:&lt;start&gt; .. &lt;end&gt;<br>
+ * &lt;start&gt; .. &lt;end&gt;<br>
+ * &lt;center base&gt;<br>
+ * &lt;feature name/ID&gt;
+ */
+
+navigateTo: function(loc) {
+    var thisB = this;
+    this.afterMilestone( 'initView', function() {
+        // lastly, try to search our feature names for it
+        thisB.searchNames( loc )
+            .then( function( found ) {
+                if( found )
+                    return;
+
+                // if it's a foo:123..456 location, go there
+                if(!thisB.callLocation(loc)){return;}
+
+                new InfoDialog(
+                {
+                    title: 'Not found',
+                    content: 'Not found: <span class="locString">'+loc+'</span>',
+                    className: 'notfound-dialog'
+                }).show();
+            },
+            thisB.callLocation(loc));
+    });
+},
+
+callLocation: function(loc){
+    var thisB=this;
+    var location = typeof loc == 'string' ? Util.parseLocString( loc ) :  loc;
+    // only call navigateToLocation() directly if location has start and end, otherwise try and fill in start/end from 'location' cookie
+    if( location && ("start" in location) && ("end" in location)) {
+        thisB.navigateToLocation( location );
+        return false;
+    }
+    // otherwise, if it's just a word (or a location with only a ref property), try to figure out what it is
+    else {
+        if( typeof loc != 'string')
+            loc = loc.ref;
+        // is it just the name of one of our ref seqs?
+        var ref = thisB.findReferenceSequence( loc );
+        if( ref ) {
+            thisB.navigateToLocation( { ref: ref.name } );
+            return false;
+        }
+    }
+},
+
+findReferenceSequence: function( name ) {
+    for( var n in this.allRefs ) {
+        if( ! this.compareReferenceNames( n, name ) )
+            return this.allRefs[n];
+    }
+    return null;
+},
+
+// given an object like { ref: 'foo', start: 2, end: 100 }, set the
+// browser's view to that location.  any of ref, start, or end may be
+// missing, in which case the function will try set the view to
+// something that seems intelligent
+navigateToLocation: function( location ) {
+    this.afterMilestone( 'initView', dojo.hitch( this, function() {
+
+        // regularize the ref seq name we were passed
+        var ref = location.ref ? this.findReferenceSequence( location.ref.name || location.ref )
+                               : this.refSeq;
+        if( !ref ) return;
+        location.ref = ref.name;
+
+        if( 'ref' in location && !( 'start' in location && 'end' in location ) ) {
+            // see if we have a stored location for this ref seq in a
+            // cookie, and go there if we do
+            var oldLoc;
+            try {
+                oldLoc = Util.parseLocString(
+                    dojo.fromJson(
+                        this.cookie("location")
+                    )[location.ref].l
+                );
+                oldLoc.ref = location.ref; // force the refseq name; older cookies don't have it
+            } catch (x) {}
+            if( oldLoc ) {
+                location = oldLoc;
+            } else {
+                // if we don't have a previous location, just go to
+                // the middle 80% of that refseq,
+                // based on range that can be viewed (start to end)
+                // rather than total length, in case start != 0 || end != length
+                // this.navigateToLocation({ref: ref.name, start: ref.end*0.1, end: ref.end*0.9 });
+                var visibleLength = ref.end - ref.start;
+                location.start = ref.start + (visibleLength * 0.1);
+                location.end   = ref.start + (visibleLength * 0.9);
+            }
+        }
+
+        // clamp the start and end to the size of the ref seq
+        location.start = Math.max( 0, location.start || 0 );
+        location.end   = Math.max( location.start,
+                                   Math.min( ref.end, location.end || ref.end )
+                                 );
+
+        // if it's the same sequence, just go there
+        if( location.ref == this.refSeq.name) {
+            this.view.setLocation( this.refSeq,
+                                   location.start,
+                                   location.end
+                                 );
+            this._updateLocationCookies( location );
+        }
+        // if different, we need to poke some other things before going there
+        else {
+            // record names of open tracks and re-open on new refseq
+            var curTracks = this.view.visibleTrackNames();
+
+            this.refSeq = this.allRefs[location.ref];
+            this.clearStores();
+
+            this.view.setLocation( this.refSeq,
+                                   location.start,
+                                   location.end );
+            this._updateLocationCookies( location );
+
+            this.showTracks( curTracks );
+        }
+    }));
+},
+
+/**
+ * Given a string name, search for matching feature names and set the
+ * view location to any that match.
+ */
+searchNames: function( /**String*/ loc ) {
+    var thisB = this;
+    return this.nameStore.query({ name: loc })
+        .then(
+            function( nameMatches ) {
+                // if we have no matches, pop up a dialog saying so, and
+                // do nothing more
+                if( ! nameMatches.length ) {
+                    return false;
+                }
+
+                var goingTo;
+
+                //first check for exact case match
+                for (var i = 0; i < nameMatches.length; i++) {
+                    if( nameMatches[i].name  == loc )
+                        goingTo = nameMatches[i];
+                }
+                //if no exact case match, try a case-insentitive match
+                if( !goingTo ) {
+                    for( i = 0; i < nameMatches.length; i++ ) {
+                        if( nameMatches[i].name.toLowerCase() == loc.toLowerCase() )
+                            goingTo = nameMatches[i];
+                    }
+                }
+                //else just pick a match
+                if( !goingTo ) goingTo = nameMatches[0];
+
+                // if it has one location, go to it
+                if( goingTo.location ) {
+                    //go to location, with some flanking region
+                    thisB.showRegionAfterSearch( goingTo.location );
+                }
+                // otherwise, pop up a dialog with a list of the locations to choose from
+                else if( goingTo.multipleLocations ) {
+                    new LocationChoiceDialog(
+                        {
+                            browser: thisB,
+                            locationChoices: goingTo.multipleLocations,
+                            title: 'Choose '+goingTo.name+' location',
+                            prompt: '"'+goingTo.name+'" is found in multiple locations.  Please choose a location to view.'
+                        })
+                        .show();
+                }
+                return true;
+            },
+            function(e) {
+                console.error( e );
+                new InfoDialog(
+                    {
+                        title: 'Error',
+                        content: 'Error reading from name store.'
+                    }).show();
+                return false;
+            }
+   );
+},
+
+
+/**
+ * load and display the given tracks
+ * @example
+ * gb=dojo.byId("GenomeBrowser").genomeBrowser
+ * gb.showTracks(["DNA","gene","mRNA","noncodingRNA"])
+ * @param trackNameList {Array|String} array or comma-separated string
+ * of track names, each of which should correspond to the "label"
+ * element of the track information
+ */
+
+showTracks: function( trackNames ) {
+    this.afterMilestone('initView', dojo.hitch( this, function() {
+        if( typeof trackNames == 'string' )
+            trackNames = trackNames.split(',');
+
+        if( ! trackNames )
+            return;
+
+        var trackConfs = dojo.filter(
+            dojo.map( trackNames, function(n) {
+                          return this.trackConfigsByName[n];
+                      }, this),
+            function(c) {return c;} // filter out confs that are missing
+        );
+
+        // publish some events with the tracks to instruct the views to show them.
+        this.publish( '/jbrowse/v1/c/tracks/show', trackConfs );
+        this.publish( '/jbrowse/v1/n/tracks/visibleChanged' );
+    }));
+},
+
+/**
+ * Create a global keyboard shortcut.
+ * @param keychar the character of the key that is typed
+ * @param [...] additional arguments passed to dojo.hitch for making the handler
+ */
+setGlobalKeyboardShortcut: function( keychar ) {
+    // warn if redefining
+    if( this.globalKeyboardShortcuts[ keychar ] )
+        console.warn("WARNING: JBrowse global keyboard shortcut '"+keychar+"' redefined");
+
+    // make the wrapped handler func
+    var func = dojo.hitch.apply( dojo, Array.prototype.slice.call( arguments, 1 ) );
+
+    // remember it
+    this.globalKeyboardShortcuts[ keychar ] = func;
+},
+
+/**
+ * Key event handler that implements all global keyboard shortcuts.
+ */
+globalKeyHandler: function( evt ) {
+    // if some digit widget is focused, don't process any global keyboard shortcuts
+    if( dijitFocus.curNode )
+        return;
+
+    var shortcut = this.globalKeyboardShortcuts[ evt.keyChar || String.fromCharCode( evt.charCode || evt.keyCode ) ];
+    if( shortcut ) {
+        shortcut.call( this );
+        evt.stopPropagation();
+    }
+},
+
+makeShareLink: function () {
+    // don't make the link if we were explicitly configured not to
+    if( ( 'share_link' in this.config ) && !this.config.share_link )
+        return null;
+
+    var browser = this;
+    var shareURL = '#';
+
+    // make the share link
+    var button = new dijitButton({
+            className: 'share',
+            innerHTML: '<span class="icon"></span> Share',
+            title: 'share this view',
+            onClick: function() {
+                URLinput.value = shareURL;
+                previewLink.href = shareURL;
+
+                sharePane.show();
+
+                var lp = dojo.position( button.domNode );
+                dojo.style( sharePane.domNode, {
+                               top: (lp.y+lp.h) + 'px',
+                               right: 0,
+                               left: ''
+                            });
+                URLinput.focus();
+                URLinput.select();
+                copyReminder.style.display = 'block';
+
+                return false;
+            }
+        }
+    );
+
+    // make the 'share' popup
+    var container = dojo.create(
+        'div', {
+            innerHTML: 'Paste this link in <b>email</b> or <b>IM</b>'
+        });
+    var copyReminder = dojo.create('div', {
+                                       className: 'copyReminder',
+                                       innerHTML: 'Press CTRL-C to copy'
+                                   });
+    var URLinput = dojo.create(
+        'input', {
+            type: 'text',
+            value: shareURL,
+            size: 50,
+            readonly: 'readonly',
+            onclick: function() { this.select();  copyReminder.style.display = 'block'; },
+            onblur: function() { copyReminder.style.display = 'none'; }
+        });
+    var previewLink = dojo.create('a', {
+        innerHTML: 'Preview',
+        target: '_blank',
+        href: shareURL,
+        style: { display: 'block', "float": 'right' }
+    }, container );
+    var sharePane = new dijitDialog(
+        {
+            className: 'sharePane',
+            title: 'Share this view',
+            draggable: false,
+            content: [
+                container,
+                URLinput,
+                copyReminder
+            ],
+            autofocus: false
+        });
+
+    // connect moving and track-changing events to update it
+    var updateShareURL = function() {
+        shareURL = browser.makeCurrentViewURL();
+    };
+    dojo.connect( this, "onCoarseMove",                     updateShareURL );
+    this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged',  updateShareURL );
+    this.subscribe( '/jbrowse/v1/n/globalHighlightChanged', updateShareURL );
+
+    return button.domNode;
+},
+
+/**
+ * Return a string URL that encodes the complete viewing state of the
+ * browser.  Currently just data dir, visible tracks, and visible
+ * region.
+ * @param {Object} overrides optional key-value object containing
+ *                           components of the query string to override
+ */
+makeCurrentViewURL: function( overrides ) {
+    var t = typeof this.config.shareURL;
+
+    if( t == 'function' ) {
+        return this.config.shareURL.call( this, this );
+    }
+    else if( t == 'string' ) {
+        return this.config.shareURL;
+    }
+
+    return "".concat(
+        window.location.protocol,
+        "//",
+        window.location.host,
+        window.location.pathname,
+        "?",
+        dojo.objectToQuery(
+            dojo.mixin(
+                dojo.mixin( {}, (this.config.queryParams||{}) ),
+                dojo.mixin(
+                    {
+                        loc:    this.view.visibleRegionLocString(),
+                        tracks: this.view.visibleTrackNames().join(','),
+                        highlight: (this.getHighlight()||'').toString()
+                    },
+                    overrides || {}
+                )
+            )
+        )
+    );
+},
+
+makeFullViewLink: function () {
+    var thisB = this;
+    // make the link
+    var link = dojo.create('a', {
+        className: 'topLink',
+        href: window.location.href,
+        target: '_blank',
+        title: 'View in full-screen browser',
+        innerHTML: 'Full-screen view'
+    });
+
+    var makeURL = this.config.makeFullViewURL || this.makeCurrentViewURL;
+
+    // update it when the view is moved or tracks are changed
+    var update_link = function() {
+        link.href = makeURL.call( thisB, thisB );
+    };
+    dojo.connect( this, "onCoarseMove",                     update_link );
+    this.subscribe( '/jbrowse/v1/n/tracks/visibleChanged',  update_link );
+    this.subscribe( '/jbrowse/v1/n/globalHighlightChanged', update_link );
+
+    return link;
+},
+
+/**
+ * @private
+ */
+
+onCoarseMove: function(startbp, endbp) {
+
+    var currRegion = { start: startbp, end: endbp, ref: this.refSeq.name };
+
+    // update the location box with our current location
+    if( this.locationBox ) {
+        this.locationBox.set(
+            'value',
+            Util.assembleLocStringWithLength( currRegion ),
+            false //< don't fire any onchange handlers
+        );
+        this.goButton.set( 'disabled', true ) ;
+    }
+
+    // also update the refseq selection dropdown if present
+    this._updateRefSeqSelectBox();
+
+    if( this.reachedMilestone('completely initialized') ) {
+        this._updateLocationCookies( currRegion );
+    }
+
+    // send out a message notifying of the move
+    this.publish( '/jbrowse/v1/n/navigate', currRegion );
+},
+
+_updateRefSeqSelectBox: function() {
+    if( this.refSeqSelectBox ) {
+
+        // if none of the options in the select box match this
+        // reference sequence, add another one to the end for it
+        if( ! array.some( this.refSeqSelectBox.getOptions(), function( option ) {
+                              return option.value == this.refSeq.name;
+                        }, this)
+          ) {
+              this.refSeqSelectBox.set( 'options',
+                                     this.refSeqSelectBox.getOptions()
+                                     .concat({ label: this.refSeq.name, value: this.refSeq.name })
+                                   );
+        }
+
+        // set its value to the current ref seq
+        this.refSeqSelectBox.set( 'value', this.refSeq.name, false );
+    }
+},
+
+/**
+ * update the location and refseq cookies
+ */
+_updateLocationCookies: function( location ) {
+    var locString = typeof location == 'string' ? location : Util.assembleLocString( location );
+    var oldLocMap = dojo.fromJson( this.cookie('location') ) || { "_version": 1 };
+    if( ! oldLocMap["_version"] )
+        oldLocMap = this._migrateLocMap( oldLocMap );
+    oldLocMap[this.refSeq.name] = { l: locString, t: Math.round( (new Date()).getTime() / 1000 ) - 1340211510 };
+    oldLocMap = this._limitLocMap( oldLocMap, this.config.maxSavedLocations || 10 );
+    this.cookie( 'location', dojo.toJson(oldLocMap), {expires: 60});
+    this.cookie('refseq', this.refSeq.name );
+},
+
+/**
+ * Migrate an old location map cookie to the new format that includes timestamps.
+ * @private
+ */
+_migrateLocMap: function( locMap ) {
+    var newLoc = { "_version": 1 };
+    for( var loc in locMap ) {
+        newLoc[loc] = { l: locMap[loc], t: 0 };
+    }
+    return newLoc;
+},
+
+/**
+ * Limit the size of the saved location map, removing the least recently used.
+ * @private
+ */
+_limitLocMap: function( locMap, maxEntries ) {
+    // don't do anything if the loc map has fewer than the max
+    var locRefs = dojof.keys( locMap );
+    if( locRefs.length <= maxEntries )
+        return locMap;
+
+    // otherwise, calculate the least recently used that we need to
+    // get rid of to be under the size limit
+    locMap = dojo.clone( locMap );
+    var deleteLocs =
+        locRefs
+        .sort( function(a,b){
+                   return locMap[b].t - locMap[a].t;
+               })
+        .slice( maxEntries-1 );
+
+    // and delete them from the locmap
+    dojo.forEach( deleteLocs, function(locRef) {
+        delete locMap[locRef];
+    });
+
+    return locMap;
+},
+
+/**
+ * Wrapper for dojo.cookie that namespaces our cookie names by
+ * prefixing them with this.config.containerID.
+ *
+ * Has one additional bit of smarts: if an object or array is passed
+ * instead of a string to set as the cookie contents, will serialize
+ * it with dojo.toJson before storing.
+ *
+ * @param [...] same as dojo.cookie
+ * @returns the new value of the cookie, same as dojo.cookie
+ */
+cookie: function(keyWithoutId,value) {
+    keyWithoutId = this.config.containerID + '-' + keyWithoutId;
+    var keyWithId = keyWithoutId +  '-' + (this.config.dataset_id || '');
+    if( typeof value == 'object' )
+        value = dojo.toJson( value );
+
+    var sizeLimit = this.config.cookieSizeLimit || 1200;
+    if( value!=null && value.length > sizeLimit ) {
+        console.warn("not setting cookie '"+keyWithId+"', value too big ("+value.length+" > "+sizeLimit+")");
+        return localStorage.getItem( keyWithId );
+    }
+    else if( value!=null ) {
+        try {
+        return localStorage.setItem(keyWithId, value);
+        }
+        catch(e) {
+        }
+    }
+
+    return (localStorage.getItem( keyWithId ) || dojo.cookie(keyWithoutId));
+},
+/**
+ * @private
+ */
+
+createNavBox: function( parent ) {
+    var thisB = this;
+    var navbox = dojo.create( 'div', { id: 'navbox', style: { 'text-align': 'center' } }, parent );
+
+    // container adds a white backdrop to the locationTrap.
+    var locationTrapContainer = dojo.create('div', {className: 'locationTrapContainer'}, navbox );
+
+    this.locationTrap = dojo.create('div', {className: 'locationTrap'}, locationTrapContainer );
+
+    var four_nbsp = String.fromCharCode(160); four_nbsp = four_nbsp + four_nbsp + four_nbsp + four_nbsp;
+    navbox.appendChild(document.createTextNode( four_nbsp ));
+
+    var moveLeft = document.createElement("img");
+    //moveLeft.type = "image";
+    moveLeft.src = this.resolveUrl( "img/Empty.png" );
+    moveLeft.id = "moveLeft";
+    moveLeft.className = "icon nav";
+    navbox.appendChild(moveLeft);
+    dojo.connect( moveLeft, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.slide(0.9);
+                  });
+
+    var moveRight = document.createElement("img");
+    //moveRight.type = "image";
+    moveRight.src = this.resolveUrl( "img/Empty.png" );
+    moveRight.id="moveRight";
+    moveRight.className = "icon nav";
+    navbox.appendChild(moveRight);
+    dojo.connect( moveRight, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.slide(-0.9);
+                  });
+
+    navbox.appendChild(document.createTextNode( four_nbsp ));
+
+    var bigZoomOut = document.createElement("img");
+    //bigZoomOut.type = "image";
+    bigZoomOut.src = this.resolveUrl( "img/Empty.png" );
+    bigZoomOut.id = "bigZoomOut";
+    bigZoomOut.className = "icon nav";
+    navbox.appendChild(bigZoomOut);
+    dojo.connect( bigZoomOut, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomOut(undefined, undefined, 2);
+                  });
+
+
+    var zoomOut = document.createElement("img");
+    //zoomOut.type = "image";
+    zoomOut.src = this.resolveUrl("img/Empty.png");
+    zoomOut.id = "zoomOut";
+    zoomOut.className = "icon nav";
+    navbox.appendChild(zoomOut);
+    dojo.connect( zoomOut, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                     this.view.zoomOut();
+                  });
+
+    var zoomIn = document.createElement("img");
+    //zoomIn.type = "image";
+    zoomIn.src = this.resolveUrl( "img/Empty.png" );
+    zoomIn.id = "zoomIn";
+    zoomIn.className = "icon nav";
+    navbox.appendChild(zoomIn);
+    dojo.connect( zoomIn, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomIn();
+                  });
+
+    var bigZoomIn = document.createElement("img");
+    //bigZoomIn.type = "image";
+    bigZoomIn.src = this.resolveUrl( "img/Empty.png" );
+    bigZoomIn.id = "bigZoomIn";
+    bigZoomIn.className = "icon nav";
+    navbox.appendChild(bigZoomIn);
+    dojo.connect( bigZoomIn, "click", this,
+                  function(event) {
+                      dojo.stopEvent(event);
+                      this.view.zoomIn(undefined, undefined, 2);
+                  });
+
+    navbox.appendChild(document.createTextNode( four_nbsp ));
+
+    // if we have fewer than 30 ref seqs, or `refSeqDropdown: true` is
+    // set in the config, then put in a dropdown box for selecting
+    // reference sequences
+    var refSeqSelectBoxPlaceHolder = dojo.create('span', {}, navbox );
+
+    // make the location box
+    this.locationBox = new dijitComboBox(
+        {
+            id: "location",
+            name: "location",
+            style: { width: '25ex' },
+            maxLength: 400,
+            searchAttr: "name"
+        },
+        dojo.create('input', {}, navbox) );
+    this.afterMilestone( 'loadNames', dojo.hitch(this, function() {
+        if( this.nameStore )
+            this.locationBox.set( 'store', this.nameStore );
+    }));
+
+    this.locationBox.focusNode.spellcheck = false;
+    dojo.query('div.dijitArrowButton', this.locationBox.domNode ).orphan();
+    dojo.connect( this.locationBox.focusNode, "keydown", this, function(event) {
+                      if( event.keyCode == keys.ESCAPE ) {
+                          this.locationBox.set('value','');
+                      }
+                      else if (event.keyCode == keys.ENTER) {
+                          this.locationBox.closeDropDown(false);
+                          this.navigateTo( this.locationBox.get('value') );
+                          this.goButton.set('disabled',true);
+                          dojo.stopEvent(event);
+                      } else {
+                          this.goButton.set('disabled', false);
+                      }
+                  });
+    dojo.connect( navbox, 'onselectstart', function(evt) { evt.stopPropagation(); return true; });
+    // monkey-patch the combobox code to make a few modifications
+    (function(){
+
+         // add a moreMatches class to our hacked-in "more options" option
+         var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+         var oldCreateOption = dropDownProto._createOption;
+         dropDownProto._createOption = function( item ) {
+             var option = oldCreateOption.apply( this, arguments );
+             if( item.hitLimit )
+                 dojo.addClass( option, 'moreMatches');
+             return option;
+         };
+
+         // prevent the "more matches" option from being clicked
+         var oldOnClick = dropDownProto.onClick;
+         dropDownProto.onClick = function( node ) {
+             if( dojo.hasClass(node, 'moreMatches' ) )
+                 return null;
+             return oldOnClick.apply( this, arguments );
+         };
+    }).call(this);
+
+    // make the 'Go' button'
+    this.goButton = new dijitButton(
+        {
+            label: 'Go',
+            onClick: dojo.hitch( this, function(event) {
+                this.navigateTo(this.locationBox.get('value'));
+                this.goButton.set('disabled',true);
+                dojo.stopEvent(event);
+            })
+        }, dojo.create('button',{},navbox));
+    this.highlightButtonPreviousState = false;
+    this.highlightButton = new dojoxTriStateCheckBox({
+        //label: 'Highlight',
+        title: 'highlight a region',
+        states:[false, true, "mixed"],
+        onChange: function() {
+            if( this.get('checked')==true ) {
+                thisB.view._rubberStop();
+                thisB.view.behaviorManager.swapBehaviors('normalMouse','highlightingMouse');
+            } else if( this.get('checked')==false) {
+                var h = thisB.getHighlight();
+                if( h ) {
+                    thisB.clearHighlight();
+                    thisB.view.redrawRegion( h ); 
+                }
+            }
+            else { // mixed
+                // Uncheck since user is cycling three-state instead
+                // of programmatically landing in mixed state
+                if( thisB.highlightButtonPreviousState != true ) {
+                    thisB.highlightButton.set('checked', false);
+                }
+                else {
+                    thisB.highlightButtonPreviousState = false;
+                }
+                thisB.view._rubberStop();
+                thisB.view.behaviorManager.swapBehaviors('highlightingMouse','normalMouse');
+            }
+        }
+    }, dojo.create('button',{},navbox));
+
+    this.subscribe('/jbrowse/v1/n/globalHighlightChanged',
+                   function() { thisB.highlightButton.set('checked',false); });
+
+
+    this.afterMilestone('loadRefSeqs', dojo.hitch( this, function() {
+
+        // make the refseq selection dropdown
+        if( this.refSeqOrder && this.refSeqOrder.length ) {
+            var max = this.config.refSeqSelectorMaxSize || 30;
+            var numrefs = Math.min( max, this.refSeqOrder.length);
+            var options = [];
+            for ( var i = 0; i < numrefs; i++ ) {
+                options.push( { label: this.refSeqOrder[i], value: this.refSeqOrder[i] } );
+            }
+            var tooManyMessage = '(first '+numrefs+' ref seqs)';
+            if( this.refSeqOrder.length > max ) {
+                options.push( { label: tooManyMessage , value: tooManyMessage, disabled: true } );
+            }
+            this.refSeqSelectBox = new dijitSelectBox({
+                name: 'refseq',
+                value: this.refSeq ? this.refSeq.name : null,
+                options: options,
+                onChange: dojo.hitch(this, function( newRefName ) {
+                    // don't trigger nav if it's the too-many message
+                    if( newRefName == tooManyMessage ) {
+                        this.refSeqSelectBox.set('value', this.refSeq.name );
+                        return;
+                    }
+
+                    // only trigger navigation if actually switching sequences
+                    if( newRefName != this.refSeq.name ) {
+                        this.navigateToLocation({ ref: newRefName });
+                    }
+                })
+            }).placeAt( refSeqSelectBoxPlaceHolder );
+        }
+
+        // calculate how big to make the location box:  make it big enough to hold the
+        var locLength = this.config.locationBoxLength || function() {
+
+            // if we have no refseqs, just use 20 chars
+            if( ! this.refSeqOrder.length )
+                return 20;
+
+            // if there are not tons of refseqs, pick the longest-named
+            // one.  otherwise just pick the last one
+            var ref = this.refSeqOrder.length < 1000
+                && function() {
+                       var longestNamedRef;
+                       array.forEach( this.refSeqOrder, function(name) {
+                                          var ref = this.allRefs[name];
+                                          if( ! ref.length )
+                                              ref.length = ref.end - ref.start + 1;
+                                          if( ! longestNamedRef || longestNamedRef.length < ref.length )
+                                              longestNamedRef = ref;
+                                      }, this );
+                       return longestNamedRef;
+                   }.call(this)
+                || this.refSeqOrder.length && this.allRefs[ this.refSeqOrder[ this.refSeqOrder.length - 1 ] ]
+                || 20;
+
+            var locstring = Util.assembleLocStringWithLength({ ref: ref.name, start: ref.end-1, end: ref.end, length: ref.length });
+            //console.log( locstring, locstring.length );
+            return locstring.length;
+        }.call(this) || 20;
+
+
+        this.locationBox.domNode.style.width = locLength+'ex';
+    }));
+
+    return navbox;
+},
+
+/**
+ * Return the current highlight region, or null if none.
+ */
+getHighlight: function() {
+    return this._highlight || null;
+},
+
+/**
+ * Set a new highlight.  Returns the new highlight.
+ */
+setHighlight: function( newHighlight ) {
+
+    if( newHighlight && ( newHighlight instanceof Location ) )
+        this._highlight = newHighlight;
+    else if( newHighlight )
+        this._highlight = new Location( newHighlight );
+
+    this.publish( '/jbrowse/v1/n/globalHighlightChanged', [this._highlight] );
+
+    return this.getHighlight();
+},
+
+
+_updateHighlightClearButton: function() {
+    var isHighlightSet=!! this._highlight;
+    if( this._highlightClearButton ) {
+        this._highlightClearButton.set( 'disabled', !isHighlightSet );
+        //this._highlightClearButton.set( 'label', 'Clear highlight' + ( this._highlight ? ' - ' + this._highlight : '' ));
+    }
+    if( this.highlightButton ) {
+        this.highlightButton.set('checked',isHighlightSet?'mixed':false );
+        this.highlightButtonPreviousState=isHighlightSet;
+    }
+},
+
+
+clearHighlight: function() {
+    if( this._highlight ) {
+        delete this._highlight;
+        this.publish( '/jbrowse/v1/n/globalHighlightChanged', [] );
+    }
+},
+
+setHighlightAndRedraw: function( location ) {
+    location = this.regularizeLocation( location );
+
+    var oldHighlight = this.getHighlight();
+    if( oldHighlight )
+        this.view.hideRegion( oldHighlight );
+    this.view.hideRegion( location );
+    this.setHighlight( location );
+    this.view.showVisibleBlocks( false );
+},
+
+/**
+ * Shows a region that has been searched for someplace else in the UI.
+ * Highlights it if this.config.highlightSearchedRegions is true.
+ */
+showRegionAfterSearch: function( location ) {
+    location = this.regularizeLocation( location );
+
+    if( this.config.highlightSearchedRegions ) {
+        var oldHighlight = this.getHighlight();
+        if( oldHighlight )
+            this.view.hideRegion( oldHighlight );
+        this.view.hideRegion( location );
+        this.setHighlight( location );
+    }
+    this.showRegion( location );
+},
+showRegionWithHighlight: function() { // backcompat
+    return this.showRegionAfterSearch.apply( this, arguments );
+}
+
+});
+});
+
+
+/*
+
+Copyright (c) 2007-2009 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'dojo/DeferredList':function(){
+define(["./_base/kernel", "./_base/Deferred", "./_base/array"], function(dojo, Deferred, darray){
+	// module:
+	//		dojo/DeferredList
+
+
+dojo.DeferredList = function(/*Array*/ list, /*Boolean?*/ fireOnOneCallback, /*Boolean?*/ fireOnOneErrback, /*Boolean?*/ consumeErrors, /*Function?*/ canceller){
+	// summary:
+	//		Deprecated, use dojo/promise/all instead.
+	//		Provides event handling for a group of Deferred objects.
+	// description:
+	//		DeferredList takes an array of existing deferreds and returns a new deferred of its own
+	//		this new deferred will typically have its callback fired when all of the deferreds in
+	//		the given list have fired their own deferreds.  The parameters `fireOnOneCallback` and
+	//		fireOnOneErrback, will fire before all the deferreds as appropriate
+	// list:
+	//		The list of deferreds to be synchronizied with this DeferredList
+	// fireOnOneCallback:
+	//		Will cause the DeferredLists callback to be fired as soon as any
+	//		of the deferreds in its list have been fired instead of waiting until
+	//		the entire list has finished
+	// fireonOneErrback:
+	//		Will cause the errback to fire upon any of the deferreds errback
+	// canceller:
+	//		A deferred canceller function, see dojo.Deferred
+	var resultList = [];
+	Deferred.call(this);
+	var self = this;
+	if(list.length === 0 && !fireOnOneCallback){
+		this.resolve([0, []]);
+	}
+	var finished = 0;
+	darray.forEach(list, function(item, i){
+		item.then(function(result){
+			if(fireOnOneCallback){
+				self.resolve([i, result]);
+			}else{
+				addResult(true, result);
+			}
+		},function(error){
+			if(fireOnOneErrback){
+				self.reject(error);
+			}else{
+				addResult(false, error);
+			}
+			if(consumeErrors){
+				return null;
+			}
+			throw error;
+		});
+		function addResult(succeeded, result){
+			resultList[i] = [succeeded, result];
+			finished++;
+			if(finished === list.length){
+				self.resolve(resultList);
+			}
+
+		}
+	});
+};
+dojo.DeferredList.prototype = new Deferred();
+
+dojo.DeferredList.prototype.gatherResults = function(deferredList){
+	// summary:
+	//		Gathers the results of the deferreds for packaging
+	//		as the parameters to the Deferred Lists' callback
+	// deferredList: dojo/DeferredList
+	//		The deferred list from which this function gathers results.
+	// returns: dojo/DeferredList
+	//		The newly created deferred list which packs results as
+	//		parameters to its callback.
+
+	var d = new dojo.DeferredList(deferredList, false, true, false);
+	d.addCallback(function(results){
+		var ret = [];
+		darray.forEach(results, function(result){
+			ret.push(result[1]);
+		});
+		return ret;
+	});
+	return d;
+};
+
+return dojo.DeferredList;
+});
+
+},
+'JBrowse/has':function(){
+/**
+ * Extends dojo/has with a few additional tests, and makes sure dojo/sniff is loaded.
+ */
+
+define([ 'dojo/has', 'dojo/sniff' ],
+       function( has ) {
+
+           // does the browser support typed arrays?
+           has.add( 'typed-arrays', function() {
+                        try {
+                            var a = new Uint8Array(1);
+                            return !!a;
+                        } catch(e) {};
+                        return false;
+                    });
+
+           // does it support canvas?
+           has.add( 'canvas', function() {
+                        try {
+                            return !! document.createElement('canvas').getContext('2d');
+                        } catch(e) {}
+                        return false;
+                    });
+
+           // some browsers don't do a very good job with
+           // percentage-based and fractional-pixel HTML coordinates
+           // and sizes
+           has.add( 'inaccurate-html-layout', function() {
+               return has('safari') || has('ie') < 9;
+           }, true );
+
+
+           has.add( 'save-generated-files', function() {
+                        var canSave = false;
+                        try {
+                            canSave = Blob && !( has('ie') < 10 ) && ! has('safari');
+                        } catch(e) {}
+                        return canSave;
+           },true);
+
+
+           // similar to the inaccurate-html-layout problem, but specifically related to width being 100%
+           // rounding on canvas features at the time being
+           has.add( 'inaccurate-html-width', function() {
+               return has('safari')||has('chrome');
+           }, true);
+
+           return has;
+       }
+);
+
+},
+'dijit/form/ComboBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"./ValidationTextBox",
+	"./ComboBoxMixin"
+], function(declare, ValidationTextBox, ComboBoxMixin){
+
+	// module:
+	//		dijit/form/ComboBox
+
+	return declare("dijit.form.ComboBox", [ValidationTextBox, ComboBoxMixin], {
+		// summary:
+		//		Auto-completing text box
+		//
+		// description:
+		//		The drop down box's values are populated from an class called
+		//		a data provider, which returns a list of values based on the characters
+		//		that the user has typed into the input box.
+		//		If OPTION tags are used as the data provider via markup,
+		//		then the OPTION tag's child text node is used as the widget value
+		//		when selected.  The OPTION tag's value attribute is ignored.
+		//		To set the default value when using OPTION tags, specify the selected
+		//		attribute on 1 of the child OPTION tags.
+		//
+		//		Some of the options to the ComboBox are actually arguments to the data
+		//		provider.
+	});
+});
+
+},
+'dojox/form/TriStateCheckBox':function(){
+define([
+	"dojo/_base/kernel", // kernel.deprecated
+	"dojo/_base/declare", // declare
+	"dojo/_base/array", // array.indexOf
+	"dojo/_base/lang", // lang.isArray, lang.isString
+	"dojo/_base/event", // event.stop
+	"dojo/query", // query()
+	"dojo/dom-attr", // domAttr.set
+	"dojo/text!./resources/TriStateCheckBox.html",
+	"dijit/form/Button",
+	"dijit/form/_ToggleButtonMixin",
+	"dojo/NodeList-dom" // NodeList.addClass/removeClass
+], function(kernel, declare, array, lang, event, query, domAttr, template, Button, _ToggleButtonMixin){
+
+return declare("dojox.form.TriStateCheckBox", [Button, _ToggleButtonMixin], {
+	// summary:
+	//		Checkbox with three states
+	
+		templateString: template,
+
+		baseClass: "dojoxTriStateCheckBox",
+
+		// type: [private] String
+		//		type attribute on `<input>` node.
+		//		Overrides `dijit/form/Button.type`.  Users should not change this value.
+		type: "checkbox",
+
+		// states: Array
+		//		States of TriStateCheckBox.
+		//		The value of This.checked should be one of these three states:
+		//		[false, true, "mixed"]
+		states: "",
+
+		// _stateLabels: Object
+		//		These characters are used to replace the image to show
+		//		current state of TriStateCheckBox in high contrast mode. This is an associate array of
+		//      states with their corresponding replacing characters. State can either be "False", "True" or "Mixed".
+		 _stateLabels: null,
+
+		// stateValues: Object
+		//		The values of the TriStateCheckBox in corresponding states. This is an associate array of
+		//      states with their corresponding values. State can either be "False", "True" or "Mixed".
+		stateValue: null,
+
+		// _currentState: Integer
+		//		The current state of the TriStateCheckBox
+		_currentState: 0,
+
+		// _stateType: String
+		//		The current state type of the TriStateCheckBox
+		//		Could be "False", "True" or "Mixed"
+		_stateType: "False",
+
+		// readOnly: Boolean
+		//		Should this widget respond to user input?
+		//		In markup, this is specified as "readOnly".
+		//		Similar to disabled except readOnly form values are submitted.
+		readOnly: false,
+
+		// checked: Boolean|String
+		//		Current check state of the check box.
+		checked: "",
+		
+		// aria-pressed for toggle buttons, and aria-checked for checkboxes
+		_aria_attr: "aria-checked",
+
+		constructor: function(){
+			// summary:
+			//		Runs on widget initialization to setup arrays etc.
+			// tags:
+			//		private
+			this.states = [false, "mixed", true];
+			this.checked = false;
+			this._stateLabels = {
+				"False": '&#9633;',
+				"True": '&#8730;',
+				"Mixed": '&#9632;'
+			};
+			this.stateValues = {
+				"False": false,
+				"True": "on",
+				"Mixed": "mixed"
+			};
+		},
+		
+		_fillContent: function(/*DomNode*/ source){
+			// Override Button::_fillContent() since it doesn't make sense for CheckBox,
+			// since CheckBox doesn't even have a container
+		},
+		
+		postCreate: function(){
+			domAttr.set(this.stateLabelNode, 'innerHTML', this._stateLabels[this._stateType]);
+			this.inherited(arguments);
+		},
+		
+		startup: function(){
+			this.set("checked", this.params.checked || this.states[this._currentState]);
+			domAttr.set(this.stateLabelNode, 'innerHTML', this._stateLabels[this._stateType]);
+			this.inherited(arguments);
+		},
+		
+		// Override behavior from Button, since we don't have an iconNode
+		_setIconClassAttr: null,
+		
+		_setCheckedAttr: function(/*String|Boolean*/ checked, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Handler for checked = attribute to constructor, and also calls to
+			//		set('checked', val).
+			// checked:
+			//		true, false or 'mixed'
+			// description:
+			//		Controls the state of the TriStateCheckBox. Set this.checked,
+			//		this._currentState, value attribute of the `<input type=checkbox>`
+			//		according to the value of 'checked'.			
+			var stateIndex = array.indexOf(this.states, checked), changed = false;
+			if(stateIndex >= 0){
+				this._currentState = stateIndex;
+				this._stateType = this._getStateType(checked);
+				domAttr.set(this.focusNode, "value", this.stateValues[this._stateType]);
+				domAttr.set(this.stateLabelNode, 'innerHTML', this._stateLabels[this._stateType]);
+				this.inherited(arguments);
+			}else{
+				console.warn("Invalid state!");
+			}
+		},
+
+		setChecked: function(/*String|Boolean*/ checked){
+			// summary:
+			//		Deprecated.  Use set('checked', true/false) instead.
+			kernel.deprecated("setChecked("+checked+") is deprecated. Use set('checked',"+checked+") instead.", "", "2.0");
+			this.set('checked', checked);
+		},
+
+		_setStatesAttr: function(/*Array|String*/ states){
+			if(lang.isArray(states)){
+				this._set("states", states);
+			}else if(lang.isString(states)){
+				var map = {
+					"true": true,
+					"false": false,
+					"mixed": "mixed"
+				};
+				states = states.split(/\s*,\s*/);
+				for(var i = 0; i < states.length; i++){
+					states[i] = map[states[i]] !== undefined ? map[states[i]] : false;
+				}
+				this._set("states", states);
+			}
+		},
+		
+		_setReadOnlyAttr: function(/*Boolean*/ value){
+			this._set("readOnly", value);
+			domAttr.set(this.focusNode, "readOnly", value);
+		},
+
+		_setValueAttr: function(/*String|Boolean*/ newValue, /*Boolean*/ priorityChange){
+			// summary:
+			//		Handler for value = attribute to constructor, and also calls to
+			//		set('value', val).
+			// description:
+			//		During initialization, just saves as attribute to the `<input type=checkbox>`.
+			//
+			//		After initialization,
+			//		when passed a boolean or the string 'mixed', controls the state of the
+			//		TriStateCheckBox.
+			//		If passed a string except 'mixed', changes the value attribute of the
+			//		TriStateCheckBox. Sets the state of the TriStateCheckBox to checked.
+			if(typeof newValue == "string" && (array.indexOf(this.states, newValue) < 0)){
+				if(newValue == ""){
+					newValue = "on";
+				}
+				this.stateValues["True"] = newValue;
+				newValue = true;
+			}
+			if(this._created){
+				this._currentState = array.indexOf(this.states, newValue);
+				this.set('checked', newValue, priorityChange);
+				domAttr.set(this.focusNode, "value", this.stateValues[this._stateType]);
+			}
+		},
+
+		_setValuesAttr: function(/*Array*/ newValues){
+			// summary:
+			//		Handler for values = attribute to constructor, and also calls to
+			//		set('values', val).
+			// newValues:
+			//		If the length of newValues is 1, it will replace the value of
+			//		the TriStateCheckBox in true state. Otherwise, the values of
+			//		the TriStateCheckBox in true state and 'mixed' state will be
+			//		replaced by the first two values in newValues.
+			// description:
+			//		Change the value of the TriStateCheckBox in 'mixed' and true states.
+			this.stateValues["True"] = newValues[0] ? newValues[0] : this.stateValues["True"];
+			this.stateValues["Mixed"] = newValues[1] ? newValues[1] : this.stateValues["Mixed"];
+		},
+
+		_getValueAttr: function(){
+			// summary:
+			//		Hook so get('value') works.
+			// description:
+			//		Returns value according to current state of the TriStateCheckBox.
+			return this.stateValues[this._stateType];
+		},
+
+		reset: function(){
+			this._hasBeenBlurred = false;
+			this.set("states", this.params.states || [false, "mixed", true]);
+			this.stateValues = this.params.stateValues || {
+				"False" : false,
+				"True" : "on",
+				"Mixed" : "mixed"
+			};
+			this.set("values", this.params.values || []);
+			this.set('checked', this.params.checked || this.states[0]);
+		},
+
+		_onFocus: function(){
+			if(this.id){
+				query("label[for='"+this.id+"']").addClass("dijitFocusedLabel");
+			}
+			this.inherited(arguments);
+		},
+
+		_onBlur: function(){
+			if(this.id){
+				query("label[for='"+this.id+"']").removeClass("dijitFocusedLabel");
+			}
+			this.mouseFocus = false;
+			this.inherited(arguments);
+		},
+
+		_onClick: function(/*Event*/ e){
+			// summary:
+			//		Internal function to handle click actions - need to check
+			//		readOnly and disabled
+			if(this.readOnly || this.disabled){
+				event.stop(e);
+				return false;
+			}
+			this.click();
+			return this.onClick(e); // user click actions
+		},
+
+		click: function(){
+			// summary:
+			//		Emulate a click on the check box, but will not trigger the
+			//		onClick method.
+			if(this._currentState >= this.states.length - 1){
+				this._currentState = 0;
+			}else{
+				if(this._currentState == -1){
+					this.fixState();
+				}else{
+					this._currentState++;
+				}
+			}
+			var oldState = this._currentState;
+			this.set("checked", this.states[this._currentState]);
+			this._currentState = oldState;
+			domAttr.set(this.stateLabelNode, 'innerHTML', this._stateLabels[this._stateType]);
+		},
+		
+		fixState: function(){
+			// summary:
+			//		Fix _currentState property if it's out of bound.
+			this._currentState = this.states.length - 1;
+		},
+		
+		_getStateType: function(/*String|Boolean*/ state){
+			// summary:
+			//		Internal function to return the type of a certain state:
+			//
+			//		- false: False
+			//		- true: True
+			//		- "mixed": Mixed
+			return state ? (state == "mixed" ? "Mixed" : "True") : "False";
+		},
+		
+		_onMouseDown: function(){
+			this.mouseFocus = true;
+		}
+	});
+
+});
+
+},
+'JBrowse/Util':function(){
+/**
+ * Miscellaneous utility functions.
+ */
+define( [
+            'dojo/_base/array',
+            'dojo/_base/lang',
+            'dojo/Deferred',
+
+            'dojox/lang/functional/object',
+            'dojox/lang/functional/fold'
+        ],
+        function(
+            array,
+            lang,
+            Deferred
+        ) {
+var Util;
+Util = {
+    dojof: dojox.lang.functional,
+    is_ie: navigator.appVersion.indexOf('MSIE') >= 0,
+    is_ie6: navigator.appVersion.indexOf('MSIE 6') >= 0,
+    addCommas: function(nStr) {
+	        nStr += '';
+	        var x = nStr.split('.');
+	        var x1 = x[0];
+	        var x2 = x.length > 1 ? '.' + x[1] : '';
+	        var rgx = /(\d+)(\d{3})/;
+	        while (rgx.test(x1)) {
+		    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	        }
+	return x1 + x2;
+    },
+
+    commifyNumber: function() {
+        return this.addCommas.apply( this, arguments );
+    },
+
+    escapeHTML: function( str ) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+
+    /**
+     * Fast, simple class-maker, used for classes that need speed more
+     * than they need dojo.declare's nice features.
+     */
+    fastDeclare: function( members, className ) {
+        var constructor = members.constructor;
+        var fastDeclareClass = function() {
+            constructor.apply( this, arguments );
+        };
+        dojo.mixin( fastDeclareClass.prototype, members );
+        return fastDeclareClass;
+    },
+
+    isRightButton: function(e) {
+        if (!e)
+            var e = window.event;
+        if (e.which)
+            return e.which == 3;
+        else if (e.button)
+            return e.button == 2;
+        else
+            return false;
+    },
+
+
+    getViewportWidth: function() {
+        var width = 0;
+        if( document.documentElement && document.documentElement.clientWidth ) {
+            width = document.documentElement.clientWidth;
+        }
+        else if( document.body && document.body.clientWidth ) {
+            width = document.body.clientWidth;
+        }
+        else if( window.innerWidth ) {
+            width = window.innerWidth - 18;
+        }
+        return width;
+    },
+
+    getViewportHeight: function() {
+        var height = 0;
+        if( document.documentElement && document.documentElement.clientHeight ) {
+            height = document.documentElement.clientHeight;
+        }
+        else if( document.body && document.body.clientHeight ) {
+            height = document.body.clientHeight;
+        }
+        else if( window.innerHeight ) {
+            height = window.innerHeight - 18;
+        }
+        return height;
+    },
+
+    findNearest: function(numArray, num) {
+        var minIndex = 0;
+        var min = Math.abs(num - numArray[0]);
+        for (var i = 1; i < numArray.length; i++) {
+            if (Math.abs(num - numArray[i]) < min) {
+                minIndex = i;
+                min = Math.abs(num - numArray[i]);
+            }
+        }
+        return minIndex;
+    },
+
+    /**
+     * replace variables in a template string with values
+     * @param template String with variable names in curly brackets
+     *                 e.g., "http://foo/{bar}?arg={baz.foo}
+     * @param fillWith object with attribute-value mappings
+     *                 e.g., { 'bar': 'someurl', 'baz': { 'foo': 42 } }
+     * @returns the template string with variables in fillWith replaced
+     *                 e.g., 'htp://foo/someurl?arg=valueforbaz'
+     *
+     */
+
+    fillTemplate: function( template, fillWith ) {
+        return template.replace( /\{([\w\s\.]+)\}/g,
+                                 function( match, varname ) {
+                                     var fill = lang.getObject( varname, false, fillWith );
+                                     if((fill = fillWith[varname]) !== undefined ) {
+                                         if( typeof fill == 'function' )
+                                             return fill( varname );
+                                         else
+                                             return fill;
+                                     } else if( fillWith.callback ) {
+                                         var v = fillWith.callback.call( this, varname );
+                                         if( v !== undefined )
+                                             return v;
+                                     }
+                                     return match;
+                                 });
+    },
+
+    /**
+     * function to load a specified resource only once
+     * @param {Object}   dojoXhrArgs object containing arguments for dojo.xhrGet,
+     *                               like <code>url</code> and <code>handleAs</code>
+     * @param {Object}   stateObj object that stores the state of the load
+     * @param {Function} successCallback function to call on a successful load
+     * @param {Function} errorCallback function to call on an unsuccessful load
+     */
+    maybeLoad: function ( dojoXhrArgs, stateObj, successCallback, errorCallback) {
+        if (stateObj.state) {
+            if ("loaded" == stateObj.state) {
+                successCallback(stateObj.data);
+            } else if ("error" == stateObj.state) {
+                errorCallback();
+            } else if ("loading" == stateObj.state) {
+                stateObj.successCallbacks.push(successCallback);
+                if (errorCallback) stateObj.errorCallbacks.push(errorCallback);
+            }
+        } else {
+            stateObj.state = "loading";
+            stateObj.successCallbacks = [successCallback];
+            stateObj.errorCallbacks = [errorCallback];
+
+            var args = dojo.clone( dojoXhrArgs );
+            args.load = function(o) {
+                stateObj.state = "loaded";
+                stateObj.data = o;
+                var cbs = stateObj.successCallbacks;
+                for (var c = 0; c < cbs.length; c++) cbs[c](o);
+            };
+            args.error = function(error) {
+                console.error(''+error);
+                stateObj.state = "error";
+                var cbs = stateObj.errorCallbacks;
+                for (var c = 0; c < cbs.length; c++) cbs[c]();
+            };
+
+            dojo.xhrGet( args );
+        }
+    },
+
+    /**
+     * updates a with values from b, recursively
+     */
+    deepUpdate: function(a, b) {
+        for (var prop in b) {
+            if ((prop in a)
+                && ("object" == typeof b[prop])
+                && ("object" == typeof a[prop]) ) {
+                Util.deepUpdate(a[prop], b[prop]);
+            } else if( typeof a[prop] == 'undefined' || typeof b[prop] != 'undefined' ){
+                a[prop] = b[prop];
+            }
+        }
+        return a;
+    },
+
+    humanReadableNumber: function( num ) {
+        num = parseInt(num);
+        var suffix = '';
+        if( num >= 1e12 ) {
+            num /= 1e12;
+            suffix = 'T';
+        } else if( num >= 1e9 ) {
+            num /= 1e9;
+            suffix = 'G';
+        } else if( num >= 1e6 ) {
+            num /= 1e6;
+            suffix = 'M';
+        } else if( num >= 1000 ) {
+            num /= 1000;
+            suffix = 'K';
+        }
+
+        return (num.toFixed(2)+' '+suffix).replace(/0+ /,' ').replace(/\. /,' ');
+    },
+
+    resolved: function( val ) {
+        var d = new Deferred();
+        d.resolve( val );
+        return d;
+    },
+
+    // from http://bugs.dojotoolkit.org/ticket/5794
+    resolveUrl: function(baseUrl, relativeUrl) {
+        // summary:
+        // This takes a base url and a relative url and resolves the target url.
+        // For example:
+        // resolveUrl("http://www.domain.com/path1/path2","../path3") ->"http://www.domain.com/path1/path3"
+        //
+        if (relativeUrl.match(/\w+:\/\//))
+	    return relativeUrl;
+        if (relativeUrl.charAt(0)=='/') {
+	    baseUrl = baseUrl.match(/.*\/\/[^\/]*/);
+	    return (baseUrl ? baseUrl[0] : '') + relativeUrl;
+        }
+        // remove the query string from the base, if any
+        baseUrl = baseUrl.replace(/\?.*$/,'');
+        //TODO: handle protocol relative urls:  ://www.domain.com
+        baseUrl = baseUrl.substring(0,baseUrl.length - baseUrl.match(/[^\/]*$/)[0].length);// clean off the trailing path
+        if (relativeUrl == '.')
+	    return baseUrl;
+        while (baseUrl && relativeUrl.substring(0,3) == '../') {
+	    baseUrl = baseUrl.substring(0,baseUrl.length - baseUrl.match(/[^\/]*\/$/)[0].length);
+	    relativeUrl = relativeUrl.substring(3);
+        }
+        return baseUrl + relativeUrl;
+    },
+
+    loadJS: function( paths ) {
+        var d = new Deferred();
+        require( paths, function() {
+            var modules = Array.prototype.slice.call( arguments );
+
+            // check the loaded modules for success
+            for( var i = 0; i<modules.length; i++ ) {
+                if( !{"object":true, "function":true}[typeof modules[i]] ) {
+                    d.reject("could not load "+paths[i]+": "+modules[i]);
+                    return;
+                }
+            }
+
+            d.resolve( modules );
+        });
+        return d;
+    },
+
+    parseLocString: function( locstring ) {
+        var inloc = locstring;
+        if( typeof locstring != 'string' )
+            return null;
+
+        locstring = dojo.trim( locstring );
+
+        // any extra stuff in parens?
+        var extra = (locstring.match(/\(([^\)]+)\)$/)||[])[1];
+
+        // parses a number from a locstring that's a coordinate, and
+        // converts it from 1-based to interbase coordinates
+        var parseCoord = function( coord ) {
+            coord = (coord+'').replace(/\D/g,'');
+            var num = parseInt( coord, 10 );
+            return typeof num == 'number' && !isNaN(num) ? num : null;
+        };
+
+        var location = {};
+        var tokens;
+
+        if( locstring.indexOf(':') != -1 ) {
+            tokens = locstring.split(':',2);
+            location.ref = dojo.trim( tokens[0] );
+            locstring = tokens[1];
+        }
+
+        tokens = locstring.match( /^\s*([\d,]+)\s*\.\.+\s*([\d,]+)/ );
+        if( tokens ) { // range of two numbers?
+            location.start = parseCoord( tokens[1] )-1;
+            location.end = parseCoord( tokens[2] );
+
+            // reverse the numbers if necessary
+            if( location.start > location.end ) {
+                var t = location.start+1;
+                location.start = location.end - 1;
+                location.end = t;
+            }
+        }
+        else { // one number?
+            tokens = locstring.match( /^\s*([\d,]+)\b/ );
+            if( tokens ) {
+                location.end = location.start = parseCoord( tokens[1] )-1;
+            }
+            else // got nothin
+                return null;
+        }
+
+        if( extra )
+            location.extra = extra;
+
+        return location;
+    },
+
+    basename: function( str, suffixList ) {
+        if( ! str || ! str.match )
+            return undefined;
+        var m = str.match( /[\/\\]([^\/\\]+)[\/\/\/]*$/ );
+        var bn = m ? m[1] || undefined : str;
+        if( bn && suffixList ) {
+            if( !( suffixList instanceof Array ) )
+                suffixList = [ suffixList ];
+            suffixList = array.map( suffixList, function( s ) {
+                return s.replace( /([\.\?\+])/g, '\\$1' );
+            });
+            bn = bn.replace( new RegExp( suffixList.join('|')+'$', 'i' ), '' );
+        }
+        return bn;
+    },
+
+    assembleLocString: function( loc_in ) {
+        var s = '',
+        types = { start: 'number', end: 'number', ref: 'string', strand: 'number' },
+        location = {}
+        ;
+
+        // filter the incoming loc_in to only pay attention to slots that we
+        // know how to handle
+        for( var slot in types ) {
+            if( types[slot] == typeof loc_in[slot]
+                && (types[slot] != 'number' || !isNaN(loc_in[slot])) //filter any NaNs
+              ) {
+                  location[slot] = loc_in[slot];
+              }
+        }
+
+        //finally assemble our string
+        if( 'ref' in location ) {
+            s += location.ref;
+            if( location.start || location.end )
+                s += ':';
+        }
+        if( 'start' in location ) {
+            s += (Math.round(location.start)+1).toFixed(0).toLocaleString();
+            if( 'end' in location )
+                s+= '..';
+        }
+        if( 'end' in location )
+            s += Math.round(location.end).toFixed(0).toLocaleString();
+
+        if( 'strand' in location )
+            s += ({'1':' (+ strand)', '-1': ' (- strand)', '0': ' (no strand)' }[ location.strand || '' ]) || '';
+
+        // add on any extra stuff if it was passed in
+        if( 'extra' in loc_in )
+            s += loc_in.extra;
+
+        return s;
+    },
+
+    /**
+     * Complement a sequence (without reversing).
+     * @param {String} seqString sequence
+     * @returns {String} complemented sequence
+     */
+    complement:  (function() {
+        var compl_rx   = /[ACGT]/gi;
+
+        // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+        // generated with:
+        // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+        var compl_tbl  = {"S":"S","w":"w","T":"A","r":"y","a":"t","N":"N","K":"M","x":"x","d":"h","Y":"R","V":"B","y":"r","M":"K","h":"d","k":"m","C":"G","g":"c","t":"a","A":"T","n":"n","W":"W","X":"X","m":"k","v":"b","B":"V","s":"s","H":"D","c":"g","D":"H","b":"v","R":"Y","G":"C"};
+
+        var nbsp = String.fromCharCode(160);
+        var compl_func = function(m) { return compl_tbl[m] || nbsp; };
+        return function( seqString ) {
+            return seqString.replace( compl_rx, compl_func );
+        };
+    })(),
+
+    /**
+     * Reverse-complement a sequence string.
+     * @param {String} seqString
+     * @returns {String} reverse-complemented sequence
+     */
+    revcom: function( seqString ) {
+        return Util.complement( seqString ).split('').reverse().join('');
+    },
+
+    assembleLocStringWithLength: function( def ) {
+        var locString = Util.assembleLocString( def );
+        var length = def.length || def.end-def.start+1;
+        return locString + ' ('+Util.humanReadableNumber( length )+'b)';
+    },
+
+    // given a possible reference sequence name and an object as { 'foo':
+    // <refseq foo>, ... }, try to match that reference sequence name
+    // against the actual name of one of the reference sequences.  returns
+    // the reference sequence record, or null
+    // if none matched.
+    matchRefSeqName: function( name, refseqs ) {
+        for( var ref in refseqs ) {
+            if( ! refseqs.hasOwnProperty(ref) )
+                continue;
+
+            var ucname = name.toUpperCase();
+            var ucref  = ref.toUpperCase();
+
+	    if(    ucname == ucref
+                   || "CHR" + ucname == ucref
+                   || ucname == "CHR" + ucref
+              ) {
+                  return refseqs[ref];
+              }
+        }
+        return null;
+    },
+
+    /**
+     * Wrap a handler function to be called 1ms later in a window timeout.
+     * This will usually give a better stack trace for figuring out where
+     * errors are happening.
+     */
+    debugHandler: function( context, func ) {
+        return function() {
+            var args = arguments;
+            window.setTimeout( function() {
+                                   var f = func;
+                                   if( typeof f == 'string' )
+                                       f = context[f];
+                                   f.apply(context,args);
+                               }, 1);
+        };
+    },
+
+    ucFirst: function(str) {
+        if( typeof str != 'string') return undefined;
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    },
+
+    /**
+     * Uniqify an array.
+     * @param stuff {Array} array of stuff
+     * @param normalizer {Function} optional function to be called on
+     * each element to convert them to a comparable string.  By
+     * default, just does default stringification.
+     */
+    uniq: function( stuff, normalizer ) {
+        normalizer = normalizer || function(t) {
+            return ''+t;
+        };
+        var result = [],
+        seen   = {};
+        dojo.forEach( stuff, function(thing) {
+                          var norm = normalizer(thing);
+                          if( !seen[ normalizer(thing) ] )
+                              result.push( thing );
+                          seen[norm] = true;
+                      });
+        return result;
+    },
+
+    // back-compatible way to remove properties/attributes from DOM
+    // nodes.  IE 7 and older do not support the `delete` operator on
+    // DOM nodes.
+    removeAttribute: function( domNode, attrName ) {
+        try { delete domNode[attrName]; }
+        catch(e) {
+            if( domNode.removeAttribute )
+                domNode.removeAttribute( attrName );
+        }
+    },
+    // Return resolution, accounting for config possibly specifying that highres is disabled
+    getResolution: function( ctx, highResolutionMode ) {
+        var ratio;
+        if( highResolutionMode=='auto' ) {
+            // finally query the various pixel ratios
+            var devicePixelRatio = window.devicePixelRatio || 1;
+            var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                                                    ctx.mozBackingStorePixelRatio ||
+                                                    ctx.msBackingStorePixelRatio ||
+                                                    ctx.oBackingStorePixelRatio ||
+                                                    ctx.backingStorePixelRatio || 1;
+            ratio = devicePixelRatio / backingStoreRatio;
+        }
+        else if( highResolutionMode=='disabled' ) {
+            ratio = 1;
+        }
+        else {
+            ratio = highResolutionMode;
+        }
+        return ratio>=1?ratio:1;
+    }
+
+};
+
+    return Util;
+});
+
+if (!Array.prototype.map) {
+  Array.prototype.map = function(fun /*, thisp */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var res = new Array(len);
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t)
+        res[i] = fun.call(thisp, t[i], i, t);
+    }
+
+    return res;
+  };
+}
+
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function(searchElement /*, fromIndex */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (len === 0)
+      return -1;
+
+    var n = 0;
+    if (arguments.length > 0)
+    {
+      n = Number(arguments[1]);
+      if (n !== n) // shortcut for verifying if it's NaN
+        n = 0;
+      else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0))
+        n = (n > 0 || -1) * Math.floor(Math.abs(n));
+    }
+
+    if (n >= len)
+      return -1;
+
+    var k = n >= 0
+          ? n
+          : Math.max(len - Math.abs(n), 0);
+
+    for (; k < len; k++)
+    {
+      if (k in t && t[k] === searchElement)
+        return k;
+    }
+    return -1;
+  };
+}
+
+
+
+/*
+
+Copyright (c) 2007-2010 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'JBrowse/Store/LazyTrie':function(){
+define( ['dojo/_base/declare','JBrowse/Util'], function( declare, Util ) {
+return declare('JBrowse.Store.LazyTrie', null,
+/**
+ * @lends JBrowse.Store.LazyTrie.prototype
+ */
+{
+
+    /**
+     * <pre>
+     * Implements a lazy PATRICIA tree.
+     *  This structure is a map where the keys are strings.  The map supports fast
+     * queries by key string prefix ("show me all the values for keys that
+     * start with "abc").  It also supports lazily loading subtrees.
+     *
+     * Each edge is labeled with a substring of a key string.
+     * Each node in the tree has one or more children, each of which represents
+     *   a potential completion of the string formed by concatenating all of the
+     *   edge strings from that node up to the root.
+     *   Nodes also have zero or one data items.
+     * Leaves have zero or one data items.
+     *
+     * Each loaded node is an array.
+     *    element 0 is the edge string;
+     *    element 1 is the data item, or null if there is none;
+     *    any further elements are the child nodes, sorted lexicographically
+     *      by their edge string
+     *
+     *  Each lazy node is an array where the first element is the number of
+     *  data items in the subtree rooted at that node, and the second element
+     *  is the edge string for that node.
+     *    when the lazy node is loaded, the lazy array gets replaced with
+     *    a loaded node array; lazy nodes and loaded nodes can be distinguished by:
+     *    "string" == typeof loaded_node[0]
+     *    "number" == typeof lazy_node[0]
+     *
+     *  e.g., for the mappings:
+     *    abc   => 0
+     *    abcd  => 1
+     *    abce  => "baz"
+     *    abfoo => [3, 4]
+     *    abbar (subtree to be loaded lazily)
+     *
+     *  the structure is:
+     *
+     *  [, , ["ab", ,
+     *        [3, "bar"],
+     *        ["c", 0, ["d", 1],
+     *         ["e", "baz"]],
+     *        ["foo", [3, 4]]
+     *        ]
+     *   ]
+     *
+     *  The main goals for this structure were to minimize the JSON size on
+     *  the wire (so, no type tags in the JSON to distinguish loaded nodes,
+     *  lazy nodes, and leaves) while supporting lazy loading and reasonably
+     *  fast lookups.
+     * </pre>
+     *
+     * @constructs
+     */
+    constructor: function(rootURL, chunkTempl) {
+        this.rootURL = rootURL;
+        this.chunkTempl = chunkTempl;
+        var trie = this;
+
+        dojo.xhrGet({url: rootURL,
+                     handleAs: "json",
+                     load: function(o) {
+                         if (!o) {
+                             console.log("failed to load trie");
+                             return;
+                         }
+                         trie.root = o;
+                         trie.extra = o[0];
+                         if (trie.deferred) {
+                             trie.deferred.callee.apply(trie, trie.deferred);
+                             delete trie.deferred;
+                         }
+                     }
+                    });
+    },
+
+    chunkUrl: function(prefix) {
+        var chunkUrl = this.chunkTempl.replace("\{Chunk\}", prefix);
+        return Util.resolveUrl(this.rootURL, chunkUrl);
+    },
+
+    pathToPrefix: function(path) {
+        var node = this.root;
+        var result = "";
+        loop: for (var i = 0; i < path.length; i++) {
+            switch(typeof node[path[i]][0]) {
+            case 'string': // regular node
+                result += node[path[i]][0];
+                break;
+            case 'number': // lazy node
+                result += node[path[i]][1];
+                break loop;
+            }
+            node = node[path[i]];
+        }
+        return result;
+    },
+
+    valuesFromPrefix: function(query, callback) {
+        var trie = this;
+        this.findNode(query, function(prefix, node) {
+                          callback(trie.valuesFromNode(node));
+                      },
+                      function() {
+                          callback([]);
+                      }
+                     );
+    },
+
+    mappingsFromPrefix: function(query, callback) {
+        var trie = this;
+        this.findNode(query, function(prefix, node) {
+                          callback(trie.mappingsFromNode(prefix, node));
+                      },
+                      function() {
+                          callback([]);
+                      }
+                     );
+    },
+
+    mappingsFromNode: function(prefix, node) {
+        var results = [];
+        if (node[1] !== null)
+            results.push([prefix, node[1]]);
+        for (var i = 2; i < node.length; i++) {
+            if ("string" == typeof node[i][0]) {
+                results = results.concat(this.mappingsFromNode(prefix + node[i][0],
+                                                               node[i]));
+            }
+        }
+        return results;
+    },
+
+    valuesFromNode: function(node) {
+        var results = [];
+        if (node[1] !== null)
+            results.push(node[1]);
+        for (var i = 2; i < node.length; i++)
+            results = results.concat(this.valuesFromNode(node[i]));
+        return results;
+    },
+
+    exactMatch: function(key, callback, notfoundCallback ) {
+        notfoundCallback = notfoundCallback || function() {};
+
+        var trie = this;
+        this.findNode(key,
+                      function(prefix, node) {
+                          if ((prefix.toLowerCase() == key.toLowerCase()) && node[1])
+                              callback(node[1]);
+                      },
+                      notfoundCallback
+                     );
+    },
+
+    findNode: function(query, foundCallback, notfoundCallback ) {
+        notfoundCallback = notfoundCallback || function() {};
+
+        var trie = this;
+        this.findPath(query, function(path) {
+                          var node = trie.root;
+                          for (var i = 0; i < path.length; i++)
+                              node = node[path[i]];
+                          var foundPrefix = trie.pathToPrefix(path);
+                          foundCallback(foundPrefix, node);
+                      }, notfoundCallback);
+    },
+
+    findPath: function(query, foundCallback, notfoundCallback) {
+
+        notfoundCallback = notfoundCallback || function() {};
+
+        if (!this.root) {
+            this.deferred = arguments;
+            return;
+        }
+        query = query.toLowerCase();
+        var node = this.root;
+        var qStart = 0;
+        var childIndex;
+
+        var path = [];
+
+        while(true) {
+            childIndex = this.binarySearch(node, query.charAt(qStart));
+            if (childIndex < 0) {
+                notfoundCallback();
+                return;
+            }
+            path.push(childIndex);
+
+            if ("number" == typeof node[childIndex][0]) {
+                // lazy node
+                var trie = this;
+                dojo.xhrGet({url: this.chunkUrl(this.pathToPrefix(path)),
+                             handleAs: "json",
+                             load: function(o) {
+                                 node[childIndex] = o;
+                                 trie.findPath(query, foundCallback);
+                             }
+                            });
+                return;
+            }
+
+            node = node[childIndex];
+
+            // if the current edge string doesn't match the
+            // relevant part of the query string, then there's no
+            // match
+            if (query.substr(qStart, node[0].length)
+                != node[0].substr(0, Math.min(node[0].length,
+                                              query.length - qStart))) {
+                notfoundCallback();
+                return;
+            }
+
+            qStart += node[0].length;
+            if (qStart >= query.length) {
+                // we've reached the end of the query string, and we
+                // have some matches
+                foundCallback(path);
+                return;
+            }
+        }
+    },
+
+    binarySearch: function(a, firstChar) {
+        var low = 2; // skip edge string (in 0) and data item (in 1)
+        var high = a.length - 1;
+        var mid, midVal;
+        while (low <= high) {
+            mid = (low + high) >>> 1;
+            switch(typeof a[mid][0]) {
+            case 'string': // regular node
+                midVal = a[mid][0].charAt(0);
+                break;
+            case 'number': // lazy node
+                midVal = a[mid][1].charAt(0);
+                break;
+            }
+
+            if (midVal < firstChar) {
+                low = mid + 1;
+            } else if (midVal > firstChar) {
+                high = mid - 1;
+            } else {
+                return mid; // key found
+            }
+        }
+
+        return -(low + 1);  // key not found.
+    }
+
+}); });
+
+/*
+
+Copyright (c) 2007-2009 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'JBrowse/Store/Names/LazyTrieDojoData':function(){
+/**
+ * dojo.data.api.Read-compatible store object that reads data from an
+ * encapsulated JBrowse/Store/LazyTrie.
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'JBrowse/Util',
+           'JBrowse/Model/Location'
+       ],function(
+           declare,
+           array,
+           Util,
+           Location
+       ) {
+return declare( null,
+/**
+ * @lends JBrowse.Store.Autocomplete.prototype
+ */
+{
+    /**
+     * @constructs
+     * @param args.namesTrie
+     * @param args.stopPrefixes
+     * @param args.resultLimit
+     * @param args.tooManyMatchesMessage
+     */
+    constructor: function( /**Object*/ args ) {
+        if( ! args.namesTrie )
+            throw "must provide a namesTrie argument";
+
+        this.namesTrie = args.namesTrie;
+
+        this.resultLimit = args.resultLimit || 15;
+        this.tooManyMatchesMessage = args.tooManyMatchesMessage || '(too many matches to display)';
+
+        // generate stopPrefixes
+        var stopPrefixes = this.stopPrefixes = {};
+        // make our stopPrefixes an object as { prefix: true, ... }
+        // with all possible prefixes of our stop prefixes
+        if( args.stopPrefixes ) {
+            var prefixesInput = typeof args.stopPrefixes == 'string'
+                ? [ args.stopPrefixes ] : args.stopPrefixes;
+
+            dojo.forEach( prefixesInput, function(prefix) {
+                while( prefix.length ) {
+                    stopPrefixes[prefix] = true;
+                    prefix = prefix.substr( 0, prefix.length - 1 );
+                }
+            });
+        }
+
+        // make a self-modifying method for extracting the that
+        // detects whether the name store is formatted with tools
+        // pre-1.4 or post-1.4.  for pre-1.4 formats, will just
+        // complete with the lower-case version of the name.  for
+        // post-1.4, use the original-case version that's stored in
+        // the name record.
+        this.nodeText = function(node) {
+            if( typeof node[1][0][0] == 'number' ) {
+                // pre-1.4, for backcompat
+                this.nodeText = function(node) { return node[0]; };
+            } else {
+                // post-1.4
+                this.nodeText = function(node) { return node[1][0][0]; };
+            }
+            return this.nodeText( node );
+        };
+    },
+
+    getFeatures: function() {
+        return {
+	    'dojo.data.api.Read': true,
+	    'dojo.data.api.Identity': true
+	};
+    },
+
+    getIdentity: function( node ) {
+        console.log( node );
+    },
+
+    // dojo.data.api.Read support
+
+    fetch: function( /**Object*/ request ) {
+        var start = request.start || 0;
+        var matchLimit = Math.min( this.resultLimit, Math.max(0, request.count || Infinity ) );
+        var matchesRemaining = matchLimit;
+	var scope = request.scope || dojo.global;
+        var aborted = false;
+
+        // wrap our abort function to set a flag
+        request.abort = function() {
+            var oldabort = request.abort || function() {};
+            return function() {
+                aborted = true;
+                oldabort.call( scope, request );
+            };
+        }.call(this);
+
+        if( ! request.store )
+            request.store = this;
+
+        if( request.onBegin )
+            request.onBegin.call( scope, 0, request );
+
+        var prefix = (request.query.name || '').toString().replace(/\*$/,'');
+
+        if( ! this.stopPrefixes[ prefix ] ) {
+            this.namesTrie.mappingsFromPrefix(
+                prefix,
+                dojo.hitch( this, function(tree) {
+                    var matches = [];
+
+                    if( aborted )
+                        return;
+
+                    // are we working with a post-JBrowse 1.4 data structure?
+                    var post1_4 = tree[0] && tree[0][1] && tree[0][1][0] && typeof tree[0][1][0][0] == 'string';
+
+                    // use dojo.some so that we can break out of the loop when we hit the limit
+                    dojo.some( tree, function(node) {
+                                   if( matchesRemaining-- ) {
+                                       var name = this.nodeText(node);
+                                       array.forEach( node[1], function(n) {
+                                           var location = new Location({
+                                               ref: n[ post1_4 ? 3 : 2 ],
+                                               start: parseInt( n[ post1_4 ? 4 : 3 ]),
+                                               end: parseInt( n[ post1_4 ? 5 : 4 ]),
+                                               tracks: [ this.namesTrie.extra[ n[ post1_4 ? 1 : 0 ] ] ],
+                                               objectName: name
+                                           });
+
+                                           matches.push({
+                                                        name: name,
+                                                        location: location
+                                                    });
+                                       },this);
+                                   }
+                                   return matchesRemaining < 0;
+                               },this);
+
+                    // if we found more than the match limit
+                    if( matchesRemaining < 0 )
+                        matches.push({ name: this.tooManyMatchesMessage, hitLimit: true });
+
+                    if( request.sort )
+                        matches.sort( dojo.data.util.sorter.createSortFunction(request.sort, this) );
+                    if( !aborted && request.onItem )
+                        dojo.forEach( matches, function( item ) {
+                            if( !aborted )
+                                request.onItem.call( scope, item, request );
+                        });
+                    if( !aborted && request.onComplete )
+                        request.onComplete.call( scope, matches, request );
+            }));
+        }
+        else if( request.onComplete ) {
+                request.onComplete.call( scope, [], request );
+   	}
+
+        return request;
+    },
+
+    getValue: function( i, attr, defaultValue ) {
+        var v = i[attr];
+        return typeof v == 'undefined' ? defaultValue : v;
+    },
+    getValues: function( i, attr ) {
+        var a = [ i[attr] ];
+        return typeof a[0] == 'undefined' ? [] : a;
+    },
+
+    getAttributes: function(item)  {
+        return Util.dojof.keys( item );
+    },
+
+    hasAttribute: function(item,attr) {
+        return item.hasOwnProperty(attr);
+    },
+
+    containsValue: function(item, attribute, value) {
+        return item[attribute] == value;
+    },
+
+    isItem: function(item) {
+        return typeof item == 'object' && typeof item.label == 'string';
+    },
+
+    isItemLoaded: function() {
+        return true;
+    },
+
+    loadItem: function( args ) {
+    },
+
+    close: function() {},
+
+    getLabel: function(i) {
+        return this.getValue(i,'name',undefined);
+    },
+    getLabelAttributes: function(i) {
+        return ['name'];
+    },
+
+    getIdentity: function(i) {
+        return this.getLabel(i);
+    }
+
+});
+});
+},
+'JBrowse/Model/Location':function(){
+define([
+           'dojo/_base/array',
+           'JBrowse/Util'
+       ],
+       function(
+           array,
+           Util
+       ) {
+
+return Util.fastDeclare(
+{
+    constructor: function( args ) {
+        if( args ) {
+
+            if( typeof args == 'string' )
+                args = Util.parseLocString( args );
+
+            if( args.location )
+                this._populate( args.location );
+            if( args.feature ) {
+                var f = args.feature;
+                this._populate({ start: f.get('start'),
+                                 end: f.get('end'),
+                                 ref: f.get('seq_id') || (args.tracks ? args.tracks[0].browser.refSeq.name : undefined ),
+                                 strand: f.get('strand'),
+                                 objectName: f.get('name') || f.get('id')
+                               });
+            }
+
+            this._populate( args );
+
+        }
+    },
+    _populate: function( args ) {
+        array.forEach( 'ref,start,end,strand,tracks,objectName'.split(','),
+                       function( p ) {
+                           if( p in args )
+                               this[p] = args[p];
+                       }, this);
+    },
+
+    toString: function() {
+        var locstring =  Util.assembleLocString(this);
+        if( this.objectName )
+            return locstring + ' ('+this.objectName + ')';
+        else
+          return locstring;
+    },
+
+    fromString: function( str ) {
+        var p = Util.parseLocString( str );
+        p.objectName = p.extra;
+        delete p.extra;
+        this._populate( p );
+    },
+
+    localeCompare: function( b ) {
+        var as = this.toString();
+        var bs = b.toString();
+        return as.localeCompare( bs );
+    }
+});
+});
+},
+'dojo/store/DataStore':function(){
+define([
+	"../_base/lang", "../_base/declare", "../Deferred", "../_base/array",
+	"./util/QueryResults", "./util/SimpleQueryEngine" /*=====, "./api/Store" =====*/
+], function(lang, declare, Deferred, array, QueryResults, SimpleQueryEngine /*=====, Store =====*/){
+
+// module:
+//		dojo/store/DataStore
+
+
+// No base class, but for purposes of documentation, the base class is dojo/store/api/Store
+var base = null;
+/*===== base = Store; =====*/
+
+return declare("dojo.store.DataStore", base, {
+	// summary:
+	//		This is an adapter for using Dojo Data stores with an object store consumer.
+	//		You can provide a Dojo data store and use this adapter to interact with it through
+	//		the Dojo object store API
+
+	target: "",
+	constructor: function(options){
+		// options: Object?
+		//		This provides any configuration information that will be mixed into the store,
+		//		including a reference to the Dojo data store under the property "store".
+		lang.mixin(this, options);
+ 		if(!"idProperty" in options){
+			var idAttribute; 
+			try{
+				idAttribute = this.store.getIdentityAttributes(); 
+			}catch(e){ 
+	 		// some store are not requiring an item instance to give us the ID attributes 
+	 		// but some other do and throw errors in that case. 
+			} 
+			// if no idAttribute we have implicit id 
+			this.idProperty = (!idAttribute || !idAttributes[0]) || this.idProperty; 
+		}
+		var features = this.store.getFeatures();
+		// check the feature set and null out any methods that shouldn't be available
+		if(!features["dojo.data.api.Read"]){
+			this.get = null;
+		}
+		if(!features["dojo.data.api.Identity"]){
+			this.getIdentity = null;
+		}
+		if(!features["dojo.data.api.Write"]){
+			this.put = this.add = null;
+		}
+	},
+	// idProperty: String
+	//		The object property to use to store the identity of the store items.
+	idProperty: "id",
+	// store:
+	//		The object store to convert to a data store
+	store: null,
+	// queryEngine: Function
+	//		Defines the query engine to use for querying the data store
+	queryEngine: SimpleQueryEngine,
+	
+	_objectConverter: function(callback){
+		var store = this.store;
+		var idProperty = this.idProperty;
+		function convert(item){
+			var object = {};
+			var attributes = store.getAttributes(item);
+			for(var i = 0; i < attributes.length; i++){
+				var attribute = attributes[i];
+				var values = store.getValues(item, attribute);
+				if(values.length > 1){
+					for(var j = 0; j < values.length; j++){
+						var value = values[j];
+						if(typeof value == 'object' && store.isItem(value)){
+							values[j] = convert(value);
+						}
+					}
+					value = values;
+				}else{
+					var value = store.getValue(item, attribute);
+					if(typeof value == 'object' && store.isItem(value)){
+						value = convert(value);
+					}
+				}
+				object[attributes[i]] = value;
+			}
+			if(!(idProperty in object) && store.getIdentity){
+				object[idProperty] = store.getIdentity(item);
+			}
+			return object;
+		}
+		return function(item){
+			return callback(item && convert(item));
+		};
+	},
+	get: function(id, options){
+		// summary:
+		//		Retrieves an object by it's identity. This will trigger a fetchItemByIdentity
+		// id: Object?
+		//		The identity to use to lookup the object
+		var returnedObject, returnedError;
+		var deferred = new Deferred();
+		this.store.fetchItemByIdentity({
+			identity: id,
+			onItem: this._objectConverter(function(object){
+				deferred.resolve(returnedObject = object);
+			}),
+			onError: function(error){
+				deferred.reject(returnedError = error);
+			}
+		});
+		if(returnedObject !== undefined){
+			// if it was returned synchronously
+			return returnedObject == null ? undefined : returnedObject;
+		}
+		if(returnedError){
+			throw returnedError;
+		}
+		return deferred.promise;
+	},
+	put: function(object, options){
+		// summary:
+		//		Stores an object by its identity.
+		// object: Object
+		//		The object to store.
+		// options: Object?
+		//		Additional metadata for storing the data.  Includes a reference to an id
+		//		that the object may be stored with (i.e. { id: "foo" }).
+		options = options || {};
+		var id = typeof options.id != "undefined" ? options.id : this.getIdentity(object);
+		var store = this.store;
+		var idProperty = this.idProperty;
+		var deferred = new Deferred();
+		if(typeof id == "undefined"){
+			store.newItem(object);
+			store.save({
+				onComplete: function(){
+					deferred.resolve(object);
+				},
+				onError: function(error){
+					deferred.reject(error);
+				}
+			});
+		}else{
+			store.fetchItemByIdentity({
+				identity: id,
+				onItem: function(item){
+					if(item){
+						if(options.overwrite === false){
+							return deferred.reject(new Error("Overwriting existing object not allowed"));
+						}
+						for(var i in object){
+							if(i != idProperty && // don't copy id properties since they are immutable and should be omitted for implicit ids
+									object.hasOwnProperty(i) && // don't want to copy methods and inherited properties
+									store.getValue(item, i) != object[i]){
+								store.setValue(item, i, object[i]);
+							}
+						}
+					}else{
+						if(options.overwrite === true){
+							return deferred.reject(new Error("Creating new object not allowed"));
+						}
+						store.newItem(object);
+					}
+					store.save({
+						onComplete: function(){
+							deferred.resolve(object);
+						},
+						onError: function(error){
+							deferred.reject(error);
+						}
+					});
+				},
+				onError: function(error){
+					deferred.reject(error);
+				}
+			});
+		}
+		return deferred.promise;
+	},
+	add: function(object, options){
+		// summary:
+		//		Creates an object, throws an error if the object already exists
+		// object: Object
+		//		The object to store.
+		// options: dojo/store/api/Store.PutDirectives?
+		//		Additional metadata for storing the data.  Includes an "id"
+		//		property if a specific id is to be used.
+		// returns: Number
+		(options = options || {}).overwrite = false;
+		// call put with overwrite being false
+		return this.put(object, options);
+	},
+	remove: function(id){
+		// summary:
+		//		Deletes an object by its identity.
+		// id: Object
+		//		The identity to use to delete the object
+		var store = this.store;
+		var deferred = new Deferred();
+
+		this.store.fetchItemByIdentity({
+			identity: id,
+			onItem: function(item){
+				try{
+					if(item == null){
+						// no item found, return false
+						deferred.resolve(false);
+					}else{
+						// delete and save the change
+						store.deleteItem(item);
+						store.save();
+						deferred.resolve(true);
+					}
+				}catch(error){
+					deferred.reject(error);
+				}
+			},
+			onError: function(error){
+				deferred.reject(error);
+			}
+		});
+		return deferred.promise;
+	},
+	query: function(query, options){
+		// summary:
+		//		Queries the store for objects.
+		// query: Object
+		//		The query to use for retrieving objects from the store
+		// options: Object?
+		//		Optional options object as used by the underlying dojo.data Store.
+		// returns: dojo/store/api/Store.QueryResults
+		//		A query results object that can be used to iterate over results.
+		var fetchHandle;
+		var deferred = new Deferred(function(){ fetchHandle.abort && fetchHandle.abort(); });
+		deferred.total = new Deferred();
+		var converter = this._objectConverter(function(object){return object;});
+		fetchHandle = this.store.fetch(lang.mixin({
+			query: query,
+			onBegin: function(count){
+				deferred.total.resolve(count);
+			},
+			onComplete: function(results){
+				deferred.resolve(array.map(results, converter));
+			},
+			onError: function(error){
+				deferred.reject(error);
+			}
+		}, options));
+		return QueryResults(deferred);
+	},
+	getIdentity: function(object){
+		// summary:
+		//		Fetch the identity for the given object.
+		// object: Object
+		//		The data object to get the identity from.
+		// returns: Number
+		//		The id of the given object.
+		return object[this.idProperty];
+	}
+});
+});
+
+},
+'JBrowse/FeatureFiltererMixin':function(){
+/**
+ * Mixin that dynamically defines and redefines a filterFeature()
+ * method, and supports a filtering hierarchy, and filter chaining at
+ * each level of the hierarchy.  Designed to be really fast, because
+ * filterFeature() is going to be called many, many times.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array'
+       ],
+       function(
+           declare,
+           array
+       ) {
+
+var serialNumber = 0;
+
+return declare( null, {
+    filterFeature: function( feature ) {
+        return true;
+    },
+
+    _featureFilterChain: [],
+
+    addFeatureFilter: function( filter, uniqName ) {
+        uniqName = this._getFeatureFilterName( uniqName );
+        this._featureFilterChain.push({ name: uniqName, filter: filter });
+        this._buildFeatureFilter();
+        return uniqName;
+    },
+
+    // need to have a unique name for every function we're passed so
+    // that we can tell them apart.  stringification and strict
+    // equality don't always work.
+    _getFeatureFilterName: function( uniqName ) {
+        if( uniqName === undefined )
+            return 'featureFilter_'+(++serialNumber);
+        return uniqName;
+    },
+
+    removeFeatureFilter: function( uniqName ) {
+        var newchain = [];
+        for( var i = 0; i < this._featureFilterChain.length; i++ ) {
+            if( this._featureFilterChain[i].name !== uniqName )
+                newchain.push( this._featureFilterChain[i] );
+        }
+        this._featureFilterChain = newchain;
+        this._buildFeatureFilter();
+    },
+
+    _buildFeatureFilter: function() {
+
+        var filterChain = this._featureFilterChain.slice();
+
+        if( ! filterChain.length )
+            this.filterFeature = function( feat ) {
+                return this.featureFilterParentComponent.filterFeature( feat );
+            };
+        else if( filterChain.length == 1 ) {
+            var single = filterChain[0].filter;
+            this.filterFeature = function(feat) {
+                return single.call(this,feat) && this.featureFilterParentComponent.filterFeature( feat );
+            };
+        } else
+            this.filterFeature = function( feat ) {
+                for( var i = 0; i<filterChain.length; i++ )
+                    if( ! filterChain[i].filter.call( this, feat ) )
+                        return false;
+
+                if( ! this.featureFilterParentComponent.filterFeature( feat ) )
+                    return false;
+
+                return true;
+            };
+    },
+
+    featureFilterParentComponent: { filterFeature: function() { return true; } },
+
+    setFeatureFilter: function( filter, uniqName ) {
+        this._featureFilterChain = [];
+        this.addFeatureFilter( filter, uniqName );
+    },
+
+    clearFeatureFilter: function() {
+        this._featureFilterChain = [];
+        this._buildFeatureFilter();
+    },
+
+    setFeatureFilterParentComponent: function( parent ) {
+        this.featureFilterParentComponent = parent;
+        this._buildFeatureFilter();
+    }
+
+});
+});
+},
+'JBrowse/GenomeView':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'dojo/dom-construct',
+           'JBrowse/Util',
+           'JBrowse/has',
+           'dojo/dnd/move',
+           'dojo/dnd/Source',
+           'dijit/focus',
+           'JBrowse/Component',
+           'JBrowse/FeatureFiltererMixin',
+           'JBrowse/View/Track/LocationScale',
+           'JBrowse/View/Track/GridLines',
+           'JBrowse/BehaviorManager',
+           'JBrowse/View/Animation/Zoomer',
+           'JBrowse/View/Animation/Slider',
+           'JBrowse/View/InfoDialog'
+       ], function(
+           declare,
+           array,
+           domConstruct,
+           Util,
+           has,
+           dndMove,
+           dndSource,
+           dijitFocus,
+           Component,
+           FeatureFiltererMixin,
+           LocationScaleTrack,
+           GridLinesTrack,
+           BehaviorManager,
+           Zoomer,
+           Slider,
+           InfoDialog
+       ) {
+
+var dojof = Util.dojof;
+
+// weird subclass of dojo dnd constrained mover to make the location
+// thumb behave better
+var locationThumbMover = declare( dndMove.constrainedMoveable, {
+        constructor: function(node, params){
+                this.constraints = function(){
+                        var n = this.node.parentNode,
+                        mb = dojo.marginBox(n);
+                        mb.t = 0;
+                        return mb;
+                 };
+        }
+});
+
+/**
+ * Main view class, shows a scrollable, horizontal view of annotation
+ * tracks.  NOTE: All coordinates are interbase.
+ * @class
+ * @constructor
+ */
+
+return declare( [Component,FeatureFiltererMixin], {
+
+constructor: function( args ) {
+    var browser = args.browser;
+    var elem = args.elem;
+    var stripeWidth = args.stripeWidth;
+    var refseq = args.refSeq;
+    var zoomLevel = args.zoomLevel;
+
+    // keep a reference to the main browser object
+    this.browser = browser;
+    this.setFeatureFilterParentComponent( this.browser );
+
+    //the page element that the GenomeView lives in
+    this.elem = elem;
+
+    this.posHeight = this.calculatePositionLabelHeight( elem );
+    // Add an arbitrary 50% padding between the position labels and the
+    // topmost track
+    this.topSpace = this.posHeight*1.5;
+
+    // WebApollo needs max zoom level to be sequence residues char width
+    this.maxPxPerBp = this.config.maxPxPerBp;
+
+    //the reference sequence
+    this.ref = refseq;
+    //current scale, in pixels per bp
+    this.pxPerBp = zoomLevel;
+
+    //width, in pixels, of the vertical stripes
+    this.stripeWidth = stripeWidth;
+
+
+    // the scrollContainer is the element that changes position
+    // when the user scrolls
+    this.scrollContainer = dojo.create(
+        'div', {
+            id: 'container',
+            style: { position: 'absolute',
+                     left: '0px',
+                     top: '0px'
+                   }
+        }, elem
+    );
+
+    this._renderVerticalScrollBar();
+
+    // we have a separate zoomContainer as a child of the scrollContainer.
+    // they used to be the same element, but making zoomContainer separate
+    // enables it to be narrower than this.elem.
+    this.zoomContainer = document.createElement("div");
+    this.zoomContainer.id = "zoomContainer";
+    this.zoomContainer.style.cssText =
+        "position: absolute; left: 0px; top: 0px; height: 100%;";
+    this.scrollContainer.appendChild(this.zoomContainer);
+
+    this.outerTrackContainer = document.createElement("div");
+    this.outerTrackContainer.className = "trackContainer outerTrackContainer";
+    this.outerTrackContainer.style.cssText = "height: 100%;";
+    this.zoomContainer.appendChild( this.outerTrackContainer );
+
+    this.trackContainer = document.createElement("div");
+    this.trackContainer.className = "trackContainer innerTrackContainer draggable";
+    this.trackContainer.style.cssText = "height: 100%;";
+    this.outerTrackContainer.appendChild( this.trackContainer );
+
+    //width, in pixels of the "regular" (not min or max zoom) stripe
+    this.regularStripe = stripeWidth;
+
+
+    this.overview = this.browser.overviewDiv;
+    this.overviewBox = dojo.marginBox(this.overview);
+
+    this.tracks = [];
+    this.uiTracks = [];
+    this.trackIndices = {};
+
+    //set up size state (zoom levels, stripe percentage, etc.)
+    this.sizeInit();
+
+    //distance, in pixels, from the beginning of the reference sequence
+    //to the beginning of the first active stripe
+    //  should always be a multiple of stripeWidth
+    this.offset = 0;
+    //largest value for the sum of this.offset and this.getX()
+    //this prevents us from scrolling off the right end of the ref seq
+    this.maxLeft = this.bpToPx(this.ref.end+1) - this.getWidth();
+    //smallest value for the sum of this.offset and this.getX()
+    //this prevents us from scrolling off the left end of the ref seq
+    this.minLeft = this.bpToPx(this.ref.start);
+    //extra margin to draw around the visible area, in multiples of the visible area
+    //0: draw only the visible area; 0.1: draw an extra 10% around the visible area, etc.
+    this.drawMargin = 0.2;
+    //slide distance (pixels) * slideTimeMultiple + 200 = milliseconds for slide
+    //1=1 pixel per millisecond average slide speed, larger numbers are slower
+    this.slideTimeMultiple = 0.8;
+    this.trackHeights = [];
+    this.trackTops = [];
+    this.waitElems = dojo.filter( [ dojo.byId("moveLeft"), dojo.byId("moveRight"),
+                                    dojo.byId("zoomIn"), dojo.byId("zoomOut"),
+                                    dojo.byId("bigZoomIn"), dojo.byId("bigZoomOut"),
+                                    document.body, elem ],
+                                  function(e) { return e; }
+                                );
+    this.prevCursors = [];
+    this.locationThumb = document.createElement("div");
+    this.locationThumb.className = "locationThumb";
+    this.overview.appendChild(this.locationThumb);
+    this.locationThumbMover = new locationThumbMover(this.locationThumb, {area: "content", within: true});
+
+    this.x = this.elem.scrollLeft;
+    this.y = 0;
+
+    var scaleTrackDiv = document.createElement("div");
+    scaleTrackDiv.className = "track static_track rubberBandAvailable";
+    scaleTrackDiv.style.height = this.posHeight + "px";
+    scaleTrackDiv.id = "static_track";
+
+    this.scaleTrackDiv = scaleTrackDiv;
+    this.staticTrack = new LocationScaleTrack({
+        label: "static_track",
+        labelClass: "pos-label",
+        posHeight: this.posHeight,
+        browser: this.browser,
+        refSeq: this.ref
+    });
+    this.staticTrack.setViewInfo( this, function(height) {}, this.stripeCount,
+                                 this.scaleTrackDiv, this.stripePercent,
+                                 this.stripeWidth, this.pxPerBp,
+                                 this.config.trackPadding);
+    this.zoomContainer.appendChild(this.scaleTrackDiv);
+    this.waitElems.push(this.scaleTrackDiv);
+
+    var gridTrackDiv = document.createElement("div");
+    gridTrackDiv.className = "track";
+    gridTrackDiv.style.cssText = "top: 0px; height: 100%;";
+    gridTrackDiv.id = "gridtrack";
+    var gridTrack = new GridLinesTrack({
+                                           browser: this.browser,
+                                           refSeq: this.ref
+                                       });
+    gridTrack.setViewInfo( this, function(height) {}, this.stripeCount,
+                          gridTrackDiv, this.stripePercent,
+                          this.stripeWidth, this.pxPerBp,
+                          this.config.trackPadding);
+    this.trackContainer.appendChild(gridTrackDiv);
+    this.uiTracks = [this.staticTrack, gridTrack];
+
+    // accept tracks being dragged into this
+    this.trackDndWidget =
+        new dndSource(
+            this.trackContainer,
+            {
+                accept: ["track"], //accepts only tracks into the viewing field
+                withHandles: true,
+                creator: dojo.hitch( this, function( trackConfig, hint ) {
+                    return {
+                        data: trackConfig,
+                        type: ["track"],
+                        node: hint == 'avatar'
+                                 ? dojo.create('div', { innerHTML: trackConfig.key || trackConfig.label, className: 'track-label dragging' })
+                                 : this.renderTrack( trackConfig )
+                    };
+                })
+            });
+
+    // subscribe to showTracks commands
+    this.browser.subscribe(
+        '/dnd/drop',
+        dojo.hitch(
+            this,
+            function( source, nodes, copy, target ) {
+                this.updateTrackList();
+                if( target.node === this.trackContainer ) {
+                    // if dragging into the trackcontainer, we are showing some tracks
+                    // get the configs from the tracks being dragged in
+                    var confs = dojo.filter( dojo.map( nodes, function(n) {
+                                                           return n.track && n.track.config;
+                                                       }),
+                                             function(c) {return c;}
+                                           );
+                    this.browser.publish( '/jbrowse/v1/v/tracks/show', confs );
+                }
+            }
+        )
+    );
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/show',    dojo.hitch( this, 'showTracks' ));
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/hide',    dojo.hitch( this, 'hideTracks' ));
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/replace', dojo.hitch( this, 'replaceTracks' ));
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/delete',  dojo.hitch( this, 'hideTracks' ));
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/pin',     dojo.hitch( this, 'pinTracks' ));
+    this.browser.subscribe( '/jbrowse/v1/c/tracks/unpin',   dojo.hitch( this, 'unpinTracks' ));
+
+    // render our UI tracks (horizontal scale tracks, grid lines, and so forth)
+    dojo.forEach(this.uiTracks, function(track) {
+        track.showRange(0, this.stripeCount - 1,
+                        Math.round(this.pxToBp(this.offset)),
+                        Math.round(this.stripeWidth / this.pxPerBp),
+                        this.pxPerBp);
+    }, this);
+
+    this.addOverviewTrack(new LocationScaleTrack({
+        label: "overview_loc_track",
+        labelClass: "overview-pos",
+        posHeight: this.overviewPosHeight,
+        browser: this.browser,
+        refSeq: this.ref
+    }));
+    this.showFine();
+    this.showCoarse();
+
+    // initialize the behavior manager used for setting what this view
+    // does (i.e. the behavior it has) for mouse and keyboard events
+    this.behaviorManager = new BehaviorManager({ context: this, behaviors: this._behaviors() });
+    this.behaviorManager.initialize();
+},
+
+
+_defaultConfig: function() {
+    return {
+        maxPxPerBp: 20,
+        trackPadding: 20 // distance in pixels between each track
+    };
+},
+
+/**
+ * @returns {Object} containing ref, start, and end members for the currently displayed location
+ */
+visibleRegion: function() {
+    return {
+               ref:   this.ref.name,
+               start: this.minVisible(),
+               end:   this.maxVisible()
+           };
+},
+
+/**
+ * @returns {String} locstring representation of the current location<br>
+ * (suitable for passing to the browser's navigateTo)
+ */
+visibleRegionLocString: function() {
+    return Util.assembleLocString( this.visibleRegion() );
+},
+
+/**
+ * Create and place the elements for the vertical scrollbar.
+ * @private
+ */
+_renderVerticalScrollBar: function() {
+    var container = dojo.create(
+        'div',
+        {
+            className: 'vertical_scrollbar',
+            style: { position: 'fixed',
+                     right: '0px',
+                     bottom: '0px',
+                     height: '100%',
+                     width: '10px',
+                     zIndex: 1000
+                   }
+        },
+        this.elem
+    );
+
+    var positionMarker = dojo.create(
+        'div',
+        {
+            className: 'vertical_position_marker',
+            style: {
+                position: 'absolute',
+                height: '100%'
+            }
+        },
+        container
+    );
+    this.verticalScrollBar = { container: container, positionMarker: positionMarker, width: container.offsetWidth };
+},
+
+/**
+ * Update the position and look of the vertical scroll bar as our
+ * y-scroll offset changes.
+ * @private
+ */
+_updateVerticalScrollBar: function( newDims ) {
+    if( typeof newDims.height == 'number' ) {
+        var heightAdjust = this.staticTrack ? -this.staticTrack.div.offsetHeight : 0;
+        var trackPaneHeight = newDims.height + heightAdjust;
+        this.verticalScrollBar.container.style.height = trackPaneHeight-(this.pinUnderlay ? this.pinUnderlay.offsetHeight+heightAdjust : 0 ) +'px';
+        var markerHeight = newDims.height / (this.containerHeight||1) * 100;
+        this.verticalScrollBar.positionMarker.style.height = markerHeight > 0.5 ? markerHeight+'%' :  '1px';
+        if( newDims.height / (this.containerHeight||1) > 0.98 ) {
+            this.verticalScrollBar.container.style.display = 'none';
+            this.verticalScrollBar.visible = false;
+        } else {
+            this.verticalScrollBar.container.style.display = 'block';
+            this.verticalScrollBar.visible = true;
+        }
+    }
+
+    if( typeof newDims.y == 'number' || typeof newDims.height == 'number' ) {
+        this.verticalScrollBar.positionMarker.style.top    = (((newDims.y || this.getY() || 0) / (this.containerHeight||1) * 100 )||0)+'%';
+    }
+},
+
+verticalScrollBarVisibleWidth: function() {
+    return this.verticalScrollBar.visible && this.verticalScrollBar.width || 0;
+},
+
+/**
+ * @returns {Array[Track]} of the tracks that are currently visible in
+ * this genomeview
+ */
+visibleTracks: function() {
+    return this.tracks;
+},
+
+/**
+ *  @returns {Array[String]} of the names of tracks that are currently visible in this genomeview
+ */
+visibleTrackNames: function() {
+    return dojo.map( this.visibleTracks(), function(t){ return t.name; } );
+},
+
+/**
+ * Called in response to a keyboard or mouse event to slide the view
+ * left or right.
+ */
+keySlideX: function( offset ) {
+    this.setX( this.getX() + offset );
+
+    var thisB = this;
+    if( ! this._keySlideTimeout )
+        this._keySlideTimeout = window.setTimeout(
+            function() {
+                thisB.afterSlide();
+                delete thisB._keySlideTimeout;
+            }, 300 );
+},
+
+
+/**
+ * Behaviors (event handler bundles) for various states that the
+ * GenomeView might be in.
+ * @private
+ * @returns {Object} description of behaviors
+ */
+_behaviors: function() { return {
+
+    // behaviors that don't change
+    always: {
+        apply_on_init: true,
+        apply: function() {
+            var handles = [];
+            handles.push( dojo.connect(
+                              this.overview, 'mousedown',
+                              dojo.hitch( this, 'startRubberZoom',
+                                          dojo.hitch(this,'overview_absXtoBp'),
+                                          this.overview,
+                                          this.overview
+                                        )
+                          ));
+            var wheelevent = "onwheel" in document.createElement("div") ? "wheel"      :
+                                    document.onmousewheel !== undefined ? "mousewheel" :
+                                                                          "DOMMouseScroll";
+            handles.push(
+                dojo.connect( this.scrollContainer,     wheelevent,     this, 'wheelScroll', false ),
+
+                dojo.connect( this.scaleTrackDiv,       "mousedown",
+                              dojo.hitch( this, 'startRubberZoom',
+                                          dojo.hitch( this,'absXtoBp'),
+                                          this.scrollContainer,
+                                          this.scaleTrackDiv
+                                        )
+                            ),
+
+                dojo.connect( this.outerTrackContainer, "dblclick",       this, 'doubleClickZoom'    ),
+
+                dojo.connect( this.locationThumbMover,  "onMoveStop",     this, 'thumbMoved'         ),
+
+                dojo.connect( this.overview,            "onclick",        this, 'overviewClicked'    ),
+
+                dojo.connect( this.scaleTrackDiv,       "onclick",        this,  'scaleClicked'      ),
+                dojo.connect( this.scaleTrackDiv,       "mouseover",      this,  'scaleMouseOver'    ),
+                dojo.connect( this.scaleTrackDiv,       "mouseout",       this,  'scaleMouseOut'     ),
+                dojo.connect( this.scaleTrackDiv,       "mousemove",      this,  'scaleMouseMove'    ),
+
+                dojo.connect( document.body, 'onkeyup', this, function(evt) {
+                    if( evt.keyCode == dojo.keys.SHIFT ) // shift
+                        this.behaviorManager.swapBehaviors( 'shiftMouse', 'normalMouse' );
+                }),
+                dojo.connect( document.body, 'onkeydown', this, function(evt) {
+                    if( evt.keyCode == dojo.keys.SHIFT ) // shift
+                        this.behaviorManager.swapBehaviors( 'normalMouse', 'shiftMouse' );
+                }),
+
+                // scroll the view around in response to keyboard arrow keys
+                dojo.connect( document.body, 'onkeypress', this, function(evt) {
+
+                    // if some digit widget is focused, don't move the
+                    // genome view with arrow keys
+                    if( dijitFocus.curNode )
+                        return;
+
+                    var that = this;
+                    if( evt.keyCode == dojo.keys.LEFT_ARROW || evt.keyCode == dojo.keys.RIGHT_ARROW ) {
+                        var offset = evt.keyCode == dojo.keys.LEFT_ARROW ? -40 : 40;
+                        if( evt.shiftKey )
+                            offset *= 5;
+                        this.keySlideX( offset );
+                    }
+                    else if( evt.keyCode == dojo.keys.DOWN_ARROW || evt.keyCode == dojo.keys.UP_ARROW ) {
+                        // shift-up/down zooms in and out
+                        if( evt.shiftKey ) {
+                            this[ evt.keyCode == dojo.keys.UP_ARROW ? 'zoomIn' : 'zoomOut' ]( evt, 0.5, evt.altKey ? 2 : 1 );
+                        }
+                        // without shift, scrolls up and down
+                        else {
+                            var offset = evt.keyCode == dojo.keys.UP_ARROW ? -40 : 40;
+                            this.setY( this.getY() + offset );
+                        }
+                    }
+                }),
+
+                // when the track pane is clicked, unfocus any dijit
+                // widgets that would otherwise not give up the focus
+                dojo.connect( this.scrollContainer, 'onclick', this, function(evt) {
+                    dijitFocus.curNode && dijitFocus.curNode.blur();
+                })
+            );
+            return handles;
+        }
+    },
+
+    // mouse events connected for "normal" behavior
+    normalMouse: {
+        apply_on_init: true,
+        apply: function() {
+            return [
+                dojo.connect( this.outerTrackContainer,         "mousedown", this, 'startMouseDragScroll'        ),
+                dojo.connect( this.verticalScrollBar.container, "mousedown", this, 'startVerticalMouseDragScroll')
+            ];
+        }
+    },
+
+    // mouse events connected when we are in 'highlighting' mode,
+    // where dragging the mouse sets the global highlight
+    highlightingMouse: {
+        apply: function() {
+            dojo.removeClass(this.trackContainer,'draggable');
+            dojo.addClass(this.trackContainer,'highlightingAvailable');
+            return [
+                dojo.connect( this.outerTrackContainer, "mousedown",
+                              dojo.hitch( this, 'startMouseHighlight',
+                                          dojo.hitch(this,'absXtoBp'),
+                                          this.scrollContainer,
+                                          this.scaleTrackDiv
+                                        )
+                            ),
+                dojo.connect( this.outerTrackContainer, "mouseover", this, 'maybeDrawVerticalPositionLine' ),
+                dojo.connect( this.outerTrackContainer, "mousemove", this, 'maybeDrawVerticalPositionLine' )
+            ];
+        },
+        remove: function( mgr, handles ) {
+            dojo.forEach( handles, dojo.disconnect, dojo );
+            dojo.removeClass(this.trackContainer,'highlightingAvailable');
+            dojo.addClass(this.trackContainer,'draggable');
+        }
+    },
+
+    // mouse events connected when the shift button is being held down
+    shiftMouse: {
+        apply: function() {
+            if ( !dojo.hasClass(this.trackContainer, 'highlightingAvailable') ){
+                dojo.removeClass(this.trackContainer,'draggable');
+                dojo.addClass(this.trackContainer,'rubberBandAvailable');
+                return [
+                    dojo.connect( this.outerTrackContainer, "mousedown",
+                                  dojo.hitch( this, 'startRubberZoom',
+                                              dojo.hitch(this,'absXtoBp'),
+                                              this.scrollContainer,
+                                              this.scaleTrackDiv
+                                            )
+                                ),
+                    dojo.connect( this.outerTrackContainer, "onclick",   this, 'scaleClicked'                  ),
+                    dojo.connect( this.outerTrackContainer, "mouseover", this, 'maybeDrawVerticalPositionLine' ),
+                    dojo.connect( this.outerTrackContainer, "mousemove", this, 'maybeDrawVerticalPositionLine' )
+                ];
+            }
+        },
+        remove: function( mgr, handles ) {
+            this.clearBasePairLabels();
+            this.clearVerticalPositionLine();
+            dojo.forEach( handles, dojo.disconnect, dojo );
+            dojo.removeClass(this.trackContainer,'rubberBandAvailable');
+            dojo.addClass(this.trackContainer,'draggable');
+        }
+    },
+
+    // mouse events that are connected when we are in the middle of a
+    // drag-scrolling operation
+    mouseDragScrolling: {
+        apply: function() {
+            return [
+                dojo.connect(document.body, "mouseup",   this, 'dragEnd'      ),
+                dojo.connect(document.body, "mousemove", this, 'dragMove'     ),
+                dojo.connect(document.body, "mouseout",  this, 'checkDragOut' )
+            ];
+        }
+    },
+
+    // mouse events that are connected when we are in the middle of a
+    // vertical-drag-scrolling operation
+    verticalMouseDragScrolling: {
+        apply: function() {
+            return [
+                dojo.connect(document.body, "mouseup",   this, 'dragEnd'         ),
+                dojo.connect(document.body, "mousemove", this, 'verticalDragMove'),
+                dojo.connect(document.body, "mouseout",  this, 'checkDragOut'    )
+            ];
+        }
+    },
+
+    // mouse events that are connected when we are in the middle of a
+    // rubber-band zooming operation
+    mouseRubberBanding: {
+        apply: function() {
+            return [
+                dojo.connect(document.body, "mouseup",    this, 'rubberExecute' ),
+                dojo.connect(document.body, "mousemove",  this, 'rubberMove'    ),
+                dojo.connect(document.body, "mouseout",   this, 'rubberCancel'  ),
+                dojo.connect(window,        "onkeydown",  this, function(e){
+                                 if( e.keyCode !== dojo.keys.SHIFT )
+                                     this.rubberCancel(e);
+                             })
+            ];
+        }
+    }
+};},
+
+/**
+ * Conduct a DOM test to calculate the height of div.pos-label
+ * elements with a line of text in them.
+ */
+calculatePositionLabelHeight: function( containerElement ) {
+    // measure the height of some arbitrary text in whatever font this
+    // shows up in (set by an external CSS file)
+    var heightTest = document.createElement("div");
+    heightTest.className = "pos-label";
+    heightTest.style.visibility = "hidden";
+    heightTest.appendChild(document.createTextNode("42"));
+    containerElement.appendChild(heightTest);
+    var h = heightTest.clientHeight;
+    containerElement.removeChild(heightTest);
+    return h;
+},
+
+wheelScroll: function( event ) {
+
+    if ( !event )
+        event = window.event;
+
+    // if( window.WheelEvent )
+    //     event = window.WheelEvent;
+
+    var delta = { x: 0, y: 0 };
+    if( 'wheelDeltaX' in event ) {
+        delta.x = event.wheelDeltaX/2;
+        delta.y = event.wheelDeltaY/2;
+    }
+    else if( 'deltaX' in event ) {
+        var multiplier = navigator.userAgent.indexOf("OS X 10.9")!==-1 ? -5 : -40;
+        delta.x = Math.abs(event.deltaY) > Math.abs(2*event.deltaX) ? 0 : event.deltaX*multiplier;
+        delta.y = event.deltaY*-10;
+    }
+    else if( event.wheelDelta ) {
+        delta.y = event.wheelDelta/2;
+        if( window.opera )
+            delta.y = -delta.y;
+    }
+    else if( event.detail ) {
+        delta.y = -event.detail*100;
+    }
+
+    delta.x = Math.round( delta.x * 2 );
+    delta.y = Math.round( delta.y );
+
+    if( delta.x )
+        this.keySlideX( -delta.x );
+    if( delta.y )
+        // 60 pixels per mouse wheel event
+        this.setY( this.getY() - delta.y );
+
+    //the timeout is so that we don't have to run showVisibleBlocks
+    //for every scroll wheel click (we just wait until so many ms
+    //after the last one).
+    if ( this.wheelScrollTimeout )
+        window.clearTimeout( this.wheelScrollTimeout );
+
+    // 100 milliseconds since the last scroll event is an arbitrary
+    // cutoff for deciding when the user is done scrolling
+    // (set by a bit of experimentation)
+    this.wheelScrollTimeout = window.setTimeout( dojo.hitch( this, function() {
+        this.showVisibleBlocks(true);
+        this.wheelScrollTimeout = null;
+    }, 100));
+
+    dojo.stopEvent(event);
+},
+
+getX: function() {
+    return this.x || 0;
+},
+
+getY: function() {
+    return this.y || 0;
+},
+
+getHeight: function() {
+    return this.elemBox.h;
+},
+getWidth: function() {
+    return this.elemBox.w;
+},
+
+clampX: function(x) {
+    return Math.round( Math.max( Math.min( this.maxLeft - this.offset, x || 0),
+                                 this.minLeft - this.offset
+                               )
+                     );
+},
+
+clampY: function(y) {
+    return Math.round( Math.min( Math.max( 0, y || 0 ),
+                                 this.containerHeight- this.getHeight()
+                               )
+                     );
+},
+
+rawSetX: function(x) {
+    this.elem.scrollLeft = x;
+    this.x = x;
+},
+
+/**
+ * @returns the new x value that was set
+ */
+setX: function(x) {
+    x = this.clampX(x);
+    this.rawSetX( x );
+    this.updateStaticElements( { x: x } );
+    this.showFine();
+    return x;
+},
+
+rawSetY: function(y) {
+    this.y = y;
+    this.layoutTracks();
+},
+
+/**
+ * @returns the new y value that was set
+ */
+setY: function(y) {
+    y = this.clampY(y);
+    this.rawSetY(y);
+    this.updateStaticElements( { y: y } );
+    return y;
+},
+
+/**
+ * @private
+ */
+rawSetPosition: function(pos) {
+    this.rawSetX( pos.x );
+    this.rawSetY( pos.y );
+    return pos;
+},
+
+/**
+ * @param pos.x new x position
+ * @param pos.y new y position
+ */
+setPosition: function(pos) {
+    var x = this.clampX( pos.x );
+    var y = this.clampY( pos.y );
+    this.updateStaticElements( {x: x, y: y} );
+    this.rawSetX( x );
+    this.rawSetY( y );
+    this.showFine();
+},
+
+/**
+ * @returns {Object} as <code>{ x: 123, y: 456 }</code>
+ */
+getPosition: function() {
+    return { x: this.x, y: this.y };
+},
+
+zoomCallback: function() {
+    this.zoomUpdate();
+},
+
+afterSlide: function() {
+    this.showCoarse();
+    this.scrollUpdate();
+    this.showVisibleBlocks(true);
+},
+
+/**
+ * Suppress double-click events in the genome view for a certain amount of time, default 100 ms.
+ */
+suppressDoubleClick: function( /** Number */ time ) {
+
+    if( this._noDoubleClick ) {
+        window.clearTimeout( this._noDoubleClick );
+    }
+
+    var thisB = this;
+    this._noDoubleClick = window.setTimeout(
+        function(){ delete thisB._noDoubleClick; },
+        time || 100
+    );
+},
+
+doubleClickZoom: function(event) {
+    if( this._noDoubleClick ) return;
+    if( this.dragging ) return;
+    if( "animation" in this ) return;
+
+    // if we have a timeout in flight from a scaleClicked click,
+    // cancel it, cause it looks now like the user has actually
+    // double-clicked
+    if( this.scaleClickedTimeout ) window.clearTimeout( this.scaleClickedTimeout );
+
+    var zoomLoc = (event.pageX - dojo.position(this.elem, true).x) / this.getWidth();
+    if (event.shiftKey) {
+    this.zoomOut(event, zoomLoc, 2);
+    } else {
+    this.zoomIn(event, zoomLoc, 2);
+    }
+    dojo.stopEvent(event);
+},
+
+/** @private */
+_beforeMouseDrag: function( event ) {
+    if ( this.animation ) {
+        if (this.animation instanceof Zoomer) {
+            dojo.stopEvent(event);
+            return 0;
+
+        } else {
+            this.animation.stop();
+        }
+    }
+    if (Util.isRightButton(event)) return 0;
+    dojo.stopEvent(event);
+    return 1;
+},
+
+/**
+ * Event fired when a user's mouse button goes down inside the main
+ * element of the genomeview.
+ */
+startMouseDragScroll: function(event) {
+    if( ! this._beforeMouseDrag(event) ) return;
+
+    this.behaviorManager.applyBehaviors('mouseDragScrolling');
+
+    this.dragStartPos = {x: event.clientX,
+                         y: event.clientY};
+    this.winStartPos = this.getPosition();
+},
+
+/**
+ * Event fired when a user's mouse button goes down inside the vertical
+ * scroll bar element of the genomeview.
+ */
+startVerticalMouseDragScroll: function(event) {
+    if( ! this._beforeMouseDrag(event) ) return; // not sure what this is for.
+
+    this.behaviorManager.applyBehaviors('verticalMouseDragScrolling');
+
+    this.dragStartPos = {x: event.clientX,
+                         y: event.clientY};
+    this.winStartPos = this.getPosition();
+},
+
+
+startMouseHighlight: function( absToBp, container, scaleDiv, event ) {
+    if( ! this._beforeMouseDrag(event) ) return;
+
+    this.behaviorManager.applyBehaviors('mouseRubberBanding');
+
+    this.rubberbanding = {
+        absFunc: absToBp,
+        container: container,
+        scaleDiv: scaleDiv,
+        message: 'Highlight region',
+        start: { x: event.clientX, y: event.clientY },
+        execute: function( start, end ) {
+            this.browser.setHighlightAndRedraw({ ref: this.ref.name, start: start, end: end });
+        }
+    };
+
+    this.winStartPos = this.getPosition();
+},
+
+
+/**
+ * Start a rubber-band dynamic zoom.
+ *
+ * @param {Function} absToBp function to convert page X coordinates to
+ *   base pair positions on the reference sequence.  Called in the
+ *   context of the GenomeView object.
+ * @param {HTMLElement} container element in which to draw the
+ *   rubberbanding highlight
+ * @param {Event} event the mouse event that's starting the zoom
+ */
+startRubberZoom: function( absToBp, container, scaleDiv, event ) {
+    if( ! this._beforeMouseDrag(event) ) return;
+
+    this.behaviorManager.applyBehaviors('mouseRubberBanding');
+
+    this.rubberbanding = {
+        absFunc: absToBp,
+        container: container,
+        scaleDiv: scaleDiv,
+        message: 'Zoom to region',
+        start: { x: event.clientX, y: event.clientY },
+        execute: function( h_start_bp, h_end_bp ) {
+            this.setLocation( this.ref, h_start_bp, h_end_bp );
+        }
+    };
+
+    this.winStartPos = this.getPosition();
+    this.clearVerticalPositionLine();
+    this.clearBasePairLabels();
+},
+
+_rubberStop: function(event) {
+    this.behaviorManager.removeBehaviors('mouseRubberBanding');
+    this.hideRubberHighlight();
+    this.clearBasePairLabels();
+    if( event )
+        dojo.stopEvent(event);
+    delete this.rubberbanding;
+},
+
+rubberCancel: function(event) {
+    var htmlNode = document.body.parentNode;
+    var bodyNode = document.body;
+
+    if ( !event || !(event.relatedTarget || event.toElement)
+        || (htmlNode === (event.relatedTarget || event.toElement))
+        || (bodyNode === (event.relatedTarget || event.toElement))) {
+        this._rubberStop(event);
+    }
+},
+
+rubberMove: function(event) {
+    this.setRubberHighlight( this.rubberbanding.start, { x: event.clientX, y: event.clientY } );
+},
+
+rubberExecute: function( event) {
+    var start = this.rubberbanding.start;
+    var end   = { x: event.clientX, y: event.clientY };
+
+    var h_start_bp = Math.floor( this.rubberbanding.absFunc( Math.min(start.x,end.x) ) );
+    var h_end_bp   = Math.ceil(  this.rubberbanding.absFunc( Math.max(start.x,end.x) ) );
+
+    var exec = this.rubberbanding.execute;
+
+    this._rubberStop(event);
+
+    // cancel the rubber-zoom if the user has moved less than 3 pixels
+    if( Math.abs( start.x - end.x ) < 3 ) {
+        return;
+    }
+
+    exec.call( this, h_start_bp, h_end_bp );
+},
+
+// draws the rubber-banding highlight region from start.x to end.x
+setRubberHighlight: function( start, end ) {
+    var container = this.rubberbanding.container,
+        container_coords = dojo.position(container,true);
+
+    var h = this.rubberHighlight || (function(){
+        var main = this.rubberHighlight = document.createElement("div");
+        main.className = 'rubber-highlight';
+        main.style.position = 'absolute';
+        main.style.zIndex = 20;
+        var text = document.createElement('div');
+        text.appendChild( document.createTextNode( this.rubberbanding.message ) );
+        main.appendChild(text);
+        text.style.position = 'relative';
+        text.style.top = (50-container_coords.y) + "px";
+
+        container.appendChild( main );
+        return main;
+    }).call(this);
+
+    h.style.visibility  = 'visible';
+    h.style.left   = Math.min( start.x, end.x ) - container_coords.x + 'px';
+    h.style.width  = Math.abs( end.x - start.x ) + 'px';
+
+    // draw basepair-position labels for the start and end of the highlight
+    this.drawBasePairLabel({ name: 'rubberLeft',
+                             xToBp: this.rubberbanding.absFunc,
+                             scaleDiv: this.rubberbanding.scaleDiv,
+                             offset: 0,
+                             x: Math.min( start.x, end.x ),
+                             parent: container,
+                             className: 'rubber'
+                           });
+    this.drawBasePairLabel({ name: 'rubberRight',
+                             xToBp: this.rubberbanding.absFunc,
+                             scaleDiv: this.rubberbanding.scaleDiv,
+                             offset: 0,
+                             x: Math.max( start.x, end.x ) + 1,
+                             parent: container,
+                             className: 'rubber'
+                           });
+
+    // turn off the red position line if it's on
+    this.clearVerticalPositionLine();
+},
+
+dragEnd: function(event) {
+    this.behaviorManager.removeBehaviors('mouseDragScrolling', 'verticalMouseDragScrolling');
+
+    dojo.stopEvent(event);
+    this.showCoarse();
+
+    this.scrollUpdate();
+    this.showVisibleBlocks(true);
+
+    // wait 100 ms before releasing our drag indication, since onclick
+    // events from during the drag might fire after the dragEnd event
+    window.setTimeout(
+        dojo.hitch(this,function() {this.dragging = false;}),
+        100 );
+},
+
+/** stop the drag if we mouse out of the view */
+checkDragOut: function( event ) {
+    var htmlNode = document.body.parentNode;
+    var bodyNode = document.body;
+
+    if (!(event.relatedTarget || event.toElement)
+        || (htmlNode === (event.relatedTarget || event.toElement))
+        || (bodyNode === (event.relatedTarget || event.toElement))
+       ) {
+           this.dragEnd(event);
+    }
+},
+
+dragMove: function(event) {
+    this.dragging = true;
+    this.setPosition({
+        x: this.winStartPos.x - (event.clientX - this.dragStartPos.x),
+        y: this.winStartPos.y - (event.clientY - this.dragStartPos.y)
+        });
+    dojo.stopEvent(event);
+},
+
+// Similar to "dragMove". Consider merging.
+verticalDragMove: function(event) {
+    this.dragging = true;
+    var containerHeight = parseInt(this.verticalScrollBar.container.style.height,10);
+    var trackContainerHeight = this.trackContainer.clientHeight;
+     this.setPosition({
+         x: this.winStartPos.x,
+         y: this.winStartPos.y + (event.clientY - this.dragStartPos.y)*(trackContainerHeight/containerHeight)
+         });
+    dojo.stopEvent(event);
+},
+
+hideRubberHighlight: function( start, end ) {
+    if( this.rubberHighlight ) {
+       this.rubberHighlight.parentNode.removeChild( this.rubberHighlight );
+       delete this.rubberHighlight;
+    }
+},
+
+/* moves the view by (distance times the width of the view) pixels */
+slide: function(distance) {
+    if (this.animation) this.animation.stop();
+    this.trimVertical();
+    // slide for an amount of time that's a function of the distance being
+    // traveled plus an arbitrary extra 200 milliseconds so that
+    // short slides aren't too fast (200 chosen by experimentation)
+    new Slider(this,
+               this.afterSlide,
+               Math.abs(distance) * this.getWidth() * this.slideTimeMultiple + 200,
+               distance * this.getWidth());
+},
+
+setLocation: function(refseq, startbp, endbp) {
+    if (startbp === undefined) startbp = this.minVisible();
+    if (endbp === undefined) endbp = this.maxVisible();
+    if( typeof refseq == 'string' ) {
+        // if a string was passed, need to get the refseq object for it
+        refseq = this.browser.getRefSeq( refseq );
+    }
+    if( ! refseq )
+        refseq = this.ref;
+
+    if ((startbp < refseq.start) || (startbp > refseq.end))
+        startbp = refseq.start;
+    if ((endbp < refseq.start) || (endbp > refseq.end))
+        endbp = refseq.end;
+
+    if( this.ref !== refseq ) {
+        var thisB = this;
+        this.ref = refseq;
+        this._unsetPosBeforeZoom();  // if switching to different sequence, flush zoom position tracking
+
+        function removeTrack( track ) {
+            if (track.div && track.div.parentNode)
+                track.div.parentNode.removeChild(track.div);
+        };
+
+        array.forEach( this.tracks, removeTrack );
+
+        this.tracks = [];
+        this.trackIndices = {};
+        this.trackHeights = [];
+        this.trackTops = [];
+
+        array.forEach(this.uiTracks, function(track) {
+                          track.refSeq = thisB.ref;
+                          track.clear();
+                      });
+
+        this.overviewTrackIterate( removeTrack);
+
+        this.addOverviewTrack(new LocationScaleTrack({
+            label: "overview_loc_track",
+            labelClass: "overview-pos",
+            posHeight: this.overviewPosHeight,
+            browser: this.browser,
+            refSeq: this.ref
+        }));
+        this.sizeInit();
+        this.setY(0);
+        this.behaviorManager.initialize();
+    }
+
+    this.pxPerBp = Math.min(this.getWidth() / (endbp - startbp), this.maxPxPerBp );
+    this.curZoom = Util.findNearest(this.zoomLevels, this.pxPerBp);
+
+    if (Math.abs(this.pxPerBp - this.zoomLevels[this.zoomLevels.length - 1]) < 0.2) {
+        //the cookie-saved location is in round bases, so if the saved
+        //location was at the highest zoom level, the new zoom level probably
+        //won't be exactly at the highest zoom (which is necessary to trigger
+        //the sequence track), so we nudge the zoom level to be exactly at
+        //the highest level if it's close.
+        //Exactly how close is arbitrary; 0.2 was chosen to be close
+        //enough that people wouldn't notice if we fudged that much.
+        //console.log("nudging zoom level from %d to %d", this.pxPerBp, this.zoomLevels[this.zoomLevels.length - 1]);
+        this.pxPerBp = this.zoomLevels[this.zoomLevels.length - 1];
+    }
+    this.stripeWidth = (this.stripeWidthForZoom(this.curZoom) / this.zoomLevels[this.curZoom]) * this.pxPerBp;
+    this.instantZoomUpdate();
+
+    this.centerAtBase((startbp + endbp) / 2, true);
+},
+
+stripeWidthForZoom: function(zoomLevel) {
+    if ((this.zoomLevels.length - 1) == zoomLevel) {
+        // width, in pixels, of stripes at full zoom, is 10bp
+        return this.regularStripe / 10 * this.maxPxPerBp;
+    } else if (0 == zoomLevel) {
+        return this.minZoomStripe;
+    } else {
+        return this.regularStripe;
+    }
+},
+
+instantZoomUpdate: function() {
+    this.scrollContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+    this.zoomContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+    this.maxOffset =
+        this.bpToPx(this.ref.end) - this.stripeCount * this.stripeWidth;
+    this.maxLeft = this.bpToPx(this.ref.end+1) - this.getWidth();
+    this.minLeft = this.bpToPx(this.ref.start);
+},
+
+centerAtBase: function(base, instantly) {
+    base = Math.min(Math.max(base, this.ref.start), this.ref.end);
+    if (instantly) {
+    var pxDist = this.bpToPx(base);
+    var containerWidth = this.stripeCount * this.stripeWidth;
+    var stripesLeft = Math.floor((pxDist - (containerWidth / 2)) / this.stripeWidth);
+    this.offset = stripesLeft * this.stripeWidth;
+    this.setX(pxDist - this.offset - (this.getWidth() / 2));
+    this.trackIterate(function(track) { track.clear(); });
+    this.showVisibleBlocks(true);
+        this.showCoarse();
+    } else {
+    var startbp = this.pxToBp(this.x + this.offset);
+    var halfWidth = (this.getWidth() / this.pxPerBp) / 2;
+    var endbp = startbp + halfWidth + halfWidth;
+    var center = startbp + halfWidth;
+    if ((base >= (startbp  - halfWidth))
+        && (base <= (endbp + halfWidth))) {
+        //we're moving somewhere nearby, so move smoothly
+            if (this.animation) this.animation.stop();
+            var distance = (center - base) * this.pxPerBp;
+        this.trimVertical();
+            // slide for an amount of time that's a function of the
+            // distance being traveled plus an arbitrary extra 200
+            // milliseconds so that short slides aren't too fast
+            // (200 chosen by experimentation)
+            new Slider(this, this.afterSlide,
+                       Math.abs(distance) * this.slideTimeMultiple + 200,
+               distance);
+    } else {
+        //we're moving far away, move instantly
+        this.centerAtBase(base, true);
+    }
+    }
+},
+
+/**
+ * @returns {Number} minimum basepair coordinate of the current
+ * reference sequence visible in the genome view
+ */
+minVisible: function() {
+    var mv = this.pxToBp(this.x + this.offset);
+
+    // if we are less than one pixel from the beginning of the ref
+    // seq, just say we are at the beginning.
+    if( mv < this.pxToBp(1) )
+        return 0;
+    else
+        return Math.round(mv);
+},
+
+/**
+ * @returns {Number} maximum basepair coordinate of the current
+ * reference sequence visible in the genome view
+ */
+maxVisible: function() {
+    var mv = this.pxToBp(this.x + this.offset + this.getWidth());
+    var scrollbar = this.pxToBp( this.verticalScrollBarVisibleWidth() );
+    // if we are less than one pixel from the end of the ref
+    // seq, just say we are at the end.
+    if( mv > this.ref.end - this.pxToBp(1) )
+        return this.ref.end - scrollbar;
+    else
+        return Math.round(mv) - scrollbar;
+},
+
+showFine: function() {
+    this.onFineMove(this.minVisible(), this.maxVisible());
+},
+showCoarse: function() {
+    this.onCoarseMove(this.minVisible(), this.maxVisible());
+},
+
+/**
+ * Hook for other components to dojo.connect to.
+ */
+onFineMove: function( startbp, endbp ) {
+    this.updateLocationThumb();
+},
+
+/**
+ * Hook for other components to dojo.connect to.
+ */
+onCoarseMove: function( startbp, endbp ) {
+    this.updateLocationThumb();
+},
+
+/**
+ * Hook to be called on a window resize.
+ */
+onResize: function() {
+    this.sizeInit();
+    this.showVisibleBlocks();
+    this.showFine();
+    this.showCoarse();
+},
+
+/**
+ * Event handler fired when the overview bar is single-clicked.
+ */
+overviewClicked: function( evt ) {
+    this.centerAtBase( this.overview_absXtoBp( evt.clientX ) );
+},
+
+/**
+ * Event handler fired when mouse is over the scale bar.
+ */
+scaleMouseOver: function( evt ) {
+    if( ! this.rubberbanding )
+        this.drawVerticalPositionLine( this.scaleTrackDiv, evt);
+},
+
+/**
+ * Event handler fired when mouse moves over the scale bar.
+ */
+scaleMouseMove: function( evt ) {
+    if( ! this.rubberbanding )
+        this.drawVerticalPositionLine( this.scaleTrackDiv, evt);
+},
+
+/**
+ * Event handler fired when mouse leaves the scale bar.
+ */
+scaleMouseOut: function( evt ) {
+    this.clearVerticalPositionLine();
+    this.clearBasePairLabels();
+},
+
+/**
+ *  draws the vertical position line only if
+ *  we are not rubberbanding
+ */
+maybeDrawVerticalPositionLine: function( evt ) {
+    if( this.rubberbanding )
+        return;
+    this.drawVerticalPositionLine( this.scaleTrackDiv, evt );
+},
+
+/**
+ * Draws the red line across the work area, or updates it if it already exists.
+ */
+drawVerticalPositionLine: function( parent, evt){
+    var numX = evt.pageX + 2;
+
+    if( ! this.verticalPositionLine ){
+        // if line does not exist, create it
+        this.verticalPositionLine = dojo.create( 'div', {
+            className: 'trackVerticalPositionIndicatorMain'
+        }, this.staticTrack.div );
+    }
+
+    var line = this.verticalPositionLine;
+    line.style.display = 'block';      //make line visible
+    line.style.left = numX+'px'; //set location on screen
+    var scaleTrackPos = dojo.position( this.scaleTrackDiv );
+    line.style.top =  scaleTrackPos.y + 'px';
+
+
+    this.drawBasePairLabel({ name: 'single', offset: 0, x: numX, parent: parent, scaleDiv: parent });
+},
+
+/**
+ * Draws the label for the line.
+ * @param {Number} args.numX X-coordinate at which to draw the label's origin
+ * @param {Number} args.name unique name used to cache this label
+ * @param {Number} args.offset offset in pixels from numX at which the label should actually be drawn
+ * @param {HTMLElement} args.scaleDiv
+ * @param {Function} args.xToBp
+ */
+drawBasePairLabel: function ( args ){
+    var name = args.name || 0;
+    var offset = args.offset || 0;
+    var numX = args.x;
+    this.basePairLabels = this.basePairLabels || {};
+
+    if( ! this.basePairLabels[name] ) {
+        var scaleTrackPos = dojo.position( args.scaleDiv || this.scaleTrackDiv );
+        this.basePairLabels[name] = dojo.create( 'div', {
+            className: 'basePairLabel'+(args.className ? ' '+args.className : '' ),
+            style: { top: scaleTrackPos.y + scaleTrackPos.h - 3 + 'px' }
+        }, document.body );
+    }
+
+    var label = this.basePairLabels[name];
+
+    if (typeof numX == 'object'){
+        numX = numX.clientX;
+    }
+
+    label.style.display = 'block';      //make label visible
+    var absfunc = args.xToBp || dojo.hitch(this,'absXtoBp');
+    //set text to BP location (adding 1 to convert from interbase)
+    label.innerHTML = Util.addCommas( Math.floor( absfunc(numX) )+1);
+
+    //label.style.top = args.top + 'px';
+
+    // 15 pixels on either side of the label
+    if( window.innerWidth - numX > 8 + label.offsetWidth ) {
+        label.style.left = numX + offset + 'px'; //set location on screen to the right
+    } else {
+        label.style.left = numX + 1 - offset - label.offsetWidth + 'px'; //set location on screen to the left
+    }
+},
+
+/**
+ * Turn off the basepair-position line if it is being displayed.
+ */
+clearVerticalPositionLine: function(){
+    if( this.verticalPositionLine )
+        this.verticalPositionLine.style.display = 'none';
+},
+
+/**
+ * Delete any base pair labels that are being displayed.
+ */
+clearBasePairLabels: function(){
+    for( var name in this.basePairLabels ) {
+        var label = this.basePairLabels[name];
+        if( label.parentNode )
+            label.parentNode.removeChild( label );
+    }
+    this.basePairLabels = {};
+},
+
+/**
+ * Convert absolute X pixel position to base pair position on the
+ * <b>overview</b> track.  This needs refactoring; a scale bar should
+ * itself know how to convert an absolute X position to base pairs.
+ * @param {Number} x absolute pixel X position (for example, from a click event's clientX property)
+ */
+overview_absXtoBp: function(x) {
+    var overviewBox = dojo.position( this.overview );
+    return ( x - overviewBox.x ) / overviewBox.w * (this.ref.end - this.ref.start) + this.ref.start;
+},
+
+/**
+ * Event handler fired when the track scale bar is single-clicked.
+ */
+scaleClicked: function( evt ) {
+    var bp = this.absXtoBp(evt.clientX);
+
+    this.scaleClickedTimeout = window.setTimeout( dojo.hitch( this, function() {
+        this.centerAtBase( bp );
+    },100));
+},
+
+/**
+ * Event handler fired when the region thumbnail in the overview bar
+ * is dragged.
+ */
+thumbMoved: function(mover) {
+    var pxLeft = parseInt(this.locationThumb.style.left);
+    var pxWidth = parseInt(this.locationThumb.style.width);
+    var pxCenter = pxLeft + (pxWidth / 2);
+    this.centerAtBase(((pxCenter / this.overviewBox.w) * (this.ref.end - this.ref.start)) + this.ref.start);
+},
+
+/**
+ * Updates the position of the red box in the overview that indicates
+ * the region being shown by the detail pane.
+ */
+updateLocationThumb: function() {
+    var startbp = this.minVisible();
+    var endbp = this.maxVisible();
+
+    var length = this.ref.end - this.ref.start;
+    var trapLeft = Math.round((((startbp - this.ref.start) / length)
+                               * this.overviewBox.w) + this.overviewBox.l);
+    var trapRight = Math.round((((endbp - this.ref.start) / length)
+                                * this.overviewBox.w) + this.overviewBox.l);
+
+    this.locationThumb.style.cssText =
+    "height: " + (this.overviewBox.h - 4) + "px; "
+    + "left: " + trapLeft + "px; "
+    + "width: " + (trapRight - trapLeft) + "px;"
+    + "z-index: 20";
+},
+
+checkY: function(y) {
+    return Math.min((y < 0 ? 0 : y), this.containerHeight - this.getHeight());
+},
+
+/**
+ * Given a new X and Y pixels position for the main track container,
+ * reposition static elements that "float" over it, like track labels,
+ * Y axis labels, the main track ruler, and so on.
+ *
+ * @param [args.x] the new X coordinate.  if not provided,
+ *   elements that only need updates on the X position are not
+ *   updated.
+ * @param [args.y] the new Y coordinate.  if not provided,
+ *   elements that only need updates on the Y position are not
+ *   updated.
+ * @param [args.width] the new width of the view.  if not provided,
+ *   elements that only need updates on the width are not
+ *   updated.
+ * @param [args.height] the new height of the view. if not provided,
+ *   elements that only need updates on the height are not
+ *   updated.
+ */
+updateStaticElements: function( args ) {
+    this.trackIterate( function(t) {
+        t.updateStaticElements( args );
+    },this);
+
+    this._updateVerticalScrollBar( args );
+},
+
+showWait: function() {
+    var oldCursors = [];
+    for (var i = 0; i < this.waitElems.length; i++) {
+        oldCursors[i] = this.waitElems[i].style.cursor;
+        this.waitElems[i].style.cursor = "wait";
+    }
+    this.prevCursors.push(oldCursors);
+},
+
+showDone: function() {
+    var oldCursors = this.prevCursors.pop();
+    for (var i = 0; i < this.waitElems.length; i++) {
+        this.waitElems[i].style.cursor = oldCursors[i];
+    }
+},
+
+pxToBp: function(pixels) {
+    return pixels / this.pxPerBp;
+},
+
+/**
+ * Convert absolute pixels X position to base pair position on the
+ * current reference sequence.
+ * @returns {Number}
+ */
+absXtoBp: function( /**Number*/ pixels) {
+    return this.pxToBp( this.getPosition().x + this.offset - dojo.position(this.elem, true).x + pixels )-1;
+},
+
+bpToPx: function(bp) {
+    return bp * this.pxPerBp;
+},
+
+
+/**
+ * Update the view's state, and that of its tracks, for the current
+ * width and height of its container.
+ * @returns nothing
+ */
+sizeInit: function() {
+    this.overviewBox = dojo.marginBox(this.overview);
+    this.elemBox = { h: this.elem.offsetHeight, w: this.elem.offsetWidth };
+
+    //scale values, in pixels per bp, for all zoom levels
+    var desiredZoomLevels = [1/500000, 1/200000, 1/100000, 1/50000, 1/20000, 1/10000, 1/5000, 1/2000, 1/1000, 1/500, 1/200, 1/100, 1/50, 1/20, 1/10, 1/5, 1/2, 1, 2, 5, 10, 20 ];
+
+    this.zoomLevels = [];
+    for( var i = 0; i < desiredZoomLevels.length; i++ )  {
+	var zlevel = desiredZoomLevels[i];
+	if( zlevel < this.maxPxPerBp )
+            this.zoomLevels.push( zlevel );
+	else
+            break; // once get to zoom level >= maxPxPerBp, quit
+    }
+    this.zoomLevels.push( this.maxPxPerBp );
+
+    //make sure we don't zoom out too far
+    while (((this.ref.end - this.ref.start) * this.zoomLevels[0])
+           < this.getWidth()) {
+        this.zoomLevels.shift();
+    }
+    this.zoomLevels.unshift(this.getWidth() / (this.ref.end - this.ref.start));
+
+    //width, in pixels, of stripes at min zoom (so the view covers
+    //the whole ref seq)
+    this.minZoomStripe = this.regularStripe * (this.zoomLevels[0] / this.zoomLevels[1]);
+
+    this.curZoom = 0;
+    while (this.pxPerBp > this.zoomLevels[this.curZoom])
+        this.curZoom++;
+    this.maxLeft = this.bpToPx(this.ref.end+1) - this.getWidth();
+
+    delete this.stripePercent;
+    //25, 50, 100 don't work as well due to the way scrollUpdate works
+    var possiblePercents = [20, 10, 5, 4, 2, 1];
+    for (var i = 0; i < possiblePercents.length; i++) {
+        // we'll have (100 / possiblePercents[i]) stripes.
+        // multiplying that number of stripes by the minimum stripe width
+        // gives us the total width of the "container" div.
+        // (or what that width would be if we used possiblePercents[i]
+        // as our stripePercent)
+        // That width should be wide enough to make sure that the user can
+        // scroll at least one page-width in either direction without making
+        // the container div bump into the edge of its parent element, taking
+        // into account the fact that the container won't always be perfectly
+        // centered (it may be as much as 1/2 stripe width off center)
+        // So, (this.getWidth() * 3) gives one screen-width on either side,
+        // and we add a regularStripe width to handle the slightly off-center
+        // cases.
+        // The minimum stripe width is going to be halfway between
+        // "canonical" zoom levels; the widest distance between those
+        // zoom levels is 2.5-fold, so halfway between them is 0.7 times
+        // the stripe width at the higher zoom level
+        if (((100 / possiblePercents[i]) * (this.regularStripe * 0.7))
+            > ((this.getWidth() * 3) + this.regularStripe)) {
+            this.stripePercent = possiblePercents[i];
+            break;
+        }
+    }
+
+    if ( ! this.stripePercent ) {
+        console.warn("stripeWidth too small: " + this.stripeWidth + ", " + this.getWidth());
+        this.stripePercent = 1;
+    }
+
+    var oldX;
+    var oldStripeCount = this.stripeCount;
+    if (oldStripeCount) oldX = this.getX();
+    this.stripeCount = Math.round(100 / this.stripePercent);
+
+    this.scrollContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+    this.zoomContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+
+    var blockDelta = undefined;
+    if (oldStripeCount && (oldStripeCount != this.stripeCount)) {
+        blockDelta = Math.floor((oldStripeCount - this.stripeCount) / 2);
+        var delta = (blockDelta * this.stripeWidth);
+        var newX = this.getX() - delta;
+        this.offset += delta;
+        this.updateStaticElements( { x: newX } );
+        this.rawSetX(newX);
+    }
+
+    // update the sizes for each of the tracks
+    this.trackIterate(function(track, view) {
+                          track.sizeInit(view.stripeCount,
+                                         view.stripePercent,
+                                         blockDelta);
+                      });
+
+    var newHeight =
+        this.trackHeights && this.trackHeights.length
+          ? Math.max(
+              dojof.reduce( this.trackHeights, '+') + this.config.trackPadding * this.trackHeights.length,
+              this.getHeight()
+            )
+          : this.getHeight();
+    this.scrollContainer.style.height = newHeight + "px";
+    this.containerHeight = newHeight;
+
+    var refLength = this.ref.end - this.ref.start;
+    if( refLength < 0 )
+        throw new Error("reference sequence "+this.ref.name+" has an invalid start coordinate, it is greater than its end coordinate.");
+
+    var posSize = document.createElement("div");
+    posSize.className = "overview-pos";
+    posSize.appendChild(document.createTextNode(Util.addCommas(this.ref.end)));
+    posSize.style.visibility = "hidden";
+    this.overview.appendChild(posSize);
+    // we want the stripes to be at least as wide as the position labels,
+    // plus an arbitrary 20% padding so it's clear which grid line
+    // a position label corresponds to.
+    var minStripe = posSize.clientWidth * 1.2;
+    this.overviewPosHeight = posSize.clientHeight * 1.2;
+    this.overview.removeChild(posSize);
+    for (var n = 1; n < 30; n++) {
+    //http://research.att.com/~njas/sequences/A051109
+        // JBrowse uses this sequence (1, 2, 5, 10, 20, 50, 100, 200, 500...)
+        // as its set of zoom levels.  That gives nice round numbers for
+        // bases per block, and it gives zoom transitions that feel about the
+        // right size to me. -MS
+    this.overviewStripeBases = (Math.pow(n % 3, 2) + 1) * Math.pow(10, Math.floor(n/3));
+    this.overviewStripes = Math.ceil(refLength / this.overviewStripeBases);
+    if ((this.overviewBox.w / this.overviewStripes) > minStripe) break;
+    if (this.overviewStripes < 2) break;
+    }
+
+    // update our overview tracks
+    var overviewStripePct = 100 / (refLength / this.overviewStripeBases);
+    var overviewHeight = 0;
+    this.overviewTrackIterate(function (track, view) {
+        track.clear();
+        track.sizeInit(view.overviewStripes,
+               overviewStripePct);
+            track.showRange(0, view.overviewStripes - 1,
+                            view.ref.start-1, view.overviewStripeBases,
+                            view.overviewBox.w /
+                            (view.ref.end - view.ref.start));
+    });
+    this.updateOverviewHeight();
+
+    this.updateScroll();
+},
+
+/**
+ * @private
+ */
+updateScroll: function() {
+
+    // may need to update our Y position if our height has changed
+    var update = { height: this.getHeight() };
+    if( this.getY() > 0 ) {
+        if( this.containerHeight - this.getY() < update.height ) {
+            //console.log( this.totalTrackHeight, update.height, this.getY() );
+            update.y = this.setY( Math.max( 0, this.containerHeight - update.height ));
+        }
+    }
+
+    // update any static (i.e. fixed-position) elements that need to
+    // float in one position over the scrolling track div (can't use
+    // CSS position:fixed for these)
+    this.updateStaticElements( update );
+},
+
+overviewTrackIterate: function(callback) {
+    var overviewTrack = this.overview.firstChild;
+    do {
+        if (overviewTrack && overviewTrack.track)
+        callback.call( this, overviewTrack.track, this);
+    } while (overviewTrack && (overviewTrack = overviewTrack.nextSibling));
+},
+
+updateOverviewHeight: function(trackName, height) {
+    var overviewHeight = 0;
+    this.overviewTrackIterate(function (track, view) {
+        overviewHeight += track.height;
+        track.div.style.height = track.height+'px';
+    });
+    this.overview.style.height = overviewHeight + "px";
+    this.overviewBox = dojo.marginBox(this.overview);
+},
+
+addOverviewTrack: function(track) {
+    var refLength = this.ref.end - this.ref.start;
+
+    var overviewStripePct = 100 / (refLength / this.overviewStripeBases);
+    var trackDiv = document.createElement("div");
+    trackDiv.className = "track";
+    trackDiv.style.height = this.overviewBox.h + "px";
+    trackDiv.id = "overviewtrack_" + track.name;
+    trackDiv.track = track;
+    var view = this;
+    var heightUpdate = function(height) {
+        view.updateOverviewHeight();
+    };
+    track.setViewInfo(
+        this,
+        heightUpdate,
+        this.overviewStripes,
+        trackDiv,
+        overviewStripePct,
+        this.overviewStripeBases,
+        this.pxPerBp,
+        this.config.trackPadding
+    );
+    this.overview.appendChild(trackDiv);
+    this.updateOverviewHeight();
+
+    return trackDiv;
+},
+
+trimVertical: function(y) {
+    if (y === undefined) y = this.getY();
+    var trackBottom;
+    var trackTop = this.topSpace;
+    var bottom = y + this.getHeight();
+    for (var i = 0; i < this.tracks.length; i++) {
+        if (this.tracks[i].shown) {
+            trackBottom = trackTop + this.trackHeights[i];
+            if (!((trackBottom > y) && (trackTop < bottom))) {
+                this.tracks[i].hideAll();
+            }
+            trackTop = trackBottom + this.config.trackPadding;
+        }
+    }
+},
+
+redrawTracks: function() {
+    this.trackIterate( function(t) { t.hideAll(); } );
+    this.showVisibleBlocks( false );
+},
+
+hideRegion: function( location ) {
+    this.overviewTrackIterate( function(t) { t.hideRegion( location ); } );
+    this.trackIterate( function(t) { t.hideRegion( location ); } );
+},
+
+redrawRegion: function( location ) {
+    this.hideRegion( location );
+    this.showVisibleBlocks( false );
+},
+
+zoomIn: function(e, zoomLoc, steps) {
+    if (this.animation) return;
+    this._unsetPosBeforeZoom();
+    if (zoomLoc === undefined) zoomLoc = 0.5;
+    if (steps === undefined) steps = 1;
+    steps = Math.min(steps, (this.zoomLevels.length - 1) - this.curZoom);
+    if ((0 == steps) && (this.pxPerBp == this.zoomLevels[this.curZoom]))
+        return;
+
+    this.showWait();
+    var pos = this.getPosition();
+    this.trimVertical(pos.y);
+
+    var scale = this.zoomLevels[this.curZoom + steps] / this.pxPerBp;
+    var fixedBp = this.pxToBp(pos.x + this.offset + (zoomLoc * this.getWidth()));
+    this.curZoom += steps;
+    this.pxPerBp = this.zoomLevels[this.curZoom];
+    this.maxLeft = this.bpToPx(this.ref.end+1) - this.getWidth();
+
+    for (var track = 0; track < this.tracks.length; track++)
+    this.tracks[track].startZoom(this.pxPerBp,
+                     fixedBp - ((zoomLoc * this.getWidth())
+                                                / this.pxPerBp),
+                     fixedBp + (((1 - zoomLoc) * this.getWidth())
+                                                / this.pxPerBp));
+    //YAHOO.log("centerBp: " + centerBp + "; estimated post-zoom start base: " + (centerBp - ((zoomLoc * this.getWidth()) / this.pxPerBp)) + ", end base: " + (centerBp + (((1 - zoomLoc) * this.getWidth()) / this.pxPerBp)));
+
+    // Zooms take an arbitrary 700 milliseconds, which feels about right
+    // to me, although if the zooms were smoother they could probably
+    // get faster without becoming off-putting. -MS
+    new Zoomer(scale, this,
+               function() {this.zoomUpdate(zoomLoc, fixedBp);},
+               700, zoomLoc);
+},
+
+/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
+zoomToBaseLevel: function(e, pos) {
+    if (this.animation) return;
+    //   if (this.zoomLevels[this.curZoom] === this.charWidth)  {  console.log("already zoomed to base level"); return; }
+    // if at max zoomLevel then already zoomed to bases, so then no-op
+    var baseZoomIndex = this.zoomLevels.length - 1;
+
+    if (this.curZoom === baseZoomIndex)  { console.log("already zoomed to base level"); return; }
+    this._setPosBeforeZoom(this.minVisible(), this.maxVisible(), this.curZoom);
+    var zoomLoc = 0.5;
+
+    this.showWait();
+    this.trimVertical();
+
+    var relativeScale = this.zoomLevels[baseZoomIndex] / this.pxPerBp;
+    var fixedBp = pos;
+    this.curZoom = baseZoomIndex;
+    this.pxPerBp = this.zoomLevels[baseZoomIndex];
+
+    this.maxLeft = (this.pxPerBp * this.ref.end) - this.getWidth();
+
+    for (var track = 0; track < this.tracks.length; track++)
+	this.tracks[track].startZoom(this.pxPerBp,
+				     fixedBp - ((zoomLoc * this.getWidth())
+						/ this.pxPerBp),
+				     fixedBp + (((1 - zoomLoc) * this.getWidth())
+						/ this.pxPerBp));
+    //YAHOO.log("centerBp: " + centerBp + "; estimated post-zoom start base: " + (centerBp - ((zoomLoc * this.getWidth()) / this.pxPerBp)) + ", end base: " + (centerBp + (((1 - zoomLoc) * this.getWidth()) / this.pxPerBp)));
+    new Zoomer(relativeScale, this,
+               function() {this.zoomUpdate(zoomLoc, fixedBp);},
+               700, zoomLoc);
+},
+
+
+zoomOut: function(e, zoomLoc, steps) {
+    if (this.animation) return;
+    this._unsetPosBeforeZoom();
+    if (steps === undefined) steps = 1;
+    steps = Math.min(steps, this.curZoom);
+    if (0 == steps) return;
+
+    this.showWait();
+    var pos = this.getPosition();
+    this.trimVertical(pos.y);
+    if (zoomLoc === undefined) zoomLoc = 0.5;
+    var scale = this.zoomLevels[this.curZoom - steps] / this.pxPerBp;
+    var edgeDist = this.bpToPx(this.ref.end) - (this.offset + pos.x + this.getWidth());
+        //zoomLoc is a number on [0,1] that indicates
+        //the fixed point of the zoom
+    zoomLoc = Math.max(zoomLoc, 1 - (((edgeDist * scale) / (1 - scale)) / this.getWidth()));
+    edgeDist = pos.x + this.offset - this.bpToPx(this.ref.start);
+    zoomLoc = Math.min(zoomLoc, ((edgeDist * scale) / (1 - scale)) / this.getWidth());
+    var fixedBp = this.pxToBp(pos.x + this.offset + (zoomLoc * this.getWidth()));
+    this.curZoom -= steps;
+    this.pxPerBp = this.zoomLevels[this.curZoom];
+
+    for (var track = 0; track < this.tracks.length; track++)
+    this.tracks[track].startZoom(this.pxPerBp,
+                     fixedBp - ((zoomLoc * this.getWidth())
+                                                / this.pxPerBp),
+                     fixedBp + (((1 - zoomLoc) * this.getWidth())
+                                                / this.pxPerBp));
+
+    //YAHOO.log("centerBp: " + centerBp + "; estimated post-zoom start base: " + (centerBp - ((zoomLoc * this.getWidth()) / this.pxPerBp)) + ", end base: " + (centerBp + (((1 - zoomLoc) * this.getWidth()) / this.pxPerBp)));
+    this.minLeft = this.pxPerBp * this.ref.start;
+
+    // Zooms take an arbitrary 700 milliseconds, which feels about right
+    // to me, although if the zooms were smoother they could probably
+    // get faster without becoming off-putting. -MS
+    new Zoomer(scale, this,
+               function() {this.zoomUpdate(zoomLoc, fixedBp);},
+               700, zoomLoc);
+},
+
+
+/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
+zoomBackOut: function(e) {
+    if (this.animation) { return; }
+    if (!this.isZoomedToBase()) { return; }
+
+    var min = this.posBeforeZoom.min;
+    var max = this.posBeforeZoom.max;
+    var zoomIndex = this.posBeforeZoom.zoomIndex;
+    this.posBeforeZoom = undefined;
+    
+    var zoomLoc = 0.5;
+    this.showWait();
+
+    var scale = this.zoomLevels[zoomIndex] / this.pxPerBp;
+    var fixedBp = (min + max) / 2;
+    this.curZoom = zoomIndex;
+    this.pxPerBp = this.zoomLevels[zoomIndex];
+
+    for (var track = 0; track < this.tracks.length; track++) {
+    	this.tracks[track].startZoom(this.pxPerBp,
+    			fixedBp - ((zoomLoc * this.getWidth())
+    					/ this.pxPerBp),
+    					fixedBp + (((1 - zoomLoc) * this.getWidth())
+    							/ this.pxPerBp));
+	}
+    
+    this.minLeft = this.pxPerBp * this.ref.start;
+    var thisObj = this;
+    // Zooms take an arbitrary 700 milliseconds, which feels about right
+    // to me, although if the zooms were smoother they could probably
+    // get faster without becoming off-putting. -MS
+    new Zoomer(scale, this,
+	       function() {thisObj.setLocation(thisObj.ref, min, max); thisObj.zoomUpdate(zoomLoc, fixedBp); },
+	       700, zoomLoc);
+},
+
+/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
+isZoomedToBase: function() {
+	return this.posBeforeZoom !== undefined;
+},
+
+/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
+_setPosBeforeZoom: function(min, max, zoomIndex) {
+    this.posBeforeZoom = { "min": min, "max": max, "zoomIndex": zoomIndex };
+},
+
+/** WebApollo support for zooming directly to base level, and later restoring previous zoom level before zooming to base */
+_unsetPosBeforeZoom: function() {
+	this.posBeforeZoom = undefined;
+},
+
+zoomUpdate: function(zoomLoc, fixedBp) {
+    var eWidth = this.elem.clientWidth;
+    var centerPx = this.bpToPx(fixedBp) - (zoomLoc * eWidth) + (eWidth / 2);
+    // stripeWidth: pixels per block
+    this.stripeWidth = this.stripeWidthForZoom(this.curZoom);
+    this.scrollContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+    this.zoomContainer.style.width =
+        (this.stripeCount * this.stripeWidth) + "px";
+    var centerStripe = Math.round(centerPx / this.stripeWidth);
+    var firstStripe = (centerStripe - ((this.stripeCount) / 2)) | 0;
+    this.offset = firstStripe * this.stripeWidth;
+    this.maxOffset = this.bpToPx(this.ref.end+1) - this.stripeCount * this.stripeWidth;
+    this.maxLeft = this.bpToPx(this.ref.end+1) - this.getWidth();
+    this.minLeft = this.bpToPx(this.ref.start);
+    this.zoomContainer.style.left = "0px";
+    this.setX((centerPx - this.offset) - (eWidth / 2));
+
+    dojo.forEach(this.uiTracks, function(track) { track.clear(); });
+
+    this.trackIterate( function(track) {
+        track.endZoom( this.pxPerBp,Math.round(this.stripeWidth / this.pxPerBp));
+    });
+
+    this.showVisibleBlocks(true);
+    this.showDone();
+    this.showCoarse();
+},
+
+scrollUpdate: function() {
+    var x = this.getX();
+    var numStripes = this.stripeCount;
+    var cWidth = numStripes * this.stripeWidth;
+    var eWidth = this.getWidth();
+    //dx: horizontal distance between the centers of
+    //this.scrollContainer and this.elem
+    var dx = (cWidth / 2) - ((eWidth / 2) + x);
+    //If dx is negative, we add stripes on the right, if positive,
+    //add on the left.
+    //We remove stripes from the other side to keep cWidth the same.
+    //The end goal is to minimize dx while making sure the surviving
+    //stripes end up in the same place.
+
+    var dStripes = (dx / this.stripeWidth) | 0;
+    if (0 == dStripes) return;
+    var changedStripes = Math.abs(dStripes);
+
+    var newOffset = this.offset - (dStripes * this.stripeWidth);
+
+    if (this.offset == newOffset) return;
+    this.offset = newOffset;
+
+    this.trackIterate(function(track) { track.moveBlocks(dStripes); });
+
+    var newX = x + (dStripes * this.stripeWidth);
+    this.updateStaticElements( { x: newX } );
+    this.rawSetX(newX);
+    var firstVisible = (newX / this.stripeWidth) | 0;
+},
+
+trackHeightUpdate: function(trackName, height) {
+    var y = this.getY();
+    if ( ! (trackName in this.trackIndices)) return;
+    var track = this.trackIndices[trackName];
+    if (Math.abs(height - this.trackHeights[track]) < 1) return;
+
+    //console.log("trackHeightUpdate: " + trackName + " " + this.trackHeights[track] + " -> " + height);
+    // if the bottom of this track is a above the halfway point,
+    // and we're not all the way at the top,
+    if ((((this.trackTops[track] + this.trackHeights[track]) - y)
+         <  (this.getHeight() / 2))
+        && (y > 0) ) {
+        // scroll so that lower tracks stay in place on screen
+        this.setY(y + (height - this.trackHeights[track]));
+        //console.log("track " + trackName + ": " + this.trackHeights[track] + " -> " + height + "; y: " + y + " -> " + this.getY());
+    }
+    this.trackHeights[track] = height;
+    this.tracks[track].div.style.height = (height + this.config.trackPadding) + "px";
+
+    this.layoutTracks();
+
+    this.setY( this.getY() );
+
+    this.updateStaticElements({ height: this.getHeight() });
+},
+
+showVisibleBlocks: function(updateHeight, pos, startX, endX) {
+    if (pos === undefined) pos = this.getPosition();
+    if (startX === undefined) startX = pos.x - (this.drawMargin * this.getWidth());
+    if (endX === undefined) endX = pos.x + ((1 + this.drawMargin) * this.getWidth());
+    var leftVisible = Math.max(0, (startX / this.stripeWidth) | 0);
+    var rightVisible = Math.min(this.stripeCount - 1,
+                               (endX / this.stripeWidth) | 0);
+
+    var bpPerBlock = Math.round(this.stripeWidth / this.pxPerBp);
+
+    var startBase = Math.round(this.pxToBp((leftVisible * this.stripeWidth)
+                                           + this.offset));
+    startBase -= 1;
+    var containerStart = Math.round(this.pxToBp(this.offset));
+    var containerEnd =
+        Math.round(this.pxToBp(this.offset
+                               + (this.stripeCount * this.stripeWidth)));
+
+    this.overviewTrackIterate(function(track, view) {
+                                  track.showRange(0, view.overviewStripes - 1,
+                                                  view.ref.start-1, view.overviewStripeBases,
+                                                  view.overviewBox.w /
+                                                  (view.ref.end - view.ref.start));
+                      });
+    this.trackIterate(function(track, view) {
+                          track.showRange(leftVisible, rightVisible,
+                                          startBase, bpPerBlock,
+                                          view.pxPerBp,
+                                          containerStart, containerEnd);
+                      });
+
+    this.updateStaticElements({
+                                  height: this.getHeight(),
+                                  width: this.getWidth(),
+                                  x: this.getX(),
+                                  y: this.getY()
+                              });
+
+    this.browser.publish( '/jbrowse/v1/n/tracks/redraw' );
+},
+
+/**
+ * Add the given track configurations to the genome view.
+ * @param trackConfigs {Array[Object]} array of track configuration
+ * objects to add
+ */
+showTracks: function( trackConfigs ) {
+    // filter out any track configs that are already displayed
+    var needed = dojo.filter( trackConfigs, function(conf) {
+        return this._getTracks( [conf.label] ).length == 0;
+    },this);
+    if( ! needed.length ) return;
+
+    // insert the track configs into the trackDndWidget ( the widget
+    // will call create() on the confs to render them)
+    this.trackDndWidget.insertNodes( false, needed );
+
+    this.updateTrackList();
+
+    // scroll the view to the bottom so we can see the new track
+    var thisB = this;
+    window.setTimeout( function() {
+        thisB.setY( Infinity );
+    }, 300 );
+},
+
+/**
+ * Replace the track configurations that are currently visible in the genome view.
+ * @param trackConfigs {Array[Object]} array of track configuration
+ * objects to add
+ */
+replaceTracks: function( trackConfigs ) {
+    // for each one
+    array.forEach( trackConfigs, function( conf ) {
+        // figure out its position in the genome view and delete it
+        var anchor;
+        var done;
+        var listNode = this.trackDndWidget.parent;
+        array.forEach( listNode.children, function( item ) {
+            if( done )
+                return;
+
+            var track = item.track;
+            if( track && (track.config.label == conf.label) ) {
+                done = 1;
+                this.trackDndWidget.delItem( item.id );
+                if( item && item.parentNode )
+                    item.parentNode.removeChild(item);
+            } else {
+                anchor = item;
+            }
+        },this);
+
+       this.updateTrackList();
+
+       // insert the new track config into the trackDndWidget after the 'before'
+       this.trackDndWidget.insertNodes( false, [conf], false, anchor );
+   },this);
+
+    if( trackConfigs.length )
+        this.updateTrackList();
+},
+
+/**
+ * Remove the given track (configs) from the genome view.
+ * @param trackConfigs {Array[Object]} array of track configurations
+ */
+hideTracks: function( /**Array[String]*/ trackConfigs ) {
+
+    // filter out any track configs that are not displayed
+    var displayed = dojo.filter( trackConfigs, function(conf) {
+        return this._getTracks( [conf.label] ).length != 0;
+    },this);
+    if( ! displayed.length ) return;
+
+    // remove the track configs from the trackDndWidget ( the widget
+    // will call create() on the confs to render them )
+    dojo.forEach( displayed, function( conf ) {
+        this.trackDndWidget.forInItems(function(obj, id, map) {
+            if( conf.label === obj.data.label ) {
+                this.trackDndWidget.delItem( id );
+                var item = dojo.byId(id);
+                if( item && item.parentNode )
+                    item.parentNode.removeChild(item);
+            }
+        },this);
+    },this);
+
+    this.updateTrackList();
+},
+
+/**
+ * Pin the tracks with the given names.  Returns an array with the
+ * names of tracks that were actually pinned.
+ */
+pinTracks: function( /**Array[String]*/ trackNames ) {
+    var tracks = this._getTracks( trackNames );
+    array.forEach( tracks, function( track ) {
+                       track.setPinned(true);
+                   });
+    this.updateTrackList();
+    return array.map( tracks, function(t) { return t.name; } );
+},
+
+/**
+ * Unpin the tracks with the given names.  Returns an array with the
+ * names of tracks that were actually unpinned.
+ */
+unpinTracks: function( /**Array[String]*/ trackNames ) {
+    var tracks = this._getTracks( trackNames );
+    array.forEach( tracks, function( track ) {
+                       track.setPinned(false);
+                   });
+    this.updateTrackList();
+    return array.map( tracks, function(t) { return t.name; } );
+},
+
+/**
+ * For an array of track names, get the track object if it exists.
+ * @private
+ * @returns {Array[Track]} the track objects that were found
+ */
+_getTracks: function( /**Array[String]*/ trackNames ) {
+    var tracks = [],
+        tn = { count: trackNames.length };
+    dojo.forEach( trackNames, function(n) { tn[n] = 1;} );
+    dojo.some( this.tracks, function(t) {
+        if( tn[t.name] ) {
+            tracks.push(t);
+            tn.count--;
+        }
+        return ! tn.count;
+    }, this);
+    return tracks;
+},
+
+/**
+ * Create the DOM elements that will contain the rendering of the
+ * given track in this genome view.
+ * @private
+ * @returns {HTMLElement} the HTML element that will contain the
+ *                        rendering of this track
+ */
+renderTrack: function( /**Object*/ trackConfig ) {
+    var thisB = this;
+
+    if( !trackConfig )
+        return null;
+
+    // just return its div if this track is already on
+    var existingTrack;
+    if( dojo.some( this.tracks, function(t) {
+            if( t.name == trackConfig.label ) {
+                existingTrack = t;
+                return true;
+            }
+            return false;
+        })
+      ) {
+          return existingTrack.div;
+      }
+
+    var cssName = function(str) { // replace weird characters and lowercase
+        return str.replace(/[^A-Za-z_0-9]/g,'_').toLowerCase();
+    };
+
+    var trackName = trackConfig.label;
+    var trackDiv = dojo.create('div', {
+        className: ['track', cssName('track_'+trackConfig.type), cssName('track_'+trackName)].join(' '),
+        id: "track_" + trackName
+    });
+    trackDiv.trackName = trackName;
+
+    var trackClass, store;
+
+    var makeTrack = dojo.hitch(this, function() {
+        var track = new trackClass({
+                refSeq: this.ref,
+                config: trackConfig,
+                changeCallback: dojo.hitch( this, 'showVisibleBlocks', true ),
+                trackPadding: this.config.trackPadding,
+                store: store,
+                browser: this.browser
+            });
+        if( typeof store.setTrack == 'function' )
+            store.setTrack( track );
+
+        trackDiv.track = track;
+
+        var heightUpdate = dojo.hitch( this, 'trackHeightUpdate', trackName );
+        track.setViewInfo( this, heightUpdate, this.stripeCount, trackDiv,
+                           this.stripePercent, this.stripeWidth,
+                           this.pxPerBp, this.config.trackPadding);
+
+        track.updateStaticElements({
+            x: this.getX(),
+            y: this.getY(),
+            height: this.getHeight(),
+            width: this.getWidth()
+         });
+
+        this.updateTrackList();
+    });
+
+    // might need to load both the store and the track class, so do it in
+    // parallel and have whichever one completes last do the actual
+    // track making.
+
+    if( ! trackConfig.store )
+        console.warn("configuration for track "+trackConfig.label+" has no store set", trackConfig );
+
+
+    // get the store
+    this.browser.getStore( trackConfig.store, function( s ) {
+            store = s;
+            if( trackClass && store )
+                makeTrack();
+        });
+
+    // get the track class
+    require( [ trackConfig.type ], function( class_ ) {
+        trackClass = class_;
+        if( trackClass && store )
+            makeTrack();
+    });
+
+    return trackDiv;
+},
+
+trackIterate: function(callback) {
+    var i;
+    for (i = 0; i < this.uiTracks.length; i++)
+        callback.call(this, this.uiTracks[i], this);
+    for (i = 0; i < this.tracks.length; i++)
+        callback.call(this, this.tracks[i], this);
+},
+
+
+/* this function must be called whenever tracks in the GenomeView
+ * are added, removed, or reordered
+ */
+updateTrackList: function() {
+    var tracks = [],
+        oldtracks = dojo.toJson( this.trackIndices || {} );
+
+    // after a track has been dragged, the DOM is the only place
+    // that knows the new ordering
+    var containerChild = this.trackContainer.firstChild;
+    do {
+        // this test excludes UI tracks, whose divs don't have a track property
+        if (containerChild.track)
+            tracks.push(containerChild.track);
+    } while ((containerChild = containerChild.nextSibling));
+
+    // sort so that the pinned tracks come first.  also, sorting is
+    // not stable in all implementations, need to stabilize it
+    // ourselves by doing a schwartzian transform with the indices
+    tracks = array.map( tracks, function(t,i) {
+                            return [t,i];
+                        });
+    tracks = tracks.sort( function( a, b ) {
+        var ap = a[0].isPinned() ? 1 : 0, bp = b[0].isPinned() ? 1 : 0;
+        return (bp - ap) || (a[1] - b[1]);
+    });
+    tracks = array.map( tracks, function( tr ) { return tr[0]; } );
+
+    // create or destroy the pinned-track underlay as needed
+    if( tracks[0] && tracks[0].isPinned() ) {
+        if( ! this.pinUnderlay )
+            this.pinUnderlay = domConstruct.create('div', {
+                                                       className: 'pin_underlay',
+                                                       style: 'top: '+this.topSpace
+                                                   }, this.trackContainer );
+        if( ! this.pinGridlinesTrack ) {
+            var gridTrackDiv = domConstruct.create(
+                "div",
+                { className: "track",
+                  style: "top: 0px; height: 100%"
+                },
+                this.pinUnderlay );
+            this.pinGridlinesTrack = new GridLinesTrack({
+                                                            browser: this.browser,
+                                                            refSeq: this.ref
+                                                        });
+            this.pinGridlinesTrack.setViewInfo( this, function() {}, this.stripeCount,
+                                                gridTrackDiv, this.stripePercent,
+                                                this.stripeWidth, this.pxPerBp,
+                                                this.config.trackPadding);
+            this.uiTracks.push( this.pinGridlinesTrack );
+        }
+    }
+    else if( this.pinUnderlay ) {
+        domConstruct.destroy( this.pinUnderlay );
+        delete this.pinUnderlay;
+        this.uiTracks = array.filter( this.uiTracks, function(t) {
+                                          return t !== this.pinGridlinesTrack;
+                                      }, this );
+        delete this.pinGridlinesTrack;
+    }
+
+
+    // set the new tracklist
+    var oldTracks = this.tracks;
+    this.tracks = tracks;
+
+    // recalculate this.trackHeights and this.trackIndices
+    var newIndices = {};
+    var newHeights = new Array(this.tracks.length);
+    var totalHeight = 0;
+    for (var i = 0; i < tracks.length; i++) {
+        newIndices[tracks[i].name] = i;
+        if (tracks[i].name in this.trackIndices) {
+            newHeights[i] = this.trackHeights[this.trackIndices[tracks[i].name]];
+        } else {
+            newHeights[i] = 0;
+        }
+        totalHeight += newHeights[i];
+        this.trackIndices[tracks[i].name] = i;
+    }
+    this.trackIndices = newIndices;
+    this.trackHeights = newHeights;
+
+    // call destroy on any tracks that are being thrown out
+    array.forEach( oldTracks || [], function( track ) {
+        if( ! ( track.name in newIndices ) ) {
+            Util.removeAttribute( track.div, 'track' ); //< because this file put it there
+            track.destroy();
+        }
+    }, this );
+
+    // lay the tracks out bottom to top
+    this.layoutTracks();
+
+    this.updateScroll();
+
+    // publish a message if the visible tracks or their ordering has changed
+    if( oldtracks != dojo.toJson( this.trackIndices || {} ) ) {
+        this.browser.publish( '/jbrowse/v1/n/tracks/visibleChanged', [this.visibleTrackNames()] );
+        this.showVisibleBlocks();
+    }
+},
+
+
+/**
+ * Lay out all shown tracks.
+ */
+layoutTracks: function() {
+    // lay out the track tops
+    var nextTop = this.topSpace;
+    var lastTop = 0;
+    var pinnedHeight = 0;
+    var lastWasPinned = false;
+    array.forEach( this.tracks, function( track, i ) {
+        this.trackTops[i] = nextTop;
+        lastTop = nextTop;
+
+        if( track.isPinned() ) {
+            track.div.style.top = nextTop + "px";
+            lastWasPinned = true;
+        }
+        else {
+            track.div.style.top = nextTop - this.y + ( lastWasPinned ? 15 : 0 ) + "px";
+            lastWasPinned = false;
+        }
+
+        if ( track.shown ) {
+            nextTop += this.trackHeights[i] + this.config.trackPadding;
+            if( track.isPinned() )
+                pinnedHeight = nextTop;
+        }
+
+    }, this );
+    if( pinnedHeight && this.pinUnderlay ) {
+        this.pinUnderlay.style.height = pinnedHeight + 'px';
+    }
+
+    this.containerHeight = Math.max( nextTop||0, Math.min( this.getY(), lastTop ) + this.getHeight() );
+    this.scrollContainer.style.height = this.containerHeight + "px";
+}
+});
+});
+
+/*
+
+Copyright (c) 2007-2009 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'JBrowse/Component':function(){
+/**
+ * A JBrowse component keeps a reference to the main browser object, and is configurable.
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'JBrowse/Util'
+       ],
+       function(
+           declare,
+           lang,
+           Util
+       ) {
+
+return declare( null, {
+
+    constructor: function( args ) {
+        args = args || {};
+
+        // merge our config with the config defaults
+        this._finalizeConfig( args.config );
+
+        this.browser = args.browser;
+        if( ! this.browser )
+            throw "a reference to the main browser is required by this constructor";
+
+        this.compiledConfig = {};
+    },
+
+    _finalizeConfig: function( config ) {
+        this.config = this._mergeConfigs( dojo.clone( this._defaultConfig() ), config || {} );
+    },
+
+    _defaultConfig: function() {
+        return {
+            baseUrl: '/'
+        };
+    },
+
+    resolveUrl: function( url, args ) {
+        args = args || {};
+        return Util.resolveUrl(
+            this.getConf('baseUrl',[]),
+            this.fillTemplate( url, args )
+        );
+
+    },
+
+    _mergeConfigs: function(a, b) {
+        if( b === null )
+            return null;
+        if( a === null )
+            a = {};
+
+        for (var prop in b) {
+            if ((prop in a)
+                && ("object" == typeof b[prop])
+                && ("object" == typeof a[prop]) ) {
+                a[prop] = this._mergeConfigs( a[prop], b[prop] );
+            } else if( typeof a[prop] == 'undefined' || typeof b[prop] != 'undefined' ){
+                a[prop] = b[prop];
+            }
+        }
+        return a;
+    },
+
+    _compileConfigurationPath: function( path ) {
+        var confVal = this.config;
+
+        if( typeof path == 'string' )
+            path = path.split('.');
+        while( path.length && confVal )
+            confVal = confVal[ path.shift() ];
+
+        if( path.length )
+            return function() { return null; };
+
+        return typeof confVal == 'function'
+            ? confVal
+            : function() { return confVal; };
+    },
+
+    /**
+     * Given a dot-separated string configuration path into the config
+     * (e.g. "style.bg_color"), get the value of the configuration.
+     *
+     * If args are given, evaluate the configuration using them.
+     * Otherwise, return a function that returns the value of the
+     * configuration when called.
+     */
+    getConf: function( path, args ) {
+        var func = this.compiledConfig[path];
+        if( ! func ) {
+            func = this.compiledConfig[path] = this._compileConfigurationPath( path );
+        }
+
+        return args ? func.apply( this, args ) : func.call( this );
+    },
+
+    /**
+     * Given a string with templating strings like {refseq}, fill them
+     * in using the given values.
+     *
+     * With no additional values given, knows how to interpolate
+     * {refseq}, {refSeq}, {refSeqNum}, and {refSeqNumNoLeadingZeroes}.
+     *
+     * @param {String} str string to interpolate values into
+     * @param {Object} values optional object with additional values that can be interpolated
+     * @returns new string with interpolations
+     */
+    fillTemplate: function( str, values ) {
+
+        // skip if it's not a string or the string has no interpolations
+        if( typeof str != 'string' || str.indexOf('{') == -1 )
+            return str;
+
+        // fill in a bunch of args for this.refSeq or this.ref
+        var templateFillArgs = {
+            'refseq': (this.refSeq||{}).name || (this.ref||{}).name || this.ref || ''
+        };
+        templateFillArgs.refSeq = templateFillArgs.refseq;
+
+        if( templateFillArgs.refSeq ) {
+            templateFillArgs.refSeqNum = ( /\d+/.exec( templateFillArgs.refSeq ) || [] )[0] || '';
+        }
+        // make refseqNumNoLeadingZeroes
+        if( templateFillArgs.refSeqNum ) {
+            templateFillArgs.refSeqNumNoLeadingZeroes = ( /^0*(\d+)/.exec( templateFillArgs.refSeqNum ) || [] )[1] || '';
+        }
+
+        if( values )
+            lang.mixin( templateFillArgs, values );
+
+        return Util.fillTemplate( str, templateFillArgs );
+    }
+});
+});
+},
+'JBrowse/View/Track/LocationScale':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+           'JBrowse/View/Track/BlockBased',
+           'JBrowse/Util'],
+       function(
+           declare,
+           dom,
+           BlockBased,
+           Util
+       ) {
+return declare(BlockBased,
+ /**
+  * @lends JBrowse.View.Track.LocationScale.prototype
+  */
+{
+
+    /**
+     * This track is for (e.g.) position and sequence information that should
+     * always stay visible at the top of the view.
+     * @constructs
+     */
+
+    constructor: function( args ) {//name, labelClass, posHeight) {
+        this.loaded = true;
+        this.labelClass = args.labelClass;
+        this.posHeight = args.posHeight;
+        this.height = Math.round( args.posHeight * 1.2 );
+    },
+
+    // this track has no track label or track menu, stub them out
+    makeTrackLabel: function() {},
+    makeTrackMenu: function() {},
+
+    fillBlock: function( args ) {
+        var blockIndex = args.blockIndex;
+        var block = args.block;
+        var leftBase = args.leftBase;
+        var scale = args.scale;
+
+        // find the number that is within 2 px of the left boundary of
+        // the block that ends with the most zeroes, or a 5 if no
+        // zeroes
+        var labelNumber = this.chooseLabel( args );
+        var labelOffset = (leftBase+1-labelNumber)*scale/10;
+        // console.log( leftBase+1, labelNumber, labelOffset );
+
+        var posLabel = document.createElement("div");
+        var numtext = Util.addCommas( labelNumber );
+        posLabel.className = this.labelClass;
+
+        // give the position label a negative left offset in ex's to
+        // more-or-less center it over the left boundary of the block
+        posLabel.style.left = "-" + Number(numtext.length)/1.7 + labelOffset + "ex";
+
+        posLabel.appendChild( document.createTextNode( numtext ) );
+        block.domNode.appendChild(posLabel);
+
+        var highlight = this.browser.getHighlight();
+        if( highlight && highlight.ref == this.refSeq.name )
+            this.renderRegionHighlight( args, highlight );
+
+        this.heightUpdate( Math.round( this.posHeight*1.2 ), blockIndex);
+        args.finishCallback();
+    },
+
+    chooseLabel: function( viewArgs ) {
+        var left = viewArgs.leftBase + 1;
+        var width = viewArgs.rightBase - left + 1;
+        var scale = viewArgs.scale;
+        for( var mod = 1000000; mod > 0; mod /= 10 ) {
+            if( left % mod * scale <= 3 )
+                return left - left%mod;
+        }
+        return left;
+    }
+
+});
+});
+},
+'JBrowse/View/Track/BlockBased':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/lang',
+            'dojo/_base/array',
+            'dojo/json',
+            'dojo/aspect',
+            'dojo/dom-construct',
+            'dojo/dom-geometry',
+            'dojo/dom-class',
+            'dojo/dom-style',
+            'dojo/query',
+            'dojo/on',
+            'dojo/when',
+            'dijit/Destroyable',
+            'JBrowse/View/InfoDialog',
+            'dijit/Dialog',
+            'dijit/Menu',
+            'dijit/PopupMenuItem',
+            'dijit/MenuItem',
+            'dijit/CheckedMenuItem',
+            'dijit/MenuSeparator',
+            'JBrowse/Util',
+            'JBrowse/Component',
+            'JBrowse/FeatureFiltererMixin',
+            'JBrowse/Errors',
+            'JBrowse/View/TrackConfigEditor',
+            'JBrowse/View/ConfirmDialog',
+            'JBrowse/View/Track/BlockBased/Block',
+            'JBrowse/View/DetailsMixin'
+        ],
+        function( declare,
+                  lang,
+                  array,
+                  JSON,
+                  aspect,
+                  domConstruct,
+                  domGeom,
+                  domClass,
+                  domStyle,
+                  query,
+                  on,
+                  when,
+                  Destroyable,
+                  InfoDialog,
+                  Dialog,
+                  dijitMenu,
+                  dijitPopupMenuItem,
+                  dijitMenuItem,
+                  dijitCheckedMenuItem,
+                  dijitMenuSeparator,
+                  Util,
+                  Component,
+                  FeatureFiltererMixin,
+                  Errors,
+                  TrackConfigEditor,
+                  ConfirmDialog,
+                  Block,
+                  DetailsMixin
+                ) {
+
+// we get `own` and `destroy` from Destroyable, see dijit/Destroyable docs
+
+return declare( [Component,DetailsMixin,FeatureFiltererMixin,Destroyable],
+/**
+ * @lends JBrowse.View.Track.BlockBased.prototype
+ */
+{
+    /**
+     * Base class for all JBrowse tracks.
+     * @constructs
+     */
+    constructor: function( args ) {
+        args = args || {};
+
+        this.refSeq = args.refSeq;
+        this.name = args.label || this.config.label;
+        this.key = args.key || this.config.key || this.name;
+
+        this._changedCallback = args.changeCallback || function(){};
+        this.height = 0;
+        this.shown = true;
+        this.empty = false;
+        this.browser = args.browser;
+
+        this.setFeatureFilterParentComponent( this.browser.view );
+
+        this.store = args.store;
+
+        // retrieve any user-set style info
+        lang.mixin( this.config.style, this.getUserStyles() );
+    },
+
+    // get/set persistent per-user style information for this track
+    updateUserStyles: function( settings ) {
+        // set in this object
+        lang.mixin( this.config.style, settings );
+        // set in the saved style
+        var saved = JSON.parse( this.browser.cookie("track-style-" + this.name ) || '{}' );
+        lang.mixin( saved, settings );
+        this.browser.cookie( "track-style-" + this.name, saved );
+        // redraw this track
+        this.redraw();
+    },
+    getUserStyles: function() {
+        return JSON.parse( this.browser.cookie("track-style-" + this.name ) || '{}' );
+    },
+
+
+    /**
+     * Returns object holding the default configuration for this track
+     * type.  Might want to override in subclasses.
+     * @private
+     */
+    _defaultConfig: function() {
+        return {
+            maxFeatureSizeForUnderlyingRefSeq: 250000
+        };
+    },
+
+    heightUpdate: function(height, blockIndex) {
+
+        if (!this.shown) {
+            this.heightUpdateCallback(0);
+            return;
+        }
+
+        if (blockIndex !== undefined)
+            this.blockHeights[blockIndex] = height;
+
+        this.height = Math.max( this.height, height );
+
+        if ( ! this.inShowRange ) {
+            this.heightUpdateCallback( Math.max( this.labelHeight, this.height ) );
+
+            // reposition any height-overflow markers in our blocks
+            query( '.height_overflow_message', this.div )
+                .style( 'top', this.height - 16 + 'px' );
+        }
+    },
+
+    setViewInfo: function( genomeView, heightUpdate, numBlocks,
+                           trackDiv,
+                           widthPct, widthPx, scale) {
+        this.genomeView = genomeView;
+        this.heightUpdateCallback = heightUpdate;
+        this.div = trackDiv;
+        this.widthPct = widthPct;
+        this.widthPx = widthPx;
+
+        this.leftBlank = document.createElement("div");
+        this.leftBlank.className = "blank-block";
+        this.rightBlank = document.createElement("div");
+        this.rightBlank.className = "blank-block";
+        this.div.appendChild(this.rightBlank);
+        this.div.appendChild(this.leftBlank);
+
+        this.sizeInit(numBlocks, widthPct);
+        this.labelHTML = "";
+        this.labelHeight = 0;
+
+        if( this.config.pinned )
+            this.setPinned( true );
+
+        if( ! this.label ) {
+            this.makeTrackLabel();
+        }
+        this.setLabel( this.key );
+    },
+
+    makeTrackLabel: function() {
+        var labelDiv = dojo.create(
+            'div', {
+                className: "track-label dojoDndHandle",
+                id: "label_" + this.name,
+                style: {
+                    position: 'absolute'
+                }
+            },this.div);
+
+        this.label = labelDiv;
+
+        if ( ( this.config.style || {} ).trackLabelCss){
+            labelDiv.style.cssText += ";" + trackConfig.style.trackLabelCss;
+        }
+
+        var closeButton = dojo.create('div',{
+            className: 'track-close-button'
+        },labelDiv);
+        this.own( on( closeButton, 'click', dojo.hitch(this,function(evt){
+                this.browser.view.suppressDoubleClick( 100 );
+                this.browser.publish( '/jbrowse/v1/v/tracks/hide', [this.config]);
+                evt.stopPropagation();
+        })));
+
+        var labelText = dojo.create('span', { className: 'track-label-text' }, labelDiv );
+        var menuButton = dojo.create('div',{
+            className: 'track-menu-button'
+        },labelDiv);
+        dojo.create('div', {}, menuButton ); // will be styled with an icon by CSS
+        this.labelMenuButton = menuButton;
+
+        // make the track menu with things like 'save as'
+        this.makeTrackMenu();
+    },
+
+    hide: function() {
+        if (this.shown) {
+            this.div.style.display = "none";
+            this.shown = false;
+        }
+    },
+
+    show: function() {
+        if (!this.shown) {
+            this.div.style.display = "block";
+            this.shown = true;
+        }
+    },
+
+    initBlocks: function() {
+        this.blocks = new Array(this.numBlocks);
+        this.blockHeights = new Array(this.numBlocks);
+        for (var i = 0; i < this.numBlocks; i++) this.blockHeights[i] = 0;
+        this.firstAttached = null;
+        this.lastAttached = null;
+        this._adjustBlanks();
+    },
+
+    clear: function() {
+        if (this.blocks) {
+            for (var i = 0; i < this.numBlocks; i++)
+                this._hideBlock(i);
+        }
+        this.initBlocks();
+        this.makeTrackMenu();
+    },
+
+    setLabel: function(newHTML) {
+        if (this.label === undefined || this.labelHTML == newHTML )
+            return;
+
+        this.labelHTML = newHTML;
+        query('.track-label-text',this.label)
+            .forEach(function(n){ n.innerHTML = newHTML; });
+        this.labelHeight = this.label.offsetHeight;
+    },
+
+    /**
+     * Stub.
+     */
+    transfer: function() {},
+
+    /**
+     *  Stub.
+     */
+    startZoom: function(destScale, destStart, destEnd) {},
+
+    /**
+     * Stub.
+     */
+    endZoom: function(destScale, destBlockBases) {
+    },
+
+
+    showRange: function(first, last, startBase, bpPerBlock, scale,
+                        containerStart, containerEnd) {
+
+        if( this.fatalError ) {
+            this.showFatalError( this.fatalError );
+            return;
+        }
+
+        if ( this.blocks === undefined || ! this.blocks.length )
+            return;
+
+        // this might make more sense in setViewInfo, but the label element
+        // isn't in the DOM tree yet at that point
+        if ((this.labelHeight == 0) && this.label)
+            this.labelHeight = this.label.offsetHeight;
+
+        this.inShowRange = true;
+        this.height = this.labelHeight;
+
+        var firstAttached = (null == this.firstAttached ? last + 1 : this.firstAttached);
+        var lastAttached =  (null == this.lastAttached ? first - 1 : this.lastAttached);
+
+        var i, leftBase;
+        var maxHeight = 0;
+        //fill left, including existing blocks (to get their heights)
+        for (i = lastAttached; i >= first; i--) {
+            leftBase = startBase + (bpPerBlock * (i - first));
+            this._showBlock(i, leftBase, leftBase + bpPerBlock, scale,
+                            containerStart, containerEnd);
+        }
+        //fill right
+        for (i = lastAttached + 1; i <= last; i++) {
+            leftBase = startBase + (bpPerBlock * (i - first));
+            this._showBlock(i, leftBase, leftBase + bpPerBlock, scale,
+                            containerStart, containerEnd);
+        }
+
+        //detach left blocks
+        var destBlock = this.blocks[first];
+        for (i = firstAttached; i < first; i++) {
+            this.transfer(this.blocks[i], destBlock, scale,
+                          containerStart, containerEnd);
+            this.cleanupBlock(this.blocks[i]);
+            this._hideBlock(i);
+        }
+        //detach right blocks
+        destBlock = this.blocks[last];
+        for (i = lastAttached; i > last; i--) {
+            this.transfer(this.blocks[i], destBlock, scale,
+                          containerStart, containerEnd);
+            this.cleanupBlock(this.blocks[i]);
+            this._hideBlock(i);
+        }
+
+        this.firstAttached = first;
+        this.lastAttached = last;
+        this._adjustBlanks();
+        this.inShowRange = false;
+
+        this.heightUpdate(this.height);
+        this.updateStaticElements( this.genomeView.getPosition() );
+    },
+
+    cleanupBlock: function( block ) {
+        if( block )
+            block.destroy();
+    },
+
+    /**
+     * Called when this track object is destroyed.  Cleans up things
+     * to avoid memory leaks.
+     */
+    destroy: function() {
+        array.forEach( this.blocks || [], function( block ) {
+            this.cleanupBlock( block );
+        }, this);
+        delete this.blocks;
+        delete this.div;
+
+        this.inherited( arguments );
+    },
+
+    _hideBlock: function(blockIndex) {
+        if (this.blocks[blockIndex]) {
+            this.div.removeChild( this.blocks[blockIndex].domNode );
+            this.cleanupBlock( this.blocks[blockIndex] );
+            this.blocks[blockIndex] = undefined;
+            this.blockHeights[blockIndex] = 0;
+        }
+    },
+
+    _adjustBlanks: function() {
+        if ((this.firstAttached === null)
+            || (this.lastAttached === null)) {
+            this.leftBlank.style.left = "0px";
+            this.leftBlank.style.width = "50%";
+            this.rightBlank.style.left = "50%";
+            this.rightBlank.style.width = "50%";
+        } else {
+            this.leftBlank.style.width = (this.firstAttached * this.widthPct) + "%";
+            this.rightBlank.style.left = ((this.lastAttached + 1)
+                                          * this.widthPct) + "%";
+            this.rightBlank.style.width = ((this.numBlocks - this.lastAttached - 1)
+                                           * this.widthPct) + "%";
+        }
+    },
+
+    hideAll: function() {
+        if (null == this.firstAttached) return;
+        for (var i = this.firstAttached; i <= this.lastAttached; i++)
+            this._hideBlock(i);
+
+
+        this.firstAttached = null;
+        this.lastAttached = null;
+        this._adjustBlanks();
+    },
+
+    // hides all blocks that overlap the given region/location
+    hideRegion: function( location ) {
+        if (null == this.firstAttached) return;
+        // hide all blocks that overlap the given region
+        for (var i = this.firstAttached; i <= this.lastAttached; i++)
+            if( this.blocks[i] && location.ref == this.refSeq.name && !(  this.blocks[i].leftBase > location.end || this.blocks[i].rightBase < location.start ) )
+                this._hideBlock(i);
+
+        this._adjustBlanks();
+    },
+
+    /**
+     *   _changeCallback invoked here is passed in constructor,
+     *         and typically is GenomeView.showVisibleBlocks()
+     */
+    changed: function() {
+        this.hideAll();
+        if( this._changedCallback )
+            this._changedCallback();
+    },
+
+    _makeLoadingMessage: function() {
+        var msgDiv = dojo.create(
+            'div', {
+                className: 'loading',
+                innerHTML: '<div class="text">Loading</span>',
+                title: 'Loading data...',
+                style: { visibility: 'hidden' }
+            });
+        window.setTimeout(function() { msgDiv.style.visibility = 'visible'; }, 200);
+        return msgDiv;
+    },
+
+    showFatalError: function( error ) {
+        query( '.block', this.div )
+            .concat( query( '.blank-block', this.div ) )
+            .concat( query( '.error', this.div ) )
+            .orphan();
+        this.blocks = [];
+        this.blockHeights = [];
+
+        this.fatalErrorMessageElement = this._renderErrorMessage( error || this.fatalError, this.div );
+        this.heightUpdate( domGeom.position( this.fatalErrorMessageElement ).h );
+        this.updateStaticElements( this.genomeView.getPosition() );
+    },
+
+    // generic handler for all types of errors
+    _handleError: function( error, viewArgs ) {
+        var errorContext = dojo.mixin( {}, error );
+        dojo.mixin( errorContext, viewArgs );
+
+        var isObject = typeof error == 'object';
+
+        if( isObject && error instanceof Errors.TimeOut && errorContext.block )
+            this.fillBlockTimeout( errorContext.blockIndex, errorContext.block, error );
+        else if( isObject && error instanceof Errors.DataOverflow ) {
+            if( errorContext.block )
+                this.fillTooManyFeaturesMessage( errorContext.blockIndex, errorContext.block, viewArgs.scale, error );
+            else
+                array.forEach( this.blocks, function( block, blockIndex ) {
+                    if( block )
+                        this.fillTooManyFeaturesMessage( blockIndex, block, viewArgs.scale, error );
+                },this);
+        }
+        else {
+            console.error( error.stack || ''+error, error );
+            this.fatalError = error;
+            this.showFatalError( error );
+        }
+    },
+
+
+    fillBlockError: function( blockIndex, block, error ) {
+        error = error || this.fatalError || this.error;
+
+        domConstruct.empty( block.domNode );
+        var msgDiv = this._renderErrorMessage( error, block.domNode );
+        this.heightUpdate( dojo.position(msgDiv).h, blockIndex );
+    },
+
+    _renderErrorMessage: function( message, parent ) {
+        return domConstruct.create(
+            'div', {
+                className: 'error',
+                innerHTML: '<h2>Error</h2><div class="text">An error was encountered when displaying this track.</div>'
+                    +( message ? '<div class="codecaption">Diagnostic message</div><code>'+message+'</code>' : '' ),
+                title: 'An error occurred'
+            }, parent );
+    },
+
+    fillTooManyFeaturesMessage: function( blockIndex, block, scale, error ) {
+        var message = (error && error.message || 'Too much data to show').replace(/\.$/,'');
+
+        this.fillMessage(
+            blockIndex,
+            block,
+            message
+                + (scale >= this.browser.view.maxPxPerBp ? '': '; zoom in to see detail')
+                + '.'
+        );
+    },
+
+    redraw: function() {
+        this.clear();
+        this.genomeView.showVisibleBlocks(true);
+    },
+
+    markBlockHeightOverflow: function( block ) {
+        if( block.heightOverflowed )
+            return;
+
+        block.heightOverflowed  = true;
+        domClass.add( block.domNode, 'height_overflow' );
+        domConstruct.create( 'div', {
+                                 className: 'height_overflow_message',
+                                 innerHTML: 'Max height reached',
+                                 style: {
+                                     top: (this.height-16) + 'px',
+                                     height: '16px'
+                                 }
+                             }, block.domNode );
+    },
+
+    _showBlock: function(blockIndex, startBase, endBase, scale,
+                         containerStart, containerEnd) {
+        if ( this.empty || this.fatalError ) {
+            this.heightUpdate( this.labelHeight );
+            return;
+        }
+
+        if (this.blocks[blockIndex]) {
+            this.heightUpdate(this.blockHeights[blockIndex], blockIndex);
+            return;
+        }
+
+        var block = new Block({
+            startBase: startBase,
+            endBase: endBase,
+            scale: scale,
+            node: {
+                className: 'block',
+                style: {
+                    left:  (blockIndex * this.widthPct) + "%",
+                    width: this.widthPct + "%"
+                }
+            }
+        });
+        this.blocks[blockIndex] = block;
+        this.div.appendChild( block.domNode );
+
+        var args = [blockIndex,
+                    block,
+                    this.blocks[blockIndex - 1],
+                    this.blocks[blockIndex + 1],
+                    startBase,
+                    endBase,
+                    scale,
+                    this.widthPx,
+                    containerStart,
+                    containerEnd];
+
+        if( this.fatalError ) {
+            this.fillBlockError( blockIndex, block );
+            return;
+        }
+
+        // loadMessage is an opaque mask div that we place over the
+        // block until the fillBlock finishes
+        var loadMessage = this._makeLoadingMessage();
+        block.domNode.appendChild( loadMessage );
+
+        var finish = function() {
+            if( block && loadMessage.parentNode )
+                block.domNode.removeChild( loadMessage );
+        };
+
+        var viewargs = {
+                blockIndex: blockIndex,
+                block:      block,
+                leftBlock:  this.blocks[blockIndex - 1],
+                rightBlock: this.blocks[blockIndex + 1],
+                leftBase:   startBase,
+                rightBase:  endBase,
+                scale:      scale,
+                stripeWidth:    this.widthPx,
+                containerStart: containerStart,
+                containerEnd:   containerEnd,
+                finishCallback: finish
+            };
+        try {
+            this.fillBlock( viewargs );
+        } catch( e ) {
+            this._handleError( e, viewargs );
+            finish();
+        }
+    },
+
+    moveBlocks: function(delta) {
+        var newBlocks = new Array(this.numBlocks);
+        var newHeights = new Array(this.numBlocks);
+        var i;
+        for (i = 0; i < this.numBlocks; i++)
+            newHeights[i] = 0;
+
+        var destBlock;
+        if ((this.lastAttached + delta < 0)
+            || (this.firstAttached + delta >= this.numBlocks)) {
+            this.firstAttached = null;
+            this.lastAttached = null;
+        } else {
+            this.firstAttached = Math.max(0, Math.min(this.numBlocks - 1,
+                                                      this.firstAttached + delta));
+            this.lastAttached = Math.max(0, Math.min(this.numBlocks - 1,
+                                                     this.lastAttached + delta));
+            if (delta < 0)
+                destBlock = this.blocks[this.firstAttached - delta];
+            else
+                destBlock = this.blocks[this.lastAttached - delta];
+        }
+
+        for (i = 0; i < this.blocks.length; i++) {
+            var newIndex = i + delta;
+            if ((newIndex < 0) || (newIndex >= this.numBlocks)) {
+                //We're not keeping this block around, so delete
+                //the old one.
+                if (destBlock && this.blocks[i])
+                    this.transfer(this.blocks[i], destBlock);
+                this._hideBlock(i);
+            } else {
+                //move block
+                newBlocks[newIndex] = this.blocks[i];
+                if (newBlocks[newIndex])
+                    newBlocks[newIndex].domNode.style.left =
+                    ((newIndex) * this.widthPct) + "%";
+
+                newHeights[newIndex] = this.blockHeights[i];
+            }
+        }
+        this.blocks = newBlocks;
+        this.blockHeights = newHeights;
+        this._adjustBlanks();
+    },
+
+    sizeInit: function(numBlocks, widthPct, blockDelta) {
+        var i, oldLast;
+        this.numBlocks = numBlocks;
+        this.widthPct = widthPct;
+        if (blockDelta) this.moveBlocks(-blockDelta);
+        if (this.blocks && (this.blocks.length > 0)) {
+            //if we're shrinking, clear out the end blocks
+            var destBlock = this.blocks[numBlocks - 1];
+            for (i = numBlocks; i < this.blocks.length; i++) {
+                if (destBlock && this.blocks[i])
+                    this.transfer(this.blocks[i], destBlock);
+                this._hideBlock(i);
+            }
+            oldLast = this.blocks.length;
+            this.blocks.length = numBlocks;
+            this.blockHeights.length = numBlocks;
+            //if we're expanding, set new blocks to be not there
+            for (i = oldLast; i < numBlocks; i++) {
+                this.blocks[i] = undefined;
+                this.blockHeights[i] = 0;
+            }
+            this.lastAttached = Math.min(this.lastAttached, numBlocks - 1);
+            if (this.firstAttached > this.lastAttached) {
+                //not sure if this can happen
+                this.firstAttached = null;
+                this.lastAttached = null;
+            }
+
+            if( this.blocks.length != numBlocks )
+                throw new Error(
+                    "block number mismatch: should be "
+                        + numBlocks + "; blocks.length: "
+                        + this.blocks.length
+                );
+
+            for (i = 0; i < numBlocks; i++) {
+                if (this.blocks[i]) {
+                    //if (!this.blocks[i].style) console.log(this.blocks);
+                    this.blocks[i].domNode.style.left = (i * widthPct) + "%";
+                    this.blocks[i].domNode.style.width = widthPct + "%";
+                }
+            }
+        } else {
+            this.initBlocks();
+        }
+
+        this.makeTrackMenu();
+    },
+
+    fillMessage: function( blockIndex, block, message, class_ ) {
+        domConstruct.empty( block.domNode );
+        var msgDiv = dojo.create(
+            'div', {
+                className: class_ || 'message',
+                innerHTML: message
+            }, block.domNode );
+        this.heightUpdate( domGeom.getMarginBox(msgDiv, domStyle.getComputedStyle(msgDiv)).h, blockIndex );
+    },
+
+    /**
+     * Called by GenomeView when the view is scrolled: communicates the
+     * new x, y, width, and height of the view.  This is needed by tracks
+     * for positioning stationary things like axis labels.
+     */
+    updateStaticElements: function( /**Object*/ coords ) {
+        this.window_info = dojo.mixin( this.window_info || {}, coords );
+        if( this.fatalErrorMessageElement ) {
+            this.fatalErrorMessageElement.style.width = this.window_info.width * 0.6 + 'px';
+            if( 'x' in coords )
+                this.fatalErrorMessageElement.style.left = coords.x+this.window_info.width * 0.2 +'px';
+        }
+
+        if( this.label && 'x' in coords )
+            this.label.style.left = coords.x+'px';
+    },
+
+    /**
+     * Render a dijit menu from a specification object.
+     *
+     * @param menuTemplate definition of the menu's structure
+     * @param context {Object} optional object containing the context
+     *   in which any click handlers defined in the menu should be
+     *   invoked, containing thing like what feature is being operated
+     *   upon, the track object that is involved, etc.
+     * @param parent {dijit.Menu|...} parent menu, if this is a submenu
+     */
+    _renderContextMenu: function( /**Object*/ menuStructure, /** Object */ context, /** dijit.Menu */ parent ) {
+        if ( !parent ) {
+            parent = new dijitMenu();
+            this.own( parent );
+        }
+
+        for ( key in menuStructure ) {
+            var spec = menuStructure [ key ];
+            try {
+                if ( spec.children ) {
+                    var child = new dijitMenu();
+                    parent.addChild( child );
+                    parent.addChild( new dijitPopupMenuItem(
+                                         {
+                                             popup : child,
+                                             label : spec.label
+                                         }));
+                    this._renderContextMenu( spec.children, context, child );
+                }
+                else {
+                    var menuConf = dojo.clone( spec );
+                    if( menuConf.action || menuConf.url || menuConf.href ) {
+                        menuConf.onClick = this._makeClickHandler( spec, context );
+                    }
+                    // only draw other menu items if they do something when clicked.
+                    // drawing menu items that do nothing when clicked
+                    // would frustrate users.
+                    if( menuConf.label && !menuConf.onClick )
+                        menuConf.disabled = true;
+
+                    // currently can only use preloaded types
+                    var class_ = {
+                        'dijit/MenuItem':        dijitMenuItem,
+                        'dijit/CheckedMenuItem': dijitCheckedMenuItem,
+                        'dijit/MenuSeparator':   dijitMenuSeparator
+                    }[spec.type] || dijitMenuItem;
+
+                    parent.addChild( new class_( menuConf ) );
+                }
+            } catch(e) {
+                console.error('failed to render menu item: '+e);
+            }
+        }
+        return parent;
+    },
+
+    _makeClickHandler: function( inputSpec, context ) {
+        var track  = this;
+
+        if( typeof inputSpec == 'function' ) {
+            inputSpec = { action: inputSpec };
+        }
+        else if( typeof inputSpec == 'undefined' ) {
+            console.error("Undefined click specification, cannot make click handler");
+            return function() {};
+        }
+        else if( inputSpec.action == 'defaultDialog' ) {
+            inputSpec.action = 'contentDialog';
+            inputSpec.content = dojo.hitch(this,'defaultFeatureDetail');
+        }
+
+        var handler = function ( evt ) {
+            if( track.genomeView.dragging )
+                return;
+
+            var ctx = context || this;
+            var spec = track._processMenuSpec( dojo.clone( inputSpec ), ctx );
+            var url = spec.url || spec.href;
+            spec.url = url;
+            var style = dojo.clone( spec.style || {} );
+
+            // try to understand the `action` setting
+            spec.action = spec.action ||
+                ( url          ? 'iframeDialog'  :
+                  spec.content ? 'contentDialog' :
+                                 false
+                );
+            spec.title = spec.title || spec.label;
+
+            if( typeof spec.action == 'string' ) {
+                // treat `action` case-insensitively
+                spec.action = {
+                    iframedialog:   'iframeDialog',
+                    iframe:         'iframeDialog',
+                    contentdialog:  'contentDialog',
+                    content:        'contentDialog',
+                    baredialog:     'bareDialog',
+                    bare:           'bareDialog',
+                    xhrdialog:      'xhrDialog',
+                    xhr:            'xhrDialog',
+                    newwindow:      'newWindow',
+                    "_blank":       'newWindow',
+                    thiswindow:     'navigateTo',
+                    navigateto:     'navigateTo'
+                }[(''+spec.action).toLowerCase()];
+
+                if( spec.action == 'newWindow' )
+                    window.open( url, '_blank' );
+                else if( spec.action == 'navigateTo' )
+                    window.location = url;
+                else if( spec.action in { iframeDialog:1, contentDialog:1, xhrDialog:1, bareDialog: 1} )
+                    track._openDialog( spec, evt, ctx );
+            }
+            else if( typeof spec.action == 'function' ) {
+                spec.action.call( ctx, evt );
+            }
+            else {
+                return;
+            }
+        };
+
+        // if there is a label, set it on the handler so that it's
+        // accessible for tooltips or whatever.
+        if( inputSpec.label )
+            handler.label = inputSpec.label;
+
+        return handler;
+    },
+
+    /**
+     * @returns {Object} DOM element containing a rendering of the
+     *                   detailed metadata about this track
+     */
+    _trackDetailsContent: function( additional ) {
+        var details = domConstruct.create('div', { className: 'detail' });
+        var fmt = lang.hitch(this, 'renderDetailField', details );
+        fmt( 'Name', this.key || this.name );
+        var metadata = lang.clone( this.getMetadata() );
+        lang.mixin( metadata, additional );
+        delete metadata.key;
+        delete metadata.label;
+        if( typeof metadata.conf == 'object' )
+            delete metadata.conf;
+
+        var md_keys = [];
+        for( var k in metadata )
+            md_keys.push(k);
+        // TODO: maybe do some intelligent sorting of the keys here?
+        array.forEach( md_keys, function(key) {
+                          fmt( Util.ucFirst(key), metadata[key] );
+                      });
+
+        return details;
+    },
+
+    getMetadata: function() {
+        return ( this.browser && this.browser.trackMetaDataStore ? this.browser.trackMetaDataStore.getItem(this.name) :
+                                          this.config.metadata ? this.config.metadata :
+                                                                 {} ) || {};
+    },
+
+    setPinned: function( p ) {
+        this.config.pinned = !!p;
+
+        if( this.config.pinned )
+            domClass.add( this.div, 'pinned' );
+        else
+            domClass.remove( this.div, 'pinned' );
+
+        return this.config.pinned;
+    },
+    isPinned: function() {
+        return !! this.config.pinned;
+    },
+
+    /**
+     * @returns {Array} menu options for this track's menu (usually contains save as, etc)
+     */
+    _trackMenuOptions: function() {
+        var that = this;
+        return [
+            { label: 'About this track',
+              title: 'About track: '+(this.key||this.name),
+              iconClass: 'jbrowseIconHelp',
+              action: 'contentDialog',
+              content: dojo.hitch(this,'_trackDetailsContent')
+            },
+            { label: 'Pin to top',
+              type: 'dijit/CheckedMenuItem',
+              title: "make this track always visible at the top of the view",
+              checked: that.isPinned(),
+              //iconClass: 'dijitIconDelete',
+              onClick: function() {
+                  that.browser.publish( '/jbrowse/v1/v/tracks/'+( this.checked ? 'pin' : 'unpin' ), [ that.name ] );
+              }
+            },
+            { label: 'Edit config',
+              title: "edit this track's configuration",
+              iconClass: 'dijitIconConfigure',
+              action: function() {
+                  new TrackConfigEditor( that.config )
+                      .show( function( result ) {
+                          // replace this track's configuration
+                          that.browser.publish( '/jbrowse/v1/v/tracks/replace', [result.conf] );
+                      });
+              }
+            },
+            { label: 'Delete track',
+              title: "delete this track",
+              iconClass: 'dijitIconDelete',
+              action: function() {
+                  new ConfirmDialog({ title: 'Delete track?', message: 'Really delete this track?' })
+                     .show( function( confirmed ) {
+                          if( confirmed )
+                              that.browser.publish( '/jbrowse/v1/v/tracks/delete', [that.config] );
+                      });
+              }
+            }
+        ];
+    },
+
+
+    _processMenuSpec: function( spec, context ) {
+        for( var x in spec ) {
+            if( spec.hasOwnProperty(x) ) {
+                if( typeof spec[x] == 'object' )
+                    spec[x] = this._processMenuSpec( spec[x], context );
+                else
+                    spec[x] = this.template( context.feature, this._evalConf( context, spec[x], x ) );
+            }
+        }
+        return spec;
+    },
+
+    /**
+     * Get the value of a conf variable, evaluating it if it is a
+     * function.  Note: does not template it, that is a separate step.
+     *
+     * @private
+     */
+    _evalConf: function( context, confVal, confKey ) {
+
+        // list of conf vals that should not be run immediately on the
+        // feature data if they are functions
+        var dontRunImmediately = {
+            action: 1,
+            click: 1,
+            content: 1
+        };
+
+        return typeof confVal == 'function' && !dontRunImmediately[confKey]
+            ? confVal.apply( context, context.callbackArgs || [] )
+            : confVal;
+    },
+
+    /**
+     * Like getConf, but get a conf value that explicitly can vary
+     * feature by feature.  Provides a uniform function signature for
+     * user-defined callbacks.
+     */
+    getConfForFeature: function( path, feature ) {
+        return this.getConf( path, [feature, path, null, null, this ] );
+    },
+
+    isFeatureHighlighted: function( feature, name ) {
+        var highlight = this.browser.getHighlight();
+        return highlight
+            && ( highlight.objectName && highlight.objectName == name )
+            && highlight.ref == this.refSeq.name
+            && !( feature.get('start') > highlight.end || feature.get('end') < highlight.start );
+    },
+
+    _openDialog: function( spec, evt, context ) {
+        context = context || {};
+        var type = spec.action;
+        type = type.replace(/Dialog/,'');
+        var featureName = context.feature && (context.feature.get('name')||context.feature.get('id'));
+        var dialogOpts = {
+            "class": "popup-dialog popup-dialog-"+type,
+            title: spec.title || spec.label || ( featureName ? featureName +' details' : "Details"),
+            style: dojo.clone( spec.style || {} )
+        };
+        if( spec.dialog )
+            declare.safeMixin( dialogOpts, spec.dialog );
+
+        var dialog;
+
+        function setContent( dialog, content ) {
+            // content can be a promise or Deferred
+            if( typeof content.then == 'function' )
+                content.then( function( c ) { dialog.set( 'content', c ); } );
+            // or maybe it's just a regular object
+            else
+                dialog.set( 'content', content );
+        }
+
+        // if dialog == xhr, open the link in a dialog
+        // with the html from the URL just shoved in it
+        if( type == 'xhr' || type == 'content' ) {
+            if( type == 'xhr' )
+                dialogOpts.href = spec.url;
+
+            dialog = new InfoDialog( dialogOpts );
+            context.dialog = dialog;
+
+            if( type == 'content' )
+                setContent( dialog, this._evalConf( context, spec.content, null ) );
+
+            Util.removeAttribute( context, 'dialog' );
+        }
+        else if( type == 'bare' ) {
+            dialog = new Dialog( dialogOpts );
+            context.dialog = dialog;
+
+            setContent( dialog, this._evalConf( context, spec.content, null ) );
+
+            Util.removeAttribute( context, 'dialog' );
+        }
+        // open the link in a dialog with an iframe
+        else if( type == 'iframe' ) {
+            var iframeDims = function() {
+                var d = domGeom.position( this.browser.container );
+                return { h: Math.round(d.h * 0.8), w: Math.round( d.w * 0.8 ) };
+            }.call(this);
+
+            dialog = new Dialog( dialogOpts );
+
+            var iframe = dojo.create(
+                'iframe', {
+                    tabindex: "0",
+                    width: iframeDims.w,
+                    height: iframeDims.h,
+                    style: { border: 'none' },
+                    src: spec.url
+                });
+
+            dialog.set( 'content', iframe );
+            dojo.create( 'a', {
+                             href: spec.url,
+                             target: '_blank',
+                             className: 'dialog-new-window',
+                             title: 'open in new window',
+                             onclick: dojo.hitch(dialog,'hide'),
+                             innerHTML: spec.url
+                         }, dialog.titleBar );
+            var updateIframeSize = function() {
+                // hitch a ride on the dialog box's
+                // layout function, which is called on
+                // initial display, and when the window
+                // is resized, to keep the iframe
+                // sized to fit exactly in it.
+                var cDims = domGeom.position( dialog.containerNode );
+                var width  = cDims.w;
+                var height = cDims.h - domGeom.position(dialog.titleBar).h;
+                iframe.width = width;
+                iframe.height = height;
+            };
+            aspect.after( dialog, 'layout', updateIframeSize );
+            aspect.after( dialog, 'show', updateIframeSize );
+        }
+
+        // destroy the dialog after it is hidden
+        aspect.after( dialog, 'hide', function() {
+                          setTimeout(function() {
+                              dialog.destroyRecursive();
+                          }, 500 );
+        });
+
+        // show the dialog
+        dialog.show();
+    },
+
+    /**
+     * Given a string with template callouts, interpolate them with
+     * data from the given object.  For example, "{foo}" is replaced
+     * with whatever is returned by obj.get('foo')
+     */
+    template: function( /** Object */ obj, /** String */ template ) {
+        if( typeof template != 'string' || !obj )
+            return template;
+
+        var valid = true;
+        if ( template ) {
+            return template.replace(
+                    /\{([^}]+)\}/g,
+                    function(match, group) {
+                        var val = obj ? obj.get( group.toLowerCase() ) : undefined;
+                        if (val !== undefined)
+                            return val;
+                        else {
+                            return '';
+                        }
+                    });
+        }
+        return undefined;
+    },
+
+    /**
+     * Makes and installs the dropdown menu showing operations available for this track.
+     * @private
+     */
+    makeTrackMenu: function() {
+        var thisB = this;
+        when( this._trackMenuOptions() )
+            .then( function( options ) {
+                if( options && options.length && thisB.label && thisB.labelMenuButton ) {
+
+                    // remove our old track menu if we have one
+                    if( thisB.trackMenu )
+                        thisB.trackMenu.destroyRecursive();
+
+                    // render and bind our track menu
+                    var menu = thisB._renderContextMenu( options, { menuButton: thisB.labelMenuButton, track: thisB, browser: thisB.browser, refSeq: thisB.refSeq } );
+                    menu.startup();
+                    menu.set('leftClickToOpen', true );
+                    menu.bindDomNode( thisB.labelMenuButton );
+                    menu.set('leftClickToOpen',  false);
+                    menu.bindDomNode( thisB.label );
+                    thisB.trackMenu = menu;
+                    thisB.own( thisB.trackMenu );
+                }
+              });
+    },
+
+
+    // display a rendering-timeout message
+    fillBlockTimeout: function( blockIndex, block ) {
+        domConstruct.empty( block.domNode );
+        domClass.add( block.domNode, 'timed_out' );
+        this.fillMessage( blockIndex, block,
+                           'This region took too long'
+                           + ' to display, possibly because'
+                           + ' it contains too much data.'
+                           + ' Try zooming in to show a smaller region.'
+                         );
+    },
+
+    renderRegionHighlight: function( args, highlight ) {
+        // do nothing if the highlight does not overlap this region
+        if( highlight.start > args.rightBase || highlight.end < args.leftBase )
+            return;
+
+        var block_span = args.rightBase - args.leftBase;
+
+        var left = highlight.start;
+        var right = highlight.end;
+
+        // trim left and right to avoid making a huge element that can cause problems
+        var trimLeft = args.leftBase - left;
+        if( trimLeft > 0 ) {
+            left += trimLeft;
+        }
+        var trimRight = right - args.rightBase;
+        if( trimRight > 0 ) {
+            right -= trimRight;
+        }
+
+        var width = (right-left)*100/block_span;
+        left = (left - args.leftBase)*100/block_span;
+        var el = domConstruct.create('div', {
+                                className: 'global_highlight'
+                                    + (trimLeft <= 0 ? ' left' : '')
+                                    + (trimRight <= 0 ? ' right' : '' ),
+                                style: {
+                                    left: left+'%',
+                                    width: width+'%',
+                                    height: '100%'
+                                }
+                            }, args.block.domNode );
+    }
+
+});
+});
+
+/*
+
+Copyright (c) 2007-2009 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'JBrowse/View/InfoDialog':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'dijit/focus',
+           'JBrowse/View/Dialog/WithActionBar',
+           'dojo/on',
+           'dijit/form/Button'
+       ],
+       function( declare, array, focus, ActionBarDialog, on, dijitButton ) {
+
+return declare( ActionBarDialog,
+
+    /**
+     * JBrowse ActionDialog subclass with a few customizations that make it
+     * more pleasant for use as an information popup.
+     * @lends JBrowse.View.InfoDialog
+     */
+{
+    refocus: false,
+    autofocus: false,
+
+    _fillActionBar: function( actionBar ) {
+            new dijitButton({
+                className: 'OK',
+                label: 'OK',
+                onClick: dojo.hitch(this,'hide')
+            })
+            .placeAt( actionBar);
+    },
+
+    show: function() {
+
+        this.inherited( arguments );
+
+        var thisB = this;
+
+        // holds the handles for the extra events we are registering
+        // so we can clean them up in the hide() method
+        this._extraEvents = [];
+
+        // make it so that clicking outside the dialog (on the underlay) will close it
+        var underlay = ((dijit||{})._underlay||{}).domNode;
+        if( underlay ) {
+            this._extraEvents.push(
+                on( underlay, 'click', dojo.hitch( this, 'hideIfVisible' ))
+            );
+        }
+
+        // also make ESCAPE or ENTER close the dialog box
+        this._extraEvents.push(
+            on( document.body, 'keydown', function( evt ) {
+                    if( [ dojo.keys.ESCAPE, dojo.keys.ENTER ].indexOf( evt.keyCode ) >= 0 )
+                        thisB.hideIfVisible();
+                })
+        );
+
+        focus.focus( this.closeButtonNode );
+    },
+
+    hideIfVisible: function() {
+        if( this.get('open') )
+            this.hide();
+    },
+
+    hide: function() {
+        this.inherited(arguments);
+
+        array.forEach( this._extraEvents, function( e ) {
+                          e.remove();
+                      });
+    }
+
+});
+});
+},
+'JBrowse/View/Dialog/WithActionBar':function(){
+/**
+ * A dialog with an action bar at the bottom for buttons.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/dom-geometry',
+           'dijit/Dialog'
+       ],
+       function( declare, domGeom, dijitDialog ) {
+
+return declare( dijitDialog,
+{
+    constructor: function() {
+        dojo.connect( this, 'onLoad', this, '_addActionBar' );
+    },
+
+    _addActionBar: function() {
+        var that = this;
+        if( this.containerNode && ! this.actionBar ) {
+            this.actionBar = dojo.create( 'div', { className: 'infoDialogActionBar dijitDialogPaneActionBar' });
+
+            this._fillActionBar( this.actionBar );
+            this.containerNode.appendChild( this.actionBar );
+        }
+    },
+
+    _fillActionBar: function( actionBar ) {
+    },
+
+    show: function( callback ) {
+        this._addActionBar();
+        this.inherited( arguments );
+        var titleDims = domGeom.position( this.titleBar );
+        this.domNode.style.width = titleDims.w + 'px';
+    }
+
+});
+});
+},
+'JBrowse/Errors':function(){
+/**
+ * All of the different JBrowse Error objects.  This amounts to a
+ * taxonomy of the different errors that JBrowse code can reason
+ * about.
+ */
+define( [
+            'dojo/_base/declare'
+        ],
+        function(
+            declare
+        ) {
+
+var Base = declare( Error, {
+    constructor: function( args ) {
+        if( typeof args == 'object' ) {
+            if( args instanceof Error ) {
+                this._originalError = args;
+                this.message = ''+args;
+                this.stack = args.stack;
+            }
+            else
+                dojo.mixin( this, args );
+        } else if( typeof args == 'string' )
+            this.message = args;
+
+        if( ! this.message )
+            this.message = this._defaultMessage;
+    }
+});
+
+var Errors = {};
+
+Errors.Fatal = declare( Base, {
+    _defaultMessage: 'Unknown fatal error.'
+});
+
+/**
+ * Took too long to handle data.
+ */
+Errors.TimeOut = declare( Base, {
+    _defaultMessage: 'Data took too long to fetch.'
+});
+
+/**
+ * Too much data to handle.
+ */
+Errors.DataOverflow = declare( Base, {
+    _defaultMessage: 'Too much data to show.'
+});
+
+
+return Errors;
+});
+},
+'JBrowse/View/TrackConfigEditor':function(){
+/**
+ * Pops up a dialog to edit the configuration of a single track.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/aspect',
+           'dojo/json',
+           'dojo/on',
+           'dojo/dom-construct',
+           'dijit/Dialog',
+           'dijit/form/Button'
+       ],
+       function(
+           declare,
+           aspect,
+           JSON,
+           on,
+           dom,
+           Dialog,
+           Button
+       ) {
+
+return declare( null, {
+
+    constructor: function( trackConfig ) {
+        this.trackConfig = trackConfig;
+    },
+
+     _makeActionBar: function( editCallback, cancelCallback ) {
+        var actionBar = dom.create(
+            'div', {
+                className: 'dijitDialogPaneActionBar'
+            });
+
+        new Button({ iconClass: 'dijitIconDelete', label: 'Cancel',
+                     onClick: dojo.hitch( this, function() {
+                                              cancelCallback && cancelCallback();
+                                              this.dialog.hide();
+                                          })
+                   })
+            .placeAt( actionBar );
+        this.applyButton = new Button({
+            iconClass: 'dijitIconEdit',
+            label: 'Apply',
+            onClick: dojo.hitch( this, function() {
+                if( this.newConfig ) {
+                    editCallback && editCallback({
+                        conf: this.newConfig
+                    });
+                } else {
+                    cancelCallback && cancelCallback();
+                }
+                this.dialog.hide();
+            })
+        });
+        this.applyButton.placeAt( actionBar );
+
+        return { domNode: actionBar };
+    },
+
+    show: function( editCallback, cancelCallback ) {
+        var dialog = this.dialog = new Dialog(
+            { title: "Edit track configuration", className: 'trackConfigEditor' }
+            );
+
+        var content = [
+            this._makeEditControls().domNode,
+            this._makeActionBar( editCallback, cancelCallback ).domNode
+        ];
+        dialog.set( 'content', content );
+        dialog.show();
+
+        aspect.after( dialog, 'hide', dojo.hitch( this, function() {
+                              setTimeout( function() {
+                                  dialog.destroyRecursive();
+                              }, 500 );
+                      }));
+    },
+
+    _makeEditControls: function() {
+        var realChange = dojo.hitch( this, function() {
+            this.newConfig = this._parseNewConfig( textArea.value );
+        });
+
+        var container = dom.create( 'div', { className: 'editControls'} );
+
+
+        var confString = this._stringifyConfig( this.trackConfig );
+        var textArea = dom.create(
+            'textarea',{
+                rows: Math.min( (confString||'').match(/\n/g).length+4, 20 ),
+                cols: 70,
+                value: confString,
+                spellcheck: false,
+                onchange: realChange
+            }, container );
+        // watch the input text for changes.  just do it every 700ms
+        // because there are many ways that text can get changed (like
+        // pasting), not all of which fire the same events.  not using
+        // the onchange event, because that doesn't fire until the
+        // textarea loses focus.
+        var previousText = '';
+        var checkFrequency = 700;
+        var that = this;
+        var checkForChange = function() {
+            if( that.dialog.get('open') ) {
+                if( textArea.value != previousText ) {
+                    realChange();
+                    previousText = textArea.value;
+                }
+                window.setTimeout( checkForChange, checkFrequency );
+            }
+        };
+        window.setTimeout( checkForChange, checkFrequency );
+
+
+
+        var errorArea = dom.create( 'div', { className: 'errors' }, container );
+        this.errorReportArea = errorArea;
+
+
+        return { domNode: container };
+    },
+
+    _stringifyConfig: function( config ) {
+
+        // don't let people edit the store configuration, just the
+        // track configuration.  make a shallow copy and delete the
+        // store conf.  will add back in later.
+        var c = dojo.mixin( {}, config ); // shallow copy
+        delete c.store;
+
+        // put a style in there if there isn't already one, for convenience
+        if( ! c.style )    c.style = {};
+        if( ! c.metadata ) c.metadata = {};
+
+        return JSON.stringify( c, undefined, 2 );
+    },
+
+    _reportError: function( error ) {
+        this.errorReportArea.innerHTML = '<div class="error">'+error+'</div>';
+        this.applyButton.set('disabled',true);
+    },
+    _clearErrors: function() {
+        dom.empty( this.errorReportArea );
+        this.applyButton.set('disabled',false);
+    },
+
+    _parseNewConfig: function( conf ) {
+        var newconf;
+        try {
+            newconf = JSON.parse( conf, true );
+            this._clearErrors();
+        } catch(e) {
+            this._reportError( e );
+        }
+        if( newconf )
+            newconf.store = this.trackConfig.store;
+        return newconf;
+    }
+
+});
+});
+},
+'JBrowse/View/ConfirmDialog':function(){
+define([
+           'dojo/_base/declare',
+           'dijit/focus',
+           'JBrowse/View/Dialog/WithActionBar',
+           'dojo/on',
+           'dijit/form/Button'
+       ],
+       function( declare, focus, ActionBarDialog, on, dijitButton ) {
+
+return declare( ActionBarDialog,
+
+    /**
+     * Dijit Dialog subclass that pops up a yes/no confirmation
+     * more pleasant for use as an information popup.
+     * @lends JBrowse.View.ConfirmDialog
+     */
+{
+    autofocus: false,
+
+    constructor: function( args ) {
+        this.message = args.message || 'Do you really want to do this?';
+        this.confirmLabel = args.confirmLabel || 'Yes';
+        this.denyLabel    = args.denyLabel    || 'No';
+    },
+
+    _fillActionBar: function( actionBar ) {
+        var thisB = this;
+        new dijitButton({ className: 'yes',
+                          label: this.confirmLabel,
+                          onClick: function() {
+                              thisB.callback( true );
+                              thisB.hide();
+                          }
+                        })
+            .placeAt( actionBar);
+        new dijitButton({ className: 'no',
+                          label: this.denyLabel,
+                          onClick: function() {
+                              thisB.callback( false );
+                              thisB.hide();
+                          }
+                        })
+            .placeAt( actionBar);
+    },
+
+    show: function( callback ) {
+        this.callback = callback || function() {};
+
+        this.set('content', this.message );
+
+        this.inherited( arguments );
+
+        focus.focus( this.closeButtonNode );
+    }
+
+});
+});
+},
+'JBrowse/View/Track/BlockBased/Block':function(){
+define([
+           'dojo/_base/declare',
+           'dijit/Destroyable',
+           'JBrowse/Util'
+       ],
+       function(
+           declare,
+           Destroyable,
+           Util
+       ) {
+return declare( Destroyable, {
+
+    constructor: function( args ) {
+        dojo.mixin( this, args );
+        var nodeArgs = this.node || {};
+        delete this.node;
+        this.domNode = dojo.create( 'div', nodeArgs );
+        this.domNode.block = this;
+    },
+
+    containsBp: function( bp ) {
+        return this.startBase <= bp && this.endBase >= bp;
+    },
+
+    bpToX: function( coord ) {
+        //console.log(coord+" "+this.startBase+" "+this.scale+" "+(coord-this.startBase)*this.scale);
+        return (coord-this.startBase)*this.scale;
+    },
+
+    toString: function() {
+        return this.startBase+'..'+this.endBase;
+    },
+
+    destroy: function() {
+        if( this.domNode )
+            Util.removeAttribute( this.domNode, 'block' );
+        this.inherited( arguments );
+    }
+});
+});
+
+},
+'JBrowse/View/DetailsMixin':function(){
+/**
+ * Mixin that provides generic functions for displaying nested data.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/_base/array',
+           'dojo/query',
+           'dojo/dom-construct',
+           'dojo/dom-class',
+           'dojo/store/Memory',
+           'dgrid/OnDemandGrid',
+           'dgrid/extensions/DijitRegistry',
+           'JBrowse/Util'
+       ],
+       function(
+           declare,
+           lang,
+           array,
+           query,
+           domConstruct,
+           domClass,
+           MemoryStore,
+           DGrid,
+           DGridDijitRegistry,
+           Util
+       ) {
+
+// make a DGrid that registers itself as a dijit widget
+var Grid = declare([DGrid,DGridDijitRegistry]);
+
+return declare( null, {
+
+    renderDetailField: function( parentElement, title, val, f, class_ ) {
+        if( val === null || val === undefined )
+            return '';
+
+        // if this object has a 'fmtDetailFooField' function, delegate to that
+        var fieldSpecificFormatter;
+        if(( fieldSpecificFormatter = this['fmtDetail'+Util.ucFirst(title)+'Field'] ))
+            return fieldSpecificFormatter.apply( this, arguments );
+
+        // otherwise, use default formatting
+
+        class_ = class_ || title.replace(/\W/g,'_').toLowerCase();
+        
+        var formatted_title=title;
+        // if this object has a config value 'fmtDetailField_Foo' function, apply it to field title
+        if(( fieldSpecificFormatter = this.config['fmtDetailField_'+title] ) && f) {
+            formatted_title= fieldSpecificFormatter(title,f);
+            if(!formatted_title) return ''; // if the callback returns null, remove field from dialog
+        }
+        else if(( fieldSpecificFormatter = this.config['fmtMetaField_'+title] ) && !f) {
+            formatted_title= fieldSpecificFormatter(title);
+            if(!formatted_title) return ''; // if the callback returns null, remove field from dialog
+        }
+
+        // special case for values that include metadata about their
+        // meaning, which are formed like { values: [], meta:
+        // {description: }.  break it out, putting the meta description in a `title`
+        // attr on the field name so that it shows on mouseover, and
+        // using the values as the new field value.
+        var fieldMeta;
+        if( typeof val == 'object' && !lang.isArray(val) && ('values' in val) ) {
+            fieldMeta = (val.meta||{}).description;
+            // join the description if it is an array
+            if( lang.isArray( fieldMeta ) )
+                fieldMeta = fieldMeta.join(', ');
+
+            val = val.values;
+        }
+        if(( fieldSpecificFormatter = this.config['fmtDetailDescription_'+title] ) && f) {
+            fieldMeta = fieldSpecificFormatter(fieldMeta);
+        }
+        else if(( fieldSpecificFormatter = this.config['fmtMetaDescription_'+title] ) && !f) {
+            fieldMeta = fieldSpecificFormatter(fieldMeta);
+        }
+        var titleAttr = fieldMeta ? ' title="'+fieldMeta+'"' : '';
+        var fieldContainer = domConstruct.create(
+            'div',
+            { className: 'field_container',
+              innerHTML: '<h2 class="field '+class_+'"'+titleAttr+'>'+formatted_title+'</h2>'
+            }, parentElement );
+        var valueContainer = domConstruct.create(
+            'div',
+            { className: 'value_container '
+                         + class_
+            }, fieldContainer );
+
+        var count = this.renderDetailValue( valueContainer, title, val, f, class_);
+        if( typeof count == 'number' && count > 4 ) {
+            query( 'h2', fieldContainer )[0].innerHTML = formatted_title + ' ('+count+')';
+        }
+
+        return fieldContainer;
+    },
+
+    renderDetailValue: function( parent, title, val, f, class_ ) {
+        var thisB = this;
+
+        if( !lang.isArray(val) && val.values )
+            val = val.values;
+
+        // if this object has a 'fmtDetailFooValue' function, delegate to that
+        var fieldSpecificFormatter;
+        if(( fieldSpecificFormatter = this['fmtDetail'+Util.ucFirst(title)+'Value'] ))
+            return fieldSpecificFormatter.apply( this, arguments );
+
+        // otherwise, use default formatting
+
+        // if this object has a config value 'fmtDetailValue_Foo' function, apply it to val
+        if(( fieldSpecificFormatter = this.config['fmtDetailValue_'+title] ) && f) {
+            val= fieldSpecificFormatter( val,f );
+            if(!val) val='';
+            if(val.length==1) val=val[0]; // avoid recursion when an array of length 1 is returned
+        }
+        else if(( fieldSpecificFormatter = this.config['fmtMetaValue_'+title] ) && !f) {
+            val=fieldSpecificFormatter( val );
+            if(val.length==1) val=val[0];
+        }
+
+        var valType = typeof val;
+        if( typeof val.toHTML == 'function' )
+            val = val.toHTML();
+        if( valType == 'boolean' )
+            val = val ? 'yes' : 'no';
+        else if( valType == 'undefined' || val === null )
+            return 0;
+        else if( lang.isArray( val ) ) {
+            var vals = array.map( val, function(v) {
+                       return this.renderDetailValue( parent, title, v, f, class_ );
+                   }, this );
+            if( vals.length > 1 )
+                domClass.add( parent, 'multi_value' );
+            if( vals.length > 10 )
+                domClass.add( parent, 'big' );
+            return vals.length;
+        } else if( valType == 'object' ) {
+            var keys = Util.dojof.keys( val ).sort();
+            var count = keys.length;
+            if( count > 5 ) {
+                this.renderDetailValueGrid(
+                    parent,
+                    title,
+                    f,
+                    // iterator
+                    function() {
+                        if( ! keys.length )
+                            return null;
+                        var k = keys.shift();
+                        var value = val[k];
+
+                        var item = { id: k };
+
+                        if( typeof value == 'object' ) {
+                            for( var field in value ) {
+                                item[field] = thisB._valToString( value[field] );
+                            }
+                        }
+                        else {
+                            item.value = value;
+                        }
+
+                        return item;
+                    },
+                    { descriptions: (function() {
+                                         if( ! keys.length )
+                                             return {};
+
+                                         var subValue = val[keys[0]];
+                                         var descriptions = {};
+                                         for( var k in subValue ) {
+                                             descriptions[k] =
+                                                 subValue[k].meta && subValue[k].meta.description
+                                                 || null;
+                                         }
+                                         return descriptions;
+                                     })()
+                    }
+                );
+                return count;
+            }
+            else {
+                array.forEach( keys, function( k ) {
+                                   return this.renderDetailField( parent, k, val[k], f, class_ );
+                               }, this );
+                return keys.length;
+            }
+        }
+
+        domConstruct.create('div', { className: 'value '+class_, innerHTML: val }, parent );
+        return 1;
+    },
+
+    renderDetailValueGrid: function( parent, title, f, iterator, attrs ) {
+        var thisB = this;
+        var rows = [];
+        var item;
+        var descriptions  = attrs.descriptions || {};
+        var cellRenderers = attrs.renderCell || {};
+        while(( item = iterator() ))
+            rows.push( item );
+
+        if( ! rows.length )
+            return document.createElement('span');
+
+        function defaultRenderCell( field, value, node, options ) {
+            thisB.renderDetailValue( node, '', value, f, '' );
+        }
+
+        var columns = [];
+        for( var field in rows[0] ) {
+            (function(field) {
+                 var column = {
+                     label: { id: 'Name'}[field] || Util.ucFirst( field ),
+                     field: field,
+                     renderCell: cellRenderers[field] || defaultRenderCell,
+                     renderHeaderCell: function( contentNode ) {
+                         if( descriptions[field] )
+                             contentNode.title = descriptions[field];
+                         contentNode.appendChild( document.createTextNode( column.label || column.field));
+                     }
+                 };
+                 columns.push( column );
+             })(field);
+        }
+
+        // create the grid
+        parent.style.overflow = 'hidden';
+        parent.style.width = '90%';
+        var grid = new Grid({
+            columns: columns,
+            store: new MemoryStore({ data: rows })
+        }, parent );
+
+        return parent;
+    },
+
+    _valToString: function( val ) {
+        if( lang.isArray( val ) ) {
+            return array.map( val, lang.hitch( this,'_valToString') ).join(' ');
+        }
+        else if( typeof val == 'object' ) {
+            if( 'values' in val )
+                return this._valToString( val.values );
+            else
+                return JSON.stringify( val );
+        }
+        return ''+val;
+    }
+
+});
+});
+
+},
+'JBrowse/View/Track/GridLines':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+           'JBrowse/View/Track/BlockBased'
+       ],
+       function( declare, dom, BlockBased ) {
+return dojo.declare( BlockBased,
+ /**
+  * @lends JBrowse.View.Track.GridLines.prototype
+  */
+{
+
+    /**
+     * This track draws vertical gridlines, which are divs with height
+     * 100%, absolutely positioned at the very top of all the tracks.
+     * @constructs
+     * @extends JBrowse.View.Track.BlockBased
+     */
+    constructor: function( args ) {
+        this.loaded = true;
+        this.name = 'gridlines';
+    },
+
+    // this track has no track label or track menu, stub them out
+    makeTrackLabel: function() {},
+    makeTrackMenu: function() {},
+
+    fillBlock: function( args ) {
+        this.renderGridlines( args.block, args.leftBase, args.rightBase );
+
+        var highlight = this.browser.getHighlight();
+        if( highlight && highlight.ref == this.refSeq.name )
+            this.renderRegionHighlight( args, highlight );
+
+        args.finishCallback();
+        this.heightUpdate(100, args.blockIndex);
+    },
+
+    renderGridlines: function(block,leftBase,rightBase) {
+
+        var base_span = rightBase-leftBase;
+        var minor_count =
+            !( base_span % 20 ) ? 20 :
+            !( base_span % 10 ) ? 10 :
+            !( base_span % 5  ) ? 5  :
+            !( base_span % 2  ) ? 2  :
+                                  5; // can happen at weird zoom levels (i.e. 13)
+        var major_count = base_span == 20 ? 2 : base_span > 0 ? 1 : 0;
+
+        var new_gridline = function( glclass, position ) {
+            var gridline = document.createElement("div");
+            gridline.style.cssText = "left: " + position + "%; width: 0px";
+            gridline.className = "gridline "+glclass;
+            return gridline;
+        };
+
+        for( var i=0; i<minor_count; i++ ) {
+            var pos = 100/minor_count*i;
+            var cls = pos == 0 || (minor_count == 20 && i == 10)
+                ? "gridline_major"
+                : "gridline_minor";
+
+            block.domNode.appendChild( new_gridline( cls, pos) );
+        }
+
+    }
+});
+});
+
+},
+'JBrowse/BehaviorManager':function(){
+define([],
+       function() {
+ /**
+ * Stores, applies, and removes a named set of behaviors.  A behavior
+ * is a set of event handlers that need to be connected and then
+ * disconnected repeatedly as a group.
+ * @constructor
+ * @class
+ * @param {Object} args.behaviors object containing the behaviors to be managed, as:
+ * <pre>
+ *     {
+ *        behavior_name: {
+ *          apply_on_init: true if this behavior should be applied when the manager is initialized,
+ *          apply: function( manager_object, handles_array ) {
+ *            // required function that returns an array of dojo event handles.  for example:
+ *            return [
+ *                dojo.connect(document.body, "mouseup",   this, 'rubberExecute'  ),
+ *                dojo.connect(document.body, "mousemove", this, 'rubberMove'     )
+ *            ];
+ *          },
+ *          remove: function( manager_object, handles_array ) {
+ *              // optional function that removes the behavior.  by
+ *              // default dojo.disconnect() is just called on each
+ *              // of the event handles that were returned by the
+ *              // apply function
+ *          }
+ *        },
+ *        ...
+ *     }
+ * </pre>
+ * @param {Object} [args.context=BehaviorManager itself] context
+ *    (i.e. <code>this</code>) in which each of the behavior
+ *    <code>apply()</code> and <code>remove()</code> functions will be
+ *    called.
+ * @lends JBrowse.BehaviorManager
+ */
+function BehaviorManager( args ) {
+    this.context   = args.context;
+    this.behaviors = args.behaviors;
+};
+
+/**
+ * Apply the behaviors that have <code>apply_on_init</code> true.
+ */
+BehaviorManager.prototype.initialize = function() {
+    this.removeAll();
+    for( var bname in this.behaviors ) {
+        var b = this.behaviors[bname];
+        if( b.apply_on_init ) {
+            this.applyBehaviors( bname );
+        }
+    }
+};
+
+/**
+ * Apply each of the behaviors named as arguments to this function.
+ * @param {String} [...] Zero or more string behavior names to apply.
+ */
+BehaviorManager.prototype.applyBehaviors = function() {
+    dojo.forEach( arguments, function(name) {
+        var b = this._get(name);
+        if( !b.applied ) {
+            b.handles = b.handles || [];
+            b.handles = b.apply.call( this.context || this, this, b.handles );
+            b.applied = true;
+        }
+    }, this);
+};
+
+/**
+ * Look up a behavior by name, throw an exception if it's not there.
+ * @private
+ */
+BehaviorManager.prototype._get = function( name ) {
+    var b = this.behaviors[name];
+    if( !b )
+        throw "no behavior registed with name '"+"'name";
+    return b;
+};
+
+/**
+ * Given two behavior names, remove the first one and apply the second
+ * one.  For convenience.
+ */
+BehaviorManager.prototype.swapBehaviors = function( off, on ) {
+    this.removeBehaviors(off);
+    this.applyBehaviors(on);
+};
+
+/**
+ * Remove each of the behaviors named as arguments to this function.
+ * @param {String} [...] Zero or more string behavior names to remove.
+ */
+BehaviorManager.prototype.removeBehaviors = function( ) {
+    dojo.forEach( arguments, function(name) {
+        var b = this._get(name);
+        if( b.applied ) {
+            var remove = b.remove || function( m, h ) {
+                dojo.forEach( h, dojo.disconnect, dojo );
+            };
+            remove.call( this.context || this, this, b.handles );
+            b.applied = false;
+        }
+    }, this);
+};
+
+/**
+ * Remove all behaviors that are currently applied.
+ */
+BehaviorManager.prototype.removeAll = function( ) {
+    for( var bname in this.behaviors ) {
+        this.removeBehaviors( bname );
+    }
+};
+
+return BehaviorManager;
+
+});
+},
+'JBrowse/View/Animation/Zoomer':function(){
+define(['JBrowse/View/Animation'],
+      function(Animation) {
+
+/**
+ * @class
+ */
+function Zoomer(scale, toScroll, callback, time, zoomLoc) {
+    Animation.call(this, toScroll, callback, time);
+    this.toZoom = toScroll.zoomContainer;
+    var cWidth = this.toZoom.clientWidth;
+
+    this.initialWidth = cWidth;
+
+    // the container width when zoomFraction is 0
+    this.width0 = cWidth * Math.min(1, scale);
+    // the container width when zoomFraction is 1
+    var width1 = cWidth * Math.max(1, scale);
+    this.distance = width1 - this.width0;
+    this.zoomingIn = scale > 1;
+    //this.zoomLoc = zoomLoc;
+    this.center =
+        (toScroll.getX() + (toScroll.elem.clientWidth * zoomLoc))
+        / toScroll.scrollContainer.clientWidth;
+
+    // initialX and initialLeft can differ when we're scrolling
+    // using scrollTop and scrollLeft
+    this.initialX = this.subject.getX();
+    this.initialLeft = parseInt(this.toZoom.style.left);
+};
+
+Zoomer.prototype = new Animation();
+
+Zoomer.prototype.step = function(pos) {
+    var zoomFraction = this.zoomingIn ? pos : 1 - pos;
+    var newWidth =
+        ((zoomFraction * zoomFraction) * this.distance) + this.width0;
+    var newLeft = (this.center * this.initialWidth) - (this.center * newWidth);
+    this.toZoom.style.width = newWidth + "px";
+    this.toZoom.style.left = (this.initialLeft + newLeft) + "px";
+    var forceRedraw = this.toZoom.offsetTop;
+
+    if( this.subject.updateStaticElements )
+        this.subject.updateStaticElements({ x: this.initialX - newLeft });
+};
+
+return Zoomer;
+});
+},
+'JBrowse/View/Animation':function(){
+define([],
+      function() {
+/**
+ * @class
+ */
+function Animation(subject, callback, time) {
+    //subject: what's being animated
+    //callback: function to call at the end of the animation
+    //time: time for the animation to run
+    if (subject === undefined) return;
+    //don't want a zoom and a slide going on at the same time
+    if ("animation" in subject) subject.animation.stop();
+    this.index = 0;
+    this.time = time;
+    this.subject = subject;
+    this.callback = callback;
+
+    var myAnim = this;
+    this.animFunction = function() { myAnim.animate(); };
+    // number of milliseconds between frames (e.g., 33ms at 30fps)
+    this.animID = setTimeout(this.animFunction, 33);
+
+    this.frames = 0;
+
+    subject.animation = this;
+}
+
+Animation.prototype.animate = function () {
+    if (this.finished) {
+	this.stop();
+	return;
+    }
+
+    // number of milliseconds between frames (e.g., 33ms at 30fps)
+    var nextTimeout = 33;
+    var elapsed = 0;
+    if (!("startTime" in this)) {
+        this.startTime = (new Date()).getTime();
+    } else {
+        elapsed = (new Date()).getTime() - this.startTime;
+        //set the next timeout to be the average of the
+        //frame times we've achieved so far.
+        //The goal is to avoid overloading the browser
+        //and getting a jerky animation.
+        nextTimeout = Math.max(33, elapsed / this.frames);
+    }
+
+    if (elapsed < this.time) {
+        this.step(elapsed / this.time);
+        this.frames++;
+    } else {
+	this.step(1);
+        this.finished = true;
+	//console.log("final timeout: " + nextTimeout);
+    }
+    this.animID = setTimeout(this.animFunction, nextTimeout);
+};
+
+Animation.prototype.stop = function() {
+    clearTimeout(this.animID);
+    delete this.subject.animation;
+    this.callback.call(this.subject,this);
+};
+return Animation;
+});
+},
+'JBrowse/View/Animation/Slider':function(){
+define(['JBrowse/View/Animation'],
+      function(Animation) {
+
+/**
+ * @class
+ */
+function Slider(view, callback, time, distance) {
+    Animation.call(this, view, callback, time);
+    this.slideStart = view.getX();
+    this.slideDistance = distance;
+}
+
+Slider.prototype = new Animation();
+
+Slider.prototype.step = function(pos) {
+    var newX = (this.slideStart -
+                (this.slideDistance *
+                 //cos will go from 1 to -1, we want to go from 0 to 1
+                 ((-0.5 * Math.cos(pos * Math.PI)) + 0.5))) | 0;
+
+    newX = Math.max(Math.min(this.subject.maxLeft - this.subject.offset, newX),
+                         this.subject.minLeft - this.subject.offset);
+    this.subject.setX(newX);
+};
+
+return Slider;
+});
+},
+'JBrowse/TouchScreenSupport':function(){
+define([], function() {
+
+var startX;
+var initialPane;
+
+/**
+ * Utility functions for touch-screen device (smartphone and tablet) support.
+ *
+ * @lends JBrowse.TouchScreenSupport
+ */
+var Touch;
+Touch = {
+
+    CompareObjPos: function(nodes, touch) {
+        var samePos = 0,
+        j= 0,
+        top = touch.pageY;
+
+        for (var i=0; i < nodes.length; i++) {
+            samePos = j++;
+            var position = findPos(nodes[i]);
+            if(position.top > top) {
+                break;
+            }
+        }
+        return samePos;
+    },
+
+    checkAvatarPosition: function(first) {
+        var leftPane = document.getElementById("tracksAvail"),
+            rightPane = document.getElementById("container");
+
+        if (first.pageX < (leftPane.offsetLeft + leftPane.offsetWidth))  {
+            return leftPane;
+        }
+        else {
+            return rightPane;
+        }
+    },
+
+    removeTouchEvents: function() {
+
+        startX = null;
+
+    },
+
+
+    touchSimulated: function(event) {
+        if(event.touches.length <= 1) {
+
+            var touches = event.changedTouches,
+            first = touches[0],
+            type1 = "",
+            type2 = "mouseover",
+            objAvatar = document.getElementsByClassName("dojoDndAvatar"),
+            obj = {},
+            pane = Touch.checkAvatarPosition(first),
+            nodes = pane.getElementsByClassName("dojoDndItem"),
+            element = {},
+            simulatedEvent_1 = document.createEvent("MouseEvent"),
+            simulatedEvent_2 = document.createEvent("MouseEvent");
+
+
+            switch (event.type) {
+
+            case "touchstart":
+                startX = first.pageX;
+                type1 = "mousedown";
+                break;
+            case "touchmove":
+                event.preventDefault();
+                type1 = "mousemove";
+                break;
+            default:
+                return;
+            }
+
+            simulatedEvent_1.initMouseEvent(type1, true, true, window, 1, first.pageX, first.pageY, first.clientX,              first.clientY,
+                                            false, false, false, false, 0, null);
+
+
+            simulatedEvent_2.initMouseEvent(type2, true, true, window, 1, first.pageX, first.pageY, first.clientX, first.clientY,
+                                            false, false, false, false, 0, null);
+
+            switch (event.type) {
+            case "touchstart":
+                first.target.dispatchEvent(simulatedEvent_1);
+                first.target.dispatchEvent(simulatedEvent_2);
+                initialPane = pane;
+                break;
+            case "touchmove":
+                if(objAvatar.length > 0) {
+                    if (nodes.length > 0) {
+                        element = Touch.CompareObjPos(nodes,first);
+                        obj = nodes[element];
+                    }
+                    try {
+                        if (initialPane != pane) {
+                            var simulatedEvent_3 = document.createEvent("MouseEvent");
+                            var type3 = "mouseout";
+                            simulatedEvent_3.initMouseEvent(type3, true, true, window, 1,
+                                                            first.pageX, first.pageY, first.clientX, first.clientY,
+                                                            false, false, false, false, 0, null);
+                            initialPane.dispatchEvent(simulatedEvent_3);
+                        }
+                        obj.dispatchEvent(simulatedEvent_2);
+                        obj.dispatchEvent(simulatedEvent_1);
+                    }
+                    catch(err)
+                    {
+                        //No Elements in the pane
+                        pane.dispatchEvent(simulatedEvent_2);
+                        pane.dispatchEvent(simulatedEvent_1);
+                    }
+                }
+                break;
+            default:
+                return;
+            }
+        }
+        else {
+            Touch.removeTouchEvents();
+        }
+    },
+
+    touchEnd: function(event) {
+        var touches = event.changedTouches,
+        first = touches[0],
+        type1 = "mouseup",
+        type2 = "mouseover",
+        objAvatar = document.getElementsByClassName("dojoDndAvatar"),
+        obj = {},
+        pane = Touch.checkAvatarPosition(first),
+        nodes = pane.getElementsByClassName("dojoDndItem"),
+        element = {},
+        simulatedEvent_1 = document.createEvent("MouseEvent"),
+        simulatedEvent_2 = document.createEvent("MouseEvent");
+
+        if (startX !==  first.pageX) {
+            //slide ocurrs
+            event.preventDefault();
+        }
+
+        var test = Touch.findPos(first.target);
+
+        simulatedEvent_1.initMouseEvent(type1, true, true, window, 1, first.pageX, first.pageY, first.clientX,              first.clientY,
+                                        false, false, false, false, 0, null);
+
+        simulatedEvent_2.initMouseEvent(type2, true, true, window, 1, first.pageX, first.pageY, first.clientX, first.clientY,
+                                        false, false, false, false, 0, null);
+
+        if(objAvatar.length > 0) {
+            if (nodes.length > 0) {
+                element = CompareObjPos(nodes,first);
+                obj = nodes[element];
+            }
+            try {
+                obj.dispatchEvent(simulatedEvent_2);
+                obj.dispatchEvent(simulatedEvent_1);
+            }
+            catch(error)
+            {
+                first.target.dispatchEvent(simulatedEvent_2);
+                pane.dispatchEvent(simulatedEvent_2);
+            }
+        }
+        else {
+            first.target.dispatchEvent(simulatedEvent_1);
+            first.target.dispatchEvent(simulatedEvent_2);
+        }
+
+        Touch.removeTouchEvents();
+    },
+
+    touchHandle: function(event) {
+        dojo.query(".dojoDndItemAnchor").connect("touchstart", Touch.touchSimulated);
+        dojo.query(".dojoDndItemAnchor").connect("touchmove", Touch.touchSimulated);
+        dojo.query(".dojoDndItemAnchor").connect("touchend", Touch.touchEnd);
+        dojo.query(".dojoDndItemAnchor").connect("click" , function(){void(0);});
+
+        if(event.touches.length <= 1) {
+
+
+	    var touches = event.changedTouches,
+	    first = touches[0],
+	    type = "";
+
+
+
+	    switch(event.type)
+	    {
+	    case "touchstart":
+		startX = first.pageX;
+		type = "mousedown";
+		break;
+
+	    case "touchmove":
+		event.preventDefault();
+		type = "mousemove";
+		break;
+
+	    case "touchend":
+		if (startX !==  first.pageX) {
+		    //slide ocurrs
+		    event.preventDefault();
+		}
+		type = "mouseup";
+		break;
+
+
+	    default:
+		return;
+	    }
+
+
+	    var simulatedEvent = document.createEvent("MouseEvent");
+
+	    simulatedEvent.initMouseEvent(type, true, true, window, 1, first.screenX, first.screenY, first.clientX, first.clientY,
+					  false, false, false, false, 0/*left*/, null);
+
+	    first.target.dispatchEvent(simulatedEvent);
+
+	}
+	else {
+            Touch.removeTouchEvents();
+        }
+    },
+
+    touchinit: function() {
+        dojo.query(".dojoDndItem").connect("touchstart", Touch.touchSimulated);
+        dojo.query(".dojoDndItem").connect("touchmove", Touch.touchSimulated);
+        dojo.query(".dojoDndItem").connect("touchend", Touch.touchEnd);
+
+        dojo.query(".locationThumb").connect("touchstart", Touch.touchHandle);
+        dojo.query(".locationThumb").connect("touchmove", Touch.touchHandle);
+        dojo.query(".locationThumb").connect("touchend", Touch.touchHandle);
+
+        dojo.query(".dojoDndItem").connect("click" , function(){void(0);});
+
+        dojo.query(".dojoDndTarget").connect("touchstart", Touch.touchHandle);
+        dojo.query(".dojoDndTarget").connect("touchmove", Touch.touchHandle);
+        dojo.query(".dojoDndTarget").connect("touchend", Touch.touchHandle);
+
+        dojo.query(".dijitSplitter").connect("touchstart", Touch.touchHandle);
+        dojo.query(".dijitSplitter").connect("touchmove", Touch.touchHandle);
+        dojo.query(".dijitSplitter").connect("touchend", Touch.touchHandle);
+    },
+
+    loadTouch: function() {
+        Touch.touchinit();
+        document.documentElement.style.webkitTouchCallout = "none";
+    },
+
+    findPos: function(obj) {
+        var curtop = 0,
+        objP = {};
+
+        if (obj.offsetParent) {
+	    do {
+		curtop += obj.offsetTop;
+            } while ((obj = obj.offsetParent));
+        }
+
+        objP.top = curtop;
+
+        return objP;
+    }
+};
+
+return Touch;
+});
+},
+'JBrowse/ConfigManager':function(){
+define(
+    [
+        'dojo/_base/declare',
+        'dojo/_base/lang',
+        'dojo/_base/array',
+        'dojo/Deferred',
+        'dojo/promise/all',
+
+        'JBrowse/Util',
+        'JBrowse/ConfigAdaptor/AdaptorUtil'
+    ],
+    function(
+        declare,
+        lang,
+        array,
+        Deferred,
+        all,
+
+        Util,
+        AdaptorUtil
+    ) {
+
+return declare(null,
+
+/**
+ * @lends JBrowse.ConfigManager.prototype
+ */
+{
+
+/**
+ * @constructs
+ */
+constructor: function( args ) {
+    this.bootConfig = lang.clone( args.bootConfig || {} );
+    this.defaults = lang.clone( args.defaults || {} );
+    this.browser = args.browser;
+    this.skipValidation = args.skipValidation;
+    // this.topLevelIncludes = this._fillTemplates(
+    //     lang.clone( this.config.include || this.defaults.include ),
+    //     this._applyDefaults( lang.clone( this.config ), this.defaults )
+    // );
+    // delete this.defaults.include;
+    // delete this.config.include;
+},
+
+/**
+ * @param callback {Function} callback, receives a single arguments,
+ * which is the final processed configuration object
+ */
+getFinalConfig: function() {
+    return this.finalConfig || ( this.finalConfig = function() {
+        var thisB = this;
+        var bootstrapConf = this._applyDefaults( lang.clone( this.bootConfig ), this.defaults );
+        return this._loadIncludes( this._fillTemplates( bootstrapConf, bootstrapConf ) )
+            .then( function( includedConfig ) {
+
+                       // merge the boot config *into* the included config last, so
+                       // that values in the boot config override the others
+                       var finalConf = thisB._mergeConfigs( includedConfig, thisB.bootConfig );
+
+                       thisB._fillTemplates( finalConf, finalConf );
+
+                       finalConf = AdaptorUtil.evalHooks( finalConf );
+
+                       if( ! thisB.skipValidation )
+                           thisB._validateConfig( finalConf );
+
+                       return finalConf;
+                   });
+    }.call(this) );
+},
+
+/**
+ * Instantiate the right config adaptor for a given configuration source.
+ * @param {Object} config the configuraiton
+ * @param {Function} callback called with the new config object
+ * @returns {Object} the right configuration adaptor to use, or
+ * undefined if one could not be found
+ * @private
+ */
+
+_getConfigAdaptor: function( config_def, callback ) {
+    var adaptor_name = "JBrowse/ConfigAdaptor/" + config_def.format;
+    if( 'version' in config_def )
+        adaptor_name += '_v'+config_def.version;
+    adaptor_name.replace( /\W/g,'' );
+    return Util.loadJS( [adaptor_name] )
+        .then( function( modules ) {
+                   return new (modules[0])( config_def );
+               });
+},
+
+_fillTemplates: function( subconfig, config ) {
+    // skip "menuTemplate" keys to prevent messing
+    // up their feature-based {} interpolation
+    //var skip = { menuTemplate: true };
+    var skip = {};
+
+    var type = typeof subconfig;
+    if( lang.isArray( subconfig ) ) {
+        for( var i = 0; i<subconfig.length; i++ )
+            subconfig[i] = this._fillTemplates( subconfig[i], config );
+    }
+    else if( type == 'object' ) {
+        for( var name in subconfig ) {
+            if( subconfig.hasOwnProperty( name ) && !skip[name] )
+                subconfig[name] = this._fillTemplates( subconfig[name], config );
+        }
+    }
+    else if( type == 'string' ) {
+        return Util.fillTemplate( subconfig, config );
+    }
+
+    return subconfig;
+},
+
+/**
+ * Recursively fetch, parse, and merge all the includes in the given
+ * config object.  Calls the callback with the resulting configuration
+ * when finished.
+ * @private
+ */
+_loadIncludes: function( inputConfig ) {
+    var thisB = this;
+    inputConfig = lang.clone( inputConfig );
+
+    function _loadRecur( config, upstreamConf ) {
+        var sourceUrl = config.sourceUrl || config.baseUrl;
+        var newUpstreamConf = thisB._mergeConfigs( lang.clone( upstreamConf ), config );
+        var includes = thisB._fillTemplates(
+            thisB._regularizeIncludes( config.include || [] ),
+            newUpstreamConf
+        );
+        delete config.include;
+
+        var loads = array.map(
+            includes, function( include ) {
+                return thisB._loadInclude( include, sourceUrl )
+                    .then( function( includedData ) {
+                               return _loadRecur(
+                                   includedData,
+                                   newUpstreamConf
+                               );
+                           });
+            });
+        return all( loads )
+            .then( function( includedDataObjects ) {
+                       array.forEach( includedDataObjects, function( includedData ) {
+                                          config = thisB._mergeConfigs( config, includedData );
+                                      });
+                       return config;
+                   });
+    }
+
+    return _loadRecur( inputConfig, {} );
+},
+
+_loadInclude: function( include, baseUrl ) {
+    var thisB = this;
+    // instantiate the adaptor and load the config
+    return this._getConfigAdaptor( include )
+        .then( function( adaptor ) {
+                   if( !adaptor )
+                       throw new Error(
+                           "Could not load config "+include.url+", "
+                               + "no configuration adaptor found for config format "
+                               +include.format+' version '+include.version
+                       );
+
+                   return adaptor.load(
+                       { config: include,
+                         baseUrl: baseUrl
+                       });
+               }
+             )
+    .then( null,
+           function(error) {
+               try {
+                   if( error.response.status == 404 )
+                       return {};
+               } catch(e) {}
+
+               throw error;
+           });
+},
+
+
+_regularizeIncludes: function( includes ) {
+    if( ! includes )
+        return [];
+
+    // coerce include to an array
+    if( typeof includes != 'object' )
+        includes = [ includes ];
+
+    // include array might have undefined elements in it if
+    // somebody left a trailing comma in and we are running under
+    // IE
+    includes = array.filter( includes, function(r) { return r; } );
+
+    return array.map( includes, function( include ) {
+        // coerce bare strings in the includes to URLs
+        if( typeof include == 'string' )
+            include = { url: include };
+
+        // set defaults for format and version
+        if( ! ('format' in include) ) {
+            include.format = /\.conf$/.test( include.url ) ? 'conf' : 'JB_json';
+        }
+        if( include.format == 'JB_json' && ! ('version' in include) ) {
+            include.version = 1;
+        }
+        return include;
+   });
+},
+
+/**
+ * @private
+ */
+_applyDefaults: function( config, defaults ) {
+    return Util.deepUpdate( dojo.clone(defaults), config );
+},
+
+/**
+ * Examine the loaded and merged configuration for errors.  Throws
+ * exceptions if it finds anything amiss.
+ * @private
+ * @returns nothing meaningful
+ */
+_validateConfig: function( c ) {
+    if( ! c.tracks )
+        c.tracks = [];
+    if( ! c.baseUrl ) {
+        this._fatalError( 'Must provide a <code>baseUrl</code> in configuration' );
+    }
+    if( this.hasFatalErrors )
+        throw "Errors in configuration, cannot start.";
+},
+
+/**
+ * @private
+ */
+_fatalError: function( error ) {
+    this.hasFatalErrors = true;
+    // if( error.url )
+    //     error = error + ' when loading '+error.url;
+    this.browser.fatalError( error );
+},
+
+// list of config properties that should not be recursively merged
+_noRecursiveMerge: function( propName ) {
+    return propName == 'datasets';
+},
+
+/**
+ * Merges config object b into a.  a <- b
+ * @private
+ */
+_mergeConfigs: function( a, b ) {
+    if( b === null )
+        return null;
+
+    if( a === null )
+        a = {};
+
+    for (var prop in b) {
+        if( prop == 'tracks' && (prop in a) ) {
+            a[prop] = this._mergeTrackConfigs( a[prop] || [], b[prop] || [] );
+        }
+        else if ( ! this._noRecursiveMerge( prop )
+                  &&(prop in a)
+                  && ("object" == typeof b[prop])
+                  && ("object" == typeof a[prop]) ) {
+            a[prop] = Util.deepUpdate( a[prop], b[prop] );
+        } else if( typeof a[prop] == 'undefined' || typeof b[prop] != 'undefined' ){
+            a[prop] = b[prop];
+        }
+    }
+    return a;
+},
+
+/**
+ * Special-case merging of two <code>tracks</code> configuration
+ * arrays.
+ * @private
+ */
+_mergeTrackConfigs: function( a, b ) {
+    if( ! b.length )
+        return a;
+
+    // index the tracks in `a` by track label
+    var aTracks = {};
+    array.forEach( a, function(t,i) {
+        t.index = i;
+        aTracks[t.label] = t;
+    });
+
+    array.forEach( b, function(bT) {
+        var aT = aTracks[bT.label];
+        if( aT ) {
+            this._mergeConfigs( aT, bT );
+        } else {
+            a.push( bT );
+        }
+    },this);
+
+    return a;
+}
+
+});
+});
+
+
+},
+'JBrowse/ConfigAdaptor/AdaptorUtil':function(){
+define( [ 'dojox/lang/functional/object',
+          'dojox/lang/functional/fold'
+        ], function() {
+    var AdaptorUtil;
+    AdaptorUtil = {
+
+        evalHooks: function( conf ) {
+            for( var x in conf ) {
+                if( typeof conf[x] == 'object' )
+                    // recur
+                    conf[x] = this.evalHooks( conf[x] );
+                else if( typeof conf[x] == 'string' ) {
+                    // compile
+                    var spec = conf[x];
+                    if( /^\s*function\s*\(/.test(spec) ) {
+                        conf[x] = this.evalHook(spec);
+                    }
+                }
+            }
+            return conf;
+        },
+
+        evalHook: function() {
+            // can't bind arguments because the closure compiler
+            // renames variables, and we need to assign in the eval
+            if ( "string" != typeof arguments[0])
+                return arguments[0];
+            try {
+                eval("arguments[0]="+arguments[0]+";");
+            } catch (e) {
+                console.error(e+" parsing config callback '"+arguments[0]+"'");
+            }
+            return arguments[0];
+        }
+    };
+    return AdaptorUtil;
+});
+
+},
+'JBrowse/View/FileDialog':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/array',
+            'dojo/aspect',
+            'dijit/focus',
+            'dijit/form/Button',
+            'dijit/form/RadioButton',
+            'dojo/dom-construct',
+            'dijit/Dialog',
+
+            'dojox/form/Uploader',
+            'dojox/form/uploader/plugins/IFrame',
+
+            './FileDialog/TrackList/BAMDriver',
+            './FileDialog/TrackList/BigWigDriver',
+            './FileDialog/TrackList/GFF3Driver',
+            './FileDialog/TrackList/GTFDriver',
+            './FileDialog/TrackList/VCFTabixDriver',
+
+            './FileDialog/ResourceList',
+            './FileDialog/TrackList'
+        ],
+        function(
+            declare,
+            array,
+            aspect,
+            dijitFocus,
+            Button,
+            RadioButton,
+            dom,
+            Dialog,
+
+            Uploaded,
+            IFramePlugin,
+
+            BAMDriver,
+            BigWigDriver,
+            GFF3Driver,
+            GTFDriver,
+            VCFTabixDriver,
+
+            ResourceList,
+            TrackList
+        ) {
+
+return declare( null, {
+
+    constructor: function( args ) {
+        this.browser = args.browser;
+        this.config = dojo.clone( args.config || {} );
+        this.browserSupports = {
+            dnd: 'draggable' in document.createElement('span')
+        };
+
+        this._fileTypeDrivers = [ new BAMDriver(), new BigWigDriver(), new GFF3Driver(), new GTFDriver(), new VCFTabixDriver() ];
+    },
+
+    addFileTypeDriver: function( d ) {
+        this._fileTypeDrivers.unshift( d );
+    },
+    getFileTypeDrivers: function() {
+        return this._fileTypeDrivers.slice();
+    },
+
+    _makeActionBar: function( openCallback, cancelCallback ) {
+        var actionBar = dom.create(
+            'div', {
+                className: 'dijitDialogPaneActionBar'
+            });
+
+        var disChoices = this.trackDispositionChoice = [
+            new RadioButton({ id: 'openImmediately',
+                              value: 'openImmediately',
+                              checked: true
+                            }),
+            new RadioButton({ id: 'addToTrackList',
+                              value: 'addToTrackList'
+                            })
+        ];
+
+        var aux = dom.create('div',{className:'aux'},actionBar);
+        disChoices[0].placeAt(aux);
+        dom.create('label', { "for": 'openImmediately', innerHTML: 'Open immediately' }, aux ),
+        disChoices[1].placeAt(aux);
+        dom.create('label', { "for": 'addToTrackList', innerHTML: 'Add to tracks' }, aux );
+
+
+        new Button({ iconClass: 'dijitIconDelete', label: 'Cancel',
+                     onClick: dojo.hitch( this, function() {
+                                              cancelCallback && cancelCallback();
+                                              this.dialog.hide();
+                                          })
+                   })
+            .placeAt( actionBar );
+        new Button({ iconClass: 'dijitIconFolderOpen',
+                     label: 'Open',
+                     onClick: dojo.hitch( this, function() {
+                         openCallback && openCallback({
+                             trackConfs: this.trackList.getTrackConfigurations(),
+                             trackDisposition: this.trackDispositionChoice[0].checked ? this.trackDispositionChoice[0].value :
+                                               this.trackDispositionChoice[1].checked ? this.trackDispositionChoice[1].value :
+                                                                                        undefined
+                         });
+                         this.dialog.hide();
+                     })
+                   })
+            .placeAt( actionBar );
+
+        return { domNode: actionBar };
+    },
+
+    show: function( args ) {
+        var dialog = this.dialog = new Dialog(
+            { title: "Open files", className: 'fileDialog' }
+            );
+
+        var localFilesControl   = this._makeLocalFilesControl();
+        var remoteURLsControl   = this._makeRemoteURLsControl();
+        var resourceListControl = this._makeResourceListControl();
+        var trackListControl    = this._makeTrackListControl();
+        var actionBar           = this._makeActionBar( args.openCallback, args.cancelCallback );
+
+        // connect the local files control to the resource list
+        dojo.connect( localFilesControl.uploader, 'onChange', function() {
+            resourceListControl.addLocalFiles( localFilesControl.uploader._files );
+        });
+
+        // connect the remote URLs control to the resource list
+        dojo.connect( remoteURLsControl, 'onChange', function( urls ) {
+            resourceListControl.clearURLs();
+            resourceListControl.addURLs( urls );
+        });
+
+        // connect the resource list to the track list
+        dojo.connect( resourceListControl, 'onChange', function( resources ) {
+            trackListControl.update( resources );
+        });
+
+        var div = function( attr, children ) {
+            var d = dom.create('div', attr );
+            array.forEach( children, dojo.hitch( d, 'appendChild' ));
+            return d;
+        };
+        var content = [
+                dom.create( 'div', { className: 'intro', innerHTML: 'Add any combination of data files and URLs, and JBrowse will automatically suggest tracks to display their contents.' } ),
+                div( { className: 'resourceControls' },
+                     [ localFilesControl.domNode, remoteURLsControl.domNode ]
+                   ),
+                resourceListControl.domNode,
+                trackListControl.domNode,
+                actionBar.domNode
+        ];
+        dialog.set( 'content', content );
+        dialog.show();
+
+        aspect.after( dialog, 'hide', dojo.hitch( this, function() {
+                              dijitFocus.curNode && dijitFocus.curNode.blur();
+                              setTimeout( function() { dialog.destroyRecursive(); }, 500 );
+                      }));
+    },
+
+    _makeLocalFilesControl: function() {
+        var container = dom.create('div', { className: 'localFilesControl' });
+
+        dom.create('h3', { innerHTML: 'Local files' }, container );
+
+        var dragArea = dom.create('div', { className: 'dragArea' }, container );
+
+        var fileBox = new dojox.form.Uploader({
+            multiple: true
+        });
+        fileBox.placeAt( dragArea );
+
+        if( this.browserSupports.dnd ) {
+            // let the uploader process any files dragged into the dialog
+            fileBox.addDropTarget( this.dialog.domNode );
+
+            // add a message saying you can drag files in
+            dom.create(
+                'div', {
+                    className: 'dragMessage',
+                    innerHTML: 'Select or drag files here.'
+                }, dragArea
+            );
+        }
+
+        // little elements used to show pipeline-like connections between the controls
+        dom.create( 'div', { className: 'connector', innerHTML: '&nbsp;'}, container );
+
+        return { domNode: container, uploader: fileBox };
+    },
+
+    _makeRemoteURLsControl: function() {
+        var container = dom.create('div', { className: 'remoteURLsControl' });
+
+        // make the input elements
+        dom.create('h3', { innerHTML: 'Remote URLs - <smaller>one per line</smaller>' }, container );
+
+        // the onChange here will be connected to by the other parts
+        // of the dialog to propagate changes to the text in the box
+        var self = { domNode: container,
+                     onChange: function(urls) {
+                         //console.log('urls changed');
+                     }
+                   };
+        self.input = dom.create( 'textarea', {
+                                     className: 'urlInput',
+                                     placeHolder: "http://paste.urls.here/example.bam",
+                                     cols: 25,
+                                     rows: 5,
+                                     spellcheck: false
+                                 }, container );
+
+        // set up the handlers to propagate changes
+        var realChange = function() {
+            var text = dojo.trim( self.input.value );
+            var urls = text.length ? text.split( /\s+/ ) : [];
+            self.onChange( urls );
+        };
+        // watch the input text for changes.  just do it every 700ms
+        // because there are many ways that text can get changed (like
+        // pasting), not all of which fire the same events.  not using
+        // the onchange event, because that doesn't fire until the
+        // textarea loses focus.
+        var previousText = '';
+        var checkFrequency = 900;
+        var checkForChange = function() {
+            // compare with all whitespace changed to commas so that
+            // we are insensitive to changes in whitespace
+            if( self.input.value.replace(/\s+/g,',') != previousText ) {
+                realChange();
+                previousText = self.input.value.replace(/\s+/g,',');
+            }
+            window.setTimeout( checkForChange, checkFrequency );
+        };
+        window.setTimeout( checkForChange, checkFrequency );
+
+        // little elements used to show pipeline-like connections between the controls
+        dom.create( 'div', { className: 'connector', innerHTML: '&nbsp;'}, container );
+
+        return self;
+    },
+
+    _makeResourceListControl: function () {
+        var rl = new ResourceList({ dialog: this });
+        return rl;
+    },
+    _makeTrackListControl: function() {
+        var tl = new TrackList({ browser: this.browser, fileDialog: this });
+        this.trackList = tl;
+        return tl;
+    }
+});
+});
+
+},
+'dojox/form/Uploader':function(){
+define([
+	"dojo/_base/kernel",
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/_base/array",
+	"dojo/_base/connect",
+	"dojo/_base/window",
+	"dojo/dom-style",
+	"dojo/dom-class",
+	"dojo/dom-geometry",
+	"dojo/dom-attr",
+	"dojo/dom-construct",
+	"dojo/dom-form",
+	"dijit",
+	"dijit/form/Button",
+	"./uploader/_Base",
+	"./uploader/_HTML5",
+	"./uploader/_IFrame",
+	"./uploader/_Flash",
+	"dojo/i18n!./nls/Uploader",
+	"dojo/text!./resources/Uploader.html"
+],function(kernel, declare, lang, array, connect, win, domStyle, domClass, domGeometry, domAttr, domConstruct,
+		   domForm, dijit, Button, Base, HTML5, IFrame, Flash, res, template){
+
+	// TODO:
+	//		i18n
+	//		label via innerHTML
+	//		Doc and or test what can be extended.
+	//		Doc custom file events
+	//		Use new FileReader() for thumbnails
+	//		flashFieldName should default to Flash
+	//		get('value'); and set warning
+	//		Make it so URL can change (current set to Flash on build)
+	//
+
+	return declare("dojox.form.Uploader", [Base, Button, HTML5, IFrame, Flash], {
+		// summary:
+		//		A widget that creates a stylable file-input button, with optional multi-file selection,
+		//		using only HTML elements. Non-HTML5 browsers have fallback options of Flash or an iframe.
+		//
+		// description:
+		//		A bare-bones, stylable file-input button, with optional multi-file selection. The list
+		//		of files is not displayed, that is for you to handle by connecting to the onChange
+		//		event, or use the dojox.form.uploader.FileList.
+		//
+		//		Uploader without plugins does not have any ability to upload - it is for use in forms
+		//		where you handle the upload either by a standard POST or with Ajax using an iFrame. This
+		//		class is for convenience of multiple files only. No progress events are available.
+		//
+		//		If the browser supports a file-input with the "multiple" attribute, that will be used.
+		//		If the browser does not support "multiple" (ergo, IE) multiple inputs are used,
+		//		one for each selection.
+		//
+		//		Version: 1.6
+	
+	
+		// uploadOnSelect: Boolean
+		//		If true, uploads immediately after a file has been selected. If false,
+		//		waits for upload() to be called.
+		uploadOnSelect:false,
+	
+		// tabIndex: Number|String
+		//		The tab order in the DOM.
+		tabIndex:0,
+	
+		// multiple: Boolean
+		//		If true and flash mode, multiple files may be selected from the dialog.
+		multiple:false,
+	
+		// label: String
+		//		The text used in the button that when clicked, opens a system Browse Dialog.
+		label:res.label,
+	
+		// url: String
+		//		The url targeted for upload. An absolute URL is preferred. Relative URLs are
+		//		changed to absolute.
+		url:"",
+	
+		// name: String
+		//		The name attribute needs to end with square brackets: [] as this is the standard way
+		//		of handling an attribute "array". This requires a slightly different technique on the
+		//		server.
+		name:"uploadedfile",
+	
+		// flashFieldName: String
+		//		If set, this will be the name of the field of the flash uploaded files that the server
+		//		is expecting. If not set, "Flash" is appended to the "name" property.
+		flashFieldName:"",
+		
+		//	force: String
+		//		options: form, html5, iframe, flash
+		//		Empty string defaults to html5 if available, and iframe if not.
+		// 		Use "flash" to always use Flash (and hopefully force the user to download the plugin
+		//		if they don't have it).
+		//		Use "iframe" to always use an iframe, and never flash nor html5. Sometimes preferred
+		//		for consistent results.
+		//		Use "form" to not use ajax and post to a page.
+		force:"",
+	
+		// uploadType: String [readonly]
+		//		The type of uploader being used. As an alternative to determining the upload type on the
+		//		server based on the fieldName, this property could be sent to the server to help
+		//		determine what type of parsing should be used.
+		//		This is set based on the force property and what features are available in the browser.
+		uploadType:"",
+	
+		// showInput: String [const]
+		//		Position to show an input which shows selected filename(s). Possible
+		//		values are "before", "after", which specifies where the input should
+		//		be placed with reference to the containerNode which contains the
+		//		label). By default, this is empty string (no such input will be
+		//		shown). Specify showInput="before" to mimic the look&feel of a
+		//		native file input element.
+		showInput: "",
+		
+		//	focusedClass: String
+		//		The class applied to the button when it is focused (via TAB key)
+		focusedClass:"dijitButtonHover",
+	
+		_nameIndex:0,
+	
+		templateString: template,
+	
+		baseClass: 'dijitUploader '+Button.prototype.baseClass,
+	
+		postMixInProperties: function(){
+			this._inputs = [];
+			this._cons = [];
+			this.force = this.force.toLowerCase();
+			if(this.supports("multiple")){
+				this.uploadType = this.force === 'form' ? 'form' : 'html5';
+			}else{
+				this.uploadType = this.force === 'flash' ? 'flash' : 'iframe';
+			}
+			
+			this.inherited(arguments);
+		},
+		buildRendering: function(){
+			this.inherited(arguments);
+			domStyle.set(this.domNode, {
+				overflow:"hidden",
+				position:"relative"
+			});
+			this._buildDisplay();
+			//change the button node not occupy tabIndex: the real file input
+			//will have tabIndex set
+			domAttr.set(this.titleNode, 'tabIndex', -1);
+		},
+		_buildDisplay: function(){
+			if(this.showInput){
+				this.displayInput = domConstruct.create('input', {
+					  'class':'dijitUploadDisplayInput',
+					  'tabIndex':-1, 'autocomplete':'off',
+					  'role':'presentation'},
+					this.containerNode, this.showInput);
+				//schedule the attachpoint to be cleaned up on destroy
+				this._attachPoints.push('displayInput');
+				this.connect(this,'onChange', function(files){
+					var i=0,l=files.length, f, r=[];
+					while((f=files[i++])){
+						if(f && f.name){
+							r.push(f.name);
+						}
+					}
+					this.displayInput.value = r.join(', ');
+				});
+				this.connect(this,'reset', function(){
+					this.displayInput.value = '';
+				});
+			}
+		},
+	
+		startup: function(){
+			if(this._buildInitialized){
+				return;
+			}
+			this._buildInitialized = true;
+			this._getButtonStyle(this.domNode);
+			this._setButtonStyle();
+			this.inherited(arguments);
+		},
+	
+		/*************************
+		 *	   Public Events	 *
+		 *************************/
+	
+		onChange: function(/*Array*/ fileArray){
+			// summary:
+			//		stub to connect
+			//		Fires when files are selected
+			//		Event is an array of last files selected
+		},
+	
+		onBegin: function(/*Array*/ dataArray){
+			// summary:
+			//		Fires when upload begins
+		},
+	
+		onProgress: function(/*Object*/ customEvent){
+			// summary:
+			//		Stub to connect
+			//		Fires on upload progress. Event is a normalized object of common properties
+			//		from HTML5 uploaders and the Flash uploader. Will not fire for IFrame.
+			// customEvent:
+			//		- bytesLoaded: Number:
+			//			Amount of bytes uploaded so far of entire payload (all files)
+			//		- bytesTotal: Number:
+			//			Amount of bytes of entire payload (all files)
+			//		- type: String:
+			//			Type of event (progress or load)
+			//		- timeStamp: Number:
+			//			Timestamp of when event occurred
+		},
+	
+		onComplete: function(/*Object*/ customEvent){
+			// summary:
+			//		stub to connect
+			//		Fires when all files have uploaded
+			//		Event is an array of all files
+			this.reset();
+		},
+	
+		onCancel: function(){
+			// summary:
+			//		Stub to connect
+			//		Fires when dialog box has been closed
+			//		without a file selection
+		},
+	
+		onAbort: function(){
+			// summary:
+			//		Stub to connect
+			//		Fires when upload in progress was canceled
+		},
+	
+		onError: function(/*Object or String*/ evtObject){
+			// summary:
+			//		Fires on errors
+	
+			// FIXME: Unsure of a standard form of error events
+		},
+	
+		/*************************
+		 *	   Public Methods	 *
+		 *************************/
+	
+		upload: function(/*Object?*/ formData){				
+			// summary:
+			//		When called, begins file upload. Only supported with plugins.
+			formData = formData || {};
+			formData.uploadType = this.uploadType;
+			this.inherited(arguments);
+		},
+	
+		submit: function(/*form Node?*/ form){
+			// summary:
+			//		If Uploader is in a form, and other data should be sent along with the files, use
+			//		this instead of form submit.
+			form = !!form ? form.tagName ? form : this.getForm() : this.getForm();
+			var data = domForm.toObject(form);
+			data.uploadType = this.uploadType;
+			this.upload(data);
+		},
+	
+		reset: function(){
+			// summary:
+			//		Resets entire input, clearing all files.
+			//		NOTE:
+			//		Removing individual files is not yet supported, because the HTML5 uploaders can't
+			//		be edited.
+			//		TODO:
+			//		Add this ability by effectively, not uploading them
+			//
+			delete this._files;
+			this._disconnectButton();
+			array.forEach(this._inputs, domConstruct.destroy);
+			this._inputs = [];
+			this._nameIndex = 0;
+			this._createInput();
+		},
+	
+		getFileList: function(){
+			// summary:
+			//		Returns a list of selected files.
+	
+			var fileArray = [];
+			if(this.supports("multiple")){
+				array.forEach(this._files, function(f, i){
+					fileArray.push({
+						index:i,
+						name:f.name,
+						size:f.size,
+						type:f.type
+					});
+				}, this);
+			}else{
+				array.forEach(this._inputs, function(n, i){
+					if(n.value){
+						fileArray.push({
+							index:i,
+							name:n.value.substring(n.value.lastIndexOf("\\")+1),
+							size:0,
+							type:n.value.substring(n.value.lastIndexOf(".")+1)
+						});
+					}
+				}, this);
+	
+			}
+			return fileArray; // Array
+		},
+	
+		/*********************************************
+		 *	   Private Property. Get off my lawn.	 *
+		 *********************************************/
+	
+		_getValueAttr: function(){
+			// summary:
+			//		Internal. To get disabled use: uploader.get("disabled");
+			return this.getFileList();
+		},
+	
+		_setValueAttr: function(disabled){
+			console.error("Uploader value is read only");
+		},
+	
+		_setDisabledAttr: function(disabled){
+			// summary:
+			//		Internal. To set disabled use: uploader.set("disabled", true);
+			if(this.disabled == disabled || !this.inputNode){ return; }
+			this.inherited(arguments);
+			domStyle.set(this.inputNode, "display", disabled ? "none" : "");
+		},
+	
+		_getButtonStyle: function(node){
+			this.btnSize = {w:domStyle.get(node,'width'), h:domStyle.get(node,'height')};
+		},
+	
+		_setButtonStyle: function(){
+			this.inputNodeFontSize = Math.max(2, Math.max(Math.ceil(this.btnSize.w / 60), Math.ceil(this.btnSize.h / 15)));
+			this._createInput();
+		},
+	
+		_getFileFieldName: function(){
+			var name;
+			if(this.supports("multiple") && this.multiple){
+				name = this.name+"s[]";
+			}else{
+				// <=IE8
+				name = this.name + (this.multiple ? this._nameIndex : "");
+			}
+			return name;
+		},
+	
+		_createInput: function(){
+			if(this._inputs.length){
+				domStyle.set(this.inputNode, {
+					top:"500px"
+				});
+				this._disconnectButton();
+				this._nameIndex++;
+			}
+			var name = this._getFileFieldName();
+			// reset focusNode to the inputNode, so when the button is clicked,
+			// the focus is properly moved to the input element
+			this.focusNode = this.inputNode = domConstruct.create("input", {type:"file", name:name, "aria-labelledby":this.id+"_label"}, this.domNode, "first");
+			if(this.supports("multiple") && this.multiple){
+				domAttr.set(this.inputNode, "multiple", true);
+			}
+			this._inputs.push(this.inputNode);
+	
+			domStyle.set(this.inputNode, {
+				position:"absolute",
+				fontSize:this.inputNodeFontSize+"em",
+				top:"-3px",
+				right:"-3px",
+				opacity:0
+			});
+			this._connectButton();
+		},
+	
+		_connectButton: function(){
+			this._cons.push(connect.connect(this.inputNode, "change", this, function(evt){
+				this._files = this.inputNode.files;
+				this.onChange(this.getFileList(evt));
+				if(!this.supports("multiple") && this.multiple) this._createInput();
+			}));
+	
+			if(this.tabIndex > -1){
+				this.inputNode.tabIndex = this.tabIndex;
+	
+				this._cons.push(connect.connect(this.inputNode, "focus", this, function(){
+					domClass.add(this.domNode, this.focusedClass);
+				}));
+				this._cons.push(connect.connect(this.inputNode, "blur", this, function(){
+					domClass.remove(this.domNode, this.focusedClass);
+				}));
+			}
+		},
+	
+		_disconnectButton: function(){
+			array.forEach(this._cons, connect.disconnect);
+			this._cons.splice(0,this._cons.length);
+		}
+	});
+
+});
+
+},
+'dojox/form/uploader/_Base':function(){
+define([
+	"dojo/dom-form",
+	"dojo/dom-style",
+	"dojo/dom-construct",
+	"dojo/dom-attr",
+	"dojo/has",
+	"dojo/_base/declare",
+	"dojo/_base/event",
+	"dijit/_Widget",
+	"dijit/_TemplatedMixin",
+	"dijit/_WidgetsInTemplateMixin"
+],function(domForm, domStyle, domConstruct, domAttr, has, declare, event, Widget, TemplatedMixin, WidgetsInTemplateMixin){
+
+has.add('FormData', function(){return !!window.FormData;});
+has.add('xhr-sendAsBinary', function(){var xhr=window.XMLHttpRequest && new window.XMLHttpRequest(); return xhr && !!xhr.sendAsBinary;});
+has.add('file-multiple', function(){return !!({'true':1,'false':1}[domAttr.get(document.createElement('input',{type:"file"}), 'multiple')]);});
+
+
+return declare("dojox.form.uploader._Base", [Widget, TemplatedMixin, WidgetsInTemplateMixin], {
+	// summary:
+	//		The Base class used for dojox/form/Uploader and dojox/form/uploader/FileList.
+	//
+	//		Should not be used as a standalone. To be mixed in with other classes.
+	//
+	getForm: function(){
+		// summary:
+		//		Finds the parent form of the Uploader, if it exists.
+
+		if(!this.form){
+			var n = this.domNode;
+			while(n && n.tagName && n !== document.body){
+				if(n.tagName.toLowerCase() == "form"){
+					this.form = n;
+					break;
+				}
+				n = n.parentNode;
+			}
+		}
+		return this.form // Node;
+	},
+
+	getUrl: function(){
+		// summary:
+		//		Finds the URL to upload to, whether it be the action in the parent form, this.url or
+		//		this.uploadUrl
+
+		if(this.uploadUrl) this.url = this.uploadUrl;
+		if(this.url) return this.url;
+		if(this.getForm()) this.url = this.form.action;
+		return this.url; // String
+	},
+
+
+	connectForm: function(){
+		// summary:
+		//		Internal. Connects to form if there is one.
+
+		this.url = this.getUrl();
+		if(!this._fcon && !!this.getForm()){
+			this._fcon = true;
+			this.connect(this.form, "onsubmit", function(evt){
+				console.log('SUBMIT')
+				event.stop(evt);
+				this.submit(this.form);
+			});
+		}
+	},
+
+	supports: function(what){
+		// summary:
+		//		Does feature testing for uploader capabilities. (No browser sniffing - yay)
+
+		switch(what){
+			case "multiple":
+				if(this.force == "flash" || this.force == "iframe") return false;
+				return has("file-multiple");
+			case "FormData":
+				return has(what);
+			case "sendAsBinary":
+				return has("xhr-sendAsBinary");
+		}
+		return false; // Boolean
+	},
+	getMimeType: function(){
+		// summary:
+		//		Returns the mime type that should be used in an HTML5 upload form. Return result
+		//		may change as the current use is very generic.
+		return "application/octet-stream"; //image/gif
+	},
+	getFileType: function(/*String*/ name){
+		// summary:
+		//		Gets the extension of a file
+		return name.substring(name.lastIndexOf(".")+1).toUpperCase(); // String
+	},
+	convertBytes: function(bytes){
+		// summary:
+		//		Converts bytes. Returns an object with all conversions. The "value" property is
+		//		considered the most likely desired result.
+
+		var kb = Math.round(bytes/1024*100000)/100000;
+		var mb = Math.round(bytes/1048576*100000)/100000;
+		var gb = Math.round(bytes/1073741824*100000)/100000;
+		var value = bytes;
+		if(kb>1) value = kb.toFixed(1)+" kb";
+		if(mb>1) value = mb.toFixed(1)+" mb";
+		if(gb>1) value = gb.toFixed(1)+" gb";
+		return {
+			kb:kb,
+			mb:mb,
+			gb:gb,
+			bytes:bytes,
+			value: value
+		}; // Object
+	}
+});
+});
+
+},
+'dojox/form/uploader/_HTML5':function(){
+define([
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/_base/array",
+	"dojo"
+],function(declare, lang, arrayUtil, dojo){
+
+	return declare("dojox.form.uploader._HTML5", [], {
+		// summary:
+		//		A mixin for dojox/form/Uploader that adds HTML5 multiple-file upload capabilities and
+		//		progress events.
+		//
+		// description:
+		//		Note that this does not add these capabilities to browsers that don't support them.
+		//		For IE8 or older browsers, _IFrame or _Flash mixins will be used.
+		//
+		
+		// debug message:
+		errMsg:"Error uploading files. Try checking permissions",
+	
+		// Overwrites "form" and could possibly be overwritten again by iframe or flash plugin.
+		uploadType:"html5",
+		
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			if(this.uploadType === "html5"){ }
+		},
+	
+		postCreate: function(){
+			this.connectForm();
+			this.inherited(arguments);
+			if(this.uploadOnSelect){
+				this.connect(this, "onChange", function(data){
+					this.upload(data[0]);
+				});
+			}
+		},
+	
+		_drop: function(e){
+			dojo.stopEvent(e);
+			var dt = e.dataTransfer;
+			this._files = dt.files;
+			this.onChange(this.getFileList());
+		},
+		/*************************
+		 *	   Public Methods	 *
+		 *************************/
+	
+		upload: function(/*Object ? */ formData){
+			// summary:
+			//		See: dojox.form.Uploader.upload
+				
+			this.onBegin(this.getFileList());
+			this.uploadWithFormData(formData);
+		},
+	
+		addDropTarget: function(node, /*Boolean?*/ onlyConnectDrop){
+			// summary:
+			//		Add a dom node which will act as the drop target area so user
+			//		can drop files to this node.
+			// description:
+			//		If onlyConnectDrop is true, dragenter/dragover/dragleave events
+			//		won't be connected to dojo.stopEvent, and they need to be
+			//		canceled by user code to allow DnD files to happen.
+			//		This API is only available in HTML5 plugin (only HTML5 allows
+			//		DnD files).
+			if(!onlyConnectDrop){
+				this.connect(node, 'dragenter', dojo.stopEvent);
+				this.connect(node, 'dragover', dojo.stopEvent);
+				this.connect(node, 'dragleave', dojo.stopEvent);
+			}
+			this.connect(node, 'drop', '_drop');
+		},
+		
+		uploadWithFormData: function(/*Object*/ data){
+			// summary:
+			//		Used with WebKit and Firefox 4+
+			//		Upload files using the much friendlier FormData browser object.
+			// tags:
+			//		private
+	
+			if(!this.getUrl()){
+				console.error("No upload url found.", this); return;
+			}
+			var fd = new FormData(), fieldName=this._getFileFieldName();
+			arrayUtil.forEach(this._files, function(f, i){
+				fd.append(fieldName, f);
+			}, this);
+	
+			if(data){
+				data.uploadType = this.uploadType;
+				for(var nm in data){
+					fd.append(nm, data[nm]);
+				}
+			}
+	
+			var xhr = this.createXhr();
+			xhr.send(fd);
+		},
+	
+		_xhrProgress: function(evt){
+			if(evt.lengthComputable){
+				var o = {
+					bytesLoaded:evt.loaded,
+					bytesTotal:evt.total,
+					type:evt.type,
+					timeStamp:evt.timeStamp
+				};
+				if(evt.type == "load"){
+					// 100%
+					o.percent = "100%";
+					o.decimal = 1;
+				}else{
+					o.decimal = evt.loaded / evt.total;
+					o.percent = Math.ceil((evt.loaded / evt.total)*100)+"%";
+				}
+				this.onProgress(o);
+			}
+		},
+	
+		createXhr: function(){
+			var xhr = new XMLHttpRequest();
+			var timer;
+			xhr.upload.addEventListener("progress", lang.hitch(this, "_xhrProgress"), false);
+			xhr.addEventListener("load", lang.hitch(this, "_xhrProgress"), false);
+			xhr.addEventListener("error", lang.hitch(this, function(evt){
+				this.onError(evt);
+				clearInterval(timer);
+			}), false);
+			xhr.addEventListener("abort", lang.hitch(this, function(evt){
+				this.onAbort(evt);
+				clearInterval(timer);
+			}), false);
+			xhr.onreadystatechange = lang.hitch(this, function(){
+				if(xhr.readyState === 4){
+	//				console.info("COMPLETE")
+					clearInterval(timer);
+					try{
+						this.onComplete(JSON.parse(xhr.responseText.replace(/^\{\}&&/,'')));
+					}catch(e){
+						var msg = "Error parsing server result:";
+						console.error(msg, e);
+						console.error(xhr.responseText);
+						this.onError(msg, e);
+					}
+				}
+			});
+			xhr.open("POST", this.getUrl());
+			xhr.setRequestHeader("Accept","application/json");
+			
+			timer = setInterval(lang.hitch(this, function(){
+				try{
+					if(typeof(xhr.statusText)){} // accessing this error throws an error. Awesomeness.
+				}catch(e){
+					//this.onError("Error uploading file."); // not always an error.
+					clearInterval(timer);
+				}
+			}),250);
+	
+			return xhr;
+		}
+	
+	});
+
+});
+
+},
+'dojox/form/uploader/_IFrame':function(){
+define([
+	"dojo/query",
+	"dojo/dom-construct",
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/_base/array",
+	"dojo/dom-form",
+	"dojo/request/iframe"
+],function(query, domConstruct, declare, lang, arrayUtil, domForm, request){
+	
+
+	return declare("dojox.form.uploader._IFrame", [], {
+		// summary:
+		//		A mixin for dojox/form/Uploader that adds Ajax upload capabilities via an iframe.
+		//
+		// description:
+		//		Only supported by IE, due to the specific iFrame hack used.  Progress events are not
+		//		supported.
+		//		
+		//
+	
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			if(this.uploadType === "iframe"){
+				this.uploadType = "iframe";
+				this.upload = this.uploadIFrame;
+			}
+		},
+	
+		uploadIFrame: function(data){
+			// summary:
+			//		Internal. You could use this, but you should use upload() or submit();
+			//		which can also handle the post data.
+	
+			var
+				formObject = {},
+				sendForm,
+				form = this.getForm(),
+				url = this.getUrl(),
+				self = this;
+			data = data || {};
+			data.uploadType = this.uploadType;
+			
+			// create a temp form for which to send data
+			//enctype can't be changed once a form element is created
+			sendForm = domConstruct.place('<form enctype="multipart/form-data" method="post"></form>', this.domNode);
+			arrayUtil.forEach(this._inputs, function(n, i){
+				// don't send blank inputs
+				if(n.value !== ''){
+					sendForm.appendChild(n);
+					formObject[n.name] = n.value;
+				}
+			}, this);
+			
+			
+			// add any extra data as form inputs		
+			if(data){
+				//formObject = domForm.toObject(form);
+				for(nm in data){
+					if(formObject[nm] === undefined){
+						domConstruct.create('input', {name:nm, value:data[nm], type:'hidden'}, sendForm);
+					}
+				}
+			}
+	
+			
+			request.post(url, {
+				form: sendForm,
+				handleAs: "json",
+				content: data
+			}).then(function(result){
+				domConstruct.destroy(sendForm);
+				if(result["ERROR"] || result["error"]){
+					self.onError(result);
+				}else{
+					self.onComplete(result);
+				}
+			}, function(err){
+				console.error('error parsing server result', err);
+				domConstruct.destroy(sendForm); 
+				self.onError(err);
+			});
+		}
+	});
+});
+
+},
+'dojo/request/iframe':function(){
+define([
+	'module',
+	'require',
+	'./watch',
+	'./util',
+	'./handlers',
+	'../_base/lang',
+	'../io-query',
+	'../query',
+	'../has',
+	'../dom',
+	'../dom-construct',
+	'../_base/window',
+	'../NodeList-dom'/*=====,
+	'../request',
+	'../_base/declare' =====*/
+], function(module, require, watch, util, handlers, lang, ioQuery, query, has, dom, domConstruct, win/*=====, NodeList, request, declare =====*/){
+	var mid = module.id.replace(/[\/\.\-]/g, '_'),
+		onload = mid + '_onload';
+
+	if(!win.global[onload]){
+		win.global[onload] = function(){
+			var dfd = iframe._currentDfd;
+			if(!dfd){
+				iframe._fireNextRequest();
+				return;
+			}
+
+			var response = dfd.response,
+				options = response.options,
+				formNode = dom.byId(options.form) || dfd._tmpForm;
+
+			if(formNode){
+				// remove all the hidden content inputs
+				var toClean = dfd._contentToClean;
+				for(var i=0; i<toClean.length; i++){
+					var key = toClean[i];
+					//Need to cycle over all nodes since we may have added
+					//an array value which means that more than one node could
+					//have the same .name value.
+					for(var j=0; j<formNode.childNodes.length; j++){
+						var childNode = formNode.childNodes[j];
+						if(childNode.name === key){
+							domConstruct.destroy(childNode);
+							break;
+						}
+					}
+				}
+
+				// restore original action + target
+				dfd._originalAction && formNode.setAttribute('action', dfd._originalAction);
+				if(dfd._originalMethod){
+					formNode.setAttribute('method', dfd._originalMethod);
+					formNode.method = dfd._originalMethod;
+				}
+				if(dfd._originalTarget){
+					formNode.setAttribute('target', dfd._originalTarget);
+					formNode.target = dfd._originalTarget;
+				}
+			}
+
+			if(dfd._tmpForm){
+				domConstruct.destroy(dfd._tmpForm);
+				delete dfd._tmpForm;
+			}
+
+			dfd._finished = true;
+		};
+	}
+
+	function create(name, onloadstr, uri){
+		if(win.global[name]){
+			return win.global[name];
+		}
+
+		if(win.global.frames[name]){
+			return win.global.frames[name];
+		}
+
+		if(!uri){
+			if(has('config-useXDomain') && !has('config-dojoBlankHtmlUrl')){
+				console.warn('dojo/request/iframe: When using cross-domain Dojo builds,' +
+					' please save dojo/resources/blank.html to your domain and set dojoConfig.dojoBlankHtmlUrl' +
+					' to the path on your domain to blank.html');
+			}
+			uri = (has('config-dojoBlankHtmlUrl')||require.toUrl('dojo/resources/blank.html'));
+		}
+
+		var frame = domConstruct.place(
+			'<iframe id="'+name+'" name="'+name+'" src="'+uri+'" onload="'+onloadstr+
+			'" style="position: absolute; left: 1px; top: 1px; height: 1px; width: 1px; visibility: hidden">',
+			win.body());
+
+		win.global[name] = frame;
+
+		return frame;
+	}
+
+	function setSrc(_iframe, src, replace){
+		var frame = win.global.frames[_iframe.name];
+
+		if(frame.contentWindow){
+			// We have an iframe node instead of the window
+			frame = frame.contentWindow;
+		}
+
+		try{
+			if(!replace){
+				frame.location = src;
+			}else{
+				frame.location.replace(src);
+			}
+		}catch(e){
+			console.log('dojo/request/iframe.setSrc: ', e);
+		}
+	}
+
+	function doc(iframeNode){
+		if(iframeNode.contentDocument){
+			return iframeNode.contentDocument;
+		}
+		var name = iframeNode.name;
+		if(name){
+			var iframes = win.doc.getElementsByTagName('iframe');
+			if(iframeNode.document && iframes[name].contentWindow && iframes[name].contentWindow.document){
+				return iframes[name].contentWindow.document;
+			}else if(win.doc.frames[name] && win.doc.frames[name].document){
+				return win.doc.frames[name].document;
+			}
+		}
+		return null;
+	}
+
+	function createForm(){
+		return domConstruct.create('form', {
+			name: mid + '_form',
+			style: {
+				position: 'absolute',
+				top: '-1000px',
+				left: '-1000px'
+			}
+		}, win.body());
+	}
+
+	function fireNextRequest(){
+		// summary:
+		//		Internal method used to fire the next request in the queue.
+		var dfd;
+		try{
+			if(iframe._currentDfd || !iframe._dfdQueue.length){
+				return;
+			}
+			do{
+				dfd = iframe._currentDfd = iframe._dfdQueue.shift();
+			}while(dfd && (dfd.canceled || (dfd.isCanceled && dfd.isCanceled())) && iframe._dfdQueue.length);
+
+			if(!dfd || dfd.canceled || (dfd.isCanceled && dfd.isCanceled())){
+				iframe._currentDfd = null;
+				return;
+			}
+
+			var response = dfd.response,
+				options = response.options,
+				c2c = dfd._contentToClean = [],
+				formNode = dom.byId(options.form),
+				notify = util.notify,
+				data = options.data || null,
+				queryStr;
+
+			if(!dfd._legacy && options.method === 'POST' && !formNode){
+				formNode = dfd._tmpForm = createForm();
+			}else if(options.method === 'GET' && formNode && response.url.indexOf('?') > -1){
+				queryStr = response.url.slice(response.url.indexOf('?') + 1);
+				data = lang.mixin(ioQuery.queryToObject(queryStr), data);
+			}
+
+			if(formNode){
+				if(!dfd._legacy){
+					var parentNode = formNode;
+					do{
+						parentNode = parentNode.parentNode;
+					}while(parentNode && parentNode !== win.doc.documentElement);
+
+					// Append the form node or some browsers won't work
+					if(!parentNode){
+						formNode.style.position = 'absolute';
+						formNode.style.left = '-1000px';
+						formNode.style.top = '-1000px';
+						win.body().appendChild(formNode);
+					}
+
+					if(!formNode.name){
+						formNode.name = mid + '_form';
+					}
+				}
+
+				// if we have things in data, we need to add them to the form
+				// before submission
+				if(data){
+					var createInput = function(name, value){
+						domConstruct.create('input', {
+							type: 'hidden',
+							name: name,
+							value: value
+						}, formNode);
+						c2c.push(name);
+					};
+					for(var x in data){
+						var val = data[x];
+						if(lang.isArray(val) && val.length > 1){
+							for(var i=0; i<val.length; i++){
+								createInput(x, val[i]);
+							}
+						}else{
+							if(!formNode[x]){
+								createInput(x, val);
+							}else{
+								formNode[x].value = val;
+							}
+						}
+					}
+				}
+
+				//IE requires going through getAttributeNode instead of just getAttribute in some form cases,
+				//so use it for all.  See #2844
+				var actionNode = formNode.getAttributeNode('action'),
+					methodNode = formNode.getAttributeNode('method'),
+					targetNode = formNode.getAttributeNode('target');
+
+				if(response.url){
+					dfd._originalAction = actionNode ? actionNode.value : null;
+					if(actionNode){
+						actionNode.value = response.url;
+					}else{
+						formNode.setAttribute('action', response.url);
+					}
+				}
+
+				if(!dfd._legacy){
+					dfd._originalMethod = methodNode ? methodNode.value : null;
+					if(methodNode){
+						methodNode.value = options.method;
+					}else{
+						formNode.setAttribute('method', options.method);
+					}
+				}else{
+					if(!methodNode || !methodNode.value){
+						if(methodNode){
+							methodNode.value = options.method;
+						}else{
+							formNode.setAttribute('method', options.method);
+						}
+					}
+				}
+
+				dfd._originalTarget = targetNode ? targetNode.value : null;
+				if(targetNode){
+					targetNode.value = iframe._iframeName;
+				}else{
+					formNode.setAttribute('target', iframe._iframeName);
+				}
+				formNode.target = iframe._iframeName;
+
+				notify && notify.emit('send', response, dfd.promise.cancel);
+				iframe._notifyStart(response);
+				formNode.submit();
+			}else{
+				// otherwise we post a GET string by changing URL location for the
+				// iframe
+
+				var extra = '';
+				if(response.options.data){
+					extra = response.options.data;
+					if(typeof extra !== 'string'){
+						extra = ioQuery.objectToQuery(extra);
+					}
+				}
+				var tmpUrl = response.url + (response.url.indexOf('?') > -1 ? '&' : '?') + extra;
+				notify && notify.emit('send', response, dfd.promise.cancel);
+				iframe._notifyStart(response);
+				iframe.setSrc(iframe._frame, tmpUrl, true);
+			}
+		}catch(e){
+			dfd.reject(e);
+		}
+	}
+
+	// dojo/request/watch handlers
+	function isValid(response){
+		return !this.isFulfilled();
+	}
+	function isReady(response){
+		return !!this._finished;
+	}
+	function handleResponse(response, error){
+		if(!error){
+			try{
+				var options = response.options,
+					doc = iframe.doc(iframe._frame),
+					handleAs = options.handleAs;
+
+				if(handleAs !== 'html'){
+					if(handleAs === 'xml'){
+						// IE6-8 have to parse the XML manually. See http://bugs.dojotoolkit.org/ticket/6334
+						if(doc.documentElement.tagName.toLowerCase() === 'html'){
+							query('a', doc.documentElement).orphan();
+							var xmlText = doc.documentElement.innerText;
+							xmlText = xmlText.replace(/>\s+</g, '><');
+							response.text = lang.trim(xmlText);
+						}else{
+							response.data = doc;
+						}
+					}else{
+						// 'json' and 'javascript' and 'text'
+						response.text = doc.getElementsByTagName('textarea')[0].value; // text
+					}
+					handlers(response);
+				}else{
+					response.data = doc;
+				}
+			}catch(e){
+				error = e;
+			}
+		}
+
+		if(error){
+			this.reject(error);
+		}else if(this._finished){
+			this.resolve(response);
+		}else{
+			this.reject(new Error('Invalid dojo/request/iframe request state'));
+		}
+	}
+	function last(response){
+		this._callNext();
+	}
+
+	var defaultOptions = {
+		method: 'POST'
+	};
+	function iframe(url, options, returnDeferred){
+		var response = util.parseArgs(url, util.deepCreate(defaultOptions, options), true);
+		url = response.url;
+		options = response.options;
+
+		if(options.method !== 'GET' && options.method !== 'POST'){
+			throw new Error(options.method + ' not supported by dojo/request/iframe');
+		}
+
+		if(!iframe._frame){
+			iframe._frame = iframe.create(iframe._iframeName, onload + '();');
+		}
+
+		var dfd = util.deferred(response, null, isValid, isReady, handleResponse, last);
+		dfd._callNext = function(){
+			if(!this._calledNext){
+				this._calledNext = true;
+				iframe._currentDfd = null;
+				iframe._fireNextRequest();
+			}
+		};
+		dfd._legacy = returnDeferred;
+
+		iframe._dfdQueue.push(dfd);
+		iframe._fireNextRequest();
+
+		watch(dfd);
+
+		return returnDeferred ? dfd : dfd.promise;
+	}
+
+	/*=====
+	iframe = function(url, options){
+		// summary:
+		//		Sends a request using an iframe element with the given URL and options.
+		// url: String
+		//		URL to request
+		// options: dojo/request/iframe.__Options?
+		//		Options for the request.
+		// returns: dojo/request.__Promise
+	};
+	iframe.__BaseOptions = declare(request.__BaseOptions, {
+		// form: DOMNode?
+		//		A form node to use to submit data to the server.
+		// data: String|Object?
+		//		Data to transfer. When making a GET request, this will
+		//		be converted to key=value parameters and appended to the
+		//		URL.
+	});
+	iframe.__MethodOptions = declare(null, {
+		// method: String?
+		//		The HTTP method to use to make the request. Must be
+		//		uppercase. Only `"GET"` and `"POST"` are accepted.
+		//		Default is `"POST"`.
+	});
+	iframe.__Options = declare([iframe.__BaseOptions, iframe.__MethodOptions]);
+
+	iframe.get = function(url, options){
+		// summary:
+		//		Send an HTTP GET request using an iframe element with the given URL and options.
+		// url: String
+		//		URL to request
+		// options: dojo/request/iframe.__BaseOptions?
+		//		Options for the request.
+		// returns: dojo/request.__Promise
+	};
+	iframe.post = function(url, options){
+		// summary:
+		//		Send an HTTP POST request using an iframe element with the given URL and options.
+		// url: String
+		//		URL to request
+		// options: dojo/request/iframe.__BaseOptions?
+		//		Options for the request.
+		// returns: dojo/request.__Promise
+	};
+	=====*/
+	iframe.create = create;
+	iframe.doc = doc;
+	iframe.setSrc = setSrc;
+
+	// TODO: Make these truly private in 2.0
+	iframe._iframeName = mid + '_IoIframe';
+	iframe._notifyStart = function(){};
+	iframe._dfdQueue = [];
+	iframe._currentDfd = null;
+	iframe._fireNextRequest = fireNextRequest;
+
+	util.addCommonMethods(iframe, ['GET', 'POST']);
+
+	return iframe;
+});
+
+},
+'dojox/form/uploader/_Flash':function(){
+define([
+	"dojo/dom-form",
+	"dojo/dom-style",
+	"dojo/dom-construct",
+	"dojo/dom-attr",
+	"dojo/_base/declare",
+	"dojo/_base/config",
+	"dojo/_base/connect",
+	"dojo/_base/lang",
+	"dojo/_base/array",
+	"dojox/embed/Flash"
+],function(domForm, domStyle, domConstruct, domAttr, declare, config, connect, lang, arrayUtil, embedFlash){
+
+
+	return declare("dojox.form.uploader._Flash", [], {
+		// summary:
+		//		A mixin for dojox/form/Uploader that utilizes a Flash SWF for handling to upload in IE.
+		//		All other browsers will use the HTML5 plugin, unless force="flash" is used, then Flash
+		//		will be used in all browsers. force="flash"	is provided because Flash has some features
+		//		that HTML5 does not yet have. But it is still not recommended because of the many problems
+		//		that Firefox and Webkit have with the Flash plugin.
+		//
+		// description:
+		//		All properties and methods listed here are specific to the Flash version only.
+		//
+		//
+		// swfPath:String
+		//		Path to SWF. Can be overwritten or provided in djConfig.
+		swfPath:config.uploaderPath || require.toUrl("dojox/form/resources/uploader.swf"),
+
+		// preventCache: Boolean
+		//		If true, then flash request is sent with a value that changes with each request (timestamp)
+		preventCache: true,
+	
+		// skipServerCheck: Boolean
+		//		If true, will not verify that the server was sent the correct format.
+		//		This can be safely set to true. The purpose of the server side check
+		//		is mainly to show the dev if they've implemented the different returns
+		//		correctly.
+		skipServerCheck:true,
+	
+		// serverTimeout:Number (milliseconds)
+		//		The amount of time given to the uploaded file
+		//		to wait for a server response. After this amount
+		//		of time, the onComplete is fired but with a 'server timeout'
+		//		error in the returned item.
+		serverTimeout: 2000,
+	
+		// isDebug: Boolean
+		//		If true, outputs traces from the SWF to console. What exactly gets passed
+		//		is very relative, and depends upon what traces have been left in the DEFT SWF.
+		isDebug:false,
+	
+		// devMode: Boolean.
+		//		Re-implemented. devMode increases the logging, adding style tracing from the SWF.
+		devMode:false,
+	
+		// deferredUploading: Number (1 - X)
+		//		(Flash only) throttles the upload to a certain amount of files at a time.
+		//		By default, Flash uploads file one at a time to the server, but in parallel.
+		//		Firefox will try to queue all files at once, leading to problems. Set this
+		//		to the amount to upload in parallel at a time.
+		//		Generally, 1 should work fine, but you can experiment with queuing more than
+		//		one at a time.
+		//		This is of course ignored if selectMultipleFiles equals false.
+		deferredUploading:0,
+	
+		postMixInProperties: function(){
+			if(this.uploadType === 'flash'){
+				this._files = [];
+				this._fileMap = {};
+				this._createInput = this._createFlashUploader;
+				this.getFileList = this.getFlashFileList;
+				this.reset = this.flashReset;
+				this.upload = this.uploadFlash;
+				this.fieldname = "flashUploadFiles"; ///////////////////// this.name
+			}
+			this.inherited(arguments);
+		},
+	
+		/*************************
+		 *	   Public Events	 *
+		 *************************/
+	
+		onReady: function(/*dojox/form/FileUploader*/ uploader){
+			// summary:
+			//		Stub - Fired when embedFlash has created the
+			//		Flash object, but it has not necessarilly finished
+			//		downloading, and is ready to be communicated with.
+		},
+	
+		onLoad: function(/*dojox/form/FileUploader*/ uploader){
+			// summary:
+			//		Stub - SWF has been downloaded 100%.
+		},
+	
+		onFileChange: function(fileArray){
+			// summary:
+			//		Stub - Flash-specific event. Fires on each selection of files
+			//		and only provides the files selected on that event - not all files
+			//		selected, as with HTML5
+		},
+	
+		onFileProgress: function(fileArray){
+			// summary:
+			//		Stub - Flash-specific event. Fires on progress of upload
+			//		and only provides a file-specific event
+		},
+	
+	
+		/*************************
+		 *	   Public Methods	 *
+		 *************************/
+	
+		getFlashFileList: function(){
+			// summary:
+			//		Returns list of currently selected files
+			return this._files; // Array
+		},
+	
+		flashReset: function(){
+			this.flashMovie.reset();
+			this._files = [];
+			this._fileMap = {};
+		},
+	
+		/*************************
+		 *	   Private Methods	 *
+		 *************************/
+	
+		uploadFlash: function(/*Object ? */ formData){
+			// summary:
+			//		Uploads selected files. Alias "upload()" should be used instead.
+			// tags:
+			//		private
+			this.onBegin(this.getFileList());
+			formData = formData || {};
+			formData.returnType = "F";
+			formData.uploadType = this.uploadType;
+			console.log('flas upload', formData);
+			this.flashMovie.doUpload(formData);
+		},
+	
+		_change: function(fileArray){
+			this._files = this._files.concat(fileArray);
+			arrayUtil.forEach(fileArray, function(f){
+				f.bytesLoaded = 0;
+				f.bytesTotal = f.size;
+				this._fileMap[f.name+"_"+f.size] = f;
+			}, this);
+			this.onChange(this._files);
+			this.onFileChange(fileArray);
+		},
+		_complete: function(fileArray){
+			var o = this._getCustomEvent();
+			o.type = "load";
+			this.onComplete(fileArray);
+		},
+		_progress: function(f){
+			this._fileMap[f.name+"_"+f.bytesTotal].bytesLoaded = f.bytesLoaded;
+			var o = this._getCustomEvent();
+			this.onFileProgress(f);
+			this.onProgress(o);
+		},
+		_error: function(err){
+			this.onError(err);
+		},
+		_onFlashBlur: function(fileArray){
+			//console.log("UploaderFlash._onFlashBlur");
+		},
+	
+		_getCustomEvent: function(){
+			var o = {
+				bytesLoaded:0,
+				bytesTotal:0,
+				type:"progress",
+				timeStamp:new Date().getTime()
+			};
+	
+	
+			for(var nm in this._fileMap){
+				o.bytesTotal += this._fileMap[nm].bytesTotal;
+				o.bytesLoaded += this._fileMap[nm].bytesLoaded;
+			}
+			o.decimal = o.bytesLoaded / o.bytesTotal;
+			o.percent = Math.ceil((o.bytesLoaded / o.bytesTotal)*100)+"%";
+			return o; // Object
+		},
+	
+		_connectFlash: function(){
+			// summary:
+			//		Subscribing to published topics coming from the
+			//		Flash uploader.
+	
+			// Sacrificing some readability for compactness. this.id
+			// will be on the beginning of the topic, so more than
+			// one uploader can be on a page and can have unique calls.
+	
+			this._subs = [];
+			this._cons = [];
+	
+			var doSub = lang.hitch(this, function(s, funcStr){
+				this._subs.push(connect.subscribe(this.id + s, this, funcStr));
+			});
+	
+			doSub("/filesSelected", "_change");
+			doSub("/filesUploaded", "_complete");
+			doSub("/filesProgress", "_progress");
+			doSub("/filesError", "_error");
+			doSub("/filesCanceled", "onCancel");
+			doSub("/stageBlur", "_onFlashBlur");
+	
+			this.connect(this.domNode, "focus", function(){
+				// TODO: some kind of indicator that the Flash button is in focus
+				this.flashMovie.focus();
+				this.flashMovie.doFocus();
+			});
+			if(this.tabIndex>=0){
+				domAttr.set(this.domNode, "tabIndex", this.tabIndex);
+			}
+		},
+		_createFlashUploader: function(){
+			// summary:
+			//		Internal. Creates Flash Uploader
+	
+			var w = this.btnSize.w;
+			var h = this.btnSize.h;
+			if(!w){
+				// FIXME: Commit this
+				setTimeout(dojo.hitch(this, function(){
+					this._getButtonStyle(this.domNode);
+					this._createFlashUploader();
+				}), 200);
+				return;
+			}
+			var url = this.getUrl();
+			if(url){
+				if(url.toLowerCase().indexOf("http")<0 && url.indexOf("/")!=0){
+					// Appears to be a relative path. Attempt to
+					// convert it to absolute, so it will better
+					// target the SWF.
+					var loc = window.location.href.split("/");
+					loc.pop();
+					loc = loc.join("/")+"/";
+					url = loc+url;
+				}
+			}else{
+				console.warn("Warning: no uploadUrl provided.");
+			}
+	
+			this.inputNode = domConstruct.create("div", {className:"dojoxFlashNode"}, this.domNode, "first");
+			domStyle.set(this.inputNode, {
+				position:"absolute",
+				top:"-2px",
+				width:w+"px",
+				height:h+"px",
+				opacity:0
+			});
+	
+	
+	
+			var args = {
+				expressInstall:true,
+				path: (this.swfPath.uri || this.swfPath) + ((this.preventCache)?("?cb_" + (new Date().getTime())):""),
+				width: w,
+				height: h,
+				allowScriptAccess:"always",
+				allowNetworking:"all",
+				vars: {
+					uploadDataFieldName: this.flashFieldName || this.name+"Flash",
+					uploadUrl: url,
+					uploadOnSelect: this.uploadOnSelect,
+					deferredUploading:this.deferredUploading || 0,
+					selectMultipleFiles: this.multiple,
+					id: this.id,
+					isDebug: this.isDebug,
+					noReturnCheck: this.skipServerCheck,
+					serverTimeout:this.serverTimeout
+				},
+				params: {
+					scale:"noscale",
+					//wmode:"transparent",
+					wmode:"opaque",
+					allowScriptAccess:"always",
+					allowNetworking:"all"
+				}
+	
+			};
+	
+			this.flashObject = new embedFlash(args, this.inputNode);
+			this.flashObject.onError = lang.hitch(function(msg){
+				console.error("Flash Error: " + msg);
+			});
+			this.flashObject.onReady = lang.hitch(this, function(){
+				this.onReady(this);
+			});
+			this.flashObject.onLoad = lang.hitch(this, function(mov){
+				this.flashMovie = mov;
+				this.flashReady = true;
+	
+				this.onLoad(this);
+			});
+			this._connectFlash();
+		}
+	});
+});
+
+},
+'dojox/embed/Flash':function(){
+define([
+	"dojo/_base/lang",
+	"dojo/_base/unload",
+	"dojo/_base/array",
+	"dojo/query",
+	"dojo/has",
+	"dojo/dom",
+	"dojo/on",
+	"dojo/window",
+	"dojo/string"
+], function(lang,unload,array,query,has,dom,on,win,stringUtil) {
+
+	// module:
+	//		dojox/embed/Flash
+	// summary:
+	//		Base functionality to insert a flash movie into
+	//		a document on the fly.
+	// example:
+	//	|	var movie=new Flash({ args }, containerNode);
+
+
+	var fMarkup, fVersion;
+	var minimumVersion = 9; // anything below this will throw an error (may overwrite)
+	var keyBase = "dojox-embed-flash-", keyCount=0;
+	var _baseKwArgs = {
+		expressInstall: false,
+		width: 320,
+		height: 240,
+		swLiveConnect: "true",
+		allowScriptAccess: "sameDomain",
+		allowNetworking:"all",
+		style: null,
+		redirect: null
+	};
+
+	function prep(kwArgs){
+		kwArgs = lang.delegate(_baseKwArgs, kwArgs);
+
+		if(!("path" in kwArgs)){
+			console.error("dojox.embed.Flash(ctor):: no path reference to a Flash movie was provided.");
+			return null;
+		}
+
+		if(!("id" in kwArgs)){
+			kwArgs.id = (keyBase + keyCount++);
+		}
+		return kwArgs;
+	}
+
+	if(has('ie')) {
+		fMarkup = function(kwArgs){
+			kwArgs = prep(kwArgs);
+			if(!kwArgs){ return null; }
+
+			var p;
+			var path = kwArgs.path;
+			if(kwArgs.vars){
+				var a = [];
+				for(p in kwArgs.vars){
+					a.push(encodeURIComponent(p) + '=' + encodeURIComponent(kwArgs.vars[p]));
+				}
+				kwArgs.params.FlashVars = a.join("&");
+				delete kwArgs.vars;
+			}
+			var s = '<object id="' + stringUtil.escape(String(kwArgs.id)) + '" '
+				+ 'classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" '
+				+ 'width="' + stringUtil.escape(String(kwArgs.width)) + '" '
+				+ 'height="' + stringUtil.escape(String(kwArgs.height)) + '"'
+				+ ((kwArgs.style)?' style="' + stringUtil.escape(String(kwArgs.style)) + '"':'')
+				+ '>'
+				+ '<param name="movie" value="' + stringUtil.escape(String(path)) + '" />';
+			if(kwArgs.params){
+				for(p in kwArgs.params){
+					s += '<param name="' + stringUtil.escape(p) + '" value="' + stringUtil.escape(String(kwArgs.params[p])) + '" />';
+				}
+			}
+			s += '</object>';
+			return { id: kwArgs.id, markup: s };
+		};
+
+		fVersion = (function(){
+			var testVersion = 10, testObj = null;
+			while(!testObj && testVersion > 7){
+				try {
+					testObj = new ActiveXObject("ShockwaveFlash.ShockwaveFlash." + testVersion--);
+				}catch(e){ }
+			}
+			if(testObj){
+				var v = testObj.GetVariable("$version").split(" ")[1].split(",");
+				return {
+					major: (v[0]!=null) ? parseInt(v[0]) : 0,
+					minor: (v[1]!=null) ? parseInt(v[1]) : 0,
+					rev: (v[2]!=null) ? parseInt(v[2]) : 0
+				};
+			}
+			return { major: 0, minor: 0, rev: 0 };
+		})();
+
+		//	attach some cleanup for IE, thanks to deconcept :)
+		unload.addOnWindowUnload(function(){
+			console.warn('***************UNLOAD');
+			var dummy = function(){};
+			var objs = query("object").
+				reverse().
+				style("display", "none").
+				forEach(function(i){
+					for(var p in i){
+						if((p != "FlashVars") && typeof i[p] == "function"){
+							try{
+								i[p] = dummy;
+							}catch(e){}
+						}
+					}
+				});
+		});
+
+	} else {
+		//	*** Sane browsers branch ******************************************************************
+		fMarkup = function(kwArgs){
+			kwArgs = prep(kwArgs);
+			if(!kwArgs){ return null; }
+
+			var p;
+			var path = kwArgs.path;
+			if(kwArgs.vars){
+				var a = [];
+				for(p in kwArgs.vars){
+					a.push(encodeURIComponent(p) + '=' + encodeURIComponent(kwArgs.vars[p]));
+				}
+				kwArgs.params.flashVars = a.join("&");
+				delete kwArgs.vars;
+			}
+			var s = '<embed type="application/x-shockwave-flash" '
+				+ 'src="' + stringUtil.escape(String(path)) + '" '
+				+ 'id="' + stringUtil.escape(String(kwArgs.id)) + '" '
+				+ 'width="' + stringUtil.escape(String(kwArgs.width)) + '" '
+				+ 'height="' + stringUtil.escape(String(kwArgs.height)) + '"'
+				+ ((kwArgs.style)?' style="' + stringUtil.escape(String(kwArgs.style)) + '" ':'')
+
+				+ 'pluginspage="' + window.location.protocol + '//www.adobe.com/go/getflashplayer" ';
+			if(kwArgs.params){
+				for(p in kwArgs.params){
+					s += ' ' + stringUtil.escape(p) + '="' + stringUtil.escape(String(kwArgs.params[p])) + '"';
+				}
+			}
+			s += ' />';
+			return { id: kwArgs.id, markup: s };
+		};
+
+		fVersion=(function(){
+			var plugin = navigator.plugins["Shockwave Flash"];
+			if(plugin && plugin.description){
+				var v = plugin.description.replace(/([a-zA-Z]|\s)+/, "").replace(/(\s+r|\s+b[0-9]+)/, ".").split(".");
+				return {
+					major: (v[0]!=null) ? parseInt(v[0]) : 0,
+					minor: (v[1]!=null) ? parseInt(v[1]) : 0,
+					rev: (v[2]!=null) ? parseInt(v[2]) : 0
+				};
+			}
+			return { major: 0, minor: 0, rev: 0 };
+		})();
+	}
+
+
+/*=====
+var __flashArgs = {
+	// path: String
+	//		The URL of the movie to embed.
+	// id: String?
+	//		A unique key that will be used as the id of the created markup.  If you don't
+	//		provide this, a unique key will be generated.
+	// width: Number?
+	//		The width of the embedded movie; the default value is 320px.
+	// height: Number?
+	//		The height of the embedded movie; the default value is 240px
+	// minimumVersion: Number?
+	//		The minimum targeted version of the Flash Player (defaults to 9)
+	// style: String?
+	//		Any CSS style information (i.e. style="background-color:transparent") you want
+	//		to define on the markup.
+	// params: Object?
+	//		A set of key/value pairs that you want to define in the resultant markup.
+	// vars: Object?
+	//		A set of key/value pairs that the Flash movie will interpret as FlashVars.
+	// expressInstall: Boolean?
+	//		Whether or not to include any kind of expressInstall info. Default is false.
+	// redirect: String?
+	//		A url to redirect the browser to if the current Flash version is not supported.
+};
+=====*/
+
+	//	the main entry point
+	var Flash = function(/*__flashArgs*/ kwArgs, /*DOMNode*/ node){
+		// summary:
+		//		Create a wrapper object around a Flash movie; this is the DojoX equivilent
+		//		to SWFObject.
+		//
+		// description:
+		//		Creates a wrapper object around a Flash movie.  Wrapper object will
+		//		insert the movie reference in node; when the browser first starts
+		//		grabbing the movie, onReady will be fired; when the movie has finished
+		//		loading, it will fire onLoad.
+		//
+		//		If your movie uses ExternalInterface, you should use the onLoad event
+		//		to do any kind of proxy setup (see dojox.embed.Flash.proxy); this seems
+		//		to be the only consistent time calling EI methods are stable (since the
+		//		Flash movie will shoot several methods into the window object before
+		//		EI callbacks can be used properly).
+		//
+		// kwArgs: __flashArgs
+		//		The various arguments that will be used to help define the Flash movie.
+		// node: DomNode
+		//		The node where the embed object will be placed
+		//
+		// example:
+		//		Embed a flash movie in a document using the new operator, and get a reference to it.
+		//	|	var movie = new dojox.embed.Flash({
+		//	|		path: "path/to/my/movie.swf",
+		//	|		width: 400,
+		//	|		height: 300
+		//	|	}, myWrapperNode, "testLoaded");
+		//
+		// example:
+		//		Embed a flash movie in a document without using the new operator.
+		//	|	var movie = dojox.embed.Flash({
+		//	|		path: "path/to/my/movie.swf",
+		//	|		width: 400,
+		//	|		height: 300,
+		//	|		style: "position:absolute;top:0;left:0"
+		//	|	}, myWrapperNode, "testLoaded");
+
+		// File can only be run from a server, due to SWF dependency.
+		if(location.href.toLowerCase().indexOf("file://")>-1){
+			throw new Error("dojox.embed.Flash can't be run directly from a file. To instatiate the required SWF correctly it must be run from a server, like localHost.");
+		}
+
+		// available: Number
+		//		If there is a flash player available, and if so what version.
+		this.available = fVersion.major;
+
+		// minimumVersion: Number
+		//		The minimum version of Flash required to run this movie.
+		this.minimumVersion = kwArgs.minimumVersion || minimumVersion;
+
+		// id: String
+		//		The id of the DOMNode to be used for this movie.  Can be used with dojo.byId to get a reference.
+		this.id = null;
+
+		// movie: FlashObject
+		//		A reference to the movie itself.
+		this.movie = null;
+
+		// domNode: DOMNode
+		//		A reference to the DOMNode that contains this movie.
+		this.domNode = null;
+		if(node){
+			node = dom.byId(node);
+		}
+		// setTimeout Fixes #8743 - creating double SWFs
+		// also allows time for code to attach to onError
+		setTimeout(lang.hitch(this, function(){
+			if(kwArgs.expressInstall || this.available && this.available >= this.minimumVersion){
+				if(kwArgs && node){
+					this.init(kwArgs, node);
+				}else{
+					this.onError("embed.Flash was not provided with the proper arguments.");
+				}
+			}else{
+				if(!this.available){
+					this.onError("Flash is not installed.");
+				}else{
+					this.onError("Flash version detected: "+this.available+" is out of date. Minimum required: "+this.minimumVersion);
+				}
+			}
+		}), 100);
+	};
+
+	lang.extend(Flash, {
+		onReady: function(/*HTMLObject*/ movie){
+			// summary:
+			//		Stub function for you to attach to when the movie reference is first
+			//		pushed into the document.
+		},
+		onLoad: function(/*HTMLObject*/ movie){
+			// summary:
+			//		Stub function for you to attach to when the movie has finished downloading
+			//		and is ready to be manipulated.
+		},
+		onError: function(msg){
+
+		},
+		_onload: function(){
+			// summary:
+			//	Internal. Cleans up before calling onLoad.
+			clearInterval(this._poller);
+			delete this._poller;
+			delete this._pollCount;
+			delete this._pollMax;
+			this.onLoad(this.movie);
+		},
+		init: function(/*__flashArgs*/ kwArgs, /*DOMNode?*/ node){
+			// summary:
+			//		Initialize (i.e. place and load) the movie based on kwArgs.
+			this.destroy();		//	ensure we are clean first.
+			node = dom.byId(node || this.domNode);
+			if(!node){ throw new Error("dojox.embed.Flash: no domNode reference has been passed."); }
+
+			// vars to help determine load status
+			var p = 0, testLoaded=false;
+			this._poller = null; this._pollCount = 0; this._pollMax = 15; this.pollTime = 100;
+
+			if(Flash.initialized){
+
+				this.id = Flash.place(kwArgs, node);
+				this.domNode = node;
+
+				setTimeout(lang.hitch(this, function(){
+					this.movie = this.byId(this.id, kwArgs.doc);
+					this.onReady(this.movie);
+
+					this._poller = setInterval(lang.hitch(this, function(){
+
+						// catch errors if not quite ready.
+						try{
+							p = this.movie.PercentLoaded();
+						}catch(e){
+							console.warn("this.movie.PercentLoaded() failed", e, this.movie);
+						}
+
+						if(p == 100){
+							// if percent = 100, movie is fully loaded and we're communicating
+							this._onload();
+
+						}else if(p==0 && this._pollCount++ > this._pollMax){
+							// after several attempts, we're not past zero.
+							clearInterval(this._poller);
+							throw new Error("Building SWF failed.");
+						}
+					}), this.pollTime);
+				}), 1);
+			}
+		},
+		_destroy: function(){
+			// summary:
+			//		Kill the movie and reset all the properties of this object.
+			try{
+				this.domNode.removeChild(this.movie);
+			}catch(e){}
+			this.id = this.movie = this.domNode = null;
+		},
+		destroy: function(){
+			// summary:
+			//		Public interface for destroying all the properties in this object.
+			//		Will also clean all proxied methods.
+			if(!this.movie){ return; }
+
+			//	remove any proxy functions
+			var test = lang.delegate({
+				id: true,
+				movie: true,
+				domNode: true,
+				onReady: true,
+				onLoad: true
+			});
+			for(var p in this){
+				if(!test[p]){
+					delete this[p];
+				}
+			}
+
+			//	poll the movie
+			if(this._poller){
+				//	wait until onLoad to destroy
+				on(this, "Load", this, "_destroy");
+			} else {
+				this._destroy();
+			}
+		},
+		byId: function (movieName, doc){
+			// summary:
+			//		Gets Flash movie by id.
+			// description:
+			//		Probably includes methods for outdated
+			//		browsers, but this should catch all cases.
+			// movieName: String
+			//		The name of the SWF
+			// doc: Object
+			//		The document, if not current window
+			//		(not fully supported)
+			// example:
+			//	|	var movie = dojox.embed.Flash.byId("myId");
+
+			doc = doc || document;
+			if(doc.embeds[movieName]){
+				return doc.embeds[movieName];
+			}
+			if(doc[movieName]){
+				return doc[movieName];
+			}
+			if(window[movieName]){
+				return window[movieName];
+			}
+			if(document[movieName]){
+				return document[movieName];
+			}
+			return null;
+		}
+	});
+
+	//	expose information through the constructor function itself.
+	lang.mixin(Flash, {
+		// summary:
+		//		A singleton object used internally to get information
+		//		about the Flash player available in a browser, and
+		//		as the factory for generating and placing markup in a
+		//		document.
+		//
+		// minSupported: Number
+		//		The minimum supported version of the Flash Player, defaults to 8.
+		// available: Number
+		//		Used as both a detection (i.e. if(dojox.embed.Flash.available){ })
+		//		and as a variable holding the major version of the player installed.
+		// supported: Boolean
+		//		Whether or not the Flash Player installed is supported by dojox.embed.
+		// version: Object
+		//		The version of the installed Flash Player; takes the form of
+		//		{ major, minor, rev }.  To get the major version, you'd do this:
+		//		var v=dojox.embed.Flash.version.major;
+		// initialized: Boolean
+		//		Whether or not the Flash engine is available for use.
+		// onInitialize: Function
+		//		A stub you can connect to if you are looking to fire code when the
+		//		engine becomes available.  A note: DO NOT use this event to
+		//		place a movie in a document; it will usually fire before DOMContentLoaded
+		//		is fired, and you will get an error.  Use dojo.addOnLoad instead.
+		minSupported : 8,
+		available: fVersion.major,
+		supported: (fVersion.major >= fVersion.required),
+		minimumRequired: fVersion.required,
+		version: fVersion,
+		initialized: false,
+		onInitialize: function(){
+			Flash.initialized = true;
+		},
+		__ie_markup__: function(kwArgs){
+			return fMarkup(kwArgs);
+		},
+		proxy: function(/*Flash*/ obj, /*Array|String*/ methods){
+			// summary:
+			//		Create the set of passed methods on the Flash object
+			//		so that you can call that object directly, as opposed to having to
+			//		delve into the internal movie to do this.  Intended to make working
+			//		with Flash movies that use ExternalInterface much easier to use.
+			//
+			// example:
+			//		Create "setMessage" and "getMessage" methods on foo.
+			//	|	var foo = new Flash(args, someNode);
+			//	|	dojo.connect(foo, "onLoad", lang.hitch(foo, function(){
+			//	|		Flash.proxy(this, [ "setMessage", "getMessage" ]);
+			//	|		this.setMessage("Flash.proxy is pretty cool...");
+			//	|		console.log(this.getMessage());
+			//	|	}));
+			array.forEach((methods instanceof Array ? methods : [ methods ]), function(item){
+				this[item] = lang.hitch(this, function(){
+					return (function(){
+						return eval(this.movie.CallFunction(
+							'<invoke name="' + item + '" returntype="javascript">'
+							+ '<arguments>'
+							+ array.map(arguments, function(item){
+								// FIXME:
+								//		investigate if __flash__toXML will
+								//		accept direct application via map()
+								//		(e.g., does it ignore args past the
+								//		first? or does it blow up?)
+								return __flash__toXML(item);
+							}).join("")
+							+ '</arguments>'
+							+ '</invoke>'
+						));
+					}).apply(this, arguments||[]);
+				});
+			}, obj);
+		}
+	});
+
+	Flash.place = function(kwArgs, node){
+		var o = fMarkup(kwArgs);
+		node = dom.byId(node);
+		if(!node){
+			node = win.doc.createElement("div");
+			node.id = o.id+"-container";
+			win.body().appendChild(node);
+		}
+		if(o){
+			node.innerHTML = o.markup;
+			return o.id;
+		}
+		return null;
+	}
+	Flash.onInitialize();
+
+	lang.setObject("dojox.embed.Flash", Flash);
+
+	return Flash;
+});
+
+},
+'dojox/form/uploader/plugins/IFrame':function(){
+define([],function(){
+	console.warn('dojox.form.uploader.plugins.IFrame has been removed. You can use Uploader directly and it will contain all necessary functionality.');
+	return {};
+});
+},
+'JBrowse/View/FileDialog/TrackList/BAMDriver':function(){
+define([
+           'dojo/_base/declare',
+           './_IndexedFileDriver'
+       ],
+       function( declare, IndexedFileDriver ) {
+return declare( IndexedFileDriver,  {
+    name: 'BAM',
+    storeType: 'JBrowse/Store/SeqFeature/BAM',
+
+    fileExtension: 'bam',
+    fileConfKey: 'bam',
+    fileUrlConfKey: 'urlTemplate',
+
+    indexExtension: 'bai',
+    indexConfKey: 'bai',
+    indexUrlConfKey: 'baiUrlTemplate'
+});
+
+});
+
+},
+'JBrowse/View/FileDialog/TrackList/_IndexedFileDriver':function(){
+define([
+           'dojo/_base/declare',
+           'JBrowse/Util',
+           'JBrowse/Model/FileBlob',
+           'JBrowse/Model/XHRBlob'
+       ],
+       function( declare, Util, FileBlob, XHRBlob ) {
+var uniqCounter = 0;
+return declare( null, {
+
+    tryResource: function( configs, resource ) {
+        if( resource.type == this.fileExtension ) {
+            var basename = Util.basename(
+                resource.file ? resource.file.name :
+                resource.url  ? resource.url       :
+                                ''
+            );
+            if( !basename )
+                return false;
+
+            // go through the configs and see if there is one for an index that seems to match
+            for( var n in configs ) {
+                var c = configs[n];
+                if( Util.basename( c[ this.indexConfKey ] ? c[ this.indexConfKey ].url || c[this.indexConfKey].blob.name : c[this.indexUrlConfKey], '.'+this.indexExtension ) == basename ) {
+                    // it's a match, put it in
+                    c[this.fileConfKey] = this._makeBlob( resource );
+                    return true;
+                }
+            }
+            // go through again and look for index files that don't have the base extension in them
+            basename = Util.basename( basename, '.'+this.fileExtension );
+            for( var n in configs ) {
+                var c = configs[n];
+                if( Util.basename( c[this.indexConfKey] ? c[this.indexConfKey].url || c[this.indexConfKey].blob.name : c[this.indexUrlConfKey], '.'+this.indexExtension ) == basename ) {
+                    // it's a match, put it in
+                    c[this.fileConfKey] = this._makeBlob( resource );
+                    return true;
+                }
+            }
+
+            // otherwise make a new store config for it
+            var newName = this.name+'_'+basename+'_'+uniqCounter++;
+            configs[newName] = {
+                type: this.storeType,
+                name: newName,
+                fileBasename: basename
+            };
+            configs[newName][this.fileConfKey] = this._makeBlob( resource );
+
+            return true;
+        } else if( resource.type == this.indexExtension ) {
+            var basename = Util.basename(
+                resource.file ? resource.file.name :
+                resource.url  ? resource.url       :
+                                ''
+                , '.'+this.indexExtension
+            );
+            if( !basename )
+                return false;
+
+            // go through the configs and look for data files that match like zee.bam -> zee.bam.bai
+            for( var n in configs ) {
+                var c = configs[n];
+                if( Util.basename( c[this.fileConfKey] ? c[this.fileConfKey].url || c[this.fileConfKey].blob.name : c[this.fileUrlConfKey] ) == basename ) {
+                    // it's a match, put it in
+                    c[this.indexConfKey] = this._makeBlob( resource );
+                    return true;
+                }
+            }
+            // go through again and look for data files that match like zee.bam -> zee.bai
+            for( var n in configs ) {
+                var c = configs[n];
+                if( Util.basename( c[this.fileConfKey] ? c[this.fileConfKey].url || c[this.fileConfKey].blob.name : c[this.fileUrlConfKey], '.'+this.fileExtension ) == basename ) {
+                    // it's a match, put it in
+                    c[this.indexConfKey] = this._makeBlob( resource );
+                    return true;
+                }
+            }
+
+            // otherwise make a new store
+            var newName = this.name+'_'+Util.basename(basename,'.'+this.fileExtension)+'_'+uniqCounter++;
+            configs[newName] = {
+                name: newName,
+                type: this.storeType
+            };
+
+            configs[newName][this.indexConfKey] = this._makeBlob( resource );
+            return true;
+        }
+        else
+            return false;
+    },
+
+    // try to merge any singleton file and index stores.  currently can only do this if there is one of each
+    finalizeConfiguration: function( configs ) {
+        var singletonIndexes = {};
+        var singletonIndexCount = 0;
+        var singletonFiles = {};
+        var singletonFileCount = 0;
+        for( var n in configs ) {
+            var conf = configs[n];
+            if( (conf.bai || conf[this.indexUrlConfKey]) && ! ( conf.bam || conf[this.fileUrlConfKey] ) ) {
+                // singleton Index
+                singletonIndexCount++;
+                singletonIndexes[n] = conf;
+            }
+            else if(( conf.bam || conf[this.fileUrlConfKey] ) && ! ( conf.bai || conf[this.indexUrlConfKey]) ) {
+                // singleton File
+                singletonFileCount++;
+                singletonFiles[n] = conf;
+            }
+        }
+
+        // if we have a single File and single Index left at the end,
+        // stick them together and we'll see what happens
+        if( singletonFileCount == 1 && singletonIndexCount == 1 ) {
+            for( var indexName in singletonIndexes ) {
+                for( var fileName in singletonFiles ) {
+                    if( singletonIndexes[indexName][this.indexUrlConfKey] )
+                        singletonFiles[fileName][this.indexUrlConfKey] = singletonIndexes[indexName][this.indexUrlConfKey];
+                    if( singletonIndexes[indexName].bai )
+                        singletonFiles[fileName].bai = singletonIndexes[indexName].bai;
+
+                    delete configs[indexName];
+                }
+            }
+        }
+
+        // delete any remaining singleton Indexes, since they don't have
+        // a hope of working
+        for( var indexName in singletonIndexes ) {
+            delete configs[indexName];
+        }
+
+        // delete any remaining singleton Files, unless they are URLs
+        for( var fileName in singletonFiles ) {
+            if( ! configs[fileName][this.fileUrlConfKey] )
+                delete configs[fileName];
+        }
+    },
+
+    _makeBlob: function( resource ) {
+        var r = resource.file ? new FileBlob( resource.file ) :
+                resource.url  ? new XHRBlob( resource.url )   :
+                                null;
+        if( ! r )
+            throw 'unknown resource type';
+        return r;
+
+    },
+
+    confIsValid: function( conf ) {
+        return (conf[this.fileConfKey] || conf[this.fileUrlConfKey]) && ( conf[this.indexConfKey] || conf[this.indexUrlConfKey] || conf[this.fileUrlConfKey] );
+    }
+});
+});
+
+},
+'JBrowse/Model/FileBlob':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'dojo/has',
+           'JBrowse/Util/TextIterator'
+       ],
+       function( declare, array, has, TextIterator ) {
+var FileBlob = declare( null,
+/**
+ * @lends JBrowse.Model.FileBlob.prototype
+ */
+{
+
+    /**
+     * Blob of binary data fetched from a local file (with FileReader).
+     *
+     * Adapted by Robert Buels from the BlobFetchable object in the
+     * Dalliance Genome Explorer, which was is copyright Thomas Down
+     * 2006-2011.
+     * @constructs
+     */
+    constructor: function(b) {
+        this.blob = b;
+        this.size = b.size;
+        this.totalSize = b.size;
+    },
+
+    slice: function(start, length) {
+        var sliceFunc = this.blob.mozSlice || this.blob.slice || this.blob.webkitSlice;
+        return new FileBlob(
+            length ? sliceFunc.call( this.blob, start, start + length )
+                   : sliceFunc.call( this.blob, start )
+        );
+    },
+
+    fetchLines: function( lineCallback, endCallback, failCallback ) {
+        var thisB = this;
+        this.fetch( function( data ) {
+                        data = new Uint8Array(data);
+
+                        var lineIterator = new TextIterator.FromBytes(
+                            { bytes: data,
+                              // only return a partial line at the end
+                              // if we are not operating on a slice of
+                              // the file
+                              returnPartialRecord: !this.end
+                            });
+                        var line;
+                        while(( line = lineIterator.getline() )) {
+                                lineCallback( line );
+                        }
+
+                        endCallback();
+             }, failCallback );
+    },
+
+    readLines: function( offset, length, lineCallback, endCallback, failCallback ) {
+        var start = this.start + offset,
+            end   = start + length;
+        var skipFirst = offset != 0;
+        this.slice( offset, length )
+            .fetchLines(
+                function() {
+                    // skip the first line if we have a
+                    // nonzero offset, because it is probably
+                    // incomplete
+                    if( ! skipFirst )
+                        lineCallback();
+                    skipFirst = false;
+                }, endCallback, failCallback );
+    },
+
+    read: function( offset, length, callback, failCallback ) {
+        var start = this.start + offset,
+            end = start + length;
+        this.slice( offset, length )
+            .fetch( callback, failCallback );
+    },
+
+    fetch: function( callback, failCallback ) {
+        var that = this,
+            reader = new FileReader();
+        reader.onloadend = function(ev) {
+            callback( that._stringToBuffer( reader.result ) );
+        };
+        reader.readAsBinaryString( this.blob );
+    },
+
+    _stringToBuffer: function(result) {
+        if( ! result || ! has('typed-arrays') )
+            return null;
+
+        var ba = new Uint8Array( result.length );
+        for ( var i = 0; i < ba.length; i++ ) {
+            ba[i] = result.charCodeAt(i);
+        }
+        return ba.buffer;
+    }
+
+});
+return FileBlob;
+});
+},
+'JBrowse/Util/TextIterator':function(){
+/**
+ * Classes to iterate over records in an array-like structure of bytes (FromBytes).
+ */
+
+define([
+       ],
+       function(
+       ) {
+
+var FromBytes = function(args) {
+    this.bytes = args.bytes;
+    this.offset = args.offset || 0;
+    this.length = args.length || this.bytes.length;
+    this._recordSeparator = (args.inputRecordSeparator || "\n").charCodeAt(0);
+    this.returnPartialRecord = args.returnPartialRecord;
+};
+
+FromBytes.prototype.getOffset = function() {
+    return this.offset;
+};
+
+// get a line of text, properly decoding UTF-8
+FromBytes.prototype.getline = function() {
+        var bytes = this.bytes;
+        var i = this.offset;
+
+        var line = [];
+        while( i < this.length ) {
+            var c1 = bytes[i], c2, c3;
+            if (c1 < 128) {
+                line.push( String.fromCharCode(c1) );
+                i++;
+                if( c1 == this._recordSeparator ) {
+                    this.offset = i;
+                    return line.join('');
+                }
+            } else if (c1 > 191 && c1 < 224) {
+                c2 = bytes[i + 1];
+                line.push( String.fromCharCode(((c1 & 31) << 6) | (c2 & 63)) );
+                i += 2;
+            } else {
+                c2 = bytes[i + 1];
+                c3 = bytes[i + 2];
+                line.push( String.fromCharCode(((c1 & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)) );
+                i += 3;
+            }
+        }
+
+        // did not get a full line
+        this.offset = i;
+        // return our partial line if we are set to return partial records
+        return this.returnPartialRecord ? line.join('') : null;
+};
+
+return {
+    FromBytes: FromBytes
+};
+
+});
+},
+'JBrowse/Model/XHRBlob':function(){
+define( [ 'dojo/_base/declare',
+          'JBrowse/Model/FileBlob',
+          'JBrowse/Store/RemoteBinaryFile'
+        ],
+        function( declare, FileBlob, RemoteBinaryFileCache ) {
+var globalCache = new RemoteBinaryFileCache({
+    name: 'XHRBlob',
+    maxSize: 100000000 // 100MB of file cache
+});
+
+var XHRBlob = declare( FileBlob,
+/**
+ * @lends JBrowse.Model.XHRBlob.prototype
+ */
+{
+
+    /**
+     * Blob of binary data fetched with an XMLHTTPRequest.
+     *
+     * Adapted by Robert Buels from the URLFetchable object in the
+     * Dalliance Genome Explorer, which was is copyright Thomas Down
+     * 2006-2011.
+     * @constructs
+     */
+    constructor: function(url, start, end, opts) {
+        if (!opts) {
+            if (typeof start === 'object') {
+                opts = start;
+                start = undefined;
+            } else {
+                opts = {};
+            }
+        }
+
+        this.url = url;
+        this.start = start || 0;
+        if (end) {
+            this.end = end;
+        }
+        this.opts = opts;
+    },
+
+    slice: function(s, l) {
+        var ns = this.start, ne = this.end;
+        if (ns && s) {
+            ns = ns + s;
+        } else {
+            ns = s || ns;
+        }
+        if (l && ns) {
+            ne = ns + l - 1;
+        } else {
+            ne = ne || l - 1;
+        }
+        return new XHRBlob(this.url, ns, ne, this.opts);
+    },
+
+    fetch: function( callback, failCallback ) {
+        globalCache.get({
+            url: this.url,
+            start: this.start,
+            end: this.end,
+            success: callback,
+            failure: failCallback
+        });
+    },
+
+    read: function( offset, length, callback, failCallback ) {
+        var start = this.start + offset,
+            end = start + length;
+
+        globalCache.get({
+            url: this.url,
+            start: start,
+            end: end,
+            success: callback,
+            failure: failCallback
+        });
+    }
+});
+return XHRBlob;
+});
+},
+'JBrowse/Store/RemoteBinaryFile':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/_base/array',
+           'JBrowse/has',
+           'JBrowse/Util',
+           'JBrowse/Store/LRUCache',
+           'jszlib/arrayCopy'
+       ],
+       function( declare, lang, array, has, Util, LRUCache, arrayCopy ) {
+
+var Chunk = Util.fastDeclare({
+    constructor: function( values ) {
+        lang.mixin( this, values );
+    },
+    toString: function() {
+        return this.url+" (bytes "+this.start+".."+this.end+")";
+    },
+    toUniqueString: function() {
+        return this.url+" (bytes "+this.start+".."+this.end+")";
+    }
+});
+
+// contains chunks of files, stitches them together if necessary, wraps, and returns them
+// to satisfy requests
+return declare( null,
+
+/**
+ * @lends JBrowse.Store.RemoteBinaryFile
+ */
+{
+    constructor: function( args ) {
+        this.name = args.name;
+
+        this._fetchCount = 0;
+        this._arrayCopyCount = 0;
+
+        this.minChunkSize = 'minChunkSize' in args ? args.minChunkSize : 32768;
+        this.chunkCache = new LRUCache({
+            name: args.name + ' chunk cache',
+            fillCallback: dojo.hitch( this, '_fetch' ),
+            maxSize: args.maxSize || 10000000 // 10MB max cache size
+        });
+
+        this.totalSizes = {};
+    },
+
+    _escapeRegExp: function(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    },
+
+    _relevantExistingChunks: function( url, start, end ) {
+        // we can't actually use any existing chunks if we don't have an
+        // end defined.  not possible in the HTTP spec to ask for all except
+        // the first X bytes of a file
+        if( !end )
+            return [];
+
+        start = start || 0;
+
+        var fileChunks = this.chunkCache
+                .query( new RegExp( '^'+this._escapeRegExp( url + ' (bytes' ) ) );
+
+        // set 'start' and 'end' on any records that don't have them, but should
+        array.forEach( fileChunks, function(c) {
+                           if( c.size ) {
+                               if( ! c.key.start )
+                                   c.key.start = 0;
+                               if( ! c.key.end )
+                                   c.key.end = c.key.start + ( c.size || c.value.byteLength );
+                           }
+                       });
+
+        // sort the records by start coordinate, then by length descending (so that we preferentially use big chunks)
+        fileChunks = fileChunks.sort( function( a, b ) {
+            return ( a.key.start - b.key.start ) || ((b.key.end - b.key.start) - ( a.key.end - a.key.start ));
+        });
+
+        // filter for the chunks that can actually be used for this request
+        return array.filter( fileChunks,
+                             function( chunk ) {
+                                 return !( chunk.key.start > end || chunk.key.end < start );
+                             }, this);
+    },
+
+    _fetchChunks: function( url, start, end, callback, errorCallback ) {
+        start = start || 0;
+
+        // if we already know how big the file is, use that information for the end
+        if( typeof end != 'number' && this.totalSizes[url] ) {
+            end = this.totalSizes[ url ]-1;
+        }
+        // if we know the size of the file, and end is beyond it, then clamp it
+        else if( end >= this.totalSizes[url] ) {
+            end = this.totalSizes[url] - 1;
+        }
+        // NOTE: if end is undefined, we take that to mean fetch all the way to the end of the file
+
+        // what chunks do we already have in the chunk cache?
+        var existingChunks = this._relevantExistingChunks( url, start, end );
+        this._log( 'existing', existingChunks );
+
+        // assemble a 'golden path' of chunks to use to fulfill this
+        // request, using existing chunks where we have them cached,
+        // and where we don't, making records for chunks to fetch
+        var goldenPath = [];
+        if( typeof end != 'number' ) { // if we don't have an end coordinate, we just have to fetch the whole file
+            goldenPath.push({ key: new Chunk( { url: url, start: 0, end: undefined } ) });
+        }
+        else {
+            for( var currOffset = start; currOffset <= end; currOffset = goldenPath[goldenPath.length-1].key.end+1 ) {
+                if( existingChunks[0] && existingChunks[0].key.start <= currOffset ) {
+                    goldenPath.push( existingChunks.shift() );
+                } else {
+                    goldenPath.push({ key: new Chunk({
+                                          url: url,
+                                          start: currOffset,
+                                          end: existingChunks[0] ? existingChunks[0].key.start-1 : end
+                                      })
+                                    });
+                }
+            }
+        }
+
+        // filter the blocks in the golden path that
+        // have not already been fetched to try to align them to chunk boundaries: multiples of minChunkSize
+        array.forEach( goldenPath, function( c ) {
+                           if( c.value )
+                               return;
+                           var k = c.key;
+                           k.start = Math.floor( k.start / this.minChunkSize ) * this.minChunkSize;
+                           if( k.end )
+                               k.end = Math.ceil( (k.end+1) / this.minChunkSize ) * this.minChunkSize - 1;
+                       }, this );
+
+        // merge and filter request blocks in the golden path
+        goldenPath = this._optimizeGoldenPath( goldenPath );
+
+        var needed = array.filter( goldenPath, function(n) { return ! n.value; });
+
+        this._log( 'needed', needed );
+
+        // now fetch all the needed chunks
+        // remember that chunk records in the 'needed' array are also
+        // present in the 'goldenPath' array, so setting their value
+        // will affect both places
+        if( needed.length ) {
+            var fetchedCount = 0;
+            array.forEach( needed, function( c ) {
+                this.chunkCache.get( c.key, function( data, error ) {
+                    c.value = data;
+                    if( error ) {
+                        errorCallback( error );
+                    }
+                    else if( ++fetchedCount == needed.length )
+                        callback( goldenPath );
+                });
+            }, this );
+        }
+        // or we might already have all the chunks we need
+        else {
+            callback( goldenPath );
+        }
+    },
+
+    _optimizeGoldenPath: function( goldenPath ) {
+        var goldenPath2 = [ goldenPath[0] ];
+        for( var i = 1; i<goldenPath.length; i++ ) {
+            var chunk = goldenPath[i];
+            var prev = goldenPath[i-1];
+            var lastGolden = goldenPath2[ goldenPath2.length-1];
+
+            if( chunk.value ) { // use an existing chunk if it is not rendered superfluous by the previous chunk
+                if( chunk.key.end > lastGolden.key.end )
+                    goldenPath2.push( chunk );
+                // else don't use this chunk
+            }
+            else {
+                // if the last thing on the golden path is also
+                // something we need to fetch, merge with it
+                if( ! lastGolden.value ) {
+                    lastGolden.key.end = chunk.key.end;
+                }
+                // otherwise, use this fetch
+                else {
+                    goldenPath2.push( chunk );
+                }
+            }
+        }
+        return goldenPath2;
+    },
+
+    _fetch: function( request, callback, attempt, truncatedLength ) {
+
+        this._log( 'fetch', request.url, request.start, request.end );
+        this._fetchCount++;
+
+        attempt = attempt || 1;
+
+        var req = new XMLHttpRequest();
+        var length;
+        var url = request.url;
+
+        // Safari browsers cache XHRs to a single resource, regardless
+        // of the byte range.  So, requesting the first 32K, then
+        // requesting second 32K, can result in getting the first 32K
+        // twice.  Seen first-hand on Safari 6, and @dasmoth reports
+        // the same thing on mobile Safari on IOS.  So, if running
+        // Safari, put the byte range in a query param at the end of
+        // the URL to force Safari to pay attention to it.
+        if( has('safari') && request.end ) {
+            url = url + ( url.indexOf('?') > -1 ? '&' : '?' ) + 'safari_range=' + request.start +'-'+request.end;
+        }
+
+        req.open('GET', url, true );
+        if( req.overrideMimeType )
+            req.overrideMimeType('text/plain; charset=x-user-defined');
+        if (request.end) {
+            req.setRequestHeader('Range', 'bytes=' + request.start + '-' + request.end);
+            length = request.end - request.start + 1;
+        }
+        req.responseType = 'arraybuffer';
+
+        var respond = function( response ) {
+            if( response ) {
+                if( ! request.start )
+                    request.start = 0;
+                if( ! request.end )
+                    request.end = request.start + response.byteLength;
+            }
+            var nocache = /no-cache/.test( req.getResponseHeader('Cache-Control') )
+                || /no-cache/.test( req.getResponseHeader('Pragma') );
+            callback( response, null, {nocache: nocache } );
+        };
+
+        req.onreadystatechange = dojo.hitch( this, function() {
+            if (req.readyState == 4) {
+                if (req.status == 200 || req.status == 206) {
+
+                    // if this response tells us the file's total size, remember that
+                    this.totalSizes[request.url] = (function() {
+                        var contentRange = req.getResponseHeader('Content-Range');
+                        if( ! contentRange )
+                            return undefined;
+                        var match = contentRange.match(/\/(\d+)$/);
+                        return match ? parseInt(match[1]) : undefined;
+                    })();
+
+                    var response = req.response || req.mozResponseArrayBuffer || (function() {
+                        try{
+                            var r = req.responseText;
+                            if (length && length != r.length && (!truncatedLength || r.length != truncatedLength)) {
+                                if( attempt == 3 ) {
+                                    callback( null, this._errorString( req, url ) );
+                                } else {
+                                    this._fetch( request, callback, attempt + 1, r.length );
+                                }
+                                return;
+                            } else {
+                                respond( this._stringToBuffer(req.responseText) );
+                                return;
+                            }
+                        } catch (x) {
+                            console.error(''+x, x.stack, x);
+                            // the response must have successful but
+                            // empty, so respond with a zero-length
+                            // arraybuffer
+                            respond( new ArrayBuffer() );
+                            return;
+                        }
+                    }).call(this);
+                    if( response ) {
+                        respond( response );
+                    }
+                } else if( attempt == 3 ) {
+                    callback( null, this._errorString( req, url ) );
+                    return null;
+                } else {
+                    return this._fetch( request, callback, attempt + 1);
+                }
+            }
+            return null;
+        });
+        // if (this.opts.credentials) {
+        //     req.withCredentials = true;
+        //  }
+        req.send('');
+    },
+
+    _errorString: function( req, url ) {
+        if( req.status )
+            return req.status+' ('+req.statusText+') when attempting to fetch '+url;
+        else
+            return 'Unable to fetch '+url;
+    },
+
+    /**
+     * @param args.url     {String} url to fetch
+     * @param args.start   {Number|undefined} start byte offset
+     * @param args.end     {Number|undefined} end byte offset
+     * @param args.success {Function} success callback
+     * @param args.failure {Function} failure callback
+     */
+    get: function( args ) {
+        if( ! has('typed-arrays') ) {
+            (args.failure || function(m) { console.error(m); })('This web browser lacks support for JavaScript typed arrays.');
+            return;
+        }
+
+
+        this._log( 'get', args.url, args.start, args.end );
+
+        var start = args.start || 0;
+        var end = args.end;
+        if( start && !end )
+            throw "cannot specify a fetch start without a fetch end";
+
+        if( start < 0 )
+            throw "start cannot be negative!";
+        if( end < 0 )
+            throw "end cannot be negative!";
+
+
+        if( ! args.success )
+            throw new Error('success callback required');
+        if( ! args.failure )
+            throw new Error('failure callback required');
+
+        this._fetchChunks(
+            args.url,
+            start,
+            end,
+            dojo.hitch( this,  function( chunks ) {
+
+                 var totalSize = this.totalSizes[ args.url ];
+
+                 this._assembleChunks(
+                         start,
+                         end,
+                         function( resultBuffer ) {
+                             if( typeof totalSize == 'number' )
+                                 resultBuffer.fileSize = totalSize;
+                             try {
+                                 args.success.call( this, resultBuffer );
+                             } catch( e ) {
+                                 console.error(''+e, e.stack, e);
+                                 if( args.failure )
+                                     args.failure( e );
+                             }
+                         },
+                         args.failure,
+                         chunks
+                 );
+            }),
+            args.failure
+        );
+    },
+
+    _assembleChunks: function( start, end, successCallback, failureCallback, chunks ) {
+        this._log( 'golden path', chunks);
+
+        var returnBuffer;
+
+        if( ! has('typed-arrays') ) {
+            failureCallback( 'Web browser does not support typed arrays');
+            return;
+        }
+
+        // if we just have one chunk, return either it, or a subarray of it.  don't have to do any array copying
+        if( chunks.length == 1 && chunks[0].key.start == start && (!end || chunks[0].key.end == end) ) {
+            returnBuffer = chunks[0].value;
+        } else {
+
+            // calculate the actual range end from the chunks we're
+            // using, can't always trust the `end` we're passed,
+            // because it might actually be beyond the end of the
+            // file.
+            var fetchEnd = Math.max.apply(
+                Math,
+                array.map(
+                    chunks,
+                    function(c) {
+                        return c.key.start + ((c.value||{}).byteLength || 0 ) - 1;
+                    })
+            );
+
+            // if we have an end, we shouldn't go larger than it, though
+            if( end )
+                fetchEnd = Math.min( fetchEnd, end );
+
+            var fetchLength = fetchEnd - start + 1;
+
+            // stitch them together into one ArrayBuffer to return
+            returnBuffer = new Uint8Array( fetchLength );
+            var cursor = 0;
+            array.forEach( chunks, function( chunk ) {
+                if( !( chunk.value && chunk.value.byteLength ) ) // skip if the chunk has no data
+                    return;
+
+                var b = new Uint8Array( chunk.value );
+                var bOffset = (start+cursor) - chunk.key.start; if( bOffset < 0 ) this._error('chunking error');
+                var length = Math.min( b.byteLength - bOffset, fetchLength - cursor );
+                this._log( 'arrayCopy', b, bOffset, returnBuffer, cursor, length );
+                arrayCopy( b, bOffset, returnBuffer, cursor, length );
+                this._arrayCopyCount++;
+                cursor += length;
+            },this);
+            returnBuffer = returnBuffer.buffer;
+        }
+
+        // return the data buffer
+        successCallback( returnBuffer );
+    },
+
+    _stringToBuffer: function(result) {
+        if( ! result || typeof Uint8Array != 'function' )
+            return null;
+
+        var ba = new Uint8Array( result.length );
+        for ( var i = 0; i < ba.length; i++ ) {
+            ba[i] = result.charCodeAt(i);
+        }
+        return ba.buffer;
+    },
+
+    _log: function() {
+        //console.log.apply( console, this._logf.apply(this,arguments) );
+    },
+    _warn: function() {
+        console.warn.apply( console, this._logf.apply(this,arguments) );
+    },
+    _error: function() {
+        console.error.apply( console,  this._logf.apply(this,arguments) );
+        throw 'file error';
+    },
+    _logf: function() {
+        arguments[0] = this.name+' '+arguments[0];
+        if( typeof arguments[0] == 'string' )
+            while( arguments[0].length < 15 )
+                arguments[0] += ' ';
+        return arguments;
+    }
+
+});
+});
+},
+'JBrowse/Store/LRUCache':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'JBrowse/Util',
+           'JBrowse/Digest/Crc32'
+       ],
+       function( declare, array, Util, digest ) {
+
+return declare( null,
+
+/**
+ * @lends JBrowse.Store.LRUCache
+ */
+{
+
+    /**
+     * An LRU cache.
+     *
+     * @param args.fillCallback
+     * @param args.maxSize
+     * @param args.sizeFunction
+     * @param args.keyFunction
+     * @param args.name
+     * @param args.verbose
+     * @constructs
+     */
+    constructor: function( args ) {
+        this.fill = args.fillCallback;
+        this.maxSize = args.maxSize || 1000000;
+
+        this.verbose = args.verbose;
+
+        this.name = args.name || 'LRUcache';
+
+        this._size = args.sizeFunction || this._size;
+        this._keyString = args.keyFunction || this._keyString;
+
+        this.itemCount = 0;
+        this.size = 0;
+
+        this._cacheByKey = {};
+
+        // each end of a doubly-linked list, sorted in usage order
+        this._cacheOldest = null;
+        this._cacheNewest = null;
+
+        // we aggregate cache fill calls that are in progress, indexed
+        // by cache key
+        this._inProgressFills = {};
+    },
+
+    get: function( inKey, callback ) {
+        var keyString = this._keyString( inKey );
+        var record = this._cacheByKey[ keyString ];
+
+        if( !record ) {
+            this._log( 'miss', keyString );
+
+            // call our fill callback if we can
+            this._attemptFill( inKey, keyString, callback );
+            return;
+
+        } else {
+            this._log( 'hit', keyString );
+            this.touchRecord( record );
+            window.setTimeout( function() {
+                callback( record.value );
+            }, 1 );
+        }
+    },
+
+    query: function( keyRegex ) {
+        var results = [];
+        var cache = this._cacheByKey;
+        for( var k in cache ) {
+            if( keyRegex.test( k ) && cache.hasOwnProperty(k) )
+                results.push( cache[k] );
+        }
+        return results;
+    },
+
+    forEach: function( func, context ) {
+        if( ! context ) context = this;
+        var i = 0;
+        for( var record = this._cacheNewest; record; record = record.next ) {
+            func.call( context, record, i++ );
+        }
+    },
+    some: function( func, context ) {
+        if( ! context ) context = this;
+        var i = 0;
+        for( var record = this._cacheNewest; record; record = record.next ) {
+            if( func.call( context, record, i++ ) )
+                return true;
+        }
+        return false;
+    },
+
+    touch: function( inKey ) {
+        this.touchRecord( this._cacheByKey[ this._keyString( inKey ) ] );
+    },
+
+    touchRecord: function( record ) {
+        if( ! record )
+            return;
+
+        // already newest, nothing to do
+        if( this._cacheNewest === record )
+            return;
+
+        // take it out of the linked list
+        this._llRemove( record );
+
+        // add it back into the list as newest
+        this._llPush( record );
+    },
+
+    // take a record out of the LRU linked list
+    _llRemove: function( record ) {
+        if( record.prev )
+            record.prev.next = record.next;
+        if( record.next )
+            record.next.prev = record.prev;
+
+        if( this._cacheNewest === record )
+            this._cacheNewest = record.prev;
+
+        if( this._cacheOldest === record )
+            this._cacheOldest = record.next;
+
+        record.prev = null;
+        record.next = null;
+    },
+
+    _llPush: function( record ) {
+        if( this._cacheNewest ) {
+            this._cacheNewest.next = record;
+            record.prev = this._cacheNewest;
+        }
+        this._cacheNewest = record;
+        if( ! this._cacheOldest )
+            this._cacheOldest = record;
+    },
+
+    _attemptFill: function( inKey, keyString, callback ) {
+        if( this.fill ) {
+
+            var fillRecord = this._inProgressFills[ keyString ] =
+                this._inProgressFills[ keyString ] || { callbacks: [], running: false };
+
+            fillRecord.callbacks.push( callback );
+
+            if( ! fillRecord.running ) {
+                fillRecord.running = true;
+                this.fill( inKey, dojo.hitch( this, function( keyString, inKey, fillRecord, value, error, hints ) {
+                    delete this._inProgressFills[ keyString ];
+                    fillRecord.running = false;
+
+                    if( value && ! ( hints && hints.nocache ) ) {
+                        this._log( 'fill', keyString );
+                        this.set( inKey, value );
+                    }
+                    array.forEach( fillRecord.callbacks, function( cb ) {
+                                       try {
+                                           cb.call( this, value, error );
+                                       } catch(x) {
+                                           console.error(''+x, x.stack, x);
+                                       }
+                                   }, this );
+                }, keyString, inKey, fillRecord ));
+            }
+        }
+        else {
+            try {
+                callback( undefined );
+            } catch(x) {
+                console.error(x);
+            }
+        }
+    },
+
+    set: function( inKey, value ) {
+        var keyString = this._keyString( inKey );
+        if( this._cacheByKey[keyString] ) {
+            return;
+        }
+
+        // make a cache record for it
+        var record = {
+            value: value,
+            key: inKey,
+            keyString: keyString,
+            size: this._size( value )
+        };
+
+        if( record.size > this.maxSize ) {
+            this._warn( 'cannot fit', keyString, '('+Util.addCommas(record.size) + ' > ' + Util.addCommas(this.maxSize)+')' );
+            return;
+        }
+
+        this._log( 'set', keyString, record, this.size );
+
+        // evict items if necessary
+        this._prune( record.size );
+
+        // put it in the byKey structure
+        this._cacheByKey[keyString] = record;
+
+        // put it in the doubly-linked list
+        this._llPush( record );
+
+        // update our total size and item count
+        this.size += record.size;
+        this.itemCount++;
+
+        return;
+    },
+
+    _keyString: function( inKey ) {
+        var type = typeof inKey;
+        if( type == 'object' && typeof inKey.toUniqueString == 'function' ) {
+            return inKey.toUniqueString();
+        }
+        else {
+            return digest.objectFingerprint( inKey );
+        }
+    },
+
+    _size: function( value ) {
+        var type = typeof value;
+        if( type == 'object' && type !== null ) {
+            var sizeType = typeof value.size;
+            if( sizeType == 'number' ) {
+                return sizeType;
+            }
+            else if( sizeType == 'function' ) {
+                return value.size();
+            }
+            else if( value.byteLength ) {
+                return value.byteLength;
+            } else {
+                var sum = 0;
+                for( var k in value ) {
+                    if( value.hasOwnProperty( k ) ) {
+                        sum += this._size( value[k] );
+                    }
+                }
+            }
+            return sum;
+        } else if( type == 'string' ) {
+            return value.length;
+        } else {
+            return 1;
+        }
+    },
+
+    _prune: function( newItemSize ) {
+        while( this.size + (newItemSize||0) > this.maxSize ) {
+            var oldest = this._cacheOldest;
+            if( oldest ) {
+                this._log( 'evict', oldest );
+
+                // // update the oldest and newest pointers
+                // if( ! oldest.next ) // if this was also the newest
+                //     this._cacheNewest = oldest.prev; // probably undef
+                // this._cacheOldest = oldest.next; // maybe undef
+
+                // take it out of the linked list
+                this._llRemove( oldest );
+
+                // delete it from the byKey structure
+                delete this._cacheByKey[ oldest.keyString ];
+
+                // remove its linked-list links in case that makes it
+                // easier for the GC
+                delete oldest.next;
+                delete oldest.prev;
+
+                // update our size and item counts
+                this.itemCount--;
+                this.size -= oldest.size;
+            } else {
+                // should usually not be reached
+                this._error( "eviction error", this.size, newItemSize, this );
+                return;
+            }
+        }
+    },
+
+    _log: function() {
+        if( this.verbose )
+            console.log.apply( console, this._logf.apply(this,arguments) );
+    },
+    _warn: function() {
+        console.warn.apply( console, this._logf.apply(this,arguments) );
+    },
+    _error: function() {
+        console.error.apply( console, this._logf.apply(this,arguments) );
+    },
+    _logf: function() {
+        arguments[0] = this.name+' '+arguments[0];
+        if( typeof arguments[0] == 'string' )
+            while( arguments[0].length < 15 )
+                arguments[0] += ' ';
+        return arguments;
+    }
+});
+});
+},
+'JBrowse/Digest/Crc32':function(){
+define([],
+    function() {
+
+var Crc32 = {
+    crc32Table: "00000000 77073096 EE0E612C 990951BA 076DC419 706AF48F E963A535 9E6495A3 0EDB8832 79DCB8A4 E0D5E91E 97D2D988 09B64C2B 7EB17CBD E7B82D07 90BF1D91 1DB71064 6AB020F2 F3B97148 84BE41DE 1ADAD47D 6DDDE4EB F4D4B551 83D385C7 136C9856 646BA8C0 FD62F97A 8A65C9EC 14015C4F 63066CD9 FA0F3D63 8D080DF5 3B6E20C8 4C69105E D56041E4 A2677172 3C03E4D1 4B04D447 D20D85FD A50AB56B 35B5A8FA 42B2986C DBBBC9D6 ACBCF940 32D86CE3 45DF5C75 DCD60DCF ABD13D59 26D930AC 51DE003A C8D75180 BFD06116 21B4F4B5 56B3C423 CFBA9599 B8BDA50F 2802B89E 5F058808 C60CD9B2 B10BE924 2F6F7C87 58684C11 C1611DAB B6662D3D 76DC4190 01DB7106 98D220BC EFD5102A 71B18589 06B6B51F 9FBFE4A5 E8B8D433 7807C9A2 0F00F934 9609A88E E10E9818 7F6A0DBB 086D3D2D 91646C97 E6635C01 6B6B51F4 1C6C6162 856530D8 F262004E 6C0695ED 1B01A57B 8208F4C1 F50FC457 65B0D9C6 12B7E950 8BBEB8EA FCB9887C 62DD1DDF 15DA2D49 8CD37CF3 FBD44C65 4DB26158 3AB551CE A3BC0074 D4BB30E2 4ADFA541 3DD895D7 A4D1C46D D3D6F4FB 4369E96A 346ED9FC AD678846 DA60B8D0 44042D73 33031DE5 AA0A4C5F DD0D7CC9 5005713C 270241AA BE0B1010 C90C2086 5768B525 206F85B3 B966D409 CE61E49F 5EDEF90E 29D9C998 B0D09822 C7D7A8B4 59B33D17 2EB40D81 B7BD5C3B C0BA6CAD EDB88320 9ABFB3B6 03B6E20C 74B1D29A EAD54739 9DD277AF 04DB2615 73DC1683 E3630B12 94643B84 0D6D6A3E 7A6A5AA8 E40ECF0B 9309FF9D 0A00AE27 7D079EB1 F00F9344 8708A3D2 1E01F268 6906C2FE F762575D 806567CB 196C3671 6E6B06E7 FED41B76 89D32BE0 10DA7A5A 67DD4ACC F9B9DF6F 8EBEEFF9 17B7BE43 60B08ED5 D6D6A3E8 A1D1937E 38D8C2C4 4FDFF252 D1BB67F1 A6BC5767 3FB506DD 48B2364B D80D2BDA AF0A1B4C 36034AF6 41047A60 DF60EFC3 A867DF55 316E8EEF 4669BE79 CB61B38C BC66831A 256FD2A0 5268E236 CC0C7795 BB0B4703 220216B9 5505262F C5BA3BBE B2BD0B28 2BB45A92 5CB36A04 C2D7FFA7 B5D0CF31 2CD99E8B 5BDEAE1D 9B64C2B0 EC63F226 756AA39C 026D930A 9C0906A9 EB0E363F 72076785 05005713 95BF4A82 E2B87A14 7BB12BAE 0CB61B38 92D28E9B E5D5BE0D 7CDCEFB7 0BDBDF21 86D3D2D4 F1D4E242 68DDB3F8 1FDA836E 81BE16CD F6B9265B 6FB077E1 18B74777 88085AE6 FF0F6A70 66063BCA 11010B5C 8F659EFF F862AE69 616BFFD3 166CCF45 A00AE278 D70DD2EE 4E048354 3903B3C2 A7672661 D06016F7 4969474D 3E6E77DB AED16A4A D9D65ADC 40DF0B66 37D83BF0 A9BCAE53 DEBB9EC5 47B2CF7F 30B5FFE9 BDBDF21C CABAC28A 53B39330 24B4A3A6 BAD03605 CDD70693 54DE5729 23D967BF B3667A2E C4614AB8 5D681B02 2A6F2B94 B40BBE37 C30C8EA1 5A05DF1B 2D02EF8D",
+
+    stringToBytes: function( str ) {
+        var ch, st, re = [];
+        for (var i = 0; i < str.length; i++ ) {
+            ch = str.charCodeAt(i);  // get char
+            st = [];                 // set up "stack"
+            do {
+                st.push( ch & 0xFF );  // push byte to stack
+                ch = ch >> 8;          // shift value down by 1 byte
+            }
+            while ( ch );
+            // add stack contents to result
+            // done because chars have "wrong" endianness
+            re = re.concat( st.reverse() );
+        }
+        // return an array of bytes
+        return re;
+    },
+
+    crc32: function( str, crc ) {
+        var bytes = Crc32.stringToBytes(str);
+        if( crc == window.undefined ) crc = 0;
+        var n = 0; //a number between 0 and 255
+        var x = 0; //a hex number
+        var table = Crc32.crc32Table;
+
+        crc = crc ^ (-1);
+        for( var i = 0, iTop = bytes.length; i < iTop; i++ ) {
+            n = ( crc ^ bytes[i] ) & 0xFF;
+            x = "0x" + table.substr( n * 9, 8 );
+            crc = ( crc >>> 8 ) ^ x;
+        }
+        crc = crc ^ (-1);
+        //convert to unsigned 32-bit int if needed
+        if (crc < 0) {
+            crc += 4294967296;
+        }
+        return crc;
+    },
+
+    /**
+     * Does a (deep) crc32 of any object.
+     * @returns {Number}
+     */
+    objectFingerprint: function(obj) {
+        var crc = 0;
+        if( typeof obj == 'object' ) {
+            for( var prop in obj ) {
+                crc = Crc32.crc32( '' + Crc32.objectFingerprint( prop      ), crc );
+                crc = Crc32.crc32( '' + Crc32.objectFingerprint( obj[prop] ), crc );
+            }
+        } else {
+            crc = Crc32.crc32( ''+obj, crc );
+        }
+        return crc;
+    }
+};
+
+return Crc32;
+});
+},
+'jszlib/arrayCopy':function(){
+define([],
+       function() {
+
+var testArray;
+try {
+    testArray = new Uint8Array(1);
+} catch (x) {}
+var hasSlice = false; /* (typeof testArray.slice === 'function'); */ // Chrome slice performance is so dire that we're currently not using it...
+
+function arrayCopy(src, srcOffset, dest, destOffset, count) {
+    if (count == 0) {
+        return;
+    }
+    if (!src) {
+        throw "Undef src";
+    } else if (!dest) {
+        throw "Undef dest";
+    }
+
+    if (srcOffset == 0 && count == src.length) {
+        arrayCopy_fast(src, dest, destOffset);
+    } else if ( src.subarray ) {
+        arrayCopy_fast(src.subarray(srcOffset, srcOffset + count), dest, destOffset);
+    } else if (src.BYTES_PER_ELEMENT == 1 && count > 100) {
+        arrayCopy_fast(new Uint8Array(src.buffer, src.byteOffset + srcOffset, count), dest, destOffset);
+    } else {
+        arrayCopy_slow(src, srcOffset, dest, destOffset, count);
+    }
+
+}
+
+function arrayCopy_slow(src, srcOffset, dest, destOffset, count) {
+
+    // dlog('_slow call: srcOffset=' + srcOffset + '; destOffset=' + destOffset + '; count=' + count);
+
+     for (var i = 0; i < count; ++i) {
+        dest[destOffset + i] = src[srcOffset + i];
+    }
+}
+
+function arrayCopy_fast(src, dest, destOffset) {
+    dest.set(src, destOffset);
+}
+
+
+return arrayCopy;
+
+});
+},
+'JBrowse/View/FileDialog/TrackList/BigWigDriver':function(){
+define([
+           'dojo/_base/declare',
+           'JBrowse/Util',
+           'JBrowse/Model/FileBlob',
+           'JBrowse/Model/XHRBlob'
+       ],
+       function( declare, Util, FileBlob, XHRBlob ) {
+var uniqCounter = 0;
+return declare( null, {
+
+    storeType: 'JBrowse/Store/SeqFeature/BigWig',
+
+    tryResource: function( configs, resource ) {
+        if( resource.type == 'bigwig' ) {
+            var basename = Util.basename(
+                resource.file ? resource.file.name :
+                resource.url  ? resource.url       :
+                                '',
+                [ '.bw','.bigwig' ]
+            );
+            if( !basename )
+                return false;
+
+            var newName = 'BigWig_'+basename+'_'+uniqCounter++;
+            configs[newName] = {
+                fileBasename: basename,
+                type: this.storeType,
+                blob: this._makeBlob( resource ),
+                name: newName
+            };
+            return true;
+        }
+        else
+            return false;
+    },
+
+    // try to merge any singleton BAM and BAI stores.  currently can only do this if there is one of each
+    finalizeConfiguration: function( configs ) {
+    },
+
+    _makeBlob: function( resource ) {
+        var r = resource.file ? new FileBlob( resource.file ) :
+                resource.url  ? new XHRBlob( resource.url )   :
+                                null;
+        if( ! r )
+            throw 'unknown resource type';
+        return r;
+
+    },
+
+    confIsValid: function( conf ) {
+        return conf.blob || conf.urlTemplate;
+    }
+});
+});
+
+},
+'JBrowse/View/FileDialog/TrackList/GFF3Driver':function(){
+define([
+           'dojo/_base/declare',
+           'JBrowse/Util',
+           'JBrowse/Model/FileBlob',
+           'JBrowse/Model/XHRBlob'
+       ],
+       function( declare, Util, FileBlob, XHRBlob ) {
+var uniqCounter = 0;
+return declare( null, {
+
+    storeType: 'JBrowse/Store/SeqFeature/GFF3',
+
+    tryResource: function( configs, resource ) {
+        if( resource.type == 'gff3' ) {
+            var basename = Util.basename(
+                resource.file ? resource.file.name :
+                resource.url  ? resource.url       :
+                                '',
+                ['.gff3','.gff']
+            );
+            if( !basename )
+                return false;
+
+            var newName = 'GFF3_'+basename+'_'+uniqCounter++;
+            configs[newName] = {
+                type: this.storeType,
+                fileBasename: basename,
+                blob: this._makeBlob( resource ),
+                name: newName
+            };
+            return true;
+        }
+        else
+            return false;
+    },
+
+    // try to merge any singleton BAM and BAI stores.  currently can only do this if there is one of each
+    finalizeConfiguration: function( configs ) {
+    },
+
+    _makeBlob: function( resource ) {
+        var r = resource.file ? new FileBlob( resource.file ) :
+                resource.url  ? new XHRBlob( resource.url )   :
+                                null;
+        if( ! r )
+            throw 'unknown resource type';
+        return r;
+
+    },
+
+    confIsValid: function( conf ) {
+        return conf.blob || conf.urlTemplate;
+    }
+});
+});
+
+},
+'JBrowse/View/FileDialog/TrackList/GTFDriver':function(){
+define([
+           'dojo/_base/declare',
+           'JBrowse/Util',
+           'JBrowse/Model/FileBlob',
+           'JBrowse/Model/XHRBlob'
+       ],
+       function( declare, Util, FileBlob, XHRBlob ) {
+var uniqCounter = 0;
+return declare( null, {
+
+    storeType: 'JBrowse/Store/SeqFeature/GTF',
+
+    tryResource: function( configs, resource ) {
+        if( resource.type == 'gtf' ) {
+            var basename = Util.basename(
+                resource.file ? resource.file.name :
+                resource.url  ? resource.url       :
+                                ''
+            );
+            if( !basename )
+                return false;
+
+            var newName = 'GTF_'+basename+'_'+uniqCounter++;
+            configs[newName] = {
+                type: this.storeType,
+                blob: this._makeBlob( resource ),
+                name: newName
+            };
+            return true;
+        }
+        else
+            return false;
+    },
+
+    // try to merge any singleton BAM and BAI stores.  currently can only do this if there is one of each
+    finalizeConfiguration: function( configs ) {
+    },
+
+    _makeBlob: function( resource ) {
+        var r = resource.file ? new FileBlob( resource.file ) :
+                resource.url  ? new XHRBlob( resource.url )   :
+                                null;
+        if( ! r )
+            throw 'unknown resource type';
+        return r;
+
+    },
+
+    confIsValid: function( conf ) {
+        return conf.blob || conf.urlTemplate;
+    }
+});
+});
+
+},
+'JBrowse/View/FileDialog/TrackList/VCFTabixDriver':function(){
+define([
+           'dojo/_base/declare',
+           './_IndexedFileDriver'
+       ],
+       function( declare, IndexedFileDriver ) {
+return declare( IndexedFileDriver,  {
+    name: 'VCF+Tabix',
+    storeType: 'JBrowse/Store/SeqFeature/VCFTabix',
+
+    fileExtension: 'vcf.gz',
+    fileConfKey: 'file',
+    fileUrlConfKey: 'urlTemplate',
+
+    indexExtension: 'tbi',
+    indexConfKey: 'tbi',
+    indexUrlConfKey: 'tbiUrlTemplate'
+});
+
+});
+
+},
+'JBrowse/View/FileDialog/ResourceList':function(){
+define( ['dojo/_base/declare',
+         'dojo/_base/array',
+         'dojo/dom-construct',
+         'dijit/form/Select'
+        ],
+        function( declare, array, dom, Select ) {
+
+return declare( null, {
+
+    constructor: function( args ) {
+        this.dialog = args.dialog;
+        this.domNode = dom.create( 'div', { className: 'resourceList' } );
+        this._updateView();
+    },
+
+    clearLocalFiles: function() {
+        this._resources = array.filter( this._resources || [], function(res) {
+            return ! res.file;
+        });
+        this._notifyChange();
+    },
+
+    _notifyChange: function() {
+        this.onChange( array.map( this._resources || [], function( res ) {
+            var r = {};
+            if( res.file )
+                r.file = res.file;
+            if( res.url )
+                r.url = res.url;
+            r.type = res.type.get('value');
+            return r;
+        }));
+    },
+
+    _addResources: function( resources ) {
+        var seenFile = {};
+        var allRes = ( this._resources||[] ).concat( resources );
+        this._resources = array.filter( allRes.reverse(), function( res ) {
+            var key = res.file && res.file.name || res.url;
+            if( seenFile[key] ) {
+                return false;
+            }
+            seenFile[key] = true;
+            return true;
+        }).reverse();
+
+        this._updateView();
+        this._notifyChange();
+    },
+
+    addLocalFiles: function( fileList ) {
+        this._addResources( array.map( fileList, function(file) {
+            return { file: file };
+        }));
+    },
+
+    clearURLs: function() {
+        this._resources = array.filter( this._resources || [], function(res) {
+            return ! res.url;
+        });
+        this._notifyChange();
+    },
+    addURLs: function( urls ) {
+        this._addResources( array.map( urls, function(u) {
+            return { url: u };
+        }));
+    },
+
+    // old-style handler stub
+    onChange: function() { },
+
+    _updateView: function() {
+        var container = this.domNode;
+        dom.empty( container );
+
+        dom.create('h3', { innerHTML: 'Files and URLs' }, container );
+
+        if( (this._resources||[]).length ) {
+            var table = dom.create('table',{}, container );
+
+            // render rows in the resource table for each resource in our
+            // list
+            array.forEach( this._resources, function( res, i){
+               var that = this;
+               var tr = dom.create('tr', {}, table );
+               var name = res.url || res.file.name;
+
+               // make a selector for the resource's type
+               var typeSelect = new Select({
+                    options: [
+                        { label: '<span class="ghosted">file type?</span>', value: null     },
+                        { label: "GFF3",        value: "gff3"   },
+                        { label: "GTF",        value: "gtf"   },
+                        { label: "BigWig",      value: "bigwig" },
+                        { label: "BAM",         value: "bam"    },
+                        { label: "BAM index",   value: "bai"    },
+                        { label: "VCF+bgzip",   value: "vcf.gz" },
+                        { label: "Tabix index", value: "tbi"    }
+                    ],
+                    value: this.guessType( name ),
+                    onChange: function() {
+                        that._rememberedTypes = that._rememberedTypes||{};
+                        that._rememberedTypes[name] = this.get('value');
+                        that._notifyChange();
+                    }
+                });
+                typeSelect.placeAt( dojo.create('td',{ width: '4%'},tr) );
+                res.type = typeSelect;
+
+                dojo.create( 'td', {
+                  width: '1%',
+                  innerHTML: '<div class="'+(res.file ? 'dijitIconFile' : 'jbrowseIconLink')+'"></div>'
+                },tr);
+                dojo.create('td',{ innerHTML: name },tr);
+                dojo.create('td',{
+                  width: '1%',
+                  innerHTML: '<div class="dijitIconDelete"></div>',
+                  onclick: function(e) {
+                      e.preventDefault && e.preventDefault();
+                      that.deleteResource( res );
+                  }
+                }, tr);
+            }, this);
+        }
+        else {
+            dom.create('div', { className: 'emptyMessage',
+                                innerHTML: 'Add files and URLs using the controls above.'
+                              },
+                       container);
+        }
+
+        // little elements used to show pipeline-like connections between the controls
+        dom.create( 'div', { className: 'connector', innerHTML: '&nbsp;'}, container );
+    },
+
+    deleteResource: function( resource ) {
+        this._resources = array.filter( this._resources || [], function(res) {
+            return res !== resource;
+        });
+        this._updateView();
+        this._notifyChange();
+    },
+
+    guessType: function( name ) {
+        return ( this._rememberedTypes||{} )[name] || (
+                /\.bam$/i.test( name )          ? 'bam'    :
+                /\.bai$/i.test( name )          ? 'bai'    :
+                /\.gff3?$/i.test( name )        ? 'gff3'   :
+                /\.gtf?$/i.test( name )        ? 'gtf'   :
+                /\.(bw|bigwig)$/i.test( name )  ? 'bigwig' :
+                /\.vcf\.gz$/i.test( name )      ? 'vcf.gz' :
+                /\.tbi$/i.test( name )          ? 'tbi'  :
+                                                  null
+        );
+    }
+
+});
+});
+
+},
+'JBrowse/View/FileDialog/TrackList':function(){
+define(['dojo/_base/declare',
+        'dojo/_base/array',
+        'dojo/dom-construct',
+        'JBrowse/Util',
+        'dijit/form/TextBox',
+        'dijit/form/Select',
+        'dijit/form/Button',
+        'JBrowse/View/TrackConfigEditor'
+       ],
+       function(
+           declare,
+           array,
+           dom,
+           Util,
+           TextBox,
+           Select,
+           Button,
+           TrackConfigEditor
+       ) {
+
+var uniqCounter = 0;
+
+return declare( null, {
+
+constructor: function( args ) {
+    this.browser = args.browser;
+    this.fileDialog = args.fileDialog;
+    this.domNode = dom.create('div', { className: 'trackList', innerHTML: 'track list!' });
+
+    this._updateDisplay();
+},
+
+
+getTrackConfigurations: function() {
+    return Util.dojof.values( this.trackConfs || {} );
+},
+
+update: function( resources ) {
+    this.storeConfs = {};
+    this.trackConfs = {};
+
+    this._makeStoreConfs( resources );
+
+    // make some track configurations from the store configurations
+    this._makeTrackConfs();
+
+    this._updateDisplay();
+},
+
+_makeStoreConfs: function( resources ) {
+    // when called, rebuild the store and track configurations that we are going to add
+    this.storeConfs = this.storeConfs || {};
+
+    var typeDrivers = this.fileDialog.getFileTypeDrivers();
+
+    // anneal the given resources into a set of data store
+    // configurations by offering each file to each type driver in
+    // turn until no more are being accepted
+    var lastLength = 0;
+    while( resources.length && resources.length != lastLength ) {
+        resources = array.filter( resources, function( resource ) {
+            return ! array.some( typeDrivers, function( typeDriver ) {
+               return typeDriver.tryResource( this.storeConfs, resource );
+            },this);
+        },this);
+
+        lastLength = resources.length;
+    }
+
+    array.forEach( typeDrivers, function( typeDriver ) {
+        typeDriver.finalizeConfiguration( this.storeConfs );
+    },this);
+
+    if( resources.length )
+        console.warn( "Not all resources could be assigned to tracks.  Unused resources:", resources );
+},
+
+_makeTrackConfs: function() {
+    // object that maps store type -> default track type to use for the store
+    var typeMap = this.browser.getTrackTypes().trackTypeDefaults;
+
+    // find any store configurations that appear to be coverage stores
+    var coverageStores = {};
+    for( var n in this.storeConfs ) {
+        if( this.storeConfs[n].fileBasename ) {
+            var baseBase = this.storeConfs[n].fileBasename.replace(/\.(coverage|density|histograms?)$/,'');
+            if( baseBase != this.storeConfs[n].fileBasename ) {
+                coverageStores[baseBase] = { store: this.storeConfs[n], name: n, used: false };
+            }
+        }
+    }
+
+    // make track configurations for each store configuration
+    for( var n in this.storeConfs ) {
+        var store = this.storeConfs[n];
+        var trackType = typeMap[store.type] || 'JBrowse/View/Track/CanvasFeatures';
+
+        this.trackConfs = this.trackConfs || {};
+
+        this.trackConfs[ n ] =  {
+            store: this.storeConfs[n],
+            label: n,
+            key: n.replace(/_\d+$/,'').replace(/_/g,' '),
+            type: trackType,
+            category: "Local tracks",
+            autoscale: "local" // make locally-opened BigWig tracks default to local autoscaling
+        };
+
+        // if we appear to have a coverage store for this one, use it
+        // and mark it to have its track removed after all the tracks are made
+        var cov = coverageStores[ store.fileBasename ];
+        if( cov ) {
+            this.trackConfs[n].histograms = {
+                store: cov.store,
+                description: cov.store.fileBasename
+            };
+            cov.used = true;
+        }
+    }
+
+    // delete the separate track confs for any of the stores that were
+    // incorporated into other tracks as histograms
+    for( var n in coverageStores ) {
+        if( coverageStores[n].used )
+            delete this.trackConfs[ coverageStores[n].name ];
+    }
+},
+
+_delete: function( trackname ) {
+    delete (this.trackConfs||{})[trackname];
+    this._updateDisplay();
+},
+
+_updateDisplay: function() {
+    var that = this;
+
+    // clear it
+    dom.empty( this.domNode );
+
+    dom.create('h3', { innerHTML: 'New Tracks' }, this.domNode );
+
+    if( ! Util.dojof.keys( this.trackConfs||{} ).length ) {
+        dom.create('div', { className: 'emptyMessage',
+                            innerHTML: 'None'
+                          },this.domNode);
+    } else {
+        var table = dom.create('table', { innerHTML: '<tr class="head"><th>Name</th><th>Display</th><th></th></tr>'}, this.domNode );
+
+        var trackTypes = this.browser.getTrackTypes();
+
+        for( var n in this.trackConfs ) {
+            var t = this.trackConfs[n];
+            var r = dom.create('tr', {}, table );
+            new TextBox({
+                value: t.key,
+                onChange: function() { t.key = this.get('value'); }
+            }).placeAt( dom.create('td',{ className: 'name' }, r ) );
+            new Select({
+                    options: array.map( trackTypes.knownTrackTypes, function( t ) {
+                                            var l = trackTypes.trackTypeLabels[t]
+                                                || t.replace('JBrowse/View/Track/','').replace(/\//g, ' ');
+                                            return { label: l, value: t };
+                                        }),
+                    value: t.type,
+                    onChange: function() {
+                        t.type = this.get('value');
+                    }
+            }).placeAt( dom.create('td',{ className: 'type' }, r ) );
+
+            new Button({
+               className: 'edit',
+               title: 'edit configuration',
+               innerHTML: 'Edit Configuration',
+               onClick: function() {
+                   new TrackConfigEditor( t )
+                     .show( function( result) {
+                                dojo.mixin( t, result.conf );
+                                that._updateDisplay();
+                     });
+               }
+            }).placeAt( dom.create('td', { className: 'edit' }, r ) );
+
+            dojo.create('td',{
+                  width: '1%',
+                  innerHTML: '<div class="dijitIconDelete"></div>',
+                  onclick: function(e) {
+                      e.preventDefault && e.preventDefault();
+                      that._delete( n );
+                  }
+                }, r);
+
+            dom.create('td',{ className: 'type' }, r );
+        }
+    }
+}
+
+});
+});
+
+
+},
+'JBrowse/View/LocationChoiceDialog':function(){
+/**
+ * Dialog box that prompts the user to choose between several
+ * different available locations to navigate to.
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+           'dojo/aspect',
+           'dijit/Dialog',
+           'dijit/form/Button',
+           'dijit/focus',
+           'JBrowse/View/LocationList'
+       ],
+       function(
+           declare,
+           dom,
+           aspect,
+           Dialog,
+           dijitButton,
+           dijitFocus,
+           LocationListView
+       ) {
+return declare( null, {
+
+    /**
+     * @param args.browser the Browser object
+     * @param args.locationChoices [Array] array of Location objects
+     *   to choose from.  The locations can optionally have 'label',
+     *   'description', and/or 'score' attributes, which will be
+     *   displayed as columns.
+     * @param args.title optional title of the dialog box.
+     * @param args.prompt optional text prompt to show at the top of the dialog.
+     * @param args.goCallback optional function to call for executing a 'Go' action. gets ( location, value, node, options )
+     * @param args.showCallback optional function to call for executing a 'Show' action.  gets ( location, value, node, options)
+     */
+    constructor: function( args ) {
+        this.browser = args.browser;
+        this.config = dojo.clone( args.config || {} );
+        this.locationChoices = args.locationChoices || [];
+        this.title = args.title || 'Choose location';
+        this.prompt = args.prompt;
+        this.goCallback = args.goCallback;
+        this.showCallback = args.showCallback;
+    },
+
+    show: function() {
+        var dialog = this.dialog = new Dialog(
+            { title: this.title,
+              className: 'locationChoiceDialog',
+              style: { width: '70%' }
+            }
+            );
+        var container = dom.create('div',{});
+
+        // show the description if there is one
+        if( this.prompt ) {
+            dom.create('div', {
+                           className: 'prompt',
+                           innerHTML: this.prompt
+                       }, container );
+        }
+
+        var browser = this.browser;
+        this.locationListView = new LocationListView(
+            { browser: browser,
+              locations: this.locationChoices,
+              buttons: [
+                  {
+                      className: 'show',
+                      innerHTML: 'Show',
+                      onClick: this.showCallback || function( location ) {
+                          browser.showRegionAfterSearch( location );
+                      }
+                  },
+                  {
+                      className: 'go',
+                      innerHTML: 'Go',
+                      onClick: this.goCallback   || function( location ) {
+                          dialog.hide();
+                          browser.showRegionAfterSearch( location );
+                      }
+                  }
+              ]
+            },
+            dom.create( 'div', {
+                            className: 'locationList',
+                            style: { maxHeight: 0.5*this.browser.container.offsetHeight+'px'}
+                        },container)
+        );
+
+        this.actionBar = dojo.create( 'div', { className: 'infoDialogActionBar dijitDialogPaneActionBar' });
+        new dijitButton({ iconClass: 'dijitIconDelete',
+                          label: 'Cancel', onClick: dojo.hitch( dialog, 'hide' )
+                        })
+            .placeAt(this.actionBar);
+
+        dialog.set( 'content', [ container, this.actionBar ] );
+        dialog.show();
+        aspect.after( dialog, 'hide', dojo.hitch( this, function() {
+                              dijitFocus.curNode && dijitFocus.curNode.blur();
+                              setTimeout( function() {
+                                  dialog.destroyRecursive();
+                              }, 500 );
+                      }));
+    }
+});
+});
+},
+'JBrowse/View/LocationList':function(){
+/**
+ * Generic component that displays a list of genomic locations, along
+ * with buttons to execute actions on them.
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/_base/array',
+           'dojo/dom-construct',
+           'dijit/form/Button',
+           'JBrowse/Util',
+           'dojo/store/Memory',
+           'dgrid/OnDemandGrid',
+           'dgrid/extensions/DijitRegistry'
+       ],
+       function(
+           declare,
+           array,
+           dom,
+           dijitButton,
+           Util,
+           MemoryStore,
+           DGrid,
+           DGridDijitRegistry
+       ) {
+
+var Grid = declare([DGrid,DGridDijitRegistry]);
+
+return declare(null,{
+    constructor: function( args, parent ) {
+        var thisB = this;
+        this.browser = args.browser;
+
+        // transform our data first, so that it's sortable.
+        var locations = array.map( args.locations || [], function(l) {
+            return { locstring: Util.assembleLocString( l ),
+                     location: l,
+                     label: l.label || l.objectName,
+                     description: l.description,
+                     score: l.score,
+                     tracks: array.map( array.filter( l.tracks || [], function(t) { return t; }), // remove nulls
+                                        function(t) {
+                                            return t.key || t.name || t.label || t;
+                                        })
+                             .join(', ')
+                   };
+        });
+
+        // build the column list
+        var columns = [];
+        if( array.some( locations, function(l) { return l.label; }) )
+            columns.unshift( { label: 'Name', field: 'label' } );
+        if( array.some( locations, function(l) { return l.description; }) )
+            columns.unshift( { label: 'Description', field: 'description' } );
+        if( array.some( locations, function(l) { return l.score; }) )
+            columns.unshift( { label: 'Score', field: 'score' } );
+        columns.push({ label: 'Location', field: 'locstring' });
+        if( locations.length && locations[0].tracks )
+            columns.push({ label: 'Track', field: 'tracks' });
+        if( args.buttons ) {
+            columns.push({
+                             label: '',
+                             className: 'goButtonColumn',
+                             renderCell: function( object, value, node, options ) {
+                                 var container = dom.create('div');
+                                 array.forEach( args.buttons, function( button ) {
+                                     var buttonArgs = dojo.mixin( {}, button );
+                                     buttonArgs.onClick = function() { button.onClick( object.location, value, node, options ); };
+                                     new dijitButton( buttonArgs ).placeAt( container );
+                                 });
+                                 return container;
+                             }
+                         });
+        }
+
+
+        // create the grid
+        this.grid = new Grid({
+            columns: columns,
+            store: new MemoryStore({ data: locations } )
+        }, parent );
+    }
+});
+});
+},
+'JBrowse/View/Dialog/SetHighlight':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+           'dijit/focus',
+           'dijit/form/TextBox',
+           'JBrowse/View/Dialog/WithActionBar',
+           'dojo/on',
+           'dijit/form/Button',
+           'JBrowse/Model/Location'
+       ],
+       function( declare, dom, focus, dijitTextBox, ActionBarDialog, on, Button, Location ) {
+
+
+return declare( ActionBarDialog,
+
+    /**
+     * Dijit Dialog subclass that pops up prompt for the user to
+     * manually set a new highlight.
+     * @lends JBrowse.View.InfoDialog
+     */
+{
+    autofocus: false,
+    title: 'Set highlight',
+
+    constructor: function( args ) {
+        this.browser = args.browser;
+        this.setCallback    = args.setCallback || function() {};
+        this.cancelCallback = args.cancelCallback || function() {};
+    },
+
+    _fillActionBar: function( actionBar ) {
+        var thisB = this;
+        new Button({ iconClass: 'dijitIconDelete', label: 'Cancel',
+                     onClick: function() {
+                         thisB.cancelCallback && thisB.cancelCallback();
+                         thisB.hide();
+                     }
+                   })
+            .placeAt( actionBar );
+        new Button({ iconClass: 'dijitIconFilter',
+                     label: 'Highlight',
+                     onClick:function() {
+                         thisB.setCallback && thisB.setCallback( thisB.getLocation() );
+                         thisB.hide();
+                     }
+                   })
+            .placeAt( actionBar );
+    },
+
+    show: function( callback ) {
+        var thisB = this;
+
+        dojo.addClass( this.domNode, 'setHighlightDialog' );
+
+        var visibleLocation = this.browser.view.visibleRegionLocString();
+        if( visibleLocation )
+            visibleLocation += ' (current view)';
+
+        this.highlightInput = new dijitTextBox({
+            id: 'newhighlight_locstring',
+            value: (this.browser.getHighlight()||'').toString() || visibleLocation || '',
+            placeHolder: visibleLocation || 'ctgA:1234..5678'
+        });
+
+        this.set('content', [
+                     dom.create('label', { "for": 'newhighlight_locstring', innerHTML: 'Location' } ),
+                     this.highlightInput.domNode
+                 ] );
+
+        this.inherited( arguments );
+    },
+
+    getLocation: function() {
+        // have to use onChange to get the value of the text box to work around a bug in dijit
+        return new Location( this.highlightInput.get('value') );
+    },
+
+    hide: function() {
+        this.inherited(arguments);
+        window.setTimeout( dojo.hitch( this, 'destroyRecursive' ), 500 );
+    }
+});
+});
+},
+'JBrowse/View/Dialog/SetTrackHeight':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+           'dijit/focus',
+            'dijit/form/NumberSpinner',
+           'JBrowse/View/Dialog/WithActionBar',
+           'dojo/on',
+           'dijit/form/Button',
+           'JBrowse/Model/Location'
+       ],
+       function( declare, dom, focus, NumberSpinner, ActionBarDialog, on, Button, Location ) {
+
+
+return declare( ActionBarDialog, {
+    /**
+     * Dijit Dialog subclass that pops up prompt for the user to
+     * manually set a new highlight.
+     * @lends JBrowse.View.InfoDialog
+     */
+    title: 'Set new track height',
+
+    constructor: function( args ) {
+        this.height = args.height || 100;
+        this.browser = args.browser;
+        this.setCallback    = args.setCallback || function() {};
+        this.cancelCallback = args.cancelCallback || function() {};
+        this.heightConstraints = { min: 10, max: 750 };
+    },
+
+    _fillActionBar: function( actionBar ) {
+        var ok_button = new Button({
+            label: "OK",
+            onClick: dojo.hitch(this, function() {
+                var height = parseInt(this.heightSpinner.getValue());
+                if (isNaN(height) || height < this.heightConstraints.min
+                    || height > this.heightConstraints.max) return;
+                this.setCallback && this.setCallback( height );
+                this.hide();
+            })
+        }).placeAt(actionBar);
+
+        var cancel_button = new Button({
+            label: "Cancel",
+            onClick: dojo.hitch(this, function() {
+                this.cancelCallback && this.cancelCallback();
+                this.hide();
+            })
+        }).placeAt(actionBar);
+    },
+
+    show: function( callback ) {
+        dojo.addClass( this.domNode, 'setTrackHeightDialog' );
+
+        this.heightSpinner = new NumberSpinner({
+            value: this.height,
+            smallDelta: 10,
+            constraints: this.heightConstraints
+        });
+
+        this.set('content', [
+                     dom.create('label', { "for": 'newhighlight_locstring', innerHTML: '' } ),
+                     this.heightSpinner.domNode,
+                     dom.create( 'span', { innerHTML: ' pixels' } )
+                 ] );
+
+        this.inherited( arguments );
+    },
+
+    hide: function() {
+        this.inherited(arguments);
+        window.setTimeout( dojo.hitch( this, 'destroyRecursive' ), 500 );
+    }
+});
+});
+
+},
+'dijit/form/NumberSpinner':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/keys", // keys.END keys.HOME
+	"./_Spinner",
+	"./NumberTextBox"
+], function(declare, keys, _Spinner, NumberTextBox){
+
+	// module:
+	//		dijit/form/NumberSpinner
+
+	return declare("dijit.form.NumberSpinner", [_Spinner, NumberTextBox.Mixin], {
+		// summary:
+		//		Extends NumberTextBox to add up/down arrows and pageup/pagedown for incremental change to the value
+		//
+		// description:
+		//		A `dijit/form/NumberTextBox` extension to provide keyboard accessible value selection
+		//		as well as icons for spinning direction. When using the keyboard, the typematic rules
+		//		apply, meaning holding the key will gradually increase or decrease the value and
+		//		accelerate.
+		//
+		// example:
+		//	| new NumberSpinner({ constraints:{ max:300, min:100 }}, "someInput");
+
+		baseClass: "dijitTextBox dijitSpinner dijitNumberTextBox",
+
+		adjust: function(/*Object*/ val, /*Number*/ delta){
+			// summary:
+			//		Change Number val by the given amount
+			// tags:
+			//		protected
+
+			var tc = this.constraints,
+				v = isNaN(val),
+				gotMax = !isNaN(tc.max),
+				gotMin = !isNaN(tc.min)
+				;
+			if(v && delta != 0){ // blank or invalid value and they want to spin, so create defaults
+				val = (delta > 0) ?
+					gotMin ? tc.min : gotMax ? tc.max : 0 :
+					gotMax ? this.constraints.max : gotMin ? tc.min : 0
+				;
+			}
+			var newval = val + delta;
+			if(v || isNaN(newval)){
+				return val;
+			}
+			if(gotMax && (newval > tc.max)){
+				newval = tc.max;
+			}
+			if(gotMin && (newval < tc.min)){
+				newval = tc.min;
+			}
+			return newval;
+		},
+
+		_onKeyDown: function(e){
+			if(this.disabled || this.readOnly){
+				return;
+			}
+			if((e.keyCode == keys.HOME || e.keyCode == keys.END) && !(e.ctrlKey || e.altKey || e.metaKey)
+				&& typeof this.get('value') != 'undefined' /* gibberish, so HOME and END are default editing keys*/){
+				var value = this.constraints[(e.keyCode == keys.HOME ? "min" : "max")];
+				if(typeof value == "number"){
+					this._setValueAttr(value, false);
+				}
+				// eat home or end key whether we change the value or not
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		}
+	});
+});
+
+},
+'dijit/form/_Spinner':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/keys", // keys keys.DOWN_ARROW keys.PAGE_DOWN keys.PAGE_UP keys.UP_ARROW
+	"dojo/_base/lang", // lang.hitch
+	"dojo/sniff", // has("mozilla")
+	"dojo/mouse", // mouse.wheel
+	"dojo/on",
+	"../typematic",
+	"./RangeBoundTextBox",
+	"dojo/text!./templates/Spinner.html",
+	"./_TextBoxMixin"    // selectInputText
+], function(declare, keys, lang, has, mouse, on, typematic, RangeBoundTextBox, template, _TextBoxMixin){
+
+	// module:
+	//		dijit/form/_Spinner
+
+	return declare("dijit.form._Spinner", RangeBoundTextBox, {
+		// summary:
+		//		Mixin for validation widgets with a spinner.
+		// description:
+		//		This class basically (conceptually) extends `dijit/form/ValidationTextBox`.
+		//		It modifies the template to have up/down arrows, and provides related handling code.
+
+		// defaultTimeout: Number
+		//		Number of milliseconds before a held arrow key or up/down button becomes typematic
+		defaultTimeout: 500,
+
+		// minimumTimeout: Number
+		//		minimum number of milliseconds that typematic event fires when held key or button is held
+		minimumTimeout: 10,
+
+		// timeoutChangeRate: Number
+		//		Fraction of time used to change the typematic timer between events.
+		//		1.0 means that each typematic event fires at defaultTimeout intervals.
+		//		Less than 1.0 means that each typematic event fires at an increasing faster rate.
+		timeoutChangeRate: 0.90,
+
+		// smallDelta: Number
+		//		Adjust the value by this much when spinning using the arrow keys/buttons
+		smallDelta: 1,
+
+		// largeDelta: Number
+		//		Adjust the value by this much when spinning using the PgUp/Dn keys
+		largeDelta: 10,
+
+		templateString: template,
+
+		baseClass: "dijitTextBox dijitSpinner",
+
+		// Set classes like dijitUpArrowButtonHover or dijitDownArrowButtonActive depending on
+		// mouse action over specified node
+		cssStateNodes: {
+			"upArrowNode": "dijitUpArrowButton",
+			"downArrowNode": "dijitDownArrowButton"
+		},
+
+		adjust: function(val /*=====, delta =====*/){
+			// summary:
+			//		Overridable function used to adjust a primitive value(Number/Date/...) by the delta amount specified.
+			//		The val is adjusted in a way that makes sense to the object type.
+			// val: Object
+			// delta: Number
+			// tags:
+			//		protected extension
+			return val;
+		},
+
+		_arrowPressed: function(/*Node*/ nodePressed, /*Number*/ direction, /*Number*/ increment){
+			// summary:
+			//		Handler for arrow button or arrow key being pressed
+			if(this.disabled || this.readOnly){
+				return;
+			}
+			this._setValueAttr(this.adjust(this.get('value'), direction * increment), false);
+			_TextBoxMixin.selectInputText(this.textbox, this.textbox.value.length);
+		},
+
+		_arrowReleased: function(/*Node*/ /*===== node =====*/){
+			// summary:
+			//		Handler for arrow button or arrow key being released
+			this._wheelTimer = null;
+		},
+
+		_typematicCallback: function(/*Number*/ count, /*DOMNode*/ node, /*Event*/ evt){
+			var inc = this.smallDelta;
+			if(node == this.textbox){
+				var key = evt.keyCode;
+				inc = (key == keys.PAGE_UP || key == keys.PAGE_DOWN) ? this.largeDelta : this.smallDelta;
+				node = (key == keys.UP_ARROW || key == keys.PAGE_UP) ? this.upArrowNode : this.downArrowNode;
+			}
+			if(count == -1){
+				this._arrowReleased(node);
+			}
+			else{
+				this._arrowPressed(node, (node == this.upArrowNode) ? 1 : -1, inc);
+			}
+		},
+
+		_wheelTimer: null,
+		_mouseWheeled: function(/*Event*/ evt){
+			// summary:
+			//		Mouse wheel listener where supported
+
+			evt.stopPropagation();
+			evt.preventDefault();
+			// FIXME: Safari bubbles
+
+			// be nice to DOH and scroll as much as the event says to
+			var wheelDelta = evt.wheelDelta / 120;
+			if(Math.floor(wheelDelta) != wheelDelta){
+				// If not an int multiple of 120, then its touchpad scrolling.
+				// This can change very fast so just assume 1 wheel click to make it more manageable.
+				wheelDelta = evt.wheelDelta > 0 ? 1 : -1;
+			}
+			var scrollAmount = evt.detail ? (evt.detail * -1) : wheelDelta;
+			if(scrollAmount !== 0){
+				var node = this[(scrollAmount > 0 ? "upArrowNode" : "downArrowNode" )];
+
+				this._arrowPressed(node, scrollAmount, this.smallDelta);
+
+				if(this._wheelTimer){
+					this._wheelTimer.remove();
+				}
+				this._wheelTimer = this.defer(function(){
+					this._arrowReleased(node);
+				}, 50);
+			}
+		},
+
+		_setConstraintsAttr: function(/*Object*/ constraints){
+			this.inherited(arguments);
+			if(this.focusNode){ // not set when called from postMixInProperties
+				if(this.constraints.min !== undefined){
+					this.focusNode.setAttribute("aria-valuemin", this.constraints.min);
+				}else{
+					this.focusNode.removeAttribute("aria-valuemin");
+				}
+				if(this.constraints.max !== undefined){
+					this.focusNode.setAttribute("aria-valuemax", this.constraints.max);
+				}else{
+					this.focusNode.removeAttribute("aria-valuemax");
+				}
+			}
+		},
+
+		_setValueAttr: function(/*Number*/ value, /*Boolean?*/ priorityChange){
+			// summary:
+			//		Hook so set('value', ...) works.
+
+			this.focusNode.setAttribute("aria-valuenow", value);
+			this.inherited(arguments);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			// extra listeners
+			this.own(
+				on(this.domNode, mouse.wheel, lang.hitch(this, "_mouseWheeled")),
+				typematic.addListener(this.upArrowNode, this.textbox, {keyCode: keys.UP_ARROW, ctrlKey: false, altKey: false, shiftKey: false, metaKey: false}, this, "_typematicCallback", this.timeoutChangeRate, this.defaultTimeout, this.minimumTimeout),
+				typematic.addListener(this.downArrowNode, this.textbox, {keyCode: keys.DOWN_ARROW, ctrlKey: false, altKey: false, shiftKey: false, metaKey: false}, this, "_typematicCallback", this.timeoutChangeRate, this.defaultTimeout, this.minimumTimeout),
+				typematic.addListener(this.upArrowNode, this.textbox, {keyCode: keys.PAGE_UP, ctrlKey: false, altKey: false, shiftKey: false, metaKey: false}, this, "_typematicCallback", this.timeoutChangeRate, this.defaultTimeout, this.minimumTimeout),
+				typematic.addListener(this.downArrowNode, this.textbox, {keyCode: keys.PAGE_DOWN, ctrlKey: false, altKey: false, shiftKey: false, metaKey: false}, this, "_typematicCallback", this.timeoutChangeRate, this.defaultTimeout, this.minimumTimeout)
+			);
+		}
+	});
+});
+
+},
+'dijit/form/RangeBoundTextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/i18n", // i18n.getLocalization
+	"./MappedTextBox",
+	"dojo/i18n!./nls/validate"
+], function(declare, i18n, MappedTextBox){
+
+	// module:
+	//		dijit/form/RangeBoundTextBox
+
+
+	var RangeBoundTextBox = declare("dijit.form.RangeBoundTextBox", MappedTextBox, {
+		// summary:
+		//		Base class for textbox form widgets which defines a range of valid values.
+
+		// rangeMessage: String
+		//		The message to display if value is out-of-range
+		rangeMessage: "",
+
+		/*=====
+		// constraints: RangeBoundTextBox.__Constraints
+		constraints: {},
+		======*/
+
+		rangeCheck: function(/*Number*/ primitive, /*dijit/form/RangeBoundTextBox.__Constraints*/ constraints){
+			// summary:
+			//		Overridable function used to validate the range of the numeric input value.
+			// tags:
+			//		protected
+			return	("min" in constraints? (this.compare(primitive,constraints.min) >= 0) : true) &&
+				("max" in constraints? (this.compare(primitive,constraints.max) <= 0) : true); // Boolean
+		},
+
+		isInRange: function(/*Boolean*/ /*===== isFocused =====*/){
+			// summary:
+			//		Tests if the value is in the min/max range specified in constraints
+			// tags:
+			//		protected
+			return this.rangeCheck(this.get('value'), this.constraints);
+		},
+
+		_isDefinitelyOutOfRange: function(){
+			// summary:
+			//		Returns true if the value is out of range and will remain
+			//		out of range even if the user types more characters
+			var val = this.get('value');
+			if(val == null){ return false; } // not yet valid enough to compare to
+			var outOfRange = false;
+			if("min" in this.constraints){
+				var min = this.constraints.min;
+				outOfRange = this.compare(val, ((typeof min == "number") && min >= 0 && val != 0) ? 0 : min) < 0;
+			}
+			if(!outOfRange && ("max" in this.constraints)){
+				var max = this.constraints.max;
+				outOfRange = this.compare(val, ((typeof max != "number") || max > 0) ? max : 0) > 0;
+			}
+			return outOfRange;
+		},
+
+		_isValidSubset: function(){
+			// summary:
+			//		Overrides `dijit/form/ValidationTextBox._isValidSubset()`.
+			//		Returns true if the input is syntactically valid, and either within
+			//		range or could be made in range by more typing.
+			return this.inherited(arguments) && !this._isDefinitelyOutOfRange();
+		},
+
+		isValid: function(/*Boolean*/ isFocused){
+			// Overrides dijit/form/ValidationTextBox.isValid() to check that the value is also in range.
+			return this.inherited(arguments) &&
+				((this._isEmpty(this.textbox.value) && !this.required) || this.isInRange(isFocused)); // Boolean
+		},
+
+		getErrorMessage: function(/*Boolean*/ isFocused){
+			// Overrides dijit/form/ValidationTextBox.getErrorMessage() to print "out of range" message if appropriate
+			var v = this.get('value');
+			if(v != null /* and !undefined */ && v !== '' && (typeof v != "number" || !isNaN(v)) && !this.isInRange(isFocused)){ // don't check isInRange w/o a real value
+				return this.rangeMessage; // String
+			}
+			return this.inherited(arguments);
+		},
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			if(!this.rangeMessage){
+				this.messages = i18n.getLocalization("dijit.form", "validate", this.lang);
+				this.rangeMessage = this.messages.rangeMessage;
+			}
+		}
+	});
+	/*=====
+	RangeBoundTextBox.__Constraints = declare(null, {
+		// min: Number
+		//		Minimum signed value.  Default is -Infinity
+		// max: Number
+		//		Maximum signed value.  Default is +Infinity
+	});
+	=====*/
+	return RangeBoundTextBox;
+});
+
+},
+'dijit/form/NumberTextBox':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // lang.hitch lang.mixin
+	"dojo/i18n", // i18n.normalizeLocale, i18n.getLocalization
+	"dojo/string", // string.rep
+	"dojo/number", // number._realNumberRegexp number.format number.parse number.regexp
+	"./RangeBoundTextBox"
+], function(declare, lang, i18n, string, number, RangeBoundTextBox){
+
+	// module:
+	//		dijit/form/NumberTextBox
+
+	// A private helper function to determine decimal information
+	// Returns an object with "sep" and "places" properties
+	var getDecimalInfo = function(constraints){
+		var constraints = constraints || {},
+			bundle = i18n.getLocalization("dojo.cldr", "number", i18n.normalizeLocale(constraints.locale)),
+			pattern = constraints.pattern ? constraints.pattern : bundle[(constraints.type || "decimal")+"Format"];
+
+		// The number of places in the constraint can be specified in several ways,
+		// the resolution order is:
+		//
+		// 1. If constraints.places is a number, use that
+		// 2. If constraints.places is a string, which specifies a range, use the range max (e.g. 0,4)
+		// 3. If a pattern is specified, use the implicit number of places in the pattern.
+		// 4. If neither constraints.pattern or constraints.places is specified, use the locale default pattern
+		var places;
+		if(typeof constraints.places == "number"){
+			places = constraints.places;
+		}else if(typeof constraints.places === "string" && constraints.places.length > 0){
+			places = constraints.places.replace(/.*,/, "");
+		}else{
+			places = (pattern.indexOf(".") != -1 ? pattern.split(".")[1].replace(/[^#0]/g, "").length : 0);
+		}
+
+		return { sep: bundle.decimal, places: places };
+	};
+
+	var NumberTextBoxMixin = declare("dijit.form.NumberTextBoxMixin", null, {
+		// summary:
+		//		A mixin for all number textboxes
+		// tags:
+		//		protected
+
+		// Override ValidationTextBox.pattern.... we use a reg-ex generating function rather
+		// than a straight regexp to deal with locale (plus formatting options too?)
+		pattern: function(constraints){
+			// if focused, accept either currency data or NumberTextBox format
+			return '(' + (this.focused && this.editOptions ? this._regExpGenerator(lang.delegate(constraints, this.editOptions)) + '|' : '')
+				+ this._regExpGenerator(constraints) + ')';
+		},
+
+		/*=====
+		// constraints: NumberTextBox.__Constraints
+		//		Despite the name, this parameter specifies both constraints on the input
+		//		(including minimum/maximum allowed values) as well as
+		//		formatting options like places (the number of digits to display after
+		//		the decimal point).
+		constraints: {},
+		======*/
+
+		// value: Number
+		//		The value of this NumberTextBox as a Javascript Number (i.e., not a String).
+		//		If the displayed value is blank, the value is NaN, and if the user types in
+		//		an gibberish value (like "hello world"), the value is undefined
+		//		(i.e. get('value') returns undefined).
+		//
+		//		Symmetrically, set('value', NaN) will clear the displayed value,
+		//		whereas set('value', undefined) will have no effect.
+		value: NaN,
+
+		// editOptions: [protected] Object
+		//		Properties to mix into constraints when the value is being edited.
+		//		This is here because we edit the number in the format "12345", which is
+		//		different than the display value (ex: "12,345")
+		editOptions: { pattern: '#.######' },
+
+		/*=====
+		_formatter: function(value, options){
+			// summary:
+			//		_formatter() is called by format().  It's the base routine for formatting a number,
+			//		as a string, for example converting 12345 into "12,345".
+			// value: Number
+			//		The number to be converted into a string.
+			// options: number.__FormatOptions?
+			//		Formatting options
+			// tags:
+			//		protected extension
+
+			return "12345";		// String
+		},
+		 =====*/
+		_formatter: number.format,
+
+		/*=====
+		_regExpGenerator: function(constraints){
+			// summary:
+			//		Generate a localized regular expression as a string, according to constraints.
+			// constraints: number.__ParseOptions
+			//		Formatting options
+			// tags:
+			//		protected
+
+			return "(\d*).(\d*)";	// string
+		},
+		=====*/
+		_regExpGenerator: number.regexp,
+
+		// _decimalInfo: Object
+		// summary:
+		//		An object containing decimal related properties relevant to this TextBox.
+		// tags:
+		//		private
+		_decimalInfo: getDecimalInfo(),
+
+		postMixInProperties: function(){
+			this.inherited(arguments);
+			this._set("type", "text"); // in case type="number" was specified which messes up parse/format
+		},
+
+		_setConstraintsAttr: function(/*Object*/ constraints){
+			var places = typeof constraints.places == "number"? constraints.places : 0;
+			if(places){ places++; } // decimal rounding errors take away another digit of precision
+			if(typeof constraints.max != "number"){
+				constraints.max = 9 * Math.pow(10, 15-places);
+			}
+			if(typeof constraints.min != "number"){
+				constraints.min = -9 * Math.pow(10, 15-places);
+			}
+			this.inherited(arguments, [ constraints ]);
+			if(this.focusNode && this.focusNode.value && !isNaN(this.value)){
+				this.set('value', this.value);
+			}
+			// Capture decimal information based on the constraint locale and pattern.
+			this._decimalInfo = getDecimalInfo(constraints);
+		},
+
+		_onFocus: function(){
+			if(this.disabled || this.readOnly){ return; }
+			var val = this.get('value');
+			if(typeof val == "number" && !isNaN(val)){
+				var formattedValue = this.format(val, this.constraints);
+				if(formattedValue !== undefined){
+					this.textbox.value = formattedValue;
+				}
+			}
+			this.inherited(arguments);
+		},
+
+		format: function(/*Number*/ value, /*number.__FormatOptions*/ constraints){
+			// summary:
+			//		Formats the value as a Number, according to constraints.
+			// tags:
+			//		protected
+
+			var formattedValue = String(value);
+			if(typeof value != "number"){ return formattedValue; }
+			if(isNaN(value)){ return ""; }
+			// check for exponential notation that dojo/number.format() chokes on
+			if(!("rangeCheck" in this && this.rangeCheck(value, constraints)) && constraints.exponent !== false && /\de[-+]?\d/i.test(formattedValue)){
+				return formattedValue;
+			}
+			if(this.editOptions && this.focused){
+				constraints = lang.mixin({}, constraints, this.editOptions);
+			}
+			return this._formatter(value, constraints);
+		},
+
+		/*=====
+		_parser: function(value, constraints){
+			// summary:
+			//		Parses the string value as a Number, according to constraints.
+			// value: String
+			//		String representing a number
+			// constraints: number.__ParseOptions
+			//		Formatting options
+			// tags:
+			//		protected
+
+			return 123.45;		// Number
+		},
+		=====*/
+		_parser: number.parse,
+
+		parse: function(/*String*/ value, /*number.__FormatOptions*/ constraints){
+			// summary:
+			//		Replaceable function to convert a formatted string to a number value
+			// tags:
+			//		protected extension
+
+			var v = this._parser(value, lang.mixin({}, constraints, (this.editOptions && this.focused) ? this.editOptions : {}));
+			if(this.editOptions && this.focused && isNaN(v)){
+				v = this._parser(value, constraints); // parse w/o editOptions: not technically needed but is nice for the user
+			}
+			return v;
+		},
+
+		_getDisplayedValueAttr: function(){
+			var v = this.inherited(arguments);
+			return isNaN(v) ? this.textbox.value : v;
+		},
+
+		filter: function(/*Number*/ value){
+			// summary:
+			//		This is called with both the display value (string), and the actual value (a number).
+			//		When called with the actual value it does corrections so that '' etc. are represented as NaN.
+			//		Otherwise it dispatches to the superclass's filter() method.
+			//
+			//		See `dijit/form/TextBox.filter()` for more details.
+			if(value == null  /* or undefined */ || typeof value == "string" && value ==''){
+				return NaN;
+			}else if(typeof value == "number" && !isNaN(value) && value != 0){
+				value = number.round(value, this._decimalInfo.places);
+			}
+			return this.inherited(arguments, [value]);
+		},
+
+		serialize: function(/*Number*/ value, /*Object?*/ options){
+			// summary:
+			//		Convert value (a Number) into a canonical string (ie, how the number literal is written in javascript/java/C/etc.)
+			// tags:
+			//		protected
+			return (typeof value != "number" || isNaN(value)) ? '' : this.inherited(arguments);
+		},
+
+		_setBlurValue: function(){
+			var val = lang.hitch(lang.delegate(this, { focused: true }), "get")('value'); // parse with editOptions
+			this._setValueAttr(val, true);
+		},
+
+		_setValueAttr: function(/*Number*/ value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
+			// summary:
+			//		Hook so set('value', ...) works.
+			if(value !== undefined && formattedValue === undefined){
+				formattedValue = String(value);
+				if(typeof value == "number"){
+					if(isNaN(value)){ formattedValue = '' }
+					// check for exponential notation that number.format chokes on
+					else if(("rangeCheck" in this && this.rangeCheck(value, this.constraints)) || this.constraints.exponent === false || !/\de[-+]?\d/i.test(formattedValue)){
+						formattedValue = undefined; // lets format compute a real string value
+					}
+				}else if(!value){ // 0 processed in if branch above, ''|null|undefined flows through here
+					formattedValue = '';
+					value = NaN;
+				}else{ // non-numeric values
+					value = undefined;
+				}
+			}
+			this.inherited(arguments, [value, priorityChange, formattedValue]);
+		},
+
+		_getValueAttr: function(){
+			// summary:
+			//		Hook so get('value') works.
+			//		Returns Number, NaN for '', or undefined for unparseable text
+			var v = this.inherited(arguments); // returns Number for all values accepted by parse() or NaN for all other displayed values
+
+			// If the displayed value of the textbox is gibberish (ex: "hello world"), this.inherited() above
+			// returns NaN; this if() branch converts the return value to undefined.
+			// Returning undefined prevents user text from being overwritten when doing _setValueAttr(_getValueAttr()).
+			// A blank displayed value is still returned as NaN.
+			if(isNaN(v) && this.textbox.value !== ''){
+				if(this.constraints.exponent !== false && /\de[-+]?\d/i.test(this.textbox.value) && (new RegExp("^"+number._realNumberRegexp(lang.delegate(this.constraints))+"$").test(this.textbox.value))){	// check for exponential notation that parse() rejected (erroneously?)
+					var n = Number(this.textbox.value);
+					return isNaN(n) ? undefined : n; // return exponential Number or undefined for random text (may not be possible to do with the above RegExp check)
+				}else{
+					return undefined; // gibberish
+				}
+			}else{
+				return v; // Number or NaN for ''
+			}
+		},
+
+		isValid: function(/*Boolean*/ isFocused){
+			// Overrides dijit/form/RangeBoundTextBox.isValid() to check that the editing-mode value is valid since
+			// it may not be formatted according to the regExp validation rules
+			if(!this.focused || this._isEmpty(this.textbox.value)){
+				return this.inherited(arguments);
+			}else{
+				var v = this.get('value');
+				if(!isNaN(v) && this.rangeCheck(v, this.constraints)){
+					if(this.constraints.exponent !== false && /\de[-+]?\d/i.test(this.textbox.value)){ // exponential, parse doesn't like it
+						return true; // valid exponential number in range
+					}else{
+						return this.inherited(arguments);
+					}
+				}else{
+					return false;
+				}
+			}
+		},
+
+		_isValidSubset: function(){
+			// Overrides dijit/form/ValidationTextBox._isValidSubset()
+			//
+			// The inherited method only checks that the computed regex pattern is valid, which doesn't
+			// take into account that numbers are a special case. Specifically:
+			//
+			//  (1) An arbitrary amount of leading or trailing zero's can be ignored.
+			//  (2) Since numeric input always occurs in the order of most significant to least significant
+			//      digits, the maximum and minimum possible values for partially inputted numbers can easily
+			//      be determined by using the number of remaining digit spaces available.
+			//
+			// For example, if an input has a maxLength of 5, and a min value of greater than 100, then the subset
+			// is invalid if there are 3 leading 0s. It remains valid for the first two.
+			//
+			// Another example is if the min value is 1.1. Once a value of 1.0 is entered, no additional trailing digits
+			// could possibly satisify the min requirement.
+			//
+			// See ticket #17923
+			var hasMinConstraint = (typeof this.constraints.min == "number"),
+				hasMaxConstraint = (typeof this.constraints.max == "number"),
+				curVal = this.get('value');
+
+			// If there is no parsable number, or there are no min or max bounds, then we can safely
+			// skip all remaining checks
+			if(isNaN(curVal) || (!hasMinConstraint && !hasMaxConstraint)){
+				return this.inherited(arguments);
+			}
+
+			// This block picks apart the values in the text box to be used later to compute the min and max possible
+			// values based on the current value and the remaining available digits.
+			//
+			// Warning: The use of a "num|0" expression, can be confusing. See the link below
+			// for an explanation.
+			//
+			// http://stackoverflow.com/questions/12125421/why-does-a-shift-by-0-truncate-the-decimal
+			var integerDigits = curVal|0,
+				valNegative = curVal < 0,
+				// Check if the current number has a decimal based on its locale
+				hasDecimal = this.textbox.value.indexOf(this._decimalInfo.sep) != -1,
+				// Determine the max digits based on the textbox length. If no length is
+				// specified, chose a huge number to account for crazy formatting.
+				maxDigits = this.maxLength || 20,
+				// Determine the remaining digits, based on the max digits
+				remainingDigitsCount = maxDigits - this.textbox.value.length,
+				// avoid approximation issues by capturing the decimal portion of the value as the user-entered string
+				fractionalDigitStr = hasDecimal ? this.textbox.value.split(this._decimalInfo.sep)[1].replace(/[^0-9]/g, "") : "";
+
+			// Create a normalized value string in the form of #.###
+			var normalizedValueStr = hasDecimal ? integerDigits+"."+fractionalDigitStr : integerDigits+"";
+
+			// The min and max values for the field can be determined using the following
+			// logic:
+			//
+			//  If the number is positive:
+			//      min value = the current value
+			//      max value = the current value with 9s appended for all remaining possible digits
+			//  else
+			//      min value = the current value with 9s appended for all remaining possible digits
+			//      max value = the current value
+			//
+			var ninePaddingStr = string.rep("9", remainingDigitsCount),
+			    minPossibleValue = curVal,
+			    maxPossibleValue = curVal;
+			if (valNegative){
+				minPossibleValue = Number(normalizedValueStr+ninePaddingStr);
+			} else{
+				maxPossibleValue = Number(normalizedValueStr+ninePaddingStr);
+			}
+
+			return !((hasMinConstraint && maxPossibleValue < this.constraints.min)
+					|| (hasMaxConstraint && minPossibleValue > this.constraints.max));
+		}
+	});
+
+	var NumberTextBox = declare("dijit.form.NumberTextBox", [RangeBoundTextBox, NumberTextBoxMixin], {
+		// summary:
+		//		A TextBox for entering numbers, with formatting and range checking
+		// description:
+		//		NumberTextBox is a textbox for entering and displaying numbers, supporting
+		//		the following main features:
+		//
+		//		1. Enforce minimum/maximum allowed values (as well as enforcing that the user types
+		//			a number rather than a random string)
+		//		2. NLS support (altering roles of comma and dot as "thousands-separator" and "decimal-point"
+		//			depending on locale).
+		//		3. Separate modes for editing the value and displaying it, specifically that
+		//			the thousands separator character (typically comma) disappears when editing
+		//			but reappears after the field is blurred.
+		//		4. Formatting and constraints regarding the number of places (digits after the decimal point)
+		//			allowed on input, and number of places displayed when blurred (see `constraints` parameter).
+
+		baseClass: "dijitTextBox dijitNumberTextBox"
+	});
+
+	NumberTextBox.Mixin = NumberTextBoxMixin;	// for monkey patching
+
+	/*=====
+	 NumberTextBox.__Constraints = declare([RangeBoundTextBox.__Constraints, number.__FormatOptions, number.__ParseOptions], {
+		 // summary:
+		 //		Specifies both the rules on valid/invalid values (minimum, maximum,
+		 //		number of required decimal places), and also formatting options for
+		 //		displaying the value when the field is not focused.
+		 // example:
+		 //		Minimum/maximum:
+		 //		To specify a field between 0 and 120:
+		 //	|		{min:0,max:120}
+		 //		To specify a field that must be an integer:
+		 //	|		{fractional:false}
+		 //		To specify a field where 0 to 3 decimal places are allowed on input:
+		 //	|		{places:'0,3'}
+	 });
+	 =====*/
+
+	return NumberTextBox;
+});
+
+},
+'JBrowse/View/Dialog/QuickHelp':function(){
+define( [
+            'dojo/_base/declare',
+            'JBrowse/View/InfoDialog'
+        ],
+        function(
+            declare,
+            InfoDialog
+        ) {
+return declare( InfoDialog, {
+
+    title: "JBrowse Help",
+
+    constructor: function(args) {
+        this.browser = args.browser;
+        this.defaultContent = this._makeDefaultContent();
+
+        if( ! args.content && ! args.href ) {
+            // make a div containing our help text
+            this.content = this.defaultContent;
+        }
+    },
+
+    _makeDefaultContent: function() {
+        return    ''
+                + '<div class="help_dialog">'
+                + '<div class="main" style="float: left; width: 49%;">'
+
+                + '<dl>'
+                + '<dt>Moving</dt>'
+                + '<dd><ul>'
+                + '    <li>Move the view by clicking and dragging in the track area, or by clicking <img class="icon nav" id="moveLeftSmall" src="'+this.browser.resolveUrl('img/Empty.png')+'">  or <img class="icon nav" id="moveRightSmall" src="'+this.browser.resolveUrl('img/Empty.png')+'"> in the navigation bar, or by pressing the left and right arrow keys.</li>'
+                + '    <li>Center the view at a point by clicking on either the track scale bar or overview bar, or by shift-clicking in the track area.</li>'
+                + '</ul></dd>'
+                + '<dt>Zooming</dt>'
+                + '<dd><ul>'
+                + '    <li>Zoom in and out by clicking <img class="icon nav" id="zoomInSmall" src="'+this.browser.resolveUrl('img/Empty.png')+'"> or <img class="icon nav" id="zoomOutSmall" src="'+this.browser.resolveUrl('img/Empty.png')+'"> in the navigation bar, or by pressing the up and down arrow keys while holding down "shift".</li>'
+                + '    <li>Select a region and zoom to it ("rubber-band" zoom) by clicking and dragging in the overview or track scale bar, or shift-clicking and dragging in the track area.</li>'
+                + '    </ul>'
+                + '</dd>'
+                + '<dt>Showing Tracks</dt>'
+                + '<dd><ul><li>Turn a track on by dragging its track label from the "Available Tracks" area into the genome area, or double-clicking it.</li>'
+                + '        <li>Turn a track off by dragging its track label from the genome area back into the "Available Tracks" area.</li>'
+                + '    </ul>'
+                + '</dd>'
+                + '</dl>'
+                + '</div>'
+
+                + '<div class="main" style="float: right; width: 49%;">'
+                + '<dl>'
+                + '<dt>Searching</dt>'
+                + '<dd><ul>'
+                + '    <li>Jump to a feature or reference sequence by typing its name in the location box and pressing Enter.</li>'
+                + '    <li>Jump to a specific region by typing the region into the location box as: <span class="example">ref:start..end</span>.</li>'
+                + '    </ul>'
+                + '</dd>'
+                + '<dt>Example Searches</dt>'
+                + '<dd>'
+                + '    <dl class="searchexample">'
+                + '        <dt>uc0031k.2</dt><dd>searches for the feature named <span class="example">uc0031k.2</span>.</dd>'
+                + '        <dt>chr4</dt><dd>jumps to chromosome 4</dd>'
+                + '        <dt>chr4:79,500,000..80,000,000</dt><dd>jumps the region on chromosome 4 between 79.5Mb and 80Mb.</dd>'
+                + '        <dt>5678</dt><dd>centers the display at base 5,678 on the current sequence</dd>'
+                + '    </dl>'
+                + '</dd>'
+                + '<dt>JBrowse Documentation</dt>'
+                + '<dd><ul><li><a target="_blank" href="docs/tutorial/">Quick-start tutorial</a></li>'
+                + '        <li><a target="_blank" href="http://gmod.org/wiki/JBrowse">JBrowse Configuration Guide</a></li>'
+                + '        <li><a target="_blank" href="docs/config.html"><tt>biodb-to-json.pl</tt> reference</a></li>'
+                + '        <li><a target="_blank" href="docs/featureglyphs.html">HTMLFeatures class reference</a></li>'
+                + '    </ul>'
+                + '</dd>'
+                + '</dl>'
+                + '</div>'
+                + '</div>'
+            ;
+    }
+});
+});
+
+},
+'JBrowse/View/StandaloneDatasetList':function(){
+define([
+           'dojo/_base/declare',
+
+           'dijit/_WidgetBase'
+       ],
+       function(
+           declare,
+
+           _WidgetBase
+       ) {
+return declare( _WidgetBase, {
+
+   baseClass: 'jbrowseStandaloneDatasetSelector',
+
+   buildRendering: function() {
+       this.inherited(arguments);
+
+       var bdy = this.domNode;
+       var h2  = bdy.appendChild( document.createElement('h2') );
+       h2.innerHTML = "Available Datasets";
+       this.containerNode = bdy.appendChild( document.createElement('ul') );
+       var datasets = this.get('datasets');
+       var ul  = bdy.appendChild( document.createElement('ul') );
+       for ( var spp in datasets ) {
+           if( ! /^_/.test( spp ) ) {
+               var sppData = datasets[spp];
+               var li      = document.createElement('li');
+               var a       = document.createElement('a');
+               a.setAttribute('href', sppData.url );
+               a.innerHTML = sppData.name;
+               li.appendChild( a  );
+               ul.appendChild( li );
+           }
+       }
+   }
+
+});
+});
+},
+'lazyload/lazyload':function(){
+// wrapped by build app
+define(["dojo","dijit","dojox"], function(dojo,dijit,dojox){
+/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
+
+/**
+LazyLoad makes it easy and painless to lazily load one or more external
+JavaScript or CSS files on demand either during or after the rendering of a web
+page.
+
+Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
+Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
+are not officially supported.
+
+Visit https://github.com/rgrove/lazyload/ for more info.
+
+Copyright (c) 2011 Ryan Grove <ryan@wonko.com>
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the 'Software'), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+@module lazyload
+@class LazyLoad
+@static
+@version 2.0.3 (git)
+*/
+
+LazyLoad = (function (doc) {
+  // -- Private Variables ------------------------------------------------------
+
+  // User agent and feature test information.
+  var env,
+
+  // Reference to the <head> element (populated lazily).
+  head,
+
+  // Requests currently in progress, if any.
+  pending = {},
+
+  // Number of times we've polled to check whether a pending stylesheet has
+  // finished loading. If this gets too high, we're probably stalled.
+  pollCount = 0,
+
+  // Queued requests.
+  queue = {css: [], js: []},
+
+  // Reference to the browser's list of stylesheets.
+  styleSheets = doc.styleSheets;
+
+  // -- Private Methods --------------------------------------------------------
+
+  /**
+  Creates and returns an HTML element with the specified name and attributes.
+
+  @method createNode
+  @param {String} name element name
+  @param {Object} attrs name/value mapping of element attributes
+  @return {HTMLElement}
+  @private
+  */
+  function createNode(name, attrs) {
+    var node = doc.createElement(name), attr;
+
+    for (attr in attrs) {
+      if (attrs.hasOwnProperty(attr)) {
+        node.setAttribute(attr, attrs[attr]);
+      }
+    }
+
+    return node;
+  }
+
+  /**
+  Called when the current pending resource of the specified type has finished
+  loading. Executes the associated callback (if any) and loads the next
+  resource in the queue.
+
+  @method finish
+  @param {String} type resource type ('css' or 'js')
+  @private
+  */
+  function finish(type) {
+    var p = pending[type],
+        callback,
+        urls;
+
+    if (p) {
+      callback = p.callback;
+      urls     = p.urls;
+
+      urls.shift();
+      pollCount = 0;
+
+      // If this is the last of the pending URLs, execute the callback and
+      // start the next request in the queue (if any).
+      if (!urls.length) {
+        callback && callback.call(p.context, p.obj);
+        pending[type] = null;
+        queue[type].length && load(type);
+      }
+    }
+  }
+
+  /**
+  Populates the <code>env</code> variable with user agent and feature test
+  information.
+
+  @method getEnv
+  @private
+  */
+  function getEnv() {
+    var ua = navigator.userAgent;
+
+    env = {
+      // True if this browser supports disabling async mode on dynamically
+      // created script nodes. See
+      // http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
+      async: doc.createElement('script').async === true
+    };
+
+    (env.webkit = /AppleWebKit\//.test(ua))
+      || (env.ie = /MSIE/.test(ua))
+      || (env.opera = /Opera/.test(ua))
+      || (env.gecko = /Gecko\//.test(ua))
+      || (env.unknown = true);
+  }
+
+  /**
+  Loads the specified resources, or the next resource of the specified type
+  in the queue if no resources are specified. If a resource of the specified
+  type is already being loaded, the new request will be queued until the
+  first request has been finished.
+
+  When an array of resource URLs is specified, those URLs will be loaded in
+  parallel if it is possible to do so while preserving execution order. All
+  browsers support parallel loading of CSS, but only Firefox and Opera
+  support parallel loading of scripts. In other browsers, scripts will be
+  queued and loaded one at a time to ensure correct execution order.
+
+  @method load
+  @param {String} type resource type ('css' or 'js')
+  @param {String|Array} urls (optional) URL or array of URLs to load
+  @param {Function} callback (optional) callback function to execute when the
+    resource is loaded
+  @param {Object} obj (optional) object to pass to the callback function
+  @param {Object} context (optional) if provided, the callback function will
+    be executed in this object's context
+  @private
+  */
+  function load(type, urls, callback, obj, context) {
+    var _finish = function () { finish(type); },
+        isCSS   = type === 'css',
+        nodes   = [],
+        i, len, node, p, pendingUrls, url;
+
+    env || getEnv();
+
+    if (urls) {
+      // If urls is a string, wrap it in an array. Otherwise assume it's an
+      // array and create a copy of it so modifications won't be made to the
+      // original.
+      urls = typeof urls === 'string' ? [urls] : urls.concat();
+
+      // Create a request object for each URL. If multiple URLs are specified,
+      // the callback will only be executed after all URLs have been loaded.
+      //
+      // Sadly, Firefox and Opera are the only browsers capable of loading
+      // scripts in parallel while preserving execution order. In all other
+      // browsers, scripts must be loaded sequentially.
+      //
+      // All browsers respect CSS specificity based on the order of the link
+      // elements in the DOM, regardless of the order in which the stylesheets
+      // are actually downloaded.
+      if (isCSS || env.async || env.gecko || env.opera) {
+        // Load in parallel.
+        queue[type].push({
+          urls    : urls,
+          callback: callback,
+          obj     : obj,
+          context : context
+        });
+      } else {
+        // Load sequentially.
+        for (i = 0, len = urls.length; i < len; ++i) {
+          queue[type].push({
+            urls    : [urls[i]],
+            callback: i === len - 1 ? callback : null, // callback is only added to the last URL
+            obj     : obj,
+            context : context
+          });
+        }
+      }
+    }
+
+    // If a previous load request of this type is currently in progress, we'll
+    // wait our turn. Otherwise, grab the next item in the queue.
+    if (pending[type] || !(p = pending[type] = queue[type].shift())) {
+      return;
+    }
+
+    head || (head = doc.head || doc.getElementsByTagName('head')[0]);
+    pendingUrls = p.urls;
+
+    for (i = 0, len = pendingUrls.length; i < len; ++i) {
+      url = pendingUrls[i];
+
+      if (isCSS) {
+          node = env.gecko ? createNode('style') : createNode('link', {
+            href: url,
+            rel : 'stylesheet'
+          });
+      } else {
+        node = createNode('script', {src: url});
+        node.async = false;
+      }
+
+      node.className = 'lazyload';
+      node.setAttribute('charset', 'utf-8');
+
+      if (env.ie && !isCSS) {
+        node.onreadystatechange = function () {
+          if (/loaded|complete/.test(node.readyState)) {
+            node.onreadystatechange = null;
+            _finish();
+          }
+        };
+      } else if (isCSS && (env.gecko || env.webkit)) {
+        // Gecko and WebKit don't support the onload event on link nodes.
+        if (env.webkit) {
+          // In WebKit, we can poll for changes to document.styleSheets to
+          // figure out when stylesheets have loaded.
+          p.urls[i] = node.href; // resolve relative URLs (or polling won't work)
+          pollWebKit();
+        } else {
+          // In Gecko, we can import the requested URL into a <style> node and
+          // poll for the existence of node.sheet.cssRules. Props to Zach
+          // Leatherman for calling my attention to this technique.
+          node.innerHTML = '@import "' + url + '";';
+          pollGecko(node);
+        }
+      } else {
+        node.onload = node.onerror = _finish;
+      }
+
+      nodes.push(node);
+    }
+
+    for (i = 0, len = nodes.length; i < len; ++i) {
+      head.appendChild(nodes[i]);
+    }
+  }
+
+  /**
+  Begins polling to determine when the specified stylesheet has finished loading
+  in Gecko. Polling stops when all pending stylesheets have loaded or after 10
+  seconds (to prevent stalls).
+
+  Thanks to Zach Leatherman for calling my attention to the @import-based
+  cross-domain technique used here, and to Oleg Slobodskoi for an earlier
+  same-domain implementation. See Zach's blog for more details:
+  http://www.zachleat.com/web/2010/07/29/load-css-dynamically/
+
+  @method pollGecko
+  @param {HTMLElement} node Style node to poll.
+  @private
+  */
+  function pollGecko(node) {
+    var hasRules;
+
+    try {
+      // We don't really need to store this value or ever refer to it again, but
+      // if we don't store it, Closure Compiler assumes the code is useless and
+      // removes it.
+      hasRules = !!node.sheet.cssRules;
+    } catch (ex) {
+      // An exception means the stylesheet is still loading.
+      pollCount += 1;
+
+      if (pollCount < 200) {
+        setTimeout(function () { pollGecko(node); }, 50);
+      } else {
+        // We've been polling for 10 seconds and nothing's happened. Stop
+        // polling and finish the pending requests to avoid blocking further
+        // requests.
+        hasRules && finish('css');
+      }
+
+      return;
+    }
+
+    // If we get here, the stylesheet has loaded.
+    finish('css');
+  }
+
+  /**
+  Begins polling to determine when pending stylesheets have finished loading
+  in WebKit. Polling stops when all pending stylesheets have loaded or after 10
+  seconds (to prevent stalls).
+
+  @method pollWebKit
+  @private
+  */
+  function pollWebKit() {
+    var css = pending.css, i;
+
+    if (css) {
+      i = styleSheets.length;
+
+      // Look for a stylesheet matching the pending URL.
+      while (--i >= 0) {
+        if (styleSheets[i].href === css.urls[0]) {
+          finish('css');
+          break;
+        }
+      }
+
+      pollCount += 1;
+
+      if (css) {
+        if (pollCount < 200) {
+          setTimeout(pollWebKit, 50);
+        } else {
+          // We've been polling for 10 seconds and nothing's happened, which may
+          // indicate that the stylesheet has been removed from the document
+          // before it had a chance to load. Stop polling and finish the pending
+          // request to prevent blocking further requests.
+          finish('css');
+        }
+      }
+    }
+  }
+
+  return {
+
+    /**
+    Requests the specified CSS URL or URLs and executes the specified
+    callback (if any) when they have finished loading. If an array of URLs is
+    specified, the stylesheets will be loaded in parallel and the callback
+    will be executed after all stylesheets have finished loading.
+
+    @method css
+    @param {String|Array} urls CSS URL or array of CSS URLs to load
+    @param {Function} callback (optional) callback function to execute when
+      the specified stylesheets are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @static
+    */
+    css: function (urls, callback, obj, context) {
+      load('css', urls, callback, obj, context);
+    },
+
+    /**
+    Requests the specified JavaScript URL or URLs and executes the specified
+    callback (if any) when they have finished loading. If an array of URLs is
+    specified and the browser supports it, the scripts will be loaded in
+    parallel and the callback will be executed after all scripts have
+    finished loading.
+
+    Currently, only Firefox and Opera support parallel loading of scripts while
+    preserving execution order. In other browsers, scripts will be
+    queued and loaded one at a time to ensure correct execution order.
+
+    @method js
+    @param {String|Array} urls JS URL or array of JS URLs to load
+    @param {Function} callback (optional) callback function to execute when
+      the specified scripts are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @static
+    */
+    js: function (urls, callback, obj, context) {
+      load('js', urls, callback, obj, context);
+    }
+
+  };
+})(this.document);
+
+});
+
+},
+'p3/widget/viewer/Feature':function(){
+define([
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"../formatter", "../TabContainer", "../FeatureOverview",
+	"dojo/request", "dojo/_base/lang",
+	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
+	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
+], function(declare, TabViewerBase, on, Topic,
+			domClass, ContentPane, domConstruct,
+			formatter, TabContainer, FeatureOverview,
+			xhr, lang,
+			ActionBar, ContainerActionBar, PathwaysContainer,
+			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin){
+	return declare([TabViewerBase], {
+		"baseClass": "FeatureGroup",
+		"disabled": false,
+		"query": null,
+		containerType: "feature_group",
+		feature_id: "",
+		apiServiceUrl: window.App.dataAPI,
+
+		_setFeature_idAttr: function(id){
+
+			if(!id){
+				return;
+			}
+			var state = this.state = this.state || {};
+			this.feature_id = id;
+			this.state.feature_id = id;
+
+			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
+				headers: {
+					accept: "application/json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(feature){
+				this.set("feature", feature)
+			}));
+
+			var activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + id + ")"});
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+				case "correlatedGenes":
+					break;
+				//case "pathways":
+				//	activeTab.set("state", state);
+				//	break;
+				//case "transcriptomics":
+				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
+				//	break;
+				default:
+					activeTab.set("state", activeQueryState);
+					break;
+			}
+		},
+
+		onSetState: function(attr, oldVal, state){
+			var parts = this.state.pathname.split("/");
+			this.set("feature_id", parts[parts.length - 1]);
+
+			if(!state){
+				return;
+			}
+
+			if(state.hashParams && state.hashParams.view_tab){
+
+				if(this[state.hashParams.view_tab]){
+					var vt = this[state.hashParams.view_tab];
+					vt.set("visible", true);
+					this.viewer.selectChild(vt);
+				}else{
+					// console.log("No view-tab supplied in State Object");
+				}
+			}
+		},
+
+		buildHeaderContent: function(feature){
+			// TODO: implement
+		},
+
+		_setFeatureAttr: function(feature){
+			var state = this.state || {};
+
+			state.feature = feature;
+
+			//this.viewHeader.set("content", this.buildHeaderContent(feature));
+
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var activeTab = this[active];
+
+			switch(active){
+				case "overview":
+				case "correlatedGenes":
+					activeTab.set("state", state);
+					break;
+				default:
+					break;
+			}
+
+			this._set("feature", feature);
+
+			this.resize();
+		},
+
+		createOverviewPanel: function(){
+			return new FeatureOverview({
+				content: "Overview",
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview",
+				state: this.state
+			});
+		},
+		postCreate: function(){
+			if(!this.state){
+				this.state = {};
+			}
+
+			this.inherited(arguments);
+
+			this.overview = this.createOverviewPanel();
+			this.genomeBrowser = new ContentPane({
+				title: "Genome Browser",
+				id: this.viewer.id + "_genomeBrowser",
+				content: "Genome Browser"
+			});
+			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
+			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
+			/*
+			this.transcriptomics = new ContentPane({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_transcriptomics",
+				content: "Transcriptomics"
+			});
+			*/
+			this.transcriptomics = new GeneExpressionContainer({
+				title: "Transcriptomics",
+				id: this.viewer.id + "_transcriptomics",
+				content: "Transcriptomics"
+			});
+			this.correlatedGenes = new CorrelatedGenesContainer({
+				title: "Correlated Genes",
+				id: this.viewer.id + "_correlatedGenes",
+				content: "Correlated Genes"
+			});
+
+			this.viewer.addChild(this.overview);
+			this.viewer.addChild(this.genomeBrowser);
+			// this.viewer.addChild(this.compareRegionViewer);
+			this.viewer.addChild(this.transcriptomics);
+			this.viewer.addChild(this.correlatedGenes);
+		}
+	});
+});
+
+},
+'p3/widget/FeatureOverview':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin"
+
+], function(declare, WidgetBase, on,
+			domClass, Templated, Template,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct, PathJoin){
+	return declare([WidgetBase, Templated], {
+		baseClass: "FeatureOverview",
+		disabled: false,
+		templateString: Template,
+		apiServiceUrl: window.App.dataAPI,
+		feature: null,
+		state: null,
+
+		_setStateAttr: function(state){
+			this._set("state", state);
+			if(state.feature){
+				this.set("feature", state.feature);
+			}else{
+				//
+			}
+		},
+
+		_setFeatureAttr: function(feature){
+			this.feature = feature;
+			console.log("Set Feature", feature);
+
+			this.createSummary(feature);
+			this.getSummaryData();
+			this.set("functionalProperties", feature);
+		},
+		_setRelatedFeatureListAttr: function(summary){
+
+			domConstruct.empty(this.relatedFeatureNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.relatedFeatureNode);
+			var thead = domConstruct.create("thead", {}, table);
+			var tbody = domConstruct.create("tbody", {}, table);
+
+			var htr = domConstruct.create("tr", {}, thead);
+			domConstruct.create("th", {innerHTML: "Annotation"}, htr);
+			domConstruct.create("th", {innerHTML: "Locus Tag"}, htr);
+			domConstruct.create("th", {innerHTML: "Start"}, htr);
+			domConstruct.create("th", {innerHTML: "End"}, htr);
+			domConstruct.create("th", {innerHTML: "NT Length"}, htr);
+			domConstruct.create("th", {innerHTML: "AA Length"}, htr);
+			domConstruct.create("th", {innerHTML: "Product"}, htr);
+
+			summary.forEach(function(row){
+				var tr = domConstruct.create('tr', {}, tbody);
+				domConstruct.create("td", {innerHTML: row.annotation}, tr);
+				domConstruct.create("td", {innerHTML: row.alt_locus_tag}, tr);
+				domConstruct.create("td", {innerHTML: row.start}, tr);
+				domConstruct.create("td", {innerHTML: row.end}, tr);
+				domConstruct.create("td", {innerHTML: row.na_length}, tr);
+				domConstruct.create("td", {innerHTML: row.aa_length || '-'}, tr);
+				domConstruct.create("td", {innerHTML: row.product || '(feature type: ' + row.feature_type + ')'}, tr);
+			});
+		},
+		_setFunctionalPropertiesAttr: function(feature){
+
+			domConstruct.empty(this.functionalPropertiesNode);
+			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.functionalPropertiesNode);
+			var tbody = domConstruct.create("tbody", {}, table);
+
+			var htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "GO Assignments", scope: "row", style: "width:20%"}, htr);
+			domConstruct.create("td", {innerHTML: feature.go || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "EC Assignments", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: feature.ec || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "PATRIC Local Family Assignments", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: feature.plfam_id || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "PATRIC Global Family Assignments", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: feature.pgfam_id || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "FIGfam Assignments", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: feature.figfam_id || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Pathway Assignments", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: feature.pathway || '-'}, htr);
+
+			// TODO: implement structure
+			// TODO: implement protein interaction
+		},
+		getSummaryData: function(){
+			// getting uniprot mapping
+			if(this.feature.gi != null){
+				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
+					handleAs: "json",
+					headers: {"accept": "application/solr+json"}
+				}).then(lang.hitch(this, function(data){
+					//console.log("Uniprot Accessions: ", data);
+
+					// TODO: process uniprot mapping
+				}));
+			}
+
+			// get related feature list
+			if(this.feature.pos_group != null){
+				//xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
+				xhr.get(PathJoin(this.apiServiceUrl, "genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)"), {
+					handleAs: "json",
+					headers: {"accept": "application/solr+json"}
+				}).then(lang.hitch(this, function(data){
+					var relatedFeatures = data.response.docs;
+					this.set("relatedFeatureList", relatedFeatures);
+				}));
+			}
+		},
+		createSummary: function(feature){
+			if(feature && feature.feature_id){
+				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>';
+				if(feature.refseq_locus_tag != null){
+					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>';
+				}
+				if(feature.alt_locus_tag != null){
+					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
+				}
+
+				this.proteinIdList.innerHTML = '';
+				if(feature.protein_id != null){
+					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.protein_id + '</span>';
+				}
+
+				// feature box
+				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
+				if(feature.strand == '+'){
+					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
+				}else{
+					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
+				}
+				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
+
+			}else{
+				console.log("Invalid Feature: ", feature);
+			}
+		},
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+		}
+	});
+});
+
+},
+'dojox/charting/themes/ThreeD':function(){
+define(["dojo/_base/lang", "dojo/_base/array", "../Theme", "./gradientGenerator", "./PrimaryColors", "dojo/colors" /* for sanitize */, "./common"],
+	function(lang, ArrayUtil, Theme, gradientGenerator, PrimaryColors, themes){
+
+	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],	// the same is in PrimaryColors
+		defaultFill = {type: "linear", space: "shape", x1: 0, y1: 0, x2: 100, y2: 0},
+		// 3D cylinder map is calculated using dojox.gfx3d
+		cyl3dMap = [
+			{o: 0.00, i: 174}, {o: 0.08, i: 231}, {o: 0.18, i: 237}, {o: 0.30, i: 231},
+			{o: 0.39, i: 221}, {o: 0.49, i: 206}, {o: 0.58, i: 187}, {o: 0.68, i: 165},
+			{o: 0.80, i: 128}, {o: 0.90, i: 102}, {o: 1.00, i: 174}
+		],
+		hiliteIndex = 2, hiliteIntensity = 100,
+		cyl3dFills = ArrayUtil.map(colors, function(c){
+			var fill = lang.delegate(defaultFill),
+				colors = fill.colors = gradientGenerator.generateGradientByIntensity(c, cyl3dMap),
+				hilite = colors[hiliteIndex].color;
+			// add highlight
+			hilite.r += hiliteIntensity;
+			hilite.g += hiliteIntensity;
+			hilite.b += hiliteIntensity;
+			hilite.sanitize();
+			return fill;
+		});
+
+	themes.ThreeD = PrimaryColors.clone();
+	themes.ThreeD.series.shadow = {dx: 1, dy: 1, width: 3, color: [0, 0, 0, 0.15]};
+
+	themes.ThreeD.next = function(elementType, mixin, doPost){
+		if(elementType == "bar" || elementType == "column"){
+			// custom processing for bars and columns: substitute fills
+			var index = this._current % this.seriesThemes.length,
+				s = this.seriesThemes[index], old = s.fill;
+			s.fill = cyl3dFills[index];
+			var theme = Theme.prototype.next.apply(this, arguments);
+			// cleanup
+			s.fill = old;
+			return theme;
+		}
+		return Theme.prototype.next.apply(this, arguments);
+	};
+	
+	return themes.ThreeD;
+});
+
+},
+'dojox/charting/Theme':function(){
+define(["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/Color", "./SimpleTheme",
+	    "dojox/color/_base", "dojox/color/Palette", "dojox/gfx/gradutils"],
+	function(lang, declare, Color, SimpleTheme, colorX, Palette){
+	
+	var Theme = declare("dojox.charting.Theme", SimpleTheme, {
+	// summary:
+	//		A Theme is a pre-defined object, primarily JSON-based, that makes up the definitions to
+	//		style a chart. It extends SimpleTheme with additional features like color definition by
+	//		palettes and gradients definition.
+	});
+
+	/*=====
+	var __DefineColorArgs = {
+		// summary:
+		//		The arguments object that can be passed to define colors for a theme.
+		// num: Number?
+		//		The number of colors to generate.  Defaults to 5.
+		// colors: String[]|dojo/_base/Color[]?
+		//		A pre-defined set of colors; this is passed through to the Theme directly.
+		// hue: Number?
+		//		A hue to base the generated colors from (a number from 0 - 359).
+		// saturation: Number?
+		//		If a hue is passed, this is used for the saturation value (0 - 100).
+		// low: Number?
+		//		An optional value to determine the lowest value used to generate a color (HSV model)
+		// high: Number?
+		//		An optional value to determine the highest value used to generate a color (HSV model)
+		// base: String|dojo/_base/Color?
+		//		A base color to use if we are defining colors using dojox.color.Palette
+		// generator: String?
+		//		The generator function name from dojox/color/Palette.
+	};
+	=====*/
+	lang.mixin(Theme, {
+
+		defineColors: function(kwArgs){
+			// summary:
+			//		Generate a set of colors for the theme based on keyword
+			//		arguments.
+			// kwArgs: __DefineColorArgs
+			//		The arguments object used to define colors.
+			// returns: dojo/_base/Color[]
+			//		An array of colors for use in a theme.
+			//
+			// example:
+			//	|	var colors = Theme.defineColors({
+			//	|		base: "#369",
+			//	|		generator: "compound"
+			//	|	});
+			//
+			// example:
+			//	|	var colors = Theme.defineColors({
+			//	|		hue: 60,
+			//	|		saturation: 90,
+			//	|		low: 30,
+			//	|		high: 80
+			//	|	});
+			kwArgs = kwArgs || {};
+			var l, c = [], n = kwArgs.num || 5;	// the number of colors to generate
+			if(kwArgs.colors){
+				// we have an array of colors predefined, so fix for the number of series.
+				l = kwArgs.colors.length;
+				for(var i = 0; i < n; i++){
+					c.push(kwArgs.colors[i % l]);
+				}
+				return c;	//	dojo.Color[]
+			}
+			if(kwArgs.hue){
+				// single hue, generate a set based on brightness
+				var s = kwArgs.saturation || 100,	// saturation
+					st = kwArgs.low || 30,
+					end = kwArgs.high || 90;
+				// we'd like it to be a little on the darker side.
+				l = (end + st) / 2;
+				// alternately, use "shades"
+				return Palette.generate(
+					colorX.fromHsv(kwArgs.hue, s, l), "monochromatic"
+				).colors;
+			}
+			if(kwArgs.generator){
+				//	pass a base color and the name of a generator
+				return colorX.Palette.generate(kwArgs.base, kwArgs.generator).colors;
+			}
+			return c;	//	dojo.Color[]
+		},
+
+		generateGradient: function(fillPattern, colorFrom, colorTo){
+			var fill = lang.delegate(fillPattern);
+			fill.colors = [
+				{offset: 0, color: colorFrom},
+				{offset: 1, color: colorTo}
+			];
+			return fill;
+		},
+
+		generateHslColor: function(color, luminance){
+			color = new Color(color);
+			var hsl    = color.toHsl(),
+				result = colorX.fromHsl(hsl.h, hsl.s, luminance);
+			result.a = color.a;	// add missing opacity
+			return result;
+		},
+
+		generateHslGradient: function(color, fillPattern, lumFrom, lumTo){
+			color = new Color(color);
+			var hsl       = color.toHsl(),
+				colorFrom = colorX.fromHsl(hsl.h, hsl.s, lumFrom),
+				colorTo   = colorX.fromHsl(hsl.h, hsl.s, lumTo);
+			colorFrom.a = colorTo.a = color.a;	// add missing opacity
+			return Theme.generateGradient(fillPattern, colorFrom, colorTo);	// Object
+		}
+	});
+
+	// for compatibility
+	Theme.defaultMarkers = SimpleTheme.defaultMarkers;
+	Theme.defaultColors = SimpleTheme.defaultColors;
+	Theme.defaultTheme = SimpleTheme.defaultTheme;
+
+	return Theme;
+});
+
+},
+'dojox/color/Palette':function(){
+define(["dojo/_base/lang", "dojo/_base/array", "./_base"],
+	function(lang, arr, dxc){
+
+	/***************************************************************
+	*	dojox.color.Palette
+	*
+	*	The Palette object is loosely based on the color palettes
+	*	at Kuler (http://kuler.adobe.com).  They are 5 color palettes
+	*	with the base color considered to be the third color in the
+	*	palette (for generation purposes).
+	*
+	*	Palettes can be generated from well-known algorithms or they
+	* 	can be manually created by passing an array to the constructor.
+	*
+	*	Palettes can be transformed, using a set of specific params
+	*	similar to the way shapes can be transformed with dojox.gfx.
+	*	However, unlike with transformations in dojox.gfx, transforming
+	* 	a palette will return you a new Palette object, in effect
+	* 	a clone of the original.
+	***************************************************************/
+
+	//	ctor ----------------------------------------------------------------------------
+	dxc.Palette = function(/* String|Array|dojox.color.Color|dojox.color.Palette */base){
+		// summary:
+		//		An object that represents a palette of colors.
+		// description:
+		//		A Palette is a representation of a set of colors.  While the standard
+		//		number of colors contained in a palette is 5, it can really handle any
+		//		number of colors.
+		//
+		//		A palette is useful for the ability to transform all the colors in it
+		//		using a simple object-based approach.  In addition, you can generate
+		//		palettes using dojox.color.Palette.generate; these generated palettes
+		//		are based on the palette generators at http://kuler.adobe.com.
+
+		// colors: dojox.color.Color[]
+		//		The actual color references in this palette.
+		this.colors = [];
+		if(base instanceof dxc.Palette){
+			this.colors = base.colors.slice(0);
+		}
+		else if(base instanceof dxc.Color){
+			this.colors = [ null, null, base, null, null ];
+		}
+		else if(lang.isArray(base)){
+			this.colors = arr.map(base.slice(0), function(item){
+				if(lang.isString(item)){ return new dxc.Color(item); }
+				return item;
+			});
+		}
+		else if (lang.isString(base)){
+			this.colors = [ null, null, new dxc.Color(base), null, null ];
+		}
+	}
+
+	//	private functions ---------------------------------------------------------------
+
+	//	transformations
+	function tRGBA(p, param, val){
+		var ret = new dxc.Palette();
+		ret.colors = [];
+		arr.forEach(p.colors, function(item){
+			var r=(param=="dr")?item.r+val:item.r,
+				g=(param=="dg")?item.g+val:item.g,
+				b=(param=="db")?item.b+val:item.b,
+				a=(param=="da")?item.a+val:item.a
+			ret.colors.push(new dxc.Color({
+				r: Math.min(255, Math.max(0, r)),
+				g: Math.min(255, Math.max(0, g)),
+				b: Math.min(255, Math.max(0, b)),
+				a: Math.min(1, Math.max(0, a))
+			}));
+		});
+		return ret;
+	}
+
+	function tCMY(p, param, val){
+		var ret = new dxc.Palette();
+		ret.colors = [];
+		arr.forEach(p.colors, function(item){
+			var o=item.toCmy(),
+				c=(param=="dc")?o.c+val:o.c,
+				m=(param=="dm")?o.m+val:o.m,
+				y=(param=="dy")?o.y+val:o.y;
+			ret.colors.push(dxc.fromCmy(
+				Math.min(100, Math.max(0, c)),
+				Math.min(100, Math.max(0, m)),
+				Math.min(100, Math.max(0, y))
+			));
+		});
+		return ret;
+	}
+
+	function tCMYK(p, param, val){
+		var ret = new dxc.Palette();
+		ret.colors = [];
+		arr.forEach(p.colors, function(item){
+			var o=item.toCmyk(),
+				c=(param=="dc")?o.c+val:o.c,
+				m=(param=="dm")?o.m+val:o.m,
+				y=(param=="dy")?o.y+val:o.y,
+				k=(param=="dk")?o.b+val:o.b;
+			ret.colors.push(dxc.fromCmyk(
+				Math.min(100, Math.max(0, c)),
+				Math.min(100, Math.max(0, m)),
+				Math.min(100, Math.max(0, y)),
+				Math.min(100, Math.max(0, k))
+			));
+		});
+		return ret;
+	}
+
+	function tHSL(p, param, val){
+		var ret = new dxc.Palette();
+		ret.colors = [];
+		arr.forEach(p.colors, function(item){
+			var o=item.toHsl(),
+				h=(param=="dh")?o.h+val:o.h,
+				s=(param=="ds")?o.s+val:o.s,
+				l=(param=="dl")?o.l+val:o.l;
+			ret.colors.push(dxc.fromHsl(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, l))));
+		});
+		return ret;
+	}
+
+	function tHSV(p, param, val){
+		var ret = new dxc.Palette();
+		ret.colors = [];
+		arr.forEach(p.colors, function(item){
+			var o=item.toHsv(),
+				h=(param=="dh")?o.h+val:o.h,
+				s=(param=="ds")?o.s+val:o.s,
+				v=(param=="dv")?o.v+val:o.v;
+			ret.colors.push(dxc.fromHsv(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, v))));
+		});
+		return ret;
+	}
+
+	//	helper functions
+	function rangeDiff(val, low, high){
+		//	given the value in a range from 0 to high, find the equiv
+		//		using the range low to high.
+		return high-((high-val)*((high-low)/high));
+	}
+
+/*=====
+var __transformArgs = {
+	// summary:
+	//		The keywords argument to be passed to the dojox.color.Palette.transform function.  Note that
+	//		while all arguments are optional, *some* arguments must be passed.  The basic concept is that
+	//		you pass a delta value for a specific aspect of a color model (or multiple aspects of the same
+	//		color model); for instance, if you wish to transform a palette based on the HSV color model,
+	//		you would pass one of "dh", "ds", or "dv" as a value.
+	// use: String?
+	//		Specify the color model to use for the transformation.  Can be "rgb", "rgba", "hsv", "hsl", "cmy", "cmyk".
+	// dr: Number?
+	//		The delta to be applied to the red aspect of the RGB/RGBA color model.
+	// dg: Number?
+	//		The delta to be applied to the green aspect of the RGB/RGBA color model.
+	// db: Number?
+	//		The delta to be applied to the blue aspect of the RGB/RGBA color model.
+	// da: Number?
+	//		The delta to be applied to the alpha aspect of the RGBA color model.
+	// dc: Number?
+	//		The delta to be applied to the cyan aspect of the CMY/CMYK color model.
+	// dm: Number?
+	//		The delta to be applied to the magenta aspect of the CMY/CMYK color model.
+	// dy: Number?
+	//		The delta to be applied to the yellow aspect of the CMY/CMYK color model.
+	// dk: Number?
+	//		The delta to be applied to the black aspect of the CMYK color model.
+	// dh: Number?
+	//		The delta to be applied to the hue aspect of the HSL/HSV color model.
+	// ds: Number?
+	//		The delta to be applied to the saturation aspect of the HSL/HSV color model.
+	// dl: Number?
+	//		The delta to be applied to the luminosity aspect of the HSL color model.
+	// dv: Number?
+	//		The delta to be applied to the value aspect of the HSV color model.
+};
+var __generatorArgs = {
+	// summary:
+	//		The keyword arguments object used to create a palette based on a base color.
+	// base: dojo/_base/Color
+	//		The base color to be used to generate the palette.
+};
+var __analogousArgs = {
+	// summary:
+	//		The keyword arguments object that is used to create a 5 color palette based on the
+	//		analogous rules as implemented at http://kuler.adobe.com, using the HSV color model.
+	// base: dojo/_base/Color
+	//		The base color to be used to generate the palette.
+	// high: Number?
+	//		The difference between the hue of the base color and the highest hue.  In degrees, default is 60.
+	// low: Number?
+	//		The difference between the hue of the base color and the lowest hue.  In degrees, default is 18.
+};
+var __splitComplementaryArgs = {
+	// summary:
+	//		The keyword arguments object used to create a palette based on the split complementary rules
+	//		as implemented at http://kuler.adobe.com.
+	// base: dojo/_base/Color
+	//		The base color to be used to generate the palette.
+	// da: Number?
+	//		The delta angle to be used to determine where the split for the complementary rules happen.
+	//		In degrees, the default is 30.
+};
+=====*/
+
+	//	object methods ---------------------------------------------------------------
+	lang.extend(dxc.Palette, {
+		transform: function(/*__transformArgs*/kwArgs){
+			// summary:
+			//		Transform the palette using a specific transformation function
+			//		and a set of transformation parameters.
+			// description:
+			//		{palette}.transform is a simple way to uniformly transform
+			//		all of the colors in a palette using any of 5 formulae:
+			//		RGBA, HSL, HSV, CMYK or CMY.
+			//
+			//		Once the forumula to be used is determined, you can pass any
+			//		number of parameters based on the formula "d"[param]; for instance,
+			//		{ use: "rgba", dr: 20, dg: -50 } will take all of the colors in
+			//		palette, add 20 to the R value and subtract 50 from the G value.
+			//
+			//		Unlike other types of transformations, transform does *not* alter
+			//		the original palette but will instead return a new one.
+			var fn=tRGBA;	//	the default transform function.
+			if(kwArgs.use){
+				//	we are being specific about the algo we want to use.
+				var use=kwArgs.use.toLowerCase();
+				if(use.indexOf("hs")==0){
+					if(use.charAt(2)=="l"){ fn=tHSL; }
+					else { fn=tHSV; }
+				}
+				else if(use.indexOf("cmy")==0){
+					if(use.charAt(3)=="k"){ fn=tCMYK; }
+					else { fn=tCMY; }
+				}
+			}
+			//	try to guess the best choice.
+			else if("dc" in kwArgs || "dm" in kwArgs || "dy" in kwArgs){
+				if("dk" in kwArgs){ fn = tCMYK; }
+				else { fn = tCMY; }
+			}
+			else if("dh" in kwArgs || "ds" in kwArgs){
+				if("dv" in kwArgs){ fn = tHSV; }
+				else { fn = tHSL; }
+			}
+
+			var palette = this;
+			for(var p in kwArgs){
+				//	ignore use
+				if(p=="use"){ continue; }
+				palette = fn(palette, p, kwArgs[p]);
+			}
+			return palette;		//	dojox.color.Palette
+		},
+		clone: function(){
+			// summary:
+			//		Clones the current palette.
+			return new dxc.Palette(this);	//	dojox.color.Palette
+		}
+	});
+
+	lang.mixin(dxc.Palette, {
+		generators: {
+			analogous:function(/* __analogousArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the analogous rules as implemented at
+				//		http://kuler.adobe.com.
+				var high=args.high||60, 	//	delta between base hue and highest hue (subtracted from base)
+					low=args.low||18,		//	delta between base hue and lowest hue (added to base)
+					base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv=base.toHsv();
+
+				//	generate our hue angle differences
+				var h=[
+					(hsv.h+low+360)%360,
+					(hsv.h+Math.round(low/2)+360)%360,
+					hsv.h,
+					(hsv.h-Math.round(high/2)+360)%360,
+					(hsv.h-high+360)%360
+				];
+
+				var s1=Math.max(10, (hsv.s<=95)?hsv.s+5:(100-(hsv.s-95))),
+					s2=(hsv.s>1)?hsv.s-1:21-hsv.s,
+					v1=(hsv.v>=92)?hsv.v-9:Math.max(hsv.v+9, 20),
+					v2=(hsv.v<=90)?Math.max(hsv.v+5, 20):(95+Math.ceil((hsv.v-90)/2)),
+					s=[ s1, s2, hsv.s, s1, s1 ],
+					v=[ v1, v2, hsv.v, v1, v2 ]
+
+				return new dxc.Palette(arr.map(h, function(hue, i){
+					return dxc.fromHsv(hue, s[i], v[i]);
+				}));		//	dojox.color.Palette
+			},
+
+			monochromatic: function(/* __generatorArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the monochromatic rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv = base.toHsv();
+				
+				//	figure out the saturation and value
+				var s1 = (hsv.s-30>9)?hsv.s-30:hsv.s+30,
+					s2 = hsv.s,
+					v1 = rangeDiff(hsv.v, 20, 100),
+					v2 = (hsv.v-20>20)?hsv.v-20:hsv.v+60,
+					v3 = (hsv.v-50>20)?hsv.v-50:hsv.v+30;
+
+				return new dxc.Palette([
+					dxc.fromHsv(hsv.h, s1, v1),
+					dxc.fromHsv(hsv.h, s2, v3),
+					base,
+					dxc.fromHsv(hsv.h, s1, v3),
+					dxc.fromHsv(hsv.h, s2, v2)
+				]);		//	dojox.color.Palette
+			},
+
+			triadic: function(/* __generatorArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the triadic rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv = base.toHsv();
+
+				var h1 = (hsv.h+57+360)%360,
+					h2 = (hsv.h-157+360)%360,
+					s1 = (hsv.s>20)?hsv.s-10:hsv.s+10,
+					s2 = (hsv.s>90)?hsv.s-10:hsv.s+10,
+					s3 = (hsv.s>95)?hsv.s-5:hsv.s+5,
+					v1 = (hsv.v-20>20)?hsv.v-20:hsv.v+20,
+					v2 = (hsv.v-30>20)?hsv.v-30:hsv.v+30,
+					v3 = (hsv.v-30>70)?hsv.v-30:hsv.v+30;
+
+				return new dxc.Palette([
+					dxc.fromHsv(h1, s1, hsv.v),
+					dxc.fromHsv(hsv.h, s2, v2),
+					base,
+					dxc.fromHsv(h2, s2, v1),
+					dxc.fromHsv(h2, s3, v3)
+				]);		//	dojox.color.Palette
+			},
+
+			complementary: function(/* __generatorArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the complementary rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv = base.toHsv();
+
+				var h1 = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
+					s1 = Math.max(hsv.s-10, 0),
+					s2 = rangeDiff(hsv.s, 10, 100),
+					s3 = Math.min(100, hsv.s+20),
+					v1 = Math.min(100, hsv.v+30),
+					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
+
+				return new dxc.Palette([
+					dxc.fromHsv(hsv.h, s1, v1),
+					dxc.fromHsv(hsv.h, s2, v2),
+					base,
+					dxc.fromHsv(h1, s3, v2),
+					dxc.fromHsv(h1, hsv.s, hsv.v)
+				]);		//	dojox.color.Palette
+			},
+
+			splitComplementary: function(/* __splitComplementaryArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the split complementary rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					dangle = args.da || 30,
+					hsv = base.toHsv();
+
+				var baseh = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
+					h1 = (baseh-dangle+360)%360,
+					h2 = (baseh+dangle)%360,
+					s1 = Math.max(hsv.s-10, 0),
+					s2 = rangeDiff(hsv.s, 10, 100),
+					s3 = Math.min(100, hsv.s+20),
+					v1 = Math.min(100, hsv.v+30),
+					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
+
+				return new dxc.Palette([
+					dxc.fromHsv(h1, s1, v1),
+					dxc.fromHsv(h1, s2, v2),
+					base,
+					dxc.fromHsv(h2, s3, v2),
+					dxc.fromHsv(h2, hsv.s, hsv.v)
+				]);		//	dojox.color.Palette
+			},
+
+			compound: function(/* __generatorArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the compound rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv = base.toHsv();
+
+				var h1 = ((hsv.h*2)+18<360)?(hsv.h*2)+18:Math.floor(hsv.h/2)-18,
+					h2 = ((hsv.h*2)+120<360)?(hsv.h*2)+120:Math.floor(hsv.h/2)-120,
+					h3 = ((hsv.h*2)+99<360)?(hsv.h*2)+99:Math.floor(hsv.h/2)-99,
+					s1 = (hsv.s-40>10)?hsv.s-40:hsv.s+40,
+					s2 = (hsv.s-10>80)?hsv.s-10:hsv.s+10,
+					s3 = (hsv.s-25>10)?hsv.s-25:hsv.s+25,
+					v1 = (hsv.v-40>10)?hsv.v-40:hsv.v+40,
+					v2 = (hsv.v-20>80)?hsv.v-20:hsv.v+20,
+					v3 = Math.max(hsv.v, 20);
+
+				return new dxc.Palette([
+					dxc.fromHsv(h1, s1, v1),
+					dxc.fromHsv(h1, s2, v2),
+					base,
+					dxc.fromHsv(h2, s3, v3),
+					dxc.fromHsv(h3, s2, v2)
+				]);		//	dojox.color.Palette
+			},
+
+			shades: function(/* __generatorArgs */args){
+				// summary:
+				//		Create a 5 color palette based on the shades rules as implemented at
+				//		http://kuler.adobe.com.
+				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
+					hsv = base.toHsv();
+
+				var s  = (hsv.s==100 && hsv.v==0)?0:hsv.s,
+					v1 = (hsv.v-50>20)?hsv.v-50:hsv.v+30,
+					v2 = (hsv.v-25>=20)?hsv.v-25:hsv.v+55,
+					v3 = (hsv.v-75>=20)?hsv.v-75:hsv.v+5,
+					v4 = Math.max(hsv.v-10, 20);
+
+				return new dxc.Palette([
+					new dxc.fromHsv(hsv.h, s, v1),
+					new dxc.fromHsv(hsv.h, s, v2),
+					base,
+					new dxc.fromHsv(hsv.h, s, v3),
+					new dxc.fromHsv(hsv.h, s, v4)
+				]);		//	dojox.color.Palette
+			}
+		},
+		generate: function(/* String|dojox.color.Color */base, /* Function|String */type){
+			// summary:
+			//		Generate a new Palette using any of the named functions in
+			//		dojox.color.Palette.generators or an optional function definition.  Current
+			//		generators include "analogous", "monochromatic", "triadic", "complementary",
+			//		"splitComplementary", and "shades".
+			if(lang.isFunction(type)){
+				return type({ base: base });	//	dojox.color.Palette
+			}
+			else if(dxc.Palette.generators[type]){
+				return dxc.Palette.generators[type]({ base: base });	//	dojox.color.Palette
+			}
+			throw new Error("dojox.color.Palette.generate: the specified generator ('" + type + "') does not exist.");
+		}
+	});
+	
+	return dxc.Palette;
+});
+
+},
+'dojox/charting/themes/gradientGenerator':function(){
+define(["dojo/_base/lang", "dojo/_base/array", "dojo/_base/Color", "../Theme", "dojox/color/_base", "./common"], 
+	function(lang, arr, Color, Theme, dxcolor, themes){
+	
+	var gg = lang.getObject("gradientGenerator", true, themes);
+
+	gg.generateFills = function(colors, fillPattern, lumFrom, lumTo){
+		// summary:
+		//		generates 2-color gradients using pure colors, a fill pattern, and two luminance values
+		// colors: Array
+		//		Array of colors to generate gradients for each.
+		// fillPattern: Object
+		//		Gradient fill descriptor which colors list will be generated.
+		// lumFrom: Number
+		//		Initial luminance value (0-100).
+		// lumTo: Number
+		//		Final luminance value (0-100).
+		return arr.map(colors, function(c){	// Array
+			return Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo);
+		});
+	};
+	
+	gg.updateFills = function(themes, fillPattern, lumFrom, lumTo){
+		// summary:
+		//		transforms solid color fills into 2-color gradients using a fill pattern, and two luminance values
+		// themes: Array
+		//		Array of mini-themes (usually series themes or marker themes), which fill will be transformed.
+		// fillPattern: Object
+		//		Gradient fill descriptor which colors list will be generated.
+		// lumFrom: Number
+		//		Initial luminance value (0-100).
+		// lumTo: Number
+		//		Final luminance value (0-100).
+		arr.forEach(themes, function(t){
+			if(t.fill && !t.fill.type){
+				t.fill = Theme.generateHslGradient(t.fill, fillPattern, lumFrom, lumTo);
+			}
+		});
+	};
+	
+	gg.generateMiniTheme = function(colors, fillPattern, lumFrom, lumTo, lumStroke){
+		// summary:
+		//		generates mini-themes with 2-color gradients using colors, a fill pattern, and three luminance values
+		// colors: Array
+		//		Array of colors to generate gradients for each.
+		// fillPattern: Object
+		//		Gradient fill descriptor which colors list will be generated.
+		// lumFrom: Number
+		//		Initial luminance value (0-100).
+		// lumTo: Number
+		//		Final luminance value (0-100).
+		// lumStroke: Number
+		//		Stroke luminance value (0-100).
+		return arr.map(colors, function(c){	// Array
+			c = new dxcolor.Color(c);
+			return {
+				fill:   Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo),
+				stroke: {color: Theme.generateHslColor(c, lumStroke)}
+			};
+		});
+	};
+	
+	gg.generateGradientByIntensity = function(color, intensityMap){
+		// summary:
+		//		generates gradient colors using an intensity map
+		// color: dojo.Color
+		//		Color to use to generate gradients.
+		// intensityMap: Array
+		//		Array of tuples {o, i}, where o is a gradient offset (0-1),
+		//		and i is an intensity (0-255).
+		color = new Color(color);
+		return arr.map(intensityMap, function(stop){	// Array
+			var s = stop.i / 255;
+			return {
+				offset: stop.o,
+				color:  new Color([color.r * s, color.g * s, color.b * s, color.a])
+			};
+		});
+	};
+	
+	return gg;
+});
+
+},
+'dojox/charting/themes/PrimaryColors':function(){
+define(["../Theme", "./gradientGenerator", "./common"], function(Theme, gradientGenerator, themes){
+
+	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],
+		defaultFill = {type: "linear", space: "plot", x1: 0, y1: 0, x2: 0, y2: 100};
+
+	themes.PrimaryColors = new Theme({
+		seriesThemes: gradientGenerator.generateMiniTheme(colors, defaultFill, 90, 40, 25)
+	});
+	
+	return themes.PrimaryColors;
+});
+
+},
+'p3/widget/GeneExpressionContainer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
+	"./ActionBar", "./ContainerActionBar",
+	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
+], function(declare, lang, on, Topic, domConstruct,
+			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
+			RadioButton, TextArea, TextBox, Button, Select,
+			ActionBar, ContainerActionBar,
+			GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog, Dialog, popup){
+
+	return declare([BorderContainer], {
+		id: "GEContainer",
+		gutters: false,
+		state: null,
+		tgState: null,
+		apiServer: window.App.dataServiceURL,
+		constructor: function(){
+			var self = this;
+
+			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
+				console.log("GeneExpression:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updateTgState":
+						self.tgState = value;
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		onSetState: function(attr, oldVal, state){
+			console.log("GeneExpressionGridContainer onSetState set state: ", state);
+			if(this.GeneExpressionGridContainer){
+				this.GeneExpressionGridContainer.set('state', state);
+			}
+			if(this.GeneExpressionChartContainer){
+				this.GeneExpressionChartContainer.set('state', state);
+			}
+			if(this.GeneExpressionMetadataChartContainer){
+				this.GeneExpressionMetadataChartContainer.set('state', state);
+			}
+			this._set('state', state);
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+
+			if(this.visible && !this._firstView){
+				this.onFirstView();
+			}
+			if(this.GeneExpressionGridContainer){
+				this.GeneExpressionGridContainer.set('visible', true);
+			}
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+
+			var filterPanel = this._buildFilterPanel();
+
+			console.log("GeneExpressionGridContainer onFirstView: this", this);
+			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
+			this.tabContainer = new StackContainer({region: "center", id: this.id + "_TabContainer"});
+			var tabController = new TabController({
+				containerId: this.id + "_TabContainer",
+				region: "top",
+				"class": "TextTabButtons"
+			});
+
+			// for charts
+			// outer BorderContainer
+			var bc1 = new BorderContainer({
+				region: "top",
+				title: "Chart",
+				style: "height: 350px;",
+				gutters: false
+			});
+
+			var bc = new BorderContainer({
+				region: "top",
+				title: "Chart",
+				style: "height: 350px;"
+			});
+
+			console.log("Before creating GeneExpressionChartContainer", this);
+
+			var chartContainer1 = new GeneExpressionChartContainer({
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+				title: "Chart",
+				content: "Gene Expression Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+			chartContainer1.startup();
+
+			var chartContainer2 = new GeneExpressionMetadataChartContainer({
+				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+				title: "Chart",
+				content: "Gene Expression Metadata Chart",
+				state: this.state,
+				tgtate: this.tgState,
+				apiServer: this.apiServer
+			});
+			chartContainer2.startup();
+
+			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
+			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
+
+			// for data grid
+			
+			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
+				title: "Table",
+				content: "Gene Expression Table",
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
+			console.log("onFirstView create GeneExpressionGrid: ", this.GeneExpressionGridContainer);
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			this.addChild(tabController);
+			this.addChild(filterPanel);
+			this.tabContainer.addChild(bc1);
+			bc1.addChild(bc);
+			bc.addChild(chartContainer1);
+			bc.addChild(chartContainer2);
+			this.tabContainer.addChild(this.GeneExpressionGridContainer);
+			this.addChild(this.tabContainer);
+			
+			this.inherited(arguments);
+			this._firstView = true;
+			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
+		},
+
+		_buildFilterPanel: function(){
+
+			// other filter items
+			var otherFilterPanel = new ContentPane({
+				region: "top",
+				"class": "GeneExpFilterPanel"
+			});
+
+			// download dialog
+			var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+			var downloadTT = new TooltipDialog({
+				content: dfc, onMouseLeave: function(){
+					popup.close(downloadTT);
+				}
+			});
+
+			var _self=this;
+			on(downloadTT.domNode, "div:click", function(evt){
+				var rel = evt.target.attributes.rel.value;
+				console.log("REL: ", rel);
+				var dataType = "transcriptomics_gene";
+				
+				var uf = _self.tgState.upFold, df = _self.tgState.downFold;
+				var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
+				var keyword= _self.tgState.keyword;
+				var range = "";
+				if (keyword && keyword.length >0)
+				{
+					range += "&keyword(" + encodeURIComponent(keyword) + ")";
+				}
+			
+				if (uf>0 && df<0)
+				{
+					range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+				}
+				else if (uf>0) {
+					range += "&gt(log_ratio,"  + uf + ")";
+				}
+				else if (df<0) {
+					range += "&lt(log_ratio,"  + df+ ")";
+				}
+				if (uz>0 && dz<0)
+				{
+					range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+				}
+				else if (uz>0) {
+					range += "&gt(z_score,"  + uz+ ")";
+				}
+				else if (dz<0) {
+					range += "&lt(z_score,"  + dz+ ")";
+				}
+				var query = _self.state.search + range + "&sort(+pid)&limit(25000)";
+
+				//var query = 	"eq(FOO,bar)";
+				console.log("DownloadQuery: ", dataType, query);				
+						
+				var baseUrl = window.App.dataServiceURL; 
+				if(baseUrl.charAt(-1) !== "/"){
+					 baseUrl = baseUrl + "/";
+				}
+				baseUrl = baseUrl + dataType + "/?";
+
+				if (window.App.authorizationToken){
+					baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+				}
+	
+				baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+				console.log("DownloadQuery: baseUrl", baseUrl);
+
+				var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+				form.submit();		
+		
+				
+				popup.close(downloadTT);
+			});
+
+			// download button
+			var wrapper = domConstruct.create("div", {
+				"class": "ActionButtonWrapper",
+				rel: "DownloadTable"
+			});
+			var b = domConstruct.create("div", {"class": "fa fa-download fa-2x"}, wrapper);
+			var t = domConstruct.create("div", {innerHTML: "DOWNLOAD", "class": "ActionButtonText"}, wrapper)
+			on(wrapper, "div:click", function(evt){
+					popup.open({
+						popup: downloadTT,
+						around: wrapper,
+						orient: ["below"]
+					});
+			});
+			
+			domConstruct.place(wrapper, otherFilterPanel.containerNode, "last");
+
+			//var keyword_label = domConstruct.create("label", {innerHTML: "Keyword "});
+			var keyword_textbox = new TextBox({
+				name: "keywordText",
+				value: "",
+				placeHolder: "keyword",
+				style: "width: 200px; margin: 5px 0"
+			});
+			//domConstruct.place(keyword_label, otherFilterPanel.containerNode, "last");
+			domConstruct.place(keyword_textbox.domNode, otherFilterPanel.containerNode, "last");
+
+
+			var select_log_ratio = new Select({
+				name: "selectGeneLogRatio",
+				id: "selectGeneLogRatio",
+				options: [{value: 0, label: "0"}, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
+					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
+					{value: 3, label: "3"}
+				],
+				style: "width: 80px; margin: 5px 0"
+			});
+			var label_select_log_ratio = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Log Ratio|: "});
+			domConstruct.place(label_select_log_ratio, otherFilterPanel.containerNode, "last");
+			domConstruct.place(select_log_ratio.domNode, otherFilterPanel.containerNode, "last");
+			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var select_z_score = new Select({
+				name: "selectGeneZScore",
+				id: "selectGeneZScore",
+				options: [{value: 0, label: "0", selected: true }, {value: 0.5, label: "0.5"}, {value: 1, label: "1"},
+					{value: 1.5, label: "1.5"}, {value: 2, label: "2"}, {value: 2.5, label: "2.5"},
+					{value: 3, label: "3"}
+				],
+				style: "width: 80px; margin: 5px 0"
+			});
+			var label_select_z_score = domConstruct.create("label", {style: "margin-left: 10px;", innerHTML: " |Z-score|: "});
+			domConstruct.place(label_select_z_score, otherFilterPanel.containerNode, "last");
+			domConstruct.place(select_z_score.domNode, otherFilterPanel.containerNode, "last");
+			//domConstruct.place("<br>", otherFilterPanel.containerNode, "last");
+
+			var defaultFilterValue = {
+				upFold: 0,
+				downFold: 0,
+				upZscore: 0,
+				downZscore: 0,
+				keyword: ""
+			};
+
+			this.tgState = defaultFilterValue;
+			var btn_submit = new Button({
+				label: "Filter",
+				style: "margin-left: 10px;",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {
+						upFold: 0,
+						downFold: 0,
+						upZscore: 0,
+						downZscore: 0,
+						keyword: ""
+					};
+
+					var lr = parseFloat(select_log_ratio.get('value'));
+					var zs = parseFloat(select_z_score.get('value'));
+					var keyword = keyword_textbox.get('value').trim();
+					if(keyword){
+						filter.keyword = keyword;
+					}
+
+					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr) : {};
+					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
+
+					console.log("submit btn clicked: filter", filter);
+
+					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+					Topic.publish("GeneExpression", "applyConditionFilter", this.tgState);					
+					console.log("submit btn clicked: this.tgState", this.tgState);
+				})
+			});
+			domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			var reset_submit = new Button({
+				label: "Reset Filter",
+				style: "margin-left: 10px;",
+				type: "reset",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {
+						upFold: 0,
+						downFold: 0,
+						upZscore: 0,
+						downZscore: 0,
+						keyword: ""
+					};
+					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+					Topic.publish("GeneExpression", "updateTgState", this.tgState);
+
+					keyword_textbox.reset();
+					select_log_ratio.reset();
+					select_z_score.reset();
+
+					//console.log("reset_submit btn clicked: select_log_ratio", select_log_ratio);
+					//console.log("reset_submit btn clicked: select_z_score", select_z_score);
+				})
+			});
+			domConstruct.place(reset_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			var all_submit = new Button({
+				label: "Show All Comparisons",
+				style: "margin-left: 10px;",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {
+						upFold: 0,
+						downFold: 0,
+						upZscore: 0,
+						downZscore: 0,
+						keyword: ""
+					};
+					this.tgState = lang.mixin(this.tgState, defaultFilterValue, filter);
+					Topic.publish("GeneExpression", "updateTgState", this.tgState);					
+
+					//keyword_textbox.reset();
+					//select_log_ratio.reset();
+					//select_z_score.reset();
+				})
+			});
+			domConstruct.place(all_submit.domNode, otherFilterPanel.containerNode, "last");
+
+			return otherFilterPanel;
+		}
+	});
+});
+},
+'p3/widget/GeneExpressionGridContainer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
+	"dijit/popup", "dijit/TooltipDialog",
+	"./GeneExpressionGrid", "./GridContainer"
+], function(declare, lang, on, Topic,
+			popup, TooltipDialog,
+			GeneExpressionGrid, GridContainer){
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var self = this;
+		// console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
+		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+		// console.log("selection: ", selection);
+		// console.log("DownloadQuery: ", dataType, currentQuery);
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		popup.close(downloadTT);
+	});
+
+	return declare([GridContainer], {
+		gridCtor: GeneExpressionGrid,
+		containerType: "gene_expression_data",
+		facetFields: [],
+		enableFilterPanel: false,
+		constructor: function(){
+			var self = this;
+			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "updateTgState":
+						self.tgState = value;
+						break;
+					default:
+						break;
+				}
+			}));
+		//console.log("GeneExpressionGridContainer constructor: self ", self);
+		//console.log("GeneExpressionGridContainer constructor: state ", self.state);
+		//console.log("GeneExpressionGridContainer constructor: title ", self.title);
+		//console.log("GeneExpressionGridContainer constructor: content ", self.content);
+		},
+		buildQuery: function(){
+			// prevent further filtering. DO NOT DELETE
+		},
+		_setQueryAttr: function(query){
+			//block default query handler for now.
+		},
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if(!state){
+				return;
+			}
+			var self = this;
+			console.log("GeneExpressionGridContainer _setStateAttr: state", state);
+			//console.log("GeneExpressionGridContainer _setStateAttr: this.state", this.state);
+			if(this.grid){
+				console.log("   call set state on this.grid: ", this.grid);
+				this.grid.set('state', state);
+			}else{
+				console.log("No Grid Yet (GeneExpressionGridContainer), this is ", self);
+			}
+
+			this._set("state", state);
+			//console.log("GeneExpressionGridContainer this._set: ", this.state);
+			//console.log("set state (GeneExpressionGridContainer), this= ", self);
+			//console.log("set state (GeneExpressionGridContainer), self.grid= ", self.grid);
+		},
+
+		startup: function(){
+			//console.log("GeneExpressionGridContainer startup()");
+			if (this._started) { return; }
+			this.inherited(arguments);
+			this._set("state", this.get("state"));
+			console.log("GeneExpressionGridContainer startup(), arguments, state", arguments, this.get("state"));
+		},
+
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"DownloadTable",
+				"fa fa-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+		])
+	});
+});
+
+},
+'p3/widget/GeneExpressionGrid':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"./PageGrid", "./formatter", "../store/GeneExpressionMemoryStore", "dgrid/selector"
+], function(declare, lang, Deferred,
+			on, domClass, domConstruct, aspect, request, Topic,
+			BorderContainer, ContentPane,
+			Grid, formatter, Store, selector){
+	return declare([Grid], {
+		region: "center",
+		query: (this.query || ""),
+		apiToken: window.App.authorizationToken,
+		apiServer: window.App.dataServiceURL,
+		store: null,
+		state: null,
+		dataModel: "gene_expression_data",
+		primaryKey: "pid",
+		selectionModel: "extended",
+		deselectOnRefresh: true,
+		columns: {
+			//"Selection Checkboxes": selector({}),
+			pid: {label: "pid", field: "pid", hidden: true},
+			feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true},
+			expname: {label: 'Title', field: 'expname'},
+			pmid: {label: 'PubMed', field: 'pmid'},
+			accession: {label: 'Accession', field: 'accession'},
+			strain: {label: 'Strain', field: 'strain'},
+			mutant: {label: 'Gene Modification', field: 'mutant'},
+			condition: {label: 'Experimental Condition', field: 'condition'},
+			timepoint: {label: 'Time Point', field: 'timepoint'},
+			avg_intensity: {label: 'Avg Intensity', field: 'avg_intensity'},
+			log_ratio: {label: 'Log Ratio', field: 'log_ratio'},
+			z_score: {label: 'Z-score', field: 'z_score'}
+		},
+		constructor: function(options){
+			console.log("GeneExpressionGrid constructor Ctor: ", options);
+			console.log("GeneExpressionGrid constructor this.store: ", this.store);
+			if(options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+
+			Topic.subscribe("GeneExpression", lang.hitch(this, function(){
+				console.log("GeneExpressionGrid: arguments=", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				console.log("GeneExpressionGrid: key, value=", key, ",", value);
+
+				switch(key){
+					case "updateTgState":
+						//console.log("GeneExpressionGrid constructor case updateTgState: this.store: ", this.store);
+						//this.store.arrange(value);
+						this.store.tgState = value;
+						this.store.reload();
+						//this.refresh();
+						break;
+					case "applyConditionFilter":
+						//console.log("GeneExpressionGrid constructor case applyConditionFilter: this.store: ", this.store);
+						//this.store.arrange(value);
+						//self.tgState = value;
+						this.store.tgState = value;
+						this.store.reload();
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		_setApiServer: function(server){
+			this.apiServer = server;
+		},
+		_setState: function(state){
+			//console.log("!!!!!!In GeneExpressionGrid _setState: state=", state);
+			//console.log("_setState: store=", this.store);
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set('state', state);
+
+				this.refresh();
+			}
+			//console.log("GeneExpressionGrid _setState: store=", this.store);		
+		},
+		startup: function(){
+			var _self = this;
+
+			//console.log("GeneExpressionGrid startup(): this=", this);		
+			//console.log("GeneExpressionGrid startup(): this.store=", this.store);		
+
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				//console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				// console.log('after emit');
+			});
+
+			this.on("dgrid-select", function(evt){
+				//console.log('dgrid-select: ', evt);
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "select", newEvt);
+			});
+
+			this.on("dgrid-deselect", function(evt){
+				//console.log("dgrid-deselect");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+			});
+
+			aspect.before(_self, 'renderArray', function(results){
+				//console.log("GeneExpressionGrid aspect.before: results=", results);
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+			this.inherited(arguments);
+			this._started = true;
+		},
+		postCreate: function(){
+			this.inherited(arguments);
+			//console.log("GeneExpressionGrid postCreate: arguments=", arguments);
+		},
+		createStore: function(server, token, state){
+			//console.log("Create Store: state=", this.state);
+			var store = new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: this.state || state 
+			});
+			store.watch('refresh', lang.hitch(this, "refresh"));
+
+			console.log("Create Store: store=", store);
+
+			return store;
+		}
+	});
+});
+
+},
+'p3/store/GeneExpressionMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
+	"dojo/store/Memory", "dojo/store/util/QueryResults",
+	"./ArrangeableMemoryStore"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic, All,
+			Memory, QueryResults,
+			ArrangeableMemoryStore){
+
+	var tgState = {
+		comparisonIds: [],
+		comparisonFilterStatus: {},
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
+
+	return declare([ArrangeableMemoryStore, Stateful], {
+		baseQuery: {},
+		apiServer: window.App.dataServiceURL,
+		idProperty: "pid",
+		state: null,
+		tgState: tgState,
+		feature_id: null,
+		onSetState: function(attr, oldVal, state){
+			console.log("Gene Transcriptomics Tab onSetState: ", state);
+			if(state && state.feature && state.feature.feature_id){
+				var cur = this.feature_id;
+				var next = state.feature.feature_id;
+				if(cur != next){
+					this.set("feature_id", state.feature_id || {});
+					this._loaded = false;
+					delete this._loadingDeferred;
+				}
+			}
+		},
+
+		constructor: function(options){
+			this._loaded = false;
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+
+			var self = this;
+
+			Topic.subscribe("GeneExpression", function(){
+				console.log("GeneExpressionMemoryStore received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "applyConditionFilter":
+						self.tgState = value;
+						//self.conditionFilter(value);
+						self.reload();
+						Topic.publish("GeneExpression", "updateTgState", self.tgState);
+						break;
+					default:
+						break;
+				}
+			});
+		},
+		
+		conditionFilter: function(tgState){
+			var self = this;
+			if(self._filtered == undefined){ // first time
+				self._filtered = true;
+				self._original = this.query("", {});
+			}
+			var data = self._original;
+			var newData = [];
+			var gfs = tgState.comparisonFilterStatus;
+			
+			console.log("In MemoryStore conditionFilter ... ", tgState, ",", self._original); 
+
+			var tsStart = window.performance.now();
+			data.forEach(function(gene){
+
+				var pass = false;
+				var up_r = 0, down_r = 0, total_samples = 0;
+
+				// comparisons
+				for(var i = 0, len = tgState.comparisonIds.length; i < len; i++){
+					var comparisonId = tgState.comparisonIds[i];
+					var index = gfs[comparisonId].getIndex();
+					var status = gfs[comparisonId].getStatus();
+					var comparison = gene.samples[comparisonId];
+					// console.log(gene, gene.feature_id, comparisonId, index, status, gene.dist, parseInt(gene.dist.substr(index * 2, 2), 16));
+
+					var expression = gene.sample_binary.substr(index, 1);
+					if(expression === '1'){
+						if(status != 2){
+							pass = self._thresholdFilter(comparison, tgState, status);
+							if(!pass){
+								break;
+							}
+						}else{
+							// status == 2, don't care
+							if(!pass){
+								pass = self._thresholdFilter(comparison, tgState, status)
+							}
+						}
+					}else{
+						if(status != 2){
+							pass = false;
+							break;
+						}
+					}
+
+					if(comparison){
+						var value = parseFloat(comparison.log_ratio);
+						if(!isNaN(value)){
+							if(value > tgState.upFold){
+								up_r++;
+							}
+							if(value < tgState.downFold){
+								down_r++;
+							}
+							total_samples++;
+						}
+					}
+				}
+
+				gene.up = up_r;
+				gene.down = down_r;
+				gene.sample_size = total_samples;
+
+				if(pass){
+					newData.push(gene);
+				}
+			});
+			console.log("conditionFilter took " + (window.performance.now() - tsStart), " ms");
+
+			self.setData(newData);
+			self.set("refresh");
+		},
+		
+		_thresholdFilter: function(comparison, tgState, filterStatus){
+			var uf = tgState.upFold, df = tgState.downFold;
+			var uz = tgState.upZscore, dz = tgState.downZscore;
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
+			if(!comparison) return false;
+
+			var pass = false;
+			switch(filterStatus){
+				case 2: // don't care (' ')
+					pass = (dz === uz && df === uf)
+						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
+					break;
+				case 0: // up-regulated (1)
+					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
+					break;
+				case 1: // down-regulated (0)
+					pass = ((dz != 0 ? z <= dz : true) && l <= df);
+					break;
+				default:
+					break;
+			}
+			console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			return pass;
+		},
+		
+		reload: function(){
+			console.log("In MemoryStore reload ... ");
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			console.log("In MemoryStore query ... ", query, ",", opts); 
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				var qr = QueryResults(when(this.loadData(), function(){
+					results = _self.query(query, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					console.log("In MemoryStore query, results ... ", results); 
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+
+			var _self = this;
+
+			if(!this.state || this.state.search == null){
+				console.log("No State, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(_self, function(){
+					_self.setData([]);
+					_self._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+			}
+			//console.log("In MemoryStore loadData(): state:", this.state);
+			console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
+
+			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
+			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
+			var keyword= _self.tgState.keyword;
+
+			//var q = this.state.search + "&select(feature_id,refseq_locus_tag,pid,expname)&limit(25000)";
+			//var q = this.state.search + "&select(feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
+			//var q = this.state.search + "&select(feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
+			var range = "";
+			if (keyword && keyword.length >0)
+			{
+				range += "&keyword(" + encodeURIComponent(keyword) + ")";
+			}
+			
+			if (uf>0 && df<0)
+			{
+				range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+			}
+			else if (uf>0) {
+				range += "&gt(log_ratio,"  + uf + ")";
+			}
+			else if (df<0) {
+				range += "&lt(log_ratio,"  + df+ ")";
+			}
+			if (uz>0 && dz<0)
+			{
+				range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+			}
+			else if (uz>0) {
+				range += "&gt(z_score,"  + uz+ ")";
+			}
+			else if (dz<0) {
+				range += "&lt(z_score,"  + dz+ ")";
+			}
+			//var q = this.state.search + range + "&select(pid,feature_id,refseq_locus_tag,pid,expname,accession,pmid,genome_id,strain,mutant,condition,timepoint,avg_intensity,log_ratio,z_score)&sort(+expname)&limit(25000)";
+			var q = this.state.search + range + "&sort(+expname)&limit(25000)";
+			
+			console.log("In MemoryStore query: q:", q);
+			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+
+			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+				}), function(response){
+				console.log("In MemoryStore loadData(): response.response:", response.response);
+
+				var comparisonIdList = [];
+				var comparisons = response.response.docs.map(function(comparison){
+					var strPId = comparison.pid.toString();
+					comparison.pid = strPId;
+					comparisonIdList.push(strPId);
+					return comparison;
+				});
+				_self.tgState.comparisonIds = comparisonIdList;
+				console.log("In MemoryStore loadData(): comparisonIds:", comparisonIdList);
+
+				_self.setData(response.response.docs);
+				_self._loaded = true;
+				return;
+			});
+			return this._loadingDeferred;
+		}
+	})
+});
+},
+'p3/widget/GeneExpressionChartContainer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
+	"./ActionBar", "./ContainerActionBar",
+	"dojox/charting/Chart2D", "dojox/charting/themes/Distinctive", "../store/GeneExpressionChartMemoryStore",  
+	"dojo/aspect",  "dojo/_base/Deferred", "dojo/fx/easing", "dojo/when",  "dojox/charting/action2d/Highlight", "dojox/charting/action2d/Tooltip"
+], function(declare, lang, on, Topic, domConstruct,
+			BorderContainer, TabContainer, StackController, ContentPane,
+			RadioButton, TextArea, TextBox, Button, Select,
+			ActionBar, ContainerActionBar,
+			Chart2D, Theme, Store, aspect, Deferred, easing, when, Highlight, Tooltip){
+	var tgState = {
+		keyword: "",
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
+	
+	return declare([BorderContainer], {
+		id: "GEChartContainer",
+		gutters: false,
+		state: null,
+		tgState: tgState,
+		filter_type: "",
+		apiServer: window.App.dataServiceURL,
+		constructor: function(){
+			var self = this;
+			console.log("GeneExpressionChartContainer Constructor: this", this);
+			console.log("GeneExpressionChartContainer Constructor: state", this.state);
+
+			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
+				console.log("GeneExpressionChartContainer subscribe GeneExpression:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "applyConditionFilter":
+						self.tgState = value;
+						self.store.reload();
+						// for log ratio
+						when(self.processData("log_ratio"), function(chartData){
+								console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+								self.lgchart.addAxis("x", {
+									title: "Log Ratio",
+									titleOrientation: "away",
+									majorLabels: true,
+									minorTicks: false,
+									minorLabels: false,
+									microTicks: false,
+									labels: chartData[0]
+								});
+								
+								self.lgchart.updateSeries("Comparisons", chartData[1]);
+								self.lgchart.render();
+								console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+							});
+
+						when(self.processData("z_score"), function(chartData){
+							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							self.zchart.addAxis("x", {
+								title: "Z-score",
+								titleOrientation: "away",
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.zchart.updateSeries("Comparisons", chartData[1]);
+							self.zchart.render();
+							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+						});
+						break;
+						
+					case "updateTgState":
+						self.tgState = value;
+						self.store.reload();
+						when(self.processData("log_ratio"), function(chartData){
+							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							self.lgchart.addAxis("x", {
+								title: "Log Ratio",
+								titleOrientation: "away",
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.lgchart.updateSeries("Comparisons", chartData[1]);
+							self.lgchart.render();
+							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+						});
+
+						// for z_score 
+						when(self.processData("z_score"), function(chartData){
+							console.log("GeneExpressionChartContainer applyConditionFilter: chartData", chartData);
+							self.zchart.addAxis("x", {
+								title: "Z-score",
+								titleOrientation: "away",
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.zchart.updateSeries("Comparisons", chartData[1]);
+							self.zchart.render();
+							console.log("GeneExpressionChartContainer applyConditionFilter reload store:", self.store.data);
+						});
+						break;
+					default:
+						break;
+				}
+			}));
+		},
+		onSetState: function(attr, oldVal, state){
+			console.log("GeneExpressionChartContainer onSetState set state: ", state);
+			this._set('state', state);
+		},
+/*
+		_setState: function(state){
+			//console.log("!!!!!!In GeneExpressionGrid _setState: state=", state);
+			console.log("GeneExpressionChartContainer _setState: store=", this.store);
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set('state', state);
+
+				this.refresh();
+			}
+			//console.log("GeneExpressionGrid _setState: store=", this.store);		
+		},
+*/
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if(!state){
+				return;
+			}
+			var self = this;
+			this._set("state", state);
+			console.log("In GeneExpressionChartContainer _setStateAttr: state", state);
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state, "log_ratio"));
+			}else{
+				this.store.set('state', state);
+
+				this.refresh();
+			}
+
+			console.log("GeneExpressionChartContainer this._set: ", this.state);
+		},
+		
+		startup: function(){
+			//console.log("GeneExpressionGridContainer startup()");
+			if (this._started) { return; }
+			this.inherited(arguments);
+			var self=this;
+			this._set("state", this.get("state"));
+			console.log("GeneExpressionChartContainer startup(), tgState", this.tgState);
+
+			var chartTabContainer1 = new TabContainer({region: "center", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartTabContainer1"});
+			var cp1 = new ContentPane({
+					title: "Log Ratio",
+					style: "height:300px; width: 500px;"
+			});
+					
+			var cp2 = new ContentPane({
+					title: "Z-score",
+					style: "height:300px; width: 500px;"
+			});
+					
+			chartTabContainer1.addChild(cp1);
+			chartTabContainer1.addChild(cp2);
+			this.addChild(chartTabContainer1);
+
+			console.log("###Before GeneExpressionChartContainer startup() Create Store: store=", this.store);		
+
+			aspect.before(this, 'renderArray', function(results){
+				console.log("GeneExpressionChartContainer aspect.before: results=", results);
+				Deferred.when(results.total, function(x){
+					this.set("totalRows", x);
+				});
+			});
+
+			this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, this.state, "log_ratio"));
+
+			console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
+			console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
+
+			// chart for log_ratio
+			this.lgchart = new Chart2D(cp1.domNode);
+			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			this.lgchart.setTheme(Theme);
+
+			// Add the only/default plot
+			this.lgchart.addPlot("default", {
+				type: "Columns",
+				markers: true,
+				gap: 5,
+				labels: true,
+				labelStyle: "outside", 
+				animate: {duration: 1000, easing: easing.linear}
+			});
+
+			new Highlight(this.lgchart, "default");
+			new Tooltip(this.lgchart, "default");
+			 
+			when(this.processData("log_ratio"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				// Add axes
+				self.lgchart.addAxis("x", {
+					title: "Log Ratio",
+					titleOrientation: "away",
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: chartData[0]
+				});
+				self.lgchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
+
+				self.lgchart.addSeries("Comparisons",chartData[1]);
+				self.lgchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+
+			// chart for z_score
+			this.zchart = new Chart2D(cp2.domNode);
+			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			this.zchart.setTheme(Theme);
+
+			// Add the only/default plot
+			this.zchart.addPlot("default", {
+				type: "Columns",
+				markers: true,
+				gap: 5,
+				labels: true,
+				labelStyle: "outside", 
+				animate: {duration: 1000, easing: easing.linear}
+			});
+
+			new Highlight(this.zchart, "default");
+			new Tooltip(this.zchart, "default");
+			 
+			when(this.processData("z_score"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				// Add axes
+				self.zchart.addAxis("x", {
+					title: "Z-score",
+					titleOrientation: "away",
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: chartData[0]
+				});
+				self.zchart.addAxis("y", {title: "Comparisons", min: 0, vertical: true, fixLower: "major", fixUpper: "major" });
+
+				self.zchart.addSeries("Comparisons",chartData[1]);
+				self.zchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
+			this.inherited(arguments);
+			this._started = true;
+			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
+		},
+
+
+		postCreate: function(){
+			this.inherited(arguments);
+		},
+
+		createStore: function(server, token, state, filter_type){
+			console.log("###GeneExpressionChartContainer Create Store: state=", this.state);
+			var store = new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: this.state || state,
+				filter_type: filter_type 
+			});
+			//store.watch('refresh', lang.hitch(this, "refresh"));
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			console.log("Create Store: store=", store);
+
+			return store;
+		},
+
+		processData: function(filter_type){
+			console.log("GeneExpressionChartContainer processData: this.store ", this.store);
+			return when(this.store.query({}), function(data){
+				console.log("GeneExpressionChartContainer processData: filter_type, data ", filter_type, data);
+				if(!data){
+					console.log("INVALID Chart DATA", data);
+					return;
+				}
+
+				var myData = [];
+				
+				if (filter_type === "z_score") {
+					myData = data[1];
+					console.log("GeneExpressionChartContainer processData: z_score, myData ", filter_type, myData);
+				}
+				else {
+					myData = data[0];
+					console.log("GeneExpressionChartContainer processData: log_ratio, myData ", filter_type, myData);
+				}
+				console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
+
+				if(!myData){
+					console.log("INVALID Chart DATA", data);
+					return;
+				}
+
+				var xLabel = [];
+				var yData = [];
+				var chartData = {};
+				var i=0;
+				for (i==0; i<myData.length; i++) {
+					xLabel.push({text: myData[i].category, value: i+1});
+					yData.push(myData[i].count);
+				}
+						
+				chartData[0]=xLabel;
+				//chartData[1]=yData;
+				chartData[1] = yData.map(function(val){ return {y: val, text: val.toFixed(0)}});
+				console.log("GeneExpressionChartContainer processData: yData, xLabel, chartData[1]", yData, xLabel, chartData[1]);
+				return chartData;
+			});
+		}						
+	});
+});
+},
+'dojox/charting/themes/Distinctive':function(){
+define(["../SimpleTheme", "./common"], function(SimpleTheme, themes){
+	themes.Distinctive = new SimpleTheme({
+		colors: [
+			"#497c91",
+			"#ada9d6",
+			"#768b4e",
+			"#eeea99",
+			"#b39c53",
+			"#c28b69",
+			"#815454",
+			"#bebebe",
+			"#59a0bd",
+			"#c9c6e4",
+			"#677e13",
+			"#f0eebb",
+			"#e9c756",
+			"#cfb09b",
+			"#a05a5a",
+			"#d8d8d8",
+			"#9dc7d9",
+			"#7b78a4",
+			"#a8c179",
+			"#b7b35c",
+			"#ebcf81",
+			"#956649",
+			"#c99999",
+			"#868686",
+			"#c7e0e9",
+			"#8d88c7",
+			"#c0d0a0",
+			"#e8e667",
+			"#efdeb0",
+			"#b17044",
+			"#ddc0c0",
+			"#a5a5a5"
+		
+		]
+	});
+	return themes.Distinctive;
+});
+
+},
+'p3/store/GeneExpressionChartMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
+	"dojo/store/Memory", "dojo/store/util/QueryResults",
+	"./ArrangeableMemoryStore"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic, All,
+			Memory, QueryResults,
+			ArrangeableMemoryStore){
+
+	var tgState = {
+		comparisonIds: [],
+		comparisonFilterStatus: {},
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
+
+	return declare([ArrangeableMemoryStore, Stateful], {
+		baseQuery: {},
+		apiServer: window.App.dataServiceURL,
+		idProperty: "feature_id",
+		state: null,
+		tgState: tgState,
+		feature_id: null,
+		filter_type: "",
+		onSetState: function(attr, oldVal, state){
+			console.log("Gene Transcriptomics Tab onSetState: ", state);
+			
+			this.set("feature_id", state.feature_id || {});
+			this._loaded = false;
+			delete this._loadingDeferred;
+/*
+
+			if(state && state.feature && state.feature.feature_id){
+				var cur = this.feature_id;
+				var next = state.feature.feature_id;
+				if(cur != next){
+					this.set("feature_id", state.feature_id || {});
+					this._loaded = false;
+					delete this._loadingDeferred;
+				}
+			}
+*/			
+		},
+
+		constructor: function(options){
+			this._loaded = false;
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+
+			var self = this;
+			console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			//this.loadData();
+			Topic.subscribe("GeneExpression", function(){
+				console.log("GeneExpressionChartMemoryStore received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "applyConditionFilter":
+						self.tgState = value;
+						//self.reload();
+						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
+						break;
+					case "updateTgState":
+						self.tgState = value;
+						//self.reload();
+						break;	
+					
+					default:
+						break;
+				}
+			});
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
+		},
+		
+
+		
+		_thresholdFilter: function(comparison, tgState, filterStatus){
+			var uf = tgState.upFold, df = tgState.downFold;
+			var uz = tgState.upZscore, dz = tgState.downZscore;
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
+			if(!comparison) return false;
+
+			var pass = false;
+			switch(filterStatus){
+				case 2: // don't care (' ')
+					pass = (dz === uz && df === uf)
+						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
+					break;
+				case 0: // up-regulated (1)
+					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
+					break;
+				case 1: // down-regulated (0)
+					pass = ((dz != 0 ? z <= dz : true) && l <= df);
+					break;
+				default:
+					break;
+			}
+			console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			return pass;
+		},
+		
+		reload: function(){
+			console.log("In MemoryStore reload ... ");
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				var qr = QueryResults(when(this.loadData(), function(){
+					results = _self.query(query, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					console.log("In MemoryStore query, results ... ", results); 
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+
+			var _self = this;
+
+			if(!this.state || this.state.search == null){
+				console.log("No State, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(_self, function(){
+					_self.setData([]);
+					_self._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+			}
+			//console.log("In MemoryStore loadData(): state:", this.state);
+			console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
+
+			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
+			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
+			var keyword= _self.tgState.keyword;
+
+			var range = "";
+			if (keyword && keyword.length >0)
+			{
+				range += "&keyword(" + encodeURIComponent(keyword) + ")";
+			}
+			
+			if (uf>0 && df<0)
+			{
+				range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+			}
+			else if (uf>0) {
+				range += "&gt(log_ratio,"  + uf + ")";
+			}
+			else if (df<0) {
+				range += "&lt(log_ratio,"  + df+ ")";
+			}
+			if (uz>0 && dz<0)
+			{
+				range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+			}
+			else if (uz>0) {
+				range += "&gt(z_score,"  + uz+ ")";
+			}
+			else if (dz<0) {
+				range += "&lt(z_score,"  + dz+ ")";
+			}
+
+			range += "facet((range,log_ratio),(range,z_score),(range.other,before),(range.other,after),(range.start,-2),(range.end,2),(range.gap,0.5),(mincount,1))&limit(1)";
+
+			var q = this.state.search + range;
+			
+			console.log("In MemoryStore query: q:", q);
+			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+
+			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+				}), function(response){
+				console.log("!!!!In GeneExpressionChartMemoryStore loadData(): response.response:", response);
+				var data=[];
+				var logRatioArray = [];
+				var zscoreArray = [];
+				if (response.response.numFound>0) {
+					logRatioArray = _self.processResult(response.facet_counts.facet_ranges.log_ratio.counts, response.facet_counts.facet_ranges.log_ratio.before, response.facet_counts.facet_ranges.log_ratio.after);
+					zscoreArray = _self.processResult(response.facet_counts.facet_ranges.z_score.counts, response.facet_counts.facet_ranges.z_score.before, response.facet_counts.facet_ranges.z_score.after);
+				}
+				else {
+					logRatioArray.push({category: "-2.0", count: 0});
+					logRatioArray.push({category: "2.0", count: 0});
+					zscoreArray.push({category: "-2.0", count: 0});
+					zscoreArray.push({category: "2.0", count: 0});
+				}
+				
+				data.push(logRatioArray);
+				data.push(zscoreArray);
+				_self.setData(data);		
+				console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
+				_self._loaded = true;
+				//return;
+			});
+			return this._loadingDeferred;
+		},
+		
+		processResult: function(res, before, after)
+		{
+			console.log("!!!!In GeneExpressionChartMemoryStore processResult():  res, before, after:", res, before, after);
+			var newRes = [];
+			var i=0;
+			if (res.length == 0) {
+				newRes.push({category: "-2.0", count: before});
+				newRes.push({category: "2.0", count: after});			
+			}
+			while(i<res.length) {
+				if (i===0 &&res[i] === "-2.0") {								
+					newRes.push({category: "-2.0", count: res[i+1]+before});
+					if (res.length == 2) {
+						newRes.push({category: "2.0", count: after});
+					}
+				}
+				else if (i===0 &&res[i] !== "-2.0") {
+					newRes.push({category: "-2.0", count: before});
+					if (res[i] === "2.0") {
+						newRes.push({category: "2.0", count: res[i+1]+after});
+					}
+					else {
+						newRes.push({category: res[i], count: res[i+1]});
+						if (res.length == 2) {
+							newRes.push({category: "2.0", count: after});
+						}
+					}
+				}
+				else if (i===res.length-2 &&res[i] === "2.0") {								
+					newRes.push({category: "2.0", count: res[i+1]+after});
+				}
+				else if (i===res.length-2 &&res[i] !== "2.0") {								
+					newRes.push({category: res[i], count: res[i+1]});
+					newRes.push({category: "2.0", count: after});
+				}
+				else {
+					newRes.push({category: res[i], count: res[i+1]});
+				}
+				
+				i=i+2;
+			}
+			return newRes;
+		}
+		
+	})
+});
+},
+'dojox/charting/action2d/Highlight':function(){
+define(["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/Color", "dojo/_base/connect", "dojox/color/_base",
+		"./PlotAction", "dojo/fx/easing", "dojox/gfx/fx"], 
+	function(lang, declare, Color, hub, c, PlotAction, dfe, dgf){
+
+	/*=====
+	var __HighlightCtorArgs = {
+		// summary:
+		//		Additional arguments for highlighting actions.
+		// duration: Number?
+		//		The amount of time in milliseconds for an animation to last.  Default is 400.
+		// easing: dojo/fx/easing/*?
+		//		An easing object (see dojo.fx.easing) for use in an animation.  The
+		//		default is dojo.fx.easing.backOut.
+		// highlight: String|dojo/_base/Color|Function?
+		//		Either a color or a function that creates a color when highlighting happens.
+	};
+	=====*/
+	
+	var DEFAULT_SATURATION  = 100,	// %
+		DEFAULT_LUMINOSITY1 = 75,	// %
+		DEFAULT_LUMINOSITY2 = 50,	// %
+		cc = function(color){
+			return function(){ return color; };
+		},
+
+		hl = function(color){
+			var a = new c.Color(color),
+				x = a.toHsl();
+			if(x.s == 0){
+				x.l = x.l < 50 ? 100 : 0;
+			}else{
+				x.s = DEFAULT_SATURATION;
+				if(x.l < DEFAULT_LUMINOSITY2){
+					x.l = DEFAULT_LUMINOSITY1;
+				}else if(x.l > DEFAULT_LUMINOSITY1){
+					x.l = DEFAULT_LUMINOSITY2;
+				}else{
+					x.l = x.l - DEFAULT_LUMINOSITY2 > DEFAULT_LUMINOSITY1 - x.l ?
+						DEFAULT_LUMINOSITY2 : DEFAULT_LUMINOSITY1;
+				}
+			}
+			var rcolor = c.fromHsl(x);
+			rcolor.a = a.a;
+			return rcolor;
+		},
+
+		spiderhl = function(color){
+			var r = hl(color);
+			r.a = 0.7;
+			return r;
+		}
+
+	return declare("dojox.charting.action2d.Highlight", PlotAction, {
+		// summary:
+		//		Creates a highlighting action on a plot, where an element on that plot
+		//		has a highlight on it.
+
+		// the data description block for the widget parser
+		defaultParams: {
+			duration: 400,	// duration of the action in ms
+			easing:   dfe.backOut	// easing for the action
+		},
+		optionalParams: {
+			highlight: "red"	// name for the highlight color
+								// programmatic instantiation can use functions and color objects
+		},
+
+		constructor: function(chart, plot, kwArgs){
+			// summary:
+			//		Create the highlighting action and connect it to the plot.
+			// chart: dojox/charting/Chart
+			//		The chart this action belongs to.
+			// plot: String?
+			//		The plot this action is attached to.  If not passed, "default" is assumed.
+			// kwArgs: __HighlightCtorArgs?
+			//		Optional keyword arguments object for setting parameters.
+			var a = kwArgs && kwArgs.highlight;
+			this.colorFunc = a ? (lang.isFunction(a) ? a : cc(a)) : hl;
+			this.connect();
+		},
+
+		process: function(o){
+			// summary:
+			//		Process the action on the given object.
+			// o: dojox/gfx/shape.Shape
+			//		The object on which to process the highlighting action.
+			if(!o.shape || !(o.type in this.overOutEvents)){ return; }
+
+			// if spider let's deal only with poly
+			if(o.element == "spider_circle" || o.element == "spider_plot"){
+				return;
+			}else if(o.element == "spider_poly" && this.colorFunc == hl){
+				// hardcode alpha for compatibility reasons
+				// TODO to remove in 2.0
+				this.colorFunc = spiderhl;
+			}
+
+			var runName = o.run.name, index = o.index, anim;
+
+			if(runName in this.anim){
+				anim = this.anim[runName][index];
+			}else{
+				this.anim[runName] = {};
+			}
+
+			if(anim){
+				anim.action.stop(true);
+			}else{
+				var color = o.shape.getFill();
+				if(!color || !(color instanceof Color)){
+					return;
+				}
+				this.anim[runName][index] = anim = {
+					start: color,
+					end:   this.colorFunc(color)
+				};
+			}
+
+			var start = anim.start, end = anim.end;
+			if(o.type == "onmouseout"){
+				// swap colors
+				var t = start;
+				start = end;
+				end = t;
+			}
+
+			anim.action = dgf.animateFill({
+				shape:    o.shape,
+				duration: this.duration,
+				easing:   this.easing,
+				color:    {start: start, end: end}
+			});
+			if(o.type == "onmouseout"){
+				hub.connect(anim.action, "onEnd", this, function(){
+					if(this.anim[runName]){
+						delete this.anim[runName][index];
+					}
+				});
+			}
+			anim.action.play();
+		}
+	});
+	
+});
+
+},
+'p3/widget/GeneExpressionMetadataChartContainer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
+	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
+	"./ActionBar", "./ContainerActionBar",
+	"dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/themes/Distinctive", "../store/GeneExpressionMetadataChartMemoryStore",  
+	"dojo/aspect",  "dojo/_base/Deferred", "dojo/fx/easing", "dojo/when", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Highlight", 
+	"dojox/charting/action2d/Tooltip", "dojox/charting/plot2d/Pie"
+], function(declare, lang, on, Topic, domConstruct,
+			BorderContainer, TabContainer, StackController, ContentPane,
+			RadioButton, TextArea, TextBox, Button, Select,
+			ActionBar, ContainerActionBar,
+			Chart2D, Theme, Distinctive, Store, aspect, Deferred, easing, when, MoveSlice, Highlight, 
+			Tooltip, Pie){
+	var tgState = {
+		keyword: "",
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
+	
+	return declare([BorderContainer], {
+		id: "GEChartContainer",
+		gutters: false,
+		state: null,
+		tgState: tgState,
+		filter_type: "",
+		apiServer: window.App.dataServiceURL,
+		constructor: function(){
+			var self = this;
+			console.log("GeneExpressionMetadataChartContainer Constructor: this", this);
+			console.log("GeneExpressionMetadataChartContainer Constructor: state", this.state);
+
+			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
+				console.log("GeneExpressionMetadataChartContainer subscribe GeneExpression:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				if(key === "applyConditionFilter" || key === "updateTgState") {
+					self.tgState = value;
+					self.store.reload();
+
+					console.log("GeneExpressionMetadataChartContainer Constructor: key=, tgState=", key, self.tgState);
+
+					// for strain
+					when(self.processData("strain"), function(chartData){
+						if (self.pschart) {
+							self.pschart.updateSeries("Strains", chartData[2]);
+							self.pschart.render();
+						} 
+						if (self.bschart) {
+							self.bschart.addAxis("x", {
+								vertical: true,
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.bschart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+							self.bschart.updateSeries("TopStrains",chartData[1]);
+							self.bschart.render();
+						}
+					});
+					// for mutant
+					when(self.processData("mutant"), function(chartData){
+						if (self.pmchart) {
+							self.pmchart.updateSeries("Mutants", chartData[2]);
+							self.pmchart.render();
+						} 
+						if (self.bmchart) {
+							self.bmchart.addAxis("x", {
+								vertical: true,
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.bmchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+							self.bmchart.updateSeries("TopMutants",chartData[1]);
+							self.bmchart.render();
+						}
+					});
+					// for condition
+					when(self.processData("condition"), function(chartData){
+						if (self.pcchart) {
+							self.pcchart.updateSeries("Conditions", chartData[2]);
+							self.pcchart.render();
+						} 
+						if (self.bcchart) {
+							self.bcchart.addAxis("x", {
+								vertical: true,
+								majorLabels: true,
+								minorTicks: false,
+								minorLabels: false,
+								microTicks: false,
+								labels: chartData[0]
+							});
+							self.bcchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+							self.bcchart.updateSeries("TopConditionss",chartData[1]);
+							self.bcchart.render();
+						}
+					});				
+					
+				}
+			}));
+		},
+		onSetState: function(attr, oldVal, state){
+			console.log("GeneExpressionMetadataChartContainer onSetState set state: ", state);
+			this._set('state', state);
+		},
+
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if(!state){
+				return;
+			}
+			var self = this;
+			this._set("state", state);
+			//console.log("In GeneExpressionMetadataChartContainer _setStateAttr: state", state);
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state, "strain"));
+			}else{
+				this.store.set('state', state);
+
+				this.refresh();
+			}
+			//console.log("GeneExpressionMetadataChartContainer this._set: ", this.state);
+		},
+		
+		startup: function(){
+			//console.log("GeneExpressionGridContainer startup()");
+			if (this._started) { return; }
+			this.inherited(arguments);
+			var self=this;
+			this._set("state", this.get("state"));
+			console.log("GeneExpressionMetadataChartContainer startup(), tgState", this.tgState);
+
+			var chartTabContainer1 = new TabContainer({region: "center", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartTabContainer1"});
+			this.cp1 = new ContentPane({
+					title: "Strain",
+					style: "height: 300px; width: 400px;"
+			});
+								
+			this.cp2 = new ContentPane({
+					title: "Gene Modification",
+					style: "height: 300px; width: 400px;"
+			});
+
+			this.cp3 = new ContentPane({
+					title: "Experimental Condition",
+					style: "height: 300px; width: 400px;"
+			});
+
+			var show_all_strain = new Button({
+				label: "Show All",
+				iconClass: "fa icon-pie-chart fa-2x",
+				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.bschart) {
+						console.log("before this.bschart.destroy() called", self.bschart);
+						self.bschart.destroy();
+						delete self.bschart;						
+						console.log("this.bschart.destroy() called", self.bschart);
+						when(self.store.query({}), function(data){
+							self.showStrainPieChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_all_strain.domNode, this.cp1.containerNode, "last");
+
+			var show_top_strain = new Button({
+				label: "Show Top 5",
+				iconClass: "fa icon-bar-chart fa-2x",
+				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.pschart) {
+						self.pschart.destroy();
+						delete self.pschart;
+						when(self.store.query({}), function(data){
+							self.showStrainBarChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_top_strain.domNode, this.cp1.containerNode, "last");
+
+			var show_all_mutant = new Button({
+				label: "Show All",
+				iconClass: "fa icon-pie-chart fa-2x",
+				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.bmchart) {
+						self.bmchart.destroy();
+						delete self.bmchart;
+						when(self.store.query({}), function(data){
+							self.showMutantPieChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_all_mutant.domNode, this.cp2.containerNode, "last");
+
+			var show_top_mutant = new Button({
+				label: "Show Top 5",
+				iconClass: "fa icon-bar-chart fa-2x",
+				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.pmchart) {
+						self.pmchart.destroy();
+						delete self.pmchart;												
+						when(self.store.query({}), function(data){
+							self.showMutantBarChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_top_mutant.domNode, this.cp2.containerNode, "last");
+
+			var show_all_condition = new Button({
+				label: "Show All",
+				iconClass: "fa icon-pie-chart fa-2x",
+				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.bcchart) {
+						self.bcchart.destroy();
+						delete self.bcchart;																		
+						when(self.store.query({}), function(data){
+							self.showConditionPieChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_all_condition.domNode, this.cp3.containerNode, "last");
+
+			var show_top_condition = new Button({
+				label: "Show Top 5",
+				iconClass: "fa icon-bar-chart fa-2x",
+				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+       			showLabel: false,
+				onClick: lang.hitch(this, function(){
+					if (self.pcchart) {
+						self.pcchart.destroy();
+						delete self.pcchart;																								
+						when(self.store.query({}), function(data){
+							self.showConditionBarChart();
+						});
+					}
+				})
+			});
+			domConstruct.place(show_top_condition.domNode, this.cp3.containerNode, "last");
+					
+			chartTabContainer1.addChild(this.cp1);
+			chartTabContainer1.addChild(this.cp2);
+			chartTabContainer1.addChild(this.cp3);
+			this.addChild(chartTabContainer1);
+
+			//console.log("###Before GeneExpressionMetadataChartContainer startup() Create Store: store=", this.store);		
+
+			aspect.before(this, 'renderArray', function(results){
+				console.log("GeneExpressionMetadataChartContainer aspect.before: results=", results);
+				Deferred.when(results.total, function(x){
+					this.set("totalRows", x);
+				});
+			});
+
+			this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, this.state, "strain"));
+
+			//console.log("###After GeneExpressionChartContainer startup() Create Store: store=", this.store); 
+			//console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
+
+
+			// Donut chart 	
+			this.Donut = declare(Pie, {
+				render: function (dim, offsets) {
+					// Call the Pie's render method
+					this.inherited(arguments);
+
+					// Draw a white circle in the middle
+				   var rx = (dim.width - offsets.l - offsets.r) / 2,
+					   ry = (dim.height - offsets.t - offsets.b) / 2,
+						r = Math.min(rx, ry) / 2;
+				   var circle = {
+					   cx: offsets.l + rx,
+					   cy: offsets.t + ry,
+					   r: "20px"
+				   };
+				   var s = this.group;
+
+				   s.createCircle(circle).setFill("#fff").setStroke("#fff");
+			   }
+		   });
+
+			// draw pie chart				
+			// pie chart for strains
+			var pschartNode = domConstruct.create("div",{}); domConstruct.place(pschartNode, this.cp1.containerNode, "first");
+			this.pschart = new Chart2D(pschartNode);
+			this.pschart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pschart, "default");
+			new Highlight(this.pschart, "default");
+			new Tooltip(this.pschart, "default");	 
+
+			when(this.processData("strain"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pschart.addSeries("Strains",chartData[2]);
+				self.pschart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+		
+			// pie chart for mutant
+			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "first");
+			this.pmchart = new Chart2D(pmchartNode);
+			this.pmchart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pmchart, "default");
+			new Highlight(this.pmchart, "default");
+			new Tooltip(this.pmchart, "default");	 
+
+			when(this.processData("mutant"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pmchart.addSeries("Mutants",chartData[2]);
+				self.pmchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});						
+
+			// pie chart for condition
+			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "first");
+			this.pcchart = new Chart2D(pcchartNode);
+			this.pcchart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pcchart, "default");
+			new Highlight(this.pcchart, "default");
+			new Tooltip(this.pcchart, "default");	 
+
+			when(this.processData("condition"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pcchart.addSeries("Conditions",chartData[2]);
+				self.pcchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
+			this.inherited(arguments);
+			this._started = true;
+			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
+		},
+
+
+		postCreate: function(){
+			this.inherited(arguments);
+		},
+
+		createStore: function(server, token, state, filter_type){
+			console.log("###GeneExpressionChartContainer Create Store: state=", this.state);
+			var store = new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: this.state || state,
+				filter_type: filter_type 
+			});
+			//store.watch('refresh', lang.hitch(this, "refresh"));
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			console.log("Create Store: store=", store);
+
+			return store;
+		},
+
+		showStrainPieChart: function(){
+			console.log("showPieChart");
+			var self=this;
+			self.store.reload();
+			//var pschartNode = domConstruct.create("div",{style: "height: 300px; width: 500px;"}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
+			var pschartNode = domConstruct.create("div",{}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
+			this.pschart = new Chart2D(pschartNode);
+			this.pschart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns",
+				style: "position:absolute; left:200px; float:left"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pschart, "default");
+			new Highlight(this.pschart, "default");
+			new Tooltip(this.pschart, "default");	 
+
+			when(this.processData("strain"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pschart.addSeries("Strains",chartData[2]);
+				self.pschart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+		},
+		
+		// pie chart for mutant
+		showMutantPieChart: function(){
+			console.log("showPieChart");
+			var self=this;
+			self.store.reload();
+			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "last");
+			this.pmchart = new Chart2D(pmchartNode);
+			this.pmchart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pmchart, "default");
+			new Highlight(this.pmchart, "default");
+			new Tooltip(this.pmchart, "default");	 
+
+			when(this.processData("mutant"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pmchart.addSeries("Mutants",chartData[2]);
+				self.pmchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});	
+		},					
+
+		// pie chart for condition
+		showConditionPieChart: function(){
+			console.log("showPieChart");
+			var self=this;
+			self.store.reload();
+			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "last");
+			this.pcchart = new Chart2D(pcchartNode);
+			this.pcchart.addPlot("default", {
+				type: this.Donut,
+				radius: 100,
+				//labelOffset: -10,
+				stroke:"black",
+				//labelWiring: "cccc",
+				labelStyle: "columns"
+			}).setTheme(Distinctive);
+		
+			new MoveSlice(this.pcchart, "default");
+			new Highlight(this.pcchart, "default");
+			new Tooltip(this.pcchart, "default");	 
+
+			when(this.processData("condition"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				self.pcchart.addSeries("Conditions",chartData[2]);
+				self.pcchart.render();
+				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+			});
+		},
+		
+		showStrainBarChart: function(){
+			console.log("showBarChart");
+			var self=this;
+			self.store.reload();
+			var bschartNode = domConstruct.create("div",{}); domConstruct.place(bschartNode, this.cp1.containerNode, "last");
+			// chart for log_ratio
+			this.bschart = new Chart2D(bschartNode);
+			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			this.bschart.setTheme(Distinctive);
+
+			// Add the only/default plot
+			this.bschart.addPlot("default", {
+				type: "Bars",
+				markers: true,
+				gap: 5,
+				labels: true,
+				labelStyle: "outside",
+				labelOffset: 15, 
+				animate: {duration: 1000, easing: easing.linear}
+			});
+
+			new Highlight(this.bschart, "default");
+			new Tooltip(this.bschart, "default");
+			 
+			when(this.processData("strain"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				// Add axes
+				self.bschart.addAxis("x", {
+					vertical: true,
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: chartData[0]
+				});
+				self.bschart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+				self.bschart.addSeries("TopStrains",chartData[1]);
+				self.bschart.render();
+				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
+			});			
+		},
+
+		showMutantBarChart: function(){
+			console.log("showBarChart");
+			var self=this;
+			self.store.reload();
+			var bmchartNode = domConstruct.create("div",{}); domConstruct.place(bmchartNode, this.cp2.containerNode, "last");
+			// chart for log_ratio
+			this.bmchart = new Chart2D(bmchartNode);
+			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			this.bmchart.setTheme(Distinctive);
+
+			// Add the only/default plot
+			this.bmchart.addPlot("default", {
+				type: "Bars",
+				markers: true,
+				gap: 5,
+				labels: true,
+				labelStyle: "outside",
+				labelOffset: 15, 
+				animate: {duration: 1000, easing: easing.linear}
+			});
+
+			new Highlight(this.bmchart, "default");
+			new Tooltip(this.bmchart, "default");
+			 
+			when(this.processData("mutant"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				// Add axes
+				self.bmchart.addAxis("x", {
+					vertical: true,
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: chartData[0]
+				});
+				self.bmchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+				self.bmchart.addSeries("TopMutants",chartData[1]);
+				self.bmchart.render();
+				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
+			});
+		},
+		
+		showConditionBarChart: function(){
+			console.log("showBarChart");
+			var self=this;
+			self.store.reload();
+			var bcchartNode = domConstruct.create("div",{}); domConstruct.place(bcchartNode, this.cp3.containerNode, "last");
+			this.bcchart = new Chart2D(bcchartNode);
+			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			this.bcchart.setTheme(Distinctive);
+
+			// Add the only/default plot
+			this.bcchart.addPlot("default", {
+				type: "Bars",
+				markers: true,
+				gap: 5,
+				labels: true,
+				labelStyle: "outside",
+				labelOffset: 15, 
+				animate: {duration: 1000, easing: easing.linear}
+			});
+
+			new Highlight(this.bcchart, "default");
+			new Tooltip(this.bcchart, "default");
+			 
+			when(this.processData("condition"), function(chartData){ 
+				console.log("ChartData: ", chartData);
+				// Add axes
+				self.bcchart.addAxis("x", {
+					vertical: true,
+					majorLabels: true,
+					minorTicks: false,
+					minorLabels: false,
+					microTicks: false,
+					labels: chartData[0]
+				});
+				self.bcchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
+				self.bcchart.addSeries("TopConditionss",chartData[1]);
+				self.bcchart.render();
+				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
+			});
+		},
+
+		processData: function(filter_type){
+			console.log("GeneExpressionChartContainer processData: this.store ", this.store);
+			return when(this.store.query({}), function(data){
+				console.log("GeneExpressionChartContainer processData: filter_type, data ", filter_type, data);
+				if(!data){
+					console.log("INVALID Chart DATA", data);
+					return;
+				}
+
+				var myData = [];
+				
+				if (filter_type === "strain") {
+					myData = data[0];
+					//console.log("GeneExpressionChartContainer processData: strain, myData ", filter_type, myData);
+				}
+				else if (filter_type === "mutant") {
+					myData = data[1];
+					//console.log("GeneExpressionChartContainer processData: mutant, myData ", filter_type, myData);
+				}
+				else {
+					myData = data[2];
+					//console.log("GeneExpressionChartContainer processData: condition, myData ", filter_type, myData);
+				}
+				console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
+
+				if(!myData){
+					console.log("INVALID Chart DATA", data);
+					return;
+				}
+								
+				var xData = [];
+				var yData = [];
+				var pieData =[];
+				var chartData = {};
+				var i=0;
+				var j=0;				
+				while(i<myData.length)
+				{
+					if (j<5 && j<myData.length) {
+						xData.push(myData[i]);
+						yData.push(myData[i+1]);	
+						j++;
+					}
+					var txt = myData[i];
+					var val = myData[i+1];
+					pieData.push({x: txt, y: val, text: txt, tooltip: txt+ " (" + val + ")"});
+					i=i+2;
+				}
+				var xLabel = [];
+				xData.map(function(val, idx) {
+					xLabel.push({text: val, value: idx+1});
+				});
+	
+				chartData[0]=xLabel;
+				chartData[1]=yData;
+				chartData[2]=pieData;
+				console.log("GeneExpressionChartContainer processData: xData, yData, xLabel, pieData", xData, yData, xLabel, pieData);
+				return chartData;
+			});
+		}						
+	});
+});
+},
+'p3/store/GeneExpressionMetadataChartMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
+	"dojo/store/Memory", "dojo/store/util/QueryResults",
+	"./ArrangeableMemoryStore"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic, All,
+			Memory, QueryResults,
+			ArrangeableMemoryStore){
+
+	var tgState = {
+		comparisonIds: [],
+		comparisonFilterStatus: {},
+		upFold: 0,
+		downFold: 0,
+		upZscore: 0,
+		downZscore: 0
+	};
+
+	return declare([ArrangeableMemoryStore, Stateful], {
+		baseQuery: {},
+		apiServer: window.App.dataServiceURL,
+		idProperty: "pid",
+		state: null,
+		tgState: tgState,
+		feature_id: null,
+		filter_type: "",
+		onSetState: function(attr, oldVal, state){
+			console.log("Gene Transcriptomics Tab metadata onSetState: ", state);
+			
+			this.set("feature_id", state.feature_id || {});
+			this._loaded = false;
+			delete this._loadingDeferred;
+/*
+
+			if(state && state.feature && state.feature.feature_id){
+				var cur = this.feature_id;
+				var next = state.feature.feature_id;
+				if(cur != next){
+					this.set("feature_id", state.feature_id || {});
+					this._loaded = false;
+					delete this._loadingDeferred;
+				}
+			}
+*/			
+		},
+
+		constructor: function(options){
+			this._loaded = false;
+			if(options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+
+			var self = this;
+			console.log("In GeneExpressionMemoryStore constructor received this.filter_type:", this.filter_type);
+			//this.loadData();
+			Topic.subscribe("GeneExpression", function(){
+				console.log("GeneExpressionChartMemoryStore received:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "applyConditionFilter":
+						self.tgState = value;
+						//self.reload();
+						//Topic.publish("GeneExpression", "updateTgState", self.tgState);
+						break;
+					case "updateTgState":
+						self.tgState = value;
+						//self.reload();
+						break;	
+					
+					default:
+						break;
+				}
+			});
+			
+			this.watch("state", lang.hitch(this, "onSetState"));
+		},
+		
+
+		
+		_thresholdFilter: function(comparison, tgState, filterStatus){
+			var uf = tgState.upFold, df = tgState.downFold;
+			var uz = tgState.upZscore, dz = tgState.downZscore;
+			var l = (comparison && !isNaN(parseFloat(comparison['log_ratio']))) ? parseFloat(comparison['log_ratio']) : 0;
+			var z = (comparison && !isNaN(parseFloat(comparison['z_score']))) ? parseFloat(comparison['z_score']) : 0;
+			if(!comparison) return false;
+
+			var pass = false;
+			switch(filterStatus){
+				case 2: // don't care (' ')
+					pass = (dz === uz && df === uf)
+						|| ((z >= uz || z <= dz) && (l >= uf || l <= df));
+					break;
+				case 0: // up-regulated (1)
+					pass = ((uz != 0 ? z >= uz : true) && l >= uf);
+					break;
+				case 1: // down-regulated (0)
+					pass = ((dz != 0 ? z <= dz : true) && l <= df);
+					break;
+				default:
+					break;
+			}
+			console.log("_thresholdFilter: [", filterStatus, pass, "] ", uf, l, df, ",", uz, z, dz);
+			return pass;
+		},
+		
+		reload: function(){
+			console.log("In MemoryStore reload ... ");
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			console.log("In GeneExpressionChartMemoryStore query ... ", query, ",", opts); 
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				var qr = QueryResults(when(this.loadData(), function(){
+					results = _self.query(query, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					console.log("In MemoryStore query, results ... ", results); 
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+
+			var _self = this;
+
+			if(!this.state || this.state.search == null){
+				console.log("No State, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(_self, function(){
+					_self.setData([]);
+					_self._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+			}
+			//console.log("In MemoryStore loadData(): state:", this.state);
+			console.log("In MemoryStore loadData(): _self.tgState:", _self.tgState);
+
+			var uf = _self.tgState.upFold, df = _self.tgState.downFold;
+			var uz = _self.tgState.upZscore, dz = _self.tgState.downZscore;
+			var keyword= _self.tgState.keyword;
+
+			var range = "";
+			if (keyword && keyword.length >0)
+			{
+				range += "&keyword(" + encodeURIComponent(keyword) + ")";
+			}
+			
+			if (uf>0 && df<0)
+			{
+				range += "&or(gt(log_ratio,"  + uf + "),lt(log_ratio,"  + df+ "))";			
+			}
+			else if (uf>0) {
+				range += "&gt(log_ratio,"  + uf + ")";
+			}
+			else if (df<0) {
+				range += "&lt(log_ratio,"  + df+ ")";
+			}
+			if (uz>0 && dz<0)
+			{
+				range += "&or(gt(z_score,"  + uz + "),lt(z_score,"  + dz+ "))";			
+			}
+			else if (uz>0) {
+				range += "&gt(z_score,"  + uz+ ")";
+			}
+			else if (dz<0) {
+				range += "&lt(z_score,"  + dz+ ")";
+			}
+
+			range += "&facet((field,strain),(field,mutant),(field,condition),(mincount,1))&limit(1)";
+
+			var q = this.state.search + range;
+			
+			console.log("In MemoryStore query: q:", q);
+			console.log("In MemoryStore query: window.App.dataServiceURL:", window.App.dataServiceURL);
+
+			this._loadingDeferred = when(request.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
+						data: q,
+						headers: {
+							"accept": "application/solr+json",
+							"content-type": "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+				}), function(response){
+				console.log("!!!!In GeneExpressionChartMemoryStore loadData(): response.response:", response.facet_counts);
+			
+				var strainArray = response.facet_counts.facet_fields.strain;
+				var mutantArray = response.facet_counts.facet_fields.mutant;
+				var conditionArray = response.facet_counts.facet_fields.condition;
+				var data=[];
+				data.push(strainArray);
+				data.push(mutantArray);
+				data.push(conditionArray);
+				_self.setData(data);
+				console.log("!!!!In GeneExpressionChartMemoryStore loadData():  _self.data:", _self.data);
+				_self._loaded = true;
+				//return;
+			});
+			return this._loadingDeferred;
+		}
+	})
+});
+},
+'p3/widget/CorrelatedGenesContainer':function(){
+define([
+	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
+	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
+	"./CorrelatedGenesGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog"
+], function(declare, BorderContainer, on, lang,
+			ActionBar, ContainerActionBar, TabContainer, StackController,
+			CorrelatedGenesGridContainer, ContentPane, GridContainer, TooltipDialog){
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
+		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+		console.log("selection: ", selection);
+		console.log("DownloadQuery: ", dataType, currentQuery);
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		popup.close(downloadTT);
+	});
+
+	return declare([BorderContainer], {
+		gutters: false,
+		state: null,
+		maxGenomeCount: 5000,
+		apiServer: window.App.dataServiceURL,
+
+		onSetState: function(attr, oldVal, state){
+			// console.log("CorrelatedGenesContainer set STATE.  feature_id: ", state.feature_id, " state: ", state);
+
+			if(!state){
+				return;
+			}
+
+			if(this.correlatedGenesGrid){
+				this.correlatedGenesGrid.set('state', state);
+			}
+
+			// console.log("call _set(state) ", state);
+
+			this._set("state", state);
+		},
+
+		visible: false,
+		_setVisibleAttr: function(visible){
+			this.visible = visible;
+
+			if(this.visible && !this._firstView){
+				this.onFirstView();
+			}
+			if(this.correlatedGenesGrid){
+				this.correlatedGenesGrid.set("visible", true)
+			}
+		},
+
+		onFirstView: function(){
+			if(this._firstView){
+				return;
+			}
+
+			this.correlatedGenesGrid = new CorrelatedGenesGridContainer({
+				region: "center",
+				title: "Correlated Genes",
+				content: "Correlated Genes Grid",
+				state: this.state,
+				apiServer: this.apiServer
+			});
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+			this.addChild(this.correlatedGenesGrid);
+
+			this.inherited(arguments);
+			this._firstView = true;
+		}
+	});
+});
+
+
+},
+'p3/widget/CorrelatedGenesGridContainer':function(){
+define([
+	"dojo/_base/declare", "./GridContainer", "dojo/on",
+	"./CorrelatedGenesGrid", "dijit/popup", "dojo/topic",
+	"dijit/TooltipDialog", "./FacetFilterPanel", "./CorrelatedGenesActionBar",
+	"dojo/_base/lang"
+
+], function(declare, GridContainer, on,
+			CorrelatedGenesGrid, popup, Topic,
+			TooltipDialog, FacetFilterPanel, ContainerActionBar,
+			lang){
+
+	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
+	var viewFASTATT = new TooltipDialog({
+		content: vfc, onMouseLeave: function(){
+			popup.close(viewFASTATT);
+		}
+	});
+
+	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+	var downloadTT = new TooltipDialog({
+		content: dfc, onMouseLeave: function(){
+			popup.close(downloadTT);
+		}
+	});
+
+	on(downloadTT.domNode, "div:click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		console.log("REL: ", rel);
+		var selection = self.actionPanel.get('selection');
+		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
+		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
+		console.log("selection: ", selection);
+		console.log("DownloadQuery: ", dataType, currentQuery);
+		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		popup.close(downloadTT);
+	});
+
+	return declare([GridContainer], {
+		gridCtor: CorrelatedGenesGrid,
+		containerType: "feature_data",
+		enableFilterPanel: true,
+		apiServer: window.App.dataServiceURL,
+
+		createFilterPanel: function(){
+			this.containerActionBar = this.filterPanel = new ContainerActionBar({
+				region: "top",
+				layoutPriority: 7,
+				splitter: false,
+				"className": "BrowserHeader",
+				dataModel: this.dataModel,
+				state: this.state,
+				enableAnchorButton: this.enableAnchorButton,
+				currentContainerWidget: this
+			});
+		},
+		_setQueryAttr: function(query){
+			// override _setQueryAttr since we're going to build query inside PathwayMemoryStore
+		},
+
+		buildQuery: function(){
+			return "";
+		},
+
+		containerActions: GridContainer.prototype.containerActions.concat([
+			[
+				"DownloadTable",
+				"fa fa-download fa-2x",
+				{
+					label: "DOWNLOAD",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "Download Table",
+					tooltipDialog: downloadTT
+				},
+				function(selection){
+					popup.open({
+						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+						around: this.containerActionBar._actions.DownloadTable.button,
+						orient: ["below"]
+					});
+				},
+				true
+			]
+		]),
+
+		_setStateAttr: function(state){
+			this.inherited(arguments);
+			if(!state){
+				return;
+			}
+			//console.log("CorrelatedGenesGridContainer _setStateAttr: ", state.feature_id);
+			if(this.grid){
+				// console.log("   call set state on this.grid: ", this.grid);
+				this.grid.set('state', state);
+			}else{
+				console.log("No Grid Yet (CorrelatedGenesGridContainer)");
+			}
+
+			this._set("state", state);
+		}
+	});
+});
+
+},
+'p3/widget/CorrelatedGenesGrid':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/on", "dojo/request", "dojo/aspect", "dojo/dom-construct", "dojo/dom-class",
+	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+	"./PageGrid", "./formatter", "../store/CorrelatedGenesMemoryStore", "dgrid/selector"
+], function(declare, lang, Deferred,
+			on, request, aspect, domConstruct, domClass,
+			BorderContainer, ContentPane,
+			Grid, formatter, Store, selector){
+	return declare([Grid], {
+		region: "center",
+		query: (this.query || ""),
+		apiToken: window.App.authorizationToken,
+		apiServer: window.App.dataServiceURL,
+		store: null,
+		dataModel: "transcriptomics_gene",
+		primaryKey: "feature_id",
+		selectionModel: "extended",
+		deselectOnRefresh: true,
+		columns: {
+			// "Selection Checkboxes": selector({}), // no selector for now.
+			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
+			accession: {label: "Accession", field: "accession", hidden: true},
+			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
+			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
+			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
+			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
+			annotation: {label: "Annotation", field: "annotation", hidden: true},
+			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
+			start: {label: "Start", field: "start", hidden: true},
+			end: {label: "END", field: "end", hidden: true},
+			na_length: {label: "NA Length", field: "na_length", hidden: true},
+			strand: {label: "Strand", field: "strand", hidden: true},
+			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
+			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
+			gene: {label: "Gene Symbol", field: "gene", hidden: false},
+			product: {label: "Product", field: "product", hidden: false},
+
+			correlation: {label: "Correlation", field: "correlation", hidden: false},
+			comparisons: {label: "Comparisons", field: "conditions", hidden: false}
+		},
+		constructor: function(options){
+			//console.log("CorrelatedGenes Ctor: ", options.state.feature);
+			if(options && options.apiServer){
+				this.apiServer = options.apiServer;
+			}
+			this.queryOptions = {
+				sort: [{attribute: "correlation", descending: true}]
+			};
+		},
+		startup: function(){
+			var _self = this;
+
+			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
+				var row = _self.row(evt);
+				//console.log("dblclick row:", row);
+				on.emit(_self.domNode, "ItemDblClick", {
+					item_path: row.data.path,
+					item: row.data,
+					bubbles: true,
+					cancelable: true
+				});
+				console.log('after emit');
+			});
+
+			this.on("dgrid-select", function(evt){
+				//console.log('dgrid-select: ', evt);
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "select", newEvt);
+			});
+
+			this.on("dgrid-deselect", function(evt){
+				//console.log("dgrid-deselect");
+				var newEvt = {
+					rows: evt.rows,
+					selected: evt.grid.selection,
+					grid: _self,
+					bubbles: true,
+					cancelable: true
+				};
+				on.emit(_self.domNode, "deselect", newEvt);
+			});
+
+			aspect.before(_self, 'renderArray', function(results){
+				Deferred.when(results.total, function(x){
+					_self.set("totalRows", x);
+				});
+			});
+
+			this.inherited(arguments);
+			this._started = true;
+		},
+		state: null,
+		postCreate: function(){
+			this.inherited(arguments);
+		},
+		_setApiServer: function(server){
+			this.apiServer = server;
+		},
+
+		_setState: function(state){
+			if(!this.store){
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+			}else{
+				this.store.set("state", state);
+				this.refresh();
+			}
+		},
+
+		createStore: function(server, token, state){
+
+			var store = new Store({
+				token: token,
+				apiServer: this.apiServer || window.App.dataServiceURL,
+				state: state || this.state
+			});
+			store.watch("refresh", lang.hitch(this, "refresh"));
+
+			return store;
+		}
+	});
+});
+
+},
+'p3/store/CorrelatedGenesMemoryStore':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
+	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic",
+	"dojo/store/Memory",
+	"dojo/store/util/QueryResults"
+], function(declare, lang, Deferred,
+			request, when, Stateful, Topic,
+			Memory, QueryResults){
+
+	return declare([Memory, Stateful], {
+		baseQuery: {},
+		idProperty: "feature_id",
+		apiServer: window.App.dataServiceURL,
+		state: null,
+		feature_id: null,
+		onSetState: function(attr, oldVal, state){
+			if(state && state.feature && state.feature.feature_id){
+				var cur = this.feature_id;
+				var next = state.feature.feature_id;
+				if(cur != next){
+					this.set("feature_id", state.feature_id || {});
+					this._loaded = false;
+					delete this._loadingDeferred;
+				}
+			}
+		},
+		constructor: function(options){
+			this._loaded = false;
+			this.feature_id = null;
+			if(options.apiServer){
+				this.apiServer = options.apiServer
+			}
+
+			var self = this;
+
+			Topic.subscribe("CorrelatedGenes", lang.hitch(this, function(){
+				// console.log("CorrelatedGenesMemoryStore:", arguments);
+				var key = arguments[0], value = arguments[1];
+
+				switch(key){
+					case "filter":
+						self.cutoff_value = value.cutoff_value;
+						self.cutoff_dir = value.cutoff_dir;
+						this.reload();
+						break;
+					default:
+						break;
+				}
+			}));
+
+			this.watch("state", lang.hitch(this, "onSetState"))
+		},
+
+		reload: function(){
+			var self = this;
+			delete self._loadingDeferred;
+			self._loaded = false;
+			self.loadData();
+			self.set("refresh");
+		},
+
+		query: function(query, opts){
+			query = query || {};
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				var results;
+				//console.log("Initiate NON LOADED Query: ", query);
+				var qr = QueryResults(when(this.loadData(), function(){
+					//console.log("Do actual Query Against loadData() data. QR: ", qr);
+					results = _self.query(query || {}, opts);
+					qr.total = when(results, function(results){
+						return results.total || results.length
+					});
+					return results;
+				}));
+
+				return qr;
+			}
+		},
+
+		get: function(id, opts){
+			if(this._loaded){
+				return this.inherited(arguments);
+			}
+			else{
+				var _self = this;
+				return when(this.loadData(), function(){
+					return _self.get(id, options)
+				})
+			}
+		},
+
+		loadData: function(){
+			var _self = this;
+
+			if(this._loadingDeferred){
+				return this._loadingDeferred;
+			}
+			var state = this.state || {};
+
+			if(!state.feature_id){
+				// console.log("No Feature, use empty data set for initial store");
+
+				//this is done as a deferred instead of returning an empty array
+				//in order to make it happen on the next tick.  Otherwise it
+				//in the query() function above, the callback happens before qr exists
+				var def = new Deferred();
+				setTimeout(lang.hitch(this, function(){
+					this.setData([]);
+					_self._loaded = true;
+					def.resolve(true);
+				}), 0);
+				return def.promise;
+			}
+
+			_self.cutoff_value = _self.cutoff_value || 0.4;
+			_self.cutoff_dir = _self.cutoff_dir || 'pos';
+
+			this._loadingDeferred = when(request.post(_self.apiServer + '/transcriptomics_gene/', {
+				handleAs: 'json',
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/solrquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+				},
+				data: {
+					q: 'genome_id:' + state.feature.genome_id,
+					fq: '{!correlation fieldId=refseq_locus_tag fieldCondition=pid fieldValue=log_ratio srcId=' + state.feature.refseq_locus_tag + ' filterCutOff=' + _self.cutoff_value + ' filterDir=' + _self.cutoff_dir + ' cost=101}',
+					rows: 0,
+					'json.nl': 'map'
+				}
+			}), function(response){
+
+				if(response.correlation.length === 0){
+					_self.setData([]);
+					_self._loaded = true;
+					return true;
+				}
+
+				var refseqLocusTagList = [];
+				response.correlation.forEach(function(element){
+					refseqLocusTagList.push(element.id);
+				});
+
+				// sub query
+				return when(request.post(_self.apiServer + '/genome_feature/', {
+					handleAs: 'json',
+					headers: {
+						'Accept': "application/solr+json",
+						'Content-Type': "application/solrquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+					},
+					data: {
+						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ')',
+						fq: 'annotation:PATRIC',
+						rows: refseqLocusTagList.length
+					}
+				}), function(res){
+
+					var featureHash = {};
+					res.response.docs.forEach(function(el){
+						if(featureHash[el.refseq_locus_tag] == null){
+							featureHash[el.refseq_locus_tag] = el;
+						}
+					});
+
+					var data = [];
+					response.correlation.forEach(function(element){
+						data.push(lang.mixin({}, element, featureHash[element.id]));
+					});
+					//console.log(data);
+					_self.setData(data);
+					_self._loaded = true;
+
+					return true;
+				});
+			});
+			return this._loadingDeferred;
+		}
+	})
+});
+},
+'p3/widget/CorrelatedGenesActionBar':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-construct", "dojo/on", "dojo/topic",
+	"dijit/form/Select", "dijit/form/Button",
+	"./ContainerActionBar"
+], function(declare, lang,
+			domConstruct, on, Topic,
+			Select, Button,
+			ContainerActionBar){
+
+	return declare([ContainerActionBar], {
+		style: "height: 52px; margin:0px;padding:0px; overflow: hidden;",
+		minimized: true,
+		minSize: 52,
+		absoluteMinSize: 52,
+		query: "",
+		state: null,
+		filter: "",
+		dataModel: "",
+		apiServer: window.App.dataAPI,
+		authorizationToken: window.App.authorizationToken,
+		enableAnchorButton: false,
+		constructor: function(){
+			this._ffWidgets = {};
+			this._ffValueButtons = {};
+			this._filter = {};
+			this.minimized = true;
+		},
+		_setStateAttr: function(state){
+			state = state || {};
+			this._set("state", state);
+		},
+		onSetState: function(attr, oldVal, state){
+			// console.log("FilterContainerActionBar onSetState: ", state)
+			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			domConstruct.destroy(this.pathContainer);
+
+			this.smallContentNode = domConstruct.create("div", {
+				"class": "minFilterView",
+				style: {margin: "2px"}
+			}, this.domNode);
+
+			var table = this.smallContentNode = domConstruct.create("table", {
+				style: {
+					"border-collapse": "collapse",
+					margin: "0px",
+					"padding": "0px",
+					background: "#fff"
+				}
+			}, this.smallContentNode);
+
+			var tr = domConstruct.create("tr", {}, table);
+			this.leftButtons = domConstruct.create("td", {
+				style: {
+					"width": "1px",
+					"text-align": "left",
+					padding: "4px",
+					"white-space": "nowrap",
+					background: "#fff"
+				}
+			}, tr);
+
+			this.containerNode = this.actionButtonContainer = this.centerButtons = domConstruct.create("td", {
+				style: {
+					"border": "0px",
+					"border-left": "2px solid #aaa",
+					"text-align": "left",
+					padding: "4px",
+					background: "#fff"
+				}
+			}, tr);
+
+			this.rightButtons = domConstruct.create("td", {
+				style: {
+					"text-align": "right",
+					padding: "4px",
+					background: "#fff",
+					width: "1px",
+					"white-space": "nowrap"
+				}
+			}, tr);
+
+			var customFilterBox = domConstruct.create("div", {
+				style: {
+					display: "inline-block",
+					"vertical-align": "top",
+					"margin-top": "4px",
+					"margin-left": "2px"
+				}
+			}, this.centerButtons);
+
+			this.cutoff = new Select({
+				name: "selectCutOff",
+				options: [{value: 1, label: "1"}, {value: 0.8, label: "0.8"},
+					{value: 0.6, label: "0.6"}, {value: 0.4, label: "0.4"},
+					{value: 0.2, label: "0.2"}, {value: 0, label: "0"}],
+				value: 0.4,
+				style: "width: 60px; margin: 0px 15px 0px 0px"
+			});
+			this.cutoff_label = domConstruct.create("label", {innerHTML: "Correlation Cutoff: "});
+			domConstruct.place(this.cutoff_label, customFilterBox, "last");
+			domConstruct.place(this.cutoff.domNode, customFilterBox, "last");
+
+			this.direction = new Select({
+				name: "selectCorrelation",
+				options: [{value: "pos", label: "positive"}, {value: "neg", label: "negative"}],
+				value: "pos",
+				style: "width: 70px; margin: 0px 15px 0px 0px"
+			});
+			this.direction_label = domConstruct.create("label", {innerHTML: "Correlation: "});
+			domConstruct.place(this.direction_label, customFilterBox, "last");
+			domConstruct.place(this.direction.domNode, customFilterBox, "last");
+
+			var self = this;
+			var btn_submit = new Button({
+				label: "Filter",
+				onClick: lang.hitch(this, function(){
+
+					var filter = {};
+					filter.cutoff_value = parseFloat(self.cutoff.get('value'));
+					filter.cutoff_dir = self.direction.get('value');
+
+					Topic.publish("CorrelatedGenes", "filter", filter)
+				})
+			});
+			domConstruct.place(btn_submit.domNode, customFilterBox, "last");
+
+			this.watch("state", lang.hitch(this, "onSetState"));
+
+		},
+
+		_setQueryAttr: function(query){
+			this._set("query", query);
+
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+			this._started = true;
+
+			this.onSetState('state', "", this.state);
+
+			if(this.currentContainerWidget){
+				this.currentContainerWidget.resize();
+			}
+		},
+
+		addAction: function(name, classes, opts, fn, enabled, target){
+			if(target && typeof target == 'string'){
+				if(target == "left"){
+					target = this.leftButtons;
+				}else if(target == "right"){
+					target = this.rightButtons;
+				}
+			}
+
+			// console.log("Add Action: ", name, classes, opts,enabled);
+			target = target || this.leftButtons;
+			var wrapper = domConstruct.create("div", {
+				"class": (enabled ? "" : "dijitHidden ") + "ActionButtonWrapper",
+				rel: name
+			});
+			var b = domConstruct.create("div", {'className': "ActionButton " + classes}, wrapper);
+
+			if(opts && opts.label){
+				var t = domConstruct.create("div", {innerHTML: opts.label, "class": "ActionButtonText"}, wrapper);
+			}
+
+			domConstruct.place(wrapper, target, "last");
+
+			this._actions[name] = {
+				options: opts,
+				action: fn,
+				button: wrapper,
+				textNode: t
+			};
+		}
+	});
+});
+
+},
+'p3/widget/viewer/FeatureList':function(){
+define([
+	"dojo/_base/declare", "./_FeatureList"
+], function(declare, FeatureList){
+	return declare([FeatureList], {});
+});
+
+},
+'p3/widget/viewer/_FeatureList':function(){
+define([
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
+	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
+	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
+	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
+], function(declare, TabViewerBase, on,
+			domClass, ContentPane, domConstruct,
+			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
+			GenomeGridContainer, PathJoin, xhr, lang){
+	return declare([TabViewerBase], {
+		"baseClass": "FeatureList",
+		"disabled": false,
+		"containerType": "feature_data",
+		"query": null,
+		paramsMap: "query",
+		total_features: 0,
+		warningContent: 'Your query returned too many results for detailed analysis.',
+		_setQueryAttr: function(query){
+			console.log(this.id, " _setQueryAttr: ", query, this);
+			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
+			//console.log("GenomeList SetQuery: ", query, this);
+
+			this._set("query", query);
+			if(!this._started){
+				return;
+			}
+
+			var _self = this;
+			console.log('genomeList setQuery - this.query: ', this.query);
+
+			var url = PathJoin(this.apiServiceUrl, "genome_feature", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
+
+			console.log("url: ", url);
+			xhr.get(url, {
+				headers: {
+					accept: "application/solr+json",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(function(res){
+				console.log(" URL: ", url);
+				console.log("Get GenomeList Res: ", res);
+				if(res && res.response && res.response.docs){
+					var features = res.response.docs;
+					if(features){
+						_self._set("total_features", res.response.numFound);
+					}
+				}else{
+					console.log("Invalid Response for: ", url);
+				}
+			}, function(err){
+				console.log("Error Retreiving Genomes: ", err)
+			});
+
+		},
+
+		onSetState: function(attr, oldVal, state){
+			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+
+			// if (!state.feature_ids){
+			// 	console.log("	NO Genome_IDS")
+			// 	if (state.search == oldVal.search){
+			// 		console.log("		Same Search")
+			// 		console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+			// 		this.set("state", lang.mixin({},state,{feature_ids: oldVal.genome_ids}))	
+			// 		return;
+			// 	}else{
+			// 		this.set("query", state.search);
+			// 	}
+			// }else if (state.search!=oldVal.search){
+			// 	console.log("SET QUERY: ", state.search);
+			// 	this.set("query", state.search);
+			// }
+
+			this.set("query", state.search);
+
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			if(active == "features"){
+				this.setActivePanelState()
+			}
+
+			this.inherited(arguments);
+		},
+
+		onSetQuery: function(attr, oldVal, newVal){
+			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
+			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
+			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Feature Query:&nbsp;' + decodeURIComponent(newVal);
+		},
+
+		setActivePanelState: function(){
+
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			console.log("Active: ", active, "state: ", this.state);
+
+			var activeTab = this[active];
+
+			if(!activeTab){
+				console.log("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
+
+			switch(active){
+				case "features":
+					activeTab.set("state", this.state);
+					break;
+				default:
+					var activeQueryState;
+					if(this.state && this.state.genome_ids){
+						console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// console.log("gidQueryState: ", gidQueryState);
+						console.log("Active Query State: ", activeQueryState);
+
+					}
+
+					if(activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
+					break;
+			}
+			console.log("Set Active State COMPLETE");
+		},
+
+		onSetFeatureIds: function(attr, oldVal, genome_ids){
+			console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+			this.state.feature_ids = feature_ids;
+			this.setActivePanelState();
+		},
+
+		createOverviewPanel: function(state){
+			return new ContentPane({
+				content: "Overview",
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview",
+				state: this.state
+			});
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("total_features", lang.hitch(this, "onSetTotalFeatures"));
+
+			this.overview = this.createOverviewPanel(this.state);
+			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
+			this.queryNode = domConstruct.create("span", {innerHTML: " Feature List Query:  "});
+
+			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
+			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
+
+			this.features = new FeatureGridContainer({
+				title: "Features",
+				id: this.viewer.id + "_" + "features",
+				disabled: false
+			});
+			// this.sequences = new SequenceGridContainer({
+			// 	title: "Sequences",
+			// 	id: this.viewer.id + "_" + "sequences",
+			// 	state: this.state,
+			// 	disable: true
+			// });
+
+			// this.genomes = new GenomeGridContainer({
+			// 	title: "Genomes",
+			// 	id: this.viewer.id + "_" + "genomes",
+			// 	state: this.state,
+			// 	disable: true
+			// });
+
+			this.viewer.addChild(this.overview);
+			this.viewer.addChild(this.features);
+			// this.viewer.addChild(this.sequences);
+			// this.viewer.addChild(this.genomes);
+
+		},
+		onSetTotalFeatures: function(attr, oldVal, newVal){
+			console.log("ON SET TOTAL GENOMES: ", newVal);
+			this.totalCountNode.innerHTML = " ( " + newVal + " Genome Features ) ";
+			var hasDisabled = false;
+
+			// this.viewer.getChildren().forEach(function(child){
+			// 	if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
+			// 		hasDisabled = true;
+			// 		child.set("disabled", true);
+			// 	}else{
+			// 		child.set("disabled", false);
+			// 	}
+			// });
+
+			// if(hasDisabled){
+			// 	this.showWarning();
+			// }else{
+			// 	this.hideWarning();
+			// }
+		},
+		hideWarning: function(){
+			if(this.warningPanel){
+				this.removeChild(this.warningPanel);
+			}
+		},
+
+		showWarning: function(msg){
+			if(!this.warningPanel){
+				this.warningPanel = new ContentPane({
+					style: "margin:0px; padding: 0px;margin-top: -10px;",
+					content: '<div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + this.warningContent + "</div>",
+					region: "top",
+					layoutPriority: 3
+				});
+			}
+			this.addChild(this.warningPanel);
+		},
+		onSetAnchor: function(evt){
+			console.log("onSetAnchor: ", evt, evt.filter);
+			evt.stopPropagation();
+			evt.preventDefault();
+			var f = evt.filter;
+			var parts = [];
+			var q;
+			if(this.query){
+				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+				if(q != "keyword(*)"){
+					parts.push(q)
+				}
+			}
+			if(evt.filter & evt.filter != "false"){
+				parts.push(evt.filter)
+			}
+
+			console.log("parts: ", parts);
+
+			if(parts.length > 1){
+				q = "?and(" + parts.join(",") + ")"
+			}else if(parts.length == 1){
+				q = "?" + parts[0]
+			}else{
+				q = "";
+			}
+
+			console.log("SetAnchor to: ", q);
+			var hp;
+			if(this.hashParams && this.hashParams.view_tab){
+				hp = {view_tab: this.hashParams.view_tab}
+			}else{
+				hp = {}
+			}
+			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
+					return key + "=" + hp[key]
+				}, this).join("&");
+			console.log("NavigateTo: ", l);
+			Topic.publish("/navigate", {href: l});
+		}
+	});
+});
+
+},
+'p3/widget/JobStatus':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "dojo/topic", "dojo/_base/lang",
+	"dojo/dom-construct", "../JobManager",
+	"dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin",
+	"dojo/text!./templates/JobStatus.html",
+	"dijit/_HasDropDown", "dijit/layout/ContentPane",
+	"dijit/Tooltip"
+], function(declare, WidgetBase, on,
+			domClass, Topic, lang,
+			domConstr, JobManager,
+			TemplatedMixin, WidgetsInTemplate, template,
+			HasDropDown, ContentPane, Tooltip){
+
+	var UploadSummaryPanel = new ContentPane({content: "No Active Uploads", style: "background:#fff;"});
+	return declare([WidgetBase, TemplatedMixin], {
+		"baseClass": "WorkspaceController",
+		"disabled": false,
+		templateString: template,
+		dropDown: UploadSummaryPanel,
+		constructor: function(){
+			this._jobstatus = {
+				inProgress: 0,
+				complete: 0,
+				queued: 0,
+				failed: 0
+			}
+		},
+		startup: function(){
+			this.inherited(arguments);
+			Topic.subscribe("/Jobs", lang.hitch(this, "onJobMessage"))
+			JobManager.getJobSummary().then(lang.hitch(this, "onJobMessage"));
+			this.tooltip = new Tooltip({
+				connectId: [this.domNode],
+				label: " Completed &middot; In progress &middot; Queued &middot; Suspended",
+				position: ["above"]
+			});
+		},
+		openJobs: function(){
+			Topic.publish("/navigate", {href: "/job/"});
+		},
+		onJobMessage: function(msg){
+			//console.log("Job Message: ", msg);
+			if(msg && msg.type == "JobStatusSummary"){
+				//console.log("JobStatusSummary: ", msg.summary);
+				this._jobstatus.inProgress = msg.summary['in-progress'] || 0;
+				this._jobstatus.complete = msg.summary.completed || 0;
+				this._jobstatus.queued = (msg.summary.queued) || 0 + (msg.summary.pending || 0) + (msg.summary.init || 0);
+				this._jobstatus.failed = msg.summary.failed || 0;
+				//console.log("this._jobstatus: ", this._jobstatus);
+				this.jobsCompleteNode.innerHTML = this._jobstatus.complete;
+				this.jobsRunningNode.innerHTML = this._jobstatus.inProgress;
+				this.jobsQueuedNode.innerHTML = this._jobstatus.queued;
+				this.jobsSuspendedNode.innerHTML = this._jobstatus.failed;
+				return;
+			}
+
+		}
+	});
+});
+
+},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
+'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
+'url:dijit/templates/InlineEditBox.html':"<span data-dojo-attach-point=\"editNode\" role=\"presentation\" class=\"dijitReset dijitInline dijitOffScreen\"\n\t><span data-dojo-attach-point=\"editorPlaceholder\"></span\n\t><span data-dojo-attach-point=\"buttonContainer\"\n\t\t><button data-dojo-type=\"./form/Button\" data-dojo-props=\"label: '${buttonSave}', 'class': 'saveButton'\"\n\t\t\tdata-dojo-attach-point=\"saveButton\" data-dojo-attach-event=\"onClick:save\"></button\n\t\t><button data-dojo-type=\"./form/Button\"  data-dojo-props=\"label: '${buttonCancel}', 'class': 'cancelButton'\"\n\t\t\tdata-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:cancel\"></button\n\t></span\n></span>\n",
 'url:dijit/form/templates/DropDownButton.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class='dijitReset dijitInline dijitButtonNode'\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" data-dojo-attach-point=\"_buttonNode\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"focusNode,titleNode,_arrowWrapperNode,_popupStateNode\"\n\t\t\trole=\"button\" aria-haspopup=\"true\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\"\n\t\t\t\tdata-dojo-attach-point=\"iconNode\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonInner\"></span\n\t\t\t><span class=\"dijitReset dijitInline dijitArrowButtonChar\">&#9660;</span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\tdata-dojo-attach-point=\"valueNode\" role=\"presentation\" aria-hidden=\"true\"\n/></span>\n",
 'url:dijit/form/templates/ComboButton.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tcellspacing='0' cellpadding='0' role=\"presentation\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonNode\" data-dojo-attach-point=\"buttonNode\" data-dojo-attach-event=\"ondijitclick:__onClick,onkeydown:_onButtonKeyDown\"\n\t\t><div id=\"${id}_button\" class=\"dijitReset dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><div class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitInline dijitButtonText\" id=\"${id}_label\" data-dojo-attach-point=\"containerNode\" role=\"presentation\"></div\n\t\t></div\n\t\t></td\n\t\t><td id=\"${id}_arrow\" class='dijitReset dijitRight dijitButtonNode dijitArrowButton'\n\t\t\tdata-dojo-attach-point=\"_popupStateNode,focusNode,_buttonNode\"\n\t\t\tdata-dojo-attach-event=\"onkeydown:_onArrowKeyDown\"\n\t\t\ttitle=\"${optionsTitle}\"\n\t\t\trole=\"button\" aria-haspopup=\"true\"\n\t\t\t><div class=\"dijitReset dijitArrowButtonInner\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitArrowButtonChar\" role=\"presentation\">&#9660;</div\n\t\t></td\n\t\t><td style=\"display:none !important;\"\n\t\t\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" data-dojo-attach-point=\"valueNode\"\n\t\t\t\tclass=\"dijitOffScreen\"\n\t\t\t\trole=\"presentation\" aria-hidden=\"true\"\n\t\t\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\t/></td></tr></tbody\n></table>\n",
 'url:dijit/form/templates/CheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><input\n\t \t${!nameAttrSetting} type=\"${type}\" role=\"${type}\" aria-checked=\"false\" ${checkedAttrSetting}\n\t\tclass=\"dijitReset dijitCheckBoxInput\"\n\t\tdata-dojo-attach-point=\"focusNode\"\n\t \tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n/></div>\n",
@@ -86997,7 +112338,6 @@ return declare("dojo.fx.Toggler", null, {
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
 'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
-'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
@@ -87025,8 +112365,8 @@ return declare("dojo.fx.Toggler", null, {
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n            </td>\n            <td style=\"width:40%;padding:7px;vertical-align:top;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                    <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\"\n                         style=\"height:205px;margin:4px;\"></div>\n                </div>\n\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                    <div id=\"GO_PFSummary\" data-dojo-attach-point=\"pfSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ProteinFeatureSummary\" style=\"margin:4px;\"></div>\n                </div>\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\"></div>\n                </div>\n\n            </td>\n            <td style=\"width:25%;padding:7px;vertical-align:top;\">\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\" style=\"margin:4px;padding:8px;display:block\">\n                        <!--<div>Show more <i data-dojo-attach-event=\"click:onShowMore\" class=\"fa icon-plus-circle fa-lg\"></i></div>-->\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
-'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-bars fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\">\n\t\t</div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/GenomeOverview.html':"<div style=\"overflow: auto;\">\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"genomeSummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n            </td>\n            <td style=\"width:40%;padding:7px;vertical-align:top;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n                    <div data-dojo-attach-point=\"gfSummaryWidget\" data-dojo-type=\"p3/widget/GenomeFeatureSummary\"\n                         style=\"height:205px;margin:4px;\"></div>\n                </div>\n\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n                    <div data-dojo-attach-point=\"pfSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ProteinFeatureSummary\" style=\"margin:4px;\"></div>\n                </div>\n\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\"></div>\n                </div>\n\n            </td>\n            <td style=\"width:25%;padding:7px;vertical-align:top;\">\n                <div class=\"section \">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\" style=\"margin:4px;padding:8px;display:block\">\n                        <!--<div>Show more <i data-dojo-attach-event=\"click:onShowMore\" class=\"fa icon-plus-circle fa-lg\"></i></div>-->\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t<i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
 'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
@@ -87034,6 +112374,12 @@ return declare("dojo.fx.Toggler", null, {
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
+'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"taxonomySummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n                <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"rgSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n                    </div>\n                </div>\n            </td>\n            <td rowspan=\"2\" style=\"width:65%;padding:7px;vertical-align:top;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Metadata Top 5</span></h3>\n                    <div  data-dojo-attach-point=\"gmSummaryWidget\" data-dojo-type=\"p3/widget/GenomeMetaSummary\"\n                         style=\"margin:4px;height:450px;\">\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n            </td>\n        </tr>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\"\n                         style=\"margin:4px;padding:8px;margin-radius:4px;display:block\">\n                        <div>Show more <i data-dojo-attach-event=\"click:onShowMore\"\n                                          class=\"fa icon-plus-circle fa-lg\"></i></div>\n                        </br>\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
+'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
+'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
+'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;padding:4px;\">\n    <div class=\"section\">\n        <table class=\"basic stripe far2x left\" style=\"width:80%\">\n            <tbody>\n            <tr>\n                <th scope=\"row\">Gene ID</th>\n                <td data-dojo-attach-point=\"geneIdList\"></td>\n            </tr>\n            <tr>\n                <th scope=\"row\">Protein ID</th>\n                <td data-dojo-attach-point=\"proteinIdList\"></td>\n            </tr>\n            </tbody>\n        </table>\n\n        <div id=\"feature_box\" class=\"far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n        <div class=\"clear\"></div>\n    </div>\n\n    <div class=\"section\">\n        <div data-dojo-attach-point=\"relatedFeatureNode\">\n            Loading Related Features...\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Functional Properties</span></h3>\n\n        <div data-dojo-attach-point=\"functionalPropertiesNode\">\n            Loading Functional Properties...\n        </div>\n    </div>\n\n    <div class=\"section\" style=\"\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Comments</span></h3>\n\n        <div data-dojo-attach-point=\"featureCommentsNode\">\n            Loading Comments...\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});
 define("p3/layer/core", [], 1);

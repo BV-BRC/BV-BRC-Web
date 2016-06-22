@@ -108,15 +108,19 @@ define([
 		},
 
 		formattaxonomy: function(docs,total){
-			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/Taxonomy/?',this.state.search,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
+			var q = this.state.search; 
+			console.log("format taxonomy q: ", q);
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a href='/view/Taxonomy/" + doc.taxon_id + "'>" + doc.taxon_name + "</a></div>");
-				//out.push("<div class='resultInfo'>" + doc.genomes +  " Genomes</div>");
+				out.push("<div class='resultInfo'>" + doc.genomes +  " Genomes</div>");
 				out.push("</div>")
 			})
 			out.push("</div>");
+
+			console.log("Taxonomy Format: ", out.join(""));
 			return out.join("");
 		},
 
@@ -157,6 +161,9 @@ define([
 				switch(type){
 					case "genome_feature":
 						tq=tq + "&ne(annotation,brc1)&ne(feature_type,source)"
+						break;
+					case "taxonomy":
+						tq=tq + "&gt(genomes,1)"
 						break;
 				}
 
