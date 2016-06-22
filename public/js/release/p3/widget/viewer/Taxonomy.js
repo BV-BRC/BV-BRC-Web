@@ -20,7 +20,7 @@ define("p3/widget/viewer/Taxonomy", [
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-
+		
 		postCreate: function(){
 			this.inherited(arguments);
 

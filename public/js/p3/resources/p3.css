@@ -334,6 +334,7 @@ body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
 	border-top: 5px solid #629821;
 	background: #fff;
 	padding-top: 2px;
+	transition-duration: 0s;
 }
 
 body.patric .dijitTabContainerTop-tabs .dijitTabActive,
@@ -341,10 +342,12 @@ body.patric .dijitTabContainerTop-tabs .dijitTabHover {
 	background-image: none;
 	background-color: #dfe4ff;
 	color: #000;
+	transition-duration: 0s;
 }
 
 body.patric .dijitTabContainerTop-tabs .dijitTabActive {
 	border-color: #34698e;
+	transition-duration: 0s;
 }
 
 
