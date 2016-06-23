@@ -90074,14 +90074,14 @@ define([
 	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
 	"dojo/fx/easing",
 	"dijit/_WidgetBase",
-	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Tooltip",
+	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/plot2d/Pie", "dojox/charting/action2d/Tooltip",
 	"dojox/charting/plot2d/Bars", "./SummaryWidget"
 
 ], function(declare, lang,
 			domClass, domConstruct, on, xhr,
 			easing,
 			WidgetBase,
-			Chart2D, Theme, MoveSlice, ChartTooltip,
+			Chart2D, Theme, MoveSlice, Pie, ChartTooltip,
 			Bars, SummaryWidget){
 
 	return declare([SummaryWidget], {
@@ -90096,7 +90096,6 @@ define([
 			}}
 		],
 		processData: function(res){
-			var chartLabels = this._chartLabels = [];
 
 			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.reference_genome){
 				console.error("INVALID SUMMARY DATA");
@@ -90106,60 +90105,51 @@ define([
 			this._tableData = res.response.docs;
 			var d = res.facet_counts.facet_fields.reference_genome; // now key-value pair
 
-			var data = {};
+			var data = [];
 			Object.keys(d).forEach(function(key){
-				data[key] = [{source: key, x: 1, y: d[key]}];
+				data.push({text: key + " (" + d[key] + ")", x: key, y: d[key]});
 			});
 
-			// console.log(data);
 			this.set('data', data);
 		},
 
 		render_chart: function(){
 
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode)
-					.setTheme(Theme)
-					.addPlot("default", {
-						type: "ClusteredColumns",
-						markers: true,
-						gap: 3,
-						label: true,
-						labelStyle: "outside",
-						animate: {duration: 1000, easing: easing.linear}
-					})
-					.addAxis("x", {
-						majorLabels: false,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false,
-						labels: this._chartLabels
-					})
-					.addAxis("y", {
-						vertical: true,
-						majorTicks: false,
-						natural: true,
-						minorTicks: false
-					});
-					// .addSeries("source", this.data);
 
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.addSeries(key, this.data[key]);
-				}));
+				this.DonutChart = declare(Pie, {
+					render: function(dim, offsets){
+						this.inherited(arguments);
 
-				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						var d = o.run.data[o.index];
-						return d.source + " (" + d.y + ")"
+						var rx = (dim.width - offsets.l - offsets.r) / 2,
+							ry = (dim.height - offsets.t - offsets.b) / 2,
+							r = Math.min(rx, ry) / 2;
+						var circle = {
+							cx: offsets.l + rx,
+							cy: offsets.t + ry,
+							r: "30px"
+						};
+						var s = this.group;
+
+						s.createCircle(circle).setFill("#fff").setStroke("#fff");
 					}
 				});
 
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						label: true,
+						labelStyle: "columns"
+					});
+
+				this.chart.addSeries('x', this.data);
 				this.chart.render();
 			}else{
 
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.updateSeries(key, this.data[key]);
-				}));
+				this.chart.updateSeries('x', this.data);
 				this.chart.render();
 			}
 		},
@@ -107831,11 +107821,12 @@ define([
 
 			// get related feature list
 			if(this.feature.pos_group != null){
-				//xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
-				xhr.get(PathJoin(this.apiServiceUrl, "genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)"), {
+				xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)", {
 					handleAs: "json",
-					headers: {"accept": "application/solr+json"}
+					headers: {"Accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
+
+					if (data.length === 0) return;
 					var relatedFeatures = data.response.docs;
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
@@ -111522,7 +111513,7 @@ define([
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
 
-			correlation: {label: "Correlation", field: "correlation", hidden: false},
+			correlation: {label: "Correlation", field: "correlation", formatter: formatter.twoDecimalNumeric},
 			comparisons: {label: "Comparisons", field: "conditions", hidden: false}
 		},
 		constructor: function(options){
@@ -111725,9 +111716,9 @@ define([
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
+				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
-					_self._loaded = true;
+					this._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;

@@ -36,7 +36,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
 
-			correlation: {label: "Correlation", field: "correlation", hidden: false},
+			correlation: {label: "Correlation", field: "correlation", formatter: formatter.twoDecimalNumeric},
 			comparisons: {label: "Comparisons", field: "conditions", hidden: false}
 		},
 		constructor: function(options){
