@@ -28,7 +28,7 @@
 @import url("facetfilter.css");
 @import url("./GenomeList.css");
 @import url("./GenomeViewer.css");
-@import url("./p2.css");
+/*@import url("./p2.css");*/
 @import url("./JobsGrid.css");
 @import url("./SummaryWidget.css");
 @import url("./GridStyle.css");
@@ -43,8 +43,12 @@ body.patric {
     overflow: hidden;
     padding: 0;
     background: #fff;
+    line-height: 1.5;
+ 	font-family: Arial, sans-serif;
+  	color: #333333;
     font-family: 'Arial';
     font-size: .9em;
+    font-weight: 200;
 }
 
 A, A:visited {
@@ -274,13 +278,14 @@ body.patric *:focus {
 	color: #aaa;
 	cursor: default ;
 }
-
-.claro .dojoDndItemOver {
-	background: #ddd;
+.patric .dgrid-header .dojoDndTarget .dojoDndItemOver {
+	background: #efefef;
 }
+/*
 .claro .dojoDndItemAnchor, .claro .dojoDndItemSelected {
 	background: #bfd6eb;
 }
+*/
 
 .UserProfileForm {
 	width: 700px;
@@ -529,4 +534,64 @@ div.tooltip {
 .kegg-map-legend-label {
     float: left;
     white-space: nowrap;
+}
+
+/* Generic Layout Classes */
+.right {
+  float: right;
+}
+.left {
+  float: left;
+}
+.clear {
+  clear: both;
+}
+.group {
+  overflow: hidden;
+}
+.half {
+  width: 50%;
+}
+.third {
+  width: 33.3333333%;
+}
+.two-third {
+  width: 66.6666666%;
+}
+
+.has-border {
+  border: #dfdfdf 1px solid;
+}
+.has-border .wrapper {
+  margin: 5px 20px 20px 20px; 
+}
+.side-margins {
+  margin: 0 20px;
+}
+
+table {
+	width: 100%;
+}
+
+.section-title {
+	background-color:#34698e;
+	color: #efefef;
+	padding: 2px;
+	padding-left: 20px;
+	border-radius: 6px;
+	border-top-left-radius: 25px;
+	border-bottom-right-radius: 25px;
+	box-shadow: 2px 2px 2px #555;
+	margin-bottom:8px;
+}
+
+.feature_box {
+  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.30, #E0E1E1), color-stop(0.70, #FFFFFF));
+  width: 100px;
+  height: 100px;
+  border-width: 3px;
+  border-style: solid;
+  border-color: rgb(171, 172, 172);
+  border-radius: 10px 10px;
+  padding-bottom: 3px;
 }

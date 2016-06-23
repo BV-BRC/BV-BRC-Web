@@ -1,3 +1,9 @@
+
+.dgrid-header .dojoDndTarget .dgrid-cell {
+        display: table-cell; /* override any spurious dojoDndItem settings elsewhere */
+        border-right: 1px solid #bbb;
+}
+
 /* protein family grid */
 .dgrid-cell.field-family_id {
     width: 12%;

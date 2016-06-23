@@ -46,13 +46,13 @@ TH.dgrid-cell.field-feature_type {
     height: 175px;
 }
 
-#GO_PFSummary div.chartNode,
-#GO_PFSummary div.tableNode {
-    height: 250px;
+.patric .gmSummaryWidget.SummaryWidget .chartNode,
+.patric .gmSummaryWidget.SummaryWidget .tableNode {
+    height: 400px;
 }
 
-#GenomeMetaSummary div.chartNode,
-#GenomeMetaSummary div.tableNode {
+.GenomeMetaSummary div.chartNode,
+.GenomeMetaSummary div.tableNode {
     height: 500px;
 }
 

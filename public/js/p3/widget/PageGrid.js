@@ -11,7 +11,7 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 		 ColumnReorder
 
 ){
-	return declare([Grid, Pagination, ColumnHider, Keyboard, ColumnResizer,ColumnReorder, DijitRegistry, Selection], {
+	return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer,DijitRegistry, Selection], {
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
 				//console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
