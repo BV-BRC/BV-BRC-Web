@@ -108,9 +108,9 @@ define("p3/store/CorrelatedGenesMemoryStore", [
 				//in order to make it happen on the next tick.  Otherwise it
 				//in the query() function above, the callback happens before qr exists
 				var def = new Deferred();
-				setTimeout(lang.hitch(this, function(){
+				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
-					_self._loaded = true;
+					this._loaded = true;
 					def.resolve(true);
 				}), 0);
 				return def.promise;

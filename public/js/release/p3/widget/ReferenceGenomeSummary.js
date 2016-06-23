@@ -3,14 +3,14 @@ define("p3/widget/ReferenceGenomeSummary", [
 	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
 	"dojo/fx/easing",
 	"dijit/_WidgetBase",
-	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Tooltip",
+	"dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice", "dojox/charting/plot2d/Pie", "dojox/charting/action2d/Tooltip",
 	"dojox/charting/plot2d/Bars", "./SummaryWidget"
 
 ], function(declare, lang,
 			domClass, domConstruct, on, xhr,
 			easing,
 			WidgetBase,
-			Chart2D, Theme, MoveSlice, ChartTooltip,
+			Chart2D, Theme, MoveSlice, Pie, ChartTooltip,
 			Bars, SummaryWidget){
 
 	return declare([SummaryWidget], {
@@ -25,7 +25,6 @@ define("p3/widget/ReferenceGenomeSummary", [
 			}}
 		],
 		processData: function(res){
-			var chartLabels = this._chartLabels = [];
 
 			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.reference_genome){
 				console.error("INVALID SUMMARY DATA");
@@ -35,60 +34,51 @@ define("p3/widget/ReferenceGenomeSummary", [
 			this._tableData = res.response.docs;
 			var d = res.facet_counts.facet_fields.reference_genome; // now key-value pair
 
-			var data = {};
+			var data = [];
 			Object.keys(d).forEach(function(key){
-				data[key] = [{source: key, x: 1, y: d[key]}];
+				data.push({text: key + " (" + d[key] + ")", x: key, y: d[key]});
 			});
 
-			// console.log(data);
 			this.set('data', data);
 		},
 
 		render_chart: function(){
 
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode)
-					.setTheme(Theme)
-					.addPlot("default", {
-						type: "ClusteredColumns",
-						markers: true,
-						gap: 3,
-						label: true,
-						labelStyle: "outside",
-						animate: {duration: 1000, easing: easing.linear}
-					})
-					.addAxis("x", {
-						majorLabels: false,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false,
-						labels: this._chartLabels
-					})
-					.addAxis("y", {
-						vertical: true,
-						majorTicks: false,
-						natural: true,
-						minorTicks: false
-					});
-					// .addSeries("source", this.data);
 
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.addSeries(key, this.data[key]);
-				}));
+				this.DonutChart = declare(Pie, {
+					render: function(dim, offsets){
+						this.inherited(arguments);
 
-				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						var d = o.run.data[o.index];
-						return d.source + " (" + d.y + ")"
+						var rx = (dim.width - offsets.l - offsets.r) / 2,
+							ry = (dim.height - offsets.t - offsets.b) / 2,
+							r = Math.min(rx, ry) / 2;
+						var circle = {
+							cx: offsets.l + rx,
+							cy: offsets.t + ry,
+							r: "30px"
+						};
+						var s = this.group;
+
+						s.createCircle(circle).setFill("#fff").setStroke("#fff");
 					}
 				});
 
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: this.DonutChart,
+						radius: 70,
+						stroke: "black",
+						label: true,
+						labelStyle: "columns"
+					});
+
+				this.chart.addSeries('x', this.data);
 				this.chart.render();
 			}else{
 
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.updateSeries(key, this.data[key]);
-				}));
+				this.chart.updateSeries('x', this.data);
 				this.chart.render();
 			}
 		},

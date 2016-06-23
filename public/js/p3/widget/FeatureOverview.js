@@ -108,11 +108,12 @@ define([
 
 			// get related feature list
 			if(this.feature.pos_group != null){
-				//xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)&http_accept=application/solr+json", {
-				xhr.get(PathJoin(this.apiServiceUrl, "genome_feature/?and(eq(sequence_id," + this.feature.sequence_id + "),eq(end," + this.feature.end + "),eq(strand,\\" + this.feature.strand + "))&limit(0)"), {
+				xhr.get(this.apiServiceUrl + "/genome_feature/?eq(pos_group," + encodeURIComponent('"' + this.feature.pos_group + '"') + ")&limit(0)", {
 					handleAs: "json",
-					headers: {"accept": "application/solr+json"}
+					headers: {"Accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
+
+					if (data.length === 0) return;
 					var relatedFeatures = data.response.docs;
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
