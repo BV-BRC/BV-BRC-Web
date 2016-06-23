@@ -56,7 +56,7 @@
 
 .P3Header {
 	width: 100%;
-    height: 32px;
+    height: 34px;
 	background: #34698e; /*#3a69b9;*/
 	padding:0px;
 	margin-top:0px;
@@ -86,7 +86,8 @@
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
 .topMenuButton {
 	background: inherit;
-	color: white;
+	color: #efefef;
+	font-weight: 500;
 	cursor: pointer;
 	border: 0px;
 	box-shadow: 0 0 0;
