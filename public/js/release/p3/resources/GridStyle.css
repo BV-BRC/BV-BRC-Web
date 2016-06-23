@@ -1,4 +1,8 @@
 
+.dgrid-header .dojoDndTarget .dgrid-cell {
+        display: table-cell; 
+        border-right: 1px solid #bbb;
+}
 .dgrid-cell.field-family_id {
     width: 12%;
 }
