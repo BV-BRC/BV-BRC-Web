@@ -89,6 +89,8 @@ define([
 
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
 			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+
+			this.setActivePanelState();
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
@@ -112,6 +114,8 @@ define([
 				return;
 			}
 			switch(active){
+				case "overview":
+					break;
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
@@ -143,7 +147,7 @@ define([
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			//console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
 			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
