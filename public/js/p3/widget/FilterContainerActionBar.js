@@ -98,17 +98,43 @@ define([
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			// console.log("FilterContainerActionBar setStateAttr: ",state);
+			//console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
-		onSetState: function(attr, oldVal, state){
-			// console.log("FilterContainerActionBar onSetState: ", state)
+		onSetState: function(attr, oldState, state){
+			//console.log("FilterContainerActionBar onSetState: ", state)
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			// console.log("FilterContainerActionBar onSetState() ", state);
-			this._refresh();
+
+/*
+			if (oldState){
+				console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			}else{
+				console.log("    OLD: No State");
+			}
+			console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
+*/
+			var ov,nv;
+			if (oldState){
+				ov = oldState.search;
+				if (oldState.hashParams && oldState.hashParams.filter){
+					ov = ov + oldState.hashParams.filter;
+				}
+			}
+
+			if (state){
+				nv = state.search;
+				if (state.hashParams && state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+			}
+
+			if (ov!=nv){
+				this._refresh();
+			}
 		},
 
 		_refresh: function(){
@@ -292,7 +318,7 @@ define([
 			}, toggleFilters, true, this.rightButtons);
 
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
-				console.log("FilterContainerActionBar minimized: ", minimized)
+				//console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
 					this.setButtonText("ToggleFilters", "SHOW FILTERS")
 				}else{
@@ -744,7 +770,7 @@ define([
 			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
-			this.onSetState('state', "", this.state);
+			this.onSetState('state', "", this.state || {});
 
 			if(this.currentContainerWidget){
 				this.currentContainerWidget.resize();

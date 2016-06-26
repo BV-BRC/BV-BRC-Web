@@ -45,11 +45,12 @@ define([
 
 		_setTaxon_idAttr: function(id){
 			// console.log("*** SET TAXON ID ", id);
+			if (id && this.taxon_id==id){
+				//console.log("Taxon ID Already set, skip");
+				return;
+			}
 			this.taxon_id = id;
 
-			var state = this.state || {};
-
-			state.taxon_id = id;
 
 			// if (id && this.taxontree){
 			// 	console.log("set taxontree query: ", "eq(taxon_id," + id + ")");
@@ -75,8 +76,9 @@ define([
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},
-		onSetState: function(attr, oldVal, state){
-			console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
+		onSetState: function(attr, oldState, state){
+			//console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
+			oldState = oldState || {};
 			if(!state){
 				throw Error("No State Set");
 				// return;
@@ -84,64 +86,100 @@ define([
 
 			var parts = state.pathname.split("/");
 
-			this.set("taxon_id", parts[parts.length - 1]);
-			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
+
+			state.taxon_id = parts[parts.length - 1]
+			this.set('taxon_id', state.taxon_id);
+	
+			// this.set("taxon_id", parts[parts.length - 1]);
+			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
 
 			if(state.search){
-				console.log("GENERATE ENGLISH QUERY for ", state.search);
+				//console.log("GENERATE ENGLISH QUERY for ", state.search);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
-				state.search = s + "&" + state.search;
+				var sx = [s];
+				if (state.search && state.search!=s) { sx.push(state.search) }
+				state.search = sx.join("&");
+				if (this.taxonomy){
+					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+				}
 
 			}else{
 				state.search = s;
 				this.filteredTaxon = false;
+				if (this.taxonomy){
+					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+				}
 			}
-			//console.log("GenomeList onSetState()");
-			this.inherited(arguments);
-			// this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// var activeTab = this[active];
-			// switch(active){
-			// 	case "genomes":
-			// 		activeTab.set("state", lang.mixin({}, this.state, {search: "eq(taxon_lineage_ids," + this.taxon_id + ")"}));
-			// 		break;
-			// }
+
+			if(!state.genome_ids){
+				 //console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
+				if(state.search == oldState.search){
+					//console.log("		Same Search")
+					//console.log("		OLD Genome_IDS: ", oldState.genome_ids);
+					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids}))
+					return;
+				}else{
+					this.set("query", state.search);
+				}
+			}else if(state.search != oldState.search){
+				this.set("query", state.search);
+			}
+
+			if(!state.hashParams){
+				if(oldState.hashParams && oldState.hashParams.view_tab){
+					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
+				}else{
+					state.hashParams = {"view_tab": this.defaultTab}
+				}
+			}
+			// console.log("    Check for Hash Params: ", state.hashParams);
+			if(state.hashParams){
+				if(!state.hashParams.view_tab){
+					state.hashParams.view_tab = this.defaultTab;
+				}
+
+				// console.log("Looking for Active Tab: ", state.hashParams.view_tab);
+
+				if(this[state.hashParams.view_tab]){
+					var vt = this[state.hashParams.view_tab];
+					// console.log("Found View Tab")
+					vt.set("visible", true);
+					// console.log("Select View Tab")
+					this.viewer.selectChild(vt);
+				}
+			}
+
+			this.setActivePanelState();
 		},
 
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				console.log("ACTIVE TAB NOT FOUND: ", active);
+				console.warn("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
-					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")"}));
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "phylogeny":
 				case "genomes":
-					// console.log("setting ", active, " state: ", this.state);
-					activeTab.set("state", this.state);
-					break;
-				case "proteinFamilies":
-					// console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
-					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({},this.state));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)});
 					}
+					//console.log("Active Query State:", activeQueryState)
 
 					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
@@ -176,7 +214,6 @@ define([
 		},
 
 		onSetAnchor: function(evt){
-			console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
 			var f = evt.filter;
@@ -219,7 +256,7 @@ define([
 					return key + "=" + hp[key]
 				}, this).join("&");
 
-			console.log(" NavigateTo: ", l);
+			//console.log(" NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});

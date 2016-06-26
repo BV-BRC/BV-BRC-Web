@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/PathwayMemoryStore"
+	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore){
+			PathwayMemoryStore,domConstruct,topic){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -46,31 +46,16 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			// console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			//console.log("PathwaysContainer set STATE.  state: ", state, " First View: ", this._firstView);
 
 			if(!state){
 				return;
 			}
 
-			if(this.pathwaysGrid){
-				//console.log("Set PathwaysGrid State: ", state);
-				this.pathwayStore.set('state', state);
-				this.pathwaysGrid.set('state', state);
-			}
 
-			if(this.ecNumbersGrid){
-				//console.log("Set PathwaysGrid State: ", state);
-				this.ecNumberStore.set('state', state);
-				this.ecNumbersGrid.set('state', state);
+			if (this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView ){
+				this.tabContainer.selectedChildWidget.set('state', state);
 			}
-
-			if(this.genesGrid){
-				//console.log("Set PathwaysGrid State: ", state);
-				this.geneStore.set('state', state);
-				this.genesGrid.set('state', state);
-			}
-
-			// console.log("call _set(state) ", state);
 
 			// this._set("state", state);
 		},
@@ -83,18 +68,15 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 
-				if(this.pathwaysGrid){
-					this.pathwaysGrid.set("visible", true)
-				}
+				// if(this.pathwaysGrid){
+				// 	this.pathwaysGrid.set("visible", true)
+				// }
 
-				if(this.ecNumbersGrid){
-					this.ecNumbersGrid.set("visible", true)
-				}
-
-				if(this.genesGrid){
-					this.genesGrid.set("visible", true)
-				}
 			}
+		},
+
+		selectChild: function(child){
+			topic.publish(this.id + "-selectChild", child); 
 		},
 
 		onFirstView: function(){
@@ -104,15 +86,21 @@ define([
 			//console.log("PathwaysContainer onFirstView()");
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
+
 			var tabController = new StackController({
 				containerId: this.id + "_TabContainer",
 				region: "top",
 				"class": "TextTabButtons"
 			});
 
-			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({type: "pathway", state: this.state});
-			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber", state: this.state});
-			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes", state: this.state});
+
+			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({
+				type: "pathway",
+			});
+
+
+			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber"});
+			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes"});
 
 			this.pathwaysGrid = new PathwaysGridContainer({
 				title: "Pathways",
@@ -129,71 +117,74 @@ define([
 				visible: true
 			});
 
+
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.pathwaysGrid);
 
-			setTimeout(lang.hitch(this,function(){
-				this.ecNumbersGrid = new PathwaysGridContainer({
-					title: "EC Numbers",
-					type: "ec_number",
-					state: this.state,
-					apiServer: this.apiServer,
-					defaultFilter: this.defaultFilter,
-					facetFields: ["annotation", "pathway_class"],
-					columns: {
-						idx: {label: 'Index', field:'idx', hidden: true},
-						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-						pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-						annotation: {label: 'Annotation', field: 'annotation'},
-						ec_number: {label: 'EC Number', field: 'ec_number'},
-						description: {label: 'Description', field: 'ec_description'},
-						genome_count: {label: 'Genome Count', field: 'genome_count'},
-						gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
-					},
-					store: ecNumberStore,
-					enableFilterPanel: true,
-					queryOptions: {
-						sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
-					}
-				});
+			this.ecNumbersGrid = new PathwaysGridContainer({
+				title: "EC Numbers",
+				type: "ec_number",
+				// state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation", "pathway_class"],
+				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					description: {label: 'Description', field: 'ec_description'},
+					genome_count: {label: 'Genome Count', field: 'genome_count'},
+					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+				},
+				store: ecNumberStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
+				}
+			});
 
-				this.genesGrid = new PathwaysGridContainer({
-					title: "Genes",
-					type: "gene",
-					state: this.state,
-					apiServer: this.apiServer,
-					defaultFilter: this.defaultFilter,
-					facetFields: ["annotation", "pathway_class"],
-					columns: {
-						idx: {label: 'Index', field:'idx', hidden: true},
-						feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
-						genome_name: {label: 'Genome Name', field: 'genome_name'},
-						accession: {label: 'Accession', field: 'accession', hidden: true},
-						patric_id: {label: 'PATRIC ID', field: 'patric_id'},
-						alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
-						gene: {label: 'Gene', field: 'gene'},
-						product: {label: 'Product', field: 'product'},
-						annotation: {label: 'Annotation', field: 'annotation'},
-						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-						ec_number: {label: 'EC Number', field: 'ec_number'},
-						ec_description: {label: 'EC Description', field: 'ec_description'}
-					},
-					store: geneStore,
-					enableFilterPanel: true,
-					queryOptions: {
-						sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
-					}
-				});
+			this.genesGrid = new PathwaysGridContainer({
+				title: "Genes",
+				type: "gene",
+				// state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation", "pathway_class"],
+				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
+					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+					genome_name: {label: 'Genome Name', field: 'genome_name'},
+					accession: {label: 'Accession', field: 'accession', hidden: true},
+					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+					gene: {label: 'Gene', field: 'gene'},
+					product: {label: 'Product', field: 'product'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					ec_description: {label: 'EC Description', field: 'ec_description'}
+				},
+				store: geneStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
+				}
+			});
 
-				
-				this.tabContainer.addChild(this.ecNumbersGrid);
-				this.tabContainer.addChild(this.genesGrid);
-			}),10000);
 			
-			this.watch("state", lang.hitch(this, "onSetState"));
+			this.tabContainer.addChild(this.ecNumbersGrid);
+			this.tabContainer.addChild(this.genesGrid);
+
+			
+			topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
+				page.set('state', this.state)
+			}));
+
 			this._firstView = true;
 		}
 

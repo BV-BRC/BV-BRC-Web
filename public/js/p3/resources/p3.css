@@ -573,6 +573,7 @@ table {
 	width: 100%;
 }
 
+.menuHeader,
 .section-title {
 	background-color:#34698e;
 	color: #efefef;
@@ -583,6 +584,10 @@ table {
 	border-bottom-right-radius: 25px;
 	box-shadow: 2px 2px 2px #555;
 	margin-bottom:8px;
+}
+
+.menuHeader {
+	padding-left: 4px;
 }
 
 .feature_box {

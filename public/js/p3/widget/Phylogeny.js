@@ -68,8 +68,6 @@ define([
 		},
 
 		onSetTaxonId: function(attr, oldVal, taxonId){
-			console.log("taxonId: ", taxonId);
-
 			request.get(PathJoin(this.apiServer, "taxonomy", taxonId), {
 				headers: {accept: "application/newick"}
 			}).then(lang.hitch(this, function(newick){
