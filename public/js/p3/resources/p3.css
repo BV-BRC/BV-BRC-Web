@@ -3,18 +3,7 @@
 @import url("../../dojox/widget/Toaster/Toaster.css");
 
 /* CSS for JBrowse */
-/*
-@import url("../../jbrowse.repo/main.css");
-@import url("../../jbrowse.repo/sequence.css");
-@import url("../../jbrowse.repo/menubar.css");
-@import url("../../jbrowse.repo/icons.css");
-@import url("../../jbrowse.repo/tristate.css");
-@import url("../../jbrowse.repo/file_dialog.css");
-@import url("../../jbrowse.repo/combination_tracks.css");
-@import url("../../jbrowse.repo/export_dialog.css");
-*/
 @import url("./jbrowse/main.css");
-
 
 @import url("Footer.css");
 @import url("Header.css");
