@@ -848,6 +848,7 @@ define("p3/widget/GenomeBrowser", [
 
 				this._browser = new Browser(config)
 			}else{
+
 				console.log("Browser Already Exists");
 			}
 		},
@@ -872,12 +873,16 @@ define("p3/widget/GenomeBrowser", [
 		},
 
 		onFirstView: function(){
+			console.log("GenomeBrowser onFirstView()")
 			if(this._firstView){
 				return;
 			}
-			if(!this._browser){
-				this._browser = new Browser(this.jbrowseConfig)
-			}
+			console.log("GenomeBrowser onFirstView()")
+
+			// if(!this._browser){
+			// 	console.log("Create GenomeBrowser: ", this.jbrowseConfig);
+			// 	this._browser = new Browser(this.jbrowseConfig)
+			// }
 		},
 
 		resize: function(changeSize, resultSize){

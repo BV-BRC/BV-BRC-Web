@@ -19,13 +19,11 @@ define("p3/widget/viewer/TabViewerBase", [
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
 		onSetState: function(attr, oldState, state){
-			// console.log("TabViewerBase onSetState()", state);
 			if(!state){
 				return;
 			}
 
 			// console.log("    Cal setActivePanelState");
-			this.setActivePanelState();
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
 					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
@@ -51,6 +49,7 @@ define("p3/widget/viewer/TabViewerBase", [
 					console.log("No view-tab supplied in State Object");
 				}
 			}
+
 		},
 
 		setActivePanelState: function(){
