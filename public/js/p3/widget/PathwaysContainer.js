@@ -95,7 +95,7 @@ define([
 
 
 			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({
-				type: "pathway",
+				type: "pathway"
 			});
 
 
