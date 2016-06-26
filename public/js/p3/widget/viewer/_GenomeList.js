@@ -25,7 +25,7 @@ define([
 			if (query && (query == this.query)){
 				return;
 			}
-			//console.log("GenomeList SetQuery: ", query, this);
+			console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
 			// if(!this._started){

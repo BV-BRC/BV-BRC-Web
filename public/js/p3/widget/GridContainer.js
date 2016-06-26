@@ -155,6 +155,7 @@ define([
 			}
 
 			if(this.enableFilterPanel && this.filterPanel){
+				console.log("GridContainer call filterPanel set state: ", state)
 				this.filterPanel.set("state", lang.mixin({},state));
 			}
 			this.set("query", q.join("&"));
@@ -169,7 +170,7 @@ define([
 
 			this.query = query;
 			// this.query = query || "?keyword(*)"
-			// console.log("Query Set: ", query);
+			console.log("Query Set: ", query);
 
 			if(this.grid){
 				// console.log("    " + this.id + " Found Grid.")

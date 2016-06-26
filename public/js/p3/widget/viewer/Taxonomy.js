@@ -45,17 +45,11 @@ define([
 
 		_setTaxon_idAttr: function(id){
 			// console.log("*** SET TAXON ID ", id);
-			if (id && this.taxon_id==id){
+			if (id && this.taxon_id==id ){
 				//console.log("Taxon ID Already set, skip");
 				return;
 			}
 			this.taxon_id = id;
-
-
-			// if (id && this.taxontree){
-			// 	console.log("set taxontree query: ", "eq(taxon_id," + id + ")");
-			// 	this.taxontree.set('query',"eq(taxon_id," + id + ")")
-			// }
 
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", id), {
 				headers: {
@@ -69,9 +63,13 @@ define([
 		},
 
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
+			console.log("onSetTaxonomy: ", taxonomy);
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.overview.set('taxonomy', taxonomy);
+			this.taxonomy = this.state.taxonomy=taxonomy;
+			// this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
+			this.setActivePanelState();
+			// this.overview.set('taxonomy', taxonomy);
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
@@ -92,18 +90,19 @@ define([
 	
 			// this.set("taxon_id", parts[parts.length - 1]);
 			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
-
+			state.search = state.search.replace(s,"");
 			if(state.search){
-				//console.log("GENERATE ENGLISH QUERY for ", state.search);
+				console.log("GENERATE ENGLISH QUERY for ", state.search, s);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
 				var sx = [s];
 				if (state.search && state.search!=s) { sx.push(state.search) }
-				state.search = sx.join("&");
+				state.search = sx.join("&").replace("&&","&");
 				if (this.taxonomy){
 					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
 				}
 
 			}else{
+				console.log("USE state.search: ", s);
 				state.search = s;
 				this.filteredTaxon = false;
 				if (this.taxonomy){
@@ -111,11 +110,27 @@ define([
 				}
 			}
 
+			if (!state.taxonomy && state.taxon_id){
+				console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
+				if (oldState && oldState.taxon_id){
+					console.log("oldState.taxon_id: ", oldState.taxon_id)
+					
+					if ((state.taxon_id == oldState.taxon_id)){
+						if (oldState.taxonomy || this.taxonomy){
+							console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
+							state.taxonomy = oldState.taxonomy || this.taxonomy;
+						}else{
+							console.log("oldState missing Taxonomy");
+						}
+					}
+				}
+			}
+
 			if(!state.genome_ids){
-				 //console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
+				 console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
 				if(state.search == oldState.search){
-					//console.log("		Same Search")
-					//console.log("		OLD Genome_IDS: ", oldState.genome_ids);
+					console.log("		Same Search")
+					console.log("		OLD Genome_IDS: ", oldState.genome_ids);
 					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids}))
 					return;
 				}else{
@@ -154,6 +169,9 @@ define([
 
 		setActivePanelState: function(){
 
+
+			console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
+
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 
 			var activeTab = this[active];
@@ -163,6 +181,11 @@ define([
 				return;
 			}
 			switch(active){
+				case "overview":
+					if (this.state && this.state.genome_ids){
+						activeTab.set('state', lang.mixin({}, this.state,{search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}));
+					}
+					break;
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
 					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")", hashParams: lang.mixin({},this.state.hashParams)}));
