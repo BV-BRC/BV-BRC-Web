@@ -104,7 +104,7 @@ define([
 			this.state = state;
 
 			if (ov!=nv){
-				console.log("New State in Pathways Memory Grid: ", nv);
+				//console.log("New State in Pathways Memory Grid: ", nv);
 			
 				if(!this.store){
 					this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
