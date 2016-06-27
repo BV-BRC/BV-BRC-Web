@@ -11,20 +11,18 @@ define([
 		apiServer: window.App.dataServiceURL,
 		idProperty: "pathway_id",
 		state: null,
-
+		query: {},
 		constructor: function(options){
 			this._loaded = false;
 			if(options.apiServer){
 				this.apiServer = options.apiServer;
 			}
+			this.watch("state", lang.hitch(this,"onSetState"));
 		},
 
-		reload: function(){
-			var self = this;
-			delete self._loadingDeferred;
-			self._loaded = false;
-			self.loadData();
-			self.set("refresh");
+		clear: function(){
+			delete this._loadingDeferred;
+			this._loaded = false;
 		},
 
 		query: function(query, opts){
@@ -58,6 +56,11 @@ define([
 			}
 		},
 
+		onSetState: function(attr,oldState,state){
+			if (!state || !state.feature_ids || state.feature_ids.length<1){ return;}
+			this.clear();
+		},
+
 		loadData: function(){
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
@@ -66,8 +69,7 @@ define([
 			var _self = this;
 
 			// console.warn(this.state.genome_ids, !this.state.genome_ids);
-			if(!this.state.feature_ids){
-				// console.log("No Genome IDS, use empty data set for initial store");
+			if(!this.state || !this.state.feature_ids){
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -81,6 +83,16 @@ define([
 				return def.promise;
 			}
 
+
+			var postData =  {
+				q: "feature_id:(" + _self.state.feature_ids.join(" OR ") + ")",
+				fl: "pathway_id,pathway_name,feature_id,genome_id",
+				rows: 25000,
+				facet: true,
+				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
+			}
+
+
 			this._loadingDeferred = when(request.post(_self.apiServer + '/pathway/', {
 				handleAs: 'json',
 				headers: {
@@ -89,13 +101,7 @@ define([
 					'X-Requested-With': null,
 					'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 				},
-				data: {
-					q: "feature_id:(" + _self.state.feature_ids.join(" OR ") + ")",
-					fl: "pathway_id,pathway_name,feature_id,genome_id",
-					rows: 25000,
-					facet: true,
-					'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
-				}
+				data: postData
 			}), function(response){
 
 				var features = response.response.docs;
@@ -193,7 +199,6 @@ define([
 						pathways: Object.keys(pathwayIdMap).length
 					};
 					// publish summary
-					console.log(summary);
 
 					_self.setData(data);
 					_self._loaded = true;

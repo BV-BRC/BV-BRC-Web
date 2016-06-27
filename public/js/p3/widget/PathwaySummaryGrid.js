@@ -90,12 +90,11 @@ define([
 		},
 		_setState: function(state){
 			if(!this.store){
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, lang.mixin({},state)));
 			}else{
 				this.store.set('state', state);
-
-				this.refresh();
 			}
+			this.refresh();
 		},
 		createStore: function(server, token, state){
 
