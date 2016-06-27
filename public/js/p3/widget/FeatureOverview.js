@@ -27,7 +27,7 @@ define([
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-			console.log("Set Feature", feature);
+			// console.log("Set Feature", feature);
 
 			this.createSummary(feature);
 			this.getSummaryData();
@@ -58,6 +58,38 @@ define([
 				domConstruct.create("td", {innerHTML: row.na_length}, tr);
 				domConstruct.create("td", {innerHTML: row.aa_length || '-'}, tr);
 				domConstruct.create("td", {innerHTML: row.product || '(feature type: ' + row.feature_type + ')'}, tr);
+			});
+		},
+		_setMappedFeatureListAttr: function(summary){
+
+			domConstruct.empty(this.idMappingList);
+			var span = domConstruct.create("span", {innerHTML: "<b>UniProt</b> :"}, this.idMappingList);
+
+			summary['accessions'].forEach(function(d){
+				var accession = domConstruct.create("a", {
+					href: "http://www.uniprot.org/uniprot/" + d,
+					target: "_blank",
+					innerHTML: d
+				}, span);
+				domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), accession, "after");
+			});
+
+			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
+			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
+
+			var table = domConstruct.create("table", {class: "hidden"}, this.idMappingList);
+			summary['ids'].forEach(function(id){
+				var tr = domConstruct.create('tr', {}, table);
+				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
+				domConstruct.create('td', {innerHTML: id['id_value']}, tr);
+			});
+
+			on(mappedIds, "click", function(){
+				if(domClass.contains(table, "hidden")){
+					domClass.remove(table, "hidden");
+				}else{
+					domClass.add(table, "hidden");
+				}
 			});
 		},
 		_setFunctionalPropertiesAttr: function(feature){
@@ -94,15 +126,35 @@ define([
 			// TODO: implement protein interaction
 		},
 		getSummaryData: function(){
-			// getting uniprot mapping
-			if(this.feature.gi != null){
-				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
-					handleAs: "json",
-					headers: {"accept": "application/solr+json"}
-				}).then(lang.hitch(this, function(data){
-					//console.log("Uniprot Accessions: ", data);
 
-					// TODO: process uniprot mapping
+			if(this.feature.gi){
+				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)"), {
+					handleAs: "json",
+					headers: {
+						'Accept': "application/json",
+						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': window.App.authorizationToken || ""
+					}
+				}).then(lang.hitch(this, function(data){
+
+					var uniprotKbAccessions = data.map(function(d){
+						return d.uniprotkb_accession;
+					});
+
+					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(id_type,id_value)&limit(25000)"), {
+						handleAs: "json",
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': window.App.authorizationToken || ""
+						}
+					}).then(lang.hitch(this, function(data){
+						if(data.length === 0) return;
+
+						this.set("mappedFeatureList", {accessions: uniprotKbAccessions, total: data.length, ids: data});
+					}));
 				}));
 			}
 
@@ -113,7 +165,7 @@ define([
 					headers: {"Accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
 
-					if (data.length === 0) return;
+					if(data.length === 0) return;
 					var relatedFeatures = data.response.docs;
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
@@ -131,17 +183,17 @@ define([
 
 				this.proteinIdList.innerHTML = '';
 				if(feature.protein_id != null){
-					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.protein_id + '</span>';
+					this.proteinIdList.innerHTML += '<b>RefSeq</b>: <a href="https://www.ncbi.nlm.nih.gov/protein/' + feature.protein_id + '" target="_blank">' + feature.protein_id + '</a>';
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
+				this.featureBoxNode.innerHTML = '<div class="gene_symbol">' + (feature.gene || ' ') + '</div>';
 				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}
-				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
+				this.featureBoxNode.innerHTML += '<div class="feature_type">' + this.feature.feature_type + '</div>';
 
 			}else{
 				console.log("Invalid Feature: ", feature);

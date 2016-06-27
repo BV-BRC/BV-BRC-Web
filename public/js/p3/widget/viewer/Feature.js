@@ -27,7 +27,7 @@ define([
 				return;
 			}
 
-			if (this.feature_id == id){
+			if(this.feature_id == id){
 				return;
 			}
 
@@ -48,10 +48,10 @@ define([
 
 		},
 
-		setActivePanelState:function(){
+		setActivePanelState: function(){
 			var activeQueryState;
 
-			if (this.state.feature_id){
+			if(this.state.feature_id){
 				activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + this.state.feature_id + ")"});
 			}
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
@@ -68,14 +68,14 @@ define([
 				case "overview":
 				case "transcriptomics":
 				case "correlatedGenes":
-					if (this.state && this.state.feature){
+					if(this.state && this.state.feature){
 						// console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4));
-						activeTab.set("state", lang.mixin({},this.state));
+						activeTab.set("state", lang.mixin({}, this.state));
 					}
-					
+
 					break;
 				default:
-					if (activeQueryState){
+					if(activeQueryState){
 						// console.log("Set Active Query State");
 						activeTab.set("state", activeQueryState);
 					}
@@ -92,14 +92,14 @@ define([
 				return;
 			}
 
-			if (state && state.feature_id && !state.feature){
-				console.log("No state.feature.  state.feature_id: ", state.feature_id);
-				if (oldState && oldState.feature_id){
-					console.log("oldState.feature_id: ", oldState.feature_id)
-					
-					if ((state.feature_id == oldState.feature_id)){
-						if (oldState.feature || this.feature){
-							console.log("oldState Feature: ", oldState.feature||this.feature);
+			if(state && state.feature_id && !state.feature){
+				// console.log("No state.feature.  state.feature_id: ", state.feature_id);
+				if(oldState && oldState.feature_id){
+					// console.log("oldState.feature_id: ", oldState.feature_id)
+
+					if((state.feature_id == oldState.feature_id)){
+						if(oldState.feature || this.feature){
+							// console.log("oldState Feature: ", oldState.feature||this.feature);
 							this.state.feature = state.feature = oldState.feature || this.feature;
 						}else{
 							console.log("oldState missing Featture");
@@ -128,7 +128,7 @@ define([
 		},
 
 		_setFeatureAttr: function(feature){
-			console.log("_setFeatureAttr: ", feature);
+			// console.log("_setFeatureAttr: ", feature);
 			var state = this.state || {};
 
 			this.feature = this.state.feature = feature;
