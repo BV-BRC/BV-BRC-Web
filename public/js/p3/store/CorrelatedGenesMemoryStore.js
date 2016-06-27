@@ -94,11 +94,11 @@ define([
 		},
 
 		loadData: function(){
-			var _self = this;
-
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
+
+			var _self = this;
 			var state = this.state || {};
 
 			if(!state.feature_id){
@@ -111,7 +111,7 @@ define([
 				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
 					this._loaded = true;
-					def.resolve(true);
+					// def.resolve(true);
 				}), 0);
 				return def.promise;
 			}

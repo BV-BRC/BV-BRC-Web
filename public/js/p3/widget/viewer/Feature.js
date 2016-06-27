@@ -57,7 +57,7 @@ define([
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
-			console.log("Active Tab in Feature: ", active, activeTab);
+			// console.log("Active Tab in Feature: ", active, activeTab);
 			switch(active){
 				// case "overview":
 				// case "correlatedGenes":
@@ -69,14 +69,14 @@ define([
 				case "transcriptomics":
 				case "correlatedGenes":
 					if (this.state && this.state.feature){
-						console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4))
+						// console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4));
 						activeTab.set("state", lang.mixin({},this.state));
 					}
 					
 					break;
 				default:
 					if (activeQueryState){
-						console.log("Set Active Query State");
+						// console.log("Set Active Query State");
 						activeTab.set("state", activeQueryState);
 					}
 					break;
@@ -177,8 +177,7 @@ define([
 			});
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
-				id: this.viewer.id + "_correlatedGenes",
-				state: this.state
+				id: this.viewer.id + "_correlatedGenes"
 			});
 
 			this.viewer.addChild(this.overview);
