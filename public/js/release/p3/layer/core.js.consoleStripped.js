@@ -4971,8 +4971,8 @@ define([
 			});
 
 			Topic.subscribe("/navigate", function(msg){
-				 0 && console.log("app.js handle /navigate msg");
-				 0 && console.log("msg.href length: ", msg.href.length)
+				// 0 && console.log("app.js handle /navigate msg");
+				// 0 && console.log("msg.href length: ", msg.href.length)
 				if (!msg || !msg.href ){
 					 0 && console.error("Missing navigation message");
 					return;
@@ -25512,6 +25512,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -58503,7 +58504,9 @@ define([
 define([
 	"dojo/_base/declare", "./_GenomeList"
 ], function(declare, GenomeList){
-	return declare([GenomeList], {});
+	return declare([GenomeList], {
+		defaultTab: "genomes"
+	});
 });
 
 },
@@ -58529,11 +58532,14 @@ define([
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
+		defaultTab: "overview",
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes.<br> When you are satisfied, click ANCHOR FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
-			//  0 && console.log(this.id, " _setQueryAttr: ", query, this);
-			//if (!query) {  0 && console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-			// 0 && console.log("GenomeList SetQuery: ", query, this);
+			if (!query) {  0 && console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
+			if (query && (query == this.query)){
+				return;
+			}
+			 0 && console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
 			// if(!this._started){
@@ -58545,7 +58551,6 @@ define([
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			//  0 && console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -58575,13 +58580,14 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//  0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			 // 0 && console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			if(!state.genome_ids){
-				//  0 && console.log("	NO Genome_IDS")
+				 // 0 && console.log("	NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
 				if(state.search == oldVal.search){
-					//  0 && console.log("		Same Search")
-					//  0 && console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					// 0 && console.log("		Same Search")
+					// 0 && console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					// 0 && console.log("INTERNAL STATE UPDATE")
 					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
@@ -58592,13 +58598,13 @@ define([
 				this.set("query", state.search);
 			}
 
-			// // 0 && console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "genomes"){
-				this.setActivePanelState()
-			}
 
 			this.inherited(arguments);
+
+			// // 0 && console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : this.defaultTab;
+
+			this.setActivePanelState();
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
@@ -58612,8 +58618,8 @@ define([
 
 		setActivePanelState: function(){
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			//  0 && console.log("Active: ", active, "state: ", this.state);
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
+			// 0 && console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -58622,21 +58628,23 @@ define([
 				return;
 			}
 			switch(active){
+				case "overview":
+					break;
 				case "genomes":
-					activeTab.set("state", this.state);
+					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "proteinFamilies":
 					//  0 && console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
-					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}))
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						//  0 && console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// 0 && console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						//  0 && console.log("gidQueryState: ", gidQueryState);
 						//  0 && console.log("Active Query State: ", activeQueryState);
 
@@ -58653,7 +58661,8 @@ define([
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			//  0 && console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			 0 && console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
 		},
@@ -58852,13 +58861,11 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
 		onSetState: function(attr, oldState, state){
-			//  0 && console.log("TabViewerBase onSetState()", state);
 			if(!state){
 				return;
 			}
 
 			//  0 && console.log("    Cal setActivePanelState");
-			this.setActivePanelState();
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
 					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
@@ -58884,6 +58891,7 @@ define([
 					 0 && console.log("No view-tab supplied in State Object");
 				}
 			}
+
 		},
 
 		setActivePanelState: function(){
@@ -58905,6 +58913,7 @@ define([
 		}
 	});
 });
+
 },
 'p3/widget/viewer/Base':function(){
 define([
@@ -58956,8 +58965,8 @@ define([
 		},
 
 		onUpdateHash: function(evt){
-			 0 && console.log("OnUpdateHash: ", evt);
-			 0 && console.log("Current State: ", this.state, " hash params: ", this.state.hashParams);
+			// 0 && console.log("OnUpdateHash: ", evt);
+			// 0 && console.log("Current State: ", this.state, " hash params: ", this.state.hashParams);
 			if(!this.state){
 				this.state = {}
 			}
@@ -58967,7 +58976,7 @@ define([
 			}
 
 			if(evt.hashParams){
-				 0 && console.log("EVT.hashParams: ", evt.hashParams);
+				// 0 && console.log("EVT.hashParams: ", evt.hashParams);
 				this.state.hashParams = evt.hashParams;
 			}else if(evt.hashProperty == "view_tab"){
 				this.state.hashParams = {
@@ -58986,7 +58995,7 @@ define([
 				}, this).filter(function(x){
 					return !!x;
 				}).join("&");
-			 0 && console.log("onUpdateHash. nav to: ", l);
+			// 0 && console.log("onUpdateHash. nav to: ", l);
 
 			Topic.publish("/navigate", {href: l});
 		},
@@ -59093,7 +59102,7 @@ define([
 			//              Called whenever one of my child buttons is pressed in an attempt to select a page
 			// tags:
 			//              private
-			 0 && console.log("Button Click: ", page.id);
+			// 0 && console.log("Button Click: ", page.id);
 
 			var button = this.pane2button(page.id);
 
@@ -59104,29 +59113,29 @@ define([
 				//In case the user clicked the checked button, keep it in the checked state because it remains to be the selected stack page.
 				button.set('checked', true);
 			}else if(this._currentChild){
-				 0 && console.log("_setPrevState[" + this._currentChild.id + "] ", this._currentChild.state);
+				// 0 && console.log("_setPrevState[" + this._currentChild.id + "] ", this._currentChild.state);
 				this._prevState[this._currentChild.id] = {view_tab: this._currentChild.id.replace(this.containerId + "_", "")};
 				if(this._currentChild.state && this._currentChild.state.hashParams){
 					Object.keys(this._currentChild.state.hashParams).filter(function(x){
-						 0 && console.log(" Filter Key: ", x);
+						// 0 && console.log(" Filter Key: ", x);
 						var preserve = ["view_tab", "filter"];
-						 0 && console.log("  found: ", preserve.indexOf(x) >= 0)
+						// 0 && console.log("  found: ", preserve.indexOf(x) >= 0)
 						return (preserve.indexOf(x) >= 0)
 					}, this).forEach(function(x){
-						 0 && console.log("Set ", x, " on ", this._prevState[this._currentChild.id]);
+						// 0 && console.log("Set ", x, " on ", this._prevState[this._currentChild.id]);
 						this._prevState[this._currentChild.id][x] = this._currentChild.state.hashParams[x];
 					}, this)
 				}
-				 0 && console.log("Updated Prev State: ", this._prevState[this._currentChild.id]);
+				// 0 && console.log("Updated Prev State: ", this._prevState[this._currentChild.id]);
 
 			}
 			var container = registry.byId(this.containerId);
 
 			var pageId = page.id.replace(this.containerId + "_", "")
 
-			 0 && console.log("Select Child - pageId: ", pageId, " page.id: ", page.id, " ContainerId: ", this.containerId, " Page State: ", page.state);
+			// 0 && console.log("Select Child - pageId: ", pageId, " page.id: ", page.id, " ContainerId: ", this.containerId, " Page State: ", page.state);
 
-			 0 && console.log("Nav to: ", window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_", ""));
+			// 0 && console.log("Nav to: ", window.location.pathname + window.location.search + "#view_tab=" + page.id.replace(this.containerId + "_", ""));
 			var evt = {
 				bubbles: true,
 				cancelable: true
@@ -59134,7 +59143,7 @@ define([
 			// evt.hashProperty = this.hashProperty;
 			// evt.value = page.id.replace(this.containerId + "_", "");
 
-			 0 && console.log("Previous State: ", this._prevState, "page.id: ", page.id)
+			// 0 && console.log("Previous State: ", this._prevState, "page.id: ", page.id)
 
 			if(this._prevState[page.id]){
 				evt.hashParams = this._prevState[page.id];
@@ -59150,6 +59159,7 @@ define([
 
 	});
 });
+
 },
 'p3/widget/GenomeOverview':function(){
 define([
@@ -59181,6 +59191,10 @@ define([
 		},
 
 		"_setGenomeAttr": function(genome){
+			if (this.genome && (this.genome.genome_id == genome.genome_id)){
+				 0 && console.log("Genome ID Already Set")
+				return;
+			}
 			this.genome = genome;
 			this.createSummary(genome);
 
@@ -72812,6 +72826,7 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, query){
+			 0 && console.log("SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
@@ -73303,9 +73318,9 @@ define([
 		// },
 
 		onSetState: function(attr, oldState, state){
-			//  0 && console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			// 0 && console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
-				//  0 && console.log("!state in grid container; return;")
+				// 0 && console.log("!state in grid container; return;")
 				return;
 			}
 			var q = [];
@@ -73315,26 +73330,21 @@ define([
 			}
 
 			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
-				// filter set to false, no filtering
 
 			}else if(state.hashParams){
-				//  0 && console.log("   Found state.hashParams");
 				if(state.hashParams.filter){
-					//  0 && console.log("       Found state.hashParams.filter, using");
 					q.push(state.hashParams.filter)
 				}else if(!oldState && this.defaultFilter){
-					//  0 && console.log("       No original state, using default Filter");
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', state);
+					this.set('state', lang.mixin({},state));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
-					//  0 && console.log("       Found oldState with hashparams.filter, using");
 					state.hashParams.filter = oldState.hashParams.filter;
-					this.set('state', state);
+					this.set('state', lang.mixin({},state));
 					return;
 				}else if(this.defaultFilter){
 					state.hashParams.filter = this.defaultFilter;
-					this.set('state', state);
+					this.set('state', lang.mixin({},state));
 					return;
 				}else{
 					//  0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
@@ -73347,30 +73357,27 @@ define([
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
 					state.hashParams.filter = oldState.hashParams.filter
 				}
-				this.set('state', state);
+				this.set('state', lang.mixin({},state));
 				return;
 			}
-			//  0 && console.log(" Has Filter Panel?", !!this.filterPanel);
 
 			if(this.enableFilterPanel && this.filterPanel){
-				//  0 && console.log("    FilterPanel Found (in GridContainer): ", state);
-				this.filterPanel.set("state", state);
+				 0 && console.log("GridContainer call filterPanel set state: ", state)
+				this.filterPanel.set("state", lang.mixin({},state));
 			}
-			//  0 && console.log("setState query: ",q.join("&"), " state: ", state)
 			this.set("query", q.join("&"));
 
 		},
 		_setQueryAttr: function(query){
-			//  0 && console.log(this.id, " GridContainer setQuery: ", query, " hasGrid?", !!this.grid, " hasFilter? ", !!this.filter);
-			//  0 && console.log("    Query: ", query, "this.query: ", this.query)
-			// if(query == this.query){
-			// 0 && console.log("  Not Skipping Query Update (unchanged)");
-			// return;
-			// }
+			
+			if(query == this.query){
+				 0 && console.log("  Skipping Query Update (unchanged)");
+				return;
+			}
 
 			this.query = query;
 			// this.query = query || "?keyword(*)"
-			//  0 && console.log("Query Set: ", query);
+			 0 && console.log("Query Set: ", query);
 
 			if(this.grid){
 				//  0 && console.log("    " + this.id + " Found Grid.")
@@ -74078,11 +74085,15 @@ define([
 				 0 && console.error("Missing this.gridCtor in GridContainer");
 				return;
 			}
+			var state;
+			if (this.state){
+				state = lang.mixin({}, this.state,{hashParams: lang.mixin({},this.state.hashParams)});
+			}
 
 			var o = {
 				region: "center",
 				query: this.buildQuery(),
-				state: this.state,
+				state: state,
 				apiServer: this.apiServer,
 				visible: true
 			};
@@ -74095,8 +74106,6 @@ define([
 				o.queryOptions = this.queryOptions;
 			}
 
-		  0 && console.log("GridContainer onFirstView create Grid: ", o);
-		  0 && console.log("GridContainer onFirstView this.store: ", this.store);
 
 			if(this.store){
 				o.store = this.store
@@ -74213,7 +74222,6 @@ define([
 
 		},
 		startup: function(){
-			//  0 && console.log("GridContainer Startup()  isVisible: ", this.visible);
 			if(this._started){
 				return;
 			}
@@ -74221,7 +74229,7 @@ define([
 				this.onFirstView()
 			}
 			if(this.state){
-				this.set('state', this.state)
+				this.set('state', lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 			}
 			this.inherited(arguments)
 		}
@@ -74330,17 +74338,44 @@ define([
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			//  0 && console.log("FilterContainerActionBar setStateAttr: ",state);
+			// 0 && console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state);
 			//  0 && console.log("_setStateAttr query: ", state.search, this.query);
 			//  0 && console.log("_after _setStateAttr: ", state);
 		},
-		onSetState: function(attr, oldVal, state){
-			//  0 && console.log("FilterContainerActionBar onSetState: ", state)
+		onSetState: function(attr, oldState, state){
+			// 0 && console.log("FilterContainerActionBar onSetState: ", state)
+			if (!state) { return; }
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			//  0 && console.log("FilterContainerActionBar onSetState() ", state);
-			this._refresh();
+
+
+			if (oldState){
+				 0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			}else{
+				 0 && console.log("    OLD: No State");
+			}
+			 0 && console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
+
+			var ov,nv;
+			if (oldState){
+				ov = oldState.search;
+				if (oldState.hashParams && oldState.hashParams.filter){
+					ov = ov + oldState.hashParams.filter;
+				}
+			}
+
+			if (state){
+				nv = state.search;
+				if (state.hashParams && state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+			}
+
+			if (ov!=nv){
+				this._refresh();
+			}
 		},
 
 		_refresh: function(){
@@ -74524,7 +74559,7 @@ define([
 			}, toggleFilters, true, this.rightButtons);
 
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
-				 0 && console.log("FilterContainerActionBar minimized: ", minimized)
+				// 0 && console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
 					this.setButtonText("ToggleFilters", "SHOW FILTERS")
 				}else{
@@ -74793,6 +74828,8 @@ define([
 			//  0 && console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				//  0 && console.log("Facet Results: ",r);
+				if (!r) { return; 
+				}
 				w.set("data", r[category]);
 			}))
 			//  0 && console.log(" Facet Query: ", ffilter)
@@ -74891,7 +74928,9 @@ define([
 		},
 
 		_setQueryAttr: function(query){
-			//  0 && console.log("_setQueryAttr: ", query)
+			 0 && console.log("_setQueryAttr: ", query)
+			if (!query) {  0 && console.log("No Query, return;"); return; }
+			if (query == this.query){  0 && console.log("Facet Query Already Set"); return; }
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				//  0 && console.log("_setQuery got facets: ", facets)
@@ -74912,11 +74951,19 @@ define([
 					}
 				}, this);
 
+			}, function(err){
+				 0 && console.log("Error Getting Facets: ", err);
 			}));
 
 		},
 
 		getFacets: function(query, facetFields){
+			 0 && console.log("getFacets: ", query);
+			if (!query || query=="?"){
+				var def = new Deferred();
+				def.resolve(false);
+				return def.promise;
+			}
 			// var d; d=new Deferred(); d.resolve({}); return d.promise;
 
 			//  0 && console.log("getFacets: ", query, facetFields);
@@ -74963,7 +75010,7 @@ define([
 				return;
 
 			}, function(err){
-				 0 && console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
+				 0 && console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: "+ url);
 				return err;
 			}))
 		},
@@ -74976,7 +75023,9 @@ define([
 			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
-			this.onSetState('state', "", this.state);
+			if (this.state){
+				this.onSetState('state', "", this.state);
+			}
 
 			if(this.currentContainerWidget){
 				this.currentContainerWidget.resize();
@@ -76501,11 +76550,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/PathwayMemoryStore"
+	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore){
+			PathwayMemoryStore,domConstruct,topic){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -76545,31 +76594,16 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			//  0 && console.log("PathwaysContainer set STATE.  genome_ids: ", state.genome_ids, " state: ", state);
+			// 0 && console.log("PathwaysContainer set STATE.  state: ", state, " First View: ", this._firstView);
 
 			if(!state){
 				return;
 			}
 
-			if(this.pathwaysGrid){
-				// 0 && console.log("Set PathwaysGrid State: ", state);
-				this.pathwayStore.set('state', state);
-				this.pathwaysGrid.set('state', state);
-			}
 
-			if(this.ecNumbersGrid){
-				// 0 && console.log("Set PathwaysGrid State: ", state);
-				this.ecNumberStore.set('state', state);
-				this.ecNumbersGrid.set('state', state);
+			if (this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView ){
+				this.tabContainer.selectedChildWidget.set('state', state);
 			}
-
-			if(this.genesGrid){
-				// 0 && console.log("Set PathwaysGrid State: ", state);
-				this.geneStore.set('state', state);
-				this.genesGrid.set('state', state);
-			}
-
-			//  0 && console.log("call _set(state) ", state);
 
 			// this._set("state", state);
 		},
@@ -76582,18 +76616,15 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 
-				if(this.pathwaysGrid){
-					this.pathwaysGrid.set("visible", true)
-				}
+				// if(this.pathwaysGrid){
+				// 	this.pathwaysGrid.set("visible", true)
+				// }
 
-				if(this.ecNumbersGrid){
-					this.ecNumbersGrid.set("visible", true)
-				}
-
-				if(this.genesGrid){
-					this.genesGrid.set("visible", true)
-				}
 			}
+		},
+
+		selectChild: function(child){
+			topic.publish(this.id + "-selectChild", child); 
 		},
 
 		onFirstView: function(){
@@ -76603,15 +76634,21 @@ define([
 			// 0 && console.log("PathwaysContainer onFirstView()");
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
+
 			var tabController = new StackController({
 				containerId: this.id + "_TabContainer",
 				region: "top",
 				"class": "TextTabButtons"
 			});
 
-			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({type: "pathway", state: this.state});
-			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber", state: this.state});
-			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes", state: this.state});
+
+			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({
+				type: "pathway"
+			});
+
+
+			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber"});
+			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes"});
 
 			this.pathwaysGrid = new PathwaysGridContainer({
 				title: "Pathways",
@@ -76628,71 +76665,74 @@ define([
 				visible: true
 			});
 
+
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.pathwaysGrid);
 
-			setTimeout(lang.hitch(this,function(){
-				this.ecNumbersGrid = new PathwaysGridContainer({
-					title: "EC Numbers",
-					type: "ec_number",
-					state: this.state,
-					apiServer: this.apiServer,
-					defaultFilter: this.defaultFilter,
-					facetFields: ["annotation", "pathway_class"],
-					columns: {
-						idx: {label: 'Index', field:'idx', hidden: true},
-						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-						pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
-						annotation: {label: 'Annotation', field: 'annotation'},
-						ec_number: {label: 'EC Number', field: 'ec_number'},
-						description: {label: 'Description', field: 'ec_description'},
-						genome_count: {label: 'Genome Count', field: 'genome_count'},
-						gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
-					},
-					store: ecNumberStore,
-					enableFilterPanel: true,
-					queryOptions: {
-						sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
-					}
-				});
+			this.ecNumbersGrid = new PathwaysGridContainer({
+				title: "EC Numbers",
+				type: "ec_number",
+				// state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation", "pathway_class"],
+				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					description: {label: 'Description', field: 'ec_description'},
+					genome_count: {label: 'Genome Count', field: 'genome_count'},
+					gene_count: {label: 'Unique Gene Count', field: 'gene_count'}
+				},
+				store: ecNumberStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "pathway_id"}, {attribute: "ec_number"}]
+				}
+			});
 
-				this.genesGrid = new PathwaysGridContainer({
-					title: "Genes",
-					type: "gene",
-					state: this.state,
-					apiServer: this.apiServer,
-					defaultFilter: this.defaultFilter,
-					facetFields: ["annotation", "pathway_class"],
-					columns: {
-						idx: {label: 'Index', field:'idx', hidden: true},
-						feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
-						genome_name: {label: 'Genome Name', field: 'genome_name'},
-						accession: {label: 'Accession', field: 'accession', hidden: true},
-						patric_id: {label: 'PATRIC ID', field: 'patric_id'},
-						alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
-						gene: {label: 'Gene', field: 'gene'},
-						product: {label: 'Product', field: 'product'},
-						annotation: {label: 'Annotation', field: 'annotation'},
-						pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
-						pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
-						ec_number: {label: 'EC Number', field: 'ec_number'},
-						ec_description: {label: 'EC Description', field: 'ec_description'}
-					},
-					store: geneStore,
-					enableFilterPanel: true,
-					queryOptions: {
-						sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
-					}
-				});
+			this.genesGrid = new PathwaysGridContainer({
+				title: "Genes",
+				type: "gene",
+				// state: this.state,
+				apiServer: this.apiServer,
+				defaultFilter: this.defaultFilter,
+				facetFields: ["annotation", "pathway_class"],
+				columns: {
+					idx: {label: 'Index', field:'idx', hidden: true},
+					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
+					genome_name: {label: 'Genome Name', field: 'genome_name'},
+					accession: {label: 'Accession', field: 'accession', hidden: true},
+					patric_id: {label: 'PATRIC ID', field: 'patric_id'},
+					alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag'},
+					gene: {label: 'Gene', field: 'gene'},
+					product: {label: 'Product', field: 'product'},
+					annotation: {label: 'Annotation', field: 'annotation'},
+					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
+					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
+					ec_number: {label: 'EC Number', field: 'ec_number'},
+					ec_description: {label: 'EC Description', field: 'ec_description'}
+				},
+				store: geneStore,
+				enableFilterPanel: true,
+				queryOptions: {
+					sort: [{attribute: "genome_name"}, {attribute: "accession"}, {attribute: "start"}]
+				}
+			});
 
-				
-				this.tabContainer.addChild(this.ecNumbersGrid);
-				this.tabContainer.addChild(this.genesGrid);
-			}),10000);
 			
-			this.watch("state", lang.hitch(this, "onSetState"));
+			this.tabContainer.addChild(this.ecNumbersGrid);
+			this.tabContainer.addChild(this.genesGrid);
+
+			
+			topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
+				page.set('state', this.state)
+			}));
+
 			this._firstView = true;
 		}
 
@@ -76743,8 +76783,8 @@ define([
 		gridCtor: PathwaysGrid,
 		containerType: "pathway_data",
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
-		facetFields: ["annotation", "feature_type"],
-		enableFilterPanel: false,
+		facetFields: ["annotation"],
+		enableFilterPanel: true,
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		visible: true,
@@ -76780,18 +76820,13 @@ define([
 				"className": "BrowserHeader",
 				dataModel: this.dataModel,
 				facetFields: this.facetFields,
-				state: this.state,
 				currentContainerWidget: this,
 				_setQueryAttr: function(query){
-					//  0 && console.log("_setQueryAttr: ", query)
 					var p = _self.typeMap[_self.type];
 					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))";
-					//  0 && console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
 					this._set("query", query);
 					this.getFacets(query).then(lang.hitch(this, function(facets){
-						//  0 && console.log("_setQuery got facets: ", facets)
 						if(!facets){
-							 0 && console.log("No Facets Returned");
 							return;
 						}
 
@@ -76817,7 +76852,7 @@ define([
 				//  0 && console.log("FILTER PANEL SET FILTER", arguments)
 				//  0 && console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
 				//  0 && console.log("setFilter Watch() callback", newVal);
-				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+				if((oldVal != newVal) && (this.state && this.state.hashParams && (newVal != this.state.hashParams.filter))){
 					//  0 && console.log("Emit UpdateHash: ", newVal);
 					on.emit(this.domNode, "UpdateHash", {
 						bubbles: true,
@@ -76899,21 +76934,69 @@ define([
 				false
 			]
 		]),
-		_setStateAttr: function(state){
-			this.inherited(arguments);
+		onSetState: function(attr,oldState,state){
 			if(!state){
+				 0 && console.log("!state in grid container; return;")
 				return;
 			}
-			//  0 && console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
-			if(this.grid){
-				//  0 && console.log("   call set state on this.grid: ", this.grid);
-				this.grid.set('state', state);
-
-			}else{
-				 0 && console.log("No Grid Yet (PathwaysGridContainer)");
+			var q = [];
+			var _self=this;
+			if(state.search){
+				q.push(state.search);
 			}
 
-			this._set("state", state);
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+				// 0 && console.log("filter set to false, no filtering");
+
+			}else if(state.hashParams){
+				//  0 && console.log("   Found state.hashParams");
+				if(state.hashParams.filter){
+					//  0 && console.log("       Found state.hashParams.filter, using");
+					q.push(state.hashParams.filter)
+				}else if(!oldState && this.defaultFilter){
+					//  0 && console.log("       No original state, using default Filter");
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					//  0 && console.log("       Found oldState with hashparams.filter, using");
+					state.hashParams.filter = oldState.hashParams.filter;
+					// this.set('state', state);
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else if(this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+					// this.set('state', state);
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else{
+					//  0 && console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+
+				}
+			}else{
+				state.hashParams = {}
+				if(!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter
+				}
+				// this.set('state', state);
+				this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+				return;
+			}
+			//  0 && console.log(" Has Filter Panel?", !!this.filterPanel);
+
+			if(this.enableFilterPanel && this.filterPanel){
+				//  0 && console.log("    FilterPanel Found (in GridContainer): ", state);
+				this.filterPanel.set("state", state);
+			}
+			//  0 && console.log("setState query: ",q.join("&"), " state: ", state)
+			// this.set("query", q.join("&"));
+
+			if (this.grid){
+				this.grid.set("state",lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+			}
+
 		}
 	});
 });
@@ -76965,7 +77048,6 @@ define([
 					bubbles: true,
 					cancelable: true
 				});
-				 0 && console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -76997,7 +77079,6 @@ define([
 					_self.set("totalRows", x);
 				});
 			});
-
 			this._started = true;
 		},
 		state: null,
@@ -77007,22 +77088,49 @@ define([
 		},
 
 		_setState: function(state){
-			//  0 && console.log("PMS SET STATE: ", state, this.store)
-			if(!this.store){
-				//  0 && console.log("CREATE STORE FROM PMG _setState()")
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				this.store.set("state", state);
-				this.refresh();
+
+			var oldState = this.get('state');
+
+			var ov,nv;
+			if (oldState){
+				ov = oldState.search;
+				if (oldState.hashParams.filter){
+					ov = ov + oldState.hashParams.filter;
+				}
 			}
+
+			if (state){
+				nv = state.search;
+				if (state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+			}
+
+			this.state = state;
+
+			if (ov!=nv){
+				// 0 && console.log("New State in Pathways Memory Grid: ", nv);
+			
+				if(!this.store){
+					this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+				}else{
+					this.store.set("state", lang.mixin({},state));
+				}
+
+				this.refresh()
+			}else{
+				this.refresh()
+			}
+
+
+		},
+
+		refresh: function(){
+			this.inherited(arguments);
+
 		},
 
 		createStore: function(server, token, state){
-			//  0 && console.log("createStore()")
-			// 0 && console.log("CreateStore() server: ", server);
-			// 0 && console.log("CreateStore() token: ", token);
-			// 0 && console.log("CreateStore() state: ", state);
-			// 0 && console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
 			if(this.store){
 				return this.store
 			}
@@ -77061,36 +77169,59 @@ define([
 		state: null,
 		genome_ids: null,
 		type: "pathway",
-		onSetState: function(attr, oldVal, state){
+		onSetState: function(attr,oldVal,state){
+
+			// 0 && console.log("PathwayMemoryStore onSetState() oldState:", oldVal);
+			// 0 && console.log("								 New State:", state);
 			var ov, nv;
 			if(oldVal){
-				ov = oldVal.search + oldVal.filter
+				ov = oldVal.search;
+				if (oldVal.hashParams.filter) {
+					ov = ov + oldVal.hashParams.filter;
+				}
 			}
 			if(state){
-				nv = state.search + state.filter
+				nv = state.search;
+				if (state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+
 			}
 
-			//  0 && console.log("MEMORY STORE onSetState: ", state, oldVal);
-			// if (ov!=nv){
-			//  0 && console.log("clear memory store data");
-			this._loaded = false;
-			if(this._loadingDeferred){
-				//  0 && console.log("Deleting _loadingDeferred", this._loadingDeferred);
-				delete this._loadingDeferred;
+			this.state = state;
+
+			if (!nv){
+				this.setData([]);
+				this._loaded = true;
+				if (this._loadingDeferred){
+					this.loadingDeferred.resolve(true);
+				}
+			}else if (ov!=nv){
+				if (this._loaded){
+					this._loaded = false;
+					delete this._loadingDeferred;
+					this.loadData();
+				}else {
+					if (this._loadingDeferred){
+						var curDef = this._loadingDeferred;
+						when(this.loadData(), function(r){
+							curDef.resolve(r);
+						})
+					}else{
+						this.loadData();
+					}
+				}
 			}
-			// }
 		},
 		constructor: function(opts){
 			this.init(opts);
 		},
 		init: function(options){
 			options = options || {};
-			//  0 && console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
-			this.watch("state", lang.hitch(this, "onSetState"));
-			//  0 && console.log("INIT COMPLETE: ", this)
+			this.watch("state", lang.hitch(this,"onSetState"));
 		},
 
 		query: function(query, opts){
@@ -77101,10 +77232,7 @@ define([
 			else{
 				var _self = this;
 				var results;
-				//  0 && console.log("Beofre LOAD type: ", this.type);
-				//  0 && console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
-					//  0 && console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
@@ -77180,8 +77308,6 @@ define([
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					//  0 && console.log("buildQuery SEARCH: ", this.state.search);
-
 					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
 				}else if(this.state.genome_ids){
 					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
@@ -77206,19 +77332,16 @@ define([
 			}
 			q = q + this.queryTypes[this.type];
 
-			//  0 && console.log("End Build Query: ", q);
 			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
 		loadData: function(){
-
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
 			var state = this.state || {};
 
 			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
-				//  0 && console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -77233,17 +77356,9 @@ define([
 
 			}
 
-			// var lq;
-
-			// if(state && state.genome_ids){
-			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
-			// }
-
-			//  0 && console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
 			var q = this.buildQuery();
 
 			var _self = this;
-			//  0 && console.log("Load Data: ", q);
 			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
@@ -77262,8 +77377,6 @@ define([
 					"ecnumber": "ec_number",
 					"genes": 'feature_id'
 				};
-				//  0 && console.log("Pathway Base Query Response:", response);
-				//  0 && console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
 				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
 					var buckets = response.facets.stat.buckets;
@@ -77276,7 +77389,6 @@ define([
 					docs = ds.map(function(doc){
 						var p = props[this.type];
 						var pv = doc[p];
-						//  0 && console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
 						lang.mixin(doc, map[pv] || {});
 						if(doc.genome_ec && doc.genome_count){
 							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
@@ -77305,7 +77417,6 @@ define([
 						}
 						return doc;
 					}, this);
-					//  0 && console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
 					_self._loaded = true;
@@ -77323,6 +77434,7 @@ define([
 				_self._loaded = true;
 				return err;
 			}));
+
 			return this._loadingDeferred;
 		}
 	})
@@ -87701,16 +87813,11 @@ define([
 
 		_setTaxon_idAttr: function(id){
 			//  0 && console.log("*** SET TAXON ID ", id);
+			if (id && this.taxon_id==id ){
+				// 0 && console.log("Taxon ID Already set, skip");
+				return;
+			}
 			this.taxon_id = id;
-
-			var state = this.state || {};
-
-			state.taxon_id = id;
-
-			// if (id && this.taxontree){
-			// 	 0 && console.log("set taxontree query: ", "eq(taxon_id," + id + ")");
-			// 	this.taxontree.set('query',"eq(taxon_id," + id + ")")
-			// }
 
 			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", id), {
 				headers: {
@@ -87724,15 +87831,20 @@ define([
 		},
 
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
+			 0 && console.log("onSetTaxonomy: ", taxonomy);
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.overview.set('taxonomy', taxonomy);
+			this.taxonomy = this.state.taxonomy=taxonomy;
+			// this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
+			this.setActivePanelState();
+			// this.overview.set('taxonomy', taxonomy);
 		},
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},
-		onSetState: function(attr, oldVal, state){
-			 0 && console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
+		onSetState: function(attr, oldState, state){
+			// 0 && console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
+			oldState = oldState || {};
 			if(!state){
 				throw Error("No State Set");
 				// return;
@@ -87740,64 +87852,125 @@ define([
 
 			var parts = state.pathname.split("/");
 
-			this.set("taxon_id", parts[parts.length - 1]);
-			var s = "eq(taxon_lineage_ids," + this.taxon_id + ")";
 
+			state.taxon_id = parts[parts.length - 1]
+			this.set('taxon_id', state.taxon_id);
+	
+			// this.set("taxon_id", parts[parts.length - 1]);
+			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
+			state.search = state.search.replace(s,"");
 			if(state.search){
-				 0 && console.log("GENERATE ENGLISH QUERY for ", state.search);
+				 0 && console.log("GENERATE ENGLISH QUERY for ", state.search, s);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
-				state.search = s + "&" + state.search;
+				var sx = [s];
+				if (state.search && state.search!=s) { sx.push(state.search) }
+				state.search = sx.join("&").replace("&&","&");
+				if (this.taxonomy){
+					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+				}
 
 			}else{
+				 0 && console.log("USE state.search: ", s);
 				state.search = s;
 				this.filteredTaxon = false;
+				if (this.taxonomy){
+					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+				}
 			}
-			// 0 && console.log("GenomeList onSetState()");
-			this.inherited(arguments);
-			// this.set("query", "eq(taxon_lineage_ids," + this.taxon_id + ")");
-			// // 0 && console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			// var activeTab = this[active];
-			// switch(active){
-			// 	case "genomes":
-			// 		activeTab.set("state", lang.mixin({}, this.state, {search: "eq(taxon_lineage_ids," + this.taxon_id + ")"}));
-			// 		break;
-			// }
+
+			if (!state.taxonomy && state.taxon_id){
+				 0 && console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
+				if (oldState && oldState.taxon_id){
+					 0 && console.log("oldState.taxon_id: ", oldState.taxon_id)
+					
+					if ((state.taxon_id == oldState.taxon_id)){
+						if (oldState.taxonomy || this.taxonomy){
+							 0 && console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
+							state.taxonomy = oldState.taxonomy || this.taxonomy;
+						}else{
+							 0 && console.log("oldState missing Taxonomy");
+						}
+					}
+				}
+			}
+
+			if(!state.genome_ids){
+				  0 && console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
+				if(state.search == oldState.search){
+					 0 && console.log("		Same Search")
+					 0 && console.log("		OLD Genome_IDS: ", oldState.genome_ids);
+					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids}))
+					return;
+				}else{
+					this.set("query", state.search);
+				}
+			}else if(state.search != oldState.search){
+				this.set("query", state.search);
+			}
+
+			if(!state.hashParams){
+				if(oldState.hashParams && oldState.hashParams.view_tab){
+					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
+				}else{
+					state.hashParams = {"view_tab": this.defaultTab}
+				}
+			}
+			//  0 && console.log("    Check for Hash Params: ", state.hashParams);
+			if(state.hashParams){
+				if(!state.hashParams.view_tab){
+					state.hashParams.view_tab = this.defaultTab;
+				}
+
+				//  0 && console.log("Looking for Active Tab: ", state.hashParams.view_tab);
+
+				if(this[state.hashParams.view_tab]){
+					var vt = this[state.hashParams.view_tab];
+					//  0 && console.log("Found View Tab")
+					vt.set("visible", true);
+					//  0 && console.log("Select View Tab")
+					this.viewer.selectChild(vt);
+				}
+			}
+
+			this.setActivePanelState();
 		},
 
 		setActivePanelState: function(){
 
+
+			 0 && console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
+
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			//  0 && console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				 0 && console.log("ACTIVE TAB NOT FOUND: ", active);
+				 0 && console.warn("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
+				case "overview":
+					if (this.state && this.state.genome_ids){
+						activeTab.set('state', lang.mixin({}, this.state,{search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}));
+					}
+					break;
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
-					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")"}));
+					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "phylogeny":
 				case "genomes":
-					//  0 && console.log("setting ", active, " state: ", this.state);
-					activeTab.set("state", this.state);
-					break;
-				case "proteinFamilies":
-					//  0 && console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
-					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({},this.state));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)});
 					}
+					// 0 && console.log("Active Query State:", activeQueryState)
 
 					if(activeQueryState){
 						activeTab.set("state", activeQueryState);
@@ -87832,7 +88005,6 @@ define([
 		},
 
 		onSetAnchor: function(evt){
-			 0 && console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
 			var f = evt.filter;
@@ -87875,7 +88047,7 @@ define([
 					return key + "=" + hp[key]
 				}, this).join("&");
 
-			 0 && console.log(" NavigateTo: ", l);
+			// 0 && console.log(" NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});
@@ -87953,8 +88125,6 @@ define([
 		},
 
 		onSetTaxonId: function(attr, oldVal, taxonId){
-			 0 && console.log("taxonId: ", taxonId);
-
 			request.get(PathJoin(this.apiServer, "taxonomy", taxonId), {
 				headers: {accept: "application/newick"}
 			}).then(lang.hitch(this, function(newick){
@@ -90525,13 +90695,19 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			// 0 && console.log("_setGenome_IDAttr: ", id, this.genome_id, this.state);
+			 0 && console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
+
+			if (this.genome_id==id){
+				 0 && console.log("Genome ID Already Set");
+				return;
+			}
 			var state = this.state = this.state || {};
-			this.genome_id = id;
+			this.genome_id = this.state.genome_id=id;
 			this.state.genome_ids = [id];
+
 
 			xhr.get(PathJoin(this.apiServiceUrl, "genome", id), {
 				headers: {
@@ -90543,26 +90719,44 @@ define([
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
 			}));
-			var activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + id + ")"});
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+
+		},
+
+		setActivePanelState: function(){
+			var activeQueryState;
+			 0 && console.log("Set ActivePanelState: ", JSON.stringify(this.state,null,4));
+			if (this.state.genome_id){
+				activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + this.state.genome_id + ")"});
+			}
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
+			 0 && console.log("Active Panel: ", active);
+
+
 
 			switch(active){
+				case "phylogeny":
 				case "overview":
-					break;
-				case "phlyogeny":
-				case "proteinFamilies":
-				case "pathways":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
+					if (this.state.genome){
+						activeTab.set("state", lang.mixin({},this.state));
+					}
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
 				default:
-					activeTab.set("state", activeQueryState);
+					if (activeQueryState){
+						 0 && console.log("Using Default ActiveQueryState: ", activeQueryState);
+						activeTab.set("state", activeQueryState);
+					}else{
+						 0 && console.log("Missing Active Query State for: ", active)
+					}
 					break;
 			}
 		},
+
+
+
 
 		buildHeaderContent: function(genome){
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
@@ -90576,24 +90770,24 @@ define([
 		_setGenomeAttr: function(genome){
 			var state = this.state || {};
 
-			state.genome = genome;
+			this.state.genome = genome;
 
 			this.viewHeader.set("content", this.buildHeaderContent(genome));
 
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			// var activeTab = this[active];
 
-			switch(active){
-				case "phylogeny":
-				case "overview":
-					activeTab.set("state", state);
-					break;
-				default:
-					break;
-			}
+			// switch(active){
+			// 	case "phylogeny":
+			// 	case "overview":
+			// 		activeTab.set("state", state);
+			// 		break;
+			// 	default:
+			// 		break;
+			// }
 
 			this._set("genome", genome);
-
+			this.setActivePanelState();
 			this.resize();
 		},
 
@@ -90606,13 +90800,32 @@ define([
 			});
 		},
 
-		onSetState: function(attr, oldVal, state){
+		onSetState: function(attr, oldState, state){
 
-			var parts = this.state.pathname.split("/");
+			var parts = state.pathname.split("/");
 			this.set("genome_id", parts[parts.length - 1]);
-
+			state.genome_id = parts[parts.length - 1];
+			state.genome_ids = [state.genome_id];
 			if(!state){
 				return;
+			}
+
+			 0 && console.log("Genome: ", state.genome, state.genome_id)
+
+			if (state && state.genome_id && !state.genome){
+				 0 && console.log("No state.genome.  state.genome_id: ", state.genome_id);
+				if (oldState && oldState.genome_id){
+					 0 && console.log("oldState.genome_id: ", oldState.genome_id)
+					
+					if ((state.genome_id == oldState.genome_id)){
+						if (oldState.genome || this.genome){
+							 0 && console.log("oldState Genome: ", oldState.genome||this.genome);
+							state.genome = oldState.genome || this.genome;
+						}else{
+							 0 && console.log("oldState missing Genome");
+						}
+					}
+				}
 			}
 
 			if(state.hashParams && state.hashParams.view_tab){
@@ -90625,6 +90838,9 @@ define([
 					//  0 && console.log("No view-tab supplied in State Object");
 				}
 			}
+
+			this.setActivePanelState();
+
 			//  0 && console.log("viewer/Genome onSetState() after set genome_id")
 		},
 
@@ -91491,10 +91707,17 @@ define([
                 });
             }
 
+            var location;
+            if (state.feature){
+            	state.hashParams.loc = state.feature.accession + ":" + state.feature.location;
+            }
+
+            //  0 && console.log("JBROWSE LOC: ", state.hashParams.loc);
+
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
 				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
-				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (state.genome_id || state.genome_ids[0]),
+				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (((state.feature && state.feature.genome_id)?state.feature.genome_id:false)|| state.genome_id || state.genome_ids[0] ),
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
@@ -91552,6 +91775,7 @@ define([
 
 				this._browser = new Browser(config)
 			}else{
+
 				 0 && console.log("Browser Already Exists");
 			}
 		},
@@ -91576,12 +91800,16 @@ define([
 		},
 
 		onFirstView: function(){
+			 0 && console.log("GenomeBrowser onFirstView()")
 			if(this._firstView){
 				return;
 			}
-			if(!this._browser){
-				this._browser = new Browser(this.jbrowseConfig)
-			}
+			 0 && console.log("GenomeBrowser onFirstView()")
+
+			// if(!this._browser){
+			// 	 0 && console.log("Create GenomeBrowser: ", this.jbrowseConfig);
+			// 	this._browser = new Browser(this.jbrowseConfig)
+			// }
 		},
 
 		resize: function(changeSize, resultSize){
@@ -107556,13 +107784,15 @@ define([
 	"../formatter", "../TabContainer", "../FeatureOverview",
 	"dojo/request", "dojo/_base/lang",
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
-	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
+	"../GeneExpressionContainer", "../CorrelatedGenesContainer", "../../util/PathJoin",
+	"../GenomeBrowser"
 ], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, FeatureOverview,
 			xhr, lang,
 			ActionBar, ContainerActionBar, PathwaysContainer,
-			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin){
+			GeneExpressionContainer, CorrelatedGenesContainer, PathJoin,
+			GenomeBrowser){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -107576,6 +107806,11 @@ define([
 			if(!id){
 				return;
 			}
+
+			if (this.feature_id == id){
+				return;
+			}
+
 			var state = this.state = this.state || {};
 			this.feature_id = id;
 			this.state.feature_id = id;
@@ -107591,32 +107826,66 @@ define([
 				this.set("feature", feature)
 			}));
 
-			var activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + id + ")"});
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+		},
+
+		setActivePanelState:function(){
+			var activeQueryState;
+
+			if (this.state.feature_id){
+				activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + this.state.feature_id + ")"});
+			}
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
+			 0 && console.log("Active Tab in Feature: ", active, activeTab);
 			switch(active){
-				case "overview":
-				case "correlatedGenes":
-					break;
-				//case "pathways":
+				// case "overview":
+				// case "correlatedGenes":
+				// 	break;
+				// //case "pathways":
 				//	activeTab.set("state", state);
 				//	break;
-				//case "transcriptomics":
-				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
-				//	break;
+				case "overview":
+				case "transcriptomics":
+				case "correlatedGenes":
+					if (this.state && this.state.feature){
+						 0 && console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4))
+						activeTab.set("state", lang.mixin({},this.state));
+					}
+					
+					break;
 				default:
-					activeTab.set("state", activeQueryState);
+					if (activeQueryState){
+						 0 && console.log("Set Active Query State");
+						activeTab.set("state", activeQueryState);
+					}
 					break;
 			}
 		},
 
-		onSetState: function(attr, oldVal, state){
+		onSetState: function(attr, oldState, state){
 			var parts = this.state.pathname.split("/");
 			this.set("feature_id", parts[parts.length - 1]);
+			state.feature_id = parts[parts.length - 1];
 
 			if(!state){
 				return;
+			}
+
+			if (state && state.feature_id && !state.feature){
+				 0 && console.log("No state.feature.  state.feature_id: ", state.feature_id);
+				if (oldState && oldState.feature_id){
+					 0 && console.log("oldState.feature_id: ", oldState.feature_id)
+					
+					if ((state.feature_id == oldState.feature_id)){
+						if (oldState.feature || this.feature){
+							 0 && console.log("oldState Feature: ", oldState.feature||this.feature);
+							this.state.feature = state.feature = oldState.feature || this.feature;
+						}else{
+							 0 && console.log("oldState missing Featture");
+						}
+					}
+				}
 			}
 
 			if(state.hashParams && state.hashParams.view_tab){
@@ -107626,36 +107895,27 @@ define([
 					vt.set("visible", true);
 					this.viewer.selectChild(vt);
 				}else{
-					//  0 && console.log("No view-tab supplied in State Object");
+					 0 && console.log("No view-tab supplied in State Object");
 				}
 			}
+
+			this.setActivePanelState();
 		},
 
 		buildHeaderContent: function(feature){
 			// TODO: implement
+			return feature.feature_id;
 		},
 
 		_setFeatureAttr: function(feature){
+			 0 && console.log("_setFeatureAttr: ", feature);
 			var state = this.state || {};
 
-			state.feature = feature;
+			this.feature = this.state.feature = feature;
 
 			//this.viewHeader.set("content", this.buildHeaderContent(feature));
 
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
-
-			switch(active){
-				case "overview":
-				case "correlatedGenes":
-					activeTab.set("state", state);
-					break;
-				default:
-					break;
-			}
-
-			this._set("feature", feature);
-
+			this.setActivePanelState();
 			this.resize();
 		},
 
@@ -107675,10 +107935,11 @@ define([
 			this.inherited(arguments);
 
 			this.overview = this.createOverviewPanel();
-			this.genomeBrowser = new ContentPane({
+			this.genomeBrowser = new GenomeBrowser({
 				title: "Genome Browser",
 				id: this.viewer.id + "_genomeBrowser",
-				content: "Genome Browser"
+				content: "Genome Browser",
+				state: lang.mixin({}, this.state)
 			});
 			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
 			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
@@ -107692,12 +107953,12 @@ define([
 			this.transcriptomics = new GeneExpressionContainer({
 				title: "Transcriptomics",
 				id: this.viewer.id + "_transcriptomics",
-				content: "Transcriptomics"
+				state: this.state
 			});
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
 				id: this.viewer.id + "_correlatedGenes",
-				content: "Correlated Genes"
+				state: this.state
 			});
 
 			this.viewer.addChild(this.overview);
@@ -107749,7 +108010,7 @@ define([
 		_setRelatedFeatureListAttr: function(summary){
 
 			domConstruct.empty(this.relatedFeatureNode);
-			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.relatedFeatureNode);
+			var table = domConstruct.create("table", {"class": "p3basic stripe far2x"}, this.relatedFeatureNode);
 			var thead = domConstruct.create("thead", {}, table);
 			var tbody = domConstruct.create("tbody", {}, table);
 
@@ -107776,7 +108037,7 @@ define([
 		_setFunctionalPropertiesAttr: function(feature){
 
 			domConstruct.empty(this.functionalPropertiesNode);
-			var table = domConstruct.create("table", {"class": "basic stripe far2x"}, this.functionalPropertiesNode);
+			var table = domConstruct.create("table", {"class": "p3basic stripe far2x"}, this.functionalPropertiesNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			var htr = domConstruct.create("tr", {}, tbody);
@@ -112365,7 +112626,7 @@ define([
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"taxonomySummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n                <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"rgSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n                    </div>\n                </div>\n            </td>\n            <td rowspan=\"2\" style=\"width:65%;padding:7px;vertical-align:top;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Metadata Top 5</span></h3>\n                    <div  class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\" data-dojo-type=\"p3/widget/GenomeMetaSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n            </td>\n        </tr>\n        <tr>\n            <td style=\"width:35%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\"\n                         style=\"margin:4px;padding:8px;margin-radius:4px;display:block\">\n                        <div>Show more <i data-dojo-attach-event=\"click:onShowMore\"\n                                          class=\"fa icon-plus-circle fa-lg\"></i></div>\n                        </br>\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
+'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"padding:7px;vertical-align:top;min-width:350px;width:30%;\">\n                <div class=\"section\" style=\"\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"taxonomySummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n                <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"rgSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n                    </div>\n                </div>\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\"\n                         style=\"margin:4px;padding:8px;margin-radius:4px;display:block\">\n                        <div>Show more <i data-dojo-attach-event=\"click:onShowMore\"\n                                          class=\"fa icon-plus-circle fa-lg\"></i></div>\n                        </br>\n                    </div>\n                </div>\n            </td>\n            <td style=\"padding:7px;vertical-align:top;width:70%;min-width:500px;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Metadata Top 5</span></h3>\n                    <div  class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\" data-dojo-type=\"p3/widget/GenomeMetaSummary\"\n                         style=\"margin:4px;width:100%;\">\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",

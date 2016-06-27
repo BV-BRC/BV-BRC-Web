@@ -3,8 +3,8 @@
     <table style="margin:2px;">
         <tbody>
         <tr>
-            <td style="width:35%;padding:7px;vertical-align:top;">
-                <div class="section">
+            <td style="padding:7px;vertical-align:top;min-width:350px;width:30%;">
+                <div class="section" style="">
                     <div style="padding:7px" data-dojo-attach-point="taxonomySummaryNode">
                         Loading Genome Summary...
                     </div>
@@ -15,27 +15,6 @@
                          data-dojo-type="p3/widget/ReferenceGenomeSummary">
                     </div>
                 </div>
-            </td>
-            <td rowspan="2" style="width:65%;padding:7px;vertical-align:top;">
-
-                <div class="section">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Genome Metadata Top 5</span></h3>
-                    <div  class="gmSummaryWidget" data-dojo-attach-point="gmSummaryWidget" data-dojo-type="p3/widget/GenomeMetaSummary"
-                         style="margin:4px;">
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
-                    <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary"
-                         style="margin:4px;">
-                    </div>
-                </div>
-
-            </td>
-        </tr>
-        <tr>
-            <td style="width:35%;padding:7px;vertical-align:top;">
                 <div class="section">
                     <h3 class="section-title normal-case close2x"><span class="wrap">Recent PubMed Articles</span></h3>
                     <div data-dojo-attach-point="pubmedSummaryNode" style="margin:4px;padding:8px;margin-radius:4px;">
@@ -48,6 +27,23 @@
                         </br>
                     </div>
                 </div>
+            </td>
+            <td style="padding:7px;vertical-align:top;width:70%;min-width:500px;">
+
+                <div class="section">
+                    <h3 class="section-title normal-case close2x"><span class="wrap">Genome Metadata Top 5</span></h3>
+                    <div  class="gmSummaryWidget" data-dojo-attach-point="gmSummaryWidget" data-dojo-type="p3/widget/GenomeMetaSummary"
+                         style="margin:4px;width:100%;">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
+                    <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary"
+                         style="margin:4px;">
+                    </div>
+                </div>
+
             </td>
         </tr>
         </tbody>

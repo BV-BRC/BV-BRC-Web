@@ -3,18 +3,7 @@
 @import url("../../dojox/widget/Toaster/Toaster.css");
 
 /* CSS for JBrowse */
-/*
-@import url("../../jbrowse.repo/main.css");
-@import url("../../jbrowse.repo/sequence.css");
-@import url("../../jbrowse.repo/menubar.css");
-@import url("../../jbrowse.repo/icons.css");
-@import url("../../jbrowse.repo/tristate.css");
-@import url("../../jbrowse.repo/file_dialog.css");
-@import url("../../jbrowse.repo/combination_tracks.css");
-@import url("../../jbrowse.repo/export_dialog.css");
-*/
 @import url("./jbrowse/main.css");
-
 
 @import url("Footer.css");
 @import url("Header.css");
@@ -117,6 +106,31 @@ body.patric *:focus {
 	border-color: #555;
 	box-shadow: 0px 0px 24px orange;
 }
+
+table.p3basic {
+  font-size: 11px;
+  border-collapse: separate;
+  empty-cells: hide;
+  border-bottom: #d3d3d3 1px solid;
+  border-right: #d3d3d3 1px solid; }
+  table.p3basic th, table.p3basic td, table.p3basic caption {
+    padding: 4px 10px 4px 5px; }
+
+table.p3basic thead th {
+  background: #fff;
+  color: #666666;
+  font-weight: bold; }
+
+table.p3basic td, th {
+  border-top: #d3d3d3 1px solid;
+  border-left: #d3d3d3 1px solid; }
+
+
+table.striped tr:nth-child(even) td,
+table tr.even td {
+  background: #e5ecf9; }
+
+
 
 .claro .dijitDialog {
 	perspective: 2000;
@@ -573,6 +587,7 @@ table {
 	width: 100%;
 }
 
+.menuHeader,
 .section-title {
 	background-color:#34698e;
 	color: #efefef;
@@ -583,6 +598,10 @@ table {
 	border-bottom-right-radius: 25px;
 	box-shadow: 2px 2px 2px #555;
 	margin-bottom:8px;
+}
+
+.menuHeader {
+	padding-left: 4px;
 }
 
 .feature_box {

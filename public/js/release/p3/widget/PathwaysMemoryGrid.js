@@ -43,7 +43,6 @@ define("p3/widget/PathwaysMemoryGrid", [
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -75,7 +74,6 @@ define("p3/widget/PathwaysMemoryGrid", [
 					_self.set("totalRows", x);
 				});
 			});
-
 			this._started = true;
 		},
 		state: null,
@@ -85,22 +83,49 @@ define("p3/widget/PathwaysMemoryGrid", [
 		},
 
 		_setState: function(state){
-			// console.log("PMS SET STATE: ", state, this.store)
-			if(!this.store){
-				// console.log("CREATE STORE FROM PMG _setState()")
-				this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
-			}else{
-				this.store.set("state", state);
-				this.refresh();
+
+			var oldState = this.get('state');
+
+			var ov,nv;
+			if (oldState){
+				ov = oldState.search;
+				if (oldState.hashParams.filter){
+					ov = ov + oldState.hashParams.filter;
+				}
 			}
+
+			if (state){
+				nv = state.search;
+				if (state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+			}
+
+			this.state = state;
+
+			if (ov!=nv){
+				//console.log("New State in Pathways Memory Grid: ", nv);
+			
+				if(!this.store){
+					this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
+				}else{
+					this.store.set("state", lang.mixin({},state));
+				}
+
+				this.refresh()
+			}else{
+				this.refresh()
+			}
+
+
+		},
+
+		refresh: function(){
+			this.inherited(arguments);
+
 		},
 
 		createStore: function(server, token, state){
-			// console.log("createStore()")
-			//console.log("CreateStore() server: ", server);
-			//console.log("CreateStore() token: ", token);
-			//console.log("CreateStore() state: ", state);
-			//console.log("Create Store for Pathways at server: ", server, " apiServer: ", this.apiServer, " global API Server: ", window.App.dataServiceURL, " TOKEN: ", token, " Base Query ", state || this.state);
 			if(this.store){
 				return this.store
 			}

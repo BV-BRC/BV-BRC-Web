@@ -39,8 +39,8 @@ define([
 		gridCtor: PathwaysGrid,
 		containerType: "pathway_data",
 		defaultFilter: "eq(annotation,%22PATRIC%22)",
-		facetFields: ["annotation", "feature_type"],
-		enableFilterPanel: false,
+		facetFields: ["annotation"],
+		enableFilterPanel: true,
 		apiServer: window.App.dataServiceURL,
 		store: null,
 		visible: true,
@@ -76,18 +76,13 @@ define([
 				"className": "BrowserHeader",
 				dataModel: this.dataModel,
 				facetFields: this.facetFields,
-				state: this.state,
 				currentContainerWidget: this,
 				_setQueryAttr: function(query){
-					// console.log("_setQueryAttr: ", query)
 					var p = _self.typeMap[_self.type];
 					query = query + "&limit(25000)&group((field," + p + "),(format,simple),(ngroups,true),(limit,1),(facet,true))";
-					// console.log("FILTERCONTAINERACTION BAR OVERRIDE QUERY: ", query)
 					this._set("query", query);
 					this.getFacets(query).then(lang.hitch(this, function(facets){
-						// console.log("_setQuery got facets: ", facets)
 						if(!facets){
-							console.log("No Facets Returned");
 							return;
 						}
 
@@ -113,7 +108,7 @@ define([
 				// console.log("FILTER PANEL SET FILTER", arguments)
 				// console.log("oldVal: ", oldVal, "newVal: ", newVal, "state.hashParams.filter: ", this.state.hashParams.filter)
 				// console.log("setFilter Watch() callback", newVal);
-				if((oldVal != newVal) && (newVal != this.state.hashParams.filter)){
+				if((oldVal != newVal) && (this.state && this.state.hashParams && (newVal != this.state.hashParams.filter))){
 					// console.log("Emit UpdateHash: ", newVal);
 					on.emit(this.domNode, "UpdateHash", {
 						bubbles: true,
@@ -195,21 +190,69 @@ define([
 				false
 			]
 		]),
-		_setStateAttr: function(state){
-			this.inherited(arguments);
+		onSetState: function(attr,oldState,state){
 			if(!state){
+				console.log("!state in grid container; return;")
 				return;
 			}
-			// console.log("PathwaysMemoryGridContainer _setStateAttr: ", state);
-			if(this.grid){
-				// console.log("   call set state on this.grid: ", this.grid);
-				this.grid.set('state', state);
-
-			}else{
-				console.log("No Grid Yet (PathwaysGridContainer)");
+			var q = [];
+			var _self=this;
+			if(state.search){
+				q.push(state.search);
 			}
 
-			this._set("state", state);
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+				//console.log("filter set to false, no filtering");
+
+			}else if(state.hashParams){
+				// console.log("   Found state.hashParams");
+				if(state.hashParams.filter){
+					// console.log("       Found state.hashParams.filter, using");
+					q.push(state.hashParams.filter)
+				}else if(!oldState && this.defaultFilter){
+					// console.log("       No original state, using default Filter");
+					state.hashParams.filter = this.defaultFilter;
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					// console.log("       Found oldState with hashparams.filter, using");
+					state.hashParams.filter = oldState.hashParams.filter;
+					// this.set('state', state);
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else if(this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+					// this.set('state', state);
+					this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+					return;
+				}else{
+					// console.log("    hmmm shouldn't get here if we have defaultFilter:", this.defaultFilter)
+
+				}
+			}else{
+				state.hashParams = {}
+				if(!oldState && this.defaultFilter){
+					state.hashParams.filter = this.defaultFilter;
+				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					state.hashParams.filter = oldState.hashParams.filter
+				}
+				// this.set('state', state);
+				this.set('state', lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+				return;
+			}
+			// console.log(" Has Filter Panel?", !!this.filterPanel);
+
+			if(this.enableFilterPanel && this.filterPanel){
+				// console.log("    FilterPanel Found (in GridContainer): ", state);
+				this.filterPanel.set("state", state);
+			}
+			// console.log("setState query: ",q.join("&"), " state: ", state)
+			// this.set("query", q.join("&"));
+
+			if (this.grid){
+				this.grid.set("state",lang.mixin({},state, {hashParams: lang.mixin({}, state.hashParams)}));
+			}
+
 		}
 	});
 });

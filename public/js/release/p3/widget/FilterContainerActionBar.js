@@ -98,17 +98,44 @@ define("p3/widget/FilterContainerActionBar", [
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			// console.log("FilterContainerActionBar setStateAttr: ",state);
+			//console.log("FilterContainerActionBar setStateAttr: ",state);
 			state = state || {};
 			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
-		onSetState: function(attr, oldVal, state){
-			// console.log("FilterContainerActionBar onSetState: ", state)
+		onSetState: function(attr, oldState, state){
+			//console.log("FilterContainerActionBar onSetState: ", state)
+			if (!state) { return; }
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			// console.log("FilterContainerActionBar onSetState() ", state);
-			this._refresh();
+
+
+			if (oldState){
+				console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			}else{
+				console.log("    OLD: No State");
+			}
+			console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
+
+			var ov,nv;
+			if (oldState){
+				ov = oldState.search;
+				if (oldState.hashParams && oldState.hashParams.filter){
+					ov = ov + oldState.hashParams.filter;
+				}
+			}
+
+			if (state){
+				nv = state.search;
+				if (state.hashParams && state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+			}
+
+			if (ov!=nv){
+				this._refresh();
+			}
 		},
 
 		_refresh: function(){
@@ -292,7 +319,7 @@ define("p3/widget/FilterContainerActionBar", [
 			}, toggleFilters, true, this.rightButtons);
 
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
-				console.log("FilterContainerActionBar minimized: ", minimized)
+				//console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
 					this.setButtonText("ToggleFilters", "SHOW FILTERS")
 				}else{
@@ -561,6 +588,8 @@ define("p3/widget/FilterContainerActionBar", [
 			// console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				// console.log("Facet Results: ",r);
+				if (!r) { return; 
+				}
 				w.set("data", r[category]);
 			}))
 			// console.log(" Facet Query: ", ffilter)
@@ -659,7 +688,9 @@ define("p3/widget/FilterContainerActionBar", [
 		},
 
 		_setQueryAttr: function(query){
-			// console.log("_setQueryAttr: ", query)
+			console.log("_setQueryAttr: ", query)
+			if (!query) { console.log("No Query, return;"); return; }
+			if (query == this.query){ console.log("Facet Query Already Set"); return; }
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				// console.log("_setQuery got facets: ", facets)
@@ -680,11 +711,19 @@ define("p3/widget/FilterContainerActionBar", [
 					}
 				}, this);
 
+			}, function(err){
+				console.log("Error Getting Facets: ", err);
 			}));
 
 		},
 
 		getFacets: function(query, facetFields){
+			console.log("getFacets: ", query);
+			if (!query || query=="?"){
+				var def = new Deferred();
+				def.resolve(false);
+				return def.promise;
+			}
 			// var d; d=new Deferred(); d.resolve({}); return d.promise;
 
 			// console.log("getFacets: ", query, facetFields);
@@ -731,7 +770,7 @@ define("p3/widget/FilterContainerActionBar", [
 				return;
 
 			}, function(err){
-				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: ", url);
+				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: "+ url);
 				return err;
 			}))
 		},
@@ -744,7 +783,9 @@ define("p3/widget/FilterContainerActionBar", [
 			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
-			this.onSetState('state', "", this.state);
+			if (this.state){
+				this.onSetState('state', "", this.state);
+			}
 
 			if(this.currentContainerWidget){
 				this.currentContainerWidget.resize();

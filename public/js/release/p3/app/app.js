@@ -136,8 +136,8 @@ define("p3/app/app", [
 			});
 
 			Topic.subscribe("/navigate", function(msg){
-				console.log("app.js handle /navigate msg");
-				console.log("msg.href length: ", msg.href.length)
+				//console.log("app.js handle /navigate msg");
+				//console.log("msg.href length: ", msg.href.length)
 				if (!msg || !msg.href ){
 					console.error("Missing navigation message");
 					return;
