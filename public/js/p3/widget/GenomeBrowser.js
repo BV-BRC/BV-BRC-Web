@@ -789,7 +789,7 @@ define([
 
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.location;
+            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             // console.log("JBROWSE LOC: ", state.hashParams.loc);
