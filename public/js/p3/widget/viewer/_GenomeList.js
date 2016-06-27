@@ -19,6 +19,7 @@ define([
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
+		defaultTab: "overview",
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes.<br> When you are satisfied, click ANCHOR FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -88,7 +89,7 @@ define([
 			this.inherited(arguments);
 
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : this.defaultTab;
 
 			this.setActivePanelState();
 		},
@@ -104,7 +105,7 @@ define([
 
 		setActivePanelState: function(){
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
 			//console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
