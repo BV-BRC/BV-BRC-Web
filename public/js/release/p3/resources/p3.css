@@ -8806,6 +8806,24 @@ body.patric *:focus {
 	border-color: #555;
 	box-shadow: 0px 0px 24px orange;
 }
+table.p3basic {
+  font-size: 11px;
+  border-collapse: separate;
+  empty-cells: hide;
+  border-bottom: #d3d3d3 1px solid;
+  border-right: #d3d3d3 1px solid; }
+  table.p3basic th, table.p3basic td, table.p3basic caption {
+    padding: 4px 10px 4px 5px; }
+table.p3basic thead th {
+  background: #fff;
+  color: #666666;
+  font-weight: bold; }
+table.p3basic td, th {
+  border-top: #d3d3d3 1px solid;
+  border-left: #d3d3d3 1px solid; }
+table.striped tr:nth-child(even) td,
+table tr.even td {
+  background: #e5ecf9; }
 .claro .dijitDialog {
 	perspective: 2000;
 	-webkit-perspective: 2000;
