@@ -21,36 +21,59 @@ define("p3/store/PathwayMemoryStore", [
 		state: null,
 		genome_ids: null,
 		type: "pathway",
-		onSetState: function(attr, oldVal, state){
+		onSetState: function(attr,oldVal,state){
+
+			//console.log("PathwayMemoryStore onSetState() oldState:", oldVal);
+			//console.log("								 New State:", state);
 			var ov, nv;
 			if(oldVal){
-				ov = oldVal.search + oldVal.filter
+				ov = oldVal.search;
+				if (oldVal.hashParams.filter) {
+					ov = ov + oldVal.hashParams.filter;
+				}
 			}
 			if(state){
-				nv = state.search + state.filter
+				nv = state.search;
+				if (state.hashParams.filter){
+					nv = nv + state.hashParams.filter;
+				}
+
 			}
 
-			// console.log("MEMORY STORE onSetState: ", state, oldVal);
-			// if (ov!=nv){
-			// console.log("clear memory store data");
-			this._loaded = false;
-			if(this._loadingDeferred){
-				// console.log("Deleting _loadingDeferred", this._loadingDeferred);
-				delete this._loadingDeferred;
+			this.state = state;
+
+			if (!nv){
+				this.setData([]);
+				this._loaded = true;
+				if (this._loadingDeferred){
+					this.loadingDeferred.resolve(true);
+				}
+			}else if (ov!=nv){
+				if (this._loaded){
+					this._loaded = false;
+					delete this._loadingDeferred;
+					this.loadData();
+				}else {
+					if (this._loadingDeferred){
+						var curDef = this._loadingDeferred;
+						when(this.loadData(), function(r){
+							curDef.resolve(r);
+						})
+					}else{
+						this.loadData();
+					}
+				}
 			}
-			// }
 		},
 		constructor: function(opts){
 			this.init(opts);
 		},
 		init: function(options){
 			options = options || {};
-			// console.log("PMS Ctor Options: ", options);
 			this._loaded = false;
 			this.genome_ids = [];
 			lang.mixin(this, options);
-			this.watch("state", lang.hitch(this, "onSetState"));
-			// console.log("INIT COMPLETE: ", this)
+			this.watch("state", lang.hitch(this,"onSetState"));
 		},
 
 		query: function(query, opts){
@@ -61,10 +84,7 @@ define("p3/store/PathwayMemoryStore", [
 			else{
 				var _self = this;
 				var results;
-				// console.log("Beofre LOAD type: ", this.type);
-				// console.log("Initiate NON LOADED Query: ", query);
 				var qr = QueryResults(when(this.loadData(), function(){
-					// console.log("Do actual Query Against loadData() data. QR: ", qr);
 					results = _self.query(query || {}, opts);
 					qr.total = when(results, function(results){
 						return results.total || results.length
@@ -140,8 +160,6 @@ define("p3/store/PathwayMemoryStore", [
 			var q = [];
 			if(this.state){
 				if(this.state.search){
-					// console.log("buildQuery SEARCH: ", this.state.search);
-
 					q.push((this.state.search.charAt(0) == "?") ? this.state.search.substr(1) : this.state.search);
 				}else if(this.state.genome_ids){
 					q.push("in(genome_id,(" + this.state.genome_ids.map(encodeURIComponent).join(",") + "))");
@@ -166,19 +184,16 @@ define("p3/store/PathwayMemoryStore", [
 			}
 			q = q + this.queryTypes[this.type];
 
-			// console.log("End Build Query: ", q);
 			return (q.charAt(0) == "?") ? q.substr(1) : q;
 		},
 
 		loadData: function(){
-
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
 			var state = this.state || {};
 
 			if(!state.search || !state.genome_ids || state.genome_ids.length < 1){
-				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -193,17 +208,9 @@ define("p3/store/PathwayMemoryStore", [
 
 			}
 
-			// var lq;
-
-			// if(state && state.genome_ids){
-			// 		lq = "&in(genome_id,(" + state.genome_ids.map(encodeURIComponent).join(",") + "))";
-			// }
-
-			// console.log("QUERY TYPE: ", this.type, this.queryTypes[this.type])
 			var q = this.buildQuery();
 
 			var _self = this;
-			// console.log("Load Data: ", q);
 			this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'pathway') + '/', {
 				handleAs: 'json',
 				headers: {
@@ -222,8 +229,6 @@ define("p3/store/PathwayMemoryStore", [
 					"ecnumber": "ec_number",
 					"genes": 'feature_id'
 				};
-				// console.log("Pathway Base Query Response:", response);
-				// console.log("Type: ", this.type, " props[this.type]: ", props[this.type], "res prop: ",  response.grouped[props[this.type]])
 				if(response && response.grouped && response.grouped[props[this.type]]){
 					var ds = response.grouped[props[this.type]].doclist.docs;
 					var buckets = response.facets.stat.buckets;
@@ -236,7 +241,6 @@ define("p3/store/PathwayMemoryStore", [
 					docs = ds.map(function(doc){
 						var p = props[this.type];
 						var pv = doc[p];
-						// console.log("p: ", p, "pv: ", pv, " mapped[pv]", map[pv]);
 						lang.mixin(doc, map[pv] || {});
 						if(doc.genome_ec && doc.genome_count){
 							doc.ec_cons = Math.round(doc.genome_ec / doc.genome_count / doc.ec_count * 10000) / 100;
@@ -265,7 +269,6 @@ define("p3/store/PathwayMemoryStore", [
 						}
 						return doc;
 					}, this);
-					// console.log("doc count: ", docs.length);
 
 					_self.setData(docs);
 					_self._loaded = true;
@@ -283,6 +286,7 @@ define("p3/store/PathwayMemoryStore", [
 				_self._loaded = true;
 				return err;
 			}));
+
 			return this._loadingDeferred;
 		}
 	})

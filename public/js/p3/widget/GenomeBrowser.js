@@ -787,10 +787,17 @@ define([
                 });
             }
 
+            var location;
+            if (state.feature){
+            	state.hashParams.loc = state.feature.accession + ":" + state.feature.location;
+            }
+
+            // console.log("JBROWSE LOC: ", state.hashParams.loc);
+
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
 				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
-				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (state.genome_id || state.genome_ids[0]),
+				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (((state.feature && state.feature.genome_id)?state.feature.genome_id:false)|| state.genome_id || state.genome_ids[0] ),
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
@@ -848,6 +855,7 @@ define([
 
 				this._browser = new Browser(config)
 			}else{
+
 				console.log("Browser Already Exists");
 			}
 		},
@@ -872,12 +880,16 @@ define([
 		},
 
 		onFirstView: function(){
+			console.log("GenomeBrowser onFirstView()")
 			if(this._firstView){
 				return;
 			}
-			if(!this._browser){
-				this._browser = new Browser(this.jbrowseConfig)
-			}
+			console.log("GenomeBrowser onFirstView()")
+
+			// if(!this._browser){
+			// 	console.log("Create GenomeBrowser: ", this.jbrowseConfig);
+			// 	this._browser = new Browser(this.jbrowseConfig)
+			// }
 		},
 
 		resize: function(changeSize, resultSize){

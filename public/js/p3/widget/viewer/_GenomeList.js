@@ -19,11 +19,14 @@ define([
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
+		defaultTab: "overview",
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes.<br> When you are satisfied, click ANCHOR FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
-			// console.log(this.id, " _setQueryAttr: ", query, this);
-			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-			//console.log("GenomeList SetQuery: ", query, this);
+			if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
+			if (query && (query == this.query)){
+				return;
+			}
+			console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
 			// if(!this._started){
@@ -35,7 +38,6 @@ define([
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + ")");
 
-			// console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -65,13 +67,14 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			 //console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			if(!state.genome_ids){
-				// console.log("	NO Genome_IDS")
+				 //console.log("	NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
 				if(state.search == oldVal.search){
-					// console.log("		Same Search")
-					// console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					//console.log("		Same Search")
+					//console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
+					//console.log("INTERNAL STATE UPDATE")
 					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids}))
 					return;
 				}else{
@@ -82,13 +85,13 @@ define([
 				this.set("query", state.search);
 			}
 
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "genomes"){
-				this.setActivePanelState()
-			}
 
 			this.inherited(arguments);
+
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : this.defaultTab;
+
+			this.setActivePanelState();
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
@@ -102,8 +105,8 @@ define([
 
 		setActivePanelState: function(){
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			// console.log("Active: ", active, "state: ", this.state);
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
+			//console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -112,21 +115,23 @@ define([
 				return;
 			}
 			switch(active){
+				case "overview":
+					break;
 				case "genomes":
-					activeTab.set("state", this.state);
+					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "proteinFamilies":
 					// console.log("SET ACTIVE TAB: ", active, " State to: ", lang.mixin({}, this.state, {search: ""}));
-					activeTab.set("state", lang.mixin({}, this.state, {search: ""}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "", hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,(" + (this.state.genome_ids || []).join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}))
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						// console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						//console.log("Found Genome_IDS in state object");
+						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						// console.log("gidQueryState: ", gidQueryState);
 						// console.log("Active Query State: ", activeQueryState);
 
@@ -143,7 +148,8 @@ define([
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			// console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
 		},

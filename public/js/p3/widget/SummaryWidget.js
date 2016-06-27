@@ -44,6 +44,7 @@ define([
 		},
 
 		onSetQuery: function(attr, oldVal, query){
+			console.log("SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,

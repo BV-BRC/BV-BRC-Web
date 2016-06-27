@@ -47,8 +47,8 @@ define([
 		},
 
 		onUpdateHash: function(evt){
-			console.log("OnUpdateHash: ", evt);
-			console.log("Current State: ", this.state, " hash params: ", this.state.hashParams);
+			//console.log("OnUpdateHash: ", evt);
+			//console.log("Current State: ", this.state, " hash params: ", this.state.hashParams);
 			if(!this.state){
 				this.state = {}
 			}
@@ -58,7 +58,7 @@ define([
 			}
 
 			if(evt.hashParams){
-				console.log("EVT.hashParams: ", evt.hashParams);
+				//console.log("EVT.hashParams: ", evt.hashParams);
 				this.state.hashParams = evt.hashParams;
 			}else if(evt.hashProperty == "view_tab"){
 				this.state.hashParams = {
@@ -77,7 +77,7 @@ define([
 				}, this).filter(function(x){
 					return !!x;
 				}).join("&");
-			console.log("onUpdateHash. nav to: ", l);
+			//console.log("onUpdateHash. nav to: ", l);
 
 			Topic.publish("/navigate", {href: l});
 		},

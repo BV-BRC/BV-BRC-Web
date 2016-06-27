@@ -24,13 +24,19 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			//console.log("_setGenome_IDAttr: ", id, this.genome_id, this.state);
+			console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
+
+			if (this.genome_id==id){
+				console.log("Genome ID Already Set");
+				return;
+			}
 			var state = this.state = this.state || {};
-			this.genome_id = id;
+			this.genome_id = this.state.genome_id=id;
 			this.state.genome_ids = [id];
+
 
 			xhr.get(PathJoin(this.apiServiceUrl, "genome", id), {
 				headers: {
@@ -42,26 +48,44 @@ define([
 			}).then(lang.hitch(this, function(genome){
 				this.set("genome", genome)
 			}));
-			var activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + id + ")"});
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+
+		},
+
+		setActivePanelState: function(){
+			var activeQueryState;
+			console.log("Set ActivePanelState: ", JSON.stringify(this.state,null,4));
+			if (this.state.genome_id){
+				activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + this.state.genome_id + ")"});
+			}
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
+			console.log("Active Panel: ", active);
+
+
 
 			switch(active){
+				case "phylogeny":
 				case "overview":
-					break;
-				case "phlyogeny":
-				case "proteinFamilies":
-				case "pathways":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "?eq(genome_id," + this.genome_id + ")"}));
+					if (this.state.genome){
+						activeTab.set("state", lang.mixin({},this.state));
+					}
 					break;
 				case "transcriptomics":
-					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}));
+					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
 				default:
-					activeTab.set("state", activeQueryState);
+					if (activeQueryState){
+						console.log("Using Default ActiveQueryState: ", activeQueryState);
+						activeTab.set("state", activeQueryState);
+					}else{
+						console.log("Missing Active Query State for: ", active)
+					}
 					break;
 			}
 		},
+
+
+
 
 		buildHeaderContent: function(genome){
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
@@ -75,24 +99,24 @@ define([
 		_setGenomeAttr: function(genome){
 			var state = this.state || {};
 
-			state.genome = genome;
+			this.state.genome = genome;
 
 			this.viewHeader.set("content", this.buildHeaderContent(genome));
 
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+			// var activeTab = this[active];
 
-			switch(active){
-				case "phylogeny":
-				case "overview":
-					activeTab.set("state", state);
-					break;
-				default:
-					break;
-			}
+			// switch(active){
+			// 	case "phylogeny":
+			// 	case "overview":
+			// 		activeTab.set("state", state);
+			// 		break;
+			// 	default:
+			// 		break;
+			// }
 
 			this._set("genome", genome);
-
+			this.setActivePanelState();
 			this.resize();
 		},
 
@@ -105,13 +129,32 @@ define([
 			});
 		},
 
-		onSetState: function(attr, oldVal, state){
+		onSetState: function(attr, oldState, state){
 
-			var parts = this.state.pathname.split("/");
+			var parts = state.pathname.split("/");
 			this.set("genome_id", parts[parts.length - 1]);
-
+			state.genome_id = parts[parts.length - 1];
+			state.genome_ids = [state.genome_id];
 			if(!state){
 				return;
+			}
+
+			console.log("Genome: ", state.genome, state.genome_id)
+
+			if (state && state.genome_id && !state.genome){
+				console.log("No state.genome.  state.genome_id: ", state.genome_id);
+				if (oldState && oldState.genome_id){
+					console.log("oldState.genome_id: ", oldState.genome_id)
+					
+					if ((state.genome_id == oldState.genome_id)){
+						if (oldState.genome || this.genome){
+							console.log("oldState Genome: ", oldState.genome||this.genome);
+							state.genome = oldState.genome || this.genome;
+						}else{
+							console.log("oldState missing Genome");
+						}
+					}
+				}
 			}
 
 			if(state.hashParams && state.hashParams.view_tab){
@@ -124,6 +167,9 @@ define([
 					// console.log("No view-tab supplied in State Object");
 				}
 			}
+
+			this.setActivePanelState();
+
 			// console.log("viewer/Genome onSetState() after set genome_id")
 		},
 

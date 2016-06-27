@@ -29,6 +29,10 @@ define("p3/widget/GenomeOverview", [
 		},
 
 		"_setGenomeAttr": function(genome){
+			if (this.genome && (this.genome.genome_id == genome.genome_id)){
+				console.log("Genome ID Already Set")
+				return;
+			}
 			this.genome = genome;
 			this.createSummary(genome);
 
