@@ -25512,7 +25512,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -58502,10 +58501,20 @@ define([
 },
 'p3/widget/viewer/GenomeList':function(){
 define([
-	"dojo/_base/declare", "./_GenomeList"
-], function(declare, GenomeList){
+	"dojo/_base/declare", "dijit/layout/ContentPane", "./_GenomeList"
+], function(declare, ContentPane, GenomeList){
 	return declare([GenomeList], {
-		defaultTab: "genomes"
+		defaultTab: "genomes",
+		onSetQuery: function(attr, oldVal, newVal){
+			// prevent default action
+		},
+		createOverviewPanel: function(){
+			return new ContentPane({
+				content: "Genome List Overview",
+				title: "Overview",
+				id: this.viewer.id + "_" + "overview"
+			})
+		}
 	});
 });
 
@@ -73362,7 +73371,7 @@ define([
 			}
 
 			if(this.enableFilterPanel && this.filterPanel){
-				console.log("GridContainer call filterPanel set state: ", state)
+				// console.log("GridContainer call filterPanel set state: ", state)
 				this.filterPanel.set("state", lang.mixin({},state));
 			}
 			this.set("query", q.join("&"));
@@ -73371,13 +73380,13 @@ define([
 		_setQueryAttr: function(query){
 			
 			if(query == this.query){
-				console.log("  Skipping Query Update (unchanged)");
+				// console.log("  Skipping Query Update (unchanged)");
 				return;
 			}
 
 			this.query = query;
 			// this.query = query || "?keyword(*)"
-			console.log("Query Set: ", query);
+			// console.log("Query Set: ", query);
 
 			if(this.grid){
 				// console.log("    " + this.id + " Found Grid.")
@@ -91709,7 +91718,7 @@ define([
 
             var location;
             if (state.feature){
-            	state.hashParams.loc = state.feature.accession + ":" + state.feature.location;
+            	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
             // console.log("JBROWSE LOC: ", state.hashParams.loc);
@@ -107807,7 +107816,7 @@ define([
 				return;
 			}
 
-			if (this.feature_id == id){
+			if(this.feature_id == id){
 				return;
 			}
 
@@ -107828,16 +107837,16 @@ define([
 
 		},
 
-		setActivePanelState:function(){
+		setActivePanelState: function(){
 			var activeQueryState;
 
-			if (this.state.feature_id){
+			if(this.state.feature_id){
 				activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + this.state.feature_id + ")"});
 			}
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
-			console.log("Active Tab in Feature: ", active, activeTab);
+			// console.log("Active Tab in Feature: ", active, activeTab);
 			switch(active){
 				// case "overview":
 				// case "correlatedGenes":
@@ -107848,15 +107857,15 @@ define([
 				case "overview":
 				case "transcriptomics":
 				case "correlatedGenes":
-					if (this.state && this.state.feature){
-						console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4))
-						activeTab.set("state", lang.mixin({},this.state));
+					if(this.state && this.state.feature){
+						// console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4));
+						activeTab.set("state", lang.mixin({}, this.state));
 					}
-					
+
 					break;
 				default:
-					if (activeQueryState){
-						console.log("Set Active Query State");
+					if(activeQueryState){
+						// console.log("Set Active Query State");
 						activeTab.set("state", activeQueryState);
 					}
 					break;
@@ -107872,14 +107881,14 @@ define([
 				return;
 			}
 
-			if (state && state.feature_id && !state.feature){
-				console.log("No state.feature.  state.feature_id: ", state.feature_id);
-				if (oldState && oldState.feature_id){
-					console.log("oldState.feature_id: ", oldState.feature_id)
-					
-					if ((state.feature_id == oldState.feature_id)){
-						if (oldState.feature || this.feature){
-							console.log("oldState Feature: ", oldState.feature||this.feature);
+			if(state && state.feature_id && !state.feature){
+				// console.log("No state.feature.  state.feature_id: ", state.feature_id);
+				if(oldState && oldState.feature_id){
+					// console.log("oldState.feature_id: ", oldState.feature_id)
+
+					if((state.feature_id == oldState.feature_id)){
+						if(oldState.feature || this.feature){
+							// console.log("oldState Feature: ", oldState.feature||this.feature);
 							this.state.feature = state.feature = oldState.feature || this.feature;
 						}else{
 							console.log("oldState missing Featture");
@@ -107908,7 +107917,7 @@ define([
 		},
 
 		_setFeatureAttr: function(feature){
-			console.log("_setFeatureAttr: ", feature);
+			// console.log("_setFeatureAttr: ", feature);
 			var state = this.state || {};
 
 			this.feature = this.state.feature = feature;
@@ -107957,8 +107966,7 @@ define([
 			});
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
-				id: this.viewer.id + "_correlatedGenes",
-				state: this.state
+				id: this.viewer.id + "_correlatedGenes"
 			});
 
 			this.viewer.addChild(this.overview);
@@ -108001,7 +108009,7 @@ define([
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-			console.log("Set Feature", feature);
+			// console.log("Set Feature", feature);
 
 			this.createSummary(feature);
 			this.getSummaryData();
@@ -108032,6 +108040,38 @@ define([
 				domConstruct.create("td", {innerHTML: row.na_length}, tr);
 				domConstruct.create("td", {innerHTML: row.aa_length || '-'}, tr);
 				domConstruct.create("td", {innerHTML: row.product || '(feature type: ' + row.feature_type + ')'}, tr);
+			});
+		},
+		_setMappedFeatureListAttr: function(summary){
+
+			domConstruct.empty(this.idMappingList);
+			var span = domConstruct.create("span", {innerHTML: "<b>UniProt</b> :"}, this.idMappingList);
+
+			summary['accessions'].forEach(function(d){
+				var accession = domConstruct.create("a", {
+					href: "http://www.uniprot.org/uniprot/" + d,
+					target: "_blank",
+					innerHTML: d
+				}, span);
+				domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), accession, "after");
+			});
+
+			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
+			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
+
+			var table = domConstruct.create("table", {class: "hidden"}, this.idMappingList);
+			summary['ids'].forEach(function(id){
+				var tr = domConstruct.create('tr', {}, table);
+				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
+				domConstruct.create('td', {innerHTML: id['id_value']}, tr);
+			});
+
+			on(mappedIds, "click", function(){
+				if(domClass.contains(table, "hidden")){
+					domClass.remove(table, "hidden");
+				}else{
+					domClass.add(table, "hidden");
+				}
 			});
 		},
 		_setFunctionalPropertiesAttr: function(feature){
@@ -108068,15 +108108,35 @@ define([
 			// TODO: implement protein interaction
 		},
 		getSummaryData: function(){
-			// getting uniprot mapping
-			if(this.feature.gi != null){
-				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
-					handleAs: "json",
-					headers: {"accept": "application/solr+json"}
-				}).then(lang.hitch(this, function(data){
-					//console.log("Uniprot Accessions: ", data);
 
-					// TODO: process uniprot mapping
+			if(this.feature.gi){
+				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)"), {
+					handleAs: "json",
+					headers: {
+						'Accept': "application/json",
+						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': window.App.authorizationToken || ""
+					}
+				}).then(lang.hitch(this, function(data){
+
+					var uniprotKbAccessions = data.map(function(d){
+						return d.uniprotkb_accession;
+					});
+
+					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(id_type,id_value)&limit(25000)"), {
+						handleAs: "json",
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': window.App.authorizationToken || ""
+						}
+					}).then(lang.hitch(this, function(data){
+						if(data.length === 0) return;
+
+						this.set("mappedFeatureList", {accessions: uniprotKbAccessions, total: data.length, ids: data});
+					}));
 				}));
 			}
 
@@ -108087,7 +108147,7 @@ define([
 					headers: {"Accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
 
-					if (data.length === 0) return;
+					if(data.length === 0) return;
 					var relatedFeatures = data.response.docs;
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
@@ -108095,27 +108155,31 @@ define([
 		},
 		createSummary: function(feature){
 			if(feature && feature.feature_id){
-				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>';
-				if(feature.refseq_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>';
+				if(feature.patric_id){
+					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';
 				}
-				if(feature.alt_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
+
+				if(feature.refseq_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ';
+				}
+
+				if(feature.alt_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
 				}
 
 				this.proteinIdList.innerHTML = '';
 				if(feature.protein_id != null){
-					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.protein_id + '</span>';
+					this.proteinIdList.innerHTML += '<b>RefSeq</b>: <a href="https://www.ncbi.nlm.nih.gov/protein/' + feature.protein_id + '" target="_blank">' + feature.protein_id + '</a>';
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
+				this.featureBoxNode.innerHTML = '<div class="gene_symbol">' + (feature.gene || ' ') + '</div>';
 				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}
-				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
+				this.featureBoxNode.innerHTML += '<div class="feature_type">' + this.feature.feature_type + '</div>';
 
 			}else{
 				console.log("Invalid Feature: ", feature);
@@ -111963,11 +112027,11 @@ define([
 		},
 
 		loadData: function(){
-			var _self = this;
-
 			if(this._loadingDeferred){
 				return this._loadingDeferred;
 			}
+
+			var _self = this;
 			var state = this.state || {};
 
 			if(!state.feature_id){
@@ -111980,7 +112044,7 @@ define([
 				setTimeout(lang.hitch(_self, function(){
 					this.setData([]);
 					this._loaded = true;
-					def.resolve(true);
+					// def.resolve(true);
 				}), 0);
 				return def.promise;
 			}
@@ -112630,7 +112694,7 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;padding:4px;\">\n    <div class=\"section\">\n        <table class=\"basic stripe far2x left\" style=\"width:80%\">\n            <tbody>\n            <tr>\n                <th scope=\"row\">Gene ID</th>\n                <td data-dojo-attach-point=\"geneIdList\"></td>\n            </tr>\n            <tr>\n                <th scope=\"row\">Protein ID</th>\n                <td data-dojo-attach-point=\"proteinIdList\"></td>\n            </tr>\n            </tbody>\n        </table>\n\n        <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n        <div class=\"clear\"></div>\n    </div>\n\n    <div class=\"section\">\n        <div data-dojo-attach-point=\"relatedFeatureNode\">\n            Loading Related Features...\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Functional Properties</span></h3>\n\n        <div data-dojo-attach-point=\"functionalPropertiesNode\">\n            Loading Functional Properties...\n        </div>\n    </div>\n\n    <div class=\"section\" style=\"\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Comments</span></h3>\n\n        <div data-dojo-attach-point=\"featureCommentsNode\">\n            Loading Comments...\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;padding:4px;\">\n    <div class=\"section\">\n        <table class=\"p3basic stripe far2x left\" style=\"width:80%\">\n            <tbody>\n            <tr>\n                <th scope=\"row\">Gene ID</th>\n                <td data-dojo-attach-point=\"geneIdList\"></td>\n            </tr>\n            <tr>\n                <th scope=\"row\">Protein ID</th>\n                <td>\n                    <span data-dojo-attach-point=\"proteinIdList\"></span>\n                    &nbsp; &nbsp;\n                    <span data-dojo-attach-point=\"idMappingList\"></span>\n                </td>\n            </tr>\n            </tbody>\n        </table>\n\n        <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n        <div class=\"clear\"></div>\n    </div>\n\n    <div class=\"section\">\n        <div data-dojo-attach-point=\"relatedFeatureNode\">\n            Loading Related Features...\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Functional Properties</span></h3>\n\n        <div data-dojo-attach-point=\"functionalPropertiesNode\">\n            Loading Functional Properties...\n        </div>\n    </div>\n\n    <div class=\"section\" style=\"\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Comments</span></h3>\n\n        <div data-dojo-attach-point=\"featureCommentsNode\">\n            [placeholder for comments]\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

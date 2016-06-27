@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;padding:4px;\">\n    <div class=\"section\">\n        <table class=\"basic stripe far2x left\" style=\"width:80%\">\n            <tbody>\n            <tr>\n                <th scope=\"row\">Gene ID</th>\n                <td data-dojo-attach-point=\"geneIdList\"></td>\n            </tr>\n            <tr>\n                <th scope=\"row\">Protein ID</th>\n                <td data-dojo-attach-point=\"proteinIdList\"></td>\n            </tr>\n            </tbody>\n        </table>\n\n        <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n        <div class=\"clear\"></div>\n    </div>\n\n    <div class=\"section\">\n        <div data-dojo-attach-point=\"relatedFeatureNode\">\n            Loading Related Features...\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Functional Properties</span></h3>\n\n        <div data-dojo-attach-point=\"functionalPropertiesNode\">\n            Loading Functional Properties...\n        </div>\n    </div>\n\n    <div class=\"section\" style=\"\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Comments</span></h3>\n\n        <div data-dojo-attach-point=\"featureCommentsNode\">\n            Loading Comments...\n        </div>\n    </div>\n</div>\n"}});
+'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;padding:4px;\">\n    <div class=\"section\">\n        <table class=\"p3basic stripe far2x left\" style=\"width:80%\">\n            <tbody>\n            <tr>\n                <th scope=\"row\">Gene ID</th>\n                <td data-dojo-attach-point=\"geneIdList\"></td>\n            </tr>\n            <tr>\n                <th scope=\"row\">Protein ID</th>\n                <td>\n                    <span data-dojo-attach-point=\"proteinIdList\"></span>\n                    &nbsp; &nbsp;\n                    <span data-dojo-attach-point=\"idMappingList\"></span>\n                </td>\n            </tr>\n            </tbody>\n        </table>\n\n        <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n        <div class=\"clear\"></div>\n    </div>\n\n    <div class=\"section\">\n        <div data-dojo-attach-point=\"relatedFeatureNode\">\n            Loading Related Features...\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Functional Properties</span></h3>\n\n        <div data-dojo-attach-point=\"functionalPropertiesNode\">\n            Loading Functional Properties...\n        </div>\n    </div>\n\n    <div class=\"section\" style=\"\">\n        <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Comments</span></h3>\n\n        <div data-dojo-attach-point=\"featureCommentsNode\">\n            [placeholder for comments]\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
@@ -29,7 +29,7 @@ define("p3/widget/FeatureOverview", [
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-			console.log("Set Feature", feature);
+			// console.log("Set Feature", feature);
 
 			this.createSummary(feature);
 			this.getSummaryData();
@@ -60,6 +60,38 @@ define("p3/widget/FeatureOverview", [
 				domConstruct.create("td", {innerHTML: row.na_length}, tr);
 				domConstruct.create("td", {innerHTML: row.aa_length || '-'}, tr);
 				domConstruct.create("td", {innerHTML: row.product || '(feature type: ' + row.feature_type + ')'}, tr);
+			});
+		},
+		_setMappedFeatureListAttr: function(summary){
+
+			domConstruct.empty(this.idMappingList);
+			var span = domConstruct.create("span", {innerHTML: "<b>UniProt</b> :"}, this.idMappingList);
+
+			summary['accessions'].forEach(function(d){
+				var accession = domConstruct.create("a", {
+					href: "http://www.uniprot.org/uniprot/" + d,
+					target: "_blank",
+					innerHTML: d
+				}, span);
+				domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), accession, "after");
+			});
+
+			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
+			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
+
+			var table = domConstruct.create("table", {class: "hidden"}, this.idMappingList);
+			summary['ids'].forEach(function(id){
+				var tr = domConstruct.create('tr', {}, table);
+				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
+				domConstruct.create('td', {innerHTML: id['id_value']}, tr);
+			});
+
+			on(mappedIds, "click", function(){
+				if(domClass.contains(table, "hidden")){
+					domClass.remove(table, "hidden");
+				}else{
+					domClass.add(table, "hidden");
+				}
 			});
 		},
 		_setFunctionalPropertiesAttr: function(feature){
@@ -96,15 +128,35 @@ define("p3/widget/FeatureOverview", [
 			// TODO: implement protein interaction
 		},
 		getSummaryData: function(){
-			// getting uniprot mapping
-			if(this.feature.gi != null){
-				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?eq(id_type,GI)&eq(id_value," + this.feature.gi + ")&limit(0)"), {
-					handleAs: "json",
-					headers: {"accept": "application/solr+json"}
-				}).then(lang.hitch(this, function(data){
-					//console.log("Uniprot Accessions: ", data);
 
-					// TODO: process uniprot mapping
+			if(this.feature.gi){
+				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)"), {
+					handleAs: "json",
+					headers: {
+						'Accept': "application/json",
+						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+						'X-Requested-With': null,
+						'Authorization': window.App.authorizationToken || ""
+					}
+				}).then(lang.hitch(this, function(data){
+
+					var uniprotKbAccessions = data.map(function(d){
+						return d.uniprotkb_accession;
+					});
+
+					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(id_type,id_value)&limit(25000)"), {
+						handleAs: "json",
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': window.App.authorizationToken || ""
+						}
+					}).then(lang.hitch(this, function(data){
+						if(data.length === 0) return;
+
+						this.set("mappedFeatureList", {accessions: uniprotKbAccessions, total: data.length, ids: data});
+					}));
 				}));
 			}
 
@@ -115,7 +167,7 @@ define("p3/widget/FeatureOverview", [
 					headers: {"Accept": "application/solr+json"}
 				}).then(lang.hitch(this, function(data){
 
-					if (data.length === 0) return;
+					if(data.length === 0) return;
 					var relatedFeatures = data.response.docs;
 					this.set("relatedFeatureList", relatedFeatures);
 				}));
@@ -123,27 +175,31 @@ define("p3/widget/FeatureOverview", [
 		},
 		createSummary: function(feature){
 			if(feature && feature.feature_id){
-				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>';
-				if(feature.refseq_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>';
+				if(feature.patric_id){
+					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';
 				}
-				if(feature.alt_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
+
+				if(feature.refseq_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ';
+				}
+
+				if(feature.alt_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
 				}
 
 				this.proteinIdList.innerHTML = '';
 				if(feature.protein_id != null){
-					this.proteinIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.protein_id + '</span>';
+					this.proteinIdList.innerHTML += '<b>RefSeq</b>: <a href="https://www.ncbi.nlm.nih.gov/protein/' + feature.protein_id + '" target="_blank">' + feature.protein_id + '</a>';
 				}
 
 				// feature box
-				this.featureBoxNode.innerHTML = '<div id="gene_symbol">' + (feature.gene || ' ') + '</div>';
+				this.featureBoxNode.innerHTML = '<div class="gene_symbol">' + (feature.gene || ' ') + '</div>';
 				if(feature.strand == '+'){
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}else{
 					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
 				}
-				this.featureBoxNode.innerHTML += '<div id="feature_type">' + this.feature.feature_type + '</div>';
+				this.featureBoxNode.innerHTML += '<div class="feature_type">' + this.feature.feature_type + '</div>';
 
 			}else{
 				console.log("Invalid Feature: ", feature);

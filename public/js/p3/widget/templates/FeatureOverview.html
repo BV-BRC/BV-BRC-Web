@@ -1,6 +1,6 @@
 <div style="overflow: auto;padding:4px;">
     <div class="section">
-        <table class="basic stripe far2x left" style="width:80%">
+        <table class="p3basic stripe far2x left" style="width:80%">
             <tbody>
             <tr>
                 <th scope="row">Gene ID</th>
@@ -8,7 +8,11 @@
             </tr>
             <tr>
                 <th scope="row">Protein ID</th>
-                <td data-dojo-attach-point="proteinIdList"></td>
+                <td>
+                    <span data-dojo-attach-point="proteinIdList"></span>
+                    &nbsp; &nbsp;
+                    <span data-dojo-attach-point="idMappingList"></span>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -35,7 +39,7 @@
         <h3 class="section-title normal-case close2x"><span class="wrap">Comments</span></h3>
 
         <div data-dojo-attach-point="featureCommentsNode">
-            Loading Comments...
+            [placeholder for comments]
         </div>
     </div>
 </div>

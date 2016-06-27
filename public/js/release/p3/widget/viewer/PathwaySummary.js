@@ -11,7 +11,7 @@ define("p3/widget/viewer/PathwaySummary", [
 		apiServiceUrl: window.App.dataAPI,
 
 		onSetState: function(attr, oldVal, state){
-			// console.log("PathwaySummary onSetState", state);
+//			 console.log("PathwaySummary onSetState", state);
 
 			if(!state){
 				return;
@@ -23,6 +23,7 @@ define("p3/widget/viewer/PathwaySummary", [
 			state.feature_ids = params.split(",");
 
 			this.viewer.set('visible', true);
+			this.viewer.set('state', lang.mixin({},state));
 		},
 
 		postCreate: function(){
