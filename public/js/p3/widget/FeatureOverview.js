@@ -173,12 +173,16 @@ define([
 		},
 		createSummary: function(feature){
 			if(feature && feature.feature_id){
-				this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>';
-				if(feature.refseq_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>';
+				if(feature.patric_id){
+					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';
 				}
-				if(feature.alt_locus_tag != null){
-					this.geneIdList.innerHTML += '&nbsp; <span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
+
+				if(feature.refseq_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ';
+				}
+
+				if(feature.alt_locus_tag){
+					this.geneIdList.innerHTML += '<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
 				}
 
 				this.proteinIdList.innerHTML = '';
