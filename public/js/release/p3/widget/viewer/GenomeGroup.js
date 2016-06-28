@@ -1,17 +1,15 @@
 define("p3/widget/viewer/GenomeGroup", [
 	"dojo/_base/declare", "./_GenomeList", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "dijit/layout/TabContainer",
+	"../formatter", "dijit/layout/TabContainer", "../GenomeListOverview",
 	"dojo/request", "dojo/_base/lang"
 ], function(declare, GenomeList, on,
 			domClass, ContentPane, domConstruct,
-			formatter, TabContainer,
+			formatter, TabContainer, Overview,
 			xhr, lang){
 	return declare([GenomeList], {
 		params: null,
-		// taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		// taxonomy: null,
 		groupPath: null,
 
 		onSetQuery: function(attr, oldVal, newVal){
@@ -84,7 +82,7 @@ define("p3/widget/viewer/GenomeGroup", [
 		},
 
 		createOverviewPanel: function(){
-			return new ContentPane({
+			return new Overview({
 				content: "Genome Group Overview",
 				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
