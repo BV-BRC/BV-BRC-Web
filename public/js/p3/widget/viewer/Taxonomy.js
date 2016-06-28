@@ -170,7 +170,7 @@ define([
 		setActivePanelState: function(){
 
 
-			console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
+			// console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 

@@ -98,25 +98,26 @@ define([
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			//console.log("FilterContainerActionBar setStateAttr: ",state);
+			console.log("FilterContainerActionBar setStateAttr oldState ",JSON.stringify(this.state,null,4));
+			console.log("FilterContainerActionBar setStateAttr newState ",JSON.stringify(state,null,4));
 			state = state || {};
 			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
 			// console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr, oldState, state){
-			//console.log("FilterContainerActionBar onSetState: ", state)
+			// console.log("FilterContainerActionBar onSetState: ", JSON.stringify(state,null,4))
 			if (!state) { return; }
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			// console.log("FilterContainerActionBar onSetState() ", state);
 
 
-			if (oldState){
-				console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
-			}else{
-				console.log("    OLD: No State");
-			}
-			console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
+			// if (oldState){
+			// 	console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			// }else{
+			// 	console.log("    OLD: No State");
+			// }
+			// console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
 			var ov,nv;
 			if (oldState){
@@ -688,14 +689,14 @@ define([
 		},
 
 		_setQueryAttr: function(query){
-			console.log("_setQueryAttr: ", query)
-			if (!query) { console.log("No Query, return;"); return; }
-			if (query == this.query){ console.log("Facet Query Already Set"); return; }
+			// console.log("_setQueryAttr: ", query)
+			if (!query) {  return; }
+			if (query == this.query){return; }
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				// console.log("_setQuery got facets: ", facets)
 				if(!facets){
-					console.log("No Facets Returned");
+					// console.log("No Facets Returned");
 					return;
 				}
 
@@ -712,13 +713,13 @@ define([
 				}, this);
 
 			}, function(err){
-				console.log("Error Getting Facets: ", err);
+				// console.log("Error Getting Facets: ", err);
 			}));
 
 		},
 
 		getFacets: function(query, facetFields){
-			console.log("getFacets: ", query);
+			// console.log("getFacets: ", query);
 			if (!query || query=="?"){
 				var def = new Deferred();
 				def.resolve(false);
