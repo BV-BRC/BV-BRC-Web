@@ -10,7 +10,7 @@
                 </script>
                 <script type="text/javascript" src="/js/msa/msa.min.js"></script>
                 <% if (request&&request.production){ %>
-                        <script src="/js/release/dojo/dojo.js"></script>
+                        <script src="/js/<%- request.package.version %>/dojo/dojo.js"></script>
                         <script>
                         require(<%- JSON.stringify(request.productionLayers) %>, function(){
                 <% } else { %>
