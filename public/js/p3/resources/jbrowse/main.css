@@ -1,8 +1,17 @@
+/* CSS styles specifically for MAKER output */
+@import url("./maker.css");
+
 @import url("./track_styles.css");
 @import url("./hierarchical_track_selector.css");
 @import url("./faceted_track_selector.css");
-/* CSS styles specifically for MAKER output */
-@import url("./maker.css");
+@import url("./combination_tracks.css");
+@import url("./genome.css");
+@import url("./icons.css");
+@import url("./menubar.css");
+@import url("./export_dialog.css");
+@import url("./file_dialog.css");
+@import url("./sequence.css");
+@import url("./tristate.css");
 
 .tundra .dijitDialogTitleBar {
     padding-right: 25px;
