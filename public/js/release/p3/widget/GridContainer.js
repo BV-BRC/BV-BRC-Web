@@ -297,7 +297,11 @@ define("p3/widget/GridContainer", [
 							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
 						})
 						var genome_ids = Object.keys(map);
-						Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+						if (genome_ids && genome_ids.length==1){
+							Topic.publish("/navigate", {href: "/view/Genome/" + genome_ids[0]});
+						}else{
+							Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+						}
 					}else{
 						var sel = selection[0];
 						// console.log("sel: ", sel)

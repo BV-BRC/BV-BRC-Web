@@ -79,7 +79,7 @@ define("p3/widget/FeatureOverview", [
 			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
 			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
 
-			var table = domConstruct.create("table", {class: "hidden"}, this.idMappingList);
+			var table = domConstruct.create("table", {"class": "hidden"}, this.idMappingList);
 			summary['ids'].forEach(function(id){
 				var tr = domConstruct.create('tr', {}, table);
 				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
