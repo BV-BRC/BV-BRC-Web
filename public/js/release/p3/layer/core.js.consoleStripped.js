@@ -25512,7 +25512,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -58502,15 +58501,41 @@ define([
 },
 'p3/widget/viewer/GenomeList':function(){
 define([
-	"dojo/_base/declare", "dijit/layout/ContentPane", "./_GenomeList"
-], function(declare, ContentPane, GenomeList){
+	"dojo/_base/declare", "dijit/layout/ContentPane", "./_GenomeList", "../GenomeListOverview"
+], function(declare, ContentPane, GenomeList, Overview){
 	return declare([GenomeList], {
 		defaultTab: "genomes",
 		onSetQuery: function(attr, oldVal, newVal){
 			// prevent default action
 		},
+		setActivePanelState: function(){
+
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			//  0 && console.log("Active: ", active, "state: ", this.state);
+
+			var activeTab = this[active];
+
+			if(!activeTab){
+				 0 && console.error("ACTIVE TAB NOT FOUND: ", active);
+				return;
+			}
+			switch(active){
+				default:
+					var activeQueryState;
+					if(this.state && this.state.genome_ids){
+						activeQueryState = this.state;
+					}
+
+					if(activeQueryState){
+						activeTab.set("state", activeQueryState);
+					}else{
+						 0 && console.warn("MISSING activeQueryState for PANEL: " + active);
+					}
+					break;
+			}
+		},
 		createOverviewPanel: function(){
-			return new ContentPane({
+			return new Overview({
 				content: "Genome List Overview",
 				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
@@ -87385,6 +87410,47 @@ define([
 		// 0 && console.log("parsed query: ", parsed);
 	}
 
+});
+
+},
+'p3/widget/GenomeListOverview':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
+	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeListOverview.html",
+	"dojo/request", "dojo/_base/lang"
+
+], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
+			domClass, Templated, Template,
+			xhr, lang
+){
+
+	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
+		baseClass: "GenomeListOverview",
+		disabled: false,
+		templateString: Template,
+		apiServiceUrl: window.App.dataAPI,
+		state: null,
+		genome_ids: null,
+
+		_setStateAttr: function(state){
+			this._set("state", state);
+
+			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget"];
+
+			sumWidgets.forEach(function(w){
+				if(this[w]){
+					this[w].set('query', this.state.search)
+				}
+			}, this)
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			this.inherited(arguments);
+		}
+	});
 });
 
 },
@@ -118170,6 +118236,189 @@ define([
 });
 
 },
+'p3/widget/ProteinFeatureSummary':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/promise/all", "dojo/when",
+	"dojo/dom-class", "./SummaryWidget",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+
+], function(declare, WidgetBase, on, All, when,
+			domClass, SummaryWidget,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct, PathJoin, easing){
+
+	var labels = ["Hypothetical proteins", "Proteins with functional assignments", "Proteins with EC number assignments", "Proteins with GO assignments", "Proteins with Pathway assignments", "Proteins with PATRIC genus-specific family (PLfam) assignments", "Proteins with PATRIC cross-genus family (PGfam) assignments", "Proteins with FIGfam assignments"];
+	var shortLabels = ["Hypothetical", "Functional", "EC assigned", "GO assigned", "Pathway assigned", "PLfam assigned", "PGfam assigned", "FIGfam assigned"];
+	var filters = ["eq(product,hypothetical+protein),eq(feature_type,CDS)", "ne(product,hypothetical+protein),eq(feature_type,CDS)", "eq(ec,*)", "eq(go,*)", "eq(pathway,*)", "eq(plfam_id,*)", "eq(pgfam_id,*)", "eq(figfam_id,*)"];
+
+	return declare([SummaryWidget], {
+		dataModel: "genome_feature",
+		query: "",
+		baseQuery: "&in(annotation,(PATRIC,RefSeq))&limit(1)&facet((field,annotation),(mincount,1))&json(nl,map)",
+		columns: [{
+			label: " ",
+			field: "label"
+		}, {
+			label: "PATRIC",
+			field: "PATRIC",
+			renderCell: function(obj, val, node){
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,PATRIC),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
+			}
+		}, {
+			label: "RefSeq",
+			field: "RefSeq",
+			renderCell: function(obj, val, node){
+				node.innerHTML = val ? ('<a href="#view_tab=features&filter=and(eq(annotation,RefSeq),' + obj.filter + ')" target="_blank">' + val + "</a>") : "0"
+			}
+		}],
+		onSetQuery: function(attr, oldVal, query){
+
+			var url = PathJoin(this.apiServiceUrl, this.dataModel) + "/";
+
+			var defHypothetical = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&and(eq(product,hypothetical+protein),eq(feature_type,CDS))" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defFunctional = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&and(ne(product,hypothetical+protein),eq(feature_type,CDS))" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defECAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(ec,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defGOAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(go,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defPathwayAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(pathway,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defPLfamAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(plfam_id,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defPGfamAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(pgfam_id,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			var defFigfamAssigned = when(xhr.post(url, {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + "&eq(figfam_id,*)" + this.baseQuery
+			}), function(response){
+				return response.facet_counts.facet_fields.annotation;
+			});
+
+			return when(All([defHypothetical, defFunctional, defECAssigned, defGOAssigned, defPathwayAssigned, defPLfamAssigned, defPGfamAssigned, defFigfamAssigned]), lang.hitch(this, "processData"));
+		},
+		processData: function(results){
+
+			this._tableData = results.map(function(row, idx){
+				row["label"] = labels[idx];
+				row["filter"] = filters[idx];
+				return row;
+			});
+
+			var data = {PATRIC:[], RefSeq:[]};
+			results.forEach(function(row, idx){
+				data['PATRIC'].push({label: labels[idx], y: row.PATRIC || 0});
+				data['RefSeq'].push({label: labels[idx], y: row.RefSeq || 0});
+			});
+
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				var chart = this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredBars",
+						markers: true,
+						gap: 3,
+						// labels: true,
+						minBarSize: 10,
+						labelStyle: "outside",
+						labelOffset: 20,
+						// labelFunc: function(o){
+						// 	return o.annotation;
+						// },
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						vertical: true,
+						majorLabels: true,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: shortLabels.map(function(val, idx){ return {text: val, value: idx+1}; })
+					}).addAxis("y", {
+						minorTicks: false
+					});
+
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						var d = o.run.data[o.index];
+						return "[" + o.run.name + "] " + d.label + "s (" + d.y + ")"
+					}
+				});
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					chart.addSeries(key, this.data[key]);
+				}));
+
+				chart.render();
+			}else{
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.updateSeries(key, this.data[key]);
+				}));
+				this.chart.render();
+
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+		}
+	})
+});
+},
 'url:dijit/templates/Dialog.html':"<div class=\"dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div data-dojo-attach-point=\"titleBar\" class=\"dijitDialogTitleBar\">\n\t\t<span data-dojo-attach-point=\"titleNode\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n\t\t\t\trole=\"heading\" level=\"1\"></span>\n\t\t<span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n\t\t\t<span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n\t\t</span>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\" class=\"dijitDialogPaneContent\"></div>\n\t${!actionBarTemplate}\n</div>\n\n",
 'url:dijit/form/templates/Button.html':"<span class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:__onClick\" role=\"presentation\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t><input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\"\n\t\tdata-dojo-attach-event=\"onclick:_onClick\"\n\t\ttabIndex=\"-1\" role=\"presentation\" aria-hidden=\"true\" data-dojo-attach-point=\"valueNode\"\n/></span>\n",
 'url:dijit/form/templates/TextBox.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\" id=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class=\"dijitReset dijitInputInner\" data-dojo-attach-point='textbox,focusNode' autocomplete=\"off\"\n\t\t\t${!nameAttrSetting} type='${type}'\n\t/></div\n></div>\n",
@@ -118216,6 +118465,7 @@ define([
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"padding:7px;vertical-align:top;min-width:350px;width:30%;\">\n                <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"rgSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n                    </div>\n                </div>\n            </td>\n            <td style=\"padding:7px;vertical-align:top;width:70%;min-width:500px;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Metadata Top 5</span></h3>\n                    <div  class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\" data-dojo-type=\"p3/widget/GenomeMetaSummary\"\n                         style=\"margin:4px;width:100%;\">\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa fa-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa fa-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
 'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n\n    <table style=\"margin:2px;\">\n        <tbody>\n        <tr>\n            <td style=\"padding:7px;vertical-align:top;min-width:350px;width:30%;\">\n                <div class=\"section\" style=\"\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"taxonomySummaryNode\">\n                        Loading Genome Summary...\n                    </div>\n                </div>\n                <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n                <div class=\"section\">\n                    <div style=\"padding:7px\" data-dojo-attach-point=\"rgSummaryWidget\"\n                         data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n                    </div>\n                </div>\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode\" style=\"margin:4px;padding:8px;margin-radius:4px;\">\n                        This feature will be returning soon.\n                    </div>\n                    <div data-dojo-attach-point=\"pubmedSummaryNode2\"\n                         style=\"margin:4px;padding:8px;margin-radius:4px;display:block\">\n                        <div>Show more <i data-dojo-attach-event=\"click:onShowMore\"\n                                          class=\"fa icon-plus-circle fa-lg\"></i></div>\n                        </br>\n                    </div>\n                </div>\n            </td>\n            <td style=\"padding:7px;vertical-align:top;width:70%;min-width:500px;\">\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Genome Metadata Top 5</span></h3>\n                    <div  class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\" data-dojo-type=\"p3/widget/GenomeMetaSummary\"\n                         style=\"margin:4px;width:100%;\">\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title normal-case close2x\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n                    <div data-dojo-attach-point=\"spgSummaryWidget\" data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"\n                         style=\"margin:4px;\">\n                    </div>\n                </div>\n\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n",
