@@ -73368,7 +73368,7 @@ define([
 
 			if(this.enableFilterPanel && this.filterPanel){
 				//  0 && console.log("GridContainer call filterPanel set state: ", state)
-				this.filterPanel.set("state", lang.mixin({},state));
+				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
 			}
 			this.set("query", q.join("&"));
 
@@ -73960,7 +73960,7 @@ define([
 					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
 					//  0 && console.log("this.currentContainerType: ", this.containerType);
@@ -74347,25 +74347,26 @@ define([
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			// 0 && console.log("FilterContainerActionBar setStateAttr: ",state);
+			 0 && console.log("FilterContainerActionBar setStateAttr oldState ",JSON.stringify(this.state,null,4));
+			 0 && console.log("FilterContainerActionBar setStateAttr newState ",JSON.stringify(state,null,4));
 			state = state || {};
 			this._set("state", state);
 			//  0 && console.log("_setStateAttr query: ", state.search, this.query);
 			//  0 && console.log("_after _setStateAttr: ", state);
 		},
 		onSetState: function(attr, oldState, state){
-			// 0 && console.log("FilterContainerActionBar onSetState: ", state)
+			//  0 && console.log("FilterContainerActionBar onSetState: ", JSON.stringify(state,null,4))
 			if (!state) { return; }
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			//  0 && console.log("FilterContainerActionBar onSetState() ", state);
 
 
-			if (oldState){
-				 0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
-			}else{
-				 0 && console.log("    OLD: No State");
-			}
-			 0 && console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
+			// if (oldState){
+			// 	 0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			// }else{
+			// 	 0 && console.log("    OLD: No State");
+			// }
+			//  0 && console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
 			var ov,nv;
 			if (oldState){
@@ -74937,14 +74938,14 @@ define([
 		},
 
 		_setQueryAttr: function(query){
-			 0 && console.log("_setQueryAttr: ", query)
-			if (!query) {  0 && console.log("No Query, return;"); return; }
-			if (query == this.query){  0 && console.log("Facet Query Already Set"); return; }
+			//  0 && console.log("_setQueryAttr: ", query)
+			if (!query) {  return; }
+			if (query == this.query){return; }
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				//  0 && console.log("_setQuery got facets: ", facets)
 				if(!facets){
-					 0 && console.log("No Facets Returned");
+					//  0 && console.log("No Facets Returned");
 					return;
 				}
 
@@ -74961,13 +74962,13 @@ define([
 				}, this);
 
 			}, function(err){
-				 0 && console.log("Error Getting Facets: ", err);
+				//  0 && console.log("Error Getting Facets: ", err);
 			}));
 
 		},
 
 		getFacets: function(query, facetFields){
-			 0 && console.log("getFacets: ", query);
+			//  0 && console.log("getFacets: ", query);
 			if (!query || query=="?"){
 				var def = new Deferred();
 				def.resolve(false);
@@ -76419,10 +76420,6 @@ define([
 
 							 0 && console.log("DownloadQuery: ", currentQuery);
 							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-
-							if (window.App.authorizationToken){
-								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
 				
 			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
 	                        if(baseUrl.charAt(-1) !== "/"){
@@ -76755,12 +76752,12 @@ define([
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FilterContainerActionBar",
-	"dojo/_base/lang"
+	"dojo/_base/lang","dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
 			TooltipDialog, ContainerActionBar,
-			lang){
+			lang,domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -76799,6 +76796,8 @@ define([
 		visible: true,
 		dataModel: "pathway",
 		type: "pathway",
+		primaryKey: "id",
+		maxDownloadSize: 25000,
 		typeMap: {
 			"pathway": "pathway_id",
 			"ec_number": "ec_number",
@@ -76875,7 +76874,7 @@ define([
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
+		/*	[
 				"DownloadTable",
 				"fa fa-download fa-2x",
 				{
@@ -76886,6 +76885,43 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -76894,7 +76930,7 @@ define([
 				},
 				true,
 				"left"
-			]
+			]*/
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
@@ -86512,11 +86548,11 @@ define([
 	"dojo/_base/declare", "./GridContainer",
 	"./TranscriptomicsExperimentGrid", "dijit/popup",
 	"dijit/TooltipDialog", "./FacetFilterPanel",
-	"dojo/_base/lang", "dojo/on"
+	"dojo/_base/lang", "dojo/on","dojo/dom-construct"
 ], function(declare, GridContainer,
 			Grid, popup,
 			TooltipDialog, FacetFilterPanel,
-			lang, on){
+			lang, on,domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><divi class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
 	var viewFASTATT = new TooltipDialog({
@@ -86533,14 +86569,29 @@ define([
 	});
 
 	on(downloadTT.domNode, "div:click", function(evt){
+
 		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery );
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
+		var dataType=_self.dataModel;
+		var currentQuery = _self.grid.get('query');
+
+		 0 && console.log("DownloadQuery: ", currentQuery);
+		var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+
+        var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+        if(baseUrl.charAt(-1) !== "/"){
+             baseUrl = baseUrl + "/";
+        }
+        baseUrl = baseUrl + dataType + "/?";
+
+		if (window.App.authorizationToken){
+			baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+		}
+
+		baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+        form.submit();			
+
 		popup.close(downloadTT);
 	});
 
@@ -86551,6 +86602,8 @@ define([
 		dataModel: "transcriptomics_experiment",
 		getFilterPanel: function(opts){
 		},
+		primaryKey: "eid",
+		maxDownloadSize: 10000,
 		query: "&keyword(*)",
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
@@ -86564,6 +86617,49 @@ define([
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					if (!_self.grid){
+						 0 && console.log("Grid Not Defined");
+						return;
+					}
+
+					 0 && console.log("_self.grid: ", _self.grid);
+					var totalRows =_self.grid.totalRows;
+						 0 && console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							 0 && console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -86573,29 +86669,7 @@ define([
 				true
 			]
 		]),
-		/*		selectionActions: GridContainer.prototype.selectionActions.concat([
-					[
-						"ViewFASTA",
-						"fa icon-fasta fa-2x",
-						{
-							label: "FASTA",
-							ignoreDataType: true,
-							multiple: true,
-							validTypes: ["*"],
-							tooltip: "View FASTA Data",
-							tooltipDialog: viewFASTATT
-						},
-						function(selection) {
-							popup.open({
-								popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
-								around: this.selectionActionBar._actions.ViewFASTA.button,
-								orient: ["below"]
-							});
-						},
-						false
-					]
-				]),
-		*/
+
 		gridCtor: Grid
 
 	});
@@ -87008,10 +87082,6 @@ define([
 
 							 0 && console.log("DownloadQuery: ", currentQuery);
 							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-
-							if (window.App.authorizationToken){
-								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
 				
 			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
 	                        if(baseUrl.charAt(-1) !== "/"){
@@ -87107,11 +87177,7 @@ define([
 
 							 0 && console.log("DownloadQuery: ", currentQuery);
 							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
-
-							if (window.App.authorizationToken){
-								query = query + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
-							}
-				
+		
 			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
 	                        if(baseUrl.charAt(-1) !== "/"){
 	                             baseUrl = baseUrl + "/";
@@ -87988,7 +88054,7 @@ define([
 		setActivePanelState: function(){
 
 
-			 0 && console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
+			//  0 && console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 
