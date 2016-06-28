@@ -137,6 +137,7 @@ var profile = {
 				"JBrowse/View/FASTA",
 				"dijit/Toolbar",
 				"dijit/ToolbarSeparator",
+				"p3/widget/ProteinFeatureSummary"
 		
 			]
 		},
