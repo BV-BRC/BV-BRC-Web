@@ -104,19 +104,17 @@ define([
 		},
 
 		setActivePanelState: function(){
-
+			// console.log("setActivePanelState()");
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
-			//console.log("Active: ", active, "state: ", this.state);
+			// console.log("Active: ", active, "state: ", JSON.stringify(this.state));
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				// console.log("ACTIVE TAB NOT FOUND: ", active);
+				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
-				case "overview":
-					break;
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
