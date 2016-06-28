@@ -792,12 +792,29 @@ define([
             	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
+            var dataRoot;
+
+            if (!state){
+            	return;
+            }
+
+            if (state.feature && state.feature.genome_id){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
+            }else if (state.genome_id){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_id;
+            }else if (state.genome_ids && state.genome_ids[0]){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_ids[0];
+            }else{
+            	console.log("No genome ID Supplied for Genome Browser");
+            	return;
+            }
+
             // console.log("JBROWSE LOC: ", state.hashParams.loc);
 
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
 				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
-				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (((state.feature && state.feature.genome_id)?state.feature.genome_id:false)|| state.genome_id || state.genome_ids[0] ),
+				dataRoot: dataRoot,
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",

@@ -119,7 +119,26 @@ var profile = {
 				"p3/widget/viewer/GenomeList",
 				"p3/widget/viewer/Feature",
 				"p3/widget/viewer/FeatureList",
-				"p3/widget/JobStatus"
+				"p3/widget/JobStatus",
+				"JBrowse/ConfigAdaptor/conf",
+				"JBrowse/ConfigAdaptor/JB_json_v1",
+				"JBrowse/Plugin",
+				"JBrowse/Store/TrackMetaData",
+				"dojo/data/util/simpleFetch",
+				"p3/widget/HierarchicalTrackList",
+				"JBrowse/View/TrackList/Hierarchical",
+				"JBrowse/View/TrackList/_TextFilterMixin",
+				"JBrowse/Store/SeqFeature/REST",
+				"JBrowse/Store/SeqFeature",
+				"JBrowse/Store",
+				"JBrowse/Model/SimpleFeature",
+				"JBrowse/View/Track/HTMLFeatures",
+				"JBrowse/View/Ruler",
+				"JBrowse/View/FASTA",
+				"dijit/Toolbar",
+				"dijit/ToolbarSeparator",
+				"p3/widget/ProteinFeatureSummary"
+		
 			]
 		},
 		"p3/layer/panels": {

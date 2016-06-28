@@ -8,6 +8,7 @@ var config = require("./config");
 var session = require("express-session-unsigned");
 var RedisStore = require('connect-redis')(session);
 var passport = require('passport');
+var package = require("./package.json");
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -79,6 +80,7 @@ app.use(function(req, res, next){
 	req.config = config;
 	req.production = config.get("production") || false;
 	req.productionLayers = ["p3/layer/core"];
+	req.package = package;
 	req.applicationOptions = {
 		version: "3.0",
 		workspaceServiceURL: config.get("workspaceServiceURL"),
@@ -106,6 +108,17 @@ passport.deserializeUser(function(id, done){
 	done(null, {id: id});
 });
 app.use("*jbrowse.conf", express.static(path.join(__dirname, "public/js/jbrowse.conf")));
+app.use("/js/" + package.version + "/", [
+	express.static(path.join(__dirname, 'public/js/release/'), {
+		maxage:"356d",
+		/*etag:false,*/
+		setHeaders: function(res,path){
+			var d = new Date(); 
+			d.setYear(d.getFullYear() + 1);
+			res.setHeader("Expires", d.toGMTString());
+		}
+	}),
+]);
 app.use("/js/msa/", express.static(path.join(__dirname, 'node_modules/msa/dist/')));
 app.use("/js/msa/node_modules/", express.static(path.join(__dirname, 'node_modules/msa/node_modules/')));
 app.use("/js/swfobject/", express.static(path.join(__dirname, 'node_modules/swfobject-amd/')));
