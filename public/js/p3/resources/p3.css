@@ -3,7 +3,7 @@
 @import url("../../dojox/widget/Toaster/Toaster.css");
 
 /* CSS for JBrowse */
-@import url("./jbrowse/main.css");
+@import url("./jbrowse/genome.css");
 
 @import url("Footer.css");
 @import url("Header.css");

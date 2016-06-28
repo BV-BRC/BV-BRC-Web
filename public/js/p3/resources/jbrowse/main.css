@@ -1,9 +1,3 @@
-@import url("./track_styles.css");
-@import url("./hierarchical_track_selector.css");
-@import url("./faceted_track_selector.css");
-/* CSS styles specifically for MAKER output */
-@import url("./maker.css");
-
 .tundra .dijitDialogTitleBar {
     padding-right: 25px;
 }

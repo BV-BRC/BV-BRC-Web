@@ -256,9 +256,9 @@ define("p3/widget/GridContainer", [
 				},
 				function(selection){
 					var sel = selection[0];
-					//Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
 					// console.log("View SP GENE: ", sel)
-					Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
+					//Topic.publish("/navigate", {href: "/view/SpecialtyGene/" + sel.patric_id});
 				},
 				false
 			], [
