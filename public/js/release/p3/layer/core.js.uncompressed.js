@@ -25512,6 +25512,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -58505,35 +58506,6 @@ define([
 ], function(declare, ContentPane, GenomeList, Overview){
 	return declare([GenomeList], {
 		defaultTab: "genomes",
-		onSetQuery: function(attr, oldVal, newVal){
-			// prevent default action
-		},
-		setActivePanelState: function(){
-
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			// console.log("Active: ", active, "state: ", this.state);
-
-			var activeTab = this[active];
-
-			if(!activeTab){
-				console.error("ACTIVE TAB NOT FOUND: ", active);
-				return;
-			}
-			switch(active){
-				default:
-					var activeQueryState;
-					if(this.state && this.state.genome_ids){
-						activeQueryState = this.state;
-					}
-
-					if(activeQueryState){
-						activeTab.set("state", activeQueryState);
-					}else{
-						console.warn("MISSING activeQueryState for PANEL: " + active);
-					}
-					break;
-			}
-		},
 		createOverviewPanel: function(){
 			return new Overview({
 				content: "Genome List Overview",
@@ -58652,19 +58624,17 @@ define([
 		},
 
 		setActivePanelState: function(){
-
+			// console.log("setActivePanelState()");
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
-			//console.log("Active: ", active, "state: ", this.state);
+			// console.log("Active: ", active, "state: ", JSON.stringify(this.state));
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				// console.log("ACTIVE TAB NOT FOUND: ", active);
+				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 			switch(active){
-				case "overview":
-					break;
 				case "genomes":
 					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
 					break;
@@ -74093,7 +74063,7 @@ define([
 				"className": "BrowserHeader",
 				dataModel: this.dataModel,
 				facetFields: this.facetFields,
-				state: this.state,
+				state: lang.mixin({},this.state),
 				enableAnchorButton: this.enableAnchorButton,
 				currentContainerWidget: this
 			});
@@ -75196,7 +75166,7 @@ define([
 			this._set('category', category);
 
 			if(this._started && this.categoryNode){
-				this.categoryNode.innerHTML = cat;
+				this.categoryNode.innerHTML = cat.replace("_"," ")
 			}
 		},
 
@@ -75390,7 +75360,7 @@ define([
 			this.inherited(arguments);
 			on(this.domNode, ".FacetValue:click", lang.hitch(this, "toggleItem"))
 			if(this.categoryNode && this.category){
-				this.categoryNode.innerHTML = this.category;
+				this.categoryNode.innerHTML = this.category.replace("_"," ")
 			}
 			if(!this.data){
 				this.data = new Deferred();
@@ -91821,7 +91791,7 @@ define([
 				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["PATRICGenes", "RefSeqGenes"].join(","),
+				forceTracks: ["Reference Sequence", "PATRICGenes", "RefSeqGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -91829,7 +91799,8 @@ define([
 				show_menu: (state && state.hashParams && (typeof state.hashParams.show_menu != 'undefined')) ? state.hashParams.show_menu : false,
 				stores: {url: {type: "JBrowse/Store/SeqFeature/FromConfig", features: []}},
 				updateBrowserURL: false,
-				trackSelector: {type: "p3/widget/HierarchicalTrackList"}
+				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
+				suppressUsageStatistics: true
 				// "trackSelector": {
 				// 	"type": "Faceted",
 				// 	"displayColumns": [

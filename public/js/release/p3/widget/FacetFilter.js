@@ -24,7 +24,7 @@ define("p3/widget/FacetFilter", [
 			this._set('category', category);
 
 			if(this._started && this.categoryNode){
-				this.categoryNode.innerHTML = cat;
+				this.categoryNode.innerHTML = cat.replace("_"," ")
 			}
 		},
 
@@ -218,7 +218,7 @@ define("p3/widget/FacetFilter", [
 			this.inherited(arguments);
 			on(this.domNode, ".FacetValue:click", lang.hitch(this, "toggleItem"))
 			if(this.categoryNode && this.category){
-				this.categoryNode.innerHTML = this.category;
+				this.categoryNode.innerHTML = this.category.replace("_"," ")
 			}
 			if(!this.data){
 				this.data = new Deferred();
