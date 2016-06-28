@@ -158,7 +158,7 @@ define("p3/widget/GridContainer", [
 
 			if(this.enableFilterPanel && this.filterPanel){
 				// console.log("GridContainer call filterPanel set state: ", state)
-				this.filterPanel.set("state", lang.mixin({},state));
+				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
 			}
 			this.set("query", q.join("&"));
 
@@ -750,7 +750,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					tooltip: "Download Selection",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection){
 					// console.log("this.currentContainerType: ", this.containerType);
