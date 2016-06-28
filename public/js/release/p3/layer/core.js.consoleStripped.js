@@ -25512,6 +25512,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -73511,7 +73512,11 @@ define([
 							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
 						})
 						var genome_ids = Object.keys(map);
-						Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+						if (genome_ids && genome_ids.length==1){
+							Topic.publish("/navigate", {href: "/view/Genome/" + genome_ids[0]});
+						}else{
+							Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
+						}
 					}else{
 						var sel = selection[0];
 						//  0 && console.log("sel: ", sel)
@@ -91721,12 +91726,29 @@ define([
             	state.hashParams.loc = state.feature.accession + ":" + state.feature.start + ".." + state.feature.end;
             }
 
+            var dataRoot;
+
+            if (!state){
+            	return;
+            }
+
+            if (state.feature && state.feature.genome_id){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.feature.genome_id;
+            }else if (state.genome_id){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_id;
+            }else if (state.genome_ids && state.genome_ids[0]){
+            	dataRoot = window.App.dataServiceURL + "/jbrowse/genome/" + state.genome_ids[0];
+            }else{
+            	 0 && console.log("No genome ID Supplied for Genome Browser");
+            	return;
+            }
+
             //  0 && console.log("JBROWSE LOC: ", state.hashParams.loc);
 
 			var jbrowseConfig = {
 				containerID: this.id + "_browserContainer",
 				//			dataRoot: (state && state.hashParams && state.hashParams.data)?state.hashParams.data:'sample_data/json/volvox',
-				dataRoot: window.App.dataServiceURL + "/jbrowse/genome/" + (((state.feature && state.feature.genome_id)?state.feature.genome_id:false)|| state.genome_id || state.genome_ids[0] ),
+				dataRoot: dataRoot,
 				// dataRoot: "sample_data/json/volvox",
 				browserRoot: "/public/js/jbrowse.repo/",
 				baseUrl: "/public/js/jbrowse.repo/",
@@ -108059,7 +108081,7 @@ define([
 			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
 			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
 
-			var table = domConstruct.create("table", {class: "hidden"}, this.idMappingList);
+			var table = domConstruct.create("table", {"class": "hidden"}, this.idMappingList);
 			summary['ids'].forEach(function(id){
 				var tr = domConstruct.create('tr', {}, table);
 				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
@@ -112637,6 +112659,5512 @@ define([
 				return;
 			}
 
+		}
+	});
+});
+
+},
+'JBrowse/ConfigAdaptor/conf':function(){
+/**
+ * Configuration adaptor for JBrowse's text configuration format.
+ * That is, the text configuration format that is not JSON.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/_base/array',
+           'dojo/json',
+
+           'JBrowse/ConfigAdaptor/JB_json_v1'
+       ],
+       function(
+           declare,
+           lang,
+           array,
+           JSON,
+
+           JB_json
+       ) {
+return declare( [JB_json], {
+
+_isAlwaysArray: function(varname) {
+    return { include: true }[varname];
+},
+
+parse_conf: function( text, load_args ) {
+    var section = [], keypath, operation, value;
+    var data = {};
+    var lineNumber;
+
+    function recordVal() {
+        if( value !== undefined ) {
+            try {
+                var match;
+                // parse json
+                if(( match = value.match(/^json:(.+)/i) )) {
+                    value = JSON.parse( match[1] );
+                }
+                // parse numbers if it looks numeric
+                else if( /^[\+\-]?[\d\.,]+([eE][\-\+]?\d+)?$/.test(value) )
+                    value = parseFloat( value.replace(/,/g,'') );
+
+                var path = section.concat(keypath).join('.');
+                if( operation == '+=' ) {
+                    var existing = lang.getObject( path, false, data );
+                    if( existing ) {
+                        if( ! lang.isArray( existing ) )
+                            existing = [existing];
+                    }
+                    else {
+                        existing = [];
+                    }
+                    existing.push( value );
+                    value = existing;
+                }
+                if(value=="true") value=true;
+                if(value=="false") value=false;
+                lang.setObject( path, value, data );
+            } catch(e) {
+                throw new Error( "syntax error"
+                                 + ( (load_args.config||{}).url ? ' in '+load_args.config.url : '' )
+                                 + ( lineNumber? " at line "+(lineNumber-1) : '' )
+                               );
+            }
+        }
+    }
+
+    array.forEach( text.split("\n"), function( line, i ) {
+        lineNumber = i+1;
+        line = line.replace(/^\s*#.+/,'');
+        var match;
+
+        // new section
+        if(( match = line.match( /^\s*\[([^\]]+)/ ))) { // new section
+            recordVal();
+            keypath = value = undefined;
+            section = match[1].trim().split(/\s*\.\s*/);
+            if( section.length == 1 && section[0].toLowerCase() == 'general' )
+                section = [];
+        }
+        // new value
+        else if(( match = line.match( value == undefined ? /^([^\+=]+)(\+?=)(.*)/ : /^(\S[^\+=]+)(\+?=)(.*)/ ))) {
+            recordVal();
+            keypath = match[1].trim().split(/\s*\.\s*/);
+            operation = match[2];
+            if( this._isAlwaysArray( section.concat(keypath).join('.') ) ) {
+                operation = '+=';
+            }
+            value = match[3].trim();
+        }
+        // add to existing array value
+        else if( keypath !== undefined && ( match = line.match( /^\s{0,4}\+\s*(.+)/ ) ) ) {
+            recordVal();
+            operation = '+=';
+            value = match[1].trim();
+        }
+        // add to existing value
+        else if( value !== undefined && (match = line.match( /^\s+(\S.*)/ ))) {
+            value += value.length ? ' '+match[1].trim() : match[1].trim();
+        }
+        // done with last value
+        else {
+            recordVal();
+            keypath = value = undefined;
+        }
+    },this);
+
+    recordVal();
+
+    return data;
+}
+
+});
+});
+
+},
+'JBrowse/ConfigAdaptor/JB_json_v1':function(){
+define( [ 'dojo/_base/declare',
+          'dojo/_base/lang',
+          'dojo/_base/array',
+          'dojo/_base/json',
+          'dojo/request',
+
+          'JBrowse/Util',
+          'JBrowse/Digest/Crc32'
+        ], function(
+            declare,
+            lang,
+            array,
+            json,
+            request,
+
+            Util,
+            digest
+        ) {
+
+var dojof = Util.dojof;
+
+return declare('JBrowse.ConfigAdaptor.JB_json_v1',null,
+
+    /**
+     * @lends JBrowse.ConfigAdaptor.JB_json_v1.prototype
+     */
+    {
+
+        /**
+         * Configuration adaptor for JBrowse JSON version 1 configuration
+         * files (formerly known as trackList.json files).
+         * @constructs
+         */
+        constructor: function() {},
+
+        /**
+         * Load the configuration file from a URL.
+         *
+         * @param args.config.url {String} URL for fetching the config file.
+         */
+        load: function( /**Object*/ args ) {
+            var that = this;
+            if( args.config.url ) {
+                var url = Util.resolveUrl( args.baseUrl || window.location.href, args.config.url );
+                return request( url, { handleAs: 'text' })
+                    .then( function( o ) {
+                               o = that.parse_conf( o, args ) || {};
+                               o.sourceUrl = url;
+                               o = that.regularize_conf( o, args );
+                               return o;
+                           });
+            }
+            else if( args.config.data ) {
+                return Util.resolved( this.regularize_conf( args.config.data, args ) );
+            }
+        },
+
+        /**
+         * In this adaptor, just evals the conf text to parse the JSON, but
+         * other conf adaptors might want to inherit and override this.
+         * @param {String} conf_text the configuration text
+         * @param {Object} load_args the arguments that were passed to <code>load()</code>
+         * @returns {Object} the parsed JSON
+         */
+        parse_conf: function( conf_text, load_args ) {
+            try {
+                return json.fromJson( conf_text );
+            } catch(e) {
+                throw e+" when parsing "+( load_args.config.url || 'configuration' )+".";
+            }
+        },
+
+        /**
+         * Applies defaults and any other necessary tweaks to the loaded JSON
+         * configuration.  Called by <code>load()</code> on the JSON
+         * configuration before it calls the <code>onSuccess</code> callback.
+         * @param {Object} o the object containing the configuration, which it
+         *                   modifies in-place
+         * @param {Object} load_args the arguments that were passed to <code>load()</code>
+         * @returns the same object it was passed
+         */
+        regularize_conf: function( o, load_args ) {
+            // if tracks is not an array, convert it to one
+            if( o.tracks && ! lang.isArray( o.tracks ) ) {
+                // if it's a single track config, wrap it in an arrayref
+                if( o.tracks.label ) {
+                    o.tracks = [ o.tracks ];
+                }
+                // otherwise, coerce it to an array
+                else {
+                    var tracks = [];
+                    for( var label in o.tracks ) {
+                        if( ! ( 'label' in o.tracks[label] ) )
+                            o.tracks[label].label = label;
+                        tracks.push( o.tracks[label] );
+                    }
+                    o.tracks = tracks;
+                }
+            }
+
+            // regularize trackMetadata.sources
+            var meta = o.trackMetadata;
+            if( meta && meta.sources ) {
+                // if it's a single source config, wrap it in an arrayref
+                if( meta.sources.url || ( typeof meta.sources == 'string' ) ) {
+                    meta.sources = [ meta.sources ];
+                }
+
+                if( ! lang.isArray( meta.sources ) ) {
+                    var sources = [];
+                    for( var name in meta.sources ) {
+                        if( ! ( 'name' in meta.sources ) )
+                            meta.sources[name].name = name;
+                        sources.push( meta.sources[name] );
+                    }
+                    meta.sources = sources;
+                }
+
+                // coerce any string source defs to be URLs, and try to detect their types
+                array.forEach( meta.sources, function( sourceDef, i ) {
+                                   if( typeof sourceDef == 'string' ) {
+                                       meta.sources[i] = { url: sourceDef };
+                                       var typeMatch = sourceDef.match( /\.(\w+)$/ );
+                                       if( typeMatch )
+                                           meta.sources[i].type = typeMatch[1].toLowerCase();
+                                   }
+                });
+            }
+
+            o.sourceUrl = o.sourceUrl || load_args.config.url;
+            o.baseUrl   = o.baseUrl || Util.resolveUrl( o.sourceUrl, '.' );
+            if( o.baseUrl.length && ! /\/$/.test( o.baseUrl ) )
+                o.baseUrl += "/";
+
+            if( o.sourceUrl ) {
+                // set a default baseUrl in each of the track and store
+                // confs, and the names conf, if needed
+                var addBase =
+                    []
+                    .concat( o.tracks || [] )
+                    .concat( dojof.values(o.stores||{}) ) ;
+                if( o.names )
+                    addBase.push( o.names );
+
+                array.forEach( addBase, function(t) {
+                    if( ! t.baseUrl )
+                        t.baseUrl = o.baseUrl || '/';
+                },this);
+
+                //resolve the refSeqs and nameUrl if present
+                if( o.refSeqs )
+                    o.refSeqs = Util.resolveUrl( o.sourceUrl, o.refSeqs );
+                if( o.nameUrl )
+                    o.nameUrl = Util.resolveUrl( o.sourceUrl, o.nameUrl );
+            }
+
+            o = this._regularizeTrackConfigs( o );
+
+            return o;
+        },
+
+        _regularizeTrackConfigs: function( conf ) {
+            conf.stores = conf.stores || {};
+
+            array.forEach( conf.tracks || [], function( trackConfig ) {
+
+                // if there is a `config` subpart,
+                // just copy its keys in to the
+                // top-level config
+                if( trackConfig.config ) {
+                    var c = trackConfig.config;
+                    delete trackConfig.config;
+                    for( var prop in c ) {
+                        if( !(prop in trackConfig) && c.hasOwnProperty(prop) ) {
+                            trackConfig[prop] = c[prop];
+                        }
+                    }
+                }
+
+                // skip if it's a new-style track def
+                if( trackConfig.store )
+                    return;
+
+                var trackClassName = this._regularizeClass(
+                    'JBrowse/View/Track', {
+                        'FeatureTrack':      'JBrowse/View/Track/HTMLFeatures',         'ImageTrack':        'JBrowse/View/Track/FixedImage',
+                        'ImageTrack.Wiggle': 'JBrowse/View/Track/FixedImage/Wiggle',
+                        'SequenceTrack':     'JBrowse/View/Track/Sequence'
+                    }[ trackConfig.type ]
+                    || trackConfig.type
+                );
+                trackConfig.type = trackClassName;
+
+                this._synthesizeTrackStoreConfig( conf, trackConfig );
+
+                if( trackConfig.histograms ) {
+                    if( ! trackConfig.histograms.baseUrl )
+                        trackConfig.histograms.baseUrl = trackConfig.baseUrl;
+                    this._synthesizeTrackStoreConfig( conf, trackConfig.histograms );
+                }
+            }, this);
+
+            return conf;
+        },
+
+        _synthesizeTrackStoreConfig: function( mainconf, trackConfig ) {
+                // figure out what data store class to use with the track,
+                // applying some defaults if it is not explicit in the
+                // configuration
+                var urlTemplate = trackConfig.urlTemplate;
+                var storeClass = this._regularizeClass(
+                    'JBrowse/Store',
+                    trackConfig.storeClass                    ? trackConfig.storeClass :
+                        /\/FixedImage/.test(trackConfig.type) ? 'JBrowse/Store/TiledImage/Fixed' +( trackConfig.backendVersion == 0 ? '_v0' : '' )  :
+                        /\.jsonz?$/i.test( urlTemplate )      ? 'JBrowse/Store/SeqFeature/NCList'+( trackConfig.backendVersion == 0 ? '_v0' : '' )  :
+                        /\.bam$/i.test( urlTemplate )         ? 'JBrowse/Store/SeqFeature/BAM'                                                      :
+                        /\.(bw|bigwig)$/i.test( urlTemplate ) ? 'JBrowse/Store/SeqFeature/BigWig'                                                   :
+                        /\/Sequence$/.test(trackConfig.type)  ? 'JBrowse/Store/Sequence/StaticChunked'                                              :
+                                                                 null
+                );
+
+                if( ! storeClass ) {
+                     0 && console.warn( "Unable to determine an appropriate data store to use with track '"
+                                   + trackConfig.label + "', please explicitly specify a "
+                                   + "storeClass in the configuration." );
+                    return;
+                }
+
+                // synthesize a separate store conf
+                var storeConf = lang.mixin( {}, trackConfig );
+                lang.mixin( storeConf, {
+                    type: storeClass
+                });
+
+                // if this is the first sequence store we see, and we
+                // have no refseqs store defined explicitly, make this the refseqs store.
+                if( storeClass == 'JBrowse/Store/Sequence/StaticChunked' && !mainconf.stores['refseqs'] )
+                    storeConf.name = 'refseqs';
+                else
+                    storeConf.name = 'store'+digest.objectFingerprint( storeConf );
+
+                // record it
+                mainconf.stores[storeConf.name] = storeConf;
+
+                // connect it to the track conf
+                trackConfig.store = storeConf.name;
+        },
+
+        _regularizeClass: function( root, class_ ) {
+            if( ! class_ )
+                return null;
+
+            // prefix the class names with JBrowse/* if they contain no slashes
+            if( ! /\//.test( class_ ) )
+                class_ = root+'/'+class_;
+            class_ = class_.replace(/^\//);
+            return class_;
+        }
+});
+});
+
+},
+'JBrowse/Plugin':function(){
+define([
+           'dojo/_base/declare',
+           'JBrowse/Component'
+       ],
+       function( declare, Component ) {
+return declare( Component,
+{
+    constructor: function( args ) {
+        this.name = args.name;
+        this.cssLoaded = args.cssLoaded;
+        this._finalizeConfig( args.config );
+    },
+
+    _defaultConfig: function() {
+        return {
+            baseUrl: '/plugins/'+this.name
+        };
+    }
+});
+});
+},
+'JBrowse/Store/TrackMetaData':function(){
+define(
+    [
+        'dojo/_base/declare',
+        'dojo/_base/array',
+        'dojo/data/util/simpleFetch',
+        'JBrowse/Util',
+        'JBrowse/Digest/Crc32'
+    ],
+    function( declare, array, simpleFetch, Util, Crc32 ) {
+var dojof = Util.dojof;
+var Meta = declare( null,
+
+/**
+ * @lends JBrowse.Store.TrackMetaData.prototype
+ */
+{
+
+    _noDataValue: '(no data)',
+
+    /**
+     * Data store for track metadata, supporting faceted
+     * (parameterized) searching.  Keeps all of the track metadata,
+     * and the indexes thereof, in memory.
+     * @constructs
+     * @param args.trackConfigs {Array} array of track configuration
+     * @param args.indexFacets {Function|Array|String}
+     * @param args.onReady {Function}
+     * @param args.metadataStores {Array[dojox.data]}
+     */
+    constructor: function( args ) {
+        // set up our facet name discrimination: what facets we will
+        // actually provide search on
+        var non_facet_attrs = ['conf'];
+        this._filterFacet = (function() {
+            var filter = args.indexFacets || function() {return true;};
+            // if we have a non-function filter, coerce to an array,
+            // then convert that array to a function
+            if( typeof filter == 'string' )
+                filter = [filter];
+            if( dojo.isArray( filter ) ) {
+                var oldfilter = filter;
+                filter = function( facetName) {
+                    return dojo.some( oldfilter, function(fn) {
+                                         return facetName == fn.toLowerCase();
+                                     });
+               };
+            }
+            var ident_facets = this.getIdentityAttributes();
+            return function(facetName) {
+                return (
+                    // always index ident facets
+                    dojo.some( ident_facets, function(n) { return n == facetName; } )
+                    // otherwise, must pass the user filter AND not be one of our explicitly-blocked attrs
+                 || filter(facetName)
+                    && ! dojo.some( non_facet_attrs, function(a) { return a == facetName;})
+                );
+            };
+        }).call(this);
+
+        // set up our onReady callbacks to fire once the data is
+        // loaded
+        if( ! dojo.isArray( args.onReady ) ){
+            this.onReadyFuncs = args.onReady ? [ args.onReady ] : [];
+        } else {
+            this.onReadyFuncs = dojo.clone(args.onReady);
+        }
+
+        // interpret the track configurations themselves as a metadata store
+        this._indexItems(
+            {
+                store: this,
+                items: dojo.map( args.trackConfigs,
+                                 dojo.hitch( this, '_trackConfigToItem' ) )
+            }
+        );
+
+        // fetch and index all the items from each of the stores
+        var stores_fetched_count = 0;
+        // filter out empty metadata store entries
+        args.metadataStores = dojo.filter( args.metadataStores, function(s) { return s; } );
+        if( ! args.metadataStores || ! args.metadataStores.length ) {
+            // if we don't actually have any stores besides the track
+            // confs, we're ready now.
+            this._finishLoad();
+        } else  {
+            // index the track metadata from each of the stores
+
+            var storeFetchFinished = dojo.hitch( this, function() {
+                if( ++stores_fetched_count == args.metadataStores.length )
+                    this._finishLoad();
+            });
+            dojo.forEach( args.metadataStores, function(store) {
+                store.fetch({
+                    scope: this,
+                    onComplete: dojo.hitch( this, function(items) {
+                        // build our indexes
+                        this._indexItems({ store: store, items: items, supplementalOnly: true });
+
+                        // if this is the last store to be fetched, call
+                        // our onReady callbacks
+                        storeFetchFinished();
+                    }),
+                    onError: function(e) {
+                         0 && console.error(e, e.stack);
+                        storeFetchFinished();
+                    }
+                });
+            },this);
+        }
+
+        // listen for track-editing commands and update our track metadata accordingly
+        args.browser.subscribe( '/jbrowse/v1/c/tracks/new',
+                                dojo.hitch( this, 'addTracks' ));
+        args.browser.subscribe( '/jbrowse/v1/c/tracks/replace', dojo.hitch( this, function( trackConfigs ) {
+            this.deleteTracks( trackConfigs, 'no events' );
+            this.addTracks( trackConfigs, 'no events' );
+        }));
+        args.browser.subscribe( '/jbrowse/v1/c/tracks/delete',
+                                dojo.hitch( this, 'deleteTracks' ));
+     },
+
+    /**
+     * Convert a track config object into a data store item.
+     */
+    _trackConfigToItem: function( conf ) {
+        var metarecord = dojo.clone( conf.metadata || {} );
+        metarecord.label = conf.label;
+        metarecord.key = conf.key;
+        metarecord.conf = conf;
+        metarecord['track type'] = conf.type;
+        if( conf.category )
+            metarecord.category = conf.category;
+        return metarecord;
+    },
+
+    // map of special comparator functions for certain metadata items
+    comparatorMap: {
+        // for category metadata, split on "/" and compare
+        "category": function(a,b) {
+            var acs = (a||'Uncategorized').split(/\s*\/\s*/);
+            var bcs = (b||'Uncategorized').split(/\s*\/\s*/);
+            var ac, bc, compresult;
+            while( (ac=acs.shift()) && (bc=bcs.shift()) ) {
+                if(( compresult = ac.localeCompare( bc ) ))
+                    return compresult;
+            }
+            return 0;
+        }
+    },
+
+    addTracks: function( trackConfigs, suppressEvents ) {
+        if( trackConfigs.length ) {
+            // clear the query cache
+            delete this.previousQueryFingerprint;
+            delete this.previousResults;
+        }
+
+        array.forEach( trackConfigs, function( conf ) {
+            // insert in the indexes
+            this._indexItems({
+                store: this,
+                items: [ this._trackConfigToItem( conf ) ]
+            });
+
+            var name = conf.label;
+            var item = this.fetchItemByIdentity( name );
+            if( ! item )
+                 0 && console.error( 'failed to add '+name+' track to track metadata store', conf );
+            else if( ! suppressEvents )
+                    this.onNew( item );
+        },this );
+    },
+
+    deleteTracks: function( trackConfigs, suppressEvents ) {
+        if( trackConfigs.length ) {
+            // clear the query cache
+            delete this.previousQueryFingerprint;
+            delete this.previousResults;
+        }
+
+        // we don't actually delete things, we just mark them as
+        // deleted and filter out deleted ones when returning results.
+        array.forEach( trackConfigs, function( conf ) {
+            var name = conf.label;
+            var item = this.fetchItemByIdentity( name );
+            if( item ) {
+                item.DELETED = true;
+                if( ! suppressEvents )
+                    this.onDelete( item );
+            }
+        },this);
+    },
+
+    /**
+     * Set the store's state to be ready (i.e. loaded), and calls all
+     * our onReady callbacks.
+     * @private
+     */
+    _finishLoad: function() {
+
+        // sort the facet names
+        this.facets.sort();
+
+        // calculate the average bucket size for each facet index
+        dojo.forEach( dojof.values( this.facetIndexes.byName ), function(bucket) {
+            bucket.avgBucketSize = bucket.itemCount / bucket.bucketCount;
+        });
+        // calculate the rank of the facets: make an array of
+        // facet names sorted by bucket size, descending
+        this.facetIndexes.facetRank = dojo.clone(this.facets).sort(dojo.hitch(this,function(a,b){
+            return this.facetIndexes.byName[a].avgBucketSize - this.facetIndexes.byName[b].avgBucketSize;
+        }));
+
+        // sort the facet indexes by ident, so that we can do our
+        // kind-of-efficient N-way merging when querying.  also,
+        // uniqify them by identity.
+        var itemSortFunction = dojo.hitch( this, '_itemSortFunc' );
+        dojo.forEach( dojof.values( this.facetIndexes.byName ), function( facetIndex ) {
+            dojo.forEach( dojof.values( facetIndex.byValue ), function( valueIndex ) {
+                var uniqueItems = [];
+                var seen =  {};
+                //NOTE: the first record loaded with a given identity always wins
+                array.forEach( valueIndex.items, function( item ) {
+                                   var id = this.getIdentity( item );
+                                   if( ! seen[id] ) {
+                                       seen[id] = true;
+                                       uniqueItems.push( item );
+                                   }
+                               },this);
+                valueIndex.items = uniqueItems.sort( itemSortFunction );
+            },this);
+        },this);
+
+        this.ready = true;
+        this._onReady();
+    },
+
+    _itemSortFunc: function(a,b) {
+            var ai = this.getIdentity(a),
+                bi = this.getIdentity(b);
+            return ai == bi ?  0 :
+                   ai  > bi ?  1 :
+                   ai  < bi ? -1 : 0;
+    },
+
+    _indexItems: function( args ) {
+        // get our (filtered) list of facets we will index for
+        var store = args.store,
+            items = args.items;
+
+        var storeAttributes = {};
+
+        // convert the items to a uniform format
+        items = dojo.map( items, function( item ) {
+                              var itemattrs = store.getAttributes(item);
+
+                              //convert the item into a uniform data format of plain objects
+                              var newitem = {};
+                              dojo.forEach( itemattrs, function(attr) {
+                                                // stores sometimes emit undef attributes  >:-{
+                                                if( ! attr )
+                                                    return;
+
+                                                var lcattr = attr.toLowerCase();
+                                                storeAttributes[lcattr] = true;
+                                                newitem[lcattr] = store.getValue(item,attr);
+                                            });
+                              return newitem;
+                          },
+                          this
+                        );
+
+        // merge them with any existing records, filtering out ones
+        // that should be ignored if we were passed
+        // 'supplementalOnly', and update the identity index
+        this.identIndex = this.identIndex || {};
+        items = (function() {
+            var seenInThisStore = {};
+            return dojo.map( items, function(item) {
+                                 // merge the new item attributes with any existing
+                                 // record for this item
+                                 var ident = this.getIdentity(item);
+                                 var existingItem = this.identIndex[ ident ];
+                                 if( existingItem && existingItem.DELETED )
+                                     delete existingItem.DELETED;
+
+                                 // skip this item if we have already
+                                 // seen it from this store, or if we
+                                 // are supplementalOnly and it
+                                 // does not already exist
+                                 if( seenInThisStore[ident] || args.supplementalOnly && !existingItem) {
+                                     return null;
+                                 }
+                                 seenInThisStore[ident] = true;
+
+                                 return this.identIndex[ ident ] = dojo.mixin( existingItem || {}, item );
+                             },
+                             this
+                           );
+        }).call(this);
+
+        // filter out nulls
+        items = dojo.filter( items, function(i) { return i;});
+
+        // update our facet list to include any new attrs these
+        // items have
+        var store_facets = dojof.keys( storeAttributes );
+        var new_facets = this._addFacets( dojof.keys( storeAttributes ) );
+        var use_facets = array.filter( this.facets, function(f) { return f in storeAttributes; } );
+
+        // initialize indexes for any new facets
+        this.facetIndexes = this.facetIndexes || { itemCount: 0, bucketCount: 0, byName: {} };
+        dojo.forEach( new_facets, function(facet) {
+            if( ! this.facetIndexes.byName[facet] ) {
+                this.facetIndexes.bucketCount++;
+                this.facetIndexes.byName[facet] = { itemCount: 0, bucketCount: 0, byValue: {} };
+            }
+        }, this);
+
+        // now update the indexes with the new data
+        if( use_facets.length ) {
+            var gotDataForItem = {};
+            dojo.forEach( use_facets, function(f){ gotDataForItem[f] = {};});
+
+            dojo.forEach( items, function( item ) {
+                this.facetIndexes.itemCount++;
+                dojo.forEach( use_facets, function( facet ) {
+                    var value = this.getValue( item, facet, undefined );
+                    if( typeof value == 'undefined' )
+                        return;
+                    gotDataForItem[facet][this.getIdentity(item)] = 1;
+                    this._indexItem( facet, value, item );
+                },this);
+            }, this);
+
+            // index the items that do not have data for this facet
+            dojo.forEach( use_facets, function(facet) {
+                dojo.forEach( dojof.values( this.identIndex ), function(item) {
+                    if( ! gotDataForItem[facet][this.getIdentity(item)] ) {
+                        this._indexItem( facet, this._noDataValue, item );
+                    }
+                },this);
+            },this);
+        }
+    },
+
+    /**
+     * Add an item to the indexes for the given facet name and value.
+     * @private
+     */
+    _indexItem: function( facet, value, item ) {
+        var facetValues = this.facetIndexes.byName[facet];
+        var bucket = facetValues.byValue[value];
+        if( !bucket ) {
+            bucket = facetValues.byValue[value] = { itemCount: 0, items: [] };
+            facetValues.bucketCount++;
+        }
+        bucket.itemCount++;
+        facetValues.itemCount++;
+        bucket.items.push(item);
+    },
+
+    /**
+     * Given an array of string facet names, add records for them,
+     * initializing the necessary data structures.
+     * @private
+     * @returns {Array[String]} facet names that did not already exist
+     */
+    _addFacets: function( facetNames ) {
+        var old_facets = this.facets || [];
+        var seen = {};
+        this.facets = dojo.filter(
+            old_facets.concat( facetNames ),
+            function(facetName) {
+                var take = this._filterFacet(facetName) && !seen[facetName];
+                seen[facetName] = true;
+                return take;
+            },
+            this
+        );
+        return this.facets.slice( old_facets.length );
+    },
+
+    /**
+     * Get the number of items that matched the most recent query.
+     * @returns {Number} the item count, or undefined if there has not
+     * been any query so far.
+     */
+    getCount: function() {
+        return this._fetchCount;
+    },
+
+
+    /**
+     * @param facetName {String} facet name
+     * @returns {Object}
+     */
+    getFacetCounts: function( facetName ) {
+        var context = this._fetchFacetCounts[ facetName ] || this._fetchFacetCounts[ '__other__' ];
+        return context ? context[facetName] : undefined;
+    },
+
+    /**
+     * Get an array of the text names of the facets that are defined
+     * in this track metadata.
+     * @param callback {Function} called as callback( [facet,facet,...] )
+     */
+    getFacetNames: function( callback ) {
+        return this.facets;
+    },
+
+    /**
+     * Get an Array of the distinct values for a given facet name.
+     * @param facetName {String} the facet name
+     * @returns {Array} distinct values for that facet
+     */
+    getFacetValues: function( facetName ) {
+        var index = this.facetIndexes.byName[facetName];
+        if( !index )
+            return [];
+
+        return dojof.keys( index.byValue );
+    },
+
+    /**
+     * Get statistics about the facet with the given name.
+     * @returns {Object} as: <code>{ itemCount: ##, bucketCount: ##, avgBucketSize: ## }</code>
+     */
+    getFacetStats: function( facetName ) {
+        var index = this.facetIndexes.byName[facetName];
+        if( !index ) return {};
+
+        var stats = {};
+        dojo.forEach( ['itemCount','bucketCount','avgBucketSize'],
+                      function(attr) { stats[attr] = index[attr]; }
+                    );
+        return stats;
+    },
+
+    // dojo.data.api.Read support
+
+    getValue: function( i, attr, defaultValue ) {
+        var v = i[attr];
+        return typeof v == 'undefined' ? defaultValue : v;
+    },
+    getValues: function( i, attr ) {
+        var a = [ i[attr] ];
+        return typeof a[0] == 'undefined' ? [] : a;
+    },
+
+    getAttributes: function(item)  {
+        return dojof.keys( item );
+    },
+
+    hasAttribute: function(item,attr) {
+        return item.hasOwnProperty(attr);
+    },
+
+    containsValue: function(item, attribute, value) {
+        return item[attribute] == value;
+    },
+
+    isItem: function(item) {
+        return typeof item == 'object' && typeof item.label == 'string';
+    },
+
+    isItemLoaded: function() {
+        return this.ready;
+    },
+
+    loadItem: function( args ) {
+    },
+
+    getItem: function( label ) {
+        if( this.ready )
+            return this.identIndex[label];
+        else
+            return null;
+    },
+
+    // used by the dojo.data.util.simpleFetch mixin to implement fetch()
+    _fetchItems: function( keywordArgs, findCallback, errorCallback ) {
+        if( ! this.ready ) {
+            this.onReady( dojo.hitch( this, '_fetchItems', keywordArgs, findCallback, errorCallback ) );
+            return;
+        }
+
+        var query = dojo.clone( keywordArgs.query || {} );
+        // coerce query arguments to arrays if they are not already arrays
+        dojo.forEach( dojof.keys( query ), function(qattr) {
+            if( ! dojo.isArray( query[qattr] ) ) {
+                query[qattr] = [ query[qattr] ];
+            }
+        },this);
+
+        var results;
+        var queryFingerprint = Crc32.objectFingerprint( query );
+        if( queryFingerprint == this.previousQueryFingerprint ) {
+            results = this.previousResults;
+        } else {
+            this.previousQueryFingerprint = queryFingerprint;
+            this.previousResults = results = this._doQuery( query );
+        }
+
+        // and finally, hand them to the finding callback
+        findCallback(results,keywordArgs);
+        this.onFetchSuccess();
+    },
+
+    /**
+     * @private
+     */
+    _doQuery: function( /**Object*/ query ) {
+
+        var textFilter = this._compileTextFilter( query.text );
+        delete query.text;
+
+        // algorithm pseudocode:
+        //
+        //    * for each individual facet, get a set of tracks that
+        //      matches its selected values.  sort each set by the
+        //      track's unique identifier.
+        //    * while still need to go through all the items in the filtered sets:
+        //          - if all the facets have the same track first in their sorted set:
+        //                 add it to the core result set.
+        //                 count it in the global counts
+        //          - if all the facets *but one* have the same track first:
+        //                 this track will need to be counted in the
+        //                 'leave-out' counts for the odd facet out.  count it.
+        //          - shift the lowest-labeled track off of whatever facets have it at the front
+
+        var results = []; // array of items that completely match the query
+
+        // construct the filtered sets (arrays of items) for each of
+        // our search criteria
+        var filteredSets = [];
+        if( textFilter ) {
+            filteredSets.push(
+                this._filterDeleted(
+                    array.filter( dojof.values( this.identIndex ), textFilter )
+                ).sort( dojo.hitch(this,'_itemSortFunc') )
+            );
+            filteredSets[0].facetName = 'Contains text';
+        }
+        filteredSets.push.apply( filteredSets,
+                dojo.map( dojof.keys( query ), function( facetName ) {
+                    var values = query[facetName];
+                    var items = [];
+                    if( ! this.facetIndexes.byName[facetName] ) {
+                         0 && console.error( "No facet defined with name '"+facetName+"'." );
+                        throw "No facet defined with name '"+facetName+"', faceted search failed.";
+                    }
+                    dojo.forEach( values, function(value) {
+                        var idx = this.facetIndexes.byName[facetName].byValue[value] || {};
+                        items.push.apply( items, this._filterDeleted( idx.items || [] ) );
+                    },this);
+                    items.facetName = facetName;
+                    items.sort( dojo.hitch( this, '_itemSortFunc' ));
+                    return items;
+                },this)
+        );
+        dojo.forEach( filteredSets, function(s) {
+            s.myOffset = 0;
+            s.topItem = function() { return this[this.myOffset]; };
+            s.shift   = function() { this.myOffset++; };
+        });
+
+        // init counts
+        var facetMatchCounts   = {};
+
+        if( ! filteredSets.length ) {
+            results = this._filterDeleted( dojof.values( this.identIndex ) );
+        } else {
+            // calculate how many item records total we need to go through
+            var leftToProcess = 0;
+            dojo.forEach( filteredSets,
+                          function(s) { leftToProcess += s.length;} );
+
+            // do a sort of N-way merge of the filtered sets
+            while( leftToProcess ) {
+
+                // look at the top of each of our sets, seeing what items
+                // we have there.  group the sets by the identity of their
+                // topmost item.
+                var setsByTopIdent = {}, uniqueIdents = [], ident, item;
+                dojo.forEach(filteredSets, function(set,i) {
+                    item = set.topItem();
+                    ident = item ? this.getIdentity( item ) : '(at end of set)';
+                    if( setsByTopIdent[ ident ] ) {
+                        setsByTopIdent[ ident ].push( set );
+                    } else {
+                        setsByTopIdent[ ident ] = [set];
+                        uniqueIdents.push( ident );
+                    }
+                },this);
+                if( uniqueIdents.length == 1 ) {
+                    // each of our matched sets has the same item at the
+                    // top.  this means it is part of the core result set.
+                    results.push( item );
+                } else {
+
+                    // ident we are operating on is always the
+                    // lexically-first one that is not the end-of-set
+                    // marker
+                    uniqueIdents.sort();
+                    var leftOutIndex;
+                    if( uniqueIdents[0] == '(at end of set)' ) {
+                        ident = uniqueIdents[1];
+                        leftOutIndex = 0;
+                    } else {
+                        ident = uniqueIdents[0];
+                        leftOutIndex = 1;
+                    }
+                    ident = uniqueIdents[0] == '(at end of set)' ? uniqueIdents[1] : uniqueIdents[0];
+
+                    if( uniqueIdents.length == 2
+                        && setsByTopIdent[ ident ].length == filteredSets.length - 1 ) {
+                        // all of the matched sets except one has the same
+                        // item on top, and it is the lowest-labeled item
+
+                        var leftOutSet = setsByTopIdent[ uniqueIdents[ leftOutIndex ] ][0];
+                        this._countItem( facetMatchCounts, setsByTopIdent[ident][0].topItem(), leftOutSet.facetName );
+                    }
+                }
+
+                dojo.forEach( setsByTopIdent[ ident ], function(s) { s.shift(); leftToProcess--; });
+            }
+        }
+
+        // each of the leave-one-out count sets needs to also have the
+        // core result set counted in it, and also make a counting set
+        // for the core result set (used by __other__ facets not
+        // involved in the query)
+        dojo.forEach( dojof.keys(facetMatchCounts).concat( ['__other__'] ), function(category) {
+            dojo.forEach( results, function(item) {
+                 this._countItem( facetMatchCounts, item, category);
+            },this);
+        },this);
+
+        // in the case of just one filtered set, the 'leave-one-out'
+        // count for it is actually the count of all results, so we
+        // need to make a special little count of that attribute for
+        // the global result set.
+        if( filteredSets.length == 1 ) {
+            dojo.forEach( dojof.values( this.identIndex ), function(item) {
+                this._countItem( facetMatchCounts, item, filteredSets[0].facetName );
+            },this);
+        }
+
+        this._fetchFacetCounts = facetMatchCounts;
+        this._fetchCount = results.length;
+        return results;
+    },
+
+    _countItem: function( facetMatchCounts, item, facetName ) {
+        var facetEntry = facetMatchCounts[facetName];
+        if( !facetEntry ) facetEntry = facetMatchCounts[facetName] = {};
+        var facets = facetName == '__other__' ? this.facets : [facetName];
+        dojo.forEach( facets, function(attrName) {
+            var value = this.getValue( item, attrName, this._noDataValue );
+            var attrEntry = facetEntry[attrName];
+            if( !attrEntry ) {
+                attrEntry = facetEntry[attrName] = {};
+                attrEntry[value] = 0;
+            }
+            attrEntry[value] = ( attrEntry[value] || 0 ) + 1;
+        },this);
+    },
+
+    onReady: function( scope, func ) {
+        scope = scope || dojo.global;
+        func = dojo.hitch( scope, func );
+        if( ! this.ready ) {
+            this.onReadyFuncs.push( func );
+            return;
+        } else {
+            func();
+        }
+    },
+
+    /**
+     * Event hook called once when the store is initialized and has
+     * an initial set of data loaded.
+     */
+    _onReady: function() {
+        dojo.forEach( this.onReadyFuncs || [], function(func) {
+            func.call();
+        });
+    },
+
+    /**
+     * Event hook called after a fetch has been successfully completed
+     * on this store.
+     */
+    onFetchSuccess: function() {
+    },
+
+    /**
+     * Event hook called when there are new items in the store.
+     */
+    onNew: function( item ) {
+    },
+    /**
+     * Event hook called when something is deleted from the store.
+     */
+    onDelete: function( item ) {
+    },
+    /**
+     * Event hook called when one or more items in the store have changed their values.
+     */
+    onSet: function( item, attribute, oldvalue, newvalue ) {
+    },
+
+    _filterDeleted: function( items ) {
+        return array.filter( items, function(i) {
+                                 return ! i.DELETED;
+        });
+    },
+
+    /**
+     * Compile a text search string into a function that tests whether
+     * a given piece of text matches that search string.
+     * @private
+     */
+    _compileTextFilter: function( textString ) {
+        if( textString === undefined )
+            return null;
+
+        // parse out words and quoted words, and convert each into a regexp
+        var rQuotedWord = /\s*["']([^"']+)["']\s*/g;
+        var rWord = /(\S+)/g;
+        var parseWord = function() {
+            var word = rQuotedWord.exec( textString ) || rWord.exec( textString );
+            if( word ) {
+                word = word[1];
+                var lastIndex = Math.max( rQuotedWord.lastIndex, rWord.lastIndex );
+                rWord.lastIndex = rQuotedWord.lastIndex = lastIndex;
+            }
+            return word;
+        };
+        var wordREs = [];
+        var currentWord;
+        while( (currentWord = parseWord()) ) {
+            // escape regex control chars, and convert glob-like chars to
+            // their regex equivalents
+            currentWord = dojo.regexp.escapeString( currentWord, '*?' )
+                              .replace(/\*/g,'.+')
+                              .replace(/ /g,'\\s+')
+                              .replace(/\?/g,'.');
+            wordREs.push( new RegExp(currentWord,'i') );
+        }
+
+        // return a function that takes on item and returns true if it
+        // matches the text filter
+        return dojo.hitch(this, function(item) {
+            return dojo.some( this.facets, function(facetName) {
+                       var text = this.getValue( item, facetName );
+                       return array.every( wordREs, function(re) { return re.test(text); } );
+            },this);
+        });
+    },
+
+    getFeatures: function() {
+        return {
+	    'dojo.data.api.Read': true,
+	    'dojo.data.api.Identity': true,
+	    'dojo.data.api.Notification': true
+	};
+    },
+    close: function() {},
+
+    getLabel: function(i) {
+        return this.getValue(i,'key',undefined);
+    },
+    getLabelAttributes: function(i) {
+        return ['key'];
+    },
+
+    // dojo.data.api.Identity support
+    getIdentityAttributes: function() {
+        return ['label'];
+    },
+    getIdentity: function(i) {
+        return this.getValue(i, 'label', undefined);
+    },
+    fetchItemByIdentity: function(id) {
+        return this.identIndex[id];
+    }
+});
+dojo.extend( Meta, simpleFetch );
+return Meta;
+});
+
+},
+'dojo/data/util/simpleFetch':function(){
+define(["../../_base/lang", "../../_base/kernel", "./sorter"],
+  function(lang, kernel, sorter){
+	// module:
+	//		dojo/data/util/simpleFetch
+	// summary:
+	//		The simpleFetch mixin is designed to serve as a set of function(s) that can
+	//		be mixed into other datastore implementations to accelerate their development.
+
+var simpleFetch = {};
+lang.setObject("dojo.data.util.simpleFetch", simpleFetch);
+
+simpleFetch.errorHandler = function(/*Object*/ errorData, /*Object*/ requestObject){
+	// summary:
+	//		The error handler when there is an error fetching items.  This function should not be called
+	//		directly and is used by simpleFetch.fetch().
+	if(requestObject.onError){
+		var scope = requestObject.scope || kernel.global;
+		requestObject.onError.call(scope, errorData, requestObject);
+	}
+};
+
+simpleFetch.fetchHandler = function(/*Array*/ items, /*Object*/ requestObject){
+	// summary:
+	//		The handler when items are successfully fetched.  This function should not be called directly
+	//		and is used by simpleFetch.fetch().
+	var oldAbortFunction = requestObject.abort || null,
+		aborted = false,
+
+		startIndex = requestObject.start?requestObject.start: 0,
+		endIndex = (requestObject.count && (requestObject.count !== Infinity))?(startIndex + requestObject.count):items.length;
+
+	requestObject.abort = function(){
+		aborted = true;
+		if(oldAbortFunction){
+			oldAbortFunction.call(requestObject);
+		}
+	};
+
+	var scope = requestObject.scope || kernel.global;
+	if(!requestObject.store){
+		requestObject.store = this;
+	}
+	if(requestObject.onBegin){
+		requestObject.onBegin.call(scope, items.length, requestObject);
+	}
+	if(requestObject.sort){
+		items.sort(sorter.createSortFunction(requestObject.sort, this));
+	}
+	if(requestObject.onItem){
+		for(var i = startIndex; (i < items.length) && (i < endIndex); ++i){
+			var item = items[i];
+			if(!aborted){
+				requestObject.onItem.call(scope, item, requestObject);
+			}
+		}
+	}
+	if(requestObject.onComplete && !aborted){
+		var subset = null;
+		if(!requestObject.onItem){
+			subset = items.slice(startIndex, endIndex);
+		}
+		requestObject.onComplete.call(scope, subset, requestObject);
+	}
+};
+
+simpleFetch.fetch = function(/* Object? */ request){
+	// summary:
+	//		The simpleFetch mixin is designed to serve as a set of function(s) that can
+	//		be mixed into other datastore implementations to accelerate their development.
+	// description:
+	//		The simpleFetch mixin should work well for any datastore that can respond to a _fetchItems()
+	//		call by returning an array of all the found items that matched the query.  The simpleFetch mixin
+	//		is not designed to work for datastores that respond to a fetch() call by incrementally
+	//		loading items, or sequentially loading partial batches of the result
+	//		set.  For datastores that mixin simpleFetch, simpleFetch
+	//		implements a fetch method that automatically handles eight of the fetch()
+	//		arguments -- onBegin, onItem, onComplete, onError, start, count, sort and scope
+	//		The class mixing in simpleFetch should not implement fetch(),
+	//		but should instead implement a _fetchItems() method.  The _fetchItems()
+	//		method takes three arguments, the keywordArgs object that was passed
+	//		to fetch(), a callback function to be called when the result array is
+	//		available, and an error callback to be called if something goes wrong.
+	//		The _fetchItems() method should ignore any keywordArgs parameters for
+	//		start, count, onBegin, onItem, onComplete, onError, sort, and scope.
+	//		The _fetchItems() method needs to correctly handle any other keywordArgs
+	//		parameters, including the query parameter and any optional parameters
+	//		(such as includeChildren).  The _fetchItems() method should create an array of
+	//		result items and pass it to the fetchHandler along with the original request object --
+	//		or, the _fetchItems() method may, if it wants to, create an new request object
+	//		with other specifics about the request that are specific to the datastore and pass
+	//		that as the request object to the handler.
+	//
+	//		For more information on this specific function, see dojo/data/api/Read.fetch()
+	//
+	// request:
+	//		The keywordArgs parameter may either be an instance of
+	//		conforming to dojo/data/api/Request or may be a simple anonymous object
+	//		that may contain any of the following:
+	// |	{
+	// |		query: query-object or query-string,
+	// |		queryOptions: object,
+	// |		onBegin: Function,
+	// |		onItem: Function,
+	// |		onComplete: Function,
+	// |		onError: Function,
+	// |		scope: object,
+	// |		start: int
+	// |		count: int
+	// |		sort: array
+	// |	}
+	//		All implementations should accept keywordArgs objects with any of
+	//		the 9 standard properties: query, onBegin, onItem, onComplete, onError
+	//		scope, sort, start, and count.  Some implementations may accept additional
+	//		properties in the keywordArgs object as valid parameters, such as
+	//		{includeOutliers:true}.
+	//
+	//		####The *query* parameter
+	//
+	//		The query may be optional in some data store implementations.
+	//		The dojo/data/api/Read API does not specify the syntax or semantics
+	//		of the query itself -- each different data store implementation
+	//		may have its own notion of what a query should look like.
+	//		However, as of dojo 0.9, 1.0, and 1.1, all the provided datastores in dojo.data
+	//		and dojox.data support an object structure query, where the object is a set of
+	//		name/value parameters such as { attrFoo: valueBar, attrFoo1: valueBar1}.  Most of the
+	//		dijit widgets, such as ComboBox assume this to be the case when working with a datastore
+	//		when they dynamically update the query.  Therefore, for maximum compatibility with dijit
+	//		widgets the recommended query parameter is a key/value object.  That does not mean that the
+	//		the datastore may not take alternative query forms, such as a simple string, a Date, a number,
+	//		or a mix of such.  Ultimately, The dojo/data/api/Read API is agnostic about what the query
+	//		format.
+	//
+	//		Further note:  In general for query objects that accept strings as attribute
+	//		value matches, the store should also support basic filtering capability, such as *
+	//		(match any character) and ? (match single character).  An example query that is a query object
+	//		would be like: { attrFoo: "value*"}.  Which generally means match all items where they have
+	//		an attribute named attrFoo, with a value that starts with 'value'.
+	//
+	//		####The *queryOptions* parameter
+	//
+	//		The queryOptions parameter is an optional parameter used to specify options that may modify
+	//		the query in some fashion, such as doing a case insensitive search, or doing a deep search
+	//		where all items in a hierarchical representation of data are scanned instead of just the root
+	//		items.  It currently defines two options that all datastores should attempt to honor if possible:
+	// |	{
+	// |		ignoreCase: boolean, // Whether or not the query should match case sensitively or not.  Default behaviour is false.
+	// |		deep: boolean	// Whether or not a fetch should do a deep search of items and all child
+	// |						// items instead of just root-level items in a datastore.  Default is false.
+	// |	}
+	//
+	//		####The *onBegin* parameter.
+	//
+	//		function(size, request);
+	//		If an onBegin callback function is provided, the callback function
+	//		will be called just once, before the first onItem callback is called.
+	//		The onBegin callback function will be passed two arguments, the
+	//		the total number of items identified and the Request object.  If the total number is
+	//		unknown, then size will be -1.  Note that size is not necessarily the size of the
+	//		collection of items returned from the query, as the request may have specified to return only a
+	//		subset of the total set of items through the use of the start and count parameters.
+	//
+	//		####The *onItem* parameter.
+	//
+	//		function(item, request);
+	//
+	//		If an onItem callback function is provided, the callback function
+	//		will be called as each item in the result is received. The callback
+	//		function will be passed two arguments: the item itself, and the
+	//		Request object.
+	//
+	//		####The *onComplete* parameter.
+	//
+	//		function(items, request);
+	//
+	//		If an onComplete callback function is provided, the callback function
+	//		will be called just once, after the last onItem callback is called.
+	//		Note that if the onItem callback is not present, then onComplete will be passed
+	//		an array containing all items which matched the query and the request object.
+	//		If the onItem callback is present, then onComplete is called as:
+	//		onComplete(null, request).
+	//
+	//		####The *onError* parameter.
+	//
+	//		function(errorData, request);
+	//
+	//		If an onError callback function is provided, the callback function
+	//		will be called if there is any sort of error while attempting to
+	//		execute the query.
+	//		The onError callback function will be passed two arguments:
+	//		an Error object and the Request object.
+	//
+	//		####The *scope* parameter.
+	//
+	//		If a scope object is provided, all of the callback functions (onItem,
+	//		onComplete, onError, etc) will be invoked in the context of the scope
+	//		object.  In the body of the callback function, the value of the "this"
+	//		keyword will be the scope object.   If no scope object is provided,
+	//		the callback functions will be called in the context of dojo.global().
+	//		For example, onItem.call(scope, item, request) vs.
+	//		onItem.call(dojo.global(), item, request)
+	//
+	//		####The *start* parameter.
+	//
+	//		If a start parameter is specified, this is a indication to the datastore to
+	//		only start returning items once the start number of items have been located and
+	//		skipped.  When this parameter is paired with 'count', the store should be able
+	//		to page across queries with millions of hits by only returning subsets of the
+	//		hits for each query
+	//
+	//		####The *count* parameter.
+	//
+	//		If a count parameter is specified, this is a indication to the datastore to
+	//		only return up to that many items.  This allows a fetch call that may have
+	//		millions of item matches to be paired down to something reasonable.
+	//
+	//		####The *sort* parameter.
+	//
+	//		If a sort parameter is specified, this is a indication to the datastore to
+	//		sort the items in some manner before returning the items.  The array is an array of
+	//		javascript objects that must conform to the following format to be applied to the
+	//		fetching of items:
+	// |	{
+	// |		attribute: attribute || attribute-name-string,
+	// |		descending: true|false;   // Optional.  Default is false.
+	// |	}
+	//		Note that when comparing attributes, if an item contains no value for the attribute
+	//		(undefined), then it the default ascending sort logic should push it to the bottom
+	//		of the list.  In the descending order case, it such items should appear at the top of the list.
+
+	request = request || {};
+	if(!request.store){
+		request.store = this;
+	}
+
+	this._fetchItems(request, lang.hitch(this, "fetchHandler"), lang.hitch(this, "errorHandler"));
+	return request;	// Object
+};
+
+return simpleFetch;
+});
+
+},
+'p3/widget/HierarchicalTrackList':function(){
+define(["dojo/_base/declare", "JBrowse/View/TrackList/Hierarchical"], function(declare, Hierarchical){
+	return declare([Hierarchical], {
+		id: ""
+	});
+});
+
+},
+'JBrowse/View/TrackList/Hierarchical':function(){
+define(['dojo/_base/declare',
+        'dojo/_base/array',
+        'dojo/_base/lang',
+        'dojo/dom-construct',
+        'dojo/query',
+        'dojo/on',
+        'dojo/json',
+
+        'dijit/TitlePane',
+        'dijit/layout/ContentPane',
+
+        'JBrowse/Util',
+        './_TextFilterMixin'
+       ],
+       function(
+           declare,
+           array,
+           lang,
+           dom,
+           query,
+           on,
+           JSON,
+
+           TitlePane,
+           ContentPane,
+
+           Util,
+           _TextFilterMixin
+       ) {
+
+return declare(
+    'JBrowse.View.TrackList.Hierarchical',
+    [ ContentPane, _TextFilterMixin ],
+    {
+
+    region: 'left',
+    splitter: true,
+    style: 'width: 25%',
+
+    id: 'hierarchicalTrackPane',
+    baseClass: 'jbrowseHierarchicalTrackSelector',
+
+    categoryFacet: 'category',
+
+    constructor: function( args ) {
+        this.categories = {};
+        this.config=
+            lang.mixin({
+                "sortHierarchical": true
+            },
+            args);
+
+        this._loadState();
+    },
+    postCreate: function() {
+        this.placeAt( this.browser.container );
+
+        // subscribe to commands coming from the the controller
+        this.browser.subscribe( '/jbrowse/v1/c/tracks/show',
+                                lang.hitch( this, 'setTracksActive' ));
+        this.browser.subscribe( '/jbrowse/v1/c/tracks/hide',
+                                lang.hitch( this, 'setTracksInactive' ));
+        this.browser.subscribe( '/jbrowse/v1/c/tracks/new',
+                                lang.hitch( this, 'addTracks' ));
+        this.browser.subscribe( '/jbrowse/v1/c/tracks/replace',
+                                lang.hitch( this, 'replaceTracks' ));
+        this.browser.subscribe( '/jbrowse/v1/c/tracks/delete',
+                                lang.hitch( this, 'deleteTracks' ));
+    },
+
+    buildRendering: function() {
+        this.inherited(arguments);
+
+        var topPane = new ContentPane({ className: 'header' });
+        this.addChild( topPane );
+        dom.create(
+            'h2',
+            { className: 'title',
+              innerHTML: 'Available Tracks'
+            },
+            topPane.containerNode );
+
+        this._makeTextFilterNodes(
+            dom.create('div',
+                       { className: 'textfilterContainer' },
+                       topPane.containerNode )
+        );
+        this._updateTextFilterControl();
+    },
+
+    startup: function() {
+        this.inherited( arguments );
+
+        var tracks = [];
+        var thisB = this;
+        var categoryFacet = this.get('categoryFacet');
+        var sorter;
+        if(this.config.sortHierarchical) {
+            sorter=[ { attribute: categoryFacet.toLowerCase()},
+                     { attribute: 'key' },
+                     { attribute: 'label' }
+                   ];
+        }
+
+        // add initally collapsed categories to the local storage
+        var arr=(this.get('collapsedCategories')||"").split(",");
+        for(var i=0; i<arr.length;i++) {
+            lang.setObject('collapsed.'+arr[i],true,this.state);
+        }
+        this._saveState();
+
+        this.get('trackMetaData').fetch(
+            { onItem: function(i) {
+                  if( i.conf )
+                      tracks.push( i );
+              },
+              onComplete: function() {
+                  // make a pane at the top to hold uncategorized tracks
+                  thisB.categories.Uncategorized =
+                      { pane: new ContentPane({ className: 'uncategorized' }).placeAt( thisB.containerNode ),
+                        tracks: {},
+                        categories: {}
+                      };
+
+                  thisB.addTracks( tracks, true );
+
+                  // hide the uncategorized pane if it is empty
+                  if( ! thisB.categories.Uncategorized.pane.containerNode.children.length ) {
+                      //thisB.removeChild( thisB.categories.Uncategorized.pane );
+                      thisB.categories.Uncategorized.pane.domNode.style.display = 'none';
+                  }
+              },
+              sort: sorter 
+            });
+    },
+
+    addTracks: function( tracks, inStartup ) {
+        this.pane = this;
+        var thisB = this;
+       
+        array.forEach( tracks, function( track ) {
+            var trackConf = track.conf || track;
+
+            var categoryFacet = this.get('categoryFacet');
+            var categoryNames = (
+                trackConf.metadata && trackConf.metadata[ categoryFacet ]
+                    || trackConf[ categoryFacet ]
+                    || track[ categoryFacet ]
+                    || 'Uncategorized'
+            ).split(/\s*\/\s*/);
+
+            var category = _findCategory( this, categoryNames, [] );
+
+            function _findCategory( obj, names, path ) {
+                var categoryName = names.shift();
+                path = path.concat(categoryName);
+                var categoryPath = path.join('/');
+
+                var cat = obj.categories[categoryName] || ( obj.categories[categoryName] = function() {
+                    var isCollapsed = lang.getObject( 'collapsed.'+categoryPath, false, thisB.state );
+                    var c = new TitlePane(
+                        { title: '<span class="categoryName">'+categoryName+'</span>'
+                          + ' <span class="trackCount">0</span>',
+                          open: ! isCollapsed
+                        });
+                    // save our open/collapsed state in local storage
+                    c.watch( 'open', function( attr, oldval, newval ) {
+                                 lang.setObject( 'collapsed.'+categoryPath, !newval, thisB.state );
+                                 thisB._saveState();
+                             });
+                    obj.pane.addChild(c, inStartup ? undefined : 1 );
+                    return { parent: obj, pane: c, categories: {}, tracks: {} };
+                }.call(thisB));
+
+                return names.length ? _findCategory( cat, names, path ) : cat;
+            };
+
+            category.pane.domNode.style.display = 'block';
+
+            // note: sometimes trackConf.description is defined as numeric, so in this case, ignore it
+            var labelNode = dom.create(
+                'label', {
+                    className: 'tracklist-label shown',
+                    title: Util.escapeHTML( trackConf.shortDescription || track.shortDescription ||  (trackConf.description===1?undefined:trackConf.description) || track.description || trackConf.Description || track.Description || trackConf.metadata && ( trackConf.metadata.shortDescription || trackConf.metadata.description || trackConf.metadata.Description ) || track.key || trackConf.key || trackConf.label )
+                }, category.pane.containerNode );
+
+            var checkbox = dom.create('input', { type: 'checkbox', className: 'check' }, labelNode );
+            var trackLabel = trackConf.label;
+            var checkListener;
+            this.own( checkListener = on( checkbox, 'click', function() {
+                thisB.browser.publish( '/jbrowse/v1/v/tracks/'+(this.checked ? 'show' : 'hide'), [trackConf] );
+            }));
+            dom.create('span', { className: 'key', innerHTML: trackConf.key || trackConf.label }, labelNode );
+
+            category.tracks[ trackLabel ] = { checkbox: checkbox, checkListener: checkListener, labelNode: labelNode };
+
+            this._updateTitles( category );
+        }, this );
+    },
+
+    _loadState: function() {
+        this.state = {};
+        try {
+            this.state = JSON.parse( localStorage.getItem( 'JBrowse-Hierarchical-Track-Selector' ) || '{}' );
+        } catch(e) {}
+        return this.state;
+    },
+    _saveState: function( state ) {
+        try {
+            localStorage.setItem( 'JBrowse-Hierarchical-Track-Selector', JSON.stringify( this.state ) );
+        } catch(e) {}
+    },
+
+    // depth-first traverse and update the titles of all the categories
+    _updateAllTitles: function(r) {
+        var root = r || this;
+        for( var c in root.categories ) {
+            this._updateTitle( root.categories[c] );
+            this._updateAllTitles( root.categories[c] );
+        }
+    },
+
+    _updateTitle: function( category ) {
+        category.pane.set( 'title', category.pane.get('title')
+                           .replace( />\s*\d+\s*\</, '>'+query('label.shown', category.pane.containerNode ).length+'<' )
+                         );
+    },
+
+    // update the titles of the given category and its parents
+    _updateTitles: function( category ) {
+        this._updateTitle( category );
+        if( category.parent )
+            this._updateTitles( category.parent );
+    },
+
+    _findTrack: function _findTrack( trackLabel, callback, r ) {
+        var root = r || this;
+        for( var c in root.categories ) {
+            var category = root.categories[c];
+            if( category.tracks[ trackLabel ] ) {
+                callback( category.tracks[ trackLabel ], category );
+                return true;
+            }
+            else {
+                if( this._findTrack( trackLabel, callback, category ) )
+                    return true;
+            }
+        }
+        return false;
+    },
+
+    replaceTracks: function( trackConfigs ) {
+    },
+
+    /**
+     * Given an array of track configs, update the track list to show
+     * that they are turned on.
+     */
+    setTracksActive: function( /**Array[Object]*/ trackConfigs ) {
+        array.forEach( trackConfigs, function(conf) {
+            this._findTrack( conf.label, function( trackRecord, category ) {
+                trackRecord.checkbox.checked = true;
+            });
+        },this);
+    },
+
+    deleteTracks: function( /**Array[Object]*/ trackConfigs ) {
+        array.forEach( trackConfigs, function(conf) {
+            this._findTrack( conf.label, function( trackRecord, category ) {
+                trackRecord.labelNode.parentNode.removeChild( trackRecord.labelNode );
+                trackRecord.checkListener.remove();
+                delete category.tracks[conf.label];
+            });
+        },this);
+    },
+
+    /**
+     * Given an array of track configs, update the track list to show
+     * that they are turned off.
+     */
+    setTracksInactive: function( /**Array[Object]*/ trackConfigs ) {
+          array.forEach( trackConfigs, function(conf) {
+            this._findTrack( conf.label, function( trackRecord, category ) {
+                trackRecord.checkbox.checked = false;
+            });
+        },this);
+    },
+
+
+    _textFilter: function() {
+        this.inherited(arguments);
+        this._updateAllTitles();
+    },
+
+    /**
+     * Make the track selector visible.
+     * This does nothing for this track selector, since it is always visible.
+     */
+    show: function() {
+    },
+
+    /**
+     * Make the track selector invisible.
+     * This does nothing for this track selector, since it is always visible.
+     */
+    hide: function() {
+    },
+
+    /**
+     * Toggle visibility of this track selector.
+     * This does nothing for this track selector, since it is always visible.
+     */
+    toggle: function() {
+    }
+
+});
+});
+
+},
+'JBrowse/View/TrackList/_TextFilterMixin':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/dom-construct',
+           'dojo/dom-class',
+           'dojo/keys',
+           'dojo/query'
+
+       ],
+       function(
+           declare,
+           lang,
+           dom,
+           domClass,
+           keys,
+           query
+
+       ) {
+
+return declare( null, {
+
+   _makeTextFilterNodes: function( trackListDiv ) {
+
+       this.textFilterDiv = dom.create( 'div', {
+                                            className: 'textfilter',
+                                            style: {
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }
+                                        }, trackListDiv );
+       this.textFilterInput = dom.create(
+            'input',
+            { type: 'text',
+              placeholder: 'filter by text',
+              onkeypress: lang.hitch( this, function( evt ) {
+                  if( evt.keyCode == keys.ESCAPE ) {
+                      this.textFilterInput.value = '';
+                  }
+
+                  if( this.textFilterTimeout )
+                      window.clearTimeout( this.textFilterTimeout );
+                  this.textFilterTimeout = window.setTimeout(
+                      lang.hitch( this, function() {
+                                      this._updateTextFilterControl();
+                                      this._textFilter( this.textFilterInput.value );
+                                  }),
+                      500
+                  );
+                  this._updateTextFilterControl();
+
+                  evt.stopPropagation();
+              })
+            },
+           this.textFilterDiv
+        );
+
+        // make a "clear" button for the text filtering input
+        this.textFilterClearButton = dom.create('div', {
+            className: 'jbrowseIconCancel',
+            onclick: lang.hitch( this, function() {
+                this._clearTextFilterControl();
+                this._textFilter( this.textFilterInput.value );
+            })
+        }, this.textFilterDiv );
+   },
+
+   /**
+    * Clear the text filter control input.
+    * @private
+    */
+    _clearTextFilterControl: function() {
+        this.textFilterInput.value = '';
+        this._updateTextFilterControl();
+    },
+    /**
+     * Update the display of the text filter control based on whether
+     * it has any text in it.
+     * @private
+     */
+    _updateTextFilterControl: function() {
+        if( this.textFilterInput.value.length )
+            domClass.remove( this.textFilterDiv, 'dijitDisabled' );
+        else
+            domClass.add( this.textFilterDiv, 'dijitDisabled' );
+    },
+
+
+    _textFilter: function( text ) {
+        if( text && /\S/.test(text) ) {
+
+            text = text.toLowerCase();
+
+            query( '.tracklist-label', this.containerNode )
+                .forEach( function( labelNode, i ) {
+                    if( labelNode.innerHTML.toLowerCase().indexOf( text ) != -1 ) {
+                        domClass.remove( labelNode, 'collapsed');
+                        domClass.add( labelNode, 'shown');
+                    } else {
+                        domClass.add( labelNode, 'collapsed');
+                        domClass.remove( labelNode, 'shown');
+                    }
+                 });
+        } else {
+            query( '.tracklist-label', this.containerNode )
+                .removeClass('collapsed')
+                .addClass('shown');
+        }
+    }
+});
+});
+},
+'JBrowse/Store/SeqFeature/REST':function(){
+/**
+ * Store that gets data from any set of web services that implement
+ * the JBrowse REST API.
+ */
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/_base/array',
+           'dojo/io-query',
+           'dojo/request',
+           'dojo/Deferred',
+           'JBrowse/Store/LRUCache',
+           'JBrowse/Store/SeqFeature',
+           'JBrowse/Store/DeferredFeaturesMixin',
+           'JBrowse/Store/DeferredStatsMixin',
+           'JBrowse/Util',
+           'JBrowse/Model/SimpleFeature'
+       ],
+       function(
+           declare,
+           lang,
+           array,
+           ioquery,
+           dojoRequest,
+           Deferred,
+           LRUCache,
+           SeqFeatureStore,
+           DeferredFeaturesMixin,
+           DeferredStatsMixin,
+           Util,
+           SimpleFeature
+       ) {
+
+return declare( SeqFeatureStore,
+{
+
+    constructor: function( args ) {
+        this.region_cache_hits = 0; //< stats mostly for unit tests
+
+        // make sure the baseUrl has a trailing slash
+        this.baseUrl = args.baseUrl || this.config.baseUrl;
+        if( this.baseUrl.charAt( this.baseUrl.length-1 ) != '/' )
+            this.baseUrl = this.baseUrl + '/';
+
+        // enable feature density bin fetching if turned on
+        if( this.config.region_feature_densities && ! this.getRegionFeatureDensities ) {
+            this.getRegionFeatureDensities = this._getRegionFeatureDensities;
+        }
+    },
+
+    _defaultConfig: function() {
+        return {
+            noCache: false
+        };
+    },
+
+    getGlobalStats: function( callback, errorCallback ) {
+        var url = this._makeURL( 'stats/global' );
+        this._get({ url: url, type: 'globalStats' }, callback, errorCallback );
+    },
+
+    getRegionStats: function( query, successCallback, errorCallback ) {
+
+        if( ! this.config.region_stats ) {
+            this._getRegionStats.apply( this, arguments );
+            return;
+        }
+
+        query = this._assembleQuery( query );
+        var url = this._makeURL( 'stats/region', query );
+        this._get( { url: url, query: query, type: 'regionStats' }, successCallback, errorCallback );
+    },
+
+    getFeatures: function( query, featureCallback, endCallback, errorCallback ) {
+        var thisB = this;
+        query = this._assembleQuery( query );
+        var url = this._makeURL( 'features', query );
+
+        // look for cached feature regions if configured to do so
+        var cachedFeatureRegions;
+        if( this.config.feature_range_cache
+            && ! this.config.noCache
+            && ( cachedFeatureRegions = this._getCachedFeatureRegions( query ) )
+          ) {
+            this.region_cache_hits++;
+            this._makeFeaturesFromCachedRegions( cachedFeatureRegions, query, featureCallback, endCallback, errorCallback );
+        }
+        // otherwise just fetch and cache like all the other requests
+        else {
+            this._get( { url: url, query: query, type: 'features' },
+                       dojo.hitch( this, '_makeFeatures',
+                                   featureCallback, endCallback, errorCallback
+                                 ),
+                       errorCallback
+                     );
+        }
+    },
+
+    // look in the REST backend's cache for cached feature requests
+    // that are relevant to the given query params (overlap the
+    // start/end region, and match other params).  return an array
+    // like [ {features: [...], start: 123, end: 456 }, ... ]
+    _getCachedFeatureRegions: function( query ) {
+        var cache = this._getCache();
+
+        function tilingIsComplete( regions, start, end ) {
+            regions.sort( function(a,b) { return a.start - b.start; });
+            var coverStart = regions[0].start,
+                  coverEnd;
+            var i;
+            var tilingComplete;
+            for( i = 0; !tilingComplete && i < regions.length; i++ ) {
+                if( coverEnd === undefined || regions[i].start <= coverEnd && regions[i].end > coverEnd ) {
+                    coverEnd = regions[i].end;
+                    tilingComplete = coverStart <= start && coverEnd >= end;
+                }
+            }
+
+            if( tilingComplete ) {
+                // touch all of the regions we processed in the cache,
+                // cause we are going to use them
+                for( i--; i >= 0; i-- )
+                    cache.touchRecord( regions[i].cacheRecord );
+
+                return true;
+            }
+
+            return false;
+        }
+
+        function queriesMatch( q1, q2 ) {
+            var keys = Util.dojof.keys( q1 ).concat( Util.dojof.keys( q2 ) );
+            for( var k in q1 ) {
+                if( k == 'start' || k == 'end' ) continue;
+                if( q1[k] != q2[k] )
+                    return false;
+            }
+            for( var k in q2 ) {
+                if( k == 'start' || k == 'end' ) continue;
+                if( q1[k] != q2[k] )
+                    return false;
+            }
+            return true;
+        }
+
+        var relevantRegions = [];
+        if( cache.some(
+                function( cacheRecord ) {
+                    var cachedRequest = cacheRecord.value.request;
+                    var cachedResponse = cacheRecord.value.response;
+                    if( cachedRequest.type != 'features' || ! cachedResponse )
+                        return false;
+                    if( ! queriesMatch( cachedRequest.query, query ) )
+                        return false;
+                    if( ! ( cachedRequest.query.end < query.start || cachedRequest.query.start > query.end ) ) {
+                        relevantRegions.push(
+                            { features:    cachedResponse.features,
+                              start:       cachedRequest.query.start,
+                              end:         cachedRequest.query.end,
+                              cacheRecord: cacheRecord
+                            });
+                        if( tilingIsComplete( relevantRegions, query.start, query.end ) )
+                            return true;
+                    }
+                    return false;
+                },
+                this )
+          ) {
+              return relevantRegions;
+          }
+        return null;
+    },
+
+    // given an array of records of cached feature data like that
+    // returned by _getCachedFeatureRegions, make feature objects from
+    // them and emit them via the callbacks
+    _makeFeaturesFromCachedRegions: function( cachedFeatureRegions, query, featureCallback, endCallback, errorCallback ) {
+        // gather and uniqify all the relevant feature data objects from the cached regions
+        var seen = {};
+        var featureData = [];
+        array.forEach( cachedFeatureRegions, function( region ) {
+            if( region && region.features ) {
+                array.forEach( region.features, function( feature ) {
+                    if( ! seen[ feature.uniqueID ] ) {
+                        seen[feature.uniqueID] = true;
+                        if( !( feature.start > query.end || feature.end < query.start ) )
+                            featureData.push( feature );
+                    }
+                });
+            }
+        });
+
+        // iterate over them and make feature objects from them
+        this._makeFeatures( featureCallback, endCallback, errorCallback, { features: featureData } );
+    },
+
+    // this method is copied to getRegionFeatureDensities in the
+    // constructor if config.region_feature_densities is true
+    _getRegionFeatureDensities: function( query, histDataCallback, errorCallback ) {
+        var url = this._makeURL( 'stats/regionFeatureDensities', this._assembleQuery( query ) );
+        this._get( { url: url}, histDataCallback, errorCallback );
+
+        // query like:
+        //    { ref: 'ctgA, start: 123, end: 456, basesPerBin: 200 }
+
+        // callback like:
+        //   histDataCallback({
+        //     "bins":  [ 51,50,58,63,57,57,65,66,63,61,56,49,50,47,39,38,54,41,50,71,61,44,64,60,42 ],
+        //     "stats": { "basesPerBin":"200","max":88,"mean":57.772 } //< `max` used to set the Y scale
+        //   });
+
+        // or error like:
+        //   errorCallback( 'aieeee i died' );
+    },
+    // STUB method to satisfy requirements when setting the REST track to a VCF type
+    getVCFHeader: function( query, filterFunctionCallback, errorCallback ) {
+        return new Deferred(function() { /*  0 && console.log("REST store getVCFHeader"); */ });
+    },
+
+    clearCache: function() {
+        delete this._cache;
+    },
+
+    // HELPER METHODS
+    _get: function( request, callback, errorCallback ) {
+        var thisB = this;
+        if( this.config.noCache )
+            dojoRequest( request.url, {
+                         method: 'GET',
+                         handleAs: 'json'
+                     }).then(
+                         callback,
+                         this._errorHandler( errorCallback )
+                     );
+        else
+            this._getCache().get( request, function( record, error ) {
+                                      if( error )
+                                          thisB._errorHandler(errorCallback)(error);
+                                      else
+                                          callback( record.response );
+                                  });
+
+    },
+
+    _getCache: function() {
+        var thisB = this;
+        return this._cache || (
+            this._cache = new LRUCache(
+                {
+                    name: 'REST data cache '+this.name,
+                    maxSize: 25000, // cache up to about 5MB of data (assuming about 200B per feature)
+                    sizeFunction: function( data ) { return data.length || 1; },
+                    fillCallback: function( request, callback ) {
+                        var get = dojoRequest( request.url, { method: 'GET', handleAs: 'json' },
+                                               true // work around dojo/request bug
+                                             );
+                        get.then(
+                            function(data) {
+                                var nocacheResponse = /no-cache/.test(get.response.getHeader('Cache-Control'))
+                                    || /no-cache/.test(get.response.getHeader('Pragma'));
+                                callback({ response: data, request: request }, null, {nocache: nocacheResponse});
+                            },
+                            thisB._errorHandler( lang.partial( callback, null ) )
+                        );
+                    }
+                }));
+    },
+
+    _errorHandler: function( handler ) {
+        handler = handler || function(e) {
+             0 && console.error( e, e.stack );
+            throw e;
+        };
+        return dojo.hitch( this, function( error ) {
+            var httpStatus = ((error||{}).response||{}).status;
+            if( httpStatus >= 400 ) {
+                handler( "HTTP " + httpStatus + " fetching "+error.response.url+" : "+error.response.text );
+            }
+            else {
+                handler( error );
+            }
+        });
+    },
+
+    _assembleQuery: function( query ) {
+            return lang.mixin(
+                { ref: (this.refSeq||{}).name },
+                this.config.query || {},
+                query || {}
+            );
+    },
+
+    _makeURL: function( subpath, query ) {
+        var url = this.baseUrl + subpath;
+
+        if( query ) {
+            if( query.ref ) {
+                url += '/' + query.ref;
+                query = lang.mixin({}, query );
+                delete query.ref;
+            }
+
+            query = ioquery.objectToQuery( query );
+            if( query )
+                url += '?' + query;
+        }
+
+        return url;
+    },
+
+    _makeFeatures: function( featureCallback, endCallback, errorCallback, featureData ) {
+        var features;
+        if( featureData && ( features = featureData.features ) ) {
+            for( var i = 0; i < features.length; i++ ) {
+                featureCallback( this._makeFeature( features[i] ) );
+            }
+        }
+
+        endCallback();
+    },
+
+    _parseInt: function( data ) {
+        array.forEach(['start','end','strand'], function( field ) {
+            if( field in data )
+                data[field] = parseInt( data[field] );
+        });
+        if( 'score' in data )
+            data.score = parseFloat( data.score );
+        if( 'subfeatures' in data )
+            for( var i=0; i<data.subfeatures.length; i++ )
+                this._parseInt( data.subfeatures[i] );
+    },
+
+    _makeFeature: function( data, parent ) {
+        this._parseInt( data );
+        return new SimpleFeature( { data: data, parent: parent } );
+    }
+});
+});
+
+},
+'JBrowse/Store/SeqFeature':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/lang',
+            'JBrowse/Store',
+            'JBrowse/Store/LRUCache'
+        ],
+        function( declare, lang, Store, LRUCache ) {
+
+/**
+ * Base class for JBrowse data backends that hold sequences and
+ * features.
+ *
+ * @class JBrowse.SeqFeatureStore
+ * @extends JBrowse.Store
+ * @constructor
+ */
+
+return declare( Store,
+{
+
+    constructor: function( args ) {
+        this.globalStats = {};
+    },
+
+    _evalConf: function( confVal, confKey ) {
+        // evaluate callbacks as functions
+        return typeof confVal == 'function' ? confVal.call( this, this ) : confVal;
+    },
+
+    /**
+     * Fetch global statistics the features in this store.
+     *
+     * @param {Function} successCallback(stats) callback to receive the
+     *   statistics.  called with one argument, an object containing
+     *   attributes with various statistics.
+     * @param {Function} errorCallback(error) in the event of an error, this
+     *   callback will be called with one argument, which is anything
+     *   that can stringify to an error message.
+     */
+    getGlobalStats: function( callback, errorCallback ) {
+        callback( this.globalStats || {} );
+    },
+
+    /**
+     * Fetch statistics about the features in a specific region.
+     *
+     * @param {String} query.ref    the name of the reference sequence
+     * @param {Number} query.start  start of the region in interbase coordinates
+     * @param {Number} query.end    end of the region in interbase coordinates
+     * @param {Function} successCallback(stats) callback to receive the
+     *   statistics.  called with one argument, an object containing
+     *   attributes with various statistics.
+     * @param {Function} errorCallback(error) in the event of an error, this
+     *   callback will be called with one argument, which is anything
+     *   that can stringify to an error message.
+     */
+    getRegionStats: function( query, successCallback, errorCallback ) {
+        return this._getRegionStats.apply( this, arguments );
+    },
+
+    _getRegionStats: function( query, successCallback, errorCallback ) {
+        var thisB = this;
+        var cache = thisB._regionStatsCache = thisB._regionStatsCache || new LRUCache({
+            name: 'regionStatsCache',
+            maxSize: 1000, // cache stats for up to 1000 different regions
+            sizeFunction: function( stats ) { return 1; },
+            fillCallback: function( query, callback ) {
+                // 0 && console.log( '_getRegionStats', query );
+                var s = {
+                    scoreMax: -Infinity,
+                    scoreMin: Infinity,
+                    scoreSum: 0,
+                    scoreSumSquares: 0,
+                    basesCovered: query.end - query.start,
+                    featureCount: 0
+                };
+                thisB.getFeatures( query,
+                                  function( feature ) {
+                                      var score = feature.get('score') || 0;
+                                      s.scoreMax = Math.max( score, s.scoreMax );
+                                      s.scoreMin = Math.min( score, s.scoreMin );
+                                      s.scoreSum += score;
+                                      s.scoreSumSquares += score*score;
+                                      s.featureCount++;
+                                  },
+                                  function() {
+                                      s.scoreMean = s.featureCount ? s.scoreSum / s.featureCount : 0;
+                                      s.scoreStdDev = thisB._calcStdFromSums( s.scoreSum, s.scoreSumSquares, s.featureCount );
+                                      s.featureDensity = s.featureCount / s.basesCovered;
+                                      // 0 && console.log( '_getRegionStats done', s );
+                                      callback( s );
+                                  },
+                                  function(error) {
+                                      callback( null, error );
+                                  }
+                                );
+            }
+         });
+
+         cache.get( query,
+                    function( stats, error ) {
+                        if( error )
+                            errorCallback( error );
+                        else
+                            successCallback( stats );
+                    });
+
+    },
+
+    // utility method that calculates standard deviation from sum and sum of squares
+    _calcStdFromSums: function( sum, sumSquares, n ) {
+        if( n == 0 )
+            return 0;
+
+        var variance = sumSquares - sum*sum/n;
+        if (n > 1) {
+	    variance /= n-1;
+        }
+        return variance < 0 ? 0 : Math.sqrt(variance);
+    },
+
+    /**
+     * Fetch feature data from this store.
+     *
+     * @param {String} query.ref    the name of the reference sequence
+     * @param {Number} query.start  start of the region in interbase coordinates
+     * @param {Number} query.end    end of the region in interbase coordinates
+     * @param {Function} featureCallback(feature) callback that is called once
+     *   for each feature in the region of interest, with a single
+     *   argument; the feature.
+     * @param {Function} endCallback() callback that is called once
+     *   for each feature in the region of interest, with a single
+     *   argument; the feature.
+     * @param {Function} errorCallback(error) in the event of an error, this
+     *   callback will be called with one argument, which is anything
+     *   that can stringify to an error message.
+     */
+    getFeatures: function( query, featureCallback, endCallback, errorCallback ) {
+        endCallback();
+    },
+
+
+    /**
+     * Given a plain query object, call back with a single sequence
+     * string that is the naively-assembled sequence for that region,
+     * assembled from the 'residues' or 'seq' attributes of the
+     * features that come back from the store.  Add
+     * "reference_sequences_only: true" to the query it send to the
+     * store.
+     */
+    getReferenceSequence: function( query, seqCallback, errorCallback ) {
+
+        // insert the `replacement` string into `str` at the given
+        // `offset`, putting in `length` characters.
+        function replaceAt( str, offset, replacement ) {
+            var rOffset = 0;
+            if( offset < 0 ) {
+                rOffset = -offset;
+                offset = 0;
+            }
+
+            var length = Math.min( str.length - offset, replacement.length - rOffset );
+
+            return str.substr( 0, offset ) + replacement.substr( rOffset, length ) + str.substr( offset + length );
+        }
+
+        // pad with spaces at the beginning of the string if necessary
+        var len = query.end - query.start;
+        var sequence = '';
+        while( sequence.length < len )
+            sequence += ' ';
+
+        var thisB = this;
+        this.getFeatures( lang.mixin({ reference_sequences_only: true }, query ),
+                          function( f ) {
+                              var seq = f.get('residues') || f.get('seq');
+                              if( seq )
+                                  sequence = replaceAt( sequence, f.get('start')-query.start, seq );
+                          },
+                          function() {
+                              seqCallback( sequence );
+                          },
+                          errorCallback
+                        );
+    }
+});
+});
+},
+'JBrowse/Store':function(){
+define( [
+            'dojo/_base/declare',
+            'JBrowse/Component'
+        ],
+        function(
+            declare,
+            Component
+        ) {
+
+var uniqCounter = 0;
+return declare( Component,
+
+/**
+ * @lends JBrowse.Store.prototype
+ */
+{
+    namePrefix: 'store-',
+
+    /**
+     * Base class for all JBrowse data stores.
+     * @constructs
+     */
+    constructor: function( args ) {
+        this.refSeq = dojo.clone( args.refSeq );
+        this.name = args.name || this.namePrefix+(++uniqCounter);
+        this.changeCallback = args.changeCallback || function() {};
+    },
+
+    // not really utilized.  ignore for now
+    notifyChanged: function( changeDescription ) {
+        if( this.changeCallback )
+            this.changeCallback( changeDescription );
+    },
+
+    /**
+     * If this store has any internal deferreds, resolves them all
+     * with the given error.
+     */
+    _failAllDeferred: function( error ) {
+        var deferreds = this._deferred || {};
+        for( var dname in deferreds ) {
+            if( deferreds.hasOwnProperty( dname ) ) {
+                deferreds[dname].reject( error );
+            }
+        }
+    }
+
+
+});
+});
+},
+'JBrowse/Store/DeferredFeaturesMixin':function(){
+/**
+ * Mixin for a store class that needs to load some remote stuff (or do
+ * some other kind of asynchronous thing) before its features are
+ * available through getFeatures,
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/Deferred'
+       ],
+       function( declare, Deferred ) {
+
+return declare( null, {
+
+    // note that dojo.declare automatically chains constructors
+    // without needing inherited()
+    constructor: function( args ) {
+        this._deferFeatures();
+    },
+
+    /**
+     * sets us up to defer calls to getFeatures().  calls will be
+     * queued until the Deferred is resolved.
+     */
+    _deferFeatures: function() {
+        if( ! this._deferred )
+            this._deferred = {};
+        this._deferred.features = new Deferred();
+    },
+
+    /**
+     * Runs calls to getFeatures through a Deferred that will queue
+     * and aggregate feature requests until the Deferred is resolved.
+     */
+    getFeatures: function( query, featCallback, endCallback, errorCallback ) {
+        this._deferred.features.then(
+            dojo.hitch( this, '_getFeatures', query, featCallback, endCallback, errorCallback ),
+            errorCallback
+        );
+    }
+});
+});
+},
+'JBrowse/Store/DeferredStatsMixin':function(){
+/**
+ * Mixin for a store class that needs to load some remote stuff (or do
+ * some other kind of asynchronous thing) before its stats are
+ * available through getGlobalStats or getRegionStats.
+ */
+
+define([
+           'dojo/_base/declare',
+           'dojo/Deferred',
+           'JBrowse/Util'
+       ],
+       function( declare, Deferred, Util ) {
+
+return declare( null, {
+
+    // note that dojo.declare automatically chains constructors
+    // without needing inherited()
+    constructor: function( args ) {
+        this._deferGlobalStats();
+    },
+
+    /**
+     * sets us up to defer calls to getGlobalStats().  calls will be
+     * queued until the Deferred is resolved.
+     */
+    _deferGlobalStats: function() {
+        if( ! this._deferred )
+            this._deferred = {};
+        this._deferred.stats = new Deferred();
+    },
+
+    /**
+     * Runs calls to getGlobalStats through a Deferred that will queue
+     * and aggregate stats requests until the Deferred is resolved.
+     */
+    getGlobalStats: function( successCallback, errorCallback ) {
+        var thisB = this;
+        this._deferred.stats.then(
+            dojo.hitch( this, '_getGlobalStats', successCallback, errorCallback ),
+            errorCallback
+        );
+    },
+
+    _getGlobalStats: function( successCallback, errorCallback ) {
+        successCallback( this.globalStats || {} );
+    },
+
+    getRegionStats: function( query, successCallback, errorCallback ) {
+        var thisB = this;
+        this._deferred.stats.then(
+            dojo.hitch( this, '_getRegionStats', query, successCallback, errorCallback ),
+            errorCallback
+        );
+    }
+});
+
+});
+},
+'JBrowse/Model/SimpleFeature':function(){
+/**
+ * Simple implementation of a feature object.
+ */
+define([
+        'JBrowse/Util'
+       ],
+       function( Util ) {
+
+var counter = 0;
+
+var SimpleFeature = Util.fastDeclare({
+
+    /**
+     * @param args.data {Object} key-value data, must include 'start' and 'end'
+     * @param args.parent {Feature} optional parent feature
+     * @param args.id {String} optional unique identifier.  can also be in data.uniqueID.
+     *
+     * Note: args.data.subfeatures can be an array of these same args,
+     * which will be inflated to more instances of this class.
+     */
+    constructor: function( args ) {
+        args = args || {};
+        this.data = args.data || {};
+        this._parent = args.parent;
+        this._uniqueID = args.id || this.data.uniqueID || (
+            this._parent ? this._parent.id()+'_'+(counter++) : 'SimpleFeature_'+(counter++)
+        );
+
+        // inflate any subfeatures that are not already feature objects
+        var subfeatures;
+        if(( subfeatures = this.data.subfeatures )) {
+            for( var i = 0; i < subfeatures.length; i++ ) {
+                if( typeof subfeatures[i].get != 'function' ) {
+                    subfeatures[i] = new SimpleFeature(
+                        { data: subfeatures[i],
+                          parent: this
+                        });
+                }
+            }
+        }
+    },
+
+    /**
+     * Get a piece of data about the feature.  All features must have
+     * 'start' and 'end', but everything else is optional.
+     */
+    get: function(name) {
+        return this.data[ name ];
+    },
+
+    /**
+     * Set an item of data.
+     */
+    set: function( name, val ) {
+        this.data[ name ] = val;
+    },
+
+    /**
+     * Get an array listing which data keys are present in this feature.
+     */
+    tags: function() {
+        var t = [];
+        var d = this.data;
+        for( var k in d ) {
+            if( d.hasOwnProperty( k ) )
+                t.push( k );
+        }
+        return t;
+    },
+
+    /**
+     * Get the unique ID of this feature.
+     */
+    id: function( newid ) {
+        if( newid )
+            this._uniqueID = newid;
+        return this._uniqueID;
+    },
+
+    /**
+     * Get this feature's parent feature, or undefined if none.
+     */
+    parent: function() {
+        return this._parent;
+    },
+
+    /**
+     * Get an array of child features, or undefined if none.
+     */
+    children: function() {
+        return this.get('subfeatures');
+    }
+
+});
+
+return SimpleFeature;
+});
+},
+'JBrowse/View/Track/HTMLFeatures':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/lang',
+            'dojo/_base/array',
+            'dojo/dom-construct',
+            'dojo/dom-geometry',
+            'dojo/on',
+            'dojo/query',
+            'JBrowse/has',
+            'dijit/Dialog',
+            'dijit/form/Select',
+            'dijit/form/RadioButton',
+            'dijit/form/Button',
+            'JBrowse/View/Track/BlockBased',
+            'JBrowse/View/Track/_YScaleMixin',
+            'JBrowse/View/Track/_ExportMixin',
+            'JBrowse/View/Track/_FeatureDetailMixin',
+            'JBrowse/View/Track/_TrackDetailsStatsMixin',
+            'JBrowse/Util',
+            'JBrowse/View/GranularRectLayout',
+            'JBrowse/Model/Location'
+        ],
+      function( declare,
+                lang,
+                array,
+                dom,
+                domGeom,
+                on,
+                query,
+                has,
+                dijitDialog,
+                dijitSelect,
+                dijitRadioButton,
+                dijitButton,
+                BlockBased,
+                YScaleMixin,
+                ExportMixin,
+                FeatureDetailMixin,
+                TrackDetailsStatsMixin,
+                Util,
+                Layout,
+                Location
+              ) {
+
+var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetailMixin, TrackDetailsStatsMixin ], {
+    /**
+     * A track that draws discrete features using `div` elements.
+     * @constructs
+     * @extends JBrowse.View.Track.BlockBased
+     * @param args.config {Object} track configuration. Must include key, label
+     * @param args.refSeq {Object} reference sequence object with name, start,
+     *   and end members.
+     * @param args.changeCallback {Function} optional callback for
+     *   when the track's data is loaded and ready
+     * @param args.trackPadding {Number} distance in px between tracks
+     */
+    constructor: function( args ) {
+        //number of histogram bins per block
+        this.numBins = lang.getObject( 'histogram.binsPerBlock', false, this.config ) || 25;
+
+        this.defaultPadding = 5;
+        this.padding = this.defaultPadding;
+
+        this.glyphHeightPad = 1;
+        this.levelHeightPad = 2;
+        this.labelPad = 1;
+
+        // if calculated feature % width would be less than minFeatWidth, then set width to minFeatWidth instead
+        this.minFeatWidth = 1;
+
+        this.trackPadding = args.trackPadding;
+
+        this.heightCache = {}; // cache for the heights of some
+                               // feature elements, indexed by the
+                               // complete cassName of the feature
+
+        this.showLabels = this.config.style.showLabels;
+
+        this._setupEventHandlers();
+    },
+
+    /**
+     * Returns object holding the default configuration for HTML-based feature tracks.
+     * @private
+     */
+    _defaultConfig: function() {
+        return Util.deepUpdate(
+            lang.clone( this.inherited(arguments) ),
+            {
+            maxFeatureScreenDensity: 0.5,
+
+            // maximum height of the track, in pixels
+            maxHeight: 1000,
+
+            style: {
+                arrowheadClass: 'arrowhead',
+
+                className: "feature2",
+
+                // not configured by users
+                _defaultHistScale: 4,
+                _defaultLabelScale: 30,
+                _defaultDescriptionScale: 120,
+
+                minSubfeatureWidth: 6,
+                maxDescriptionLength: 70,
+                showLabels: true,
+
+                label: 'name,id',
+                description: 'note, description',
+
+                centerChildrenVertically: true  // by default use feature child centering
+            },
+            hooks: {
+                create: function(track, feat ) {
+                    return document.createElement('div');
+                }
+            },
+            events: {},
+            menuTemplate: [
+                { label: 'View details',
+                  title: '{type} {name}',
+                  action: 'contentDialog',
+                  iconClass: 'dijitIconTask',
+                  content: dojo.hitch( this, 'defaultFeatureDetail' )
+                },
+                { label: function() {
+                      return 'Highlight this '
+                          +( this.feature && this.feature.get('type') ? this.feature.get('type')
+                                                                      : 'feature'
+                           );
+                  },
+                  action: function() {
+                     var loc = new Location({ feature: this.feature, tracks: [this.track] });
+                     this.track.browser.setHighlightAndRedraw(loc);
+                  },
+                  iconClass: 'dijitIconFilter'
+                }
+            ]
+        });
+    },
+
+    /**
+     * Make life easier for event handlers by handing them some things
+     */
+    wrapHandler: function(handler) {
+        var track = this;
+        return function(event) {
+            event = event || window.event;
+            if (event.shiftKey) return;
+            var elem = (event.currentTarget || event.srcElement);
+            //depending on bubbling, we might get the subfeature here
+            //instead of the parent feature
+            if (!elem.feature) elem = elem.parentElement;
+            if (!elem.feature) return; //shouldn't happen; just bail if it does
+            handler(track, elem, elem.feature, event);
+        };
+    },
+
+    fillHistograms: function( args ) {
+        var blockIndex = args.blockIndex;
+        var block = args.block;
+        var leftBase = args.leftBase;
+        var rightBase = args.rightBase;
+        var stripeWidth = args.stripeWidth;
+
+        var blockSizeBp = Math.abs( rightBase - leftBase );
+
+        // bases in each histogram bin that we're currently rendering
+        var basesPerBin = blockSizeBp / this.numBins;
+
+        var track = this;
+        this.store.getRegionFeatureDensities(
+            { ref:   this.refSeq.name,
+              start: args.leftBase,
+              end:   args.rightBase,
+              basesPerBin: basesPerBin
+            },
+            function( histData ) {
+                if( track._fillType != 'histograms' )
+                    return; // we must have moved on
+
+                var hist = histData.bins;
+                var maxBin = 0;
+                for (var bin = 0; bin < track.numBins; bin++) {
+                    if( typeof hist[bin] == 'number' && isFinite(hist[bin]) ) {
+                        maxBin = Math.max(maxBin, hist[bin]);
+                    }
+                }
+
+                var logScale =   histData.stats ? ((histData.stats.mean / histData.stats.max) < .01)
+                                                : false;
+                var pxPerCount = histData.stats ? ( 100 / (logScale ? Math.log(histData.stats.max) : histData.stats.max) )
+                                                : 2;
+                var dims = {
+                    basesPerBin: basesPerBin,
+                    pxPerCount: pxPerCount,
+                    logScale: logScale,
+                    stats: histData.stats
+                };
+
+                var binDiv;
+                for (bin = 0; bin < track.numBins; bin++) {
+                    if (!(typeof hist[bin] == 'number' && isFinite(hist[bin])))
+                        continue;
+                    binDiv = document.createElement("div");
+                    binDiv.className = "hist feature-hist "+track.config.style.className + "-hist";
+                    binDiv.style.cssText =
+                        "left: " + ((bin / track.numBins) * 100) + "%; "
+                        + "height: "
+                        + ( dims.pxPerCount * ( dims.logScale ? Math.log(hist[bin]) : hist[bin]) )
+                        + "px;"
+                        + "bottom: " + track.trackPadding + "px;"
+                        + "width: " + ((100 / track.numBins) - (100 / stripeWidth)) + "%;"
+                        + (track.config.style.histCss ?
+                           track.config.style.histCss : "");
+                    binDiv.setAttribute('value',hist[bin]);
+                    if (Util.is_ie6) binDiv.appendChild(document.createComment());
+                    block.domNode.appendChild(binDiv);
+                }
+
+                track.heightUpdate( dims.pxPerCount * ( dims.logScale ? Math.log(maxBin) : maxBin ),
+                                    blockIndex );
+                track.makeHistogramYScale( blockSizeBp, dims, histData );
+            },
+            dojo.hitch( this, 'fillBlockError', blockIndex, block )
+            );
+
+        args.finishCallback();
+    },
+
+    endZoom: function(destScale, destBlockBases) {
+        this.clear();
+    },
+
+    updateStaticElements: function( coords ) {
+        this.inherited( arguments );
+        this.updateYScaleFromViewDimensions( coords );
+        this.updateFeatureLabelPositions( coords );
+        this.updateFeatureArrowPositions( coords );
+    },
+
+    updateFeatureArrowPositions: function( coords ) {
+        if( ! 'x' in coords )
+            return;
+
+    var viewmin = this.browser.view.minVisible();
+    var viewmax = this.browser.view.maxVisible();
+
+        var blocks = this.blocks;
+
+        for( var blockIndex = 0; blockIndex < blocks.length; blockIndex++ ) {
+            var block = blocks[blockIndex];
+            if( ! block )
+                continue;
+            var childNodes = block.domNode.childNodes;
+            for( var i = 0; i<childNodes.length; i++ ) {
+                var featDiv = childNodes[i];
+                        if( ! featDiv.feature )
+                            continue;
+                        var feature = featDiv.feature;
+
+                        // Retrieve containerStart/End to resolve div truncation from renderFeature
+                        var containerStart = featDiv._containerStart;
+                        var containerEnd = featDiv._containerEnd;
+
+                        var strand  = feature.get('strand');
+                        if( ! strand )
+                            continue;
+
+                        var fmin    = feature.get('start');
+                        var fmax    = feature.get('end');
+                        var arrowhead;
+                        var featDivChildren;
+                        //borrow displayStart,displayEnd for arrowhead calculations because of truncations in renderFeat
+                        var displayStart = Math.max( fmin, containerStart );
+                        var displayEnd = Math.min( fmax, containerEnd );
+
+                        // minus strand
+                        if( strand < 0 && fmax > viewmin ) {
+                            var minusArrowClass = 'minus-'+this.config.style.arrowheadClass;
+                            featDivChildren = featDiv.childNodes;
+                            for( var j = 0; j<featDivChildren.length; j++ ) {
+                                arrowhead = featDivChildren[j];
+                                if( arrowhead && arrowhead.className && arrowhead.className.indexOf( minusArrowClass ) >= 0 ) {
+                                    arrowhead.style.left =
+                                        ( fmin < viewmin ? block.bpToX( viewmin ) - block.bpToX( displayStart )
+                                                         : -this.minusArrowWidth
+                                        ) + 'px';
+                                };
+                            }
+                        }
+                        // plus strand
+                        else if( strand > 0 && fmin < viewmax ) {
+                            var plusArrowClass = 'plus-'+this.config.style.arrowheadClass;
+                            featDivChildren = featDiv.childNodes;
+                            for( var j = 0; j<featDivChildren.length; j++ ) {
+                                arrowhead = featDivChildren[j];
+                                if( arrowhead && arrowhead.className && arrowhead.className.indexOf( plusArrowClass ) >= 0 ) {
+                                    arrowhead.style.right =  
+                                        ( fmax > viewmax ? block.bpToX( displayEnd ) - block.bpToX( viewmax-2 )
+                                                         : -this.plusArrowWidth
+                                        ) + 'px';
+                                }
+                            }
+                        }
+                    }
+        }
+    },
+
+    updateFeatureLabelPositions: function( coords ) {
+        if( ! 'x' in coords )
+            return;
+
+        array.forEach( this.blocks, function( block, blockIndex ) {
+
+
+            // calculate the view left coord relative to the
+            // block left coord in units of pct of the block
+            // width
+            if( ! block || ! this.label )
+                return;
+            var viewLeft = 100 * ( (this.label.offsetLeft+this.label.offsetWidth) - block.domNode.offsetLeft ) / block.domNode.offsetWidth + 2;
+
+            // if the view start is unknown, or is to the
+            // left of this block, we don't have to worry
+            // about adjusting the feature labels
+            if( ! viewLeft )
+                return;
+
+            var blockWidth = block.endBase - block.startBase;
+
+            array.forEach( block.domNode.childNodes, function( featDiv ) {
+                              if( ! featDiv.label ) return;
+                              var labelDiv = featDiv.label;
+                              var feature = featDiv.feature;
+
+                              // get the feature start and end in terms of block width pct
+                              var minLeft = parseInt( feature.get('start') );
+                              minLeft = 100 * (minLeft - block.startBase) / blockWidth;
+                              var maxLeft = parseInt( feature.get('end') );
+                              maxLeft = 100 * ( (maxLeft - block.startBase) / blockWidth
+                                                - labelDiv.offsetWidth / block.domNode.offsetWidth
+                                              );
+
+                              // move our label div to the view start if the start is between the feature start and end
+                              labelDiv.style.left = Math.max( minLeft, Math.min( viewLeft, maxLeft ) ) + '%';
+
+                          },this);
+        },this);
+    },
+
+    fillBlock: function( args ) {
+        var blockIndex = args.blockIndex;
+        var block = args.block;
+        var leftBase = args.leftBase;
+        var rightBase = args.rightBase;
+        var scale = args.scale;
+        var containerStart = args.containerStart;
+        var containerEnd = args.containerEnd;
+
+        var region = { ref: this.refSeq.name, start: leftBase, end: rightBase };
+
+        this.store.getGlobalStats(
+            dojo.hitch( this, function( stats ) {
+
+                var density        = stats.featureDensity;
+                var histScale      = this.config.style.histScale    || density * this.config.style._defaultHistScale;
+                var featureScale   = this.config.style.featureScale || density / this.config.maxFeatureScreenDensity; // (feat/bp) / ( feat/px ) = px/bp )
+
+                // only update the label once for each block size
+                var blockBases = Math.abs( leftBase-rightBase );
+                if( this._updatedLabelForBlockSize != blockBases ){
+                    if ( this.store.getRegionFeatureDensities && scale < histScale ) {
+                        this.setLabel( this.key + ' <span class="feature-density">per '
+                                       + Util.addCommas( Math.round( blockBases / this.numBins))
+                                       + ' bp</span>');
+                    } else {
+                        this.setLabel( this.key );
+                    }
+                    this._updatedLabelForBlockSize = blockBases;
+                }
+
+                // if our store offers density histograms, and we are zoomed out far enough, draw them
+                if( this.store.getRegionFeatureDensities && scale < histScale ) {
+                    this._fillType = 'histograms';
+                    this.fillHistograms( args );
+                }
+                // if we have no histograms, check the predicted density of
+                // features on the screen, and display a message if it's
+                // bigger than maxFeatureScreenDensity
+                else if( scale < featureScale ) {
+                    this.fillTooManyFeaturesMessage(
+                        blockIndex,
+                        block,
+                        scale
+                    );
+                    args.finishCallback();
+                }
+                else {
+                    // if we have transitioned to viewing features, delete the
+                    // y-scale used for the histograms
+                    this.removeYScale();
+                    this._fillType = 'features';
+                    this.fillFeatures( dojo.mixin( {stats: stats}, args ) );
+                }
+        }),
+        dojo.hitch( this, 'fillBlockError', blockIndex, block )
+        );
+    },
+
+    /**
+     * Creates a Y-axis scale for the feature histogram.  Must be run after
+     * the histogram bars are drawn, because it sometimes must use the
+     * track height to calculate the max value if there are no explicit
+     * histogram stats.
+     */
+    makeHistogramYScale: function( blockSizeBp, dims, histData ) {
+        if( dims.logScale ) {
+             0 && console.error("Log histogram scale axis labels not yet implemented.");
+            return;
+        }
+        var maxval = this.height/dims.pxPerCount;
+        maxval = dims.logScale ? log(maxval) : maxval;
+
+        // if we have a scale, and it has the same characteristics
+        // (including pixel height), don't redraw it.
+        if( this.yscale && this.yscale_params
+            && this.yscale_params.maxval == maxval
+            && this.yscale_params.height == this.height
+            && this.yscale_params.blockbp == blockSizeBp
+          ) {
+              return;
+          } else {
+              this.removeYScale();
+              this.makeYScale({ min: 0, max: maxval });
+              this.yscale_params = {
+                  height: this.height,
+                  blockbp: blockSizeBp,
+                  maxval: maxval
+              };
+          }
+    },
+
+    destroy: function() {
+        this._clearLayout();
+        this.inherited(arguments);
+    },
+
+    cleanupBlock: function(block) {
+        if( block ) {
+            // discard the layout for this range
+            if ( this.layout )
+                this.layout.discardRange( block.startBase, block.endBase );
+
+            if( block.featureNodes )
+                for( var name in block.featureNodes ) {
+                    var featDiv = block.featureNodes[name];
+                    array.forEach(
+                        'track,feature,callbackArgs,_labelScale,_descriptionScale'.split(','),
+                        function(a) { Util.removeAttribute( featDiv, a ); }
+                    );
+                    if( 'label' in featDiv ) {
+                        array.forEach(
+                            'track,feature,callbackArgs'.split(','),
+                            function(a) { Util.removeAttribute( featDiv.label, a ); }
+                        );
+                        Util.removeAttribute( featDiv, 'label' );
+                    }
+                }
+        }
+
+        this.inherited( arguments );
+    },
+
+    /**
+     * Called when sourceBlock gets deleted.  Any child features of
+     * sourceBlock that extend onto destBlock should get moved onto
+     * destBlock.
+     */
+    transfer: function(sourceBlock, destBlock, scale, containerStart, containerEnd) {
+
+        if (!(sourceBlock && destBlock)) return;
+
+        var destLeft = destBlock.startBase;
+        var destRight = destBlock.endBase;
+        var blockWidth = destRight - destLeft;
+        var sourceSlot;
+
+        var overlaps = (sourceBlock.startBase < destBlock.startBase)
+            ? sourceBlock.rightOverlaps
+            : sourceBlock.leftOverlaps;
+        overlaps = overlaps || [];
+
+        for (var i = 0; i < overlaps.length; i++) {
+            //if the feature overlaps destBlock,
+            //move to destBlock & re-position
+            sourceSlot = sourceBlock.featureNodes[ overlaps[i] ];
+            if ( sourceSlot && sourceSlot.label && sourceSlot.label.parentNode ) {
+                sourceSlot.label.parentNode.removeChild(sourceSlot.label);
+            }
+            if (sourceSlot && sourceSlot.feature) {
+                if ( sourceSlot.layoutEnd > destLeft
+                     && sourceSlot.feature.get('start') < destRight ) {
+
+                         sourceSlot.parentNode.removeChild(sourceSlot);
+
+                         delete sourceBlock.featureNodes[ overlaps[i] ];
+
+                         /* feature render, adding to block, centering refactored into addFeatureToBlock() */
+                         var featDiv = this.addFeatureToBlock( sourceSlot.feature, overlaps[i],
+                                                         destBlock, scale, sourceSlot._labelScale, sourceSlot._descriptionScale,
+                                                         containerStart, containerEnd );
+                         // if there are boolean coverage divs, modify feature accordingly.
+                         if ( sourceSlot.booleanCovs ) {
+                            this._maskTransfer( featDiv, sourceSlot, containerStart, containerEnd );
+                         }
+                     }
+            }
+        }
+    },
+
+     /**
+     * Called by "tranfer" when sourceBlock gets deleted.  Ensures that any child features of
+     * sourceBlock that extend onto destBlock will remain masked when moved onto
+     * destBlock.
+     */
+    _maskTransfer: function( featDiv, sourceSlot, containerStart, containerEnd ) {
+        var subfeatures = [];
+        // remove subfeatures
+        while ( featDiv.firstChild ) {
+            subfeatures.push( featDiv.firstChild );
+            featDiv.removeChild( featDiv.firstChild );
+        }
+        var s = featDiv.featureEdges.s;
+        var e = featDiv.featureEdges.e;
+        for ( var key in sourceSlot.booleanCovs ) {
+            if ( sourceSlot.booleanCovs.hasOwnProperty(key) ) {
+                // dynamically resize the coverage divs.
+                var start = sourceSlot.booleanCovs[key].span.s;
+                var end   = sourceSlot.booleanCovs[key].span.e;
+                if ( end < containerStart || start > containerEnd)
+                    continue;
+                // note: we should also remove it from booleanCovs at some point.
+                sourceSlot.booleanCovs[key].style.left = 100*(start-s)/(e-s)+'%';
+                sourceSlot.booleanCovs[key].style.width = 100*(end-start)/(e-s)+'%';
+                featDiv.appendChild( sourceSlot.booleanCovs[key] );
+            }
+        }
+        // add the processed subfeatures, if in frame.
+        query( '.basicSubfeature', sourceSlot ).forEach(
+            function(node, idx, arr) {
+                var start = node.subfeatureEdges.s;
+                var end   = node.subfeatureEdges.e;
+                if ( end < containerStart || start > containerEnd )
+                    return;
+                node.style.left = 100*(start-s)/(e-s)+'%';
+                node.style.width = 100*(end-start)/(e-s)+'%';
+                featDiv.appendChild(node);
+            }
+        );
+        if ( this.config.style.arrowheadClass ) {
+            // add arrowheads
+            var a = this.config.style.arrowheadClass;
+            query( '.minus-'+a+', .plus-'+a, sourceSlot ).forEach(
+                function(node, idx, arr) {
+                    featDiv.appendChild(node);
+                }
+            );
+        }
+        featDiv.className = 'basic';
+        featDiv.oldClassName = sourceSlot.oldClassName;
+        featDiv.booleanCovs = sourceSlot.booleanCovs;
+    },
+
+    /**
+     * arguments:
+     * @param args.block div to be filled with info
+     * @param args.leftBlock div to the left of the block to be filled
+     * @param args.rightBlock div to the right of the block to be filled
+     * @param args.leftBase starting base of the block
+     * @param args.rightBase ending base of the block
+     * @param args.scale pixels per base at the current zoom level
+     * @param args.containerStart don't make HTML elements extend further left than this
+     * @param args.containerEnd don't make HTML elements extend further right than this. 0-based.
+     */
+    fillFeatures: function(args) {
+        var blockIndex = args.blockIndex;
+        var block = args.block;
+        var leftBase = args.leftBase;
+        var rightBase = args.rightBase;
+        var scale = args.scale;
+        var stats = args.stats;
+        var containerStart = args.containerStart;
+        var containerEnd = args.containerEnd;
+        var finishCallback = args.finishCallback;
+
+        this.scale = scale;
+
+        block.featureNodes = {};
+
+        //determine the glyph height, arrowhead width, label text dimensions, etc.
+        if( !this.haveMeasurements ) {
+            this.measureStyles();
+            this.haveMeasurements = true;
+        }
+
+        var labelScale       = this.config.style.labelScale       || stats.featureDensity * this.config.style._defaultLabelScale;
+        var descriptionScale = this.config.style.descriptionScale || stats.featureDensity * this.config.style._defaultDescriptionScale;
+
+        var curTrack = this;
+
+        var featCallback = dojo.hitch(this,function( feature ) {
+            var uniqueId = feature.id();
+            if( ! this._featureIsRendered( uniqueId ) ) {
+                /* feature render, adding to block, centering refactored into addFeatureToBlock() */
+                // var filter = this.browser.view.featureFilter;
+                if( this.filterFeature( feature ) )  {
+                    this.addFeatureToBlock( feature, uniqueId, block, scale, labelScale, descriptionScale,
+                                            containerStart, containerEnd );
+               }
+            }
+        });
+
+        this.store.getFeatures( { ref: this.refSeq.name,
+                                  start: leftBase,
+                                  end: rightBase
+                                },
+                                featCallback,
+                                function ( args ) {
+                                    curTrack.heightUpdate(curTrack._getLayout(scale).getTotalHeight(),
+                                                          blockIndex);
+                                    if ( args && args.maskingSpans ) { 
+                                        //note: spans have to be inverted
+                                        var invSpan = [];
+                                        invSpan[0] = { start: leftBase };
+                                        var i = 0;
+                                        for ( var span in args.maskingSpans) {
+                                            if (args.maskingSpans.hasOwnProperty(span)) {
+                                                span = args.maskingSpans[span];
+                                                invSpan[i].end = span.start;
+                                                i++;
+                                                invSpan[i] = { start: span.end };
+                                            }
+                                        }
+                                        invSpan[i].end = rightBase;
+                                        if (invSpan[i].end <= invSpan[i].start) {
+                                            invSpan.splice(i,1); }
+                                        if (invSpan[0].end <= invSpan[0].start) {
+                                            invSpan.splice(0,1); }
+                                        curTrack.maskBySpans( invSpan, args.maskingSpans ); 
+                                    }
+                                    finishCallback();
+                                },
+                                function( error ) {
+                                     0 && console.error( error, error.stack );
+                                    curTrack.fillBlockError( blockIndex, block, error );
+                                    finishCallback();
+                                }
+                              );
+    },
+
+    /**
+     *  Creates feature div, adds to block, and centers subfeatures.
+     *  Overridable by subclasses that need more control over the substructure.
+     */
+    addFeatureToBlock: function( feature, uniqueId, block, scale, labelScale, descriptionScale,
+                                 containerStart, containerEnd ) {
+        var featDiv = this.renderFeature( feature, uniqueId, block, scale, labelScale, descriptionScale,
+                                          containerStart, containerEnd );
+        if( ! featDiv )
+            return null;
+
+        block.domNode.appendChild( featDiv );
+        if( this.config.style.centerChildrenVertically )
+            this._centerChildrenVertically( featDiv );
+        return featDiv;
+    },
+
+
+    fillBlockTimeout: function( blockIndex, block ) {
+        this.inherited( arguments );
+        block.featureNodes = {};
+    },
+
+
+    /**
+     * Returns true if a feature is visible and rendered someplace in the blocks of this track.
+     * @private
+     */
+    _featureIsRendered: function( uniqueId ) {
+        var blocks = this.blocks;
+        for( var i=0; i<blocks.length; i++ ) {
+            if( blocks[i] && blocks[i].featureNodes && blocks[i].featureNodes[uniqueId])
+                return true;
+        }
+        return false;
+    },
+
+    /**
+     * If spans are passed to the track (i.e. if it is a boolean track), mask features accordingly.
+     */
+    maskBySpans: function ( invSpans, spans ) {
+        var blocks = this.blocks;
+        for ( var i in blocks ) {
+            if ( blocks.hasOwnProperty(i) ) {
+                // loop through all blocks
+                if ( !blocks[i] )
+                    continue;
+                var block = blocks[i];
+                var bs = block.startBase;
+                var be = block.endBase;
+
+                var overlaps = function ( featStart, featEnd, spanStart, spanEnd ) {
+                    // outputs start and end points of overlap
+                    var s = Math.max( featStart, spanStart );
+                    var e = Math.min( featEnd, spanEnd );
+                    if ( s < e ) { return {s:s, e:e}; }
+                    return false;
+                };
+
+                var union = function ( start1, end1, start2, end2 ) {
+                    // outputs the endpoints of the union
+                    if ( overlaps( start1, end1, start2, end2 ) ) {
+                        return { s: Math.min( start1, start2 ),
+                                 e: Math.max( end1, end2 ) };
+                    }
+                    else { return false; }
+                };
+
+                var makeDiv = function ( start, end, parentDiv, masked, voidClass ) {
+                    // make a coverage div
+                    var coverageNode = dojo.create('div');
+                    var s = parentDiv.featureEdges 
+                            ? parentDiv.featureEdges.s
+                            : parentDiv.subfeatureEdges.s;
+                    var e = parentDiv.featureEdges
+                            ? parentDiv.featureEdges.e
+                            : parentDiv.subfeatureEdges.e;
+                    coverageNode.span = { s:start, e:end };
+                    coverageNode.className = masked ?  (feat.className == voidClass
+                                                        ? feat.oldClassName + ' Boolean-transparent'
+                                                        : feat.className +' Boolean-transparent')
+                                                    :  (feat.className == voidClass
+                                                        ? feat.oldClassName
+                                                        : feat.className);
+                    coverageNode.booleanDiv = true;
+                    coverageNode.style.left = 100*(start-s)/(e-s)+'%';
+                    coverageNode.style.top = '0px';
+                    coverageNode.style.width = 100*(end-start)/(e-s)+'%';
+                    return coverageNode;
+                };
+
+                var addDiv = function ( start, end, parentDiv, masked, voidClass, isAdded ) {
+                    // Loop through coverage Nodes, combining existing nodes so they don't overlap, and add new divs.
+                    isAdded = isAdded || false;
+                    for ( var key in parentDiv.childNodes ) {
+                        if ( parentDiv.childNodes[key] && parentDiv.childNodes[key].booleanDiv ) {
+                            var divStart = parentDiv.childNodes[key].span.s;
+                            var divEnd   = parentDiv.childNodes[key].span.e;
+                            if ( divStart <= start && divEnd >= end ) {
+                                isAdded = true;
+                                break;
+                            }
+                            var u = union (start, end, divStart, divEnd );
+                            if ( u ) {
+                                var coverageNode = makeDiv( u.s, u.e, parentDiv, masked, voidClass );
+                                var tempIndex = parentDiv.booleanCovs.indexOf(parentDiv.childNodes[key]);
+                                parentDiv.removeChild(parentDiv.childNodes[key]);
+                                parentDiv.booleanCovs.splice(tempIndex, 1);
+                                parentDiv.appendChild(coverageNode);
+                                parentDiv.booleanCovs.push(coverageNode);
+                                isAdded = true;
+                                addDiv( u.s, u.e, parentDiv, masked, voidClass, true );
+                                break;
+                            }
+                        }
+                    }
+                    if ( !isAdded ) {
+                        var coverageNode = makeDiv( start, end, parentDiv, masked, voidClass );
+                        parentDiv.appendChild(coverageNode);
+                        parentDiv.booleanCovs.push(coverageNode);
+                    }
+                };
+
+                var addOverlaps = function ( s, e, feat, spans, invSpans, voidClass ) {
+                    if ( !feat.booleanCovs ) {
+                        feat.booleanCovs = [];
+                    }
+                    // add opaque divs
+                    for ( var index in invSpans ) {
+                        if ( invSpans.hasOwnProperty(index) ) {
+                            var ov = overlaps( s, e, invSpans[index].start, invSpans[index].end );
+                            if ( ov ) {
+                                addDiv( ov.s, ov.e, feat, false, voidClass );
+                            }
+                        }
+                    }
+                    // add masked divs
+                    for ( var index in spans ) {
+                        if ( spans.hasOwnProperty(index) ) {
+                            var ov = overlaps( s, e, spans[index].start, spans[index].end );
+                            if ( ov ) {
+                                addDiv( ov.s, ov.e, feat, true, voidClass );
+                            }
+                        }
+                    }
+
+                    feat.oldClassName = feat.className == voidClass
+                                        ? feat.oldClassName
+                                        : feat.className;
+                    feat.className = voidClass;
+                };
+
+                for ( var key in block.featureNodes ) {
+                    if (block.featureNodes.hasOwnProperty(key)) {
+                        var feat = block.featureNodes[key];
+                        if ( !feat.feature ) {
+                            // If there is no feature property, than it is a subfeature
+                            var s = feat.subfeatureEdges.s;
+                            var e = feat.subfeatureEdges.e;
+                            addOverlaps( s, e, feat, spans, invSpans, 'basicSubfeature' );
+                            continue;
+                        }
+                        var s = feat.feature.get('start');
+                        var e = feat.feature.get('end');
+                        addOverlaps( s, e, feat, spans, invSpans, 'basic' );
+                    }
+                }
+            }
+        }
+    },
+
+    measureStyles: function() {
+        //determine dimensions of labels (height, per-character width)
+        var heightTest = document.createElement("div");
+        heightTest.className = "feature-label";
+        heightTest.style.height = "auto";
+        heightTest.style.visibility = "hidden";
+        heightTest.appendChild(document.createTextNode("1234567890"));
+        document.body.appendChild(heightTest);
+        this.labelHeight = heightTest.clientHeight;
+        this.labelWidth = heightTest.clientWidth / 10;
+        document.body.removeChild(heightTest);
+
+        //measure the height of glyphs
+        var glyphBox;
+        heightTest = document.createElement("div");
+        //cover all the bases: stranded or not, phase or not
+        heightTest.className =
+            "feature " + this.config.style.className
+            + " plus-" + this.config.style.className
+            + " plus-" + this.config.style.className + "1";
+        if (this.config.style.featureCss)
+            heightTest.style.cssText = this.config.style.featureCss;
+        heightTest.style.visibility = "hidden";
+        if (Util.is_ie6) heightTest.appendChild(document.createComment("foo"));
+        document.body.appendChild(heightTest);
+        glyphBox = domGeom.getMarginBox(heightTest);
+        this.glyphHeight = Math.round(glyphBox.h);
+        this.padding = this.defaultPadding + glyphBox.w;
+        document.body.removeChild(heightTest);
+
+        //determine the width of the arrowhead, if any
+        if (this.config.style.arrowheadClass) {
+            var ah = document.createElement("div");
+            ah.className = "plus-" + this.config.style.arrowheadClass;
+            if (Util.is_ie6) ah.appendChild(document.createComment("foo"));
+            document.body.appendChild(ah);
+            glyphBox = domGeom.position(ah);
+            this.plusArrowWidth = glyphBox.w;
+            this.plusArrowHeight = glyphBox.h;
+            ah.className = "minus-" + this.config.style.arrowheadClass;
+            glyphBox = domGeom.position(ah);
+            this.minusArrowWidth = glyphBox.w;
+            this.minusArrowHeight = glyphBox.h;
+            document.body.removeChild(ah);
+        }
+    },
+
+    hideAll: function() {
+        this._clearLayout();
+        return this.inherited(arguments);
+    },
+
+    getFeatDiv: function( feature )  {
+        var id = this.getId( feature );
+        if( ! id )
+            return null;
+
+        for( var i = 0; i < this.blocks.length; i++ ) {
+            var b = this.blocks[i];
+            if( b && b.featureNodes ) {
+                var f = b.featureNodes[id];
+                if( f )
+                    return f;
+            }
+        }
+
+        return null;
+    },
+
+    getId: function( f ) {
+        return f.id();
+    },
+
+    renderFeature: function( feature, uniqueId, block, scale, labelScale, descriptionScale, containerStart, containerEnd ) {
+        //featureStart and featureEnd indicate how far left or right
+        //the feature extends in bp space, including labels
+        //and arrowheads if applicable
+
+        var featureEnd = feature.get('end');
+        var featureStart = feature.get('start');
+        if( typeof featureEnd == 'string' )
+            featureEnd = parseInt(featureEnd);
+        if( typeof featureStart == 'string' )
+            featureStart = parseInt(featureStart);
+        // layoutStart: start genome coord (at current scale) of horizontal space need to render feature,
+        //       including decorations (arrowhead, label, etc) and padding
+        var layoutStart = featureStart;
+        // layoutEnd: end genome coord (at current scale) of horizontal space need to render feature,
+        //       including decorations (arrowhead, label, etc) and padding
+        var layoutEnd = featureEnd;
+
+        //     JBrowse now draws arrowheads within feature genome coord bounds
+        //     For WebApollo we're keeping arrow outside of feature genome coord bounds,
+        //           because otherwise arrow can obscure edge-matching, CDS/UTR transitions, small inton/exons, etc.
+        //     Would like to implement arrowhead change in WebApollo plugin, but would need to refactor HTMLFeature more to allow for that
+        if (this.config.style.arrowheadClass) {
+            switch (feature.get('strand')) {
+            case 1:
+            case '+':
+                layoutEnd   += (this.plusArrowWidth / scale); break;
+            case -1:
+            case '-':
+                layoutStart -= (this.minusArrowWidth / scale); break;
+            }
+        }
+
+        var levelHeight = this.glyphHeight + this.glyphHeightPad;
+
+        // if the label extends beyond the feature, use the
+        // label end position as the end position for layout
+        var name = this.getFeatureLabel( feature );
+        var description = scale > descriptionScale && this.getFeatureDescription(feature);
+        if( description && description.length > this.config.style.maxDescriptionLength )
+            description = description.substr(0, this.config.style.maxDescriptionLength+1 ).replace(/(\s+\S+|\s*)$/,'')+String.fromCharCode(8230);
+
+        // add the label div (which includes the description) to the
+        // calculated height of the feature if it will be displayed
+        if( this.showLabels && scale >= labelScale && name ) {
+            layoutEnd = Math.max(layoutEnd, layoutStart + (''+name).length * this.labelWidth / scale );
+            levelHeight += this.labelHeight + this.labelPad;
+        }
+        if( this.showLabels && description ) {
+            layoutEnd = Math.max( layoutEnd, layoutStart + (''+description).length * this.labelWidth / scale );
+            levelHeight += this.labelHeight + this.labelPad;
+        }
+
+        layoutEnd += Math.max(1, this.padding / scale);
+
+        var top = this._getLayout( scale )
+                      .addRect( uniqueId,
+                                layoutStart,
+                                layoutEnd,
+                                levelHeight);
+
+        if( top === null ) {
+            // could not lay out, would exceed our configured maxHeight
+            // mark the block as exceeding the max height
+            this.markBlockHeightOverflow( block );
+            return null;
+        }
+
+        var featDiv = this.config.hooks.create(this, feature );
+        this._connectFeatDivHandlers( featDiv );
+        // NOTE ANY DATA SET ON THE FEATDIV DOM NODE NEEDS TO BE
+        // MANUALLY DELETED IN THE cleanupBlock METHOD BELOW
+        featDiv.track = this;
+        featDiv.feature = feature;
+        featDiv.layoutEnd = layoutEnd;
+
+        // border values used in positioning boolean subfeatures, if any.
+        featDiv.featureEdges = { s : Math.max( featDiv.feature.get('start'), containerStart ),
+                                 e : Math.min( featDiv.feature.get('end')  , containerEnd   ) };
+
+        // (callbackArgs are the args that will be passed to callbacks
+        // in this feature's context menu or left-click handlers)
+        featDiv.callbackArgs = [ this, featDiv.feature, featDiv ];
+
+        // save the label scale and description scale in the featDiv
+        // so that we can use them later
+        featDiv._labelScale = labelScale;
+        featDiv._descriptionScale = descriptionScale;
+
+
+        block.featureNodes[uniqueId] = featDiv;
+
+        // record whether this feature protrudes beyond the left and/or right side of the block
+        if( layoutStart < block.startBase ) {
+            if( ! block.leftOverlaps ) block.leftOverlaps = [];
+            block.leftOverlaps.push( uniqueId );
+        }
+        if( layoutEnd > block.endBase ) {
+            if( ! block.rightOverlaps ) block.rightOverlaps = [];
+            block.rightOverlaps.push( uniqueId );
+        }
+
+        dojo.addClass(featDiv, "feature");
+        var className = this.config.style.className;
+        if (className == "{type}") { className = feature.get('type'); }
+        var strand = feature.get('strand');
+        switch (strand) {
+        case 1:
+        case '+':
+            dojo.addClass(featDiv, "plus-" + className); break;
+        case -1:
+        case '-':
+            dojo.addClass(featDiv, "minus-" + className); break;
+        default:
+            dojo.addClass(featDiv, className);
+        }
+        var phase = feature.get('phase');
+        if ((phase !== null) && (phase !== undefined))
+//            featDiv.className = featDiv.className + " " + featDiv.className + "_phase" + phase;
+            dojo.addClass(featDiv, className + "_phase" + phase);
+
+        // check if this feature is highlighted
+        var highlighted = this.isFeatureHighlighted( feature, name );
+
+        // add 'highlighted' to the feature's class if its name
+        // matches the objectName of the global highlight and it's
+        // within the highlighted region
+        if( highlighted )
+            dojo.addClass( featDiv, 'highlighted' );
+
+        // Since some browsers don't deal well with the situation where
+        // the feature goes way, way offscreen, we truncate the feature
+        // to exist betwen containerStart and containerEnd.
+        // To make sure the truncated end of the feature never gets shown,
+        // we'll destroy and re-create the feature (with updated truncated
+        // boundaries) in the transfer method.
+        var displayStart = Math.max( featureStart, containerStart );
+        var displayEnd = Math.min( featureEnd, containerEnd );
+        var blockWidth = block.endBase - block.startBase;
+        var featwidth = Math.max( this.minFeatWidth, (100 * ((displayEnd - displayStart) / blockWidth)));
+        featDiv.style.cssText =
+            "left:" + (100 * (displayStart - block.startBase) / blockWidth) + "%;"
+            + "top:" + top + "px;"
+            + " width:" + featwidth + "%;"
+            + (this.config.style.featureCss ? this.config.style.featureCss : "");
+
+        // Store the containerStart/End so we can resolve the truncation 
+        // when we are updating static elements
+        featDiv._containerStart=containerStart;
+        featDiv._containerEnd=containerEnd;
+
+        if ( this.config.style.arrowheadClass ) {
+            var ah = document.createElement("div");
+            var featwidth_px = featwidth/100*blockWidth*scale;
+
+            switch (strand) {
+            case 1:
+            case '+':
+                ah.className = "plus-" + this.config.style.arrowheadClass;
+                ah.style.cssText =  "right: "+(-this.plusArrowWidth) + "px";
+                featDiv.appendChild(ah);
+                break;
+            case -1:
+            case '-':
+                ah.className = "minus-" + this.config.style.arrowheadClass;
+                ah.style.cssText = "left: " + (-this.minusArrowWidth) + "px";
+                featDiv.appendChild(ah);
+                break;
+            }
+        }
+
+        // fill in the template parameters in the featDiv and also for the labelDiv (see below)
+        var context = lang.mixin( { track: this, feature: feature, callbackArgs: [ this, feature ] } );
+        if(featDiv.title) {
+            featDiv.title=this.template( feature, this._evalConf( context, featDiv.title, "label" ));
+        }
+
+        if ( ( name || description ) && this.showLabels && scale >= labelScale ) {
+            var labelDiv = dojo.create( 'div', {
+                    className: "feature-label" + ( highlighted ? ' highlighted' : '' ),
+                    innerHTML:  ( name ? '<div class="feature-name">'+name+'</div>' : '' )
+                               +( description ? ' <div class="feature-description">'+description+'</div>' : '' ),
+                    style: {
+                        top: (top + this.glyphHeight + 2) + "px",
+                        left: (100 * (layoutStart - block.startBase) / blockWidth)+'%'
+                    }
+                }, block.domNode );
+
+            this._connectFeatDivHandlers( labelDiv );
+
+            if(featDiv.title) labelDiv.title=featDiv.title;
+            featDiv.label = labelDiv;
+
+
+            // NOTE: ANY DATA ADDED TO THE labelDiv MUST HAVE A
+            // CORRESPONDING DELETE STATMENT IN cleanupBlock BELOW
+            labelDiv.feature = feature;
+            labelDiv.track = this;
+            // (callbackArgs are the args that will be passed to callbacks
+            // in this feature's context menu or left-click handlers)
+            labelDiv.callbackArgs = [ this, featDiv.feature, featDiv ];
+        }
+
+        if( featwidth > this.config.style.minSubfeatureWidth ) {
+            this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block);
+        }
+
+        // render the popup menu if configured
+        if( this.config.menuTemplate ) {
+            window.setTimeout( dojo.hitch( this, '_connectMenus', featDiv ), 50+Math.random()*150 );
+        }
+
+        if ( typeof this.config.hooks.modify == 'function' ) {
+            this.config.hooks.modify(this, feature, featDiv);
+        }
+
+        return featDiv;
+    },
+
+    handleSubFeatures: function( feature, featDiv,
+                                 displayStart, displayEnd, block )  {
+        var subfeatures = feature.get('subfeatures');
+        if( subfeatures ) {
+            for (var i = 0; i < subfeatures.length; i++) {
+                this.renderSubfeature( feature, featDiv,
+                                      subfeatures[i],
+                                      displayStart, displayEnd, block );
+            }
+        }
+    },
+
+    /**
+     * Get the height of a div.  Caches div heights based on
+     * classname.
+     */
+    _getHeight: function( theDiv )  {
+        if (this.config.disableHeightCache)  {
+            return theDiv.offsetHeight || 0;
+        }
+        else  {
+            var c = this.heightCache[ theDiv.className ];
+            if( c )
+                return c;
+            c  = theDiv.offsetHeight || 0;
+            this.heightCache[ theDiv.className ] = c;
+            return c;
+        }
+    },
+
+    /**
+     * Vertically centers all the child elements of a feature div.
+     * @private
+     */
+    _centerChildrenVertically: function( /**HTMLElement*/ featDiv ) {
+        if( featDiv.childNodes.length > 0 ) {
+            var parentHeight = this._getHeight(featDiv);
+            for( var i = 0; i< featDiv.childNodes.length; i++ ) {
+                var child = featDiv.childNodes[i];
+                // only operate on child nodes that can be styled,
+                // i.e. HTML elements instead of text nodes or whatnot
+                if( child.style ) {
+                    // cache the height of elements, for speed.
+                    var h = this._getHeight(child);
+                    dojo.style( child, { marginTop: '0', top: ((parentHeight-h)/2) + 'px' });
+                    // recursively center any descendants
+                    if (child.childNodes.length > 0)  {
+                        this._centerChildrenVertically( child );
+                    }
+                }
+            }
+        }
+    },
+
+    /**
+     * Connect our configured event handlers to a given html element,
+     * usually a feature div or label div.
+     */
+    _connectFeatDivHandlers: function( /** HTMLElement */ div  ) {
+        for( var event in this.eventHandlers ) {
+            this.own( on( div, event, this.eventHandlers[event] ) );
+        }
+        // if our click handler has a label, set that as a tooltip
+        if( this.eventHandlers.click && this.eventHandlers.click.label )
+            div.setAttribute( 'title', this.eventHandlers.click.label );
+    },
+
+    _connectMenus: function( featDiv ) {
+        // don't actually make the menu until the feature is
+        // moused-over.  pre-generating menus for lots and lots of
+        // features at load time is way too slow.
+        var refreshMenu = lang.hitch( this, '_refreshMenu', featDiv );
+        this.own( on( featDiv,  'mouseover', refreshMenu ) );
+        if( featDiv.label ) {
+            this.own( on( featDiv.label,  'mouseover', refreshMenu ) );
+        }
+    },
+
+    _refreshMenu: function( featDiv ) {
+        // if we already have a menu generated for this feature,
+        // give it a new lease on life
+        if( ! featDiv.contextMenu ) {
+            featDiv.contextMenu = this._makeFeatureContextMenu( featDiv, this.config.menuTemplate );
+        }
+
+        // give the menu a timeout so that it's cleaned up if it's not used within a certain time
+        if( featDiv.contextMenuTimeout ) {
+            window.clearTimeout( featDiv.contextMenuTimeout );
+        }
+        var timeToLive = 30000; // clean menus up after 30 seconds
+        featDiv.contextMenuTimeout = window.setTimeout( function() {
+            if( featDiv.contextMenu ) {
+                featDiv.contextMenu.destroyRecursive();
+                Util.removeAttribute( featDiv, 'contextMenu' );
+            }
+            Util.removeAttribute( featDiv, 'contextMenuTimeout' );
+        }, timeToLive );
+    },
+
+    /**
+     * Make the right-click dijit menu for a feature.
+     */
+    _makeFeatureContextMenu: function( featDiv, menuTemplate ) {
+        // interpolate template strings in the menuTemplate
+        menuTemplate = this._processMenuSpec(
+            dojo.clone( menuTemplate ),
+            featDiv
+        );
+
+        // render the menu, start it up, and bind it to right-clicks
+        // both on the feature div and on the label div
+        var menu = this._renderContextMenu( menuTemplate, featDiv );
+        menu.startup();
+        menu.bindDomNode( featDiv );
+        if( featDiv.label )
+            menu.bindDomNode( featDiv.label );
+
+        return menu;
+    },
+
+    renderSubfeature: function( feature, featDiv, subfeature, displayStart, displayEnd, block ) {
+        var subStart = subfeature.get('start');
+        var subEnd = subfeature.get('end');
+        var featLength = displayEnd - displayStart;
+        var type = subfeature.get('type');
+        var className;
+        if( this.config.style.subfeatureClasses ) {
+            className = this.config.style.subfeatureClasses[type];
+            // if no class mapping specified for type, default to subfeature.get('type')
+            if (className === undefined) { className = type; }
+            // if subfeatureClasses specifies that subfeature type explicitly maps to null className
+            //     then don't render the feature
+            else if (className === null)  {
+                return null;
+            }
+        }
+        else {
+            // if no config.style.subfeatureClasses to specify subfeature class mapping, default to subfeature.get('type')
+            className = type;
+        }
+
+        // a className of 'hidden' causes things to not even be rendered
+        if( className == 'hidden' )
+            return null;
+
+        var subDiv = document.createElement("div");
+        // used by boolean tracks to do positiocning
+        subDiv.subfeatureEdges = { s: subStart, e: subEnd };
+
+        dojo.addClass(subDiv, "subfeature");
+        // check for className to avoid adding "null", "plus-null", "minus-null"
+        if (className) {
+            switch ( subfeature.get('strand') ) {
+            case 1:
+            case '+':
+                dojo.addClass(subDiv, "plus-" + className); break;
+            case -1:
+            case '-':
+                dojo.addClass(subDiv, "minus-" + className); break;
+            default:
+                dojo.addClass(subDiv, className);
+            }
+        }
+
+        // if the feature has been truncated to where it doesn't cover
+        // this subfeature anymore, just skip this subfeature
+        if ( subEnd <= displayStart || subStart >= displayEnd )
+            return null;
+
+        if (Util.is_ie6) subDiv.appendChild(document.createComment());
+
+        subDiv.style.cssText = "left: " + (100 * ((subStart - displayStart) / featLength)) + "%;"
+            + "width: " + (100 * ((subEnd - subStart) / featLength)) + "%;";
+        featDiv.appendChild(subDiv);
+
+        block.featureNodes[ subfeature.id() ] = subDiv;
+
+        return subDiv;
+    },
+
+    _getLayout: function( scale ) {
+
+        //determine the glyph height, arrowhead width, label text dimensions, etc.
+        if (!this.haveMeasurements) {
+            this.measureStyles();
+            this.haveMeasurements = true;
+        }
+
+        // create the layout if we need to, and we can
+        if( ( ! this.layout || this.layout.pitchX != 4/scale ) && scale  )
+            this.layout = new Layout({
+                                         pitchX: 4/scale,
+                                         pitchY: this.config.layoutPitchY || (this.glyphHeight + this.glyphHeightPad),
+                                         maxHeight: this.getConf('maxHeight')
+                                     });
+
+
+        return this.layout;
+    },
+    _clearLayout: function() {
+        delete this.layout;
+    },
+
+    clear: function() {
+        delete this.layout;
+        this.inherited( arguments );
+    },
+
+    /**
+     *   indicates a change to this track has happened that may require a re-layout
+     *   clearing layout here, and relying on superclass BlockBased.changed() call and
+     *   standard _changedCallback function passed in track constructor to trigger relayout
+     */
+    changed: function() {
+        this._clearLayout();
+        this.inherited(arguments);
+    },
+
+    _exportFormats: function() {
+        return [ {name: 'GFF3', label: 'GFF3', fileExt: 'gff3'}, {name: 'BED', label: 'BED', fileExt: 'bed'}, { name: 'SequinTable', label: 'Sequin Table', fileExt: 'sqn' } ];
+    },
+
+    _trackMenuOptions: function() {
+        var o = this.inherited(arguments);
+        var track = this;
+
+        o.push.apply(
+            o,
+            [
+                { type: 'dijit/MenuSeparator' },
+                { label: 'Show labels',
+                  type: 'dijit/CheckedMenuItem',
+                  checked: !!( 'showLabels' in this ? this.showLabels : this.config.style.showLabels ),
+                  onClick: function(event) {
+                      track.showLabels = this.checked;
+                      track.changed();
+                  }
+                }
+            ]
+        );
+
+        return o;
+    }
+});
+
+return HTMLFeatures;
+});
+
+/*
+
+Copyright (c) 2007-2010 The Evolutionary Software Foundation
+
+Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
+
+This package and its accompanying libraries are free software; you can
+redistribute it and/or modify it under the terms of the LGPL (either
+version 2.1, or at your option, any later version) or the Artistic
+License 2.0.  Refer to LICENSE for the full license text.
+
+*/
+
+},
+'JBrowse/View/Track/_YScaleMixin':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/query',
+
+            'JBrowse/View/Ruler'
+        ],
+        function(
+            declare,
+            query,
+
+            Ruler
+        ) {
+/**
+ * Mixin for a track that has a Y-axis scale bar on its left side.
+ * Puts the scale div in <code>this.yscale</code>, stores the 'left' CSS pixel
+ * offset in <code>this.yscale_left</code>.
+ * @lends JBrowse.View.Track.YScaleMixin
+ */
+
+return declare( null, {
+    /**
+     * @param {Number} [min] Optional minimum value for the scale.
+     * Defaults to value of <code>this.minDisplayed</code>.
+     * @param {Number} [max] Optional maximum value for the scale.
+     * Defaults to value of <code>this.maxDisplayed</code>.
+     */
+    makeYScale: function( args ) {
+        args = args || {};
+        var min = typeof args.min == 'number' ? args.min : this.minDisplayed;
+        var max = typeof args.max == 'number' ? args.max : this.maxDisplayed;
+
+        // make and style the main container div for the axis
+        if( this.yscale ) {
+            this.yscale.parentNode.removeChild( this.yscale );
+        }
+        var rulerdiv =
+            dojo.create('div', {
+                            className: 'ruler vertical_ruler',
+                            style: {
+                                height: this.height+'px',
+                                width: '10px',
+                                position: 'absolute',
+                                zIndex: 17
+                            }
+                        }, this.div );
+        this.yscale = rulerdiv;
+
+        if( this.window_info && 'x' in this.window_info ) {
+            if ('yScalePosition' in this.config) {
+                if(this.config.yScalePosition == 'right') {
+                    this.yscale.style.left = (this.window_info.x + (this.window_info.width-1||0)) + "px";
+                }
+                else if(this.config.yScalePosition == 'left') {
+                    this.yscale.style.left = this.window_info.x + 10 + 1 + "px";
+                }
+                else if(this.config.yScalePosition == 'center') {
+                    this.yscale.style.left = (this.window_info.x + (this.window_info.width||0)/2) + "px";
+                }
+            }
+            else {
+                this.yscale.style.left = (this.window_info.x + (this.window_info.width||0)/2) + "px";
+            }
+        }
+
+        dojo.style(
+            rulerdiv,
+            ( this.config.align == 'top' ? { bottom: 0 } :
+              { top: 0 })
+        );
+
+        // now make a Ruler and draw the axis in the div we just made
+        var ruler = new Ruler({
+            min: min,
+            max: max,
+            direction: 'up',
+            leftBottom: !('yScalePosition' in this.config && this.config.yScalePosition == 'left'),
+            fixBounds: args.fixBounds || false
+        });
+        ruler.render_to( rulerdiv );
+
+        this.ruler = ruler;
+    },
+
+    /**
+     * Delete the Y-axis scale if present.
+     * @private
+     */
+    removeYScale: function() {
+        if( !this.yscale ) {
+            query( '.ruler', this.div ).orphan();
+            return;
+        }
+        if( this.yscale ) {
+            this.yscale.parentNode.removeChild( this.yscale );
+            delete this.yscale;
+        }
+        delete this.yscale_params;
+    },
+
+    updateYScaleFromViewDimensions: function( coords ) {
+        if( typeof coords.x == 'number' || typeof coords.width == 'number' ) {
+            if( this.yscale ) {
+                if ('yScalePosition' in this.config) {
+                    if(this.config.yScalePosition == 'right') {
+                        this.yscale.style.left = (this.window_info.x + (this.window_info.width-1||0)) + "px";
+                    }
+                    else if(this.config.yScalePosition == 'left') {
+                        this.yscale.style.left = this.window_info.x + 10 + "px";
+                    }
+                    else if(this.config.yScalePosition == 'center') {
+                        this.yscale.style.left = (this.window_info.x + (this.window_info.width||0)/2) + "px";
+                    }
+                }
+                else {
+                    this.yscale.style.left = (this.window_info.x + (this.window_info.width||0)/2) + "px";
+                }
+            }
+        }
+    }
+});
+});
+
+},
+'JBrowse/View/Ruler':function(){
+define( [
+            'dojo/query',
+            'dojox/charting/Chart',
+            'dojox/charting/axis2d/Default',
+            'dojox/charting/plot2d/Bubble',
+            'dojo/NodeList-dom',
+            'dojo/number'
+        ],
+        function( query, Chart ) {
+/**
+ * Ruler, with ticks and numbers, drawn with HTML elements. Can be
+ * stretched to any length.
+ *
+ * @class
+ * @constructor
+ *
+ * @param {Number} args.min
+ * @param {Number} args.max
+ * @param {String} [args.direction="up"] The direction of increasing numbers.
+ *   Either "up" or "down".
+ * @param {Boolean} args.leftBottom=true Should the ticks and labels be on the right
+ * or the left.
+ *
+ */
+
+function Ruler(args) {
+    dojo.mixin( this, args );
+};
+
+Ruler.prototype.render_to = function( target_div ) {
+    if( typeof target_div == 'string' )
+        target_div = dojo.byId( target_div );
+
+    var target_dims = dojo.position( target_div );
+
+
+    // make an inner container that's styled to compensate for the
+    // 12px edge-padding that dojox.charting has builtin that we can't
+    // change, making the tick marks align correctly with the images
+    var label_digits = Math.floor( Math.log(this.max+1)/Math.log(10))+1;
+
+    var container = dojo.create(
+        'div', {
+            style: {
+                   position: 'absolute',
+                   left: "-9px",
+                   bottom: "-9px",
+                   width: '10px',
+                   height: (target_dims.h+18)+"px"
+            }
+        },
+        target_div );
+
+    try {
+        var chart1 = new Chart( container, {fill: 'transparent'} );
+        chart1.addAxis( "y", {
+                            vertical: true,
+                            fill: 'transparent',
+                            min: this.min,
+                            max: this.max,
+                            fixLower: this.fixBounds ? 'major' : 'none',
+                            fixUpper: this.fixBounds ? 'major' : 'none',
+                            leftBottom: this.leftBottom
+                            // minorTickStep: 0.5,
+                            // majorTickStep: 1
+                            //labels: [{value: 1, text: "One"}, {value: 3, text: "Ten"}]
+                        });
+        chart1.addPlot("default", {type: "Bubble", fill: 'transparent'});
+        chart1.render();
+
+        // hack to remove undesirable opaque white rectangles.  do
+        // this a little bit later
+        query('svg rect', chart1.domNode ).orphan();
+
+        this.scaler = chart1.axes.y.scaler;
+    } catch (x) {
+         0 && console.error(x+'');
+         0 && console.error("Failed to draw Ruler with SVG, your browser may not support the necessary technology.");
+        target_div.removeChild( container );
+    }
+};
+
+return Ruler;
+});
+
+},
+'JBrowse/View/Track/_ExportMixin':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/array',
+            'dojo/_base/lang',
+            'dojo/aspect',
+            'dojo/on',
+            'JBrowse/has',
+            'dojo/window',
+            'dojo/dom-construct',
+            'JBrowse/Util',
+            'dijit/form/TextBox',
+            'dijit/form/Button',
+            'dijit/form/RadioButton',
+            'dijit/Dialog',
+            'FileSaver/FileSaver'
+        ],
+        function(
+            declare,
+            array,
+            lang,
+            aspect,
+            on,
+            has,
+            dojoWindow,
+            dom,
+            Util,
+            dijitTextBox,
+            dijitButton,
+            dijitRadioButton,
+            dijitDialog,
+            saveAs
+        ) {
+
+/**
+ * Mixin for a track that can export its data.
+ * @lends JBrowse.View.Track.ExportMixin
+ */
+return declare( null, {
+
+    _canSaveFiles: function() {
+        return has('save-generated-files') && ! this.config.noExportFiles;
+    },
+
+    _canExport: function() {
+        if( this.config.noExport )
+            return false;
+
+        var highlightedRegion = this.browser.getHighlight();
+        var visibleRegion = this.browser.view.visibleRegion();
+        var wholeRefSeqRegion = { ref: this.refSeq.name, start: this.refSeq.start, end: this.refSeq.end };
+        var canExportVisibleRegion = this._canExportRegion( visibleRegion );
+        var canExportWholeRef = this._canExportRegion( wholeRefSeqRegion );
+        return highlightedRegion && this._canExportRegion( highlightedRegion )
+            || this._canExportRegion( visibleRegion )
+            || this._canExportRegion( wholeRefSeqRegion );
+    },
+
+    _possibleExportRegions: function() {
+        var regions = [
+            // the visible region
+            (function() {
+                 var r = dojo.clone( this.browser.view.visibleRegion() );
+                 r.description = 'Visible region';
+                 r.name = 'visible';
+                 return r;
+             }.call(this)),
+            // whole reference sequence
+            { ref: this.refSeq.name, start: this.refSeq.start, end: this.refSeq.end, description: 'Whole reference sequence', name: 'wholeref' }
+        ];
+
+        var highlightedRegion = this.browser.getHighlight();
+        if( highlightedRegion ) {
+            regions.unshift( lang.mixin( lang.clone( highlightedRegion ), { description: "Highlighted region", name: "highlight" } ) );
+        }
+
+        return regions;
+    },
+
+    _exportDialogContent: function() {
+        // note that the `this` for this content function is not the track, it's the menu-rendering context
+        var possibleRegions = this.track._possibleExportRegions();
+
+        // for each region, calculate its length and determine whether we can export it
+        array.forEach( possibleRegions, function( region ) {
+            region.length = Math.round( region.end - region.start + 1 );
+            region.canExport = this._canExportRegion( region );
+        },this.track);
+
+        var setFilenameValue = dojo.hitch(this.track, function() {
+            var region = this._readRadio(form.elements.region);
+            var format = nameToExtension[this._readRadio(form.elements.format)];
+            form.elements.filename.value = ((this.key || this.label) + "-" + region).replace(/[^ .a-zA-Z0-9_-]/g,'-') + "." + format;
+        });
+
+        var form = dom.create('form', { onSubmit: function() { return false; } });
+        var regionFieldset = dom.create('fieldset', {className: "region"}, form );
+        dom.create('legend', {innerHTML: "Region to save"}, regionFieldset);
+
+        var checked = 0;
+        array.forEach( possibleRegions, function(r) {
+                var locstring = Util.assembleLocString(r);
+                var regionButton = new dijitRadioButton(
+                    { name: "region", id: "region_"+r.name,
+                      value: locstring, checked: r.canExport && !(checked++) ? "checked" : ""
+                    });
+                regionFieldset.appendChild(regionButton.domNode);
+                var regionButtonLabel = dom.create("label", {"for": regionButton.id, innerHTML: r.description+' - <span class="locString">'
+                                   +         locstring+'</span> ('+Util.humanReadableNumber(r.length)+(r.canExport ? 'b' : 'b, too large')+')'}, regionFieldset);
+                if(!r.canExport) {
+                    regionButton.domNode.disabled = "disabled";
+                    regionButtonLabel.className = "ghosted";
+                }
+
+                on(regionButton, "click", setFilenameValue);
+
+                dom.create('br',{},regionFieldset);
+        });
+
+
+        var formatFieldset = dom.create("fieldset", {className: "format"}, form);
+        dom.create("legend", {innerHTML: "Format"}, formatFieldset);
+
+        checked = 0;
+        var nameToExtension = {};
+        array.forEach( this.track._exportFormats(), function(fmt) {
+            if( ! fmt.name ) {
+                fmt = { name: fmt, label: fmt };
+            }
+            if( ! fmt.fileExt) {
+                fmt.fileExt = fmt.name || fmt;
+            }
+            nameToExtension[fmt.name] = fmt.fileExt;
+            var formatButton = new dijitRadioButton({ name: "format", id: "format"+fmt.name, value: fmt.name, checked: checked++?"":"checked"});
+            formatFieldset.appendChild(formatButton.domNode);
+            var formatButtonLabel = dom.create("label", {"for": formatButton.id, innerHTML: fmt.label}, formatFieldset);
+
+            on(formatButton, "click", setFilenameValue);
+            dom.create( "br", {}, formatFieldset );
+        },this);
+
+
+        var filenameFieldset = dom.create("fieldset", {className: "filename"}, form);
+        dom.create("legend", {innerHTML: "Filename"}, filenameFieldset);
+        dom.create("input", {type: "text", name: "filename", style: {width: "100%"}}, filenameFieldset);
+
+        setFilenameValue();
+
+        var actionBar = dom.create( 'div', {
+            className: 'dijitDialogPaneActionBar'
+        });
+
+        // note that the `this` for this content function is not the track, it's the menu-rendering context
+        var dialog = this.dialog;
+
+        new dijitButton({ iconClass: 'dijitIconDelete', onClick: dojo.hitch(dialog,'hide'), label: 'Cancel' })
+            .placeAt( actionBar );
+        var viewButton = new dijitButton({ iconClass: 'dijitIconTask',
+                          label: 'View',
+                          disabled: ! array.some(possibleRegions,function(r) { return r.canExport; }),
+                          onClick: lang.partial( this.track._exportViewButtonClicked, this.track, form, dialog )
+            })
+            .placeAt( actionBar );
+
+        // don't show a download button if we for some reason can't save files
+        if( this.track._canSaveFiles() ) {
+
+            var dlButton = new dijitButton({ iconClass: 'dijitIconSave',
+                              label: 'Save',
+                              disabled: ! array.some(possibleRegions,function(r) { return r.canExport; }),
+                              onClick: dojo.hitch( this.track, function() {
+                                var format = this._readRadio( form.elements.format );
+                                var region = this._readRadio( form.elements.region );
+                                var filename = form.elements.filename.value.replace(/[^ .a-zA-Z0-9_-]/g,'-');
+                                dlButton.set('disabled',true);
+                                dlButton.set('iconClass','jbrowseIconBusy');
+                                this.exportRegion( region, format, dojo.hitch( this, function( output ) {
+                                    dialog.hide();
+                                    this._fileDownload({ format: format, data: output, filename: filename });
+                                }));
+                              })})
+                .placeAt( actionBar );
+        }
+
+        return [ form, actionBar ];
+    },
+
+    // run when the 'View' button is clicked in the export dialog
+    _exportViewButtonClicked: function( track, form, dialog ) {
+                            var viewButton = this;
+                            viewButton.set('disabled',true);
+                            viewButton.set('iconClass','jbrowseIconBusy');
+
+                            var region = track._readRadio( form.elements.region );
+                            var format = track._readRadio( form.elements.format );
+                            var filename = form.elements.filename.value.replace(/[^ .a-zA-Z0-9_-]/g,'-');
+                            track.exportRegion( region, format, function(output) {
+                                dialog.hide();
+                                var text = dom.create('textarea', {
+                                                           rows: Math.round( dojoWindow.getBox().h / 12 * 0.5 ),
+                                                           wrap: 'off',
+                                                           cols: 80,
+                                                           style: "maxWidth: 90em; overflow: scroll; overflow-y: scroll; overflow-x: scroll; overflow:-moz-scrollbars-vertical;",
+                                                           readonly: true
+                                                       });
+                                text.value = output;
+                                var actionBar = dom.create( 'div', {
+                                    className: 'dijitDialogPaneActionBar'
+                                });
+                                var exportView = new dijitDialog({
+                                    className: 'export-view-dialog',
+                                    title: format + ' export - <span class="locString">'+ region+'</span> ('+Util.humanReadableNumber(output.length)+'bytes)',
+                                    content: [ text, actionBar ]
+                                });
+                                new dijitButton({ iconClass: 'dijitIconDelete',
+                                                  label: 'Close', onClick: dojo.hitch( exportView, 'hide' )
+                                                })
+                                     .placeAt(actionBar);
+
+                                // only show a button if the browser can save files
+                                if( track._canSaveFiles() ) {
+                                    var saveDiv = dom.create( "div", { className: "save" }, actionBar );
+
+                                    var saveButton = new dijitButton(
+                                        {
+                                            iconClass: 'dijitIconSave',
+                                            label: 'Save',
+                                            onClick: function() {
+                                                var filename = fileNameText.get('value').replace(/[^ .a-zA-Z0-9_-]/g,'-');
+                                                exportView.hide();
+                                                track._fileDownload({ format: format, data: output, filename: filename });
+                                            }
+                                        }).placeAt(saveDiv);
+                                    var fileNameText = new dijitTextBox({
+                                            value: filename,
+                                            style: "width: 24em"
+                                        }).placeAt( saveDiv );
+                                }
+
+                                aspect.after( exportView, 'hide', function() {
+                                    // manually unhook and free the (possibly huge) text area
+                                    text.parentNode.removeChild( text );
+                                    text = null;
+                                    setTimeout( function() {
+                                        exportView.destroyRecursive();
+                                    }, 500 );
+                                });
+                                exportView.show();
+                            });
+                          },
+
+    _fileDownload: function( args ) {
+        saveAs(new Blob([args.data], {type: args.format ? 'application/x-'+args.format.toLowerCase() : 'text/plain'}), args.filename);
+        // We will need to check whether this breaks the WebApollo plugin.
+    },
+
+    // cross-platform function for (portably) reading the value of a radio control. sigh. *rolls eyes*
+    _readRadio: function( r ) {
+        if( r.length ) {
+            for( var i = 0; i<r.length; i++ ) {
+                if( r[i].checked )
+                    return r[i].value;
+            }
+        }
+        return r.value;
+    },
+
+    exportRegion: function( region, format, callback ) {
+        // parse the locstring if necessary
+        if( typeof region == 'string' )
+            region = Util.parseLocString( region );
+
+        // we can only export from the currently-visible reference
+        // sequence right now
+        if( region.ref != this.refSeq.name ) {
+             0 && console.error("cannot export data for ref seq "+region.ref+", "
+                          + "exporting is currently only supported for the "
+                          + "currently-visible reference sequence" );
+            return;
+        }
+
+        require( ['JBrowse/View/Export/'+format], dojo.hitch(this,function( exportDriver ) {
+            new exportDriver({
+                refSeq: this.refSeq,
+                track: this,
+                store: this.store
+            }).exportRegion( region, callback );
+        }));
+    },
+
+    _trackMenuOptions: function() {
+        var opts = this.inherited(arguments);
+
+        if( ! this.config.noExport )
+            // add a "Save track data as" option to the track menu
+            opts.push({ label: 'Save track data',
+                        iconClass: 'dijitIconSave',
+                        disabled: ! this._canExport(),
+                        action: 'bareDialog',
+                        content: this._exportDialogContent,
+                        dialog: { id: 'exportDialog', className: 'export-dialog' }
+                      });
+
+        return opts;
+    },
+
+    _canExportRegion: function( l ) {
+        // 0 && console.log('can generic export?');
+        if( ! l ) return false;
+
+        // if we have a maxExportSpan configured for this track, use it.
+        if( typeof this.config.maxExportSpan == 'number' || typeof this.config.maxExportSpan == 'string' ) {
+            return l.end - l.start + 1 <= this.config.maxExportSpan;
+        }
+        else {
+            // if we know the store's feature density, then use that with
+            // a limit of maxExportFeatures or 5,000 features
+            var thisB = this;
+            var storeStats = {};
+            // will return immediately if the stats are available
+            this.store.getGlobalStats( function( s ) {
+                storeStats = s;
+            }, function(error){ }); // error callback does nothing for now
+            if( storeStats.featureDensity ) {
+                return storeStats.featureDensity*(l.end - l.start) <= ( thisB.config.maxExportFeatures || 50000 );
+            }
+        }
+
+        // otherwise, i guess we can export
+        return true;
+    }
+
+});
+});
+
+},
+'FileSaver/FileSaver':function(){
+define([], function() {
+
+	/* FileSaver.js
+	 * A saveAs() FileSaver implementation.
+	 * 2013-01-23
+	 *
+	 * By Eli Grey, http://eligrey.com
+	 * License: X11/MIT
+	 *   See LICENSE.md
+	 */
+
+	/*global self */
+	/*jslint bitwise: true, regexp: true, confusion: true, es5: true, vars: true, white: true,
+	  plusplus: true */
+
+	/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+	var saveAs = saveAs
+	  || (navigator.msSaveBlob && navigator.msSaveBlob.bind(navigator))
+	  || (function(view) {
+		"use strict";
+		var
+			  doc = view.document
+			  // only get URL when necessary in case BlobBuilder.js hasn't overridden it yet
+			, get_URL = function() {
+				return view.URL || view.webkitURL || view;
+			}
+			, URL = view.URL || view.webkitURL || view
+			, save_link = function() {
+                            try {
+                                return doc.createElementNS("http://www.w3.org/1999/xhtml", "a");
+                            } catch( e ) {
+                                return doc.createElement('a');
+                            }
+                        }.call(this)
+			, can_use_save_link = "download" in save_link
+			, click = function(node) {
+				var event = doc.createEvent("MouseEvents");
+				event.initMouseEvent(
+					"click", true, false, view, 0, 0, 0, 0, 0
+					, false, false, false, false, 0, null
+				);
+				node.dispatchEvent(event);
+			}
+			, webkit_req_fs = view.webkitRequestFileSystem
+			, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+			, throw_outside = function (ex) {
+				(view.setImmediate || view.setTimeout)(function() {
+					throw ex;
+				}, 0);
+			}
+			, force_saveable_type = "application/octet-stream"
+			, fs_min_size = 0
+			, deletion_queue = []
+			, process_deletion_queue = function() {
+				var i = deletion_queue.length;
+				while (i--) {
+					var file = deletion_queue[i];
+					if (typeof file === "string") { // file is an object URL
+						URL.revokeObjectURL(file);
+					} else { // file is a File
+						file.remove();
+					}
+				}
+				deletion_queue.length = 0; // clear queue
+			}
+			, dispatch = function(filesaver, event_types, event) {
+				event_types = [].concat(event_types);
+				var i = event_types.length;
+				while (i--) {
+					var listener = filesaver["on" + event_types[i]];
+					if (typeof listener === "function") {
+						try {
+							listener.call(filesaver, event || filesaver);
+						} catch (ex) {
+							throw_outside(ex);
+						}
+					}
+				}
+			}
+			, FileSaver = function(blob, name) {
+				// First try a.download, then web filesystem, then object URLs
+				var
+					  filesaver = this
+					, type = blob.type
+					, blob_changed = false
+					, object_url
+					, target_view
+					, get_object_url = function() {
+						var object_url = get_URL().createObjectURL(blob);
+						deletion_queue.push(object_url);
+						return object_url;
+					}
+					, dispatch_all = function() {
+						dispatch(filesaver, "writestart progress write writeend".split(" "));
+					}
+					// on any filesys errors revert to saving with object URLs
+					, fs_error = function() {
+						// don't create more object URLs than needed
+						if (blob_changed || !object_url) {
+							object_url = get_object_url(blob);
+						}
+						if (target_view) {
+							target_view.location.href = object_url;
+						} else {
+	                        window.open(object_url, "_blank");
+	                    }
+						filesaver.readyState = filesaver.DONE;
+						dispatch_all();
+					}
+					, abortable = function(func) {
+						return function() {
+							if (filesaver.readyState !== filesaver.DONE) {
+								return func.apply(this, arguments);
+							}
+						};
+					}
+					, create_if_not_found = {create: true, exclusive: false}
+					, slice
+				;
+				filesaver.readyState = filesaver.INIT;
+				if (!name) {
+					name = "download";
+				}
+				if (can_use_save_link) {
+					object_url = get_object_url(blob);
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					return;
+				}
+				// Object and web filesystem URLs have a problem saving in Google Chrome when
+				// viewed in a tab, so I force save with application/octet-stream
+				// http://code.google.com/p/chromium/issues/detail?id=91158
+				if (view.chrome && type && type !== force_saveable_type) {
+					slice = blob.slice || blob.webkitSlice;
+					blob = slice.call(blob, 0, blob.size, force_saveable_type);
+					blob_changed = true;
+				}
+				// Since I can't be sure that the guessed media type will trigger a download
+				// in WebKit, I append .download to the filename.
+				// https://bugs.webkit.org/show_bug.cgi?id=65440
+				if (webkit_req_fs && name !== "download") {
+					name += ".download";
+				}
+				if (type === force_saveable_type || webkit_req_fs) {
+					target_view = view;
+				}
+				if (!req_fs) {
+					fs_error();
+					return;
+				}
+				fs_min_size += blob.size;
+				req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+					fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
+						var save = function() {
+							dir.getFile(name, create_if_not_found, abortable(function(file) {
+								file.createWriter(abortable(function(writer) {
+									writer.onwriteend = function(event) {
+										target_view.location.href = file.toURL();
+										deletion_queue.push(file);
+										filesaver.readyState = filesaver.DONE;
+										dispatch(filesaver, "writeend", event);
+									};
+									writer.onerror = function() {
+										var error = writer.error;
+										if (error.code !== error.ABORT_ERR) {
+											fs_error();
+										}
+									};
+									"writestart progress write abort".split(" ").forEach(function(event) {
+										writer["on" + event] = filesaver["on" + event];
+									});
+									writer.write(blob);
+									filesaver.abort = function() {
+										writer.abort();
+										filesaver.readyState = filesaver.DONE;
+									};
+									filesaver.readyState = filesaver.WRITING;
+								}), fs_error);
+							}), fs_error);
+						};
+						dir.getFile(name, {create: false}, abortable(function(file) {
+							// delete file if it already exists
+							file.remove();
+							save();
+						}), abortable(function(ex) {
+							if (ex.code === ex.NOT_FOUND_ERR) {
+								save();
+							} else {
+								fs_error();
+							}
+						}));
+					}), fs_error);
+				}), fs_error);
+			}
+			, FS_proto = FileSaver.prototype
+			, saveAs = function(blob, name) {
+				return new FileSaver(blob, name);
+			}
+		;
+		FS_proto.abort = function() {
+			var filesaver = this;
+			filesaver.readyState = filesaver.DONE;
+			dispatch(filesaver, "abort");
+		};
+		FS_proto.readyState = FS_proto.INIT = 0;
+		FS_proto.WRITING = 1;
+		FS_proto.DONE = 2;
+
+		FS_proto.error =
+		FS_proto.onwritestart =
+		FS_proto.onprogress =
+		FS_proto.onwrite =
+		FS_proto.onabort =
+		FS_proto.onerror =
+		FS_proto.onwriteend =
+			null;
+
+                try {
+		    view.addEventListener("unload", process_deletion_queue, false);
+                } catch(e) {
+                     0 && console.warn('FileSaver.js probably will not work');
+                }
+		return saveAs;
+	}(self));
+
+	return saveAs;
+});
+
+},
+'JBrowse/View/Track/_FeatureDetailMixin':function(){
+/**
+ * Mixin with methods for parsing making default feature detail dialogs.
+ */
+define([
+            'dojo/_base/declare',
+            'dojo/_base/array',
+            'dojo/_base/lang',
+            'dojo/aspect',
+            'dojo/dom-construct',
+            'JBrowse/Util',
+            'JBrowse/View/FASTA',
+            'JBrowse/View/_FeatureDescriptionMixin'
+        ],
+        function(
+            declare,
+            array,
+            lang,
+            aspect,
+            domConstruct,
+            Util,
+            FASTAView,
+            FeatureDescriptionMixin
+        ) {
+
+return declare( FeatureDescriptionMixin, {
+
+    constructor: function() {
+
+        // clean up the eventHandlers at destruction time if possible
+        if( typeof this.destroy == 'function' ) {
+            aspect.before( this, 'destroy', function() {
+                delete this.eventHandlers;
+            });
+        }
+    },
+
+    _setupEventHandlers: function() {
+        // make a default click event handler
+        var eventConf = dojo.clone( this.config.events || {} );
+        if( ! eventConf.click ) {
+            eventConf.click = (this.config.style||{}).linkTemplate
+                    ? { action: "newWindow", url: this.config.style.linkTemplate }
+                    : { action: "contentDialog",
+                        title: '{type} {name}',
+                        content: dojo.hitch( this, 'defaultFeatureDetail' ) };
+        }
+
+        // process the configuration to set up our event handlers
+        this.eventHandlers = (function() {
+            var handlers = dojo.clone( eventConf );
+            // find conf vars that set events, like `onClick`
+            for( var key in this.config ) {
+                var handlerName = key.replace(/^on(?=[A-Z])/, '');
+                if( handlerName != key )
+                    handlers[ handlerName.toLowerCase() ] = this.config[key];
+            }
+            // interpret handlers that are just strings to be URLs that should be opened
+            for( key in handlers ) {
+                if( typeof handlers[key] == 'string' )
+                    handlers[key] = { url: handlers[key] };
+            }
+            return handlers;
+        }).call(this);
+        this.eventHandlers.click = this._makeClickHandler( this.eventHandlers.click );
+    },
+
+    /**
+     * Make a default feature detail page for the given feature.
+     * @returns {HTMLElement} feature detail page HTML
+     */
+    defaultFeatureDetail: function( /** JBrowse.Track */ track, /** Object */ f, /** HTMLElement */ featDiv, /** HTMLElement */ container ) {
+        container = container || dojo.create('div', { className: 'detail feature-detail feature-detail-'+track.name.replace(/\s+/g,'_').toLowerCase(), innerHTML: '' } );
+
+        this._renderCoreDetails( track, f, featDiv, container );
+
+        this._renderAdditionalTagsDetail( track, f, featDiv, container );
+
+        this._renderUnderlyingReferenceSequence( track, f, featDiv, container );
+
+        this._renderSubfeaturesDetail( track, f, featDiv, container );
+
+        return container;
+    },
+
+    _renderCoreDetails: function( track, f, featDiv, container ) {
+        var coreDetails = dojo.create('div', { className: 'core' }, container );
+        var fmt = dojo.hitch( this, 'renderDetailField', coreDetails );
+        coreDetails.innerHTML += '<h2 class="sectiontitle">Primary Data</h2>';
+
+        fmt( 'Name', this.getFeatureLabel( f ),f );
+        fmt( 'Type', f.get('type'),f );
+        fmt( 'Score', f.get('score'),f );
+        fmt( 'Description', this.getFeatureDescription( f ),f );
+        fmt(
+            'Position',
+            Util.assembleLocString({ start: f.get('start'),
+                                     end: f.get('end'),
+                                     ref: this.refSeq.name,
+                                     strand: f.get('strand')
+                                   }),f
+        );
+        fmt( 'Length', Util.addCommas(f.get('end')-f.get('start'))+' bp',f );
+    },
+
+    // render any subfeatures this feature has
+    _renderSubfeaturesDetail: function( track, f, featDiv, container ) {
+        var subfeatures = f.get('subfeatures');
+        if( subfeatures && subfeatures.length ) {
+            this._subfeaturesDetail( track, subfeatures, container, f );
+        }
+    },
+
+    _isReservedTag: function( t ) {
+        return {name:1,start:1,end:1,strand:1,note:1,subfeatures:1,type:1,score:1}[t.toLowerCase()];
+    },
+
+    // render any additional tags as just key/value
+    _renderAdditionalTagsDetail: function( track, f, featDiv, container ) {
+        var additionalTags = array.filter( f.tags(), function(t) {
+            return ! this._isReservedTag( t );
+        },this);
+
+        if( additionalTags.length ) {
+            var atElement = domConstruct.create(
+                'div',
+                { className: 'additional',
+                  innerHTML: '<h2 class="sectiontitle">Attributes</h2>'
+                },
+                container );
+            array.forEach( additionalTags.sort(), function(t) {
+                this.renderDetailField( container, t, f.get(t), f );
+            }, this );
+        }
+    },
+
+    _renderUnderlyingReferenceSequence: function( track, f, featDiv, container ) {
+
+        // render the sequence underlying this feature if possible
+        var field_container = dojo.create('div', { className: 'field_container feature_sequence' }, container );
+        dojo.create( 'h2', { className: 'field feature_sequence', innerHTML: 'Region sequence', title: 'reference sequence underlying this '+(f.get('type') || 'feature') }, field_container );
+        var valueContainerID = 'feature_sequence'+this._uniqID();
+        var valueContainer = dojo.create(
+            'div', {
+                id: valueContainerID,
+                innerHTML: '<div style="height: 12em">Loading...</div>',
+                className: 'value feature_sequence'
+            }, field_container);
+        var maxSize = this.config.maxFeatureSizeForUnderlyingRefSeq;
+        if( maxSize < (f.get('end') - f.get('start')) ) {
+            valueContainer.innerHTML = 'Not displaying underlying reference sequence, feature is longer than maximum of '+Util.humanReadableNumber(maxSize)+'bp';
+        } else {
+             track.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
+                 valueContainer = dojo.byId(valueContainerID) || valueContainer;
+                 if( refSeqStore ) {
+                     refSeqStore.getReferenceSequence(
+                         { ref: this.refSeq.name, start: f.get('start'), end: f.get('end')},
+                         // feature callback
+                         dojo.hitch( this, function( seq ) {
+                             valueContainer = dojo.byId(valueContainerID) || valueContainer;
+                             valueContainer.innerHTML = '';
+                             // the HTML is rewritten by the dojo dialog
+                             // parser, but this callback may be called either
+                             // before or after that happens.  if the fetch by
+                             // ID fails, we have come back before the parse.
+                             var textArea = new FASTAView({ track: this, width: 62, htmlMaxRows: 10 })
+                                                .renderHTML(
+                                                    { ref:   this.refSeq.name,
+                                                      start: f.get('start'),
+                                                      end:   f.get('end'),
+                                                      strand: f.get('strand'),
+                                                      type: f.get('type')
+                                                    },
+                                                    f.get('strand') == -1 ? Util.revcom(seq) : seq,
+                                                    valueContainer
+                                                );
+                       }),
+                       // end callback
+                       function() {},
+                       // error callback
+                       dojo.hitch( this, function() {
+                           valueContainer = dojo.byId(valueContainerID) || valueContainer;
+                           valueContainer.innerHTML = '<span class="ghosted">reference sequence not available</span>';
+                       })
+                     );
+                 } else {
+                     valueContainer.innerHTML = '<span class="ghosted">reference sequence not available</span>';
+                 }
+             }));
+        }
+    },
+
+    _uniqID: function() {
+        this._idCounter = this._idCounter || 0;
+        return this._idCounter++;
+    },
+
+    _subfeaturesDetail: function( track, subfeatures, container ) {
+            var field_container = dojo.create('div', { className: 'field_container subfeatures' }, container );
+            dojo.create( 'h2', { className: 'field subfeatures', innerHTML: 'Subfeatures' }, field_container );
+            var subfeaturesContainer = dojo.create( 'div', { className: 'value subfeatures' }, field_container );
+            array.forEach( subfeatures || [], function( subfeature ) {
+                    this.defaultFeatureDetail(
+                        track,
+                        subfeature,
+                        null,
+                        dojo.create('div', {
+                                        className: 'detail feature-detail subfeature-detail feature-detail-'+track.name+' subfeature-detail-'+track.name,
+                                        innerHTML: ''
+                                    }, subfeaturesContainer )
+                    );
+            },this);
+    }
+
+});
+});
+
+},
+'JBrowse/View/FASTA':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/dom-construct',
+
+           'dijit/Toolbar',
+           'dijit/form/Button',
+           'JBrowse/Util',
+           'JBrowse/has'
+       ],
+       function( declare, dom, Toolbar, Button, Util, has ) {
+
+return declare(null,
+{
+
+    constructor: function( args ) {
+        this.width       = args.width || 78;
+        this.htmlMaxRows = args.htmlMaxRows || 15;
+        this.track = args.track;
+        this.canSaveFiles = args.track &&  args.track._canSaveFiles && args.track._canSaveFiles();
+    },
+    renderHTML: function( region, seq, parent ) {
+        var text = this.renderText( region, seq );
+        var lineCount = text.match( /\n/g ).length + 1;
+        var container = dom.create('div', { className: 'fastaView' }, parent );
+
+        if( this.canSaveFiles ) {
+            var toolbar = new Toolbar().placeAt( container );
+            var thisB = this;
+            toolbar.addChild( new Button(
+                                  { iconClass: 'dijitIconSave',
+                                    label: 'FASTA',
+                                    title: 'save as FASTA',
+                                    disabled: ! has('save-generated-files'),
+                                    onClick: function() {
+                                        thisB.track._fileDownload(
+                                            { format: 'FASTA',
+                                              filename: Util.assembleLocString(region)+'.fasta',
+                                              data: text
+                                            });
+                                    }
+                                  }));
+        }
+
+        var textArea = dom.create('textarea', {
+                        className: 'fasta',
+                        cols: this.width,
+                        rows: Math.min( lineCount, this.htmlMaxRows ),
+                        readonly: true
+                    }, container );
+        var c = 0;
+        textArea.innerHTML = text.replace(/\n/g, function() { return c++ ? '' : "\n"; });
+        return container;
+    },
+    renderText: function( region, seq ) {
+        return '>' + region.ref
+            + ' '+Util.assembleLocString(region)
+            + ( region.type ? ' class='+region.type : '' )
+            + ' length='+(region.end - region.start)
+            + "\n"
+            + this._wrap( seq, this.width );
+    },
+    _wrap: function( string, length ) {
+        length = length || this.width;
+        return string.replace( new RegExp('(.{'+length+'})','g'), "$1\n" );
+    }
+});
+});
+
+},
+'dijit/Toolbar':function(){
+define([
+	"require",
+	"dojo/_base/declare", // declare
+	"dojo/has",
+	"dojo/keys", // keys.LEFT_ARROW keys.RIGHT_ARROW
+	"dojo/ready",
+	"./_Widget",
+	"./_KeyNavContainer",
+	"./_TemplatedMixin"
+], function(require, declare, has, keys, ready, _Widget, _KeyNavContainer, _TemplatedMixin){
+
+	// module:
+	//		dijit/Toolbar
+
+
+	// Back compat w/1.6, remove for 2.0
+	if(has("dijit-legacy-requires")){
+		ready(0, function(){
+			var requires = ["dijit/ToolbarSeparator"];
+			require(requires);	// use indirection so modules not rolled into a build
+		});
+	}
+
+	return declare("dijit.Toolbar", [_Widget, _TemplatedMixin, _KeyNavContainer], {
+		// summary:
+		//		A Toolbar widget, used to hold things like `dijit/Editor` buttons
+
+		templateString:
+			'<div class="dijit" role="toolbar" tabIndex="${tabIndex}" data-dojo-attach-point="containerNode">' +
+			'</div>',
+
+		baseClass: "dijitToolbar",
+
+		_onLeftArrow: function(){
+			this.focusPrev();
+		},
+
+		_onRightArrow: function(){
+			this.focusNext();
+		}
+	});
+});
+
+},
+'JBrowse/View/_FeatureDescriptionMixin':function(){
+define( [
+            'dojo/_base/declare',
+            'dojo/_base/lang'
+        ],
+        function(
+            declare,
+            lang
+        ) {
+
+return declare( null, {
+
+    // get the label string for a feature, based on the setting
+    // of this.config.label
+    getFeatureLabel: function( feature ) {
+        return this._getFeatureDescriptiveThing( 'label', 'name,id', feature );
+    },
+
+    // get the description string for a feature, based on the setting
+    // of this.config.description
+    getFeatureDescription: function( feature ) {
+        return this._getFeatureDescriptiveThing( 'description', 'note,description', feature );
+    },
+
+    _getFeatureDescriptiveThing: function( field, defaultFields, feature ) {
+        var dConf = this.config.style[field] || this.config[field];
+
+        if( ! dConf )
+            return null;
+
+        // if the description is a function, just call it
+        if( typeof dConf == 'function' ) {
+            return dConf.call( this, feature );
+        }
+        // otherwise try to parse it as a field list
+        else {
+            if( ! this.descriptionFields )
+                this.descriptionFields = {};
+
+            // parse our description varname conf if necessary
+            var fields = this.descriptionFields[field] || function() {
+                var f = dConf;
+                if( f ) {
+                    if( lang.isArray( f ) ) {
+                        f = f.join(',');
+                    }
+                    else if( typeof f != 'string' ) {
+                         0 && console.warn( 'invalid `description` setting ('+f+') for "'+(this.name||this.track.name)+'" track, falling back to "note,description"' );
+                        f = defaultFields;
+                    }
+                    f = f.toLowerCase().split(/\s*\,\s*/);
+                }
+                else {
+                    f = [];
+                }
+                this.descriptionFields[field] = f;
+                return f;
+            }.call(this);
+
+            // return the value of the first field that contains something
+            for( var i=0; i<fields.length; i++ ) {
+                var d = feature.get( fields[i] );
+                if( d )
+                    return d;
+            }
+            return null;
+        }
+    }
+
+});
+});
+},
+'JBrowse/View/Track/_TrackDetailsStatsMixin':function(){
+define([
+           'dojo/_base/declare',
+           'dojo/_base/lang',
+           'dojo/Deferred'
+       ],
+       function(
+           declare,
+           lang,
+           Deferred
+       ) {
+
+return declare( null, {
+
+    _trackDetailsContent: function() {
+        var thisB = this;
+        var d = new Deferred();
+        var args = arguments;
+        // this.store.getRegionStats(
+        //     { ref: this.refSeq.name, start: this.refSeq.start, end: this.refSeq.end },
+        this.store.getGlobalStats(
+            function( stats ) {
+                d.resolve( thisB.inherited( args, [ { "Stats (current reference sequence)": stats } ] ) );
+            },
+            lang.hitch( d, 'reject' )
+        );
+        return d;
+    }
+});
+});
+},
+'JBrowse/View/GranularRectLayout':function(){
+/**
+ * Rectangle-layout manager that lays out rectangles using bitmaps at
+ * resolution that, for efficiency, may be somewhat lower than that of
+ * the coordinate system for the rectangles being laid out.  `pitchX`
+ * and `pitchY` are the ratios of input scale resolution to internal
+ * bitmap resolution.
+ */
+
+define(
+    ['dojo/_base/declare'],
+    function( declare ) {
+return declare( null,
+{
+
+
+    /**
+     * @param args.pitchX  layout grid pitch in the X direction
+     * @param args.pitchY  layout grid pitch in the Y direction
+     * @param args.maxHeight  maximum layout height, default Infinity (no max)
+     */
+    constructor: function( args ) {
+        this.pitchX = args.pitchX || 10;
+        this.pitchY = args.pitchY || 10;
+
+        this.displayMode = args.displayMode;
+
+        // reduce the pitchY to try and pack the features tighter
+        if( this.displayMode == 'compact' ) {
+            this.pitchY = Math.round( this.pitchY/4 ) || 1;
+            this.pitchX = Math.round( this.pitchX/4 ) || 1;
+        }
+
+        this.bitmap = [];
+        this.rectangles = {};
+        this.maxHeight = Math.ceil( ( args.maxHeight || Infinity ) / this.pitchY );
+        this.pTotalHeight = 0; // total height, in units of bitmap squares (px/pitchY)
+    },
+
+    /**
+     * @returns {Number} top position for the rect, or Null if laying out the rect would exceed maxHeight
+     */
+    addRect: function( id, left, right, height, data ) {
+
+        // if we have already laid it out, return its layout
+        if( id in this.rectangles ) {
+            var storedRec = this.rectangles[id];
+            if( storedRec.top === null )
+                return null;
+
+            // add it to the bitmap again, since that bitmap range may have been discarded
+            this._addRectToBitmap( storedRec, data );
+            return storedRec.top * this.pitchY;
+        }
+
+        var pLeft   = Math.floor( left   / this.pitchX );
+        var pRight  = Math.floor( right  / this.pitchX );
+        var pHeight = Math.ceil(  height / this.pitchY );
+
+        var midX = Math.floor((pLeft+pRight)/2);
+        var rectangle = { id: id, l: pLeft, r: pRight, mX: midX, h: pHeight };
+        if( data )
+            rectangle.data = data;
+
+        var maxTop = this.maxHeight - pHeight;
+        for(var top = 0; top <= maxTop; top++ ){
+            if( ! this._collides( rectangle, top ) )
+                break;
+        }
+
+        if( top > maxTop ) {
+            rectangle.top = top = null;
+            this.rectangles[id] = rectangle;
+            this.pTotalHeight = Math.max( this.pTotalHeight||0, top+pHeight );
+            return null;
+        }
+        else {
+            rectangle.top = top;
+            this._addRectToBitmap( rectangle, data );
+            this.rectangles[id] = rectangle;
+            this.pTotalHeight = Math.max( this.pTotalHeight||0, top+pHeight );
+            return top * this.pitchY;
+        }
+    },
+
+    _collides: function( rect, top ) {
+        if( this.displayMode == "collapsed" )
+            return false;
+
+        var bitmap = this.bitmap;
+        //var mY = top + rect.h/2; // Y midpoint: ( top+height  + top ) / 2
+
+        // test the left first, then right, then middle
+        var mRow = bitmap[top];
+        if( mRow && ( mRow[rect.l] || mRow[rect.r] || mRow[rect.mX]) )
+            return true;
+
+        // finally, test exhaustively
+        var maxY = top+rect.h;
+        for( var y = top; y < maxY; y++ ) {
+            var row = bitmap[y];
+            if( row ) {
+                if( row.allFilled )
+                    return true;
+                if( row.length > rect.l )
+                    for( var x = rect.l; x <= rect.r; x++ )
+                        if( row[x] )
+                            return true;
+            }
+        }
+
+        return false;
+    },
+
+    /**
+     * make a subarray if it does not exist
+     * @private
+     */
+    _autovivify: function( array, subscript ) {
+        return array[subscript] ||
+            (function() { var a = []; array[subscript] = a; return a; })();
+    },
+
+    _addRectToBitmap: function( rect, data ) {
+        if( rect.top === null )
+            return;
+
+        data = data || true;
+        var bitmap = this.bitmap;
+        var av = this._autovivify;
+        var yEnd = rect.top+rect.h;
+        if( rect.r-rect.l > 20000 ) {
+            // the rect is very big in relation to the view size, just
+            // pretend, for the purposes of layout, that it extends
+            // infinitely.  this will cause weird layout if a user
+            // scrolls manually for a very, very long time along the
+            // genome at the same zoom level.  but most users will not
+            // do that.  hopefully.
+            for( var y = rect.top; y < yEnd; y++ ) {
+                av(bitmap,y).allFilled = data;
+            }
+        }
+        else {
+            for( var y = rect.top; y < yEnd; y++ ) {
+                var row = av(bitmap,y);
+                for( var x = rect.l; x <= rect.r; x++ )
+                    row[x] = data;
+            }
+        }
+    },
+
+    /**
+     *  Given a range of X coordinates, deletes all data dealing with
+     *  the features.
+     */
+    discardRange: function( left, right ) {
+        // 0 && console.log( 'discard', left, right );
+        var pLeft   = Math.floor( left   / this.pitchX );
+        var pRight  = Math.floor( right  / this.pitchX );
+        var bitmap = this.bitmap;
+        for( var y = 0; y < bitmap.length; ++y ) {
+            var row = bitmap[y];
+            if( row )
+                for( var x = pLeft; x <= pRight; ++x ) {
+                    delete row[x];
+                }
+        }
+    },
+
+    hasSeen: function( id ) {
+        return !! this.rectangles[id];
+    },
+
+    getByCoord: function( x, y ) {
+        var pY   = Math.floor( y / this.pitchY );
+        var r = this.bitmap[pY];
+        if( ! r ) return undefined;
+        return r.allFilled || function() {
+            var pX   = Math.floor( x / this.pitchX );
+            return r[pX];
+        }.call(this);
+    },
+
+    getByID: function( id ) {
+        var r = this.rectangles[id];
+        if( r ) {
+            return r.data || true;
+        }
+        return undefined;
+    },
+
+    cleanup: function() {
+    },
+
+    getTotalHeight: function() {
+        return this.pTotalHeight * this.pitchY;
+    }
+}
+);
+});
+},
+'dijit/ToolbarSeparator':function(){
+define([
+	"dojo/_base/declare", // declare
+	"dojo/dom", // dom.setSelectable
+	"./_Widget",
+	"./_TemplatedMixin"
+], function(declare, dom, _Widget, _TemplatedMixin){
+
+	// module:
+	//		dijit/ToolbarSeparator
+
+
+	return declare("dijit.ToolbarSeparator", [_Widget, _TemplatedMixin], {
+		// summary:
+		//		A spacer between two `dijit.Toolbar` items
+
+		templateString: '<div class="dijitToolbarSeparator dijitInline" role="presentation"></div>',
+
+		buildRendering: function(){
+			this.inherited(arguments);
+			dom.setSelectable(this.domNode, false);
+		},
+
+		isFocusable: function(){
+			// summary:
+			//		This widget isn't focusable, so pass along that fact.
+			// tags:
+			//		protected
+			return false;
 		}
 	});
 });
