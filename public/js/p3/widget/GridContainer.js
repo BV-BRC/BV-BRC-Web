@@ -851,7 +851,7 @@ define([
 				"className": "BrowserHeader",
 				dataModel: this.dataModel,
 				facetFields: this.facetFields,
-				state: this.state,
+				state: lang.mixin({},this.state),
 				enableAnchorButton: this.enableAnchorButton,
 				currentContainerWidget: this
 			});
