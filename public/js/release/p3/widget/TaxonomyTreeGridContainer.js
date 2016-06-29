@@ -40,7 +40,7 @@ define("p3/widget/TaxonomyTreeGridContainer", [
 		dataModel: "taxonomy",
 		containerType: "taxonomy_data",
 		onSetState: function(attr, oldState, state){
-			console.log("GridContainer onSetState: ", state, " oldState:", oldState);
+			// console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){
 				// console.log("!state in grid container; return;")
 				return;

@@ -4,12 +4,13 @@ define("p3/widget/SummaryWidget", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
+	"dgrid/extensions/CompoundColumns"
 
 ], function(declare, WidgetBase, on, domGeometry, domStyle,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid){
+			ChartTooltip, domConstruct, PathJoin, Grid, CompoundColumns){
 	return declare([WidgetBase, Templated], {
 		baseClass: "SummaryWidget",
 		templateString: Template,
@@ -46,7 +47,7 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		onSetQuery: function(attr, oldVal, query){
-			console.log("SummaryWidget Query: ", this.query + this.baseQuery);
+			// console.log("SummaryWidget Query: ", this.query + this.baseQuery);
 			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
 				handleAs: "json",
 				headers: this.headers,
@@ -69,7 +70,8 @@ define("p3/widget/SummaryWidget", [
 			if(!this.grid){
 				var opts = this.gridOptions || {};
 				opts.columns = this.columns;
-				this.grid = new Grid(opts, this.tableNode);
+				var CompoundColumnGrid = declare([Grid, CompoundColumns]);
+				this.grid = new CompoundColumnGrid(opts, this.tableNode);
 				this.grid.startup();
 			}
 		},

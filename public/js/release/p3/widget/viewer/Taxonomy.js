@@ -63,7 +63,7 @@ define("p3/widget/viewer/Taxonomy", [
 		},
 
 		onSetTaxonomy: function(attr, oldVal, taxonomy){
-			console.log("onSetTaxonomy: ", taxonomy);
+			// console.log("onSetTaxonomy: ", taxonomy);
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
 			this.taxonomy = this.state.taxonomy=taxonomy;
@@ -102,7 +102,7 @@ define("p3/widget/viewer/Taxonomy", [
 				}
 
 			}else{
-				console.log("USE state.search: ", s);
+				// console.log("USE state.search: ", s);
 				state.search = s;
 				this.filteredTaxon = false;
 				if (this.taxonomy){
@@ -111,7 +111,7 @@ define("p3/widget/viewer/Taxonomy", [
 			}
 
 			if (!state.taxonomy && state.taxon_id){
-				console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
+				// console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
 				if (oldState && oldState.taxon_id){
 					console.log("oldState.taxon_id: ", oldState.taxon_id)
 					
@@ -127,11 +127,11 @@ define("p3/widget/viewer/Taxonomy", [
 			}
 
 			if(!state.genome_ids){
-				 console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
+				 // console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
 				if(state.search == oldState.search){
-					console.log("		Same Search")
-					console.log("		OLD Genome_IDS: ", oldState.genome_ids);
-					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids}))
+					// console.log("		Same Search")
+					// console.log("		OLD Genome_IDS: ", oldState.genome_ids);
+					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids}));
 					return;
 				}else{
 					this.set("query", state.search);
@@ -168,7 +168,6 @@ define("p3/widget/viewer/Taxonomy", [
 		},
 
 		setActivePanelState: function(){
-
 
 			// console.log("Taxonomy setActivePanelState: ", JSON.stringify(this.state,null,4))
 

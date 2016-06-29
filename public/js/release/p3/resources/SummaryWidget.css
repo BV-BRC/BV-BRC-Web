@@ -1,3 +1,6 @@
+.SummaryWidget {
+    margin: 4px;
+}
 .SummaryWidget .tableNode,
 .SummaryWidget .chartNode,
 .chartView .tableNode,
@@ -44,6 +47,10 @@ TH.dgrid-cell.field-feature_type {
 .GenomeMetaSummary div.tableNode {
     height: 500px;
 }
+.patric .pfSummaryWidget.SummaryWidget .chartNode,
+.patric .pfSummaryWidget.SummaryWidget .tableNode {
+    height: 300px;
+}
 .pie-chart-widget {
     display: inline-block;
     width: 350px;
@@ -53,5 +60,5 @@ TH.dgrid-cell.field-feature_type {
     width: 40px;
 }
 .SummaryWidget .field-category {
-    width: 25%;
+    width: 35%;
 }

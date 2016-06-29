@@ -26,7 +26,7 @@ define("p3/widget/viewer/_GenomeList", [
 			if (query && (query == this.query)){
 				return;
 			}
-			console.log("GenomeList SetQuery: ", query, this);
+			// console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
 			// if(!this._started){
@@ -129,7 +129,7 @@ define("p3/widget/viewer/_GenomeList", [
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
 						//console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						// console.log("gidQueryState: ", gidQueryState);
 						// console.log("Active Query State: ", activeQueryState);
 
@@ -146,7 +146,7 @@ define("p3/widget/viewer/_GenomeList", [
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
+			// console.log("onSetGenomeIds: ", genome_ids, this.genome_ids, this.state.genome_ids);
 			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 			this.state.genome_ids = genome_ids;
 			this.setActivePanelState();
