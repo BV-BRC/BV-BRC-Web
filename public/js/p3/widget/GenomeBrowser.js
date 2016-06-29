@@ -821,7 +821,8 @@ define([
 				refSeqs: "{dataRoot}/refseqs",
 				queryParams: (state && state.hashParams) ? state.hashParams : {},
 				location: (state && state.hashParams) ? state.hashParams.loc : undefined,
-				forceTracks: ["Reference Sequence", "PATRICGenes", "RefSeqGenes"].join(","),
+				forceTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
+				alwaysOnTracks: ["ReferenceSequence", "PATRICGenes"].join(","),
 				initialHighlight: (state && state.hashParams) ? state.hashParams.highlight : undefined,
 				show_nav: (state && state.hashParams && (typeof state.hashParams.show_nav != 'undefined')) ? state.hashParams.show_nav : true,
 				show_tracklist: (state && state.hashParams && (typeof state.hashParams.show_tracklist != 'undefined')) ? state.hashParams.show_tracklist : true,
@@ -830,7 +831,8 @@ define([
 				stores: {url: {type: "JBrowse/Store/SeqFeature/FromConfig", features: []}},
 				updateBrowserURL: false,
 				trackSelector: {type: "p3/widget/HierarchicalTrackList"},
-				suppressUsageStatistics: true
+				suppressUsageStatistics: true,
+				refSeqSelectorMaxSize: 100
 				// "trackSelector": {
 				// 	"type": "Faceted",
 				// 	"displayColumns": [
