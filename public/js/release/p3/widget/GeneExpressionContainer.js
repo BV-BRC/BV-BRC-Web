@@ -34,6 +34,7 @@ define("p3/widget/GeneExpressionContainer", [
 		},
 		onSetState: function(attr, oldVal, state){
 			console.log("GeneExpressionGridContainer onSetState set state: ", state);
+			if (!state){ return; }
 			if(this.GeneExpressionGridContainer){
 				this.GeneExpressionGridContainer.set('state', state);
 			}

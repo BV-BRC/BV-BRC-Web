@@ -50,6 +50,7 @@ define([
 
 		setActivePanelState: function(){
 			var activeQueryState;
+			if (!this._started){ console.log("Feature Viewer not started"); return; }
 
 			if(this.state.feature_id){
 				activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + this.state.feature_id + ")"});
@@ -66,7 +67,6 @@ define([
 				//	activeTab.set("state", state);
 				//	break;
 				case "overview":
-				case "transcriptomics":
 				case "correlatedGenes":
 					if(this.state && this.state.feature){
 						// console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4));
@@ -88,9 +88,6 @@ define([
 			this.set("feature_id", parts[parts.length - 1]);
 			state.feature_id = parts[parts.length - 1];
 
-			if(!state){
-				return;
-			}
 
 			if(state && state.feature_id && !state.feature){
 				// console.log("No state.feature.  state.feature_id: ", state.feature_id);
@@ -108,6 +105,7 @@ define([
 				}
 			}
 
+			this.setActivePanelState();
 			if(state.hashParams && state.hashParams.view_tab){
 
 				if(this[state.hashParams.view_tab]){
@@ -147,6 +145,7 @@ define([
 				state: this.state
 			});
 		},
+
 		postCreate: function(){
 			if(!this.state){
 				this.state = {};
@@ -172,8 +171,7 @@ define([
 			*/
 			this.transcriptomics = new GeneExpressionContainer({
 				title: "Transcriptomics",
-				id: this.viewer.id + "_transcriptomics",
-				state: this.state
+				id: this.viewer.id + "_transcriptomics"
 			});
 			this.correlatedGenes = new CorrelatedGenesContainer({
 				title: "Correlated Genes",
