@@ -2,12 +2,12 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 	"dojo/_base/declare", "./GridContainer", "dojo/on",
 	"./PathwaysMemoryGrid", "dijit/popup", "dojo/topic",
 	"dijit/TooltipDialog", "./FilterContainerActionBar",
-	"dojo/_base/lang"
+	"dojo/_base/lang","dojo/dom-construct"
 
 ], function(declare, GridContainer, on,
 			PathwaysGrid, popup, Topic,
 			TooltipDialog, ContainerActionBar,
-			lang){
+			lang,domConstruct){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
@@ -46,6 +46,8 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 		visible: true,
 		dataModel: "pathway",
 		type: "pathway",
+		primaryKey: "id",
+		maxDownloadSize: 25000,
 		typeMap: {
 			"pathway": "pathway_id",
 			"ec_number": "ec_number",
@@ -122,7 +124,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 		},
 
 		containerActions: GridContainer.prototype.containerActions.concat([
-			[
+		/*	[
 				"DownloadTable",
 				"fa fa-download fa-2x",
 				{
@@ -133,6 +135,43 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 					tooltipDialog: downloadTT
 				},
 				function(selection){
+					var _self=this;
+
+					var totalRows =_self.grid.totalRows;
+						console.log("TOTAL ROWS: ", totalRows);
+					if (totalRows > _self.maxDownloadSize){
+						downloadTT.set('content',"This table exceeds the maximum download size of " + _self.maxDownloadSize);
+					}else{
+						downloadTT.set("content", dfc);
+
+						on(downloadTT.domNode, "div:click", function(evt){
+							var rel = evt.target.attributes.rel.value;
+							var dataType=_self.dataModel;
+							var currentQuery = _self.grid.get('query');
+
+							console.log("DownloadQuery: ", currentQuery);
+							var query =  currentQuery + "&sort(+" + _self.primaryKey + ")&limit(" + _self.maxDownloadSize + ")";
+				
+			                var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "") 
+	                        if(baseUrl.charAt(-1) !== "/"){
+	                             baseUrl = baseUrl + "/";
+	                        }
+	                        baseUrl = baseUrl + dataType + "/?";
+
+							if (window.App.authorizationToken){
+								baseUrl = baseUrl + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken)
+							}
+				
+							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
+	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
+	                        form.submit();			
+
+							//window.open(url);
+							popup.close(downloadTT);
+						});
+					}
+
 					popup.open({
 						popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
 						around: this.containerActionBar._actions.DownloadTable.button,
@@ -141,7 +180,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 				},
 				true,
 				"left"
-			]
+			]*/
 		]),
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
