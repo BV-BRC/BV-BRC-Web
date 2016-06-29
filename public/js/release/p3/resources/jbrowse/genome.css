@@ -1186,7 +1186,6 @@ a.topLink, a.topLink * {
   width: 30px;
   height: 22px !important;
   margin: 0 2px 0 0;
-  padding: 5px 5px 5px 5px;
 }
 .dj_ie6 .tundra .dojoxTriStateCheckBox, .dj_ie6  .dojoxTriStateCheckBoxIcon {
   background-image: url("img/tristate.png");

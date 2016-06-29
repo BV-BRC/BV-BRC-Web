@@ -6315,7 +6315,6 @@ a.topLink, a.topLink * {
   width: 30px;
   height: 22px !important;
   margin: 0 2px 0 0;
-  padding: 5px 5px 5px 5px;
 }
 .dj_ie6 .tundra .dojoxTriStateCheckBox, .dj_ie6  .dojoxTriStateCheckBoxIcon {
   background-image: url("jbrowse/img/tristate.png");
@@ -9830,4 +9829,19 @@ table {
 }
 .feature_box .feature_type {
 	text-align: center;
+}
+.DataItemHeader {
+	border: 0px;
+	padding: 4px;
+	margin: 0px;
+	
+	color: #76a72d;
+	font-size: 1.3em;
+}
+.DataItemHeader > * {
+	vertical-align: middle;
+}
+.DataItemHeader .fa {
+	color: #76a72d;
+	font-size: 1.3em;
 }

@@ -1183,9 +1183,9 @@ define("p3/widget/DataItemFormatter", [
 		}
 		//console.log("url=" + url + ", linkTitle=" + linkTitle);
 
-		var hdr_div = domConstruct.create("div", {}, div);
+		var hdr_div = domConstruct.create("div", {"class":"DataItemHeader"}, div);
 
-		var hdr_table = domConstruct.create("table", {}, div);
+		var hdr_table = domConstruct.create("table", {}, hdr_div);
 		var hdr_tbody = domConstruct.create("tbody", {}, hdr_table);
 		var hdr_th = domConstruct.create("tr", {}, hdr_tbody);
 		var hdr_tda = domConstruct.create("td", {}, hdr_th);
@@ -1195,11 +1195,11 @@ define("p3/widget/DataItemFormatter", [
 		if(linkTitle == true){
 			hdr_tdb = domConstruct.create("td", {
 				innerHTML: "<a href='" + url + "'>" + item_name + "</a>",
-				style: "font-weight: bold"
+				style: "font-weight: bold;width:95%;"
 			}, hdr_th);
 		}
 		else{
-			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold;width:95%;"}, hdr_th);
 		}
 
 		var dtl_div = domConstruct.create("div", {}, div);
