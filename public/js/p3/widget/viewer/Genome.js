@@ -24,19 +24,18 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		_setGenome_idAttr: function(id){
-			console.log("_setGenome_IDAttr: ", id, this.genome_id);
+			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
 			if(!id){
 				return;
 			}
 
-			if (this.genome_id==id){
-				console.log("Genome ID Already Set");
+			if(this.genome_id == id){
+				// console.log("Genome ID Already Set");
 				return;
 			}
 			var state = this.state = this.state || {};
-			this.genome_id = this.state.genome_id=id;
+			this.genome_id = this.state.genome_id = id;
 			this.state.genome_ids = [id];
-
 
 			xhr.get(PathJoin(this.apiServiceUrl, "genome", id), {
 				headers: {
@@ -53,29 +52,27 @@ define([
 
 		setActivePanelState: function(){
 			var activeQueryState;
-			console.log("Set ActivePanelState: ", JSON.stringify(this.state,null,4));
-			if (this.state.genome_id){
+			// console.log("Set ActivePanelState: ", JSON.stringify(this.state,null,4));
+			if(this.state.genome_id){
 				activeQueryState = lang.mixin({}, this.state, {search: "eq(genome_id," + this.state.genome_id + ")"});
 			}
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
-			console.log("Active Panel: ", active);
-
-
+			// console.log("Active Panel: ", active);
 
 			switch(active){
 				case "phylogeny":
 				case "overview":
-					if (this.state.genome){
-						activeTab.set("state", lang.mixin({},this.state));
+					if(this.state.genome){
+						activeTab.set("state", lang.mixin({}, this.state));
 					}
 					break;
 				case "transcriptomics":
 					activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + this.genome_id + ")"}));
 					break;
 				default:
-					if (activeQueryState){
-						console.log("Using Default ActiveQueryState: ", activeQueryState);
+					if(activeQueryState){
+						// console.log("Using Default ActiveQueryState: ", activeQueryState);
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.log("Missing Active Query State for: ", active)
@@ -83,9 +80,6 @@ define([
 					break;
 			}
 		},
-
-
-
 
 		buildHeaderContent: function(genome){
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
@@ -139,16 +133,16 @@ define([
 				return;
 			}
 
-			console.log("Genome: ", state.genome, state.genome_id)
+			// console.log("Genome: ", state.genome, state.genome_id)
 
-			if (state && state.genome_id && !state.genome){
-				console.log("No state.genome.  state.genome_id: ", state.genome_id);
-				if (oldState && oldState.genome_id){
-					console.log("oldState.genome_id: ", oldState.genome_id)
-					
-					if ((state.genome_id == oldState.genome_id)){
-						if (oldState.genome || this.genome){
-							console.log("oldState Genome: ", oldState.genome||this.genome);
+			if(state && state.genome_id && !state.genome){
+				// console.log("No state.genome.  state.genome_id: ", state.genome_id);
+				if(oldState && oldState.genome_id){
+					// console.log("oldState.genome_id: ", oldState.genome_id)
+
+					if((state.genome_id == oldState.genome_id)){
+						if(oldState.genome || this.genome){
+							// console.log("oldState Genome: ", oldState.genome || this.genome);
 							state.genome = oldState.genome || this.genome;
 						}else{
 							console.log("oldState missing Genome");

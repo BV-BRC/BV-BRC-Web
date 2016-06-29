@@ -27,6 +27,7 @@ define([
 	return declare([SummaryWidget], {
 		dataModel: "sp_gene",
 		query: "",
+		view: "table",
 		baseQuery: "&limit(1)&facet((field,source),(mincount,1))&json(nl,map)",
 		columns: [
 			{label: " ", field: "category"},
@@ -46,9 +47,9 @@ define([
 
 			var data = this._tableData = [];
 			Object.keys(d).forEach(function(key, idx){
-				chartLabels.push({text: key, value: idx+1});
+				chartLabels.push({text: key, value: idx + 1});
 				var cat = sourcePropertyMap[key];
-				data.push({source: key, category: cat, y: d[key]});
+				data.push({category: cat, source: key, y: d[key]});
 			});
 
 			this.set('data', data);
@@ -63,10 +64,6 @@ define([
 						type: Bars,
 						markers: true,
 						gap: 3,
-						// maxBarSize: 20,
-						// labels: true,
-						// labelOffset: 20,
-						// labelStyle: "outside",
 						animate: {duration: 1000, easing: easing.linear}
 					})
 					.addAxis("x", {
@@ -102,6 +99,7 @@ define([
 
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
+			this.grid.sort([{attribute: "category", descending: true}]);
 		}
 	})
 });

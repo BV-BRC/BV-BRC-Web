@@ -16,6 +16,7 @@ define([
 	return declare([SummaryWidget], {
 		dataModel: "genome_feature",
 		query: "",
+		view: "table",
 		baseQuery: "&in(annotation,(PATRIC,RefSeq))&limit(1)&facet((field,annotation),(mincount,1))&json(nl,map)",
 		columns: [{
 			label: " ",
@@ -128,9 +129,9 @@ define([
 					.addPlot("default", {
 						type: "ClusteredBars",
 						markers: true,
-						gap: 3,
+						gap: 2,
 						// labels: true,
-						minBarSize: 10,
+						minBarSize: 7,
 						labelStyle: "outside",
 						labelOffset: 20,
 						// labelFunc: function(o){
