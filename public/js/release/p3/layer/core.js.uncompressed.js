@@ -37896,9 +37896,9 @@ define([
 		}
 		//console.log("url=" + url + ", linkTitle=" + linkTitle);
 
-		var hdr_div = domConstruct.create("div", {}, div);
+		var hdr_div = domConstruct.create("div", {"class":"DataItemHeader"}, div);
 
-		var hdr_table = domConstruct.create("table", {}, div);
+		var hdr_table = domConstruct.create("table", {}, hdr_div);
 		var hdr_tbody = domConstruct.create("tbody", {}, hdr_table);
 		var hdr_th = domConstruct.create("tr", {}, hdr_tbody);
 		var hdr_tda = domConstruct.create("td", {}, hdr_th);
@@ -37908,11 +37908,11 @@ define([
 		if(linkTitle == true){
 			hdr_tdb = domConstruct.create("td", {
 				innerHTML: "<a href='" + url + "'>" + item_name + "</a>",
-				style: "font-weight: bold"
+				style: "font-weight: bold;width:95%;"
 			}, hdr_th);
 		}
 		else{
-			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold"}, hdr_th);
+			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold;width:95%;"}, hdr_th);
 		}
 
 		var dtl_div = domConstruct.create("div", {}, div);
@@ -91812,7 +91812,7 @@ define([
 	return declare([WidgetBase], {
 		state: null,
 		jbrowseConfig: null,
-
+		style: "border: 1px solid #ddd;",
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
 
