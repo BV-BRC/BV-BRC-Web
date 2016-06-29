@@ -11,29 +11,35 @@
             </td>
             <td style="width:40%;padding:7px;vertical-align:top;">
 
+                <div class="section hidden">
+                    <h3 class="section-title"><span class="wrap">AMR Panel Summary</span></h3>
+                    <div data-dojo-attach-point="apSummaryWidget"
+                         data-dojo-type="p3/widget/AMRPanelSummary"></div>
+                </div>
+
                 <div class="section">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Genomic Feature Summary</span></h3>
-                    <div data-dojo-attach-point="gfSummaryWidget" data-dojo-type="p3/widget/GenomeFeatureSummary"
-                         style="height:205px;margin:4px;"></div>
+                    <h3 class="section-title"><span class="wrap">Genomic Feature Summary</span></h3>
+                    <div data-dojo-attach-point="gfSummaryWidget"
+                         data-dojo-type="p3/widget/GenomeFeatureSummary"></div>
                 </div>
 
 
-                <div class="section ">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Protein Feature Summary</span></h3>
-                    <div data-dojo-attach-point="pfSummaryWidget"
-                         data-dojo-type="p3/widget/ProteinFeatureSummary" style="margin:4px;"></div>
+                <div class="section">
+                    <h3 class="section-title"><span class="wrap">Protein Feature Summary</span></h3>
+                    <div class="pfSummaryWidget" data-dojo-attach-point="pfSummaryWidget"
+                         data-dojo-type="p3/widget/ProteinFeatureSummary"></div>
                 </div>
 
-                <div class="section ">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
-                    <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary"
-                         style="margin:4px;"></div>
+                <div class="section">
+                    <h3 class="section-title"><span class="wrap">Specialty Gene Summary</span></h3>
+                    <div data-dojo-attach-point="spgSummaryWidget"
+                         data-dojo-type="p3/widget/SpecialtyGeneSummary"></div>
                 </div>
 
             </td>
             <td style="width:25%;padding:7px;vertical-align:top;">
                 <div class="section ">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Recent PubMed Articles</span></h3>
+                    <h3 class="section-title"><span class="wrap">Recent PubMed Articles</span></h3>
                     <div data-dojo-attach-point="pubmedSummaryNode" style="margin:4px;padding:8px;margin-radius:4px;">
                         This feature will be returning soon.
                     </div>

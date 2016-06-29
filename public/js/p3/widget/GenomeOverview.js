@@ -28,13 +28,13 @@ define([
 
 		"_setGenomeAttr": function(genome){
 			if (this.genome && (this.genome.genome_id == genome.genome_id)){
-				console.log("Genome ID Already Set")
+				// console.log("Genome ID Already Set")
 				return;
 			}
 			this.genome = genome;
 			this.createSummary(genome);
 
-			var sumWidgets = ["gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
+			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){

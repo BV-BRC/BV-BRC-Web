@@ -13,13 +13,11 @@ define([
 	return declare([SummaryWidget], {
 		dataModel: "genome_feature",
 		query: "",
-		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&facet((pivot,(annotation,feature_type)),(mincount,0))",
+		view: "table",
+		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&ne(feature_type,source)&facet((pivot,(annotation,feature_type)),(mincount,0))",
 		columns: [{
 			label: " ",
-			field: "feature_type",
-			renderCell: function(obj, val, node){
-				node.innerHTML = '<a href="#view_tab=features&filter=eq(feature_type,' + obj.feature_type + ')">' + obj.feature_type + "</a>"
-			}
+			field: "feature_type"
 		}, {
 			label: "PATRIC",
 			field: "PATRIC",
@@ -160,6 +158,7 @@ define([
 			// console.log("RenderArray: ", this._tableData);
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
+			this.grid.sort([{attribute: "PATRIC", descending: true}])
 		}
 	})
 });

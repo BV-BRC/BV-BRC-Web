@@ -1214,7 +1214,7 @@ define([
 	}
 
 	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options){
-		var diaplayColumns = {};
+		var displayColumns = {};
 		var tr;
 		var tda;
 		var tdb;
@@ -1254,7 +1254,7 @@ define([
 				//console.log("item[column]=", item[column]);
 
 				if(column){
-					diaplayColumns[column] = 1;
+					displayColumns[column] = 1;
 				}
 
 				if(column && (item[column] || item[column] == "0")){
@@ -1291,14 +1291,14 @@ define([
 
 		}
 
-		// console.log("diaplayColumns[column]=", diaplayColumns);
+		// console.log("displayColumns[column]=", displayColumns);
 
 		var additional = 0;
 
 		if(hideExtra == false && mini == false){
 
 			Object.keys(item).sort().forEach(function(key){
-				if(diaplayColumns[key] != 1 && item[key]){
+				if(displayColumns[key] != 1 && item[key]){
 					if(additional == 0){
 						tr = domConstruct.create("tr", {}, tbody);
 						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
@@ -1322,7 +1322,7 @@ define([
 	}
 
 	function displayDetail(item, column_data, tbody, options){
-		var diaplayColumns = {};
+		var displayColumns = {};
 		var tr;
 		var tda;
 		var tdb;
@@ -1344,7 +1344,7 @@ define([
 			//console.log("item[column]=", item.column);
 
 			if(column){
-				diaplayColumns[column] = 1;
+				displayColumns[column] = 1;
 			}
 
 			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
@@ -1380,11 +1380,11 @@ define([
 		}
 
 		var additional = 0;
-		// console.log("diaplayColumns=", diaplayColumns);
+		// console.log("displayColumns=", displayColumns);
 
 		if(hideExtra == false && mini == false){
 			Object.keys(item).sort().forEach(function(key){
-				if(diaplayColumns[key] != 1 && item[key]){
+				if(displayColumns[key] != 1 && item[key]){
 					if(additional == 0){
 						tr = domConstruct.create("tr", {}, tbody);
 						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
