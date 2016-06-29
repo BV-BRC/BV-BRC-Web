@@ -776,7 +776,7 @@ define([
 	return declare([WidgetBase], {
 		state: null,
 		jbrowseConfig: null,
-
+		style: "border: 1px solid #ddd;",
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeBrowser onSetState: ", state, state.genome_id, state.genome_ids)
 

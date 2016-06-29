@@ -1,9 +1,32 @@
-<div class="layer" style="text-align: center;">
-<h1>Why Should I use PATRIC?</h1>
-<% for (var i=0; i<25; i++) { %>
-	<div class="HomeServiceLink">
-		SVC <% i %>
-	</div>
-<% } %>
+<div>
 
+	<div style="background-color:#000;">
+		<div class="layer" style="text-align: center;">
+			<div style="background:#efefef;height:400px;width:100%;margin-top:-1px;margin-bottom:10px"></div>
+		</div>
+	</div>
+	<div class="layer" style="text-align: center;">
+
+	<h1>Why Should I use PATRIC?</h1>
+	<% var services = [
+		{name: "Explore Data"},
+		{name: "Search Data"},
+		{name: "Assembly"},
+		{name: "Annotation"},
+		{name: "BLAST"},
+		{name: "Variation Analysis"},
+		{name: "Expression Import"},
+		{name: "RNA-Seq Analysis"},
+		{name: "Protein Families Comparison"},
+		{name: "Proteome Comparison"},
+		{name: "Comparative Pathways"},
+		{name: "Metabolic Reconstruction"}
+	] %>
+	<% services.forEach(function(svc,index) { %>
+		<div class="HomeServiceLink">
+			<%- svc.name %>
+		</div>
+	<% }) %>
+
+	</div>
 </div>
