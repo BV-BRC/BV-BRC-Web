@@ -6,14 +6,13 @@ define([
 
 	var formatters = {
 		"default": function(item, options){
-			// console.log("item: ", item);
-			options = options || {}
+			options = options || {};
 
 			var table = domConstruct.create("table");
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			Object.keys(item).sort().forEach(function(key){
-				var tr = domConstruct.create("tr", {}, tbody)
+				var tr = domConstruct.create("tr", {}, tbody);
 				var tda = domConstruct.create("td", {innerHTML: key}, tr);
 				var tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
 			}, this);
@@ -52,7 +51,7 @@ define([
 			}
 		},
 		"completed_job": function(item, options){
-			options = options || {}
+			options = options || {};
 			options.hideExtra = true;
 			var featureColumns = [{
 				name: 'App',
@@ -87,19 +86,15 @@ define([
 			}];
 
 			var div = domConstruct.create("div");
-			// console.log("Create Display Header")
 			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
-			// console.log("TBODY: ", tbody)
-			displayDetail(item, featureColumns, tbody, options);
-			// console.log("Display Detail Complete")
 
-			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
+			displayDetail(item, featureColumns, tbody, options);
 
 			return div;
 		},
 
 		"failed_job": function(item, options){
-			options = options || {}
+			options = options || {};
 			options.hideExtra = true;
 			var featureColumns = [{
 				name: 'App',
@@ -156,7 +151,7 @@ define([
 				}, function(err){
 					dlg.set("content", "Unable to retreive additional details about this task at this task.<br>" + err + "<br><pre></pre>");
 				});
-			})
+			});
 
 			// displayDetailBySections(obj.parameters,"Parameters" , obj.parameters, tbody, options);
 
@@ -164,10 +159,7 @@ define([
 		},
 
 		"feature_data": function(item, options){
-			options = options || {}
-
-			//console.log("Running feature_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
+			options = options || {};
 
 			var featureColumns = [{
 				name: 'Genome Name',
@@ -351,13 +343,9 @@ define([
 		},
 
 		"spgene_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running spgene_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'Genome Name',
 				text: 'genome_name'
 			}, {
@@ -488,7 +476,7 @@ define([
 		},
 
 		"taxonomy_data": function(item, options){
-			options = options || {}
+			options = options || {};
 			var featureColumns = [{
 				name: 'Taxonomy ID',
 				text: 'taxon_id',
@@ -520,23 +508,17 @@ define([
 			}];
 
 			var div = domConstruct.create("div");
-			// console.log("Create Display Header")
 			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
-			// console.log("TBODY: ", tbody)
+
 			displayDetail(item, featureColumns, tbody, options);
-			// console.log("Display Detail Complete")
 
 			return div;
 		},
 
 		"pathway_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running pathway_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'Pathway ID',
 				text: 'pathway_id'
 			}, {
@@ -581,13 +563,9 @@ define([
 		},
 
 		"proteinfamily_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running pathway_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'ID',
 				text: 'family_id'
 			}, {
@@ -629,13 +607,9 @@ define([
 		},
 
 		"sequence_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running spgene_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'Genome Name',
 				text: 'genome_name',
 				mini: true
@@ -723,13 +697,9 @@ define([
 		},
 
 		"transcriptomics_experiment_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running spgene_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'Experiment ID',
 				text: 'eid'
 			}, {
@@ -821,13 +791,9 @@ define([
 		},
 
 		"transcriptomics_sample_data": function(item, options){
-			options = options || {}
+			options = options || {};
 
-			//console.log("Running spgene_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-
-			var featureColumns = {};
-			featureColumns = [{
+			var featureColumns = [{
 				name: 'Sample ID',
 				text: 'pid'
 			}, {
@@ -927,10 +893,7 @@ define([
 		},
 
 		"genome_data": function(item, options){
-			// do some other type formatting here and return it
-			//console.log("Running genome_data formatter");
-			//return domConstruct.create("div", {innerHTML: "hello"});
-			options = options || {}
+			options = options || {};
 
 			var metadataGenomeSummaryID = ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
 			var metadataGenomeSummaryValue = {};
@@ -1158,21 +1121,21 @@ define([
 			var div = domConstruct.create("div");
 			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
 
-			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + item.chromosomes + ", Plasmids: " + item.plasmids + ", Contigs: " + item.contigs;
+			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + (item.chromosomes || 0) + ", Plasmids: " + (item.plasmids || 0) + ", Contigs: " + (item.contigs || 0);
 			var tr = domConstruct.create("tr", {}, tbody);
-			var tda = domConstruct.create("td", {
+			domConstruct.create("td", {
 				innerHTML: "Summary:",
 				style: "font-weight: bold",
 				nowrap: "nowrap"
 			}, tr);
-			var tdb = domConstruct.create("td", {innerHTML: summary}, tr);
+			domConstruct.create("td", {innerHTML: summary}, tr);
 
 			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody, options);
 
 			return div;
 
 		}
-	}
+	};
 
 	function displayHeader(div, item_name, icon_name, url, options){
 		var linkTitle = false;
@@ -1181,9 +1144,8 @@ define([
 				linkTitle = true;
 			}
 		}
-		//console.log("url=" + url + ", linkTitle=" + linkTitle);
 
-		var hdr_div = domConstruct.create("div", {"class":"DataItemHeader"}, div);
+		var hdr_div = domConstruct.create("div", {"class": "DataItemHeader"}, div);
 
 		var hdr_table = domConstruct.create("table", {}, hdr_div);
 		var hdr_tbody = domConstruct.create("tbody", {}, hdr_table);
@@ -1250,17 +1212,12 @@ define([
 
 			for(var j = 0; j < value.length; j++){
 				var column = value[j].text;
-				//console.log("column=", column);
-				//console.log("item[column]=", item[column]);
 
 				if(column){
 					displayColumns[column] = 1;
 				}
 
 				if(column && (item[column] || item[column] == "0")){
-					//console.log("column=", column);
-					//console.log("item[column]=", item[column]);
-					//console.log("value[j].name=", value[j].name);
 
 					if(mini == false){
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
@@ -1290,8 +1247,6 @@ define([
 			}
 
 		}
-
-		// console.log("displayColumns[column]=", displayColumns);
 
 		var additional = 0;
 
@@ -1340,16 +1295,12 @@ define([
 
 		for(var i = 0; i < column_data.length; i++){
 			var column = column_data[i].text;
-			//console.log("column_data.length=" + column_data.length + " column=", column);
-			//console.log("item[column]=", item.column);
 
 			if(column){
 				displayColumns[column] = 1;
 			}
 
 			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
-				//console.log("column=", column);
-				//console.log("item[column]=", item[column]);
 
 				if(mini == false){
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
@@ -1376,11 +1327,9 @@ define([
 					}
 				}
 			}
-
 		}
 
 		var additional = 0;
-		// console.log("displayColumns=", displayColumns);
 
 		if(hideExtra == false && mini == false){
 			Object.keys(item).sort().forEach(function(key){
@@ -1398,7 +1347,7 @@ define([
 						tdb = domConstruct.create("td", {innerHTML: ""}, tr);
 					}
 					additional++;
-					tr = domConstruct.create("tr", {}, tbody)
+					tr = domConstruct.create("tr", {}, tbody);
 					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
 					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
 				}
@@ -1407,7 +1356,7 @@ define([
 	}
 
 	return function(item, type, options){
-		// console.log("Format Data: ", type, item);
+
 		var new_type = type;
 		var out;
 		if(type == "genome_group"){
@@ -1431,7 +1380,6 @@ define([
 			out = formatters["default"](item, options);
 		}
 
-		// console.log("output: ", out);
 		return out;
 	}
 });
