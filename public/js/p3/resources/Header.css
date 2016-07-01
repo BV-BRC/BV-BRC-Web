@@ -46,11 +46,31 @@
 	color: #eee;
 }
 
-.TopMenuLink {
+.TopMenuBar .TopMenuLink,.TopMenuBar .TopMenuLink A {
 	display: inline;
 	margin-right: 8px;
 	cursor: pointer;
 	color: #fff;
+}
+
+.TopMenuBar A.TopMenuLink:hover {
+	color: orange;
+	text-decoration: none;
+}
+
+.TopMenuBar A.TopMenuLink:visited{
+	text-decoration: none;
+}
+
+
+.TopMenuLink .fa{
+	color: #76a72d;	
+	font-size: 12px;
+	vertical-align: middle;	
+}
+
+.TopMenuLink .fa:hover {
+	color: orange;	
 }
 
 
@@ -106,10 +126,10 @@
 .claro .topMenuButton .dijitButtonText {
 	padding: 0px;
 }
-.TopMenuLink,
-.TopMenuLink:visited,
-.P3Header A,
-.P3Header A:visited {
+.patric .P3Header .TopMenuLink,
+.patric .P3Header .TopMenuLink:visited,
+.patric .P3Header A,
+.patric .P3Header A:visited {
 	text-decoration:none;
 }
 

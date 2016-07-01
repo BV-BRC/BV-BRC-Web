@@ -14230,6 +14230,26 @@ define([], function(){
 			params: {overwrite: true}
 		},
 
+		Search: {
+			title: "Search",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/GlobalSearch",
+			params: {
+				style: "width:600px;font-size:1.3em;border:1px solid #ddd;"
+			}
+		},
+
+
+		BLAST: {
+			title: "BLAST",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/app/BLAST",
+			params: {}
+		},
+
+
+
+
 		GenomeGroupViewer: {
 			title: "Genome Group",
 			layer: "p3/layer/panels",
@@ -24187,7 +24207,7 @@ define([
 					this.searchInput.set("value", '');
 				}
 
-
+				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 				 0 && console.log("Do Search: ", searchFilter, query);
 			}
 		},
@@ -25512,6 +25532,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 

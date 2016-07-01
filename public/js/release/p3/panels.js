@@ -30,6 +30,26 @@ define("p3/panels", [], function(){
 			params: {overwrite: true}
 		},
 
+		Search: {
+			title: "Search",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/GlobalSearch",
+			params: {
+				style: "width:600px;font-size:1.3em;border:1px solid #ddd;"
+			}
+		},
+
+
+		BLAST: {
+			title: "BLAST",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/app/BLAST",
+			params: {}
+		},
+
+
+
+
 		GenomeGroupViewer: {
 			title: "Genome Group",
 			layer: "p3/layer/panels",

@@ -1,32 +1,139 @@
-<div>
-
-	<div style="background-color:#000;">
-		<div class="layer" style="text-align: center;">
-			<div style="background:#efefef;height:400px;width:100%;margin-top:-1px;margin-bottom:10px"></div>
-		</div>
-	</div>
-	<div class="layer" style="text-align: center;">
-
-	<h1>Why Should I use PATRIC?</h1>
 	<% var services = [
-		{name: "Explore Data"},
-		{name: "Search Data"},
-		{name: "Assembly"},
-		{name: "Annotation"},
+		{name: "Genome Assembly"},
+		{name: "Genome Annotation"},
 		{name: "BLAST"},
 		{name: "Variation Analysis"},
-		{name: "Expression Import"},
 		{name: "RNA-Seq Analysis"},
 		{name: "Protein Families Comparison"},
 		{name: "Proteome Comparison"},
 		{name: "Comparative Pathways"},
 		{name: "Metabolic Reconstruction"}
 	] %>
-	<% services.forEach(function(svc,index) { %>
-		<div class="HomeServiceLink">
-			<%- svc.name %>
+
+	<% var topNews = [
+		{
+			publishDate: new Date(),
+			title: "Vulputate Inceptos Parturient",
+			summary: "<p>Maecenas faucibus mollis interdum. Donec sed odio dui. Donec ullamcorper nulla non metus auctor fringilla. Sed posuere consectetur est at lobortis. Nulla vitae elit libero, a pharetra augue. Cras mattis consectetur purus sit amet fermentum.</p><p>Etiam porta sem malesuada magna mollis euismod. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.</p>"
+		},
+		{
+			publishDate: new Date(),
+			title: "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
+			summary: "<p>Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Cras justo odio, dapibus ac facilisis in, egestas eget quam.</p>"
+		},
+		{
+			publishDate: new Date(),
+			title: "Cras justo odio, dapibus ac facilisis in, egestas eget quam.",
+			summary: "<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Sed posuere consectetur est at lobortis.</p>"
+		}
+	] %>
+
+
+	<% var workShops = [
+		{
+			publishDate: new Date(),
+			title: "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
+			summary: "Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Cras justo odio, dapibus ac facilisis in, egestas eget quam."
+		}
+	] %>
+
+
+
+
+<div>
+
+	<div style="background-color:#000;">
+		<div class="layer" style="text-align: center;">
+			<div style="background:#efefef;width:100%;margin: auto;margin-top:-1px;margin-bottom:10px;padding:4px;">
+				<table style="width:100%;margin-right:4px;">
+					<tr>
+						<td style="width: 200px;padding:4px;">
+							<div style="margin: 4px; width:100%; height: 120px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div><a class="DialogButton" rel="Search:">Search</a> or Explore Data</div>
+								<div>Genomes, Genes, Pathways, Taxonomies, Protein Families</div>
+							</div>
+							<div>- OR -</div>
+							<div style="margin:4px; width:100%; height: 120px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div><a class="DialogButton" style="font-size:1.2em;  vertical-align:middle;cursor:pointer;" rel="Upload:">Bring Your Own Data</a></div>
+								<div>Upload your own Contigs, Reads, Differential Expression Data, FASTA files.</div> 
+							</div>
+	
+						</td>
+						<td>
+							<div style="margin: 4px; width:100%; height: 120px; border: 0px;padding-top:80px;">
+								<span class="fa-4x icon-long-arrow-right"></span>
+							</div>
+						</td>
+						<td style="width:200px;padding:4px;">
+							<div style="vertical-align: middle; margin: 4px;width:100%; height: 250px;border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div>Analyze</div>
+								<div>
+									<% services.forEach(function(svc,index) { %>
+										<div style="text-align:center;margin:4px;"><%- svc.name %></div>
+									<% }) %>
+								</div>
+							</div>
+						</td>
+						<td>
+							<div style="margin: 4px; width:100%; height: 120px; border: 0px;padding-top:80px;">
+								<span class="fa-4x icon-long-arrow-right"></span>
+							</div>
+						</td>
+						<td style="width:200px;padding:4px;">
+							<div style="vertical-align: middle; margin:4px;width:100%; height:250px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div>Workspace</div>
+							</div>
+
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
-	<% }) %>
+	</div>
+	<div class="layer" style="text-align: center;">
+
+		<h1>What Can I Do @PATRIC?</h1>
+
+		<% services.forEach(function(svc,index) { %>
+			<div class="HomeServiceLink">
+				<%- svc.name %>
+			</div>
+		<% }) %>
+
+		<table style="width: 100%">
+			<tr>
+				<td style="vertical-align:top;width:60%;">
+					<div class="section-title">Recent News</div>
+					<% topNews.forEach(function(svc,index) { %>
+						<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- svc.publishDate.toLocaleDateString() %></span></div>
+						<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
+							<!--<span style="float:left;width:75px;margin-top:8px;padding:4px;color:#fff;background:#000;margin-top:-35px;;"><%- svc.publishDate.toLocaleDateString() %></span>-->
+							<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><%- svc.title %> </div>
+							<div style="text-align:left;padding-left:20px;"><%- svc.summary %></div>
+						</div>
+					<% }) %>
+				</td>
+				<td style="width:10px;"></td>
+				<td style="vertical-align:top;">
+					<div class="section-title">Top 10 Genera	</div>
+					<div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10" style="width:100%;height:315px;margin:4px;margin-bottom: 5px;"></div>
+					<div style="text-align:right;"><a class="navigationLink" href="/view/TaxonList/?&eq(taxon_rank,genus)">Explore All Genera</a></div>
+					<div class="section-title">Upcoming Workshops</div>
+					<% workShops.forEach(function(svc,index) { %>
+						<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- svc.publishDate.toLocaleDateString() %></span></div>
+						<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
+							<!--<span style="float:left;width:75px;margin-top:8px;padding:4px;color:#fff;background:#000;margin-top:-35px;;"><%- svc.publishDate.toLocaleDateString() %></span>-->
+							<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><%- svc.title %> </div>
+
+						</div>
+					<% }) %>
+					
+
+				</td>
+	
+			</tr>
+			<tr>
+		</table>
 
 	</div>
 </div>

@@ -40,6 +40,7 @@ body.patric {
 A, A:visited {
     text-decoration: none;
     color: #09456f;
+    cursor: pointer;
 }
 A:hover {
     text-decoration: underline;
