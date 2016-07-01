@@ -129,7 +129,7 @@ define([
 						var circle = {
 							cx: offsets.l + rx,
 							cy: offsets.t + ry,
-							r: "25px"
+							r: "20px"
 						};
 						var s = this.group;
 
