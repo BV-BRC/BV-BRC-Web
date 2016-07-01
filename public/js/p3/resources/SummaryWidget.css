@@ -35,6 +35,33 @@
     overflow-y: auto;
 }
 
+.SummaryWidget .actionButtons .actionButtonsRadio {
+    border-radius: 4px;
+    border: 1px solid #333;
+    display: inline-block;
+    background: #333;
+    padding:0px;
+    margin-bottom: 4px;
+}
+
+
+.SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
+.SummaryWidget.chartView .actionButtons .actionButtonsRadio .ChartButton.fa {
+    color: green;
+    background: #efefef;
+}
+
+.SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
+.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa  {
+    color: #eee;
+    background: #333;
+    padding:3px;
+    margin:0px;
+    border-radius: 2px;
+}
+
+
+
 TH.dgrid-cell.field-feature_type {
     border-left: 0px;
 }
