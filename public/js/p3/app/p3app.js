@@ -268,10 +268,14 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			// console.log("updateUserWorkspaceList: ", data);
+			 console.log("updateUserWorkspaceList: ", data);
+			var wsNode = dom.byId("YourWorkspaces")
 			domConstruct.empty("YourWorkspaces");
+			console.log("Your Workspaces Node: ", wsNode);
 			data.forEach(function(ws){
-				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, dom.byId("YourWorkspaces"));
+				console.log("Create Link for Workspace: ", ws.path);
+
+				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
 				domConstruct.create("a", {
 					'class': 'navigationLink',
 					href: "/workspace" + ws.path,

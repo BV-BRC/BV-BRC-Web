@@ -10090,7 +10090,7 @@ body.patric *:focus {
 .dijitToasterContainer {
     margin: 5px;
 }
-.patric .ShowWithAuth {
+.ShowWithAuth {
     display: none;
 }
 .patric .Authenticated .ShowWithAuth {

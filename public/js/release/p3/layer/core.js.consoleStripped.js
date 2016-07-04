@@ -270,10 +270,14 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			//  0 && console.log("updateUserWorkspaceList: ", data);
+			  0 && console.log("updateUserWorkspaceList: ", data);
+			var wsNode = dom.byId("YourWorkspaces")
 			domConstruct.empty("YourWorkspaces");
+			 0 && console.log("Your Workspaces Node: ", wsNode);
 			data.forEach(function(ws){
-				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, dom.byId("YourWorkspaces"));
+				 0 && console.log("Create Link for Workspace: ", ws.path);
+
+				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
 				domConstruct.create("a", {
 					'class': 'navigationLink',
 					href: "/workspace" + ws.path,
@@ -4997,7 +5001,7 @@ define([
 				//  0 && console.log("end loginLink Lcik");
 			};
 
-			on(document, "A.loginLink:click", showAuthDlg);
+			on(document, ".loginLink:click", showAuthDlg);
 			Topic.subscribe("/login", showAuthDlg);
 
 			on(document, ".navigationLink:click", function(evt){
@@ -76422,7 +76426,7 @@ define([
 			],
 			"Feature": [
 				{label: "Overview", link: "overview"},
-				{label: "Genomes", link: "genomes"},
+				{label: "Browser", link: "genomeBrowser"},
 				{label: "Transcriptomics", link: "transcriptomics"},
 				{label: "Correlated Genes", link: "correlatedGenes"}
 			],
