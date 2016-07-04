@@ -60,6 +60,11 @@
     width: 5%
 }
 
+.patric .dijitTab .tabLabel {
+    font-weight: 600;
+
+}
+
 .patric .dgrid-row-odd {
     background: #efefef;
 }
