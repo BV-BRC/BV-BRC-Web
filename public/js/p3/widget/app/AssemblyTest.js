@@ -158,7 +158,7 @@ define([
 				var td = domConstr.create('td', {"class": "singledata", innerHTML: ""}, tr);
 				td.libRecord = lrec;
 				td.innerHTML = this.makeSingleName(td.libRecord);
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstr.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
@@ -188,7 +188,7 @@ define([
 				var td = domConstr.create('td', {"class": "pairdata", innerHTML: ""}, tr);
 				td.libRecord = lrec;
 				td.innerHTML = this.makePairName(td.libRecord);
-				var td2 = domConstr.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstr.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}

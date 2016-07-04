@@ -20,7 +20,8 @@ define("p3/widget/viewer/Taxonomy", [
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-		
+		perspectiveLabel: "Taxonomy Perspective",
+		perspectiveIconClass: "icon-perspective-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
 
@@ -31,14 +32,13 @@ define("p3/widget/viewer/Taxonomy", [
 			});
 
 			this.taxontree = new TaxonomyTreeGrid({
-				title: "Taxonomy",
+				title: "Tree",
 				id: this.viewer.id + "_" + "taxontree",
 				state: this.state
 				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
 			});
 			this.viewer.addChild(this.phylogeny, 1);
 			this.viewer.addChild(this.taxontree, 2);
-			domConstruct.empty(this.queryNode);
 
 			this.watch("taxonomy", lang.hitch(this, "onSetTaxonomy"));
 		},
@@ -225,12 +225,12 @@ define("p3/widget/viewer/Taxonomy", [
 				out.push(this.filteredTaxon);
 			}
 
-			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
+			return out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		createOverviewPanel: function(){
 			return new TaxonomyOverview({
-				title: "Overview",
+				title: "Taxonomy Overview",
 				id: this.viewer.id + "_" + "overview"
 			});
 		},

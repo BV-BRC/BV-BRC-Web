@@ -5095,6 +5095,612 @@ table {  font-size:100%; }
 .dojoTabular td { 
 	padding: 0.25em 0.5em;
 }
+@font-face {
+    font-family: 'icomoon';
+    src:    url("icomoon/fonts/icomoon.eot?lqzw3j");
+    src:    url("icomoon/fonts/icomoon.eot?lqzw3j#iefix") format('embedded-opentype'),
+        url("icomoon/fonts/icomoon.ttf?lqzw3j") format('truetype'),
+        url("icomoon/fonts/icomoon.woff?lqzw3j") format('woff'),
+        url("icomoon/fonts/icomoon.svg?lqzw3j#icomoon") format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+[class^="icon-"], [class*=" icon-"] {
+    
+    font-family: 'icomoon' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.icon-apply-perspective-filter:before {
+    content: "\e976";
+}
+.icon-alignment:before {
+    content: "\e900";
+}
+.icon-anchor:before {
+    content: "\e901";
+}
+.icon-arrow-circle-o-down:before {
+    content: "\e902";
+}
+.icon-arrow-circle-o-left:before {
+    content: "\e903";
+}
+.icon-arrow-circle-o-right:before {
+    content: "\e904";
+}
+.icon-arrow-circle-o-up:before {
+    content: "\e905";
+}
+.icon-arrow-down:before {
+    content: "\e906";
+}
+.icon-arrow-left:before {
+    content: "\e907";
+}
+.icon-arrow-right:before {
+    content: "\e908";
+}
+.icon-arrow-up:before {
+    content: "\e909";
+}
+.icon-bar-chart:before {
+    content: "\e90a";
+}
+.icon-bars:before {
+    content: "\e90b";
+}
+.icon-camera:before {
+    content: "\e90c";
+}
+.icon-cancel-circle:before {
+    content: "\e90d";
+}
+.icon-caret-down:before {
+    content: "\e90e";
+}
+.icon-caret-left:before {
+    content: "\e90f";
+}
+.icon-caret-right:before {
+    content: "\e910";
+}
+.icon-caret-up:before {
+    content: "\e911";
+}
+.icon-check-square-o:before {
+    content: "\e912";
+}
+.icon-check:before {
+    content: "\e913";
+}
+.icon-chevron-circle-down:before {
+    content: "\e914";
+}
+.icon-chevron-circle-left:before {
+    content: "\e915";
+}
+.icon-chevron-circle-right:before {
+    content: "\e916";
+}
+.icon-chevron-circle-up:before {
+    content: "\e917";
+}
+.icon-circle:before {
+    content: "\e918";
+}
+.icon-cog:before {
+    content: "\e919";
+}
+.icon-contigs:before {
+    content: "\e91a";
+}
+.icon-delicious:before {
+    content: "\e91b";
+}
+.icon-download:before {
+    content: "\e91c";
+}
+.icon-exchange:before {
+    content: "\e91d";
+}
+.icon-experiments:before {
+    content: "\e91e";
+}
+.icon-eye-slash:before {
+    content: "\e91f";
+}
+.icon-eye:before {
+    content: "\e920";
+}
+.icon-fasta:before {
+    content: "\e921";
+}
+.icon-filter:before {
+    content: "\e922";
+}
+.icon-flag-checkered:before {
+    content: "\e923";
+}
+.icon-folder-open:before {
+    content: "\e924";
+}
+.icon-folder-plus:before {
+    content: "\e925";
+}
+.icon-genome-browser:before {
+    content: "\e926";
+}
+.icon-genome-features-cds:before {
+    content: "\e927";
+}
+.icon-genome-features:before {
+    content: "\e928";
+}
+.icon-genome-group .path1:before {
+    content: "\e929";
+    color: rgb(1, 1, 1);
+}
+.icon-genome-group .path2:before {
+    content: "\e92a";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path3:before {
+    content: "\e92b";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path4:before {
+    content: "\e92c";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path5:before {
+    content: "\e92d";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path6:before {
+    content: "\e92e";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path7:before {
+    content: "\e92f";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path8:before {
+    content: "\e930";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path9:before {
+    content: "\e931";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path10:before {
+    content: "\e932";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path11:before {
+    content: "\e933";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path12:before {
+    content: "\e934";
+    margin-left: -1em;
+    color: rgb(1, 1, 1);
+}
+.icon-genome-group .path13:before {
+    content: "\e935";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path14:before {
+    content: "\e936";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path15:before {
+    content: "\e937";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path16:before {
+    content: "\e938";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path17:before {
+    content: "\e939";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path18:before {
+    content: "\e93a";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path19:before {
+    content: "\e93b";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path20:before {
+    content: "\e93c";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path21:before {
+    content: "\e93d";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path22:before {
+    content: "\e93e";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path23:before {
+    content: "\e93f";
+    margin-left: -1em;
+    color: rgb(1, 1, 1);
+}
+.icon-genome-group .path24:before {
+    content: "\e940";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path25:before {
+    content: "\e941";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path26:before {
+    content: "\e942";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path27:before {
+    content: "\e943";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path28:before {
+    content: "\e944";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path29:before {
+    content: "\e945";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path30:before {
+    content: "\e946";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path31:before {
+    content: "\e947";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path32:before {
+    content: "\e948";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome-group .path33:before {
+    content: "\e949";
+    margin-left: -1em;
+    color: rgb(255, 255, 255);
+}
+.icon-genome:before {
+    content: "\e94a";
+}
+.icon-git-pull-request:before {
+    content: "\e94b";
+}
+.icon-group:before {
+    content: "\e94c";
+}
+.icon-info-circle:before {
+    content: "\e94d";
+}
+.icon-info:before {
+    content: "\e94e";
+}
+.icon-level-down:before {
+    content: "\e94f";
+}
+.icon-level-up:before {
+    content: "\e950";
+}
+.icon-lightbulb-o:before {
+    content: "\e951";
+}
+.icon-list-unordered:before {
+    content: "\e952";
+}
+.icon-lock:before {
+    content: "\e953";
+}
+.icon-long-arrow-left:before {
+    content: "\e954";
+}
+.icon-long-arrow-right:before {
+    content: "\e955";
+}
+.icon-map-o:before {
+    content: "\e956";
+}
+.icon-map:before {
+    content: "\e957";
+}
+.icon-object-group:before {
+    content: "\e958";
+}
+.icon-object-ungroup:before {
+    content: "\e959";
+}
+.icon-paint-brush:before {
+    content: "\e95a";
+}
+.icon-pencil-square:before {
+    content: "\e95b";
+}
+.icon-perspective-Feature:before {
+    content: "\e95c";
+}
+.icon-perspective-FeatureList:before {
+    content: "\e95d";
+}
+.icon-perspective-Genome:before {
+    content: "\e95e";
+}
+.icon-perspective-GenomeList:before {
+    content: "\e95f";
+}
+.icon-perspective-TaxonList:before {
+    content: "\e960";
+}
+.icon-perspective-Taxonomy:before {
+    content: "\e961";
+}
+.icon-pie-chart:before {
+    content: "\e962";
+}
+.icon-plus-circle:before {
+    content: "\e963";
+}
+.icon-print:before {
+    content: "\e964";
+}
+.icon-random:before {
+    content: "\e965";
+}
+.icon-repeat:before {
+    content: "\e966";
+}
+.icon-rotate-left:before {
+    content: "\e967";
+}
+.icon-search-minus:before {
+    content: "\e968";
+}
+.icon-search-plus:before {
+    content: "\e969";
+}
+.icon-split:before {
+    content: "\e96a";
+}
+.icon-square-o:before {
+    content: "\e96b";
+}
+.icon-square:before {
+    content: "\e96c";
+}
+.icon-table:before {
+    content: "\e96d";
+}
+.icon-tasks:before {
+    content: "\e96e";
+}
+.icon-taxonomy:before {
+    content: "\e96f";
+}
+.icon-th-list:before {
+    content: "\e970";
+}
+.icon-trash:before {
+    content: "\e971";
+}
+.icon-unlock-alt:before {
+    content: "\e972";
+}
+.icon-unlock:before {
+    content: "\e973";
+}
+.icon-upload:before {
+    content: "\e974";
+}
+.icon-x:before {
+    content: "\e975";
+}
+.icon-chevron-right:before {
+    content: "\e977";
+}
+.icon-chevron-left:before {
+    content: "\e978";
+}
+.icon-chevron-down:before {
+    content: "\e979";
+}
+.icon-chevron-up:before {
+    content: "\e97a";
+}
+.icon-folder:before {
+    content: "\e97b";
+}
+* makes the font 33% larger relative to the icon container */
+.fa-lg {
+  font-size: 1.33333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+.fa-2x {
+  font-size: 2em;
+}
+.fa-3x {
+  font-size: 3em;
+}
+.fa-4x {
+  font-size: 4em;
+}
+.fa-5x {
+  font-size: 5em;
+}
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
+.fa-ul {
+  padding-left: 0;
+  margin-left: 2.14285714em;
+  list-style-type: none;
+}
+.fa-ul > li {
+  position: relative;
+}
+.fa-li {
+  position: absolute;
+  left: -2.14285714em;
+  width: 2.14285714em;
+  top: 0.14285714em;
+  text-align: center;
+}
+.fa-li.fa-lg {
+  left: -1.85714286em;
+}
+.fa-border {
+  padding: .2em .25em .15em;
+  border: solid 0.08em #eeeeee;
+  border-radius: .1em;
+}
+.pull-right {
+  float: right;
+}
+.pull-left {
+  float: left;
+}
+.fa.pull-left {
+  margin-right: .3em;
+}
+.fa.pull-right {
+  margin-left: .3em;
+}
+.fa-spin {
+  -webkit-animation: fa-spin 2s infinite linear;
+  animation: fa-spin 2s infinite linear;
+}
+.fa-pulse {
+  -webkit-animation: fa-spin 1s infinite steps(8);
+  animation: fa-spin 1s infinite steps(8);
+}
+@-webkit-keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+.fa-rotate-90 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.fa-rotate-180 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.fa-rotate-270 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+.fa-flip-horizontal {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1);
+  -webkit-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+}
+.fa-flip-vertical {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);
+  -webkit-transform: scale(1, -1);
+  -ms-transform: scale(1, -1);
+  transform: scale(1, -1);
+}
+:root .fa-rotate-90,
+:root .fa-rotate-180,
+:root .fa-rotate-270,
+:root .fa-flip-horizontal,
+:root .fa-flip-vertical {
+  filter: none;
+}
+.fa-stack {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+}
+.fa-stack-1x,
+.fa-stack-2x {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.fa-stack-1x {
+  line-height: inherit;
+}
+.fa-stack-2x {
+  font-size: 2em;
+}
+.fa-inverse {
+  color: #ffffff;
+}
 .dijitToasterContent {
 	padding:1em;
 	padding-top:0.25em;
@@ -8118,6 +8724,21 @@ background-color: #FF00FF;
 	padding-right: 4px;
 	padding:2px;
 }
+.RegistrationButton,
+.LoginButton {
+	font-size:.95em;
+}
+.patric.claro .P3Header .dijitButtonNode,
+.patric.claro .P3Header .dijitButtonNode {
+    background-image: none;
+	background:#f7ffba;
+}
+.patric.claro .P3Header  .dijitButtonHover .dijitButtonNode {
+	background-color: #E8FFBA;
+}
+.Authenticated .P3Header .HideWithAuth,
+.Authenticated .LoginButton.HideWithAuth,
+.Authenticated .RegistrationButton.HideWithAuth,
 .Authenticated .TopMenuLink.HideWithAuth {
 	display: none;
 }
@@ -8130,15 +8751,30 @@ background-color: #FF00FF;
 	background: #34698E;
 	color: #eee;
 }
-.TopMenuLink {
+.TopMenuBar .TopMenuLink,.TopMenuBar .TopMenuLink A {
 	display: inline;
 	margin-right: 8px;
 	cursor: pointer;
 	color: #fff;
 }
+.TopMenuBar A.TopMenuLink:hover {
+	color: orange;
+	text-decoration: none;
+}
+.TopMenuBar A.TopMenuLink:visited{
+	text-decoration: none;
+}
+.TopMenuLink .fa{
+	color: #76a72d;	
+	font-size: 12px;
+	vertical-align: middle;	
+}
+.TopMenuLink .fa:hover {
+	color: orange;	
+}
 .P3Header {
 	width: 100%;
-    height: 34px;
+    height: 35px;
 	background: #34698e; 
 	padding:0px;
 	margin-top:0px;
@@ -8149,18 +8785,23 @@ background-color: #FF00FF;
 	font-size:1.85em;
 	color: #fff;
 	font-weight: 400;
-	margin-left: 8px;
-	margin-bottom: 2px;
-	margin-top: 2px;
+}
+.P3Header .p3LogoImage {
+	height:16px;
+	padding:0px;
+	margin-left:4px;
+	margin-right:-95px;
 }
 .P3Header .appLabel{
 	font-size: 1em;
 	color: orange;
 	font-weight: 600;
 	margin-left: 3px;
-	margin-bottom: -4px;
+	
 }
+.claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
+.topMenuButtonIcon,
 .topMenuButton {
 	background: inherit;
 	color: #efefef;
@@ -8170,8 +8811,16 @@ background-color: #FF00FF;
 	box-shadow: 0 0 0;
 	margin: 0px;
 }
+.claro .topMenuButtonIcon.dijitDropDownButton{
+	margin:0px;
+	margin-top:4px;
+}
 .claro .topMenuButton.dijitDropDownButton {
-	margin:0px
+	margin:0px;
+	margin-top:10px;
+}
+.claro .topMenuButtonIcon .dijitArrowButtonInner {
+	display: none;
 }
 .claro .topMenuButton .dijitArrowButtonInner {
 	margin:0px;
@@ -8183,10 +8832,10 @@ background-color: #FF00FF;
 .claro .topMenuButton .dijitButtonText {
 	padding: 0px;
 }
-.TopMenuLink,
-.TopMenuLink:visited,
-.P3Header A,
-.P3Header A:visited {
+.patric .P3Header .TopMenuLink,
+.patric .P3Header .TopMenuLink:visited,
+.patric .P3Header A,
+.patric .P3Header A:visited {
 	text-decoration:none;
 }
 .patric .TopMenuBar *:focus{
@@ -8572,9 +9221,16 @@ th.dgrid-cell.wsItemType {
 	text-align: center;
 	margin:1px;
 	cursor: pointer;
-	width: 44px;
+	width: 50px;
 	border-radius: 4px;
 	border: 1px solid #76a72d;
+}
+.ActionButtonWrapper.depressed:hover,
+.ActionButtonWrapper.depressed .ActionButtonText,
+.ActionButtonWrapper.depressed .ActionButton.fa,
+.ActionButtonWrapper.depressed  {
+	color: #ddd;
+	border-color: #ddd;
 }
 .ActionButtonContainer {
 	float: left;
@@ -9221,6 +9877,31 @@ font-size: 12px;
 .SummaryWidget .dgrid-scroller {
     overflow-y: auto;
 }
+.SummaryWidget .actionButtons .actionButtonsRadio {
+    border-radius: 4px;
+    border: 1px solid #333;
+    display: inline-block;
+    background: #333;
+    padding:0px;
+    padding-top: 2px;
+    padding-bottom:2px;
+    margin-bottom: 4px;
+    font-size:.7em;
+    text-align: center;
+}
+.SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
+.SummaryWidget.chartView .actionButtons .actionButtonsRadio .ChartButton.fa {
+    color: #efefef;
+    background: #333;
+}
+.SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
+.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa  {
+    color: #333;
+    background: #efefef;
+    padding:2px;
+    border-radius: 2px;
+    vertical-align:middle;
+}
 TH.dgrid-cell.field-feature_type {
     border-left: 0px;
 }
@@ -9255,6 +9936,9 @@ TH.dgrid-cell.field-feature_type {
 }
 .SummaryWidget .field-category {
     width: 35%;
+}
+.patric .dgrid-header .dgrid-cell {
+	font-weight: 600;
 }
 .dgrid-header .dojoDndTarget .dgrid-cell {
         display: table-cell; 
@@ -9308,6 +9992,24 @@ TH.dgrid-cell.field-feature_type {
 .dgrid-cell.field-sig_z_score {
     width: 5%
 }
+.patric .dijitTab .tabLabel {
+    font-weight: 600;
+}
+.patric .dgrid-row-odd {
+    background: #efefef;
+}
+.patric .dgrid-selected{
+    background: #bfd6eb;
+}
+.TaxonTreeGrid .dgrid-cell {
+    border: 0px;
+}
+.TaxonTreeGrid .dgrid-cell.field-genomes {
+    width: 60px;
+}
+.TaxonTreeGrid .dgrid-cell.field-taxon_rank {
+    width: 90px;
+}
 .resultTypeHeader {
 	font-size:1.5em;
 	border-bottom:1px solid #ddd;
@@ -9333,6 +10035,13 @@ TH.dgrid-cell.field-feature_type {
 	padding-left: 15px;
 	margin-bottom: 10px;
 }
+.detailProp {
+	vertical-align:top;
+	font-weight: 600;
+}
+.detailValue {
+	vertical-align: top;
+}
 html, body,
 body.patric {
     height: 100%;
@@ -9349,6 +10058,7 @@ body.patric {
 A, A:visited {
     text-decoration: none;
     color: #09456f;
+    cursor: pointer;
 }
 A:hover {
     text-decoration: underline;
@@ -9383,10 +10093,10 @@ body.patric *:focus {
 .ShowWithAuth {
     display: none;
 }
-.Authenticated .ShowWithAuth {
+.patric .Authenticated .ShowWithAuth {
     display: inherit;
 }
-.Authenticated .ShowWithoutAuth {
+.patric .Authenticated .ShowWithoutAuth {
     display: none;
 }
 .HomeServiceLink {
@@ -9624,6 +10334,11 @@ body.patric .dijitTabContainerTop-tabs .dijitTabActive {
     border-color: #34698e;
     transition-duration: 0s;
 }
+body.patric.claro .dijitTabDisabled {
+    background-color: #dedede;
+    background-image: none;
+    color: #fff;
+}
 .TextTabButtons {
     margin: 0px;
     padding: 4px;
@@ -9858,4 +10573,19 @@ table {
 .DataItemHeader .fa {
 	color: #76a72d;
 	font-size: 1.3em;
+}
+.PerspectiveHeader {
+}
+.PerspectiveQuery,
+.PerspectiveTotalCount {
+    vertical-align:top;
+}
+.PerspectiveType {
+    font-size:.85em;vertical-align:top;margin-top:2px;
+}
+.patric .PerspectiveHeader .PerspectiveIcon.fa {
+    font-size:2.2em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;
+}
+.patric.claro .dijitButtonNode {
+    background-image: none;;
 }

@@ -135,7 +135,7 @@ define("p3/widget/GenomeNameSelector", [
 		labelFunc: function(item, store){
 			var label = "";
 			if(!item['public'] && (typeof item['public'] != 'undefined')){
-				label += "<i class='fa icon-lock3 fa-1x' />&nbsp;";
+				label += "<i class='fa icon-lock fa-1x' />&nbsp;";
 			}
 			else{
 				label += "<i class='fa fa-1x'> &nbsp; </i>&nbsp;";

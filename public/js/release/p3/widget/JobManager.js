@@ -59,7 +59,7 @@ define("p3/widget/JobManager", [
 		selectionActions: [
 			[
 				"ToggleItemDetail",
-				"fa fa-info-circle fa-2x", {
+				"fa icon-info-circle fa-2x", {
 				label: "DETAIL",
 				persistent: true,
 				validTypes: ["*"],
@@ -84,7 +84,7 @@ define("p3/widget/JobManager", [
 				true
 			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-eye2 fa-2x",
+				"MultiButton fa icon-eye fa-2x",
 				{
 					label: "VIEW",
 					validTypes: ["*"],

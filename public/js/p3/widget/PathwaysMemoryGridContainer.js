@@ -126,7 +126,7 @@ define([
 		containerActions: GridContainer.prototype.containerActions.concat([
 		/*	[
 				"DownloadTable",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DOWNLOAD",
 					multiple: false,
@@ -185,7 +185,7 @@ define([
 		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewPathwayMap",
-				"fa fa-map-o fa-2x",
+				"fa icon-map-o fa-2x",
 				{
 					label: "Map",
 					multiple: false,

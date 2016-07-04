@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic"
+	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic","dgrid/selector"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore,domConstruct,topic){
+			PathwayMemoryStore,domConstruct,topic,selector){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -130,6 +130,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
+					"Selection Checkboxes": selector({}),
 					idx: {label: 'Index', field:'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
@@ -155,6 +156,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
+					"Selection Checkboxes": selector({}),
 					idx: {label: 'Index', field:'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},

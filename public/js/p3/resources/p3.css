@@ -1,5 +1,8 @@
 @import url("../../dijit/themes/claro/claro.css");
 @import url("../../dojo/resources/dojo.css");
+@import url("./icomoon/style.css");
+@import url("./icons.css");
+
 @import url("../../dojox/widget/Toaster/Toaster.css");
 /* CSS for JBrowse */
 @import url("./jbrowse/genome.css");
@@ -20,6 +23,7 @@
 @import url("./SummaryWidget.css");
 @import url("./GridStyle.css");
 @import url("./SearchResults.css");
+@import url("./DataItemFormatter.css");
 
 /*@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");*/
 
@@ -40,6 +44,7 @@ body.patric {
 A, A:visited {
     text-decoration: none;
     color: #09456f;
+    cursor: pointer;
 }
 A:hover {
     text-decoration: underline;
@@ -82,11 +87,11 @@ body.patric *:focus {
     display: none;
 }
 
-.Authenticated .ShowWithAuth {
+.patric .Authenticated .ShowWithAuth {
     display: inherit;
 }
 
-.Authenticated .ShowWithoutAuth {
+.patric .Authenticated .ShowWithoutAuth {
     display: none;
 }
 
@@ -366,6 +371,12 @@ body.patric .dijitTabContainerTop-tabs .dijitTabHover {
 body.patric .dijitTabContainerTop-tabs .dijitTabActive {
     border-color: #34698e;
     transition-duration: 0s;
+}
+
+body.patric.claro .dijitTabDisabled {
+    background-color: #dedede;
+    background-image: none;
+    color: #fff;
 }
 
 .TextTabButtons {
@@ -659,3 +670,25 @@ table {
 	color: #76a72d;
 	font-size: 1.3em;
 }
+
+.PerspectiveHeader {
+
+}
+
+.PerspectiveQuery,
+.PerspectiveTotalCount {
+    vertical-align:top;
+}
+
+.PerspectiveType {
+    font-size:.85em;vertical-align:top;margin-top:2px;
+}
+.patric .PerspectiveHeader .PerspectiveIcon.fa {
+    font-size:2.2em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;
+}
+
+.patric.claro .dijitButtonNode {
+    background-image: none;;
+}
+
+

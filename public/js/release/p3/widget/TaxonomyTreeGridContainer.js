@@ -35,6 +35,7 @@ define("p3/widget/TaxonomyTreeGridContainer", [
 	});
 
 	return declare([GridContainer], {
+		"class": "GridContainer TaxonTreeGrid",
 		facetFields: [],
 		enableFilterPanel: false,
 		dataModel: "taxonomy",
@@ -70,7 +71,7 @@ define("p3/widget/TaxonomyTreeGridContainer", [
 			],
 			[
 				"DownloadTable",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DOWNLOAD",
 					multiple: false,

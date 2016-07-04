@@ -35,6 +35,7 @@ define([
 	});
 
 	return declare([GridContainer], {
+		"class": "GridContainer TaxonTreeGrid",
 		facetFields: [],
 		enableFilterPanel: false,
 		dataModel: "taxonomy",
@@ -70,7 +71,7 @@ define([
 			],
 			[
 				"DownloadTable",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DOWNLOAD",
 					multiple: false,

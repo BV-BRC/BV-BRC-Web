@@ -1,4 +1,7 @@
 
+.patric .dgrid-header .dgrid-cell {
+	font-weight: 600;
+}
 .dgrid-header .dojoDndTarget .dgrid-cell {
         display: table-cell; 
         border-right: 1px solid #bbb;
@@ -50,4 +53,22 @@
 .dgrid-cell.field-sig_log_ratio,
 .dgrid-cell.field-sig_z_score {
     width: 5%
+}
+.patric .dijitTab .tabLabel {
+    font-weight: 600;
+}
+.patric .dgrid-row-odd {
+    background: #efefef;
+}
+.patric .dgrid-selected{
+    background: #bfd6eb;
+}
+.TaxonTreeGrid .dgrid-cell {
+    border: 0px;
+}
+.TaxonTreeGrid .dgrid-cell.field-genomes {
+    width: 60px;
+}
+.TaxonTreeGrid .dgrid-cell.field-taxon_rank {
+    width: 90px;
 }

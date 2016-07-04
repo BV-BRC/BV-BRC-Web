@@ -1,14 +1,14 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
+<!--
 	<div class="TopMenuBar">
 		<span style="float:left;margin-left:4px;font-weight:200;"><span style="font-weight:900;color:#76A72D;">PAT</span>HOSYSTEMS <span style="font-weight:900;color:#76A72D;">R</span>ESOURCE <span style="font-weight:900;color:#76A72D;">I</span>NTEGRATION <span style="font-weight:900;color:#76A72D;">C</span>ENTER</span>
 
-		<!-- <a class="TopMenuLink" href="http://enews.patricbrc.org/subscribe/" title="Subscribe to PATRIC Mailing List"><span class="fa icon-mail" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a> -->
-		<a class="TopMenuLink" href="https://github.com/PATRIC3" title="PATRIC3 GitHub"><span class="fa icon-github-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>
-		<a class="TopMenuLink" href="http://www.addthis.com/bookmark.php?v=250&username=xa-4c40660c515875dc%3C" title="Share Patric"><span class="fa icon-share-alt-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>	
-		<a class="TopMenuLink" href="http://www.youtube.com/user/PATRICBRC" title="PATRIC YouTube Channel"><span class="fa icon-youtube-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>	
-		<a class="TopMenuLink" href="http://www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823" title="PATRIC Facebook Page"><span class="fa icon-facebook-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>	
-		<a class="TopMenuLink" href="http://twitter.com/PATRICBRC" title="PATRIC Twitter Feed"><span class="fa icon-twitter-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>	
-		<a class="TopMenuLink" href="http://enews.patricbrc.org/feed/" title="PATRIC RSS Feed"><span class="fa icon-rss-square" style="color:#76a72d;font-size:12px;vertical-align:middle;"></span></a>	
+		<a class="TopMenuLink" href="https://github.com/PATRIC3" title="PATRIC3 GitHub"><span class="fa icon-github-square" ></span></a>
+		<a class="TopMenuLink" href="http://www.addthis.com/bookmark.php?v=250&username=xa-4c40660c515875dc%3C" title="Share Patric"><span class="fa icon-share-alt-square" ></span></a>	
+		<a class="TopMenuLink" href="http://www.youtube.com/user/PATRICBRC" title="PATRIC YouTube Channel"><span class="fa icon-youtube-square" ></span></a>	
+		<a class="TopMenuLink" href="http://www.facebook.com/pages/Pathosystems-Resource-Integration-Center-PATRIC/117100971687823" title="PATRIC Facebook Page"><span class="fa icon-facebook-square" ></span></a>	
+		<a class="TopMenuLink" href="http://twitter.com/PATRICBRC" title="PATRIC Twitter Feed"><span class="fa icon-twitter-square"></span></a>	
+		<a class="TopMenuLink" href="http://enews.patricbrc.org/feed/" title="PATRIC RSS Feed"><span class="fa icon-rss-square"></span></a>	
 		<a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">CITE</a>	
 		<a class="TopMenuLink" href="/content/news" title="News">NEWS</a>  
 		<a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> WORKSHOPS </a>  
@@ -19,11 +19,19 @@
 		<a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> 
 		<a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
 	</div>
+
+-->
+
 	<div class="P3Header">
 		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
+			<td style="text-align:left;width:220px;">
+				<a href="/">
+					<img class="p3LogoImage" src="/js/p3/resources/images/patric_logo_bg.png" />
+					<span class="logo">PATRIC</span>
+					<span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %>
+				</a>
+			</td>
 			<td style="text-align:left;">
-				<a href="/"><img style="height:16px;margin:2px;margin-top:-8px;padding:0px;margin-left:4px;margin-right:-100px;vertical-align:middle;" src="/js/p3/resources/images/patric_logo_bg.png" /><span class="logo">PATRIC</span><span class="appLabel"><%- request.applicationOptions.appLabel %></a>
-				&nbsp;
 				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
 					<span>Explore</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -209,6 +217,30 @@
 			</td>
 			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
 				<input data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
+			</td>
+
+			<td  class="HideWithAuth" style="padding:2px;width:125px;">
+  			    <div class="RegistrationButton" data-dojo-type="dijit/form/Button">Register</div>
+				<div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Login</div>
+			</td>
+
+			<td style="width:1%;">
+				<div class="topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
+					<span></span>
+					<div data-dojo-type="p3/widget/TooltipDialog">
+						<div><a class="TopMenuLink" href="/content/news" title="News">PATRIC NEWS</a>  </div>
+						<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> UPCOMING WORKSHOPS </a> </div> 
+						<hr>
+						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">ABOUT PATRIC </a></div>
+						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">CITE</a>	</div>
+						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">CONTACT US</a></div>
+						<hr>
+						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">ACCOUNT</a> </div>
+						<div><a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a></div>
+					</div>
+				</div>
 			</td>
 		</tr></tbody></table>
 	</div>

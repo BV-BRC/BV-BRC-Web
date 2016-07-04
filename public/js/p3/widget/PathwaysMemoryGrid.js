@@ -19,7 +19,7 @@ define([
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},

@@ -22,6 +22,8 @@ define([
 		containerType: "genome_group",
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
+		perspectiveLabel: "Genome Perspective",
+		perspectiveIconClass: "icon-perspective-Genome",
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
@@ -87,7 +89,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;' + out.join("&nbsp;&raquo;&nbsp;");
+			return out.join("&nbsp;&raquo;&nbsp;");
 		},
 
 		_setGenomeAttr: function(genome){
@@ -95,8 +97,10 @@ define([
 
 			this.state.genome = genome;
 
-			this.viewHeader.set("content", this.buildHeaderContent(genome));
+			// this.viewHeader.set("content", this.buildHeaderContent(genome));
 
+			this.queryNode.innerHTML = this.buildHeaderContent(genome);
+			domConstruct.empty(this.totalCountNode);
 			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// var activeTab = this[active];
 

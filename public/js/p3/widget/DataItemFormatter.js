@@ -86,7 +86,11 @@ define([
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			// console.log("Create Display Header")
+			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
+			// console.log("TBODY: ", tbody)
+			displayDetail(item, featureColumns, tbody, options);
+			// console.log("Display Detail Complete")
 
 			displayDetail(item, featureColumns, tbody, options);
 
@@ -130,7 +134,7 @@ define([
 
 			var div = domConstruct.create("div");
 			// console.log("Create Display Header")
-			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 
@@ -1222,25 +1226,25 @@ define([
 					if(mini == false){
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
 						else{
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 						}
 					}
 					else if(value[j].mini == true){
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
 						else{
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 						}
 					}
 				}
@@ -1269,8 +1273,8 @@ define([
 					}
 					additional++;
 					tr = domConstruct.create("tr", {}, tbody)
-					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
-					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+					tda = domConstruct.create("td", {"class": "detailProp", innerHTML: key, nowrap: "nowrap"}, tr);
+					tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
 				}
 			}, this);
 		}
@@ -1305,25 +1309,25 @@ define([
 				if(mini == false){
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 					}
 					else{
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 					}
 				}
 				else if(column_data[i].mini == true){
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 					}
 					else{
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 					}
 				}
 			}

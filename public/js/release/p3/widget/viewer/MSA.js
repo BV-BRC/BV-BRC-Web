@@ -461,7 +461,7 @@ define("p3/widget/viewer/MSA", [
 		selectionActions: [
 			[
 				"InfoButton",
-				"fa fa-info-circle fa-2x",
+				"fa icon-info-circle fa-2x",
 				{
 					label: "Info",
 					persistent: true,
@@ -572,7 +572,7 @@ define("p3/widget/viewer/MSA", [
 				false
 			], [
 				"Snapshot",
-				"fa icon-camera2 fa-2x",
+				"fa icon-camera fa-2x",
 				{
 					label: "Capture",
 					persistent: true,

@@ -142,7 +142,7 @@ define([
 //			domConstr.place(this.selValNode, sel, "last");
 			var buttonContainer = domConstr.create("div", {
 				style: {"font-size": ".85em", display: "inline-block", "float": "right", "text-align": "right"},
-				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa fa-upload fa-2x" style="vertical-align: bottom"></i>'
+				innerHTML: '<i rel="createFolder" class="fa icon-folder-plus fa-2x" style="vertical-align: bottom;" ></i>&nbsp;<i rel="upload" class="fa icon-upload fa-2x" style="vertical-align: bottom"></i>'
 			}, wrap);
 
 			return wrap;

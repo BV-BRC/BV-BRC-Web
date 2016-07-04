@@ -153,7 +153,7 @@ define("p3/widget/GlobalSearch", [
 					this.searchInput.set("value", '');
 				}
 
-
+				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
 				console.log("Do Search: ", searchFilter, query);
 			}
 		},

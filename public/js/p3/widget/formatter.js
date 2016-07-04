@@ -163,7 +163,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 			return val;
 			switch(val){
 				case "completed":
-					return '<i class="fa fa-check fa-1x" title="Folder" />'
+					return '<i class="fa icon-check fa-1x" title="Folder" />'
 				case "queued":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />'
 			}
@@ -193,9 +193,9 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 		wsItemType: function(val){
 			switch(val){
 				case "parentfolder":
-					return '<i class="fa fa-level-up fa-1x" title="Folder" />';
+					return '<i class="fa icon-level-up fa-1x" title="Folder" />';
 				case "folder":
-					return '<i class="fa fa-folder fa-1x" title="Folder" />';
+					return '<i class="fa icon-folder fa-1x" title="Folder" />';
 				case "contigs":
 					return '<i class="fa icon-contigs fa-1x" title="Contigs" />';
 				case "fasta":
@@ -213,7 +213,7 @@ define(["dojo/date/locale", "dojo/dom-construct", "dojo/dom-class"], function(lo
 				case "job_result_RNASeq":
 					return '<i class="fa icon-flag-checkered fa-1x" title="Assembly" />';
 				default:
-					return '<i class="fa fa-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
+					return '<i class="fa icon-file fa-1x" title="' + (val || "Unspecified Document Type") + '" />'
 			}
 		},
 		appLabel: function(appName){

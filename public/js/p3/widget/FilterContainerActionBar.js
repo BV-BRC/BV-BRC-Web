@@ -312,9 +312,9 @@ define([
 				on.emit(_self.currentContainerWidget.domNode, "ToggleFilters", {});
 			}
 
-			this.addAction("ToggleFilters", "fa icon-filter fa-1x", {
+			this.addAction("ToggleFilters", "fa icon-filter fa-2x", {
 				style: {"font-size": ".5em"},
-				label: "SHOW FILTERS",
+				label: "SHOW",
 				validType: ["*"],
 				tooltip: "Toggle the filter display"
 			}, toggleFilters, true, this.rightButtons);
@@ -322,18 +322,18 @@ define([
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
 				//console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
-					this.setButtonText("ToggleFilters", "SHOW FILTERS")
+					this.setButtonText("ToggleFilters", "SHOW")
 				}else{
-					this.setButtonText("ToggleFilters", "HIDE FILTERS")
+					this.setButtonText("ToggleFilters", "HIDE")
 				}
 			}));
 
 			if(this.enableAnchorButton){
-				this.addAction("AnchorCurrentFilters", "fa icon-anchor fa-1x", {
+				this.addAction("AnchorCurrentFilters", "fa icon-apply-perspective-filter fa-2x", {
 					style: {"font-size": ".5em"},
-					label: "ANCHOR FITLERS",
+					label: "APPLY",
 					validType: ["*"],
-					tooltip: "Anchor the active filter to update the current context."
+					tooltip: "Apply the active filters to your current perspective"
 				}, setAnchor, true, this.rightButtons);
 			}
 
@@ -382,11 +382,11 @@ define([
 					padding: "0px",
 					"margin-top": "4px",
 					"font-size": ".75em",
-					"color": "#34698e",
+					"color": "#333", //"#34698e",
 					"text-align": "left"
 				}
 			}, keywordSearchBox)
-			var label = domConstruct.create("span", {style: {}, innerHTML: "KEYWORDS", style: {}}, kbot);
+			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {}}, kbot);
 			var clear = domConstruct.create("i", {
 				"class": "dijitHidden fa icon-x fa-1x",
 				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},

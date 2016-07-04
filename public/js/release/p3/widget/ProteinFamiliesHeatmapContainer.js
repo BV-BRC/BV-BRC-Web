@@ -85,7 +85,7 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			],
 			[
 				"Anchor",
-				"fa fa-random fa-2x",
+				"fa icon-random fa-2x",
 				{
 					label: "Anchor",
 					multiple: false,

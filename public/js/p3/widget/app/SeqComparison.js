@@ -45,12 +45,12 @@ define([
 				if(!this.advrow.turnedOn){
 					this.advrow.turnedOn = true;
 					this.advrow.style.display = 'block';
-					this.advicon.className = "fa fa-caret-left fa-1";
+					this.advicon.className = "fa icon-caret-left fa-1";
 				}
 				else{
 					this.advrow.turnedOn = false;
 					this.advrow.style.display = 'none';
-					this.advicon.className = "fa fa-caret-down fa-1";
+					this.advicon.className = "fa icon-caret-down fa-1";
 				}
 			}));
 			this._started = true;
@@ -218,7 +218,7 @@ define([
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName() + "</div>";
 				var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedGenomes < this.startingRows){
 					this.genomeTable.deleteRow(-1);
 				}
@@ -251,7 +251,7 @@ define([
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeFastaName() + "</div>";
 				var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedGenomes < this.startingRows){
 					this.genomeTable.deleteRow(-1);
 				}
@@ -284,7 +284,7 @@ define([
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupName() + "</div>";
 				var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedGenomes < this.startingRows){
 					this.genomeTable.deleteRow(-1);
 				}
