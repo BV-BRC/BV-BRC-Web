@@ -37998,25 +37998,25 @@ define([
 					if(mini == false){
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
 						else{
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 						}
 					}
 					else if(value[j].mini == true){
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 						}
 						else{
 							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
+							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 						}
 					}
 				}
@@ -38047,8 +38047,8 @@ define([
 					}
 					additional++;
 					tr = domConstruct.create("tr", {}, tbody)
-					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
-					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+					tda = domConstruct.create("td", {"class": "detailProp", innerHTML: key, nowrap: "nowrap"}, tr);
+					tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
 				}
 			}, this);
 		}
@@ -38087,25 +38087,25 @@ define([
 				if(mini == false){
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 					}
 					else{
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 					}
 				}
 				else if(column_data[i].mini == true){
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
 					}
 					else{
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: item[column]}, tr);
+						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
+						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
 					}
 				}
 			}
@@ -75140,11 +75140,11 @@ define([
 					padding: "0px",
 					"margin-top": "4px",
 					"font-size": ".75em",
-					"color": "#34698e",
+					"color": "#333", //"#34698e",
 					"text-align": "left"
 				}
 			}, keywordSearchBox)
-			var label = domConstruct.create("span", {style: {}, innerHTML: "KEYWORDS", style: {}}, kbot);
+			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {}}, kbot);
 			var clear = domConstruct.create("i", {
 				"class": "dijitHidden fa icon-x fa-1x",
 				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},
@@ -77198,11 +77198,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic"
+	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic","dgrid/selector"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore,domConstruct,topic){
+			PathwayMemoryStore,domConstruct,topic,selector){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -77326,6 +77326,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
+					"Selection Checkboxes": selector({}),
 					idx: {label: 'Index', field:'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
@@ -77351,6 +77352,7 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
+					"Selection Checkboxes": selector({}),
 					idx: {label: 'Index', field:'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},
@@ -77711,7 +77713,7 @@ define([
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
 		columns: {
-			// "Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},

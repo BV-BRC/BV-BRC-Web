@@ -9937,6 +9937,9 @@ TH.dgrid-cell.field-feature_type {
 .SummaryWidget .field-category {
     width: 35%;
 }
+.patric .dgrid-header .dgrid-cell {
+	font-weight: 600;
+}
 .dgrid-header .dojoDndTarget .dgrid-cell {
         display: table-cell; 
         border-right: 1px solid #bbb;
@@ -9989,6 +9992,15 @@ TH.dgrid-cell.field-feature_type {
 .dgrid-cell.field-sig_z_score {
     width: 5%
 }
+.patric .dijitTab .tabLabel {
+    font-weight: 600;
+}
+.patric .dgrid-row-odd {
+    background: #efefef;
+}
+.patric .dgrid-selected{
+    background: #bfd6eb;
+}
 .TaxonTreeGrid .dgrid-cell {
     border: 0px;
 }
@@ -10022,6 +10034,13 @@ TH.dgrid-cell.field-feature_type {
 .searchResult {
 	padding-left: 15px;
 	margin-bottom: 10px;
+}
+.detailProp {
+	vertical-align:top;
+	font-weight: 600;
+}
+.detailValue {
+	vertical-align: top;
 }
 html, body,
 body.patric {
