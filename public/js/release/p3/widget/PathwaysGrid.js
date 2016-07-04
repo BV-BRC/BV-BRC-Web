@@ -2,11 +2,11 @@ define("p3/widget/PathwaysGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"./PageGrid", "./formatter", "../store/PathwayJsonRest", "dojo/aspect",
-	"dojo/_base/Deferred"
+	"dojo/_base/Deferred","dgrid/selector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, aspect,
-			Deferred){
+			Deferred,selector){
 
 	var store = new Store({});
 
@@ -24,6 +24,7 @@ define("p3/widget/PathwaysGrid", [
 		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
+			"Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},

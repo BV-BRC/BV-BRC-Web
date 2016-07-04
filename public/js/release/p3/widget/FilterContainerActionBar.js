@@ -382,11 +382,11 @@ define("p3/widget/FilterContainerActionBar", [
 					padding: "0px",
 					"margin-top": "4px",
 					"font-size": ".75em",
-					"color": "#34698e",
+					"color": "#333", //"#34698e",
 					"text-align": "left"
 				}
 			}, keywordSearchBox)
-			var label = domConstruct.create("span", {style: {}, innerHTML: "KEYWORDS", style: {}}, kbot);
+			var label = domConstruct.create("span", {innerHTML: "KEYWORDS", style: {}}, kbot);
 			var clear = domConstruct.create("i", {
 				"class": "dijitHidden fa icon-x fa-1x",
 				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},
