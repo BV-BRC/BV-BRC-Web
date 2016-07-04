@@ -64,6 +64,12 @@
     background: #efefef;
 }
 
+
+.patric .dgrid-selected{
+    background: #bfd6eb;
+}
+
+
 .TaxonTreeGrid .dgrid-cell {
     border: 0px;
 }
