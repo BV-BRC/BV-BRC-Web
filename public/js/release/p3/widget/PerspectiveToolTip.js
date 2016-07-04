@@ -52,7 +52,7 @@ define("p3/widget/PerspectiveToolTip", [
 			],
 			"Feature": [
 				{label: "Overview", link: "overview"},
-				{label: "Genomes", link: "genomes"},
+				{label: "Browser", link: "genomeBrowser"},
 				{label: "Transcriptomics", link: "transcriptomics"},
 				{label: "Correlated Genes", link: "correlatedGenes"}
 			],

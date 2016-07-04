@@ -162,7 +162,7 @@ define([
 				// console.log("end loginLink Lcik");
 			};
 
-			on(document, "A.loginLink:click", showAuthDlg);
+			on(document, ".loginLink:click", showAuthDlg);
 			Topic.subscribe("/login", showAuthDlg);
 
 			on(document, ".navigationLink:click", function(evt){
