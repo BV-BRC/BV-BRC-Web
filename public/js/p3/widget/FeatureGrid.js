@@ -16,7 +16,7 @@ define([
 					descending: false
 				}, {attribute: "start", descending: false}]
 			};
-			console.log("this.queryOptions: ", this.queryOptions);
+			// console.log("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
 		query: (this.query || ""),
@@ -32,7 +32,7 @@ define([
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
-			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
+			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: true},
 			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
 			annotation: {label: "Annotation", field: "annotation", hidden: true},
 			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
@@ -41,6 +41,9 @@ define([
 			na_length: {label: "NA Length", field: "na_length", hidden: true},
 			strand: {label: "Strand", field: "strand", hidden: true},
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
+			figfam: {label: "FIGfam", field: "figfam_id", hidden: true},
+			plfam: {label: "PATRIC Local family", field: "plfam_id"},
+			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
 			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
@@ -55,18 +58,16 @@ define([
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				//console.log("dblclick row:", row);
+
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				//console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -78,7 +79,6 @@ define([
 			});
 
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

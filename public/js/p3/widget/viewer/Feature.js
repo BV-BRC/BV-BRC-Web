@@ -33,7 +33,7 @@ define([
 				return;
 			}
 
-			var state = this.state = this.state || {};
+			this.state = this.state || {};
 			this.feature_id = id;
 			this.state.feature_id = id;
 
@@ -47,7 +47,6 @@ define([
 			}).then(lang.hitch(this, function(feature){
 				this.set("feature", feature)
 			}));
-
 		},
 
 		setActivePanelState: function(){
@@ -60,25 +59,18 @@ define([
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
 			var activeTab = this[active];
 
-			// console.log("Active Tab in Feature: ", active, activeTab);
 			switch(active){
-				// case "overview":
-				// case "correlatedGenes":
-				// 	break;
-				// //case "pathways":
+				//case "pathways":
 				//	activeTab.set("state", state);
 				//	break;
 				case "overview":
 				case "correlatedGenes":
 					if(this.state && this.state.feature){
-						// console.log("Set Feature Dependent States", JSON.stringify(this.state,null,4));
 						activeTab.set("state", lang.mixin({}, this.state));
 					}
-
 					break;
 				default:
 					if(activeQueryState){
-						// console.log("Set Active Query State");
 						activeTab.set("state", activeQueryState);
 					}
 					break;
@@ -90,15 +82,10 @@ define([
 			this.set("feature_id", parts[parts.length - 1]);
 			state.feature_id = parts[parts.length - 1];
 
-
 			if(state && state.feature_id && !state.feature){
-				// console.log("No state.feature.  state.feature_id: ", state.feature_id);
 				if(oldState && oldState.feature_id){
-					// console.log("oldState.feature_id: ", oldState.feature_id)
-
 					if((state.feature_id == oldState.feature_id)){
 						if(oldState.feature || this.feature){
-							// console.log("oldState Feature: ", oldState.feature||this.feature);
 							this.state.feature = state.feature = oldState.feature || this.feature;
 						}else{
 							console.log("oldState missing Featture");
@@ -128,8 +115,6 @@ define([
 		},
 
 		_setFeatureAttr: function(feature){
-			// console.log("_setFeatureAttr: ", feature);
-			var state = this.state || {};
 
 			this.feature = this.state.feature = feature;
 
@@ -149,6 +134,7 @@ define([
 
 			this.queryNode.innerHTML = content.join("&nbsp;");
 			domConstruct.empty(this.totalCountNode);
+
 			this.setActivePanelState();
 			this.resize();
 		},
@@ -178,13 +164,7 @@ define([
 			});
 			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
 			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
-			/*
-			this.transcriptomics = new ContentPane({
-				title: "Transcriptomics",
-				id: this.viewer.id + "_transcriptomics",
-				content: "Transcriptomics"
-			});
-			*/
+
 			this.transcriptomics = new GeneExpressionContainer({
 				title: "Transcriptomics",
 				id: this.viewer.id + "_transcriptomics"
@@ -196,7 +176,6 @@ define([
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
-			// this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
 		}
