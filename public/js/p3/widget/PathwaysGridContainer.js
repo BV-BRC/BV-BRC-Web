@@ -75,7 +75,7 @@ define([
 			],
 			[
 				"DownloadTable",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DOWNLOAD",
 					multiple: false,

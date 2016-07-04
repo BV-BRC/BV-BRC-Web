@@ -305,7 +305,7 @@ define([
 			}
 			else{
 				var conditionList = this.conditionStore.query({id: query_id});
-				result = conditionList.length ? conditionList[0].icon : "<i class='fa fa-info fa-1' />";
+				result = conditionList.length ? conditionList[0].icon : "<i class='fa icon-info fa-1' />";
 			}
 			return result;
 		},
@@ -330,7 +330,7 @@ define([
 				var tdinfo = domConstruct.create("td", {"class": "iconcol", innerHTML: lrec["icon"]}, tr);
 				var td2 = domConstruct.create("td", {
 					"class": "iconcol",
-					innerHTML: "<i class='fa fa-times fa-1x' />"
+					innerHTML: "<i class='fa icon-x fa-1x' />"
 				}, tr);
 				if(this.addedCond.counter < this.initConditions){
 					this.condTable.deleteRow(-1);
@@ -413,7 +413,7 @@ define([
 				}
 				var td2 = domConstruct.create("td", {
 					"class": "iconcol",
-					innerHTML: "<i class='fa fa-times fa-1x' />"
+					innerHTML: "<i class='fa icon-x fa-1x' />"
 				}, tr);
 				if(this.addedLibs.counter < this.startingRows){
 					this.libsTable.deleteRow(-1);
@@ -486,7 +486,7 @@ define([
 				}
 				var td2 = domConstruct.create("td", {
 					"class": "iconcol",
-					innerHTML: "<i class='fa fa-times fa-1x' />"
+					innerHTML: "<i class='fa icon-x fa-1x' />"
 				}, tr);
 				if(this.addedLibs.counter < this.startingRows){
 					this.libsTable.deleteRow(-1);

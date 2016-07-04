@@ -1,14 +1,14 @@
 define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
-	"dojo/request", "dojo/when",
+	"dojo/request", "dojo/when","dojo/dom-class",
 	"./ActionBar", "./FilterContainerActionBar", "dojo/_base/lang", "./ItemDetailPanel", "./SelectionToGroup",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane", "dojo/text!./templates/IDMapping.html",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog"
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog", "./DownloadTooltipDialog","./PerspectiveToolTip"
 ], function(declare, BorderContainer, on, domConstruct,
-			request, when,
+			request, when,domClass,
 			ActionBar, ContainerActionBar, lang, ItemDetailPanel, SelectionToGroup,
 			Topic, query, ContentPane, IDMappingTemplate,
-			Dialog, popup, TooltipDialog, DownloadTooltipDialog){
+			Dialog, popup, TooltipDialog, DownloadTooltipDialog,PerspectiveToolTipDialog){
 
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
 	var viewFASTATT = new TooltipDialog({
@@ -203,14 +203,14 @@ define([
 		selectionActions: [
 			[
 				"ToggleItemDetail",
-				"fa fa-info-circle fa-2x",
+				"fa icon-chevron-circle-right fa-2x",
 				{
-					label: "DETAIL",
+					label: "HIDE",
 					persistent: true,
 					validTypes: ["*"],
 					tooltip: "Toggle Selection Detail"
 				},
-				function(selection){
+				function(selection,container,button){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
 					var children = this.getChildren();
@@ -220,37 +220,106 @@ define([
 						}, this)){
 						// console.log("Remove Item Detail Panel");
 						this.removeChild(this.itemDetailPanel);
+						console.log("Button Node: ", button)
+
+						query(".ActionButtonText",button).forEach(function(node){
+							node.innerHTML="SHOW";
+						})
+
+						query(".ActionButton",button).forEach(function(node){
+							console.log("ActionButtonNode: ",node)
+							domClass.remove(node, "icon-chevron-circle-right");
+							domClass.add(node, "icon-chevron-circle-left");
+						})	
 					}
 					else{
 						// console.log("Re-add child: ", this.itemDetailPanel);
 						this.addChild(this.itemDetailPanel);
+
+						query(".ActionButtonText",button).forEach(function(node){
+							node.innerHTML="HIDE";
+						})
+
+						query(".ActionButton",button).forEach(function(node){
+							console.log("ActionButtonNode: ",node)
+							domClass.remove(node, "icon-chevron-circle-left");
+							domClass.add(node, "icon-chevron-circle-right");
+						})
 					}
 				},
 				true
 			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-eye2 fa-2x",
+				"MultiButton fa icon-perspective-Feature fa-2x",
 				{
-					label: "VIEW",
+					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "View Feature",
-					validContainerTypes: ["feature_data", "transcriptomics_gene_data"]
+					tooltip: "Switch to the Feature Perspective. Press and Hold for more options.",
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+							around: button,
+							orient: ["below"]
+						});
+					}
 				},
 				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id});
+					Topic.publish("/navigate", {href: "/view/Feature/" + sel.feature_id + "#view_tab=overview"});
 				},
 				false
-			], [
-				"ViewSpgeneItem",
-				"MultiButton fa icon-eye2 fa-2x",
+			],
+			[
+				"ViewFeatureItems",
+				"MultiButton fa icon-perspective-FeatureList fa-2x",
 				{
-					label: "VIEW",
+					label: "FEATURES",
+					validTypes: ["*"],
+					multiple: true,
+					min:2,
+					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "FeatureList", perspectiveUrl: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){ return x.feature_id; }).join(",") + "))"}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
+				},
+				function(selection){
+					var sel = selection[0];
+					Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + selection.map(function(x){ return x.feature_id; }).join(",") + "))"});
+				},
+				false
+			],
+
+
+			 [
+				"ViewSpgeneItem",
+				"MultiButton fa icon-perspective-Feature fa-2x",
+				{
+					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "View Specialty Gene",
-					validContainerTypes: ["spgene_data"]
+					tooltip: "Switch to the Feature Perspective. Press and Hold for more options..",
+					validContainerTypes: ["spgene_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+							around: button,
+							orient: ["below"]
+						});
+					}
 				},
 				function(selection){
 					var sel = selection[0];
@@ -261,13 +330,23 @@ define([
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-genome fa-2x",
+				"MultiButton fa icon-perspective-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "View Genome",
-					validContainerTypes: ["genome_data"]
+					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
+					validContainerTypes: ["genome_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
 				},
 				function(selection){
 					var sel = selection[0];
@@ -276,103 +355,152 @@ define([
 					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
 				},
 				false
-			], [
+			], 
+
+			[
 				"ViewGenomeItem",
-				"MultiButton fa icon-genome fa-2x",
+				"MultiButton fa icon-perspective-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
-					multiple: true,
-					tooltip: "View Genome",
+					multiple: false,
+					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"]
+					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+							around: button,
+							orient: ["below"]
+						});
+
+					}
 				},
 				function(selection){
-		
-					if (selection.length>1){
+						var sel = selection[0];
+						// console.log("sel: ", sel)
+						// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+				},
+				false
+			], 
+
+			[
+				"ViewGenomeItems",
+				"MultiButton fa icon-perspective-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					validTypes: ["*"],
+					multiple: true,
+					min: 2,
+					tooltip: "Switch to the Genome List Perspective. Press and Hold for more options.",
+					ignoreDataType: true,
+					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					pressAndHold: function(selection,button,opts,evt){
 						var map={};
 						selection.forEach(function(sel){
 							if (!map[sel.genome_id]){ map[sel.genome_id]=true }
 						})
 						var genome_ids = Object.keys(map);
-						if (genome_ids && genome_ids.length==1){
-							Topic.publish("/navigate", {href: "/view/Genome/" + genome_ids[0]});
-						}else{
-							Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
-						}
-					}else{
-						var sel = selection[0];
-						// console.log("sel: ", sel)
-						// console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
-						Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id});
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "GenomeList", perspectiveUrl: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"}),
+							around: button,
+							orient: ["below"]
+						});
+
 					}
 				},
-				false
-			], [
-				"ViewCDSFeatures",
-				"MultiButton fa icon-genome-features-cds fa-2x",
-				{
-					label: "CDS",
-					validTypes: ["*"],
-					multiple: false,
-					tooltip: "View CDS Features",
-					validContainerTypes: ["genome_data"]
-				},
 				function(selection){
-					// console.log("selection: ", selection);
-					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+					var map={};
+					selection.forEach(function(sel){
+						if (!map[sel.genome_id]){ map[sel.genome_id]=true }
+					})
+					var genome_ids = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(genome_id,(" + genome_ids.join(",") + "))"});
 				},
 				false
-			], [
+			], 
+
+			// [
+			// 	"ViewCDSFeatures",
+			// 	"MultiButton fa icon-genome-features-cds fa-2x",
+			// 	{
+			// 		label: "CDS",
+			// 		validTypes: ["*"],
+			// 		multiple: false,
+			// 		tooltip: "View CDS Features",
+			// 		validContainerTypes: ["genome_data"]
+			// 	},
+			// 	function(selection){
+			// 		// console.log("selection: ", selection);
+			// 		var sel = selection[0];
+			// 		Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"});
+			// 	},
+			// 	false
+			// ], 
+			[
 				"ViewCDSFeaturesSeq",
-				"MultiButton fa icon-genome-features-cds fa-2x",
+				"MultiButton fa icon-perspective-FeatureList fa-2x",
 				{
-					label: "CDS",
+					label: "FEATURES",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "View CDS Features",
-					validContainerTypes: ["sequence_data"]
+					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					validContainerTypes: ["sequence_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "FeatureList", perspectiveUrl: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(accession," + selection[0].accession + "))" }),
+							around: button,
+							orient: ["below"]
+						});
+					}
 				},
 				function(selection){
 					// console.log("selection: ", selection);
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/FeatureList/?eq(accession," + sel.accession + ")#view_tab=sequences&filter=eq(feature_type,CDS)"});
+					Topic.publish("/navigate", {href: "/view/FeatureList/?and(eq(annotation,PATRIC),eq(accession," + sel.accession + "),eq(feature_type,CDS))"});
 				},
 				false
-			], [
-				"ViewGenomeBrowser",
-				"MultiButton fa icon-genome_browser fa-2x",
-				{
-					label: "BRWSR",
-					validTypes: ["*"],
-					multiple: false,
-					tooltip: "Open Genome Browser",
-					validContainerTypes: ["genome_data"]
-				},
-				function(selection){
-					// console.log("selection: ", selection);
-					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
-				},
-				false
-			], [
-				"ViewGenomeBrowserSeq",
-				"MultiButton fa icon-genome_browser fa-2x",
-				{
-					label: "BRWSR",
-					validTypes: ["*"],
-					multiple: false,
-					tooltip: "Open Genome Browser",
-					validContainerTypes: ["sequence_data"]
-				},
-				function(selection){
-					// console.log("selection: ", selection);
-					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
-				},
-				false
-			], [
+			],
+			 // [
+				// "ViewGenomeBrowser",
+				// "MultiButton fa icon-genome-browser fa-2x",
+				// {
+				// 	label: "BRWSR",
+				// 	validTypes: ["*"],
+				// 	multiple: false,
+				// 	tooltip: "Open Genome Browser",
+				// 	validContainerTypes: ["genome_data"]
+				// },
+				// function(selection){
+				// 	// console.log("selection: ", selection);
+				// 	var sel = selection[0];
+				// 	Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+				// },
+				// false
+			// ], 
+			// [
+			// 	"ViewGenomeBrowserSeq",
+			// 	"MultiButton fa icon-genome-browser fa-2x",
+			// 	{
+			// 		label: "BRWSR",
+			// 		validTypes: ["*"],
+			// 		multiple: false,
+			// 		tooltip: "Open Genome Browser",
+			// 		validContainerTypes: ["sequence_data"]
+			// 	},
+			// 	function(selection){
+			// 		// console.log("selection: ", selection);
+			// 		var sel = selection[0];
+			// 		Topic.publish("/navigate", {href: "/view/Genome/" + sel.genome_id + "#view_tab=browser"});
+			// 	},
+			// 	false
+			// ], 
+			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
 				{
@@ -740,7 +868,7 @@ define([
 				false
 			], [
 				"DownloadSelection",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DWNLD",
 					multiple: true,
@@ -769,51 +897,61 @@ define([
 				false
 			], [
 				"ViewTaxon",
-				"fa icon-eye2 fa-2x",
+				"fa icon-perspective-Taxonomy fa-2x",
 				{
-					label: "VIEW",
+					label: "TAXONOMY",
 					multiple: false,
 					validTypes: ["*"],
-					tooltip: "View Selected Taxonomy",
+					tooltip: "Switch to the Taxonomy Perspective. Press and Hold for more options.",
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["taxonomy_data","taxon_data"]
+					validContainerTypes: ["taxonomy_data","taxon_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						console.log("PressAndHold");
+						console.log("Selection: ", selection, selection[0])
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "Taxonomy", perspectiveUrl: "/view/Taxonomy/" + selection[0].taxon_id}),
+							around: button,
+							orient: ["below"]
+						});
+					}
 				},
 				function(selection){
 					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id})
+					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=overview"})
 				},
 				false
-			], [
-				"ViewTaxonGenomes",
-				"fa icon-genome fa-2x",
-				{
-					label: "VIEW",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "View Genome List",
-					validContainerTypes: ["taxonomy_data"]
-				},
-				function(selection){
-					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
-				},
-				false
-			], [
-				"ViewTaxonGenomeFeatures",
-				"fa icon-genome-features-cds fa-2x",
-				{
-					label: "CDS",
-					multiple: false,
-					validTypes: ["*"],
-					tooltip: "View Genome List",
-					validContainerTypes: ["taxonomy_data"]
-				},
-				function(selection){
-					var sel = selection[0];
-					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
-				},
-				false
-			]
+			], 
+			// [
+			// 	"ViewTaxonGenomes",
+			// 	"fa icon-genome fa-2x",
+			// 	{
+			// 		label: "VIEW",
+			// 		multiple: false,
+			// 		validTypes: ["*"],
+			// 		tooltip: "View Genome List",
+			// 		validContainerTypes: ["taxonomy_data"]
+			// 	},
+			// 	function(selection){
+			// 		var sel = selection[0];
+			// 		Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=genomes"})
+			// 	},
+			// 	false
+			// ], [
+			// 	"ViewTaxonGenomeFeatures",
+			// 	"fa icon-genome-features-cds fa-2x",
+			// 	{
+			// 		label: "CDS",
+			// 		multiple: false,
+			// 		validTypes: ["*"],
+			// 		tooltip: "View Genome List",
+			// 		validContainerTypes: ["taxonomy_data"]
+			// 	},
+			// 	function(selection){
+			// 		var sel = selection[0];
+			// 		Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=features&filter=eq(feature_type,CDS)"})
+			// 	},
+			// 	false
+			// ]
 		],
 
 		buildQuery: function(){
@@ -918,7 +1056,7 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:48px;text-align:center;",
+				style: "width:56px;text-align:center;",
 				splitter: false,
 				currentContainerWidget: this
 			});

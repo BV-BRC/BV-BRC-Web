@@ -50,12 +50,12 @@ define([
 				if(!this.advrow.turnedOn){
 					this.advrow.turnedOn = true;
 					this.advrow.style.display = 'block';
-					this.advicon.className = "fa fa-caret-left fa-1";
+					this.advicon.className = "fa icon-caret-left fa-1";
 				}
 				else{
 					this.advrow.turnedOn = false;
 					this.advrow.style.display = 'none';
-					this.advicon.className = "fa fa-caret-down fa-1";
+					this.advicon.className = "fa icon-caret-down fa-1";
 				}
 			}));
 
@@ -65,12 +65,12 @@ define([
 				if(!this.advrow2.turnedOn){
 					this.advrow2.turnedOn = true;
 					this.advrow2.style.display = 'block';
-					this.advicon2.className = "fa fa-caret-left fa-1";
+					this.advicon2.className = "fa icon-caret-left fa-1";
 				}
 				else{
 					this.advrow2.turnedOn = false;
 					this.advrow2.style.display = 'none';
-					this.advicon2.className = "fa fa-caret-down fa-1";
+					this.advicon2.className = "fa icon-caret-down fa-1";
 				}
 			}));
 			this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function(attachname){
@@ -236,7 +236,7 @@ define([
 				td.libRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeSingleName() + "</div>";
 				var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
@@ -281,7 +281,7 @@ define([
 					advPairInfo.push("Mate Paired");
 				}
 				if(advPairInfo.length){
-					var tdinfo = domConstruct.create("td", {innerHTML: "<i class='fa fa-info fa-1' />"}, tr);
+					var tdinfo = domConstruct.create("td", {innerHTML: "<i class='fa icon-info fa-1' />"}, tr);
 					var ihandle = new Tooltip({
 						connectId: [tdinfo],
 						label: advPairInfo.join("</br>")
@@ -290,7 +290,7 @@ define([
 				else{
 					var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
 				}
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedLibs < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}

@@ -20,7 +20,9 @@ define([
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
 		defaultTab: "overview",
-		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes.<br> When you are satisfied, click ANCHOR FILTERS ( <i class="fa icon-anchor fa-1x" style="color:#333"></i> ) to restablish the page context.',
+		perspectiveLabel: "Genome List Perspective",
+		perspectiveIconClass: "icon-perspective-GenomeList",
+		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
 			if (query && (query == this.query)){
@@ -100,7 +102,7 @@ define([
 			// console.log("English Content: ", content);
 			this.overview.set("content", '<div style="margin:4px;"><span class="queryModel">Genomes</span> ' + content /*decodeURIComponent(newVal)*/ + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;<span class="queryModel">Genomes</span>  ' + content;
+			this.queryNode.innerHTML = '<span class="queryModel">Genomes</span>  ' + content;
 		},
 
 		setActivePanelState: function(){
@@ -169,11 +171,22 @@ define([
 			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
 			this.overview = this.createOverviewPanel(this.state);
-			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {});
+			// this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
+			// this.queryNode = domConstruct.create("span", {});
 
-			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
+			// domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
+			// domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
+
+
+			// headerContent = domConstruct.create("div",{"class":"PerspectiveHeader", style:"padding:0px;"});
+			// domConstruct.place(headerContent, this.viewHeader.containerNode, "last");
+
+			// domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass},headerContent);
+			// this.perspectiveTypeNode = domConstruct.create("span",{"class": "PerspectiveType", innerHTML: this.perspectiveLabel},headerContent)
+			// domConstruct.create("br",{},headerContent);
+			// this.queryNode = domConstruct.create("span",{"class": "PerspectiveQuery"},headerContent)
+			// this.totalCountNode = domConstruct.create("span", {"class": "PerspectiveTotalCount", innerHTML: "( loading... )"},headerContent);;
+
 
 			this.genomes = new GenomeGridContainer({
 				title: "Genomes",
@@ -262,7 +275,7 @@ define([
 				var c = this.warningContent.replace("{{maxGenomesPerList}}", this.maxGenomesPerList);
 				this.warningPanel = new ContentPane({
 					style: "margin:0px; padding: 0px;margin-top: -10px;margin:4px;margin-bottom: 0px;background: #f9ff85;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;",
-					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner" style="background: #f9ff85;text-align:center;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-times-circle-o close' style='color:#333;font-weight:200;'></td></tr></table>",
+					content: '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner" style="background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;">' + c + "</div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-2x icon-cancel-circle close' style='color:#333;font-weight:200;'></td></tr></table>",
 					region: "top",
 					layoutPriority: 3
 				});

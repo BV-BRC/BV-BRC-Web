@@ -280,7 +280,7 @@ define([
 					var nameNode = domConstruct.create("td", {innerHTML: file.name}, row);
 					var typeNode = domConstruct.create("td", {innerHTML: _self.uploadType.get("value")}, row);
 					var sizeNode = domConstruct.create("td", {innerHTML: file.size}, row);
-					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa fa-times fa-1x" />'}, row);
+					var delNode = domConstruct.create("td", {innerHTML: '<i class="fa icon-x fa-1x" />'}, row);
 					var handle = on(delNode, "click", lang.hitch(this, function(evt){
 						handle.remove();
 						domConstruct.destroy(row);

@@ -71,7 +71,7 @@ define([
 					for(var i in dls){
 						var dl = dls[i];
 						table.push('<tr>' +
-							'<td><a href="' + dl.url + '"><i class="fa fa-download"><i> ' + dl.name + '</a></td>' +
+							'<td><a href="' + dl.url + '"><i class="fa icon-download"><i> ' + dl.name + '</a></td>' +
 							'<td>' + dl.size + '</td>' +
 							'<tr>');
 					}

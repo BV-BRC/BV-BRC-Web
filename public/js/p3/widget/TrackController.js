@@ -13,7 +13,7 @@ define([
 			Topic.subscribe("/addTrack", lang.hitch(this, "onAddTrack"));
 		},
 
-		visibleIconClass: "icon-eye2",
+		visibleIconClass: "icon-eye",
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
@@ -112,7 +112,7 @@ define([
 				}))
 			}
 
-			// var settingsButton = domConstruct.create("i", {'class': "fa icon-cog2 fa-2x", style: {margin: "2px"}}, td);
+			// var settingsButton = domConstruct.create("i", {'class': "fa icon-cog fa-2x", style: {margin: "2px"}}, td);
 			// on(settingsButton,"click", function(evt){
 			// 	new Dialog({content: "Track Settings not yet Implemented", title: "Track Settings"}).show();
 

@@ -20,6 +20,8 @@ define([
 		containerType: "feature_group",
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
+		perspectiveLabel: "Feature Perspective",
+		perspectiveIconClass: "icon-perspective-Feature",
 
 		_setFeature_idAttr: function(id){
 
@@ -132,7 +134,21 @@ define([
 			this.feature = this.state.feature = feature;
 
 			//this.viewHeader.set("content", this.buildHeaderContent(feature));
+			var content=[];
+			if(feature.patric_id){
+				content.push('<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ')
+			}
 
+			if(feature.refseq_locus_tag){
+				content.push('<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ');
+			}
+
+			if(feature.alt_locus_tag){
+				content.push('<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>');
+			}
+
+			this.queryNode.innerHTML = content.join("&nbsp;");
+			domConstruct.empty(this.totalCountNode);
 			this.setActivePanelState();
 			this.resize();
 		},

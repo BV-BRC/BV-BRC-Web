@@ -65,7 +65,7 @@ define([
 			// moveLeft.id = "moveLeft";
 			// moveLeft.className = "fa icon-filter fa-2x"; //"icon nav";
 			// navbox.appendChild(moveLeft);
-			var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left2 fa-2x"}, navbox);
+			var moveLeft = domConstruct.create("I", {"class": "fa icon-arrow-left fa-2x"}, navbox);
 			dojo.connect(moveLeft, "click", this,
 				function(event){
 					dojo.stopEvent(event);
@@ -76,7 +76,7 @@ define([
 			//moveRight.type = "image";
 			// moveRight.src = this.resolveUrl( "img/Empty.png" );
 			// moveRight.id="moveRight";
-			moveRight.className = "fa icon-arrow-right2 fa-2x"; //"icon nav";
+			moveRight.className = "fa icon-arrow-right fa-2x"; //"icon nav";
 			navbox.appendChild(moveRight);
 			dojo.connect(moveRight, "click", this,
 				function(event){

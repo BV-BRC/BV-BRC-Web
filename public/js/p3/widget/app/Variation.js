@@ -268,7 +268,7 @@ define([
 				var advPairInfo= [];
                 lrec["design"]=false;
                 var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol", innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				var td2 = domConstruct.create("td", {"class":"iconcol", innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
 				if(this.addedLibs.counter < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}
@@ -325,7 +325,7 @@ define([
 				var advPairInfo= [];
                 lrec["design"]=false;
                 var tdinfo=domConstruct.create("td", {innerHTML: ""},tr);
-				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa fa-times fa-1x' />"},tr);
+				var td2 = domConstruct.create("td", {"class":"iconcol",innerHTML: "<i class='fa icon-x fa-1x' />"},tr);
 				if(this.addedLibs.counter < this.startingRows){
 					this.libsTable.deleteRow(-1);
 				}

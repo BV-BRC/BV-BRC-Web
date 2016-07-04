@@ -187,7 +187,7 @@ define([
 				td.genomeRecord = lrec;
 				td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName() + "</div>";
 				var tdinfo = domConstruct.create("td", {innerHTML: ""}, tr);
-				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa fa-times fa-1x' />"}, tr);
+				var td2 = domConstruct.create("td", {innerHTML: "<i class='fa icon-x fa-1x' />"}, tr);
 				if(this.addedGenomes < this.startingRows){
 					this.genomeTable.deleteRow(-1);
 				}
