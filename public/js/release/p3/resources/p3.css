@@ -9944,6 +9944,17 @@ TH.dgrid-cell.field-feature_type {
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
+.dgrid-cell.field-plfam_id,
+.dgrid-cell.field-pgfam_id,
+.dgrid-cell.field-figfam_id {
+    width: 10%;
+}
+.dgrid-cell.field-product {
+    width: 25%;
+}
+.dgrid-cell.field-gene {
+    width: 8%;
+}
 .dgrid-cell.field-family_id {
     width: 12%;
 }
