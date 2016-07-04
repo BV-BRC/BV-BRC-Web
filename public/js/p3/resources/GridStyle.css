@@ -1,4 +1,7 @@
 
+.patric .dgrid-header .dgrid-cell {
+	font-weight: 600;
+}
 .dgrid-header .dojoDndTarget .dgrid-cell {
         display: table-cell; /* override any spurious dojoDndItem settings elsewhere */
         border-right: 1px solid #bbb;
