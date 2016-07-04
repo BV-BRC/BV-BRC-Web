@@ -78,7 +78,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
-				"fa fa-download fa-2x",
+				"fa icon-download fa-2x",
 				{
 					label: "DOWNLOAD",
 					multiple: false,
@@ -120,7 +120,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 				false
 			], [
 				"ViewProteinFamiliesMembers",
-				"fa fa-users fa-2x",
+				"fa icon-group fa-2x",
 				{
 					label: "Members",
 					multiple: true,

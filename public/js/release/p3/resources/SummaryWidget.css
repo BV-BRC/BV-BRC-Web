@@ -33,20 +33,24 @@
     display: inline-block;
     background: #333;
     padding:0px;
+    padding-top: 2px;
+    padding-bottom:2px;
     margin-bottom: 4px;
+    font-size:.7em;
+    text-align: center;
 }
 .SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .actionButtonsRadio .ChartButton.fa {
-    color: green;
-    background: #efefef;
+    color: #efefef;
+    background: #333;
 }
 .SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
 .SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa  {
-    color: #eee;
-    background: #333;
-    padding:3px;
-    margin:0px;
+    color: #333;
+    background: #efefef;
+    padding:2px;
     border-radius: 2px;
+    vertical-align:middle;
 }
 TH.dgrid-cell.field-feature_type {
     border-left: 0px;

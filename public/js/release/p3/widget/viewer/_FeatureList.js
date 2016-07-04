@@ -15,6 +15,8 @@ define("p3/widget/viewer/_FeatureList", [
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
+		perspectiveLabel: "Genome Feature List Perspective",
+		perspectiveIconClass: "icon-perspective-FeatureList",
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -87,7 +89,7 @@ define("p3/widget/viewer/_FeatureList", [
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Feature Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
@@ -148,11 +150,6 @@ define("p3/widget/viewer/_FeatureList", [
 			this.watch("total_features", lang.hitch(this, "onSetTotalFeatures"));
 
 			this.overview = this.createOverviewPanel(this.state);
-			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Feature List Query:  "});
-
-			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
 			this.features = new FeatureGridContainer({
 				title: "Features",

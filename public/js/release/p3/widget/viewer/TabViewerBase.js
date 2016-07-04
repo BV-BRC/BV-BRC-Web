@@ -18,6 +18,8 @@ define("p3/widget/viewer/TabViewerBase", [
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		defaultTab: "overview",
+		perspectiveLabel: "BasePerspective Perspective",
+		perspectiveIconClass: "icon-info",
 		onSetState: function(attr, oldState, state){
 			if(!state){
 				return;
@@ -61,6 +63,19 @@ define("p3/widget/viewer/TabViewerBase", [
 				content: "",
 				region: "top"
 			});
+
+
+			headerContent = domConstruct.create("div",{"class":"PerspectiveHeader", style:"padding:0px;"});
+			domConstruct.place(headerContent, this.viewHeader.containerNode, "last");
+
+			domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass},headerContent);
+			this.perspectiveTypeNode = domConstruct.create("span",{"class": "PerspectiveType", innerHTML: this.perspectiveLabel},headerContent)
+			domConstruct.create("br",{},headerContent);
+			this.queryNode = domConstruct.create("span",{"class": "PerspectiveQuery"},headerContent)
+			this.totalCountNode = domConstruct.create("span", {"class": "PerspectiveTotalCount", innerHTML: "( loading... )"},headerContent);;
+
+
+
 			this.viewer = new TabContainer({
 				region: "center"
 			});

@@ -88,7 +88,7 @@ define("p3/widget/DataItemFormatter", [
 
 			var div = domConstruct.create("div");
 			// console.log("Create Display Header")
-			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 			// console.log("Display Detail Complete")
@@ -135,7 +135,7 @@ define("p3/widget/DataItemFormatter", [
 
 			var div = domConstruct.create("div");
 			// console.log("Create Display Header")
-			var tbody = displayHeader(div, item.id, "fa fa-flag-checkered fa-2x", "/workspace/", options);
+			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			// console.log("TBODY: ", tbody)
 			displayDetail(item, featureColumns, tbody, options);
 

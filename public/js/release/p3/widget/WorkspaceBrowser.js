@@ -42,7 +42,7 @@ define("p3/widget/WorkspaceBrowser", [
 			});
 			var self = this;
 
-			this.actionPanel.addAction("ToggleItemDetail", "fa fa-info-circle fa-2x", {
+			this.actionPanel.addAction("ToggleItemDetail", "fa icon-info-circle fa-2x", {
 				label: "DETAIL",
 				persistent: true,
 				validTypes: ["*"],
@@ -62,7 +62,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa fa-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: true,
@@ -79,7 +79,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa fa-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-eye fa-2x", {
 				label: "VIEW",
 				validTypes: ["*"],
 				validContainerTypes: ["genome_group"],
@@ -91,7 +91,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa fa-eye fa-2x", {
+			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-eye fa-2x", {
 				validTypes: ["*"],
 				label: "VIEW",
 				validContainerTypes: ["feature_group"],
@@ -127,7 +127,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=features&filter=eq(feature_type,CDS)"
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeBrowser", "MultiButton fa icon-genome_browser fa-2x", {
+			this.actionPanel.addAction("ViewGenomeBrowser", "MultiButton fa icon-genome-browser fa-2x", {
 				validTypes: ["*"],
 				label: "BROWSER",
 				validContainerTypes: ["genome_group"],
@@ -139,7 +139,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=browser";
 			}, true);
 
-			this.actionPanel.addAction("DownloadItem", "fa fa-download fa-2x", {
+			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
 				validTypes: WorkspaceManager.downloadTypes,
@@ -169,7 +169,7 @@ define("p3/widget/WorkspaceBrowser", [
 				popup.close(downloadTT);
 			});
 
-			this.browserHeader.addAction("DownloadTable", "fa fa-download fa-2x", {
+			this.browserHeader.addAction("DownloadTable", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
 				validTypes: ["genome_group", "feature_group"],
@@ -202,7 +202,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download=true");
 				popup.close(downloadTT);
 			});
-			this.actionPanel.addAction("SelectDownloadTable", "fa fa-download fa-2x", {
+			this.actionPanel.addAction("SelectDownloadTable", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
 				validTypes: ["genome_group", "feature_group"],
@@ -227,7 +227,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 			})
 
-			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa fa-download fa-2x", {
+			this.browserHeader.addAction("SelectDownloadSeqComparison", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
 				multiple: false,
 				validTypes: ["GenomeComparison"],
@@ -264,7 +264,7 @@ define("p3/widget/WorkspaceBrowser", [
 				popup.close(downloadTTSelectFile);
 			}));
 
-			this.browserHeader.addAction("ViewAnnotatedGenome", "fa fa-eye fa-2x", {
+			this.browserHeader.addAction("ViewAnnotatedGenome", "fa icon-eye fa-2x", {
 				label: "VIEW",
 				multiple: false,
 				validTypes: ["GenomeAnnotation"],
@@ -277,7 +277,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.browserHeader.addAction("ViewModel", "fa fa-eye fa-2x", {
+			this.browserHeader.addAction("ViewModel", "fa icon-eye fa-2x", {
 				label: "VIEW",
 				multiple: false,
 				validTypes: ["model"],
@@ -302,7 +302,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome_browser fa-2x", {
+			this.browserHeader.addAction("ViewAnnotatedGenomeBrowser", "fa icon-genome-browser fa-2x", {
 				label: "BROWSER",
 				multiple: false,
 				validTypes: ["GenomeAnnotation"],
@@ -314,7 +314,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.browserHeader.addAction("Upload", "fa fa-upload fa-2x", {
+			this.browserHeader.addAction("Upload", "fa icon-upload fa-2x", {
 				label: "UPLOAD",
 				multiple: true,
 				validTypes: ["folder"],
@@ -567,13 +567,13 @@ define("p3/widget/WorkspaceBrowser", [
 			}, true);
 
 			/*
-			this.actionPanel.addAction("UploadItem","fa fa-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
+			this.actionPanel.addAction("UploadItem","fa icon-upload fa-2x", {multiple: false,validTypes:["*"]}, function(selection){
 				console.log("Replace Item Action", selection);
 				Topic.publish("/openDialog",{type:"UploadReplace",params:{path: selection[0].path}});
 			}, true);
 			*/
 
-			this.actionPanel.addAction("RemoveItem", "fa fa-remove fa-2x", {
+			this.actionPanel.addAction("RemoveItem", "fa icon-x fa-2x", {
 				label: "REMOVE",
 				ignoreDataType: true,
 				multiple: true,
@@ -681,7 +681,7 @@ define("p3/widget/WorkspaceBrowser", [
 				},
 				false);
 
-			this.actionPanel.addAction("ProteinFamily", "fa fa-users fa-2x", {
+			this.actionPanel.addAction("ProteinFamily", "fa icon-group fa-2x", {
 				label: "ProteinFam",
 				multiple: true,
 				validTypes: ["genome_group"],
@@ -713,7 +713,7 @@ define("p3/widget/WorkspaceBrowser", [
 //				console.log("Remove Items from Group", selection);
 //			},true);
 
-			this.actionPanel.addAction("DeleteItem", "fa fa-trash fa-2x", {
+			this.actionPanel.addAction("DeleteItem", "fa icon-trash fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
@@ -738,7 +738,7 @@ define("p3/widget/WorkspaceBrowser", [
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("DeleteFolder", "fa fa-trash fa-2x", {
+			this.actionPanel.addAction("DeleteFolder", "fa icon-trash fa-2x", {
 				label: "DELETE",
 				allowMultiTypes: false,
 				multiple: true,
@@ -995,7 +995,7 @@ define("p3/widget/WorkspaceBrowser", [
 						})
 						//out.push("<span>" + parts.join("/") + "</span>");
 						out.push("<span style='float:right;'>");
-						out.push("<a href class='DialogButton fa fa-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
+						out.push("<a href class='DialogButton fa icon-upload fa-2x' rel='Upload:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/")+ "' style='margin:4px;' title='Upload to Folder'></a>");
 						out.push("<a href class='DialogButton fa icon-folder-plus fa-2x' rel='CreateFolder:" + ((this.path.charAt(-1)=="/")?this.path:this.path+"/") + "' style='margin:4px;' title='Create Folder' ></a>");
 						out.push("</span>");
 
