@@ -84,16 +84,16 @@ define([
 					var t = item.document_type || item.type;
 					switch(t){
 						case "folder":
-							domClass.add(_self.typeIcon, "fa fa-folder fa-2x")
-							currentIcon = "fa fa-folder fa-2x";
+							domClass.add(_self.typeIcon, "fa icon-folder fa-2x")
+							currentIcon = "fa icon-folder fa-2x";
 							break;
 						//case "contigs": 
 						//	domClass.add(_self.typeIcon,"fa icon-contigs fa-3x")
-						//	currentIcon="fa fa-folder fa-3x";
+						//	currentIcon="fa icon-folder fa-3x";
 						//	break;
 						case "contigs":
 							domClass.add(_self.typeIcon, "fa icon-contigs fa-2x")
-							currentIcon = "fa fa-contigs fa-2x";
+							currentIcon = "fa icon-contigs fa-2x";
 							break;
 						case "fasta":
 							domClass.add(_self.typeIcon, "fa icon-fasta fa-2x")
@@ -104,7 +104,7 @@ define([
 							currentIcon = "fa icon-genome_group fa-2x";
 							break;
 						case "job_result":
-							domClass.add(_self.typeIcon, "fa fa-flag-checkered fa-2x")
+							domClass.add(_self.typeIcon, "fa icon-flag-checkered fa-2x")
 							currentIcon = "fa icon-flag-checkered fa-2x";
 							break;
 						case "feature_group":
@@ -113,8 +113,8 @@ define([
 							break;
 
 						default:
-							domClass.add(_self.typeIcon, "fa fa-file fa-2x")
-							currentIcon = "fa fa-file fa-2x";
+							domClass.add(_self.typeIcon, "fa icon-file fa-2x")
+							currentIcon = "fa icon-file fa-2x";
 							break;
 					}
 

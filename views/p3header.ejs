@@ -1,5 +1,5 @@
 <div data-dojo-type="dijit/layout/ContentPane" class="HeaderBar" data-dojo-props="region:'top'">
-
+<!--
 	<div class="TopMenuBar">
 		<span style="float:left;margin-left:4px;font-weight:200;"><span style="font-weight:900;color:#76A72D;">PAT</span>HOSYSTEMS <span style="font-weight:900;color:#76A72D;">R</span>ESOURCE <span style="font-weight:900;color:#76A72D;">I</span>NTEGRATION <span style="font-weight:900;color:#76A72D;">C</span>ENTER</span>
 
@@ -20,11 +20,18 @@
 		<a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a>
 	</div>
 
+-->
+
 	<div class="P3Header">
 		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
+			<td style="text-align:left;width:210px;">
+				<a href="/">
+					<img class="p3LogoImage" src="/js/p3/resources/images/patric_logo_bg.png" />
+					<span class="logo">PATRIC</span>
+					<span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %>
+				</a>
+			</td>
 			<td style="text-align:left;">
-				<a href="/"><img style="height:16px;margin:2px;margin-top:-8px;padding:0px;margin-left:4px;margin-right:-100px;vertical-align:middle;" src="/js/p3/resources/images/patric_logo_bg.png" /><span class="logo">PATRIC</span><span class="appLabel"><%- request.package.version %><%- request.applicationOptions.appLabel||"" %></a>
-				&nbsp;
 				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
 					<span>Explore</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -210,6 +217,29 @@
 			</td>
 			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
 				<input data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
+			</td>
+			<td  class="HideWithAuth" style="padding:2px;width:125px;">
+  			    <div class="RegistrationButton" data-dojo-type="dijit/form/Button">Register</div>
+				<div class="LoginButton" data-dojo-type="dijit/form/Button">Login</div>
+			</td>
+
+			<td style="width:1%;">
+				<div class="topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
+					<span></span>
+					<div data-dojo-type="p3/widget/TooltipDialog">
+						<div><a class="TopMenuLink" href="/content/news" title="News">PATRIC NEWS</a>  </div>
+						<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> UPCOMING WORKSHOPS </a> </div> 
+						<hr>
+						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">ABOUT PATRIC </a></div>
+						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">CITE</a>	</div>
+						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">CONTACT US</a></div>
+						<hr>
+						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">ACCOUNT</a> </div>
+						<div><a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a></div>
+					</div>
+				</div>
 			</td>
 		</tr></tbody></table>
 	</div>

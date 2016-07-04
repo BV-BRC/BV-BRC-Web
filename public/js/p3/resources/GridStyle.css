@@ -59,3 +59,15 @@
 .dgrid-cell.field-sig_z_score {
     width: 5%
 }
+
+.TaxonTreeGrid .dgrid-cell {
+    border: 0px;
+}
+
+.TaxonTreeGrid .dgrid-cell.field-genomes {
+    width: 60px;
+}
+
+.TaxonTreeGrid .dgrid-cell.field-taxon_rank {
+    width: 90px;
+}

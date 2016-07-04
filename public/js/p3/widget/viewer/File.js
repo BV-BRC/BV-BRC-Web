@@ -65,7 +65,7 @@ define([
 			if(this.file && this.file.metadata){
 				header = header + this.file.metadata.type + " file: " + this.file.metadata.name + '</span>'
 				if(array.indexOf(WorkspaceManager.downloadTypes, this.file.metadata.type) >= 0){
-					header = header + '<i class="fa fa-download fa" rel="' + this.filepath + '" />';
+					header = header + '<i class="fa icon-download fa" rel="' + this.filepath + '" />';
 				}
 				header = header + '</h3>';
 				output.push(header);

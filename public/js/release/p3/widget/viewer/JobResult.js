@@ -102,7 +102,7 @@ define("p3/widget/viewer/JobResult", [
 					result_output.push('</tr>');
 					this._resultObjects.forEach(function(obj){
 						result_output.push('<tr class="alt">');
-						result_output.push('<th scope="row"><i class="fa fa-download fa" rel="' + obj.path + "/" + obj.name + '" /></th>');
+						result_output.push('<th scope="row"><i class="fa icon-download fa" rel="' + obj.path + "/" + obj.name + '" /></th>');
 						result_output.push('<td class="last">' + obj.name + "</td>");
 						result_output.push('<td class="last">' + obj.type + "</td>");
 						result_output.push('<td class="last">' + formatter.humanFileSize(obj.size, 1) + "</td>");

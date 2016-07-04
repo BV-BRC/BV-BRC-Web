@@ -1,10 +1,10 @@
 define("p3/widget/ActionBar", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./Button", "dojo/dom-construct",
-	"dijit/Tooltip", "dojo/dom"
+	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse"
 ], function(declare, WidgetBase, on,
 			domClass, Button, domConstruct,
-			Tooltip, dom){
+			Tooltip, dom, Event){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
 		constructor: function(){
@@ -147,13 +147,30 @@ define("p3/widget/ActionBar", [
 				}else{
 					target = evt.target.parentNode;
 				}
-				//console.log("target: ", target);
 				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
-						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget]);
+						console.log("actionButton: ", _self._actions[rel].button);
+						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget,_self._actions[rel].button]);
 					}
 				}
+			});
+
+			on(this.domNode, ".ActionButtonWrapper:mousedown", function(evt){
+				var t = evt.target;
+				if (!domClass.contains(evt.target,"ActionButtonWrapper")){
+					t=evt.target.parentNode;
+				}
+				domClass.add(t,"depressed");
+			});
+
+
+			on(this.domNode, ".ActionButtonWrapper:mouseout", function(evt){
+				var t = evt.target;
+				if (!domClass.contains(evt.target,"ActionButtonWrapper")){
+					t=evt.target.parentNode;
+				}
+				domClass.remove(t,"depressed");
 			});
 
 //			on(this.domNode, ".ActionButton:mouseover", function(evt){
@@ -173,6 +190,33 @@ define("p3/widget/ActionBar", [
 
 			if(opts && opts.label){
 				var t = domConstruct.create("div", {innerHTML: opts.label, "class": "ActionButtonText"}, wrapper);
+			}
+
+			if (opts && opts.pressAndHold && typeof opts.pressAndHold=="function"){
+				var _self=this;
+				var timer;
+				on(wrapper,"mousedown", function(evt){
+					console.log("Handle Press MouseDownAction");
+
+					var cancelClick=false;
+	
+					timer = setTimeout(function(){
+						cancelClick=true;
+						console.log("Selection in ActionBar: ", _self.selection, _self);
+						opts.pressAndHold(_self.get("selection"),wrapper,opts,evt);
+					}, 800)
+
+					on.once(wrapper, "click", function(clickEvt){
+						console.log("Cancel Click: ", cancelClick)
+						if (timer){
+							clearTimeout(timer);
+						}
+
+						if (cancelClick){
+							Event.stop(clickEvt)
+						}
+					});
+				});
 			}
 
 			domConstruct.place(wrapper, target, "last");

@@ -19,7 +19,7 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 				tabIndex: -1,
 				checked: !!value
 			}));
-		input.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
+		input.setAttribute("class", value ? "fa icon-check-square-o" : "fa icon-square-o");
 		input.setAttribute("aria-checked", !!value);
 		return input;
 	};
@@ -88,7 +88,7 @@ define("p3/widget/ProteinFamiliesFilterGrid", [
 			var options = ['present', 'absent', 'mixed'];
 			var toggleSelection = function(element, value){
 				element.checked = value;
-				element.setAttribute("class", value ? "fa fa-check-square-o" : "fa fa-square-o");
+				element.setAttribute("class", value ? "fa icon-check-square-o" : "fa icon-square-o");
 				element.setAttribute("aria-checked", value);
 			};
 

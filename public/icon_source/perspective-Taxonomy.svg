@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="TaxonomyPerspective.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="45.836517"
+     inkscape:cy="80.631374"
+     inkscape:document-units="px"
+     inkscape:current-layer="text4580"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="966"
+     inkscape:window-height="777"
+     inkscape:window-x="1029"
+     inkscape:window-y="335"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-924.3622)">
+    <path
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.61994535px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 56.514591,949.85602 -42.949418,-17.33674 4.960825,-8.54164 -17.91615498,7.07036 5.26675088,18.89512 5.0930991,-10.80204 41.573168,16.91015 0.330775,83.10307 -10.930698,0 14.542171,12.5233 14.871358,-12.3321 -10.059492,-0.1043 -0.681053,-83.20404 55.923958,-16.73799 4.26479,9.53239 6.38439,-17.30415 -16.7818,-7.17696 3.97916,8.63915 z"
+       id="path4195"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccccccccccc" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:bold;font-size:80px;line-height:125%;font-family:'.Arial Hebrew Desk Interface';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;-inkscape-font-specification:'.Arial Hebrew Desk Interface Bold';font-stretch:normal;font-variant:normal;"
+       x="72.73098"
+       y="969.52966"
+       id="text4576"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4578"
+         x="72.73098"
+         y="969.52966" /></text>
+    <g
+       transform="matrix(0.77022494,-0.23011667,0.08407715,1.1454683,133.84734,-167.63803)"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="text4580">
+      <path
+         d="m -176.76103,952.82476 45.60886,0.42176 -1.08965,10.50332 -16.40727,-0.15157 -4.50149,43.38483 -12.76163,-0.1137 4.50148,-43.38485 -16.44044,-0.15181 1.08965,-10.50328 z"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:80px;font-family:'.Arial Hebrew Desk Interface';-inkscape-font-specification:'.Arial Hebrew Desk Interface Bold'"
+         id="path4585"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>

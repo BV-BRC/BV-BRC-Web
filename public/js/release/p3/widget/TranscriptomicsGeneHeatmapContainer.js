@@ -35,7 +35,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			],
 			[
 				"Heatmap Color",
-				"fa fa-delicious fa-2x",
+				"fa icon-delicious fa-2x",
 				{label: "Color", multiple: false, validTypes: ["*"]},
 				function(){
 					if(this.containerActionBar._actions['Heatmap Color'].options.tooltipDialog == null){
@@ -112,7 +112,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			],
 			[
 				"Show Significant",
-				"fa fa-filter fa-2x",
+				"fa filter fa-2x",
 				{label: "Show", multiple: false, validTypes: ["*"]},
 				function(){
 					if(this.containerActionBar._actions['Show Significant'].options.tooltipDialog == null){

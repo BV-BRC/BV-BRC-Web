@@ -21,6 +21,21 @@
 	padding-right: 4px;
 	padding:2px;
 }
+.RegistrationButton,
+.LoginButton {
+	font-size:.95em;
+}
+.patric.claro .P3Header .dijitButtonNode,
+.patric.claro .P3Header .dijitButtonNode {
+    background-image: none;
+	background:#f7ffba;
+}
+.patric.claro .P3Header  .dijitButtonHover .dijitButtonNode {
+	background-color: #E8FFBA;
+}
+.Authenticated .P3Header .HideWithAuth,
+.Authenticated .LoginButton.HideWithAuth,
+.Authenticated .RegistrationButton.HideWithAuth,
 .Authenticated .TopMenuLink.HideWithAuth {
 	display: none;
 }
@@ -56,7 +71,7 @@
 }
 .P3Header {
 	width: 100%;
-    height: 34px;
+    height: 35px;
 	background: #34698e; 
 	padding:0px;
 	margin-top:0px;
@@ -67,18 +82,23 @@
 	font-size:1.85em;
 	color: #fff;
 	font-weight: 400;
-	margin-left: 8px;
-	margin-bottom: 2px;
-	margin-top: 2px;
+}
+.P3Header .p3LogoImage {
+	height:16px;
+	padding:0px;
+	margin-left:4px;
+	margin-right:-95px;
 }
 .P3Header .appLabel{
 	font-size: 1em;
 	color: orange;
 	font-weight: 600;
 	margin-left: 3px;
-	margin-bottom: -4px;
+	
 }
+.claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
+.topMenuButtonIcon,
 .topMenuButton {
 	background: inherit;
 	color: #efefef;
@@ -88,8 +108,16 @@
 	box-shadow: 0 0 0;
 	margin: 0px;
 }
+.claro .topMenuButtonIcon.dijitDropDownButton{
+	margin:0px;
+	margin-top:4px;
+}
 .claro .topMenuButton.dijitDropDownButton {
-	margin:0px
+	margin:0px;
+	margin-top:10px;
+}
+.claro .topMenuButtonIcon .dijitArrowButtonInner {
+	display: none;
 }
 .claro .topMenuButton .dijitArrowButtonInner {
 	margin:0px;
