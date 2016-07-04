@@ -60,6 +60,10 @@
     width: 5%
 }
 
+.patric .dgrid-row-odd {
+    background: #efefef;
+}
+
 .TaxonTreeGrid .dgrid-cell {
     border: 0px;
 }
