@@ -54,7 +54,7 @@ define([
 				{label: "Overview", link: "overview"},
 				{label: "Genomes", link: "genomes"},
 				{label: "Transcriptomics", link: "transcriptomics"},
-				{label: "Correlated Genes", link: "correlatedGenes"},
+				{label: "Correlated Genes", link: "correlatedGenes"}
 			],
 			"FeatureList": [
 				{label: "Overview", link: "overview"},

@@ -920,8 +920,8 @@ define([
 					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=overview"})
 				},
 				false
-			], 
-			// [
+			]
+			// ,[
 			// 	"ViewTaxonGenomes",
 			// 	"fa icon-genome fa-2x",
 			// 	{
