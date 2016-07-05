@@ -208,7 +208,7 @@ define([
 					label: "HIDE",
 					persistent: true,
 					validTypes: ["*"],
-					tooltip: "Toggle Selection Detail"
+					tooltip: "Toggle Details Pane"
 				},
 				function(selection,container,button){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
