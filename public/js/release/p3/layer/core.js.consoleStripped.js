@@ -25536,6 +25536,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -73746,7 +73747,7 @@ define([
 					label: "HIDE",
 					persistent: true,
 					validTypes: ["*"],
-					tooltip: "Toggle Selection Detail"
+					tooltip: "Toggle Details Pane"
 				},
 				function(selection,container,button){
 					//  0 && console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
