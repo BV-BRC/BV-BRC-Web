@@ -87,6 +87,7 @@ body.patric *:focus {
     display: none;
 }
 
+.Authenticated .ShowWithAuth,
 .patric .Authenticated .ShowWithAuth {
     display: inherit;
 }
