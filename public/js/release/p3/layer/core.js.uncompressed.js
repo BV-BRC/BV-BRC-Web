@@ -5002,6 +5002,9 @@ define([
 			};
 
 			on(document, ".loginLink:click", showAuthDlg);
+			on(document, ".registrationLink:click", function(){
+				window.open(_self.accountURL);
+			});
 			Topic.subscribe("/login", showAuthDlg);
 
 			on(document, ".navigationLink:click", function(evt){
@@ -109881,9 +109884,6 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 			}
-			if(this.GeneExpressionGridContainer){
-				this.GeneExpressionGridContainer.set('visible', true);
-			}
 		},
 
 		onFirstView: function(){
@@ -109901,6 +109901,8 @@ define([
 				region: "top",
 				"class": "TextTabButtons"
 			});
+
+
 
 			// for charts
 			// outer BorderContainer
@@ -109948,9 +109950,7 @@ define([
 			
 			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
 				title: "Table",
-				content: "Gene Expression Table",
-				state: this.state,
-				apiServer: this.apiServer
+				content: "Gene Expression Table"
 			});
 
 			console.log("onFirstView create GeneExpressionGrid: ", this.GeneExpressionGridContainer);
@@ -109966,6 +109966,10 @@ define([
 			this.tabContainer.addChild(this.GeneExpressionGridContainer);
 			this.addChild(this.tabContainer);
 			
+			Topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
+				page.set('state', this.state)
+				page.set('visible', true);
+			}));
 			this.inherited(arguments);
 			this._firstView = true;
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);

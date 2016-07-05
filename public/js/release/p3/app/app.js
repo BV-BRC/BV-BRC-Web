@@ -163,6 +163,9 @@ define("p3/app/app", [
 			};
 
 			on(document, ".loginLink:click", showAuthDlg);
+			on(document, ".registrationLink:click", function(){
+				window.open(_self.accountURL);
+			});
 			Topic.subscribe("/login", showAuthDlg);
 
 			on(document, ".navigationLink:click", function(evt){
