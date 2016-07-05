@@ -950,6 +950,9 @@ define([
 			}, {
 				name: 'Antimicrobial Resistance Evidence',
 				text: 'antimicrobial_resistance_evidence'
+			}, {
+				name: 'Reference Genome',
+				text: 'reference_genome'
 			}];
 
 			metadataGenomeSummaryValue['Project Info'] = [{
