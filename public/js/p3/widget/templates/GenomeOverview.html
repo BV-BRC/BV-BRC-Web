@@ -1,54 +1,49 @@
-<div style="overflow: auto;">
-    <table style="margin:2px;">
-        <tbody>
-        <tr>
-            <td style="width:35%;padding:7px;vertical-align:top;">
-                <div class="section">
-                    <div style="padding:7px" data-dojo-attach-point="genomeSummaryNode">
-                        Loading Genome Summary...
-                    </div>
-                </div>
-            </td>
-            <td style="width:40%;padding:7px;vertical-align:top;">
+<div>
+    <div class="column-sub">
+        <div class="section">
+            <div data-dojo-attach-point="genomeSummaryNode">
+                Loading Genome Summary...
+            </div>
+        </div>
+    </div>
 
-                <div class="section hidden">
-                    <h3 class="section-title"><span class="wrap">AMR Panel Summary</span></h3>
-                    <div data-dojo-attach-point="apSummaryWidget"
-                         data-dojo-type="p3/widget/AMRPanelSummary"></div>
-                </div>
+    <div class="column-prime">
+        <div class="section hidden">
+            <h3 class="section-title"><span class="wrap">AMR Panel Summary</span></h3>
+            <div data-dojo-attach-point="apSummaryWidget"
+                 data-dojo-type="p3/widget/AMRPanelSummary"></div>
+        </div>
 
-                <div class="section">
-                    <h3 class="section-title"><span class="wrap">Genomic Feature Summary</span></h3>
-                    <div data-dojo-attach-point="gfSummaryWidget"
-                         data-dojo-type="p3/widget/GenomeFeatureSummary"></div>
-                </div>
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Genomic Feature Summary</span></h3>
+            <div data-dojo-attach-point="gfSummaryWidget"
+                 data-dojo-type="p3/widget/GenomeFeatureSummary"></div>
+        </div>
 
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Protein Feature Summary</span></h3>
+            <div class="pfSummaryWidget" data-dojo-attach-point="pfSummaryWidget"
+                 data-dojo-type="p3/widget/ProteinFeatureSummary"></div>
+        </div>
 
-                <div class="section">
-                    <h3 class="section-title"><span class="wrap">Protein Feature Summary</span></h3>
-                    <div class="pfSummaryWidget" data-dojo-attach-point="pfSummaryWidget"
-                         data-dojo-type="p3/widget/ProteinFeatureSummary"></div>
-                </div>
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Specialty Gene Summary</span></h3>
+            <div data-dojo-attach-point="spgSummaryWidget"
+                 data-dojo-type="p3/widget/SpecialtyGeneSummary"></div>
+        </div>
+    </div>
 
-                <div class="section">
-                    <h3 class="section-title"><span class="wrap">Specialty Gene Summary</span></h3>
-                    <div data-dojo-attach-point="spgSummaryWidget"
-                         data-dojo-type="p3/widget/SpecialtyGeneSummary"></div>
+    <div class="column-opt">
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Recent PubMed Articles</span></h3>
+            <div data-dojo-attach-point="pubmedSummaryNode"">
+                This feature will be returning soon.
+            </div>
+            <div data-dojo-attach-point="pubmedSummaryNode2">
+                <div>Show more
+                    <!--<i data-dojo-attach-event="click:onShowMore" class="fa icon-plus-circle fa-lg"></i>-->
                 </div>
-
-            </td>
-            <td style="width:25%;padding:7px;vertical-align:top;">
-                <div class="section">
-                    <h3 class="section-title"><span class="wrap">Recent PubMed Articles</span></h3>
-                    <div data-dojo-attach-point="pubmedSummaryNode" style="margin:4px;padding:8px;margin-radius:4px;">
-                        This feature will be returning soon.
-                    </div>
-                    <div data-dojo-attach-point="pubmedSummaryNode2" style="margin:4px;padding:8px;display:block">
-                        <!--<div>Show more <i data-dojo-attach-event="click:onShowMore" class="fa icon-plus-circle fa-lg"></i></div>-->
-                    </div>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+            </div>
+        </div>
+    </div>
 </div>
