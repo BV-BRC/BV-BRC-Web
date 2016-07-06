@@ -250,6 +250,35 @@ define("p3/widget/GridContainer", [
 					}
 				},
 				true
+			],[
+				"DownloadSelection",
+				"fa icon-download fa-2x",
+				{
+					label: "DWNLD",
+					multiple: true,
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Download Selection",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.containerType);
+					// console.log("GridContainer selection: ", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
+
+					setTimeout(lang.hitch(this, function(){
+						popup.open({
+							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+							around: this.selectionActionBar._actions.DownloadSelection.button,
+							orient: ["below"]
+						});
+					}), 10);
+
+				},
+				false
 			], [
 				"ViewFeatureItem",
 				"MultiButton fa icon-perspective-Feature fa-2x",
@@ -866,35 +895,6 @@ define("p3/widget/GridContainer", [
 					stg.startup();
 					dlg.startup();
 					dlg.show();
-				},
-				false
-			], [
-				"DownloadSelection",
-				"fa icon-download fa-2x",
-				{
-					label: "DWNLD",
-					multiple: true,
-					validTypes: ["*"],
-					ignoreDataType: true,
-					tooltip: "Download Selection",
-					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "transcriptomics_gene_data", "gene_expression_data"]
-				},
-				function(selection){
-					// console.log("this.currentContainerType: ", this.containerType);
-					// console.log("GridContainer selection: ", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
-					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
-
-					setTimeout(lang.hitch(this, function(){
-						popup.open({
-							popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-							around: this.selectionActionBar._actions.DownloadSelection.button,
-							orient: ["below"]
-						});
-					}), 10);
-
 				},
 				false
 			], [

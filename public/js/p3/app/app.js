@@ -2,13 +2,13 @@ define([
 	"dojo/_base/declare", "dojo/parser",
 	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr",
 	"dijit/registry", "dojo/request", "dijit/layout/ContentPane",
-	"dojo/_base/Deferred",
+	"dojo/_base/Deferred","dojo/query","dojo/NodeList-dom",
 	"dojo/ready", "dojo/parser", "rql/query", "dojo/_base/lang",
 	"p3/router", "dijit/Dialog", "dojo/dom-construct"
 ], function(declare, parser,
 			Topic, on, dom, domClass, domAttr,
 			Registry, xhr, ContentPane,
-			Deferred,
+			Deferred,query,nodeListDom,
 			Ready, Parser, rql, lang,
 			Router, Dialog, domConstruct){
 	return declare(null, {
@@ -66,6 +66,7 @@ define([
 
 			Ready(this, function(){
 				// console.log("Instantiate App Widgets");
+				query(".showOnLoad").removeClass("dijitHidden");
 				Parser.parse().then(function(){
 					// console.log("ApplicationContainer: ", _self.getApplicationContainer());
 					_self.startup();
@@ -163,6 +164,9 @@ define([
 			};
 
 			on(document, ".loginLink:click", showAuthDlg);
+			on(document, ".registrationLink:click", function(){
+				window.open(_self.accountURL);
+			});
 			Topic.subscribe("/login", showAuthDlg);
 
 			on(document, ".navigationLink:click", function(evt){

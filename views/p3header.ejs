@@ -32,7 +32,7 @@
 				</a>
 			</td>
 			<td style="text-align:left;">
-				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
 					<span>Explore</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
@@ -119,7 +119,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
 					<span>Workspaces</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -132,7 +132,7 @@
 										<div id="YourWorkspaces">
 
 										</div>
-										<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
+										<!--<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
 										<div id="SharedWithYouWorkspaces">
 										</div>
 										</div>
@@ -141,7 +141,7 @@
 										</div>
 										<div><a class="navigationLink" href="/workspace/published">Published</a></div>
 										<div id="PublishedWorkspaces">
-										</div>
+										</div>-->
 
 									</td>
 									<td style="width:5px;"></td>
@@ -162,7 +162,7 @@
 					</div>
 				</div>
 	
-				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
 					<span>Tools</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -202,7 +202,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="topMenuButton" data-dojo-type="dijit/form/DropDownButton">
+				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
 					<span>Help</span>
 
 					<div data-dojo-type="p3/widget/TooltipDialog">
@@ -216,29 +216,29 @@
 			</div>
 			</td>
 			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
-				<input data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
+				<input class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
 			</td>
 
-			<td  class="HideWithAuth" style="padding:2px;width:125px;">
-  			    <div class="RegistrationButton" data-dojo-type="dijit/form/Button">Register</div>
+			<td  class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding:2px;width:125px;">
+  			    <div class="RegistrationButton registrationLink" data-dojo-type="dijit/form/Button">Register</div>
 				<div class="LoginButton loginLink" data-dojo-type="dijit/form/Button">Login</div>
 			</td>
 
 			<td style="width:1%;">
-				<div class="topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
+				<div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
 					<span></span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div><a class="TopMenuLink" href="/content/news" title="News">PATRIC NEWS</a>  </div>
-						<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> UPCOMING WORKSHOPS </a> </div> 
+						<div><a class="TopMenuLink" href="/content/news" title="News">PATRIC News</a>  </div>
+						<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> 
 						<hr>
-						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">ABOUT PATRIC </a></div>
-						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">CITE</a>	</div>
-						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">CONTACT US</a></div>
+						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">About PATRIC </a></div>
+						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite PATRIC</a>	</div>
+						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">Contact Us</a></div>
 						<hr>
-						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">ACCOUNT</a> </div>
-						<div><a class="ShowWithAuth TopMenuLink" href="/logout">LOGOUT</a> </div>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">REGISTER</a> </div>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> LOGIN </a></div>
+						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
+						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">Register</a> </div>
+						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> Login </a></div>
 					</div>
 				</div>
 			</td>
