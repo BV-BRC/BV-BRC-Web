@@ -78441,7 +78441,7 @@ define([
 		},
 		postCreate: function(){
 			// create a loading mask
-			this.loadingMask = new Standby({target: this.id});
+			this.loadingMask = new Standby({target: this.id, image: "/public/js/p3/resources/images/ripple.svg",color: "#efefef"});
 			this.addChild(this.loadingMask);
 			this.loadingMask.startup();
 		},
