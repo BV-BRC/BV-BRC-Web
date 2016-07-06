@@ -2028,6 +2028,7 @@
 				},
 				{
 					 location:"../FileSaver",
+					 main:"FileSaver",
 					 name:"FileSaver"
 				},
 				{
