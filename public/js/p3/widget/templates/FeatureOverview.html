@@ -1,16 +1,9 @@
 <div>
     <div class="column-sub">
         <div class="section">
-            <div class="SummaryWidget">
-                <button>Add PATRIC Feature to Workspace</button>
-                <br/>
-                <a href="#">View NT Sequence</a><br/>
-                <a href="#">View AA Sequence</a>
+            <div data-dojo-attach-point="featureSummaryNode">
+                Loading Feature Summary...
             </div>
-        </div>
-        <div class="section">
-            <h3 class="section-title"><span class="wrap">External Tools</span></h3>
-            <div data-dojo-attach-point="externalLinkNode"></div>
         </div>
     </div>
 
@@ -41,16 +34,16 @@
             [placeholder for simplified gene browser]
         </div>
 
-        <div class="section hidden">
-            <h3 class="section-title"><span class="wrap">Special Properties</span></h3>
-            <div style="height: 250px" data-dojo-attach-point="specialPropertiesNode"></div>
-        </div>
-
         <div class="section">
             <h3 class="section-title"><span class="wrap">Functional Properties</span></h3>
             <div data-dojo-attach-point="functionalPropertiesNode">
                 Loading Functional Properties...
             </div>
+        </div>
+
+        <div class="section hidden">
+            <h3 class="section-title"><span class="wrap">Special Properties</span></h3>
+            <div style="height: 250px" data-dojo-attach-point="specialPropertiesNode"></div>
         </div>
 
         <div class="section">
@@ -63,8 +56,22 @@
 
     <div class="column-opt">
         <div class="section">
+            <div class="SummaryWidget">
+                <button>Add PATRIC Feature to Workspace</button>
+                <br/>
+                <a href="#">View NT Sequence</a><br/>
+                <a href="#">View AA Sequence</a>
+            </div>
+        </div>
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">External Tools</span></h3>
+            <div data-dojo-attach-point="externalLinkNode"></div>
+        </div>
+        <div class="section">
             <h3 class="section-title"><span class="wrap">Recent PubMed Articles</span></h3>
-            <!--<div data-dojo-attach-point=""></div>-->
+            <div data-dojo-attach-point="pubmedSummaryNode">
+                Loading...
+            </div>
         </div>
     </div>
 </div>

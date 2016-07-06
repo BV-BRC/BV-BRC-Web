@@ -2,12 +2,14 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
+	"./DataItemFormatter", "./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid){
+			ChartTooltip, domConstruct, PathJoin, Grid,
+			DataItemFormatter, ExternalItemFormatter){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -315,6 +317,12 @@ define([
 			}))
 		},
 		createSummary: function(feature){
+
+			domConstruct.empty(this.featureSummaryNode);
+			domConstruct.place(DataItemFormatter(feature, "feature_data", {hideExtra: true}), this.featureSummaryNode, "first");
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data",{}), this.pubmedSummaryNode, "first");
+
 			if(feature && feature.feature_id){
 				if(feature.patric_id){
 					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';

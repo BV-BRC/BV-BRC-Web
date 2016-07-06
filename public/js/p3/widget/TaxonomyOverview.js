@@ -51,15 +51,8 @@ define([
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {hideExtra: true}), this.taxonomySummaryNode, "first");
 			if(searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
-				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {hideExtra: true}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
-				this.pubmedSummaryNode2.style.display = 'block';
+				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}, this.pubmedLinkNode), this.pubmedSummaryNode, "first");
 			}
-		},
-
-		onShowMore: function(){
-			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data", {hideExtra: false}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
-			this.pubmedSummaryNode2.style.display = 'none';
 		},
 
 		startup: function(){
