@@ -71,6 +71,8 @@ define([
 							}
 				
 							baseUrl = baseUrl + "&http_accept=" + rel + "&http_download=true";
+
+							console.log("DOWNLOAD QUERY: ", query, "DOWNLOAD URL: ", baseUrl);
 	                        var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl },_self.domNode);
 	                        domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"},form);
 	                        form.submit();			
