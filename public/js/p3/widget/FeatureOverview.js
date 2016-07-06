@@ -354,6 +354,12 @@ define([
 				console.log("Invalid Feature: ", feature);
 			}
 		},
+		onViewNTSequence: function(){
+			window.open('/view/FASTA/dna/?in(feature_id,(' + this.feature.feature_id + '))');
+		},
+		onViewAASequence: function(){
+			window.open('/view/FASTA/protein/?in(feature_id,(' + this.feature.feature_id + '))');
+		},
 		startup: function(){
 			if(this._started){
 				return;
