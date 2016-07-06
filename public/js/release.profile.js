@@ -65,7 +65,8 @@ var profile = {
 		},
 		{
 			name: "FileSaver",
-			location: "./FileSaver"
+			location: "./FileSaver",
+			main: "FileSaver"
 		},
 		{
 			name: "circulus",

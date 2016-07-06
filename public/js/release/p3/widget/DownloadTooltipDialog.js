@@ -3,12 +3,12 @@ define("p3/widget/DownloadTooltipDialog", [
 	"dojo/_base/lang", "dojo/mouse",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class"
+	"./AdvancedDownload", "dojo/dom-class","FileSaver"
 ], function(declare, on, domConstruct,
 			lang, Mouse,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
-			AdvancedDownload, domClass){
+			AdvancedDownload, domClass, saveAs){
 
 	return declare([TooltipDialog], {
 		containerType: "",
@@ -36,6 +36,100 @@ define("p3/widget/DownloadTooltipDialog", [
 			popup.close(this);
 		},
 
+		downloadSelection: function(type,selection){
+		
+			if (this["_to" + type]){
+				var data = this["_to" + type.toLowerCase()](selection);
+				saveAs(new Blob([data]), this.containerType + "_selection." + type);
+			}else{
+				var conf = this.downloadableConfig[this.containerType];
+				var sel = selection.map(function(sel){
+					return sel[conf.field || conf.pk]
+				});
+
+				var accept;
+				switch(type){
+					case "csv":
+					case "tsv":
+						accept = "text/" + type;
+						break;
+					case "excel":
+						accept = "application/vnd.openxmlformats";
+						break;
+					default:
+						accept = "application/" + type;
+						break;
+				}
+				
+				var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+				
+				if(baseUrl.charAt(-1) !== "/"){
+					baseUrl = baseUrl + "/";
+				}
+				baseUrl = baseUrl + conf.dataType + "/";
+				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
+				console.log("Download Query: ", query);
+
+				var form = domConstruct.create("form", {
+					style: "display: none;",
+					id: "downloadForm",
+					enctype: 'application/x-www-form-urlencoded',
+					name: "downloadForm",
+					method: "post",
+					action: baseUrl + "?&http_download=true&http_accept=" + accept
+				}, this.domNode);
+				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
+				form.submit();
+			}
+		},
+
+		_tocsv: function(selection){
+			var out = [];
+			var keys = Object.keys(selection[0]);
+
+			var header=[]
+			keys.forEach(function(key){
+				header.push(key);
+			});
+			out.push(header.join(","));
+			selection.forEach(function(obj){
+				var io = [];
+
+				keys.forEach(function(key){
+					io.push('"' + obj[key] + '"');
+				})
+
+				out.push(io.join(","));
+			});
+
+			return out.join("\n");
+
+		},
+
+
+		_totsv: function(selection){
+			var out = [];
+			var keys = Object.keys(selection[0]);
+
+			var header=[]
+			keys.forEach(function(key){
+				header.push(key);
+			});
+			out.push(header.join("\t"));
+			selection.forEach(function(obj){
+				var io = [];
+
+				keys.forEach(function(key){
+					io.push('"' + obj[key] + '"');
+				})
+
+				out.push(io.join("\t"));
+			});
+
+			return out.join("\n");
+
+		},
+
 		startup: function(){
 			if(this._started){
 				return;
@@ -57,41 +151,11 @@ define("p3/widget/DownloadTooltipDialog", [
 				}
 				var conf = _self.downloadableConfig[_self.containerType];
 
-				var sel = _self.selection.map(function(sel){
-					return sel[conf.pk]
-				});
+				// var sel = _self.selection.map(function(sel){
+				// 	return sel[conf.field || conf.pk]
+				// });
 
-				var accept;
-				switch(rel){
-					case "csv":
-					case "tsv":
-						accept = "text/" + rel;
-						break;
-					case "excel":
-						accept = "application/vnd.openxmlformats";
-						break;
-					default:
-						accept = "application/" + rel;
-						break;
-				}
-
-				var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-				if(baseUrl.charAt(-1) !== "/"){
-					baseUrl = baseUrl + "/";
-				}
-				baseUrl = baseUrl + conf.dataType + "/";
-				var query = "in(" + conf.pk + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
-				var form = domConstruct.create("form", {
-					style: "display: none;",
-					id: "downloadForm",
-					enctype: 'application/x-www-form-urlencoded',
-					name: "downloadForm",
-					method: "post",
-					action: baseUrl + "?&http_download=true&http_accept=" + accept
-				}, _self.domNode);
-				domConstruct.create('input', {type: "hidden", value: query, name: "rql"}, form);
-				form.submit();
-
+				_self.downloadSelection(rel,_self.selection)
 			});
 
 			var dstContent = domConstruct.create("div", {});
@@ -107,7 +171,7 @@ define("p3/widget/DownloadTooltipDialog", [
 
 			domConstruct.create("div", {"class": "wsActionTooltip", rel: "tsv", innerHTML: "Text"}, tData);
 			domConstruct.create("div", {"class": "wsActionTooltip", rel: "csv", innerHTML: "CSV"}, tData);
-			domConstruct.create("div", {"class": "wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
+			// domConstruct.create("div", {"class": "wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
 
 			tr = domConstruct.create("tr", {}, table);
 			var td = domConstruct.create("td", {"colspan": 3, "style": "text-align:right"}, tr);
@@ -162,7 +226,8 @@ define("p3/widget/DownloadTooltipDialog", [
 			},
 			"spgene_data": {
 				dataType: "sp_gene",
-				pk: "feature_id",
+				field: "feature_id",
+				pk: "id",
 				"label": "Specialty Genes",
 				tableData: true
 			},
