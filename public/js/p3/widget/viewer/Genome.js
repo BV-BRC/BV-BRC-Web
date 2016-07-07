@@ -22,7 +22,7 @@ define([
 		containerType: "genome_group",
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Genome Perspective",
+		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-perspective-Genome",
 
 		_setGenome_idAttr: function(id){

@@ -114,7 +114,7 @@ define([
 			this.set("content", dstContent);
 
 			this._started = true;
-			this.set("label", this.label || "Switch to " + this.perspective + " Perspective");
+			this.set("label", this.label || "Switch to " + this.perspective + " View");
 			this.set("selection", this.selection);
 
 		},

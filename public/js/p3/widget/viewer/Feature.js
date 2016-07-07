@@ -20,7 +20,7 @@ define([
 		containerType: "feature_group",
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Feature Perspective",
+		perspectiveLabel: "Feature View",
 		perspectiveIconClass: "icon-perspective-Feature",
 
 		_setFeature_idAttr: function(id){
