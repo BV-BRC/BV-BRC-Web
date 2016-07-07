@@ -1,15 +1,17 @@
 require({cache:{
-'url:p3/widget/templates/FeatureOverview.html':"<div style=\"overflow: auto;\">\n    <table style=\"margin:2px\">\n        <tbody>\n        <tr>\n            <td style=\"width:25%;padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <div class=\"SummaryWidget\">\n                        <button>Add PATRIC Feature to Workspace</button><br/>\n                        <a href=\"#\">View NT Sequence</a><br/>\n                        <a href=\"#\">View AA Sequence</a>\n                    </div>\n                </div>\n                <div class=\"section\">\n                    <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n                    <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n                </div>\n                <div class=\"section\">\n                    <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n                    <!--<div data-dojo-attach-point=\"\"></div>-->\n                </div>\n            </td>\n            <td style=\"padding:7px;vertical-align:top;\">\n                <div class=\"section\">\n                    <table class=\"p3basic stripe far2x left\" style=\"width:80%\">\n                        <tbody>\n                        <tr>\n                            <th scope=\"row\">Gene ID</th>\n                            <td data-dojo-attach-point=\"geneIdList\"></td>\n                        </tr>\n                        <tr>\n                            <th scope=\"row\">Protein ID</th>\n                            <td>\n                                <span data-dojo-attach-point=\"proteinIdList\"></span>\n                                &nbsp; &nbsp;\n                                <span data-dojo-attach-point=\"idMappingList\"></span>\n                            </td>\n                        </tr>\n                        </tbody>\n                    </table>\n\n                    <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n                    <div class=\"clear\"></div>\n                </div>\n                <!--\n                    <div class=\"section\">\n                        <div data-dojo-attach-point=\"relatedFeatureNode\">\n                            Loading Related Features...\n                        </div>\n                    </div>\n                -->\n                <div class=\"section hidden\">\n                    <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n                    <div class=\"SummaryWidget\" style=\"height:150px;\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n                    <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                        Loading Functional Properties...\n                    </div>\n                </div>\n\n                <div class=\"section\">\n                    <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n                    <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\">\n                        [placeholder for comments]\n                    </div>\n                </div>\n            </td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n"}});
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <table class=\"p3basic stripe far2x left\" style=\"width:80%\">\n                <tbody>\n                <tr>\n                    <th scope=\"row\">Gene ID</th>\n                    <td data-dojo-attach-point=\"geneIdList\"></td>\n                </tr>\n                <tr>\n                    <th scope=\"row\">Protein ID</th>\n                    <td>\n                        <span data-dojo-attach-point=\"proteinIdList\"></span>\n                        &nbsp; &nbsp;\n                        <span data-dojo-attach-point=\"idMappingList\"></span>\n                    </td>\n                </tr>\n                </tbody>\n            </table>\n\n            <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n            <div class=\"clear\"></div>\n        </div>\n\n        <div class=\"section\">\n            [placeholder for simplified gene browser]\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n                <button data-dojo-attach-event=\"click:onViewNTSequence\">View NT Sequence</button><br/>\n                <button data-dojo-attach-event=\"click:onViewAASequence\">View AA Sequence</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
+	"./DataItemFormatter", "./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid){
+			ChartTooltip, domConstruct, PathJoin, Grid,
+			DataItemFormatter, ExternalItemFormatter){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -317,6 +319,12 @@ define("p3/widget/FeatureOverview", [
 			}))
 		},
 		createSummary: function(feature){
+
+			domConstruct.empty(this.featureSummaryNode);
+			domConstruct.place(DataItemFormatter(feature, "feature_data", {hideExtra: true}), this.featureSummaryNode, "first");
+			domConstruct.empty(this.pubmedSummaryNode);
+			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data",{}), this.pubmedSummaryNode, "first");
+
 			if(feature && feature.feature_id){
 				if(feature.patric_id){
 					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';
@@ -347,6 +355,12 @@ define("p3/widget/FeatureOverview", [
 			}else{
 				console.log("Invalid Feature: ", feature);
 			}
+		},
+		onViewNTSequence: function(){
+			window.open('/view/FASTA/dna/?in(feature_id,(' + this.feature.feature_id + '))');
+		},
+		onViewAASequence: function(){
+			window.open('/view/FASTA/protein/?in(feature_id,(' + this.feature.feature_id + '))');
 		},
 		startup: function(){
 			if(this._started){

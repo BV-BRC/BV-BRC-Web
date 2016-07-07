@@ -267,7 +267,8 @@ define([
 				data_hide: true
 			}, {
 				name: 'Uniprotkb Accession',
-				text: 'uniprotkb_accession'
+				text: 'uniprotkb_accession',
+				data_hide: true
 			}, {
 				name: 'P2 Feature ID',
 				text: 'p2_feature_id',
@@ -279,7 +280,7 @@ define([
 			}, {
 				name: 'Genome ID',
 				text: 'genome_id',
-				data_hide: true
+				link: "/view/Genome/"
 			}, {
 				name: 'Taxon ID',
 				text: 'taxon_id',
@@ -950,6 +951,9 @@ define([
 			}, {
 				name: 'Antimicrobial Resistance Evidence',
 				text: 'antimicrobial_resistance_evidence'
+			}, {
+				name: 'Reference Genome',
+				text: 'reference_genome'
 			}];
 
 			metadataGenomeSummaryValue['Project Info'] = [{

@@ -83,22 +83,17 @@ TH.dgrid-cell.field-feature_type {
 
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
-    height: 400px;
-}
-
-.GenomeMetaSummary div.chartNode,
-.GenomeMetaSummary div.tableNode {
-    height: 500px;
+    min-height: 400px;
 }
 
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
-    height: 300px;
+    height: 275px;
 }
 
 .pie-chart-widget {
     display: inline-block;
-    width: 350px;
+    width: 335px;
     height: 200px;
 }
 
