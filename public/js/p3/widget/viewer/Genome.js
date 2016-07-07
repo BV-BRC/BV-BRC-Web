@@ -120,7 +120,7 @@ define([
 
 		createOverviewPanel: function(){
 			return new GenomeOverview({
-				title: "Overview",
+				title: "Genome Overview",
 				style: "overflow:auto;",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state

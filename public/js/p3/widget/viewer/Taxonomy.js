@@ -32,7 +32,7 @@ define([
 			});
 
 			this.taxontree = new TaxonomyTreeGrid({
-				title: "Tree",
+				title: "Taxonomy",
 				id: this.viewer.id + "_" + "taxontree",
 				state: this.state
 				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""

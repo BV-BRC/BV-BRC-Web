@@ -142,7 +142,7 @@ define([
 		createOverviewPanel: function(){
 			return new FeatureOverview({
 				content: "Overview",
-				title: "Overview",
+				title: "Feature Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});

@@ -138,7 +138,7 @@ define([
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
-				title: "Overview",
+				title: "Specialty Gene List Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
