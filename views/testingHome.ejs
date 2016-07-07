@@ -1,13 +1,13 @@
 	<% var services = [
-		{name: "Genome Assembly"},
-		{name: "Genome Annotation"},
-		{name: "BLAST"},
-		{name: "Variation Analysis"},
-		{name: "RNA-Seq Analysis"},
-		{name: "Protein Families Comparison"},
-		{name: "Proteome Comparison"},
-		{name: "Comparative Pathways"},
-		{name: "Metabolic Reconstruction"}
+		{name: "Genome Assembly", href: "/app/Assembly"},
+		{name: "Genome Annotation", href: "/app/Annotation"},
+		{name: "BLAST", href: "/app/BLAST"},
+		{name: "Variation Analysis", href: "/app/Variation"},
+		{name: "RNA-Seq Analysis", href: "/app/Rnaseq"},
+		{name: "Protein Families Comparison", href: "/app/ProteinFamily"},
+		{name: "Proteome Comparison", href: "/app/SeqComparison"},
+		{name: "Comparative Pathways", href: "/app/ComparativePathway"},
+		{name: "Metabolic Reconstruction", href: "/app/Reconstruct"}
 	] %>
 
 	<% var topNews = [
@@ -47,41 +47,63 @@
 			<div style="background:#efefef;width:100%;margin: auto;margin-top:-1px;margin-bottom:10px;padding:4px;">
 				<table style="width:100%;margin-right:4px;">
 					<tr>
-						<td style="width: 200px;padding:4px;">
-							<div style="margin: 4px; width:100%; height: 120px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div><a class="DialogButton" rel="Search:">Search</a> or Explore Data</div>
-								<div>Genomes, Genes, Pathways, Taxonomies, Protein Families</div>
+						<td style="width: 200px;padding:4px;vertical-align:top;">
+
+							<div style="vertical-align:top;margin: 4px; width:100%; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Explore</a> Data</div>
+								<div style="text-align:left;">
+									<ul>
+										<li>Genomes</li>
+										<li>Genomic Features</li>
+										<li>Protein Families</li>
+										<li>Pathways</li>
+										<li>Transcriptomics Experiments</li>
+										<li>Antibiotic Resistance</li>
+										<li>Taxonomies</li>
+									</ul>
+								</div>
 							</div>
-							<div>- OR -</div>
-							<div style="margin:4px; width:100%; height: 120px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div><a class="DialogButton" style="font-size:1.2em;  vertical-align:middle;cursor:pointer;" rel="Upload:">Bring Your Own Data</a></div>
-								<div>Upload your own Contigs, Reads, Differential Expression Data, FASTA files.</div> 
+							</td>
+						<td style="vertical-align:top;">
+							<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
+								<span class="fa-4x icon-long-arrow-right"></span><br>
+								<span class="fa-4x icon-long-arrow-left"></span>
 							</div>
-	
 						</td>
-						<td>
-							<div style="margin: 4px; width:100%; height: 120px; border: 0px;padding-top:80px;">
-								<span class="fa-4x icon-long-arrow-right"></span>
-							</div>
-						</td>
-						<td style="width:200px;padding:4px;">
-							<div style="vertical-align: middle; margin: 4px;width:100%; height: 250px;border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div>Analyze</div>
-								<div>
+						<td style="width:210px;padding:4px;vertical-align:top;">
+							<div style="vertical-align: top; margin: 4px;width:100%;border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div style="font-size:1.2em;font-weight:bold;">Analyze</div>
+								<div style="text-align:left;">
+									<ul>
 									<% services.forEach(function(svc,index) { %>
-										<div style="text-align:center;margin:4px;"><%- svc.name %></div>
+										<li style="margin:4px;"><a href="<%- svc.href %>"><%- svc.name %></a></li>
 									<% }) %>
+									</ul>
 								</div>
 							</div>
 						</td>
-						<td>
-							<div style="margin: 4px; width:100%; height: 120px; border: 0px;padding-top:80px;">
-								<span class="fa-4x icon-long-arrow-right"></span>
+						<td style="vertical-align:top;">
+							<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
+								<span class="fa-4x icon-long-arrow-right"></span><br>
+								<span class="fa-4x icon-long-arrow-left"></span>
 							</div>
 						</td>
-						<td style="width:200px;padding:4px;">
-							<div style="vertical-align: middle; margin:4px;width:100%; height:250px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div>Workspace</div>
+						<td style="width:200px;padding:4px;padding-right:16px;vertical-align:top;">
+							<div style="vertical-align: top; margin:4px;width:100%; height:250px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+								<div style="font-size:1.2em;font-weight:bold;">Workspace</div>
+								<div style="text-align: left;">
+									<ul>
+										<li><a class="DialogButton" style="cursor:pointer;" rel="Upload:">Upload Your Data</a>
+											<ul>
+												<li>Contigs</li>
+												<li>Reads</li>
+												<li>Differential Expression Data</li>
+												<li>FASTA Files</li>
+											</ul>
+										</li>
+										<li>Create and Combine Data Groups</li>
+										<li>Store and share analyses</li>
+								</div>
 							</div>
 
 						</td>

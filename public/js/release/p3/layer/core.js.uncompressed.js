@@ -38441,6 +38441,7 @@ define([
 		selection: null,
 		currentContainerType: null,
 		currentContainerWidget: null,
+		tooltipPosition: ["before", "above"],
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
 			// console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
@@ -38563,7 +38564,7 @@ define([
 					}
 					return false;
 				},
-				position: ["above"]
+				position: this.tooltipPosition
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){
@@ -45350,6 +45351,7 @@ define([
 	return declare([ActionBar], {
 		path: null,
 		"class": "WSContainerActionBar",
+		tooltipPosition: ["above","below"],
 		_setPathAttr: function(p){
 			this.path = p;
 			if(this._started){
@@ -58564,7 +58566,7 @@ define([
 		maxGenomesPerList: 10000,
 		totalGenomes: 0,
 		defaultTab: "overview",
-		perspectiveLabel: "Genome List Perspective",
+		perspectiveLabel: "Genome List View",
 		perspectiveIconClass: "icon-perspective-GenomeList",
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
@@ -58701,7 +58703,7 @@ define([
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
-				title: "Overview",
+				title: "Genome List Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
@@ -73827,7 +73829,7 @@ define([
 					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -73853,7 +73855,7 @@ define([
 					validTypes: ["*"],
 					multiple: true,
 					min:2,
-					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -73881,7 +73883,7 @@ define([
 					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature Perspective. Press and Hold for more options..",
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -73907,7 +73909,7 @@ define([
 					label: "GENOME",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					validContainerTypes: ["genome_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -73936,7 +73938,7 @@ define([
 					label: "GENOME",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
@@ -73967,9 +73969,9 @@ define([
 					validTypes: ["*"],
 					multiple: true,
 					min: 2,
-					tooltip: "Switch to the Genome List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					validContainerTypes: ["genome_data","sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						var map={};
 						selection.forEach(function(sel){
@@ -74019,7 +74021,7 @@ define([
 					label: "FEATURES",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -74445,7 +74447,7 @@ define([
 					label: "TAXONOMY",
 					multiple: false,
 					validTypes: ["*"],
-					tooltip: "Switch to the Taxonomy Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Taxonomy View. Press and Hold for more options.",
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["taxonomy_data","taxon_data"],
 					pressAndHold: function(selection,button,opts,evt){
@@ -75051,7 +75053,7 @@ define([
 					style: {"font-size": ".5em"},
 					label: "APPLY",
 					validType: ["*"],
-					tooltip: "Apply the active filters to your current perspective"
+					tooltip: "Apply the active filters to update your current view"
 				}, setAnchor, true, this.rightButtons);
 			}
 
@@ -76743,7 +76745,7 @@ define([
 			this.set("content", dstContent);
 
 			this._started = true;
-			this.set("label", this.label || "Switch to " + this.perspective + " Perspective");
+			this.set("label", this.label || "Switch to " + this.perspective + " View");
 			this.set("selection", this.selection);
 
 		},
@@ -88810,7 +88812,7 @@ define([
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-		perspectiveLabel: "Taxonomy Perspective",
+		perspectiveLabel: "Taxonomy View",
 		perspectiveIconClass: "icon-perspective-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
@@ -88822,7 +88824,7 @@ define([
 			});
 
 			this.taxontree = new TaxonomyTreeGrid({
-				title: "Tree",
+				title: "Taxonomy",
 				id: this.viewer.id + "_" + "taxontree",
 				state: this.state
 				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
@@ -91752,7 +91754,7 @@ define([
 		containerType: "genome_group",
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Genome Perspective",
+		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-perspective-Genome",
 
 		_setGenome_idAttr: function(id){
@@ -91850,7 +91852,7 @@ define([
 
 		createOverviewPanel: function(){
 			return new GenomeOverview({
-				title: "Overview",
+				title: "Genome Overview",
 				style: "overflow:auto;",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
@@ -108877,7 +108879,7 @@ define([
 		containerType: "feature_group",
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Feature Perspective",
+		perspectiveLabel: "Feature View",
 		perspectiveIconClass: "icon-perspective-Feature",
 
 		_setFeature_idAttr: function(id){
@@ -108999,7 +109001,7 @@ define([
 		createOverviewPanel: function(){
 			return new FeatureOverview({
 				content: "Overview",
-				title: "Overview",
+				title: "Feature Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
@@ -113580,7 +113582,7 @@ define([
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
-		perspectiveLabel: "Genome Feature List Perspective",
+		perspectiveLabel: "Feature List Perspective",
 		perspectiveIconClass: "icon-perspective-FeatureList",
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
@@ -113702,7 +113704,7 @@ define([
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
-				title: "Overview",
+				title: "Feature List Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});

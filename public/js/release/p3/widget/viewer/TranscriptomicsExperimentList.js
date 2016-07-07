@@ -12,6 +12,8 @@ define("p3/widget/viewer/TranscriptomicsExperimentList", [
 		"disabled": false,
 		"containerType": "feature_data",
 		"query": null,
+		perspectiveLabel: "Transcriptomics Experiment List View",
+		perspectiveIconClass: "icon-perspective-FeatureList",
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
@@ -87,7 +89,7 @@ define("p3/widget/viewer/TranscriptomicsExperimentList", [
 
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Transcriptomics Experiment List Query: ' + decodeURIComponent(newVal) + "</div>");
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Transcriptomics Experiment Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
@@ -148,8 +150,7 @@ define("p3/widget/viewer/TranscriptomicsExperimentList", [
 			this.watch("total_features", lang.hitch(this, "onSetTotalTranscriptomicsExperiments"));
 
 			this.overview = this.createOverviewPanel(this.state);
-			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Transcriptomics Experiment List Query:  "});
+	
 
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");

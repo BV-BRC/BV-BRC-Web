@@ -13,6 +13,7 @@ define([
 		selection: null,
 		currentContainerType: null,
 		currentContainerWidget: null,
+		tooltipPosition: ["before", "above"],
 		_setCurrentContainerWidgetAttr: function(widget){
 			//console.log("_set Current Container Widget: ", widget);
 			// console.log("_set CurrentContainerWidget: ", widget.containerType, widget, " Current: ", this.currentContainerWidget);
@@ -135,7 +136,7 @@ define([
 					}
 					return false;
 				},
-				position: ["above"]
+				position: this.tooltipPosition
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:click", function(evt){

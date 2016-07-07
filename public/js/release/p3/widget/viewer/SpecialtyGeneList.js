@@ -13,6 +13,8 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 		"containerType": "spgene_data",
 		"query": null,
 		paramsMap: "query",
+		perspectiveLabel: "Specialty Gene List View",
+		perspectiveIconClass: "icon-perspective-FeatureList",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
@@ -88,7 +90,7 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 		onSetQuery: function(attr, oldVal, newVal){
 			this.overview.set("content", '<div style="margin:4px;">Specialty Gene List Query: ' + decodeURIComponent(newVal) + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Specialty Gene Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Specialty Gene Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
@@ -136,7 +138,7 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
-				title: "Overview",
+				title: "Specialty Gene List Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
@@ -149,8 +151,6 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 			this.watch("total_features", lang.hitch(this, "onSetTotalSpecialtyGenes"));
 
 			this.overview = this.createOverviewPanel(this.state);
-			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Specialty Gene List Query:  "});
 
 			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
 			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
