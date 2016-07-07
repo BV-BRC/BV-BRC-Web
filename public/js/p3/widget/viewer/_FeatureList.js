@@ -15,7 +15,7 @@ define([
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
-		perspectiveLabel: "Genome Feature List Perspective",
+		perspectiveLabel: "Feature List Perspective",
 		perspectiveIconClass: "icon-perspective-FeatureList",
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
