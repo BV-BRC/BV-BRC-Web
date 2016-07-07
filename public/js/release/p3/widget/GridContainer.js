@@ -286,7 +286,7 @@ define("p3/widget/GridContainer", [
 					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -312,7 +312,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					multiple: true,
 					min:2,
-					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -340,7 +340,7 @@ define("p3/widget/GridContainer", [
 					label: "FEATURE",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature Perspective. Press and Hold for more options..",
+					tooltip: "Switch to Feature View. Press and Hold for more options.",
 					validContainerTypes: ["spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -366,7 +366,7 @@ define("p3/widget/GridContainer", [
 					label: "GENOME",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					validContainerTypes: ["genome_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -395,7 +395,7 @@ define("p3/widget/GridContainer", [
 					label: "GENOME",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Genome Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome View. Press and Hold for more options.",
 					ignoreDataType: true,
 					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
@@ -426,9 +426,9 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					multiple: true,
 					min: 2,
-					tooltip: "Switch to the Genome List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
-					validContainerTypes: ["sequence_data", "feature_data", "spgene_data", "sequence_data"],
+					validContainerTypes: ["genome_data","sequence_data", "feature_data", "spgene_data", "sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						var map={};
 						selection.forEach(function(sel){
@@ -478,7 +478,7 @@ define("p3/widget/GridContainer", [
 					label: "FEATURES",
 					validTypes: ["*"],
 					multiple: false,
-					tooltip: "Switch to the Feature List Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["sequence_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");
@@ -904,7 +904,7 @@ define("p3/widget/GridContainer", [
 					label: "TAXONOMY",
 					multiple: false,
 					validTypes: ["*"],
-					tooltip: "Switch to the Taxonomy Perspective. Press and Hold for more options.",
+					tooltip: "Switch to Taxonomy View. Press and Hold for more options.",
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["taxonomy_data","taxon_data"],
 					pressAndHold: function(selection,button,opts,evt){

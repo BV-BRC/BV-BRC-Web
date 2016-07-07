@@ -333,7 +333,7 @@ define("p3/widget/FilterContainerActionBar", [
 					style: {"font-size": ".5em"},
 					label: "APPLY",
 					validType: ["*"],
-					tooltip: "Apply the active filters to your current perspective"
+					tooltip: "Apply the active filters to update your current view"
 				}, setAnchor, true, this.rightButtons);
 			}
 

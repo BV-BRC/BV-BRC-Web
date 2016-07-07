@@ -20,7 +20,7 @@ define("p3/widget/viewer/Taxonomy", [
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-		perspectiveLabel: "Taxonomy Perspective",
+		perspectiveLabel: "Taxonomy View",
 		perspectiveIconClass: "icon-perspective-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
@@ -32,7 +32,7 @@ define("p3/widget/viewer/Taxonomy", [
 			});
 
 			this.taxontree = new TaxonomyTreeGrid({
-				title: "Tree",
+				title: "Taxonomy",
 				id: this.viewer.id + "_" + "taxontree",
 				state: this.state
 				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
