@@ -22,7 +22,7 @@ define("p3/widget/viewer/Genome", [
 		containerType: "genome_group",
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Genome Perspective",
+		perspectiveLabel: "Genome View",
 		perspectiveIconClass: "icon-perspective-Genome",
 
 		_setGenome_idAttr: function(id){
@@ -120,7 +120,7 @@ define("p3/widget/viewer/Genome", [
 
 		createOverviewPanel: function(){
 			return new GenomeOverview({
-				title: "Overview",
+				title: "Genome Overview",
 				style: "overflow:auto;",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state

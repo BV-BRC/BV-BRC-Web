@@ -15,7 +15,7 @@ define("p3/widget/viewer/_FeatureList", [
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
-		perspectiveLabel: "Genome Feature List Perspective",
+		perspectiveLabel: "Feature List Perspective",
 		perspectiveIconClass: "icon-perspective-FeatureList",
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
@@ -137,7 +137,7 @@ define("p3/widget/viewer/_FeatureList", [
 		createOverviewPanel: function(state){
 			return new ContentPane({
 				content: "Overview",
-				title: "Overview",
+				title: "Feature List Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});

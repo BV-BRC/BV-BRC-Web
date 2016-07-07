@@ -20,7 +20,7 @@ define("p3/widget/viewer/Feature", [
 		containerType: "feature_group",
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
-		perspectiveLabel: "Feature Perspective",
+		perspectiveLabel: "Feature View",
 		perspectiveIconClass: "icon-perspective-Feature",
 
 		_setFeature_idAttr: function(id){
@@ -142,7 +142,7 @@ define("p3/widget/viewer/Feature", [
 		createOverviewPanel: function(){
 			return new FeatureOverview({
 				content: "Overview",
-				title: "Overview",
+				title: "Feature Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
