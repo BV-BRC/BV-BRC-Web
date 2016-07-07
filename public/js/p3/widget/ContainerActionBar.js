@@ -6,6 +6,7 @@ define([
 	return declare([ActionBar], {
 		path: null,
 		"class": "WSContainerActionBar",
+		tooltipPosition: ["above","below"],
 		_setPathAttr: function(p){
 			this.path = p;
 			if(this._started){
