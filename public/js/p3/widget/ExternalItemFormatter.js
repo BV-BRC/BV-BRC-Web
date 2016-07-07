@@ -5,7 +5,7 @@ define([
 			Button, JobManager, TitlePane, xhr, lang){
 
 	var formatters = {
-		"default": function(item, options, node){
+		"default": function(item, options){
 			options = options || {};
 
 			var table = domConstruct.create("table");
@@ -20,7 +20,7 @@ define([
 			return table;
 		},
 
-		"pubmed_data": function(item, options, node){
+		"pubmed_data": function(item, options){
 			options = options || {};
 
 			var term;
@@ -104,16 +104,15 @@ define([
 				}
 				else{
 					domConstruct.create("li", {innerHTML: "No recent articles found."}, topLevelUl);
-					node.style.display = 'none';
 				}
 			}));
 			return div;
 		}
 	};
 
-	return function(item, type, options, node){
+	return function(item, type, options){
 		type = type || "default";
 
-		return formatters[type](item, options, node)
+		return formatters[type](item, options)
 	}
 });
