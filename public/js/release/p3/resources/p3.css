@@ -9916,19 +9916,15 @@ TH.dgrid-cell.field-feature_type {
 }
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
-    height: 400px;
-}
-.GenomeMetaSummary div.chartNode,
-.GenomeMetaSummary div.tableNode {
-    height: 500px;
+    min-height: 400px;
 }
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
-    height: 300px;
+    height: 275px;
 }
 .pie-chart-widget {
     display: inline-block;
-    width: 350px;
+    width: 335px;
     height: 200px;
 }
 .SummaryWidget .field-reference_genome {
@@ -10533,6 +10529,43 @@ div.tooltip {
 table {
     width: 100%;
 }
+@media screen and (max-width: 768px){
+    .column-prime,
+    .column-sub,
+    .column-opt{
+        min-width: 768px;
+    }
+}
+@media screen and (min-width: 1024px){
+    .column-prime {
+        width: 66.666%;
+        float: right;
+    }
+    .column-sub,
+    .column-opt {
+        width: 33.333%;
+        float: left;
+    }
+}
+@media screen and (min-width: 1200px){
+    .column-prime {
+        width: 47.99%;
+        float: left;
+    }
+    .column-sub {
+        width: 29.99%;
+        float: left;
+    }
+    .column-opt {
+        width: 21.99%;
+        float: right;
+    }
+}
+.column-prime .section,
+.column-sub .section,
+.column-opt .section{
+    padding: 0 5px;
+}
 .menuHeader,
 .section-title {
     background-color: #34698e;
@@ -10547,6 +10580,21 @@ table {
 }
 .menuHeader {
     padding-left: 4px;
+}
+.pubmed {
+    padding: 0 5px;
+}
+.pubmed ul {
+    padding: 0;
+    margin: 0;
+}
+div.pubmed ul li {
+    background: url('/patric/images/arrow-slate-e.png') scroll no-repeat 0 5px;
+    list-style: none;
+    line-height: 1.2;
+    margin: 0 0 5px 0;
+    padding: 0 0 5px 7px;
+    border-bottom: #aec9d2 1px solid;
 }
 .feature_box {
     background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.30, #E0E1E1), color-stop(0.70, #FFFFFF));

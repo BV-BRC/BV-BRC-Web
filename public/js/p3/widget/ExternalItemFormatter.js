@@ -5,8 +5,7 @@ define([
 			Button, JobManager, TitlePane, xhr, lang){
 
 	var formatters = {
-		"default": function(item, options, shownode){
-			// console.log("item: ", item);
+		"default": function(item, options, node){
 			options = options || {};
 
 			var table = domConstruct.create("table");
@@ -21,31 +20,50 @@ define([
 			return table;
 		},
 
-		"pubmed_data": function(item, options, shownode){
+		"pubmed_data": function(item, options, node){
 			options = options || {};
-			var taxonName = item.taxon_name || item.genome_name;
-			var eutilSeaarchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + taxonName + "&retmode=json";
-			// console.log("taxon_name = " + taxonName);
-			var div = domConstruct.create("div");
-			// console.log("Create Display Pubmed");
-			var table = domConstruct.create("table", {}, div);
-			var tbody = domConstruct.create("tbody", {}, table);
 
-			xhr.get(eutilSeaarchURL, {
+			var term;
+			if(item.hasOwnProperty('feature_id')){ // feature
+				var organism = item.genome_name.split(" ").slice(0, -1).join(" ");
+				var opts = [];
+				item.hasOwnProperty('product') ? opts.push(item.product) : {};
+				item.hasOwnProperty('patric_id') ? opts.push(item.patric_id) : {};
+				item.hasOwnProperty('gene') ? opts.push(item.gene) : {};
+				item.hasOwnProperty('refseq_locus_tag') ? opts.push(item.refseq_locus_tag) : {};
+				item.hasOwnProperty('protein_id') ? opts.push(item.protein_id) : {};
+
+				term = "(\"" + organism + "\") AND (" + opts.map(function(d){
+						return "\"" + d + "\"";
+					}).join(" OR ") + ")";
+			}
+			else if(item.hasOwnProperty('genome_name')){
+				term = item.genome_name;
+			}
+			else if(item.hasOwnProperty('taxon_name')){
+				term = item.taxon_name;
+			}else{
+				return;
+			}
+
+			var eutilSearchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=" + term + "&retmode=json";
+
+			var div = domConstruct.create("div", {class: "pubmed"});
+			var topLevelUl = domConstruct.create("ul", {}, div);
+
+			xhr.get(eutilSearchURL, {
 				headers: {
 					accept: "application/json",
 					'X-Requested-With': null
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(pubmedList){
-				// console.log("pubmedList=", pubmedList);
+
 				if(pubmedList.esearchresult.count > 0){
 					var pmids = pubmedList.esearchresult.idlist;
 					var retmax = 5;
 					var eutilSummaryURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmax=" + retmax + "&retmode=json";
-					if(options.hideExtra == false){
-						eutilSummaryURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmids + "&retmode=json";
-					}
+
 					xhr.get(eutilSummaryURL, {
 						headers: {
 							accept: "application/json",
@@ -53,53 +71,49 @@ define([
 						},
 						handleAs: "json"
 					}).then(lang.hitch(this, function(pubmedSummary){
-						// console.log("pubmedSummary=", pubmedSummary);
+
 						for(var i = 0; i < pubmedSummary.result.uids.length; i++){
 							var value = pubmedSummary.result.uids[i];
-							// console.log("pubmedSummary value=", value);
-							var tr = domConstruct.create("tr", {}, tbody);
-							var td = domConstruct.create("td", {innerHTML: pubmedSummary.result[value].pubdate}, tr);
-							tr = domConstruct.create("tr", {}, tbody);
-							td = domConstruct.create("td", {innerHTML: "<a href='http://www.ncbi.nlm.nih.gov/pubmed/" + value + "' target ='_blank'>" + pubmedSummary.result[value].title + "</a>"}, tr);
-							tr = domConstruct.create("tr", {}, tbody);
-							var author = pubmedSummary.result[value].lastauthor + " et al.";
 
+							var listItem = domConstruct.create("li", {}, topLevelUl);
+
+							domConstruct.create("div", {innerHTML: pubmedSummary.result[value].pubdate}, listItem);
+							domConstruct.create("a", {
+								href: 'http://www.ncbi.nlm.nih.gov/pubmed/' + value,
+								target: '_blank',
+								innerHTML: pubmedSummary.result[value].title
+							}, listItem);
+
+							var author;
 							if(pubmedSummary.result[value].authors.length == 1){
-								author = pubmedSummary.result[value].lastauthor;
+								author = pubmedSummary.result[value].authors[0].name;
 							}
 							else if(pubmedSummary.result[value].authors.length == 2){
 								author = pubmedSummary.result[value].authors[0].name + " and " + pubmedSummary.result[value].authors[1].name;
 							}
-
-							td = domConstruct.create("td", {innerHTML: author}, tr);
-							tr = domConstruct.create("tr", {}, tbody);
-							td = domConstruct.create("td", {innerHTML: pubmedSummary.result[value].source}, tr);
-							tr = domConstruct.create("tr", {}, tbody);
-							td = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-
+							else{
+								author = pubmedSummary.result[value].authors[0].name + ' et al.'
+							}
+							domConstruct.create("div", {innerHTML: author}, listItem);
+							domConstruct.create("div", {innerHTML: pubmedSummary.result[value].source}, listItem);
 						}
 					}));
+
+					// add show more link
+					domConstruct.create("a", {href: window.location.protocol + "//www.ncbi.nlm.nih.gov/pubmed/?term=" + term, target:"_blank", innerHTML: "show more >>"}, div);
 				}
 				else{
-					var tr = domConstruct.create("tr", {}, tbody);
-					var td = domConstruct.create("td", {innerHTML: "No recent articles found."}, tr);
-					shownode.style.display = 'none';
+					domConstruct.create("li", {innerHTML: "No recent articles found."}, topLevelUl);
+					node.style.display = 'none';
 				}
 			}));
 			return div;
 		}
 	};
 
-	return function(item, type, options, shownode){
-		// console.log("Format Data: ", type, item);
-		var out;
-		if(type && formatters[type]){
-			out = formatters[type](item, options, shownode)
-		}else{
-			out = formatters["default"](item, options, shownode);
-		}
+	return function(item, type, options, node){
+		type = type || "default";
 
-		// console.log("output: ", out);
-		return out;
+		return formatters[type](item, options, node)
 	}
 });

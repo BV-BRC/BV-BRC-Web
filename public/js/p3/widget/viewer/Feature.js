@@ -110,29 +110,31 @@ define([
 		},
 
 		buildHeaderContent: function(feature){
-			// TODO: implement
-			return feature.feature_id;
+			var content = [];
+			if(feature.hasOwnProperty('patric_id')){
+				content.push(feature.patric_id);
+			}
+			if(feature.hasOwnProperty('refseq_locus_tag')){
+				content.push(feature.refseq_locus_tag);
+			}
+			if(feature.hasOwnProperty('alt_locus_tag')){
+				content.push(feature.alt_locus_tag);
+			}
+			if(feature.hasOwnProperty('gene')){
+				content.push(feature.gene);
+			}
+			if(feature.hasOwnProperty('product')){
+				content.push(feature.product);
+			}
+
+			return content.map(function(d){ return '<span><b>' + d + '</b></span>';}).join(' <span class="pipe">|</span> ');
 		},
 
 		_setFeatureAttr: function(feature){
 
 			this.feature = this.state.feature = feature;
 
-			//this.viewHeader.set("content", this.buildHeaderContent(feature));
-			var content=[];
-			if(feature.patric_id){
-				content.push('<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ')
-			}
-
-			if(feature.refseq_locus_tag){
-				content.push('<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ');
-			}
-
-			if(feature.alt_locus_tag){
-				content.push('<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>');
-			}
-
-			this.queryNode.innerHTML = content.join("&nbsp;");
+			this.queryNode.innerHTML = this.buildHeaderContent(feature);
 			domConstruct.empty(this.totalCountNode);
 
 			this.setActivePanelState();

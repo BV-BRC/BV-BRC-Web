@@ -2,15 +2,13 @@ define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
 	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/TaxonomyOverview.html",
 	"dojo/request", "dojo/_base/lang",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter",
-	"p3/widget/ReferenceGenomeSummary","p3/widget/GenomeMetaSummary","p3/widget/SpecialtyGeneSummary"
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter", "./ExternalItemFormatter"
 
 ], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
 			domClass, Templated, Template,
 			xhr, lang,
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter,
-			ReferenceGenomeSummary,GenomeMetaSummary,SpecialtyGeneSummary
+			ExternalItemFormatter
 ){
 
 	var searchName = null;
@@ -33,7 +31,7 @@ define([
 
 			searchName = this.genome.taxon_name; 
 
-			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget"];
+			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
@@ -53,15 +51,8 @@ define([
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {hideExtra: true}), this.taxonomySummaryNode, "first");
 			if(searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
-				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {hideExtra: true}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
-				this.pubmedSummaryNode2.style.display = 'block';
+				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}, this.pubmedLinkNode), this.pubmedSummaryNode, "first");
 			}
-		},
-
-		onShowMore: function(){
-			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(this.genome, "pubmed_data", {hideExtra: false}, this.pubmedSummaryNode2), this.pubmedSummaryNode, "first");
-			this.pubmedSummaryNode2.style.display = 'none';
 		},
 
 		startup: function(){
