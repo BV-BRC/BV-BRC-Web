@@ -154,8 +154,8 @@ define([
 				m1m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
 
 				// draw circles
-				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
-				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
+				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle_color1", "true");
+				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle_color2", "true");
 
 				// region for 0-1
 				region_name = "(" + groups[0].name + ") - (" + groups[1].name + ")";
@@ -374,9 +374,9 @@ define([
 				m1p2m0.append("svg:use").attr("xlink:href", "#g0").style("fill", "black");
 
 				// draw circles
-				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle", "true");
-				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle", "true");
-				svg.append("use").attr("id", "g2_circle").attr("xlink:href", "#g2").classed("venn_circle", "true");
+				svg.append("use").attr("id", "g0_circle").attr("xlink:href", "#g0").classed("venn_circle_color1", "true");
+				svg.append("use").attr("id", "g1_circle").attr("xlink:href", "#g1").classed("venn_circle_color2", "true");
+				svg.append("use").attr("id", "g2_circle").attr("xlink:href", "#g2").classed("venn_circle_color3", "true");
 
 				// svg.append("svg:text").attr("class","circle_label");
 				/*
