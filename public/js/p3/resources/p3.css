@@ -709,26 +709,6 @@ div.pubmed ul li {
     text-align: center;
 }
 
-.DataItemHeader {
-	border: 0px;
-	padding: 4px;
-	margin: 0px;
-	/*color: #fff;*/
-	color: #76a72d;
-/*	background-color: #76a72d;*/
-	font-size: 1.3em;
-/*	border-top-right-radius: 25px;*/
-}
-
-.DataItemHeader > * {
-	vertical-align: middle;
-}
-
-.DataItemHeader .fa {
-	color: #76a72d;
-	font-size: 1.3em;
-}
-
 .PerspectiveHeader {
 
 }
