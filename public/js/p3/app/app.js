@@ -163,6 +163,30 @@ define([
 				// console.log("end loginLink Lcik");
 			};
 
+			var timer;
+			on(document, ".HomeServiceLink:click", function(evt){
+				var target = evt.target;
+				var rel;
+				console.log("TARGET: ", target);
+				if (target.attributes.rel.value){
+					rel = target.attributes.rel.value;
+				}else{
+					rel = target.parentNode.attributes.rel.value;
+				}
+
+				console.log("SELECT ", rel);
+				console.log("Child: ", Registry.byId(rel))
+				Registry.byId("p3carousel").selectChild(Registry.byId(rel));
+
+				if (timer){
+					clearTimeout(timer);
+				}
+
+				timer = setTimeout(function(){
+					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
+				},10000)
+			});
+
 			on(document, ".loginLink:click", showAuthDlg);
 			on(document, ".registrationLink:click", function(){
 				window.open(_self.accountURL);
