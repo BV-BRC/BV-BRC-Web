@@ -50,7 +50,7 @@ define([
 
 			// console.log("call _set(state) ", state);
 
-			this._set("state", state);
+			// this._set("state", state);
 		},
 
 		visible: false,
@@ -60,9 +60,9 @@ define([
 			if(this.visible && !this._firstView){
 				this.onFirstView();
 			}
-			if(this.correlatedGenesGrid){
-				this.correlatedGenesGrid.set("visible", true)
-			}
+			// if(this.correlatedGenesGrid){
+			// 	this.correlatedGenesGrid.set("visible", true)
+			// }
 		},
 
 		onFirstView: function(){
@@ -74,7 +74,7 @@ define([
 				region: "center",
 				title: "Correlated Genes",
 				content: "Correlated Genes Grid",
-				state: this.state,
+				visible: true,
 				apiServer: this.apiServer
 			});
 
