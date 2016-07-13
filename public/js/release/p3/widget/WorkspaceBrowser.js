@@ -642,8 +642,8 @@ define("p3/widget/WorkspaceBrowser", [
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {
-					label: "GCOMPARE",
+			this.actionPanel.addAction("GroupExplore", "fa icon-venn_circles fa-2x", {
+					label: "VennDiag",
 					ignoreDataType: false,
 					allowMultiTypes: false,
 					min: 2,

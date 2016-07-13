@@ -5,13 +5,13 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 	"./ActionBar", "./ContainerActionBar",
 	"dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/themes/Distinctive", "../store/GeneExpressionMetadataChartMemoryStore",  
 	"dojo/aspect",  "dojo/_base/Deferred", "dojo/fx/easing", "dojo/when", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Highlight", 
-	"dojox/charting/action2d/Tooltip", "dojox/charting/plot2d/Pie"
+	"dojox/charting/action2d/Tooltip", "dojox/charting/plot2d/Pie", "dojo/dom-style"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
 			Chart2D, Theme, Distinctive, Store, aspect, Deferred, easing, when, MoveSlice, Highlight, 
-			Tooltip, Pie){
+			Tooltip, Pie, domStyle){
 	var tgState = {
 		keyword: "",
 		upFold: 0,
@@ -156,7 +156,7 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 			var show_all_strain = new Button({
 				label: "Show All",
 				iconClass: "fa icon-pie-chart fa-2x",
-				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:10px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.bschart) {
@@ -170,12 +170,15 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_all_strain.domNode, {"width":"36px"});
+			domStyle.set(show_all_strain.domNode.firstChild, "display", "block");
+						
 			domConstruct.place(show_all_strain.domNode, this.cp1.containerNode, "last");
 
 			var show_top_strain = new Button({
 				label: "Show Top 5",
 				iconClass: "fa icon-bar-chart fa-2x",
-				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:50px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.pschart) {
@@ -187,12 +190,15 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_top_strain.domNode, {"width":"36px"});
+			domStyle.set(show_top_strain.domNode.firstChild, "display", "block");			
+
 			domConstruct.place(show_top_strain.domNode, this.cp1.containerNode, "last");
 
 			var show_all_mutant = new Button({
 				label: "Show All",
 				iconClass: "fa icon-pie-chart fa-2x",
-				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:10px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.bmchart) {
@@ -204,12 +210,15 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_all_mutant.domNode, {"width":"36px"});
+			domStyle.set(show_all_mutant.domNode.firstChild, "display", "block");			
+
 			domConstruct.place(show_all_mutant.domNode, this.cp2.containerNode, "last");
 
 			var show_top_mutant = new Button({
 				label: "Show Top 5",
 				iconClass: "fa icon-bar-chart fa-2x",
-				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:50px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.pmchart) {
@@ -221,12 +230,15 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_top_mutant.domNode, {"width":"36px"});
+			domStyle.set(show_top_mutant.domNode.firstChild, "display", "block");			
+
 			domConstruct.place(show_top_mutant.domNode, this.cp2.containerNode, "last");
 
 			var show_all_condition = new Button({
 				label: "Show All",
 				iconClass: "fa icon-pie-chart fa-2x",
-				style: "text-align: right; position:absolute; top:10px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:10px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.bcchart) {
@@ -238,12 +250,15 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_all_condition.domNode, {"width":"36px"});
+			domStyle.set(show_all_condition.domNode.firstChild, "display", "block");			
+
 			domConstruct.place(show_all_condition.domNode, this.cp3.containerNode, "last");
 
 			var show_top_condition = new Button({
 				label: "Show Top 5",
 				iconClass: "fa icon-bar-chart fa-2x",
-				style: "text-align: right; position:absolute; top:50px; left:440px; float: right",
+				style: "text-align:center; position:absolute; top:50px; left:440px; float: right",
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.pcchart) {
@@ -255,6 +270,9 @@ define("p3/widget/GeneExpressionMetadataChartContainer", [
 					}
 				})
 			});
+			domStyle.set(show_top_condition.domNode, {"width":"36px"});
+			domStyle.set(show_top_condition.domNode.firstChild, "display", "block");			
+
 			domConstruct.place(show_top_condition.domNode, this.cp3.containerNode, "last");
 					
 			chartTabContainer1.addChild(this.cp1);
