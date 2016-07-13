@@ -155,6 +155,7 @@ define("p3/widget/ActionBar", [
 						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget,_self._actions[rel].button]);
 					}
 				}
+				domClass.remove(target,"depressed");
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:mousedown", function(evt){
