@@ -53,7 +53,7 @@ define("p3/widget/TaxonomyOverview", [
 			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {hideExtra: true}), this.taxonomySummaryNode, "first");
 			if(searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
-				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}, this.pubmedLinkNode), this.pubmedSummaryNode, "first");
+				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 			}
 		},
 

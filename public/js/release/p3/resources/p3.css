@@ -8850,6 +8850,19 @@ background-color: #FF00FF;
 .patric .dijitTooltipBelow {
 	padding-top: 13px;
 }
+.FlowBoxItem {
+	border:1px solid #ddd;
+	border-radius:4px;
+	vertical-align:middle;
+	background-color:#fff;
+	padding:4px;
+}
+.FlowBoxArrow {
+	margin: 4px; 
+	width:100%; 
+	border: 0px;
+	font-size: .5em;
+}
 .carousel {
 	height: 250px;
 	background: black;
@@ -10045,12 +10058,33 @@ TH.dgrid-cell.field-feature_type {
 	padding-left: 15px;
 	margin-bottom: 10px;
 }
+.DataItemHeader {
+    color: #76a72d;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 6px;
+    padding: 10px 0 7px 0;
+    border-bottom: 1px solid #afafaf;
+}
+.DataItemHeader > span {
+    vertical-align: middle;
+}
+.DataItemHeader .fa {
+    color: #76a72d;
+    font-size: 1.3em;
+    padding-right: 5px;
+    cursor: initial;
+}
 .detailProp {
-	vertical-align:top;
-	font-weight: 600;
+    vertical-align: top;
+    padding: 0 4px 0 6px;
+    width: 30%;
+    
 }
 .detailValue {
-	vertical-align: top;
+    vertical-align: top;
+    word-break: normal;
+    
 }
 html, body,
 body.patric {
@@ -10621,21 +10655,6 @@ div.pubmed ul li {
 }
 .feature_box .feature_type {
     text-align: center;
-}
-.DataItemHeader {
-	border: 0px;
-	padding: 4px;
-	margin: 0px;
-	
-	color: #76a72d;
-	font-size: 1.3em;
-}
-.DataItemHeader > * {
-	vertical-align: middle;
-}
-.DataItemHeader .fa {
-	color: #76a72d;
-	font-size: 1.3em;
 }
 .PerspectiveHeader {
 }

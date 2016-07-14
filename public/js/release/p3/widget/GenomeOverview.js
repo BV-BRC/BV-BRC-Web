@@ -50,7 +50,7 @@ define("p3/widget/GenomeOverview", [
 			domConstruct.empty(this.genomeSummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {hideExtra: true}), this.genomeSummaryNode, "first");
 			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}, this.pubmedLinkNode), this.pubmedSummaryNode, "first");
+			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 
 		startup: function(){
