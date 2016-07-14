@@ -52,6 +52,7 @@
 	<div style="background-color:#000;">
 		<div class="layer" style="text-align: center;">
 			<div data-dojo-type="dijit/layout/StackContainer" style="background:#efefef;width:100%;margin: auto;margin-top:-1px;margin-bottom:10px;padding:4px;" id="p3carousel">
+
 				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">
 					<table style="width:100%;margin-right:4px;">
 						<tr>
@@ -118,14 +119,84 @@
 						</tr>
 					</table>
 				</div>
-				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_genomics">
-					Genomics Workflow Overview
+
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics">
+				<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Comparative Genomics Workflow</div>
+				<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td colspan="3"></td>
+							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/SeqComparison">Proteome Comparison</a></div></td>
+							<td colspan="4"></td>
+						</tr>
+						<tr>
+							<td><div class="FlowBoxItem">Search for Genomes</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Create Genome Set</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Protein Family Sorter</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Heatmap Clustering</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">MSA<br>Gene Trees</div></td>
+						</tr>
+		
+						<tr>
+							<td colspan="3"></td>
+							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/ComparativePathway">Comparative Pathways</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Pathway Map<br>Heatmap</div></td>
+						</tr>
+					</table>
 				</div>
-				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics">
-					Comparative Genomics Workflow Overview
+
+
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_genomics" class="genomicsWorkflow">
+					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Genomics Workflow</div>
+					<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Assembly">Assemble</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Annotation">Annotate</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Genomic Overview<br>Genomic Features<br>Specialty Genes<br>Pathways</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Genome Browser<br>Circular Viewer</div></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Preassembled<br>Contigs</div></td><td colspan="4"></td>
+						</tr>
+					</table>
 				</div>
+
 				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_transcriptomics">
-					Transcriptomics Workflow Overview
+					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Gene Expression Analysis</div>
+					<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Rnaseq">RNA-Seq Analysis</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="">Differential Expression Analysis</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Heatmap<br>Clustering</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Pathway Analysis</div></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Differential Epxressions</div></td><td colspan="4"></td>
+						</tr>
+					</table>
 				</div>
 				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_variation_analysis">
 					Variation Analysis Workflow Overview
