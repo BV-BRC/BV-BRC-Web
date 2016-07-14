@@ -189,7 +189,7 @@ define([
 
 			on(document, ".loginLink:click", showAuthDlg);
 			on(document, ".registrationLink:click", function(){
-				window.open(_self.accountURL);
+				window.open(_self.accountURL + "/register");
 			});
 			Topic.subscribe("/login", showAuthDlg);
 

@@ -10111,6 +10111,16 @@ A:hover {
 body.patric *:focus {
     outline: 0;
 }
+iframe  {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+}
 .layoutContainer {
     width: 100%;
     height: 100%;
