@@ -11,7 +11,60 @@ define("p3/widget/AdvancedSearch", [
 	return declare([base], {
 		"baseClass": "AdvancedSearch",
 		"disabled": false,
-		searchTypes: ["genome","genome_feature", "taxonomy"],
+		searchTypes: ["genome","genome_feature", "taxonomy","sp_gene","transcriptomics_experiment"],
+		labelsByType: {
+			"genome": "Genomes",
+			"genome_feature": "Genomic Features",
+			"taxonomy": "Taxonomies",
+			"sp_gene": "Specialty Genes",
+			"transcriptomics_experiment": "Transcriptomics Experiments"
+		},
+
+		_generateLink: {
+			"genome": function(docs,total){
+				console.log("Genome Link Generator: ", docs, total)
+				if (total==1){
+					return ['/view/Genome/',docs[0].genome_id,"#view_tab=overview"].join("");
+				}else{
+					return ['/view/GenomeList/?',this.state.search,"#view_tab=genomes"].join("");
+				}
+			},
+			"genome_feature": function(docs,total){
+				if (total==1){
+					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
+				}else{
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=features"].join("");
+				}
+			},
+			"taxonomy": function(docs,total){
+				if (total==1){
+					return ['/view/Taxonomy/',docs[0].taxon_id,"#view_tab=overview"].join("");
+				}else{
+					return ['/view/TaxonList/?',this.state.search,"#view_tab=taxons"].join("");
+				}
+			},
+
+			"sp_gene": function(docs,total){
+				if (total==1){
+					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
+				}else{
+					return ['/view/SpecialtyGeneList/?',this.state.search,"#view_tab=specialtyGenes"].join("");
+				}
+			},
+			"transcriptomics_experiment": function(docs,total){
+				if (total==1){
+					return ['/view/TranscriptomicsExperiment/',docs[0].eid,"#view_tab=overview"].join("");
+				}else{
+					return ['/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments"].join("");
+				}
+			}
+		},
+
+		generateLink: function(type,docs,total){
+			console.log("Generate Link: ", type, docs, total)
+			return this._generateLink[type].apply(this,[docs,total]);
+		},
+
 		onSetState: function(attr,oldval,state){
 			console.log("onSetState: ", state.search);
 
@@ -30,6 +83,8 @@ define("p3/widget/AdvancedSearch", [
 		},
 		searchResults: null,
 		parseQuery: GlobalSearch.prototype.parseQuery,
+
+
 
 		formatgenome: function(docs,total){
 			var out=["<div class=\"searchResultsContainer genomeResults\">",'<div class="resultTypeHeader"><a href="/view/GenomeList/?',this.state.search,"#view_tab=genomes",'">Genomes&nbsp;(', total, ")</div></a>"];
@@ -107,6 +162,69 @@ define("p3/widget/AdvancedSearch", [
 			return out.join("");
 		},
 
+
+		formatsp_gene: function(docs,total){
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false",'">Specialty Genes&nbsp;(', total, ")</div> </a>"];
+			docs.forEach(function(doc){
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + doc.product + "</a>");
+				if (doc.gene) {  out.push(" | " + doc.gene ); }
+				out.push("</div>");
+
+				out.push("<div class='resultInfo'>" + doc.genome_name +  "</div>");
+
+				out.push("<div class='resultInfo'>" + doc.annotation + " | " + doc.feature_type);
+
+				if (doc.refseq_locus_tag){
+					out.push("&nbsp;|&nbsp;" + doc.refseq_locus_tag);					
+				}
+
+				if (doc.alt_locus_tag){
+					out.push("&nbsp;|&nbsp;" + doc.alt_locus_tag);					
+				}
+
+				out.push("</div>");
+				out.push("</div>");
+			})
+			out.push("</div>");
+			return out.join("");
+		},
+
+		formattranscriptomics_experiment: function(docs,total){
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=features&filter=false",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
+			docs.forEach(function(doc){
+				out.push("<div class='searchResult'>");
+				out.push("<div class='resultHead'><a href='/view/Experiment/" + doc.eid + "'>" + doc.title + "</a>");
+				out.push("</div>");
+				out.push("<div class='resultInfo'>" + doc.organism);
+
+				if (doc.strain){
+					out.push ("&nbsp;|&nbsp;" + doc.strain)
+
+				}
+
+				out.push("</div>");
+
+				out.push("<div class='resultInfo'>");
+				out.push(doc.genes + "&nbsp;Genes&nbsp;|&nbsp;"+ doc.samples + " Comparisons");
+				out.push("</div>")
+
+				out.push("<div class='resultInfo'>");
+				out.push(doc.mutant);
+				out.push("</div>");
+
+
+				out.push("<div class='resultInfo'>");
+				out.push(doc.condition);
+				out.push("</div>");
+
+
+				out.push("</div>");
+			})
+			out.push("</div>");
+			return out.join("");
+		},
+
 		formattaxonomy: function(docs,total){
 			var q = this.state.search; 
 			console.log("format taxonomy q: ", q);
@@ -128,27 +246,59 @@ define("p3/widget/AdvancedSearch", [
 			this.searchResults=val;
 			console.log("Search Results: ", val);
 			var foundContent=false;
-			var content = Object.keys(val).map(function(type){
+			var resultCounts = {};
+			var singleResults = {};
+
+			var content=[]
+			Object.keys(val).forEach(function(type){
 				var tRes = val[type];
 				var total = (tRes&&tRes.result&&tRes.result.response)?tRes.result.response.numFound:0
-				var out = ["<div><div>",type, "(",total,")</div>"];
-				if (total>0){
+				var docs = tRes.result.response.docs;
+				resultCounts[type]={total: total, docs: docs};
+
+				if (total>0 && total<4){
+					var out=[];
 					foundContent=true;
-					var docs = tRes.result.response.docs;
 					if (this["format" + type]){
-						return this["format" + type](docs,total);
+						singleResults[type] = this["format" + type](docs,total);
+						out.push(singleResults[type])
 					}
+					content.push(out.join(""));
 				}
+
+
 			},this)
 
+			var keys = Object.keys(resultCounts).sort();
 
+			var out = ['<div style="width:700px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>']
+
+				for (var i =0; i<keys.length;i+=3){
+				out.push("<tr>");
+				out.push("<td><a href=\"" + this.generateLink(keys[i],resultCounts[keys[i]].docs,resultCounts[keys[i]].total) + "\">" + this.labelsByType[keys[i]] + ": " + resultCounts[keys[i]].total + "</a></td>");
+				if (keys[i+1]){
+					out.push("<td><a href=\"" + this.generateLink(keys[i+1],resultCounts[keys[i+1]].docs,resultCounts[keys[i+1]].total)  + "\">" + this.labelsByType[keys[i+1]] + ": " + resultCounts[keys[i+1]].total + "</a></td>");
+				} else { out.push("<td></td>"); }
+				if (keys[i+2]){
+					out.push("<td><a href=\"" + this.generateLink(keys[i+2],resultCounts[keys[i+2]].docs,resultCounts[keys[i+2]].total)  + "\">" + this.labelsByType[keys[i+2]] + ": " + resultCounts[keys[i+2]].total + "</a></td>");
+				}else { out.push("<td></td>"); }
+				out.push("</tr>")
+
+			}
+			out.push("</table></div>")
+
+			console.log("Content Length: ", content.length, content);
+
+			if (content.length>0){
+				out.push("<h2>Top Matches</h2>" + content.join(""))
+			}
 
 			if (this.viewer){
-				if (foundContent){
-					this.viewer.set('content', content.join(""));
-				}else{
-					this.viewer.set("content", "No Results Found.")
-				}
+				//if (foundContent){
+					this.viewer.set('content', out.join(""));
+				//}else{
+				//	this.viewer.set("content", "No Results Found.")
+				//}
 			}
 		},
 

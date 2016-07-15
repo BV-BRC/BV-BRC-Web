@@ -92,6 +92,18 @@ define("p3/app/app", [
 				var parts = rel.split(":");
 				var type = parts[0];
 				params = parts[1];
+
+				var panel = _self.panels[type];
+				if (!panel){
+					throw error("Ivalid Panel: " + type);
+					return;
+				}
+
+				if (panel.requireAuth && (!_self.user || !_self.user.id)){
+					Topic.publish("/login");
+					return;
+				}
+
 				var w = _self.loadPanel(type, params);
 				Deferred.when(w, function(w){
 					if(!_self.dialog){
