@@ -314,7 +314,7 @@ define("p3/widget/FilterContainerActionBar", [
 
 			this.addAction("ToggleFilters", "fa icon-filter fa-2x", {
 				style: {"font-size": ".5em"},
-				label: "SHOW",
+				label: "FILTERS",
 				validType: ["*"],
 				tooltip: "Toggle the filter display"
 			}, toggleFilters, true, this.rightButtons);
@@ -322,7 +322,7 @@ define("p3/widget/FilterContainerActionBar", [
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
 				//console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
-					this.setButtonText("ToggleFilters", "SHOW")
+					this.setButtonText("ToggleFilters", "FILTERS")
 				}else{
 					this.setButtonText("ToggleFilters", "HIDE")
 				}

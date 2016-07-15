@@ -343,7 +343,7 @@ define("p3/widget/GenomeGrid", [
 			date_modified: {
 				label: 'Last Index Date',
 				field: 'date_modified',
-				hidden: false,
+				hidden: true,
 				formatter: formatter.dateOnly
 			}
 

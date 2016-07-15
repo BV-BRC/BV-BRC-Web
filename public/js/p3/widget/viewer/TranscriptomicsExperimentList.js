@@ -1,36 +1,37 @@
 define([
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../TranscriptomicsExperimentGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
+	"../PageGrid", "../formatter", "../TranscriptomicsExperimentGridContainer", 
+	 "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
 ], function(declare, TabViewerBase, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, TranscriptomicsExperimentGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang){
+			Grid, formatter, TranscriptomicsExperimentGridContainer,
+			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
-		"baseClass": "TranscriptomicsExperimentList",
+		"baseClass": "ExperimentList",
 		"disabled": false,
-		"containerType": "feature_data",
+		"containerType": "experiment_data",
 		"query": null,
-		perspectiveLabel: "Transcriptomics Experiment List View",
-		perspectiveIconClass: "icon-perspective-FeatureList",
 		paramsMap: "query",
-		total_features: 0,
+		defaultTab: "experiments",
+		perspectiveLabel: "Experiments View",
+		perspectiveIconClass: "icon-perspective-GenomeList",
+		total_experiments: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
 			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
 			//console.log("GenomeList SetQuery: ", query, this);
-
+			query = query; 
 			this._set("query", query);
 			if(!this._started){
-				return;
+				return; 
 			}
 
 			var _self = this;
-			console.log('genomeList setQuery - this.query: ', this.query);
+			console.log('ExperimentList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl, "transcriptomics_experiment", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
+			var url = PathJoin(this.apiServiceUrl, "transcriptomics_experiment", "?" + (this.query) + "&limit(1)"); 
 
 			console.log("url: ", url);
 			xhr.get(url, {
@@ -46,13 +47,13 @@ define([
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
-						_self._set("total_features", res.response.numFound);
+						_self._set("total_experiments", res.response.numFound);
 					}
 				}else{
 					console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.log("Error Retreiving Genomes: ", err)
+				console.log("Error Retreiving Experiments: ", err)
 			});
 
 		},
@@ -78,59 +79,45 @@ define([
 			this.set("query", state.search);
 
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "features"){
+			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "taxons";
+//			if(active == "Experiments"){
 				this.setActivePanelState()
-			}
-			;
+//			}
 
 			this.inherited(arguments);
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Transcriptomics Experiment List Query: ' + decodeURIComponent(newVal) + "</div>");
+			if (this.overview) {
+				this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
+			}
+			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "experiments";
 			console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
-
+			
 			if(!activeTab){
 				console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 
 			switch(active){
-				case "experiments":
-					activeTab.set("state", this.state);
-					break;
 				default:
-					var activeQueryState;
-					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
-						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
-
-					}
-
-					if(activeQueryState){
-						activeTab.set("state", activeQueryState);
-					}else{
-						console.warn("MISSING activeQueryState for PANEL: " + active);
-					}
+					console.log("SET ACTIVE STATE for default taxonList tab: ", this.state);
+					activeTab.set("state", lang.mixin({},this.state,{search: this.state.search}));
 					break;
 			}
 			console.log("Set Active State COMPLETE");
 		},
 
-		onSetTranscriptomicsExperimentIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
-			this.state.feature_ids = feature_ids;
+		onSetExperimentIds: function(attr, oldVal, genome_ids){
+			this.state.taxon_ids = feature_ids;
 			this.setActivePanelState();
 		},
 
@@ -147,42 +134,24 @@ define([
 			this.inherited(arguments);
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
-			this.watch("total_features", lang.hitch(this, "onSetTotalTranscriptomicsExperiments"));
+			this.watch("total_experiments", lang.hitch(this, "onSetTotalExperiments"));
 
-			this.overview = this.createOverviewPanel(this.state);
-	
-
-			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
-
-			this.experiments = new TranscriptomicsExperimentGridContainer({
-				title: "Transcriptomics Experiments",
+			//this.overview = this.createOverviewPanel(this.state);
+			this.experiments= new TranscriptomicsExperimentGridContainer({
+				title: "Experiments",
 				id: this.viewer.id + "_" + "experiments",
 				disabled: false
 			});
-			// this.sequences = new SequenceGridContainer({
-			// 	title: "Sequences",
-			// 	id: this.viewer.id + "_" + "sequences",
-			// 	state: this.state,
-			// 	disable: true
-			// });
 
-			// this.genomes = new GenomeGridContainer({
-			// 	title: "Genomes",
-			// 	id: this.viewer.id + "_" + "genomes",
-			// 	state: this.state,
-			// 	disable: true
-			// });
-
-			this.viewer.addChild(this.overview);
+			//this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.experiments);
 			// this.viewer.addChild(this.sequences);
-			// this.viewer.addChild(this.genomes);
+			//this.viewer.addChild(this.genomes);
 
 		},
-		onSetTotalTranscriptomicsExperiments: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
-			this.totalCountNode.innerHTML = " ( " + newVal + " Experiments ) ";
+		onSetTotalExperiments: function(attr, oldVal, newVal){
+			console.log("ON SET TOTAL TAXONS: ", newVal);
+			this.totalCountNode.innerHTML = " ( " + newVal + " Experiments) ";
 			var hasDisabled = false;
 
 			// this.viewer.getChildren().forEach(function(child){
@@ -223,13 +192,14 @@ define([
 			evt.preventDefault();
 			var f = evt.filter;
 			var parts = [];
+			var q;
 			if(this.query){
-				var q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
+				q = (this.query.charAt(0) == "?") ? this.query.substr(1) : this.query;
 				if(q != "keyword(*)"){
 					parts.push(q)
 				}
 			}
-			if(evt.filter){
+			if(evt.filter & evt.filter != "false"){
 				parts.push(evt.filter)
 			}
 

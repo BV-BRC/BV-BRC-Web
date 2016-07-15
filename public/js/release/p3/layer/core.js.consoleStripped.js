@@ -4931,6 +4931,18 @@ define([
 				var parts = rel.split(":");
 				var type = parts[0];
 				params = parts[1];
+
+				var panel = _self.panels[type];
+				if (!panel){
+					throw error("Ivalid Panel: " + type);
+					return;
+				}
+
+				if (panel.requireAuth && (!_self.user || !_self.user.id)){
+					Topic.publish("/login");
+					return;
+				}
+
 				var w = _self.loadPanel(type, params);
 				Deferred.when(w, function(w){
 					if(!_self.dialog){
@@ -14238,6 +14250,7 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateWorkspace",
 			dataParam: "userId",
+			requireAuth: true,
 			params: {}
 		},
 		CreateFolder: {
@@ -14245,12 +14258,14 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateFolder",
 			dataParam: "path",
+			requireAuth: true,
 			params: {}
 		},
 		Upload: {
 			title: "Upload",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			dataParam: "path",
 			params: {multiple: true}
 
@@ -14259,6 +14274,7 @@ define([], function(){
 			title: "Overwrite File",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			params: {overwrite: true}
 		},
 
@@ -14278,9 +14294,6 @@ define([], function(){
 			ctor: "p3/widget/app/BLAST",
 			params: {}
 		},
-
-
-
 
 		GenomeGroupViewer: {
 			title: "Genome Group",
@@ -24229,6 +24242,14 @@ define([
 						break;
 					case "genomes":
 						Topic.publish("/navigate", {href: "/view/GenomeList/?" + q});
+						clear = true;
+						break;
+					case "transcriptomics_experiments":
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?" + q});
+						clear = true;
+						break;
+					case "taxonomy":
+						Topic.publish("/navigate", {href: "/view/TaxonListList/?" + q});
 						clear = true;
 						break;
 					default:
@@ -38466,10 +38487,11 @@ define([
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./Button", "dojo/dom-construct",
-	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse"
+	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse",
+	"dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Button, domConstruct,
-			Tooltip, dom, Event){
+			Tooltip, dom, Event,mouse,Topic){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
 		constructor: function(){
@@ -38616,7 +38638,12 @@ define([
 				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
-						 0 && console.log("actionButton: ", _self._actions[rel].button);
+						 0 && console.log("actionButton: ", _self._actions[rel]);
+						if (_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
+							Topic.publish("/login");
+							return;
+						}
+
 						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget,_self._actions[rel].button]);
 					}
 				}
@@ -56630,7 +56657,7 @@ define([
 			date_modified: {
 				label: 'Last Index Date',
 				field: 'date_modified',
-				hidden: false,
+				hidden: true,
 				formatter: formatter.dateOnly
 			}
 
@@ -74738,6 +74765,7 @@ define([
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
+					requireAuth: true,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
@@ -75374,7 +75402,7 @@ define([
 
 			this.addAction("ToggleFilters", "fa icon-filter fa-2x", {
 				style: {"font-size": ".5em"},
-				label: "SHOW",
+				label: "FILTERS",
 				validType: ["*"],
 				tooltip: "Toggle the filter display"
 			}, toggleFilters, true, this.rightButtons);
@@ -75382,7 +75410,7 @@ define([
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
 				// 0 && console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
-					this.setButtonText("ToggleFilters", "SHOW")
+					this.setButtonText("ToggleFilters", "FILTERS")
 				}else{
 					this.setButtonText("ToggleFilters", "HIDE")
 				}
@@ -87573,7 +87601,7 @@ define([
 
 	return declare([GridContainer], {
 		containerType: "transcriptomics_experiment_data",
-		facetFields: ["organism", "strain", "mutant", "condition", "timeseries", "release_date"],
+		facetFields: ["organism", "strain", "mutant", "condition", "timeseries"],
 		maxGenomeCount: 5000,
 		dataModel: "transcriptomics_experiment",
 		getFilterPanel: function(opts){
@@ -118981,7 +119009,7 @@ define([
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genome Features</option>\n\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxonomies</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
