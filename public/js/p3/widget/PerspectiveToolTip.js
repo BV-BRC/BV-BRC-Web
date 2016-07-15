@@ -38,6 +38,16 @@ define([
 				{label: "Pathways", link: "pathways"},
 				{label: "Transcriptomics", link: "transcriptomics"}
 			],
+			"GenomeGroup": [
+				{label: "Overview", link: "overview"},
+				{label: "Genomes", link: "genomes"},
+				{label: "Sequences", link: "sequences"},
+				{label: "Features", link: "features"},
+				{label: "Specialty Genes", link: "specialtyGenes"},
+				{label: "Protein Families", link: "proteinFamilies"},
+				{label: "Pathways", link: "pathways"},
+				{label: "Transcriptomics", link: "transcriptomics"}
+			],
 			"Taxonomy": [
 				{label: "Overview", link: "overview"},
 				{label: "Phylogeny", link: "phylogeny"},

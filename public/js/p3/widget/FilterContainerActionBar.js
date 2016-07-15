@@ -337,7 +337,7 @@ define([
 				}, setAnchor, true, this.rightButtons);
 			}
 
-			this.fullViewNode = domConstruct.create("div", {
+			this.fullViewContentNode = this.fullViewNode = domConstruct.create("div", {
 				"class": "FullFilterView",
 				style: {
 					"white-space": "nowrap",
@@ -350,7 +350,7 @@ define([
 					"overflow-x": "auto"
 				}
 			}, this.domNode)
-			this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
+			//this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
@@ -849,8 +849,12 @@ define([
 				h: bb.h - pe.h
 			};
 
+			console.log("_contentBox: ", this._contentBox);
+
+
+
 			Object.keys(this._ffWidgets).forEach(function(name){
-				this._ffWidgets[name].resize({h: this._contentBox.h - 4});
+				this._ffWidgets[name].resize({h: mb.h - this.absoluteMinSize - 7});
 			}, this);
 
 		},

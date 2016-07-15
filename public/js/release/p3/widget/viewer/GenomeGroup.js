@@ -11,7 +11,8 @@ define("p3/widget/viewer/GenomeGroup", [
 		params: null,
 		apiServiceUrl: window.App.dataAPI,
 		groupPath: null,
-
+		perspectiveLabel: "Genome Group View",
+		perspectiveIconClass: "icon-perspective-GenomeGroup",
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},
@@ -78,7 +79,7 @@ define("p3/widget/viewer/GenomeGroup", [
 		},
 
 		buildHeaderContent: function(){
-			return '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Genome Group: ' + this.groupPath;
+			return this.groupPath;
 		},
 
 		createOverviewPanel: function(){

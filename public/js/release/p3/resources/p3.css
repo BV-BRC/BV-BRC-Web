@@ -5097,11 +5097,11 @@ table {  font-size:100%; }
 }
 @font-face {
     font-family: 'icomoon';
-    src:    url("icomoon/fonts/icomoon.eot?mdnt14");
-    src:    url("icomoon/fonts/icomoon.eot?mdnt14#iefix") format('embedded-opentype'),
-        url("icomoon/fonts/icomoon.ttf?mdnt14") format('truetype'),
-        url("icomoon/fonts/icomoon.woff?mdnt14") format('woff'),
-        url("icomoon/fonts/icomoon.svg?mdnt14#icomoon") format('svg');
+    src:    url("icomoon/fonts/icomoon.eot?84pg43");
+    src:    url("icomoon/fonts/icomoon.eot?84pg43#iefix") format('embedded-opentype'),
+        url("icomoon/fonts/icomoon.ttf?84pg43") format('truetype'),
+        url("icomoon/fonts/icomoon.woff?84pg43") format('woff'),
+        url("icomoon/fonts/icomoon.svg?84pg43#icomoon") format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -5118,445 +5118,442 @@ table {  font-size:100%; }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-.icon-venn_circles:before {
+.icon-apply-perspective-filter:before {
     content: "\e900";
 }
-.icon-alignment:before {
+.icon-arrow-circle-o-down:before {
     content: "\e901";
 }
-.icon-anchor:before {
+.icon-arrow-circle-o-left:before {
     content: "\e902";
 }
-.icon-apply-perspective-filter:before {
+.icon-arrow-circle-o-right:before {
     content: "\e903";
 }
-.icon-arrow-circle-o-down:before {
+.icon-arrow-circle-o-up:before {
     content: "\e904";
 }
-.icon-arrow-circle-o-left:before {
+.icon-arrow-down:before {
     content: "\e905";
 }
-.icon-arrow-circle-o-right:before {
+.icon-arrow-left:before {
     content: "\e906";
 }
-.icon-arrow-circle-o-up:before {
+.icon-arrow-right:before {
     content: "\e907";
 }
-.icon-arrow-down:before {
+.icon-arrow-up:before {
     content: "\e908";
 }
-.icon-arrow-left:before {
+.icon-bar-chart:before {
     content: "\e909";
 }
-.icon-arrow-right:before {
+.icon-bars:before {
     content: "\e90a";
 }
-.icon-arrow-up:before {
+.icon-camera:before {
     content: "\e90b";
 }
-.icon-bar-chart:before {
+.icon-cancel-circle:before {
     content: "\e90c";
 }
-.icon-bars:before {
+.icon-caret-down:before {
     content: "\e90d";
 }
-.icon-camera:before {
+.icon-caret-left:before {
     content: "\e90e";
 }
-.icon-cancel-circle:before {
+.icon-caret-right:before {
     content: "\e90f";
 }
-.icon-caret-down:before {
+.icon-caret-up:before {
     content: "\e910";
 }
-.icon-caret-left:before {
+.icon-check-square-o:before {
     content: "\e911";
 }
-.icon-caret-right:before {
+.icon-check:before {
     content: "\e912";
 }
-.icon-caret-up:before {
+.icon-chevron-circle-down:before {
     content: "\e913";
 }
-.icon-check-square-o:before {
+.icon-chevron-circle-left:before {
     content: "\e914";
 }
-.icon-check:before {
+.icon-chevron-circle-right:before {
     content: "\e915";
 }
-.icon-chevron-circle-down:before {
+.icon-chevron-circle-up:before {
     content: "\e916";
 }
-.icon-chevron-circle-left:before {
+.icon-chevron-down:before {
     content: "\e917";
 }
-.icon-chevron-circle-right:before {
+.icon-chevron-left:before {
     content: "\e918";
 }
-.icon-chevron-circle-up:before {
+.icon-chevron-right:before {
     content: "\e919";
 }
-.icon-chevron-down:before {
+.icon-chevron-up:before {
     content: "\e91a";
 }
-.icon-chevron-left:before {
+.icon-circle:before {
     content: "\e91b";
 }
-.icon-chevron-right:before {
+.icon-cog:before {
     content: "\e91c";
 }
-.icon-chevron-up:before {
+.icon-contigs:before {
     content: "\e91d";
 }
-.icon-circle:before {
+.icon-delicious:before {
     content: "\e91e";
 }
-.icon-cog:before {
+.icon-download:before {
     content: "\e91f";
 }
-.icon-contigs:before {
+.icon-exchange:before {
     content: "\e920";
 }
-.icon-delicious:before {
+.icon-experiments:before {
     content: "\e921";
 }
-.icon-download:before {
+.icon-eye-slash:before {
     content: "\e922";
 }
-.icon-exchange:before {
+.icon-eye:before {
     content: "\e923";
 }
-.icon-experiments:before {
+.icon-fasta:before {
     content: "\e924";
 }
-.icon-eye-slash:before {
+.icon-filter:before {
     content: "\e925";
 }
-.icon-eye:before {
+.icon-flag-checkered:before {
     content: "\e926";
 }
-.icon-fasta:before {
+.icon-folder-open:before {
     content: "\e927";
 }
-.icon-filter:before {
+.icon-folder-plus:before {
     content: "\e928";
 }
-.icon-flag-checkered:before {
+.icon-folder:before {
     content: "\e929";
 }
-.icon-folder-open:before {
+.icon-genome-browser:before {
     content: "\e92a";
 }
-.icon-folder-plus:before {
+.icon-genome-features-cds:before {
     content: "\e92b";
 }
-.icon-folder:before {
+.icon-genome-features:before {
     content: "\e92c";
 }
-.icon-genome-browser:before {
-    content: "\e92d";
-}
-.icon-genome-features-cds:before {
-    content: "\e92e";
-}
-.icon-genome-features:before {
-    content: "\e92f";
-}
 .icon-genome-group .path1:before {
-    content: "\e930";
+    content: "\e92d";
     color: rgb(1, 1, 1);
 }
 .icon-genome-group .path2:before {
-    content: "\e931";
+    content: "\e92e";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path3:before {
-    content: "\e932";
+    content: "\e92f";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path4:before {
-    content: "\e933";
+    content: "\e930";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path5:before {
-    content: "\e934";
+    content: "\e931";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path6:before {
-    content: "\e935";
+    content: "\e932";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path7:before {
-    content: "\e936";
+    content: "\e933";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path8:before {
-    content: "\e937";
+    content: "\e934";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path9:before {
-    content: "\e938";
+    content: "\e935";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path10:before {
-    content: "\e939";
+    content: "\e936";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path11:before {
-    content: "\e93a";
+    content: "\e937";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path12:before {
-    content: "\e93b";
+    content: "\e938";
     margin-left: -1em;
     color: rgb(1, 1, 1);
 }
 .icon-genome-group .path13:before {
-    content: "\e93c";
+    content: "\e939";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path14:before {
-    content: "\e93d";
+    content: "\e93a";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path15:before {
-    content: "\e93e";
+    content: "\e93b";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path16:before {
-    content: "\e93f";
+    content: "\e93c";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path17:before {
-    content: "\e940";
+    content: "\e93d";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path18:before {
-    content: "\e941";
+    content: "\e93e";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path19:before {
-    content: "\e942";
+    content: "\e93f";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path20:before {
-    content: "\e943";
+    content: "\e940";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path21:before {
-    content: "\e944";
+    content: "\e941";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path22:before {
-    content: "\e945";
+    content: "\e942";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path23:before {
-    content: "\e946";
+    content: "\e943";
     margin-left: -1em;
     color: rgb(1, 1, 1);
 }
 .icon-genome-group .path24:before {
-    content: "\e947";
+    content: "\e944";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path25:before {
-    content: "\e948";
+    content: "\e945";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path26:before {
-    content: "\e949";
+    content: "\e946";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path27:before {
-    content: "\e94a";
+    content: "\e947";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path28:before {
-    content: "\e94b";
+    content: "\e948";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path29:before {
-    content: "\e94c";
+    content: "\e949";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path30:before {
-    content: "\e94d";
+    content: "\e94a";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path31:before {
-    content: "\e94e";
+    content: "\e94b";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path32:before {
-    content: "\e94f";
+    content: "\e94c";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome-group .path33:before {
-    content: "\e950";
+    content: "\e94d";
     margin-left: -1em;
     color: rgb(255, 255, 255);
 }
 .icon-genome:before {
-    content: "\e951";
+    content: "\e94e";
 }
 .icon-git-pull-request:before {
-    content: "\e952";
+    content: "\e94f";
 }
 .icon-group:before {
-    content: "\e953";
+    content: "\e950";
 }
 .icon-info-circle:before {
-    content: "\e954";
+    content: "\e951";
 }
 .icon-info:before {
-    content: "\e955";
+    content: "\e952";
 }
 .icon-level-down:before {
-    content: "\e956";
+    content: "\e953";
 }
 .icon-level-up:before {
-    content: "\e957";
+    content: "\e954";
 }
 .icon-lightbulb-o:before {
-    content: "\e958";
+    content: "\e955";
 }
 .icon-list-unordered:before {
-    content: "\e959";
+    content: "\e956";
 }
 .icon-lock:before {
-    content: "\e95a";
+    content: "\e957";
 }
 .icon-long-arrow-left:before {
-    content: "\e95b";
+    content: "\e958";
 }
 .icon-long-arrow-right:before {
-    content: "\e95c";
+    content: "\e959";
 }
 .icon-map-o:before {
-    content: "\e95d";
+    content: "\e95a";
 }
 .icon-map:before {
-    content: "\e95e";
+    content: "\e95b";
 }
 .icon-object-group:before {
-    content: "\e95f";
+    content: "\e95c";
 }
 .icon-object-ungroup:before {
-    content: "\e960";
+    content: "\e95d";
 }
 .icon-paint-brush:before {
-    content: "\e961";
+    content: "\e95e";
 }
 .icon-pencil-square:before {
-    content: "\e962";
+    content: "\e95f";
 }
 .icon-perspective-Feature:before {
-    content: "\e963";
+    content: "\e960";
 }
 .icon-perspective-FeatureList:before {
-    content: "\e964";
+    content: "\e961";
 }
 .icon-perspective-Genome:before {
-    content: "\e965";
+    content: "\e962";
+}
+.icon-perspective-GenomeGroup:before {
+    content: "\e963";
 }
 .icon-perspective-GenomeList:before {
-    content: "\e966";
+    content: "\e964";
 }
 .icon-perspective-TaxonList:before {
-    content: "\e967";
+    content: "\e965";
 }
 .icon-perspective-Taxonomy:before {
-    content: "\e968";
+    content: "\e966";
 }
 .icon-pie-chart:before {
-    content: "\e969";
+    content: "\e967";
 }
 .icon-plus-circle:before {
-    content: "\e96a";
+    content: "\e968";
 }
 .icon-print:before {
-    content: "\e96b";
+    content: "\e969";
 }
 .icon-random:before {
-    content: "\e96c";
+    content: "\e96a";
 }
 .icon-repeat:before {
-    content: "\e96d";
+    content: "\e96b";
 }
 .icon-rotate-left:before {
-    content: "\e96e";
+    content: "\e96c";
 }
 .icon-search-minus:before {
-    content: "\e96f";
+    content: "\e96d";
 }
 .icon-search-plus:before {
-    content: "\e970";
+    content: "\e96e";
 }
 .icon-split:before {
-    content: "\e971";
+    content: "\e96f";
 }
 .icon-square-o:before {
-    content: "\e972";
+    content: "\e970";
 }
 .icon-square:before {
-    content: "\e973";
+    content: "\e971";
 }
 .icon-table:before {
-    content: "\e974";
+    content: "\e972";
 }
 .icon-tasks:before {
-    content: "\e975";
+    content: "\e973";
 }
 .icon-taxonomy:before {
-    content: "\e976";
+    content: "\e974";
 }
 .icon-th-list:before {
-    content: "\e977";
+    content: "\e975";
 }
 .icon-trash:before {
-    content: "\e978";
+    content: "\e976";
 }
 .icon-unlock-alt:before {
-    content: "\e979";
+    content: "\e977";
 }
 .icon-unlock:before {
-    content: "\e97a";
+    content: "\e978";
 }
 .icon-upload:before {
-    content: "\e97b";
+    content: "\e979";
+}
+.icon-venn_circles:before {
+    content: "\e97a";
 }
 .icon-x:before {
-    content: "\e97c";
+    content: "\e97b";
 }
 * makes the font 33% larger relative to the icon container */
 .fa-lg {
@@ -9335,6 +9332,8 @@ th.dgrid-cell.wsItemType {
 .multipleItemSelection,
 .noItemSelection {
 	text-align: center;
+	font-size:1.2em;
+	font-weight: bold;
 }
 .dataItem .singleItemSelection .workspaceItemSelection,
 .workspaceItem .singleItemSelection .dataItemSelection,
@@ -10024,6 +10023,10 @@ TH.dgrid-cell.field-feature_type {
 .patric .dgrid-selected{
     background: #bfd6eb;
 }
+.patric .dgrid-footer {
+	font-size: 1.2em;
+	font-weight: bold;
+}
 .TaxonTreeGrid .dgrid-cell {
     border: 0px;
 }
@@ -10667,17 +10670,54 @@ div.pubmed ul li {
     text-align: center;
 }
 .PerspectiveHeader {
+	background: #efefef;
+	margin:0px;
+	padding: 4px;
+	border: 2px solid #76a72d;
+	border-radius:2px;	
 }
-.PerspectiveQuery,
-.PerspectiveTotalCount {
+.patric .PerspectiveQuery,
+.patric .PerspectiveTotalCount {
     vertical-align:top;
+    font-size: 1.25em;
 }
-.PerspectiveType {
-    font-size:.85em;vertical-align:top;margin-top:2px;
+.patric .PerspectiveTotalCount {
+	color: #76a72d;
+	font-weight: bold;
+}
+.patric .PerspectiveType {
+    font-size:1.1em;vertical-align:top;margin-top:2px;
 }
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
-    font-size:2.2em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;
+    font-size:3em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;margin:4px;
 }
 .patric.claro .dijitButtonNode {
     background-image: none;;
+}
+.FacetFilter ::-webkit-scrollbar,
+.dgrid ::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    background: #efefef;
+}
+.FacetFilter ::-webkit-scrollbar{
+	background: #333;
+	
+}
+.FacetFilter ::-webkit-scrollbar-thumb,
+.dgrid ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 1ex;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+}
+.FacetFilter ::-webkit-scrollbar-thumb{
+	background: #333;
+	border: 1px solid #fff;
+}
+.FacetFilter ::-webkit-scrollbar-corner, 
+.dgrid ::-webkit-scrollbar-corner {
+    background: #000;
+}
+.dgrid ::-webkit-scrollbar:horizontal {
+    display: none;
 }
