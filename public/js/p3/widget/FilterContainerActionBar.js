@@ -849,8 +849,12 @@ define([
 				h: bb.h - pe.h
 			};
 
+			console.log("_contentBox: ", this._contentBox);
+
+
+
 			Object.keys(this._ffWidgets).forEach(function(name){
-				this._ffWidgets[name].resize({h: this._contentBox.h - 35});
+				this._ffWidgets[name].resize({h: mb.h - this.absoluteMinSize - 7});
 			}, this);
 
 		},
