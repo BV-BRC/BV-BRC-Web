@@ -93,6 +93,12 @@
 }
 
 
+.patric .dgrid-footer {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+
 .TaxonTreeGrid .dgrid-cell {
     border: 0px;
 }

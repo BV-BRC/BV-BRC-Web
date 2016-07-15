@@ -1,9 +1,9 @@
 define([
 	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
-	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang"
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang","dgrid/selector"
 
 ], function(declare, Grid, Tree, on, Selection,
-			Store, DijitRegistryExt, lang){
+			Store, DijitRegistryExt, lang,selector){
 	return declare([Grid, DijitRegistryExt, Selection], {
 		constructor: function(){
 			this.queryOptions = {
@@ -13,6 +13,7 @@ define([
 		},
 		store: new Store({}),
 		columns: [
+			selector({}),
 			Tree({
 				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
 					return (prevExpanded || (level < 1))

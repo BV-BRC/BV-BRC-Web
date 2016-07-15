@@ -373,7 +373,7 @@ define([
 			};
 
 			Query(".FacetFilter", this.containerNode).forEach(function(n){
-				domGeometry.setMarginBox(n, {h: this._contentBox.h - 4})
+				domGeometry.setMarginBox(n, {h: this._contentBox.h - 25})
 			}, this)
 
 		}
