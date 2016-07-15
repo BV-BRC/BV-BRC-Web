@@ -6,6 +6,7 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateWorkspace",
 			dataParam: "userId",
+			requireAuth: true,
 			params: {}
 		},
 		CreateFolder: {
@@ -13,12 +14,14 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateFolder",
 			dataParam: "path",
+			requireAuth: true,
 			params: {}
 		},
 		Upload: {
 			title: "Upload",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			dataParam: "path",
 			params: {multiple: true}
 
@@ -27,6 +30,7 @@ define([], function(){
 			title: "Overwrite File",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			params: {overwrite: true}
 		},
 
@@ -46,9 +50,6 @@ define([], function(){
 			ctor: "p3/widget/app/BLAST",
 			params: {}
 		},
-
-
-
 
 		GenomeGroupViewer: {
 			title: "Genome Group",
