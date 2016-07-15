@@ -142,6 +142,7 @@ define("p3/widget/FacetFilter", [
 				}else{
 					domClass.remove(this.categoryNode, "selected");
 				}
+				this.resize();
 			}));
 			// this._refreshFilter();
 		},
@@ -265,7 +266,9 @@ define("p3/widget/FacetFilter", [
 
 			var hmb = domGeometry.getMarginBox(this.categoryNode);
 
-			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h - 50})
+			console.log("FacetFilter _contentBox: ", this._contentBox, " Header MB: ", hmb);
+
+			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h })
 
 		}
 	})

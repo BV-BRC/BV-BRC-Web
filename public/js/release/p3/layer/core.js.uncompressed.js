@@ -27933,14 +27933,14 @@ define([
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid"
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid","./PerspectiveToolTip"
 
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid){
+			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid,PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
 		"disabled": false,
@@ -27988,11 +27988,51 @@ define([
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-perspective-GenomeGroup fa-2x", {
+				label: "VIEW",
+				validTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "Switch to the Genome Group Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"GenomeGroup", perspectiveUrl: "/view/GenomeGroup/" + selection[0].path}),
+						around: button,
+						orient: ["below"]
+					});
+				}
+			}, function(selection){
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+				}
+			});
+
+			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-perspective-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: true,
-				tooltip: "View items in this genome group"
+				min: 2,
+				tooltip: "Switch to the Genome List Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"GenomeList", perspectiveUrl: "/view/GenomeList/" + q}),
+						around: button,
+						orient: ["below"]
+					});
+				}
 			}, function(selection){
 				if (selection.length==1){
 					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
@@ -58296,6 +58336,295 @@ function(kernel, arrayUtil, on, aspect, has, put){
 });
 
 },
+'p3/widget/PerspectiveToolTip':function(){
+define([
+	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
+	"dojo/_base/lang", "dojo/mouse",
+	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
+	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
+	"./AdvancedDownload", "dojo/dom-class"
+], function(declare, on, domConstruct,
+			lang, Mouse,
+			Topic, query, ContentPane,
+			Dialog, popup, TooltipDialog,
+			AdvancedDownload, domClass){
+
+	return declare([TooltipDialog], {
+		perspective: "Genome",
+		perspectiveUrl: "",
+		selection: null,
+		label: "",
+		subsections: {
+			"Genome": [
+				{label: "Overview", link: "overview"},
+				{label: "Phylogeny", link: "phylogeny"},
+				{label: "Browser", link: "browser"},
+				{label: "Circular Viewer", link: "circular"},
+				{label: "Sequences", link: "sequences"},
+				{label: "Features", link: "features"},
+				{label: "Specialty Genes", link: "specialtyGenes"},
+				{label: "Protein Families", link: "proteinFamilies"},
+				{label: "Pathways", link: "pathways"},
+				{label: "Transcriptomics", link: "transcriptomics"}
+			],
+			"GenomeList": [
+				{label: "Overview", link: "overview"},
+				{label: "Genomes", link: "genomes"},
+				{label: "Sequences", link: "sequences"},
+				{label: "Features", link: "features"},
+				{label: "Specialty Genes", link: "specialtyGenes"},
+				{label: "Protein Families", link: "proteinFamilies"},
+				{label: "Pathways", link: "pathways"},
+				{label: "Transcriptomics", link: "transcriptomics"}
+			],
+			"GenomeGroup": [
+				{label: "Overview", link: "overview"},
+				{label: "Genomes", link: "genomes"},
+				{label: "Sequences", link: "sequences"},
+				{label: "Features", link: "features"},
+				{label: "Specialty Genes", link: "specialtyGenes"},
+				{label: "Protein Families", link: "proteinFamilies"},
+				{label: "Pathways", link: "pathways"},
+				{label: "Transcriptomics", link: "transcriptomics"}
+			],
+			"Taxonomy": [
+				{label: "Overview", link: "overview"},
+				{label: "Phylogeny", link: "phylogeny"},
+				{label: "Taxonomy", link: "taxontree"},
+				{label: "Genomes", link: "genomes"},
+				{label: "Sequences", link: "sequences"},
+				{label: "Features", link: "features"},
+				{label: "Specialty Genes", link: "specialtyGenes"},
+				{label: "Protein Families", link: "proteinFamilies"},
+				{label: "Pathways", link: "pathways"},
+				{label: "Transcriptomics", link: "transcriptomics"}
+			],
+			"Feature": [
+				{label: "Overview", link: "overview"},
+				{label: "Browser", link: "genomeBrowser"},
+				{label: "Transcriptomics", link: "transcriptomics"},
+				{label: "Correlated Genes", link: "correlatedGenes"}
+			],
+			"FeatureList": [
+				{label: "Overview", link: "overview"},
+				{label: "Features", link: "features"}
+			]
+		},
+
+		_setSelectionAttr: function(val){
+			// console.log("DownloadTooltipDialog set selection: ", val);
+			this.selection = val;
+		},
+		timeout: function(val){
+			var _self = this;
+			this._timer = setTimeout(function(){
+				popup.close(_self);
+			}, val || 2500);
+		},
+
+		onMouseEnter: function(){
+			if(this._timer){
+				clearTimeout(this._timer);
+			}
+
+			this.inherited(arguments);
+		},
+		onMouseLeave: function(){
+			popup.close(this);
+		},
+
+		startup: function(){
+			if(this._started){
+				return;
+			}
+			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
+			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
+			var _self = this;
+			on(this.domNode, ".wsActionTooltip:click", function(evt){
+				// console.log("evt.target: ", evt.target, evt.target.attributes);
+				var rel = evt.target.attributes.rel.value;
+
+			});
+
+			var dstContent = domConstruct.create("div", {});
+			this.labelNode = domConstruct.create("div", {style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
+			this.selectedCount = domConstruct.create("div", {}, dstContent);
+			
+
+			var subs = this.subsections[this.perspective];
+
+			subs.forEach(function(sub){
+				var d = domConstruct.create("div",{}, dstContent);
+				domConstruct.create("a",{"class": "navigationLink", innerHTML: sub.label, href: this.perspectiveUrl + "#view_tab=" + sub.link},d);
+			},this);
+
+
+
+			this.set("content", dstContent);
+
+			this._started = true;
+			this.set("label", this.label || "Switch to " + this.perspective + " View");
+			this.set("selection", this.selection);
+
+		},
+
+		_setLabelAttr: function(val){
+			this.label = val;
+			if(this._started){
+				this.labelNode.innerHTML = val;
+			}
+		}
+	});
+
+});
+
+},
+'p3/widget/AdvancedDownload':function(){
+define([
+        "dojo/_base/declare", "dojo/on", "dojo/dom-construct","dojo/dom-attr",
+        "dojo/_base/lang","dojo/mouse", "dijit/_WidgetBase","dijit/_WidgetsInTemplateMixin",
+        "dojo/topic", "dijit/_TemplatedMixin","dojo/text!./templates/AdvancedDownload.html",
+        "dijit/Dialog","dojo/query"
+
+], function(declare, on, domConstruct,domAttr,
+		lang,Mouse,WidgetBase,WidgetsInTemplate,
+		Topic,TemplatedMixin,Template,
+		Dialog
+
+){
+	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate],{
+		templateString: Template,
+		"downloadableConfig": {
+			"genome_data": {
+			        "label": "Genomes",
+			        dataType: "genome",
+			        tableData: true,
+			        downloadTypes: [
+			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "fna",skipAnnotation:true},
+						{"label": "Protein Sequences in FASTA (*.faa)", type: "faa"},
+						{"label": "Annotations in GenBank file format (*.gbf)", type: "gbf"},
+						{"label": "Genomic features in Generic Feature Format format (*.gff)", type: "gff"},
+						{"label": "Genomic features in tab-delimited format (*.features.tab)", type: "features.tab"},
+						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "cds.tab"},
+
+						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "rna.tab"},
+						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "ffn"},
+						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "frn"},
+						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "pathway.tab"}
+			        ]
+			},
+			"sequence_data": {
+			      "label": "Sequences",
+			      tableData: true
+			 },
+			"feature_data": {
+			      "label": "Features",
+			      tableData: true
+			},
+			"spgene_data": {
+			      "label": "Specialty Genes",
+			      tableData: true
+			},
+			"pathway_data": {
+			      "label": "Pathways",
+			      tableData: true  
+			},
+			"default": {
+			      "label": "Items",
+			      tableData: true  
+	    	}
+	    },
+	    download: function(){
+	    	var ids = this.selection.map(function(x){ return x.genome_id; });
+	    	console.log("Downloading genomes: ", ids);
+	    	var types=[];
+	    	dojo.query("input",this.fileTypesTable).forEach(function(node){
+	    		console.log("node: ", node, node.checked, node.value);
+	    		if (node.checked){
+
+	    			types.push(node.value);
+	    		}
+	    	});
+	    	//new Dialog({content: "Download: " + ids + "\nTypes: " + types}).show();
+	    	var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
+	    	var conf = this.downloadableConfig[this.containerType]
+
+	    	var map={}
+	    	conf.downloadTypes.forEach(function(type){
+	    		map[type.type]=type;
+	    	})
+
+	    	var annotation = this.annotationType.get('value');
+
+	    	types = types.map(function(type){
+	    		if (map[type] && (map[type].skipAnnotation || annotation=="all" || !annotation)){
+	    			return "*."+type;
+	    		}else{
+	    			return "*"+annotation + "." + type;
+	    		}
+	    	})
+
+	    	if(baseUrl.charAt(-1) !== "/"){
+				baseUrl = baseUrl + "/";
+			}
+
+			
+			var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "bundle/" + conf.dataType + "/"},this.domNode);
+			domConstruct.create('input', {type: "hidden", name: "archiveType", value: this.archiveType.get('value')},form);
+			var typesNode = document.createElement("input");
+			typesNode.setAttribute('type',"hidden")
+			typesNode.setAttribute("name", "types");
+			typesNode.setAttribute("value", types.join(","));
+			form.appendChild(typesNode);
+
+			var qNode = document.createElement("input");
+			qNode.setAttribute('type',"hidden")
+			qNode.setAttribute("name", "q");
+			qNode.setAttribute("value", "in(genome_id,(" + ids.join(",") +"))");
+			form.appendChild(qNode);
+	
+			console.log("FORM SUBMIT: ", form);
+			form.submit();
+
+	    },
+		selection: null,
+		_setSelectionAttr: function(val){
+			console.log("AdvancedDownload _setSelectionAttr: ", val);
+			this.selection = val;
+
+		},
+		containerType: "",
+		startup: function(){
+			if (this.selection){
+				this.selectionNode.innerHTML = this.selection.length;
+			}
+			domConstruct.empty(this.fileTypesTable);
+			if (this.containerType){
+
+					if (this.downloadableConfig[this.containerType]){
+						var conf = this.downloadableConfig[this.containerType]
+						this.typeLabelNode.innerHTML = conf.label;
+						console.log("Advanced Download Conf: ", conf)
+						for (var x = 0; x<conf.downloadTypes.length;x+=2){
+							var row = domConstruct.create("tr",{},this.fileTypesTable);
+							var left = conf.downloadTypes[x];
+							domConstruct.create("td", {style: "padding:4px;", innerHTML: '<input type="checkbox" name="fileType" value="' + left.type + '"></input>&nbsp;' +left.label},row);
+							
+							var right = conf.downloadTypes[x+1];
+							if (right){
+								domConstruct.create("td", {style: "padding:4px;",innerHTML:  '<input type="checkbox" name="fileType" value="' + right.type + '"></input>&nbsp;' +right.label},row);
+							}
+						}
+					}
+
+			}
+
+		}
+	})
+
+});
+
+},
 'p3/widget/WorkspaceGroups':function(){
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
@@ -75068,7 +75397,7 @@ define([
 				}, setAnchor, true, this.rightButtons);
 			}
 
-			this.fullViewNode = domConstruct.create("div", {
+			this.fullViewContentNode = this.fullViewNode = domConstruct.create("div", {
 				"class": "FullFilterView",
 				style: {
 					"white-space": "nowrap",
@@ -75081,7 +75410,7 @@ define([
 					"overflow-x": "auto"
 				}
 			}, this.domNode)
-			this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
+			//this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
@@ -75580,8 +75909,12 @@ define([
 				h: bb.h - pe.h
 			};
 
+			console.log("_contentBox: ", this._contentBox);
+
+
+
 			Object.keys(this._ffWidgets).forEach(function(name){
-				this._ffWidgets[name].resize({h: this._contentBox.h - 4});
+				this._ffWidgets[name].resize({h: mb.h - this.absoluteMinSize - 7});
 			}, this);
 
 		},
@@ -75767,6 +76100,7 @@ define([
 				}else{
 					domClass.remove(this.categoryNode, "selected");
 				}
+				this.resize();
 			}));
 			// this._refreshFilter();
 		},
@@ -75890,7 +76224,9 @@ define([
 
 			var hmb = domGeometry.getMarginBox(this.categoryNode);
 
-			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h - 50})
+			console.log("FacetFilter _contentBox: ", this._contentBox, " Header MB: ", hmb);
+
+			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h })
 
 		}
 	})
@@ -76259,152 +76595,6 @@ define([
 });
 
 },
-'p3/widget/AdvancedDownload':function(){
-define([
-        "dojo/_base/declare", "dojo/on", "dojo/dom-construct","dojo/dom-attr",
-        "dojo/_base/lang","dojo/mouse", "dijit/_WidgetBase","dijit/_WidgetsInTemplateMixin",
-        "dojo/topic", "dijit/_TemplatedMixin","dojo/text!./templates/AdvancedDownload.html",
-        "dijit/Dialog","dojo/query"
-
-], function(declare, on, domConstruct,domAttr,
-		lang,Mouse,WidgetBase,WidgetsInTemplate,
-		Topic,TemplatedMixin,Template,
-		Dialog
-
-){
-	return declare([WidgetBase,TemplatedMixin,WidgetsInTemplate],{
-		templateString: Template,
-		"downloadableConfig": {
-			"genome_data": {
-			        "label": "Genomes",
-			        dataType: "genome",
-			        tableData: true,
-			        downloadTypes: [
-			        	{"label": "Genomic Sequences in FASTA (*.fna)", type: "fna",skipAnnotation:true},
-						{"label": "Protein Sequences in FASTA (*.faa)", type: "faa"},
-						{"label": "Annotations in GenBank file format (*.gbf)", type: "gbf"},
-						{"label": "Genomic features in Generic Feature Format format (*.gff)", type: "gff"},
-						{"label": "Genomic features in tab-delimited format (*.features.tab)", type: "features.tab"},
-						{"label": "Protein coding genes tab-delimited format (*.cds.tab)", type: "cds.tab"},
-
-						{"label": "RNAs in tab-delimited format (*.rna.tab)", type: "rna.tab"},
-						{"label": "DNA Sequences of Protein Coding Genes (*.ffn)", type: "ffn"},
-						{"label": "DNA Sequences of RNA Coding Genes (*.frn)", type: "frn"},
-						{"label": "Pathway assignments in tab-delimited format (*.pathway.tab)", type: "pathway.tab"}
-			        ]
-			},
-			"sequence_data": {
-			      "label": "Sequences",
-			      tableData: true
-			 },
-			"feature_data": {
-			      "label": "Features",
-			      tableData: true
-			},
-			"spgene_data": {
-			      "label": "Specialty Genes",
-			      tableData: true
-			},
-			"pathway_data": {
-			      "label": "Pathways",
-			      tableData: true  
-			},
-			"default": {
-			      "label": "Items",
-			      tableData: true  
-	    	}
-	    },
-	    download: function(){
-	    	var ids = this.selection.map(function(x){ return x.genome_id; });
-	    	console.log("Downloading genomes: ", ids);
-	    	var types=[];
-	    	dojo.query("input",this.fileTypesTable).forEach(function(node){
-	    		console.log("node: ", node, node.checked, node.value);
-	    		if (node.checked){
-
-	    			types.push(node.value);
-	    		}
-	    	});
-	    	//new Dialog({content: "Download: " + ids + "\nTypes: " + types}).show();
-	    	var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : "")
-	    	var conf = this.downloadableConfig[this.containerType]
-
-	    	var map={}
-	    	conf.downloadTypes.forEach(function(type){
-	    		map[type.type]=type;
-	    	})
-
-	    	var annotation = this.annotationType.get('value');
-
-	    	types = types.map(function(type){
-	    		if (map[type] && (map[type].skipAnnotation || annotation=="all" || !annotation)){
-	    			return "*."+type;
-	    		}else{
-	    			return "*"+annotation + "." + type;
-	    		}
-	    	})
-
-	    	if(baseUrl.charAt(-1) !== "/"){
-				baseUrl = baseUrl + "/";
-			}
-
-			
-			var form = domConstruct.create("form",{style: "display: none;", id: "downloadForm", enctype: 'application/x-www-form-urlencoded', name:"downloadForm",method:"post", action: baseUrl + "bundle/" + conf.dataType + "/"},this.domNode);
-			domConstruct.create('input', {type: "hidden", name: "archiveType", value: this.archiveType.get('value')},form);
-			var typesNode = document.createElement("input");
-			typesNode.setAttribute('type',"hidden")
-			typesNode.setAttribute("name", "types");
-			typesNode.setAttribute("value", types.join(","));
-			form.appendChild(typesNode);
-
-			var qNode = document.createElement("input");
-			qNode.setAttribute('type',"hidden")
-			qNode.setAttribute("name", "q");
-			qNode.setAttribute("value", "in(genome_id,(" + ids.join(",") +"))");
-			form.appendChild(qNode);
-	
-			console.log("FORM SUBMIT: ", form);
-			form.submit();
-
-	    },
-		selection: null,
-		_setSelectionAttr: function(val){
-			console.log("AdvancedDownload _setSelectionAttr: ", val);
-			this.selection = val;
-
-		},
-		containerType: "",
-		startup: function(){
-			if (this.selection){
-				this.selectionNode.innerHTML = this.selection.length;
-			}
-			domConstruct.empty(this.fileTypesTable);
-			if (this.containerType){
-
-					if (this.downloadableConfig[this.containerType]){
-						var conf = this.downloadableConfig[this.containerType]
-						this.typeLabelNode.innerHTML = conf.label;
-						console.log("Advanced Download Conf: ", conf)
-						for (var x = 0; x<conf.downloadTypes.length;x+=2){
-							var row = domConstruct.create("tr",{},this.fileTypesTable);
-							var left = conf.downloadTypes[x];
-							domConstruct.create("td", {style: "padding:4px;", innerHTML: '<input type="checkbox" name="fileType" value="' + left.type + '"></input>&nbsp;' +left.label},row);
-							
-							var right = conf.downloadTypes[x+1];
-							if (right){
-								domConstruct.create("td", {style: "padding:4px;",innerHTML:  '<input type="checkbox" name="fileType" value="' + right.type + '"></input>&nbsp;' +right.label},row);
-							}
-						}
-					}
-
-			}
-
-		}
-	})
-
-});
-
-},
 'FileSaver/FileSaver':function(){
 define([], function() {
 
@@ -76636,139 +76826,6 @@ define([], function() {
 	}(self));
 
 	return saveAs;
-});
-
-},
-'p3/widget/PerspectiveToolTip':function(){
-define([
-	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse",
-	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
-	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class"
-], function(declare, on, domConstruct,
-			lang, Mouse,
-			Topic, query, ContentPane,
-			Dialog, popup, TooltipDialog,
-			AdvancedDownload, domClass){
-
-	return declare([TooltipDialog], {
-		perspective: "Genome",
-		perspectiveUrl: "",
-		selection: null,
-		label: "",
-		subsections: {
-			"Genome": [
-				{label: "Overview", link: "overview"},
-				{label: "Phylogeny", link: "phylogeny"},
-				{label: "Browser", link: "browser"},
-				{label: "Circular Viewer", link: "circular"},
-				{label: "Sequences", link: "sequences"},
-				{label: "Features", link: "features"},
-				{label: "Specialty Genes", link: "specialtyGenes"},
-				{label: "Protein Families", link: "proteinFamilies"},
-				{label: "Pathways", link: "pathways"},
-				{label: "Transcriptomics", link: "transcriptomics"}
-			],
-			"GenomeList": [
-				{label: "Overview", link: "overview"},
-				{label: "Genomes", link: "genomes"},
-				{label: "Sequences", link: "sequences"},
-				{label: "Features", link: "features"},
-				{label: "Specialty Genes", link: "specialtyGenes"},
-				{label: "Protein Families", link: "proteinFamilies"},
-				{label: "Pathways", link: "pathways"},
-				{label: "Transcriptomics", link: "transcriptomics"}
-			],
-			"Taxonomy": [
-				{label: "Overview", link: "overview"},
-				{label: "Phylogeny", link: "phylogeny"},
-				{label: "Taxonomy", link: "taxontree"},
-				{label: "Genomes", link: "genomes"},
-				{label: "Sequences", link: "sequences"},
-				{label: "Features", link: "features"},
-				{label: "Specialty Genes", link: "specialtyGenes"},
-				{label: "Protein Families", link: "proteinFamilies"},
-				{label: "Pathways", link: "pathways"},
-				{label: "Transcriptomics", link: "transcriptomics"}
-			],
-			"Feature": [
-				{label: "Overview", link: "overview"},
-				{label: "Browser", link: "genomeBrowser"},
-				{label: "Transcriptomics", link: "transcriptomics"},
-				{label: "Correlated Genes", link: "correlatedGenes"}
-			],
-			"FeatureList": [
-				{label: "Overview", link: "overview"},
-				{label: "Features", link: "features"}
-			]
-		},
-
-		_setSelectionAttr: function(val){
-			// console.log("DownloadTooltipDialog set selection: ", val);
-			this.selection = val;
-		},
-		timeout: function(val){
-			var _self = this;
-			this._timer = setTimeout(function(){
-				popup.close(_self);
-			}, val || 2500);
-		},
-
-		onMouseEnter: function(){
-			if(this._timer){
-				clearTimeout(this._timer);
-			}
-
-			this.inherited(arguments);
-		},
-		onMouseLeave: function(){
-			popup.close(this);
-		},
-
-		startup: function(){
-			if(this._started){
-				return;
-			}
-			on(this.domNode, Mouse.enter, lang.hitch(this, "onMouseEnter"));
-			on(this.domNode, Mouse.leave, lang.hitch(this, "onMouseLeave"));
-			var _self = this;
-			on(this.domNode, ".wsActionTooltip:click", function(evt){
-				// console.log("evt.target: ", evt.target, evt.target.attributes);
-				var rel = evt.target.attributes.rel.value;
-
-			});
-
-			var dstContent = domConstruct.create("div", {});
-			this.labelNode = domConstruct.create("div", {style: "background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;"}, dstContent);
-			this.selectedCount = domConstruct.create("div", {}, dstContent);
-			
-
-			var subs = this.subsections[this.perspective];
-
-			subs.forEach(function(sub){
-				var d = domConstruct.create("div",{}, dstContent);
-				domConstruct.create("a",{"class": "navigationLink", innerHTML: sub.label, href: this.perspectiveUrl + "#view_tab=" + sub.link},d);
-			},this);
-
-
-
-			this.set("content", dstContent);
-
-			this._started = true;
-			this.set("label", this.label || "Switch to " + this.perspective + " View");
-			this.set("selection", this.selection);
-
-		},
-
-		_setLabelAttr: function(val){
-			this.label = val;
-			if(this._started){
-				this.labelNode.innerHTML = val;
-			}
-		}
-	});
-
 });
 
 },
@@ -77264,7 +77321,7 @@ define([
 			};
 
 			Query(".FacetFilter", this.containerNode).forEach(function(n){
-				domGeometry.setMarginBox(n, {h: this._contentBox.h - 4})
+				domGeometry.setMarginBox(n, {h: this._contentBox.h - 25})
 			}, this)
 
 		}
@@ -90571,10 +90628,10 @@ define([
 'p3/widget/TaxonomyTreeGrid':function(){
 define([
 	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
-	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang"
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang","dgrid/selector"
 
 ], function(declare, Grid, Tree, on, Selection,
-			Store, DijitRegistryExt, lang){
+			Store, DijitRegistryExt, lang,selector){
 	return declare([Grid, DijitRegistryExt, Selection], {
 		constructor: function(){
 			this.queryOptions = {
@@ -90584,6 +90641,7 @@ define([
 		},
 		store: new Store({}),
 		columns: [
+			selector({}),
 			Tree({
 				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
 					return (prevExpanded || (level < 1))
@@ -118948,6 +119006,7 @@ define([
 'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n",
 'url:dgrid/css/extensions/Pagination.css':".dgrid-status{padding:2px;}.dgrid-pagination .dgrid-status{float:left;}.dgrid-pagination .dgrid-navigation, .dgrid-pagination .dgrid-page-size{float:right;}.dgrid-navigation .dgrid-page-link{cursor:pointer;font-weight:bold;text-decoration:none;color:inherit;padding:0 4px;}.dgrid-first, .dgrid-last, .dgrid-next, .dgrid-previous{font-size:130%;}.dgrid-pagination .dgrid-page-disabled, .has-ie-6-7 .dgrid-navigation .dgrid-page-disabled, .has-ie.has-quirks .dgrid-navigation .dgrid-page-disabled{color:#aaa;cursor:default;}.dgrid-page-input{margin-top:1px;width:2em;text-align:center;}.dgrid-page-size{margin:1px 4px 0 4px;}#dgrid-css-extensions-Pagination-loaded{display:none;}",
 'url:dgrid/css/extensions/ColumnReorder.css':".dgrid-header .dojoDndTarget .dgrid-cell{display:table-cell;}.dgrid-header .dojoDndItemBefore{border-left:2px dotted #000 !important;}.dgrid-header .dojoDndItemAfter{border-right:2px dotted #000 !important;}#dgrid-css-extensions-ColumnReorder-loaded{display:none;}",
+'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
@@ -118955,7 +119014,6 @@ define([
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n\t<div class=\"actionButtons\" style=\"text-align: right\">\n\t\t\t<div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n\t\t\t<i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\" data-dojo-attach-event=\"click:showChart\"></i>\t\n\t\t\t<i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\" data-dojo-attach-event=\"click:showTable\"></i>\n\t\t\t</div>\n\t</div>\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t<div class=\"chartNode\" data-dojo-attach-point=\"chartNode\">\n\t\t</div>\n\n\t\t<div class=\"tableNode\" data-dojo-attach-point=\"tableNode\">\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
-'url:p3/widget/templates/AdvancedDownload.html':"<div style=\"width: 700px;\">\n\t<div>\n\t\tSelected <span data-dojo-attach-point=\"typeLabelNode\">Items</span>: <span data-dojo-attach-point=\"selectionNode\">\n\t\t</span>\n\t</div>\n\t<div style=\"margin-top:4px; padding:4px; border:1px solid #ccc;border-radius:4px;\">\n\t\t<p>Choose the data types you would like to download with the checkboxes below.  After selecting your desired data types, click on the download button to download an archive containing the selected data.</p>\n\t</div>\n\t<div style=\"margin-top:4px;padding:4px;\">\n\n\t\t<label>Annotation Type</label>\n\t\t<select style=\"width:120px;margin:4px;margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"annotationType\">\n\t\t\t<option value=\"PATRIC\" selected=true>PATRIC</option>\n\t\t\t<option value=\"RefSeq\" selected=true>RefSeq</option>\n\t\t\t<option value=\"all\" selected=true>All</option>\n\t\t</select>\n\n\t\t<label>Archive Type</label>\n\t\t<select style=\"width:120px;margin:4px; margin-left:8px;\" data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"archiveType\">\n\t\t\t<option value=\"zip\" selected=true>Zip</option>\n\t\t\t<option value=\"tar\" selected=true>TGZ</option>\n\t\t</select>\n\t</div>\n\t\n\t<div data-dojo-attach-point=\"fileTypesContainer\">\n\t\t<table data-dojo-attach-point=\"fileTypesTable\">\n\t\t</table>\n\t</div>\n\t<div style=\"text-align:right;\">\n\t\t<span data-dojo-type=\"dijit/form/Button\" data-dojo-attach-point=\"downloadButton\" data-dojo-attach-event=\"onClick:download\" label=\"Download\"></span>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
