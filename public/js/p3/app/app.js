@@ -196,7 +196,7 @@ define([
 
 				timer = setTimeout(function(){
 					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
-				},10000)
+				},120000)
 			});
 
 			on(document, ".loginLink:click", showAuthDlg);
