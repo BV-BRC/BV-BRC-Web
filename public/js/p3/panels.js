@@ -1,6 +1,13 @@
 define([], function(){
 
 	return {
+		quickstart: {
+			title: "PATRIC Quickstart",
+			ctor: "dijit/layout/ContentPane",
+			params: {
+				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+			}
+		},
 		CreateWorkspace: {
 			title: "Create Workspace",
 			layer: "p3/layer/panels",
@@ -42,7 +49,6 @@ define([], function(){
 				style: "width:600px;font-size:1.3em;border:1px solid #ddd;"
 			}
 		},
-
 
 		BLAST: {
 			title: "BLAST",
