@@ -58906,7 +58906,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish"
+	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish","dijit/Dialog"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -58914,7 +58914,7 @@ define([
 			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
 			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
 			TranscriptomicsContainer, InteractionsContainer, GenomeGridContainer,
-			SequenceGridContainer, PathJoin, QueryToEnglish){
+			SequenceGridContainer, PathJoin, QueryToEnglish, Dialog){
 	return declare([TabViewerBase], {
 		paramsMap: "query",
 		maxGenomesPerList: 10000,
@@ -58922,6 +58922,9 @@ define([
 		defaultTab: "overview",
 		perspectiveLabel: "Genome List View",
 		perspectiveIconClass: "icon-perspective-GenomeList",
+
+		showQuickstartKey: "hideQuickstart",
+
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
 			if (!query) {  0 && console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
@@ -59142,6 +59145,19 @@ define([
 			// 		 0 && console.log(this.id, " Call onSetAnchor " , this);
 			// 		this.onSetAnchor(evt);
 			// }));
+			if (localStorage){
+				var gs = localStorage.getItem(this.showQuickstartKey);
+				if (gs){
+					gs=JSON.parse(gs);
+				}
+				if (!gs){
+
+					var dlg = new Dialog({title: "PATRIC Quickstart", content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'})
+					dlg.show();
+					localStorage.setItem(this.showQuickstartKey,true);
+				}
+
+			}
 		},
 		onSetTotalGenomes: function(attr, oldVal, newVal){
 			//  0 && console.log("ON SET TOTAL GENOMES: ", newVal);
