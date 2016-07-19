@@ -507,7 +507,7 @@ define([
 				},
 				true
 			],
-			[
+		/*	[
 				"IDSelection",
 				"fa icon-pencil-square fa-2x",
 				{
@@ -531,7 +531,8 @@ define([
 					});
 				},
 				true
-			], [
+			],*/
+            [
 				"AddGroup",
 				"fa icon-object-group fa-2x",
 				{
