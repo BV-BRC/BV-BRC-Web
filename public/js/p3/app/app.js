@@ -92,6 +92,18 @@ define([
 				var parts = rel.split(":");
 				var type = parts[0];
 				params = parts[1];
+
+				var panel = _self.panels[type];
+				if (!panel){
+					throw error("Ivalid Panel: " + type);
+					return;
+				}
+
+				if (panel.requireAuth && (!_self.user || !_self.user.id)){
+					Topic.publish("/login");
+					return;
+				}
+
 				var w = _self.loadPanel(type, params);
 				Deferred.when(w, function(w){
 					if(!_self.dialog){
@@ -163,9 +175,33 @@ define([
 				// console.log("end loginLink Lcik");
 			};
 
+			var timer;
+			on(document, ".HomeServiceLink:click", function(evt){
+				var target = evt.target;
+				var rel;
+				console.log("TARGET: ", target);
+				if (target.attributes.rel.value){
+					rel = target.attributes.rel.value;
+				}else{
+					rel = target.parentNode.attributes.rel.value;
+				}
+
+				console.log("SELECT ", rel);
+				console.log("Child: ", Registry.byId(rel))
+				Registry.byId("p3carousel").selectChild(Registry.byId(rel));
+
+				if (timer){
+					clearTimeout(timer);
+				}
+
+				timer = setTimeout(function(){
+					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
+				},120000)
+			});
+
 			on(document, ".loginLink:click", showAuthDlg);
 			on(document, ".registrationLink:click", function(){
-				window.open(_self.accountURL);
+				window.open(_self.accountURL + "/register");
 			});
 			Topic.subscribe("/login", showAuthDlg);
 

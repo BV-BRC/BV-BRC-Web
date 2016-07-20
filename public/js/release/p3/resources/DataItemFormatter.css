@@ -1,7 +1,28 @@
+.DataItemHeader {
+    color: #76a72d;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 6px;
+    padding: 10px 0 7px 0;
+    border-bottom: 1px solid #afafaf;
+}
+.DataItemHeader > span {
+    vertical-align: middle;
+}
+.DataItemHeader .fa {
+    color: #76a72d;
+    font-size: 1.3em;
+    padding-right: 5px;
+    cursor: initial;
+}
 .detailProp {
-	vertical-align:top;
-	font-weight: 600;
+    vertical-align: top;
+    padding: 0 4px 0 6px;
+    width: 30%;
+    
 }
 .detailValue {
-	vertical-align: top;
+    vertical-align: top;
+    word-break: normal;
+    
 }

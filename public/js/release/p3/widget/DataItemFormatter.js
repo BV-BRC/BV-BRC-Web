@@ -13,8 +13,8 @@ define("p3/widget/DataItemFormatter", [
 
 			Object.keys(item).sort().forEach(function(key){
 				var tr = domConstruct.create("tr", {}, tbody);
-				var tda = domConstruct.create("td", {innerHTML: key}, tr);
-				var tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
+				domConstruct.create("td", {innerHTML: key}, tr);
+				domConstruct.create("td", {innerHTML: item[key]}, tr);
 			}, this);
 
 			return table;
@@ -30,21 +30,21 @@ define("p3/widget/DataItemFormatter", [
 					props.forEach(function(p){
 						if(typeof obj[p] == 'object'){
 							var tr = domConstruct.create("tr", {}, tbody);
-							var tda = domConstruct.create("td", {
+							domConstruct.create("td", {
 								style: {"padding-left": (depth * 5) + "px"},
 								innerHTML: p,
 								nowrap: "nowrap"
 							}, tr);
-							var tdb = domConstruct.create("td", {}, tr);
+							domConstruct.create("td", {}, tr);
 							renderObject(obj[p], tbody, depth + 1);
 						}else{
 							var tr = domConstruct.create("tr", {}, tbody);
-							var tda = domConstruct.create("td", {
+							domConstruct.create("td", {
 								style: {"padding-left": (depth * 10) + "px"},
 								innerHTML: p,
 								nowrap: "nowrap"
 							}, tr);
-							var tdb = domConstruct.create("td", {innerHTML: obj[p]}, tr);
+							domConstruct.create("td", {innerHTML: obj[p]}, tr);
 						}
 					})
 				}
@@ -86,13 +86,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			// console.log("Create Display Header")
-			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
-			// console.log("TBODY: ", tbody)
-			displayDetail(item, featureColumns, tbody, options);
-			// console.log("Display Detail Complete")
-
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -133,10 +128,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			// console.log("Create Display Header")
-			var tbody = displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
-			// console.log("TBODY: ", tbody)
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
+			displayDetail(item, featureColumns, div, options);
 
 			var tpDiv = domConstruct.create("div", {}, div);
 			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
@@ -167,7 +160,10 @@ define("p3/widget/DataItemFormatter", [
 
 			var featureColumns = [{
 				name: 'Genome Name',
-				text: 'genome_name'
+				text: 'genome_name',
+				link: function(obj){
+					return "<a href='/view/Genome/" + obj.genome_id + "'>" + obj.genome_name + "</a>";
+				}
 			}, {
 				name: 'Annotation',
 				text: 'annotation'
@@ -177,6 +173,7 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'PATRIC ID',
 				text: 'patric_id',
+				link: '/view/Feature/',
 				mini: true
 			}, {
 				name: 'RefSeq Locus Tag',
@@ -236,7 +233,8 @@ define("p3/widget/DataItemFormatter", [
 				text: 'segments'
 			}, {
 				name: 'Feature ID',
-				text: 'feature_id'
+				text: 'feature_id',
+				data_hide: true
 			}, {
 				name: 'Protein ID',
 				text: 'protein_id',
@@ -341,8 +339,8 @@ define("p3/widget/DataItemFormatter", [
 			}
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -474,8 +472,8 @@ define("p3/widget/DataItemFormatter", [
 			}
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -488,16 +486,24 @@ define("p3/widget/DataItemFormatter", [
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
 				name: 'Taxon Name',
-				text: 'taxon_name'
+				text: 'taxon_name',
+				data_hide: true
 			}, {
-				name: 'Taxon Rank',
+				name: 'Rank',
 				text: 'taxon_rank'
-			}, {
-				name: 'Other Names',
-				text: 'other_names'
 			}, {
 				name: 'Lineage',
 				text: 'lineage_names',
+				link: function(obj){
+					var names = obj.lineage_names;
+					var ids = obj.lineage_ids;
+					return names.map(function(d, idx){
+						return "<a href='/view/Taxonomy/" + ids[idx] + "'>" + d + "</a>";
+					}).join(", ");
+				}
+			}, {
+				name: 'Other Names',
+				text: 'other_names',
 				data_hide: true
 			}, {
 				name: 'Lineage Ranks',
@@ -513,9 +519,9 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
+			displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
 
-			displayDetail(item, featureColumns, tbody, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -561,8 +567,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/" + item.pathway_id, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/" + item.pathway_id, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -605,8 +611,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/" + item.family_id, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/" + item.family_id, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -695,8 +701,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/" + item.genome_id, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/" + item.genome_id, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -789,8 +795,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -891,8 +897,8 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
-			displayDetail(item, featureColumns, tbody, options);
+			displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
+			displayDetail(item, featureColumns, div, options);
 
 			return div;
 		},
@@ -1127,18 +1133,16 @@ define("p3/widget/DataItemFormatter", [
 			}];
 
 			var div = domConstruct.create("div");
-			var tbody = displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
+			displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
 
 			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + (item.chromosomes || 0) + ", Plasmids: " + (item.plasmids || 0) + ", Contigs: " + (item.contigs || 0);
-			var tr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("td", {
-				innerHTML: "Summary:",
-				style: "font-weight: bold",
+			domConstruct.create("div", {
+				innerHTML: summary,
+				style: "font-weight: bold; padding-left: 10px; margin-bottom: 6px; padding-bottom: 7px; border-bottom: 1px solid #afafaf;",
 				nowrap: "nowrap"
-			}, tr);
-			domConstruct.create("td", {innerHTML: summary}, tr);
+			}, div);
 
-			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, tbody, options);
+			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, div, options);
 
 			return div;
 
@@ -1153,42 +1157,24 @@ define("p3/widget/DataItemFormatter", [
 			}
 		}
 
-		var hdr_div = domConstruct.create("div", {"class": "DataItemHeader"}, div);
+		var titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, div);
 
-		var hdr_table = domConstruct.create("table", {}, hdr_div);
-		var hdr_tbody = domConstruct.create("tbody", {}, hdr_table);
-		var hdr_th = domConstruct.create("tr", {}, hdr_tbody);
-		var hdr_tda = domConstruct.create("td", {}, hdr_th);
-		var span = domConstruct.create("span", {"class": icon_name}, hdr_tda);
-		var hdr_tdb;
+		var span = domConstruct.create("span", {"class": icon_name}, titleDiv);
 
 		if(linkTitle == true){
-			hdr_tdb = domConstruct.create("td", {
-				innerHTML: "<a href='" + url + "'>" + item_name + "</a>",
-				style: "font-weight: bold;width:95%;"
-			}, hdr_th);
+			domConstruct.create("span", {
+				innerHTML: "<a href='" + url + "'>" + item_name + "</a>"
+			}, titleDiv);
 		}
 		else{
-			hdr_tdb = domConstruct.create("td", {innerHTML: item_name, style: "font-weight: bold;width:95%;"}, hdr_th);
+			domConstruct.create("span", {
+				innerHTML: item_name
+			}, titleDiv);
 		}
-
-		var dtl_div = domConstruct.create("div", {}, div);
-		var table = domConstruct.create("table", {}, dtl_div);
-		var tbody = domConstruct.create("tbody", {}, table);
-
-		var tr = domConstruct.create("tr", {}, tbody);
-		var tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-		var tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-
-		return tbody;
 	}
 
-	function displayDetailBySections(item, meta_data_section, meta_data, tbody, options){
+	function displayDetailBySections(item, meta_data_section, meta_data, parent, options){
 		var displayColumns = {};
-		var tr;
-		var tda;
-		var tdb;
-
 		var mini = false;
 		var hideExtra = false;
 
@@ -1201,19 +1187,18 @@ define("p3/widget/DataItemFormatter", [
 			}
 		}
 
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
+
 		for(var i = 0; i < meta_data_section.length; i++){
 			if(mini == false){
-				tr = domConstruct.create("tr", {}, tbody);
-				tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-				tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
 
-				tr = domConstruct.create("tr", {}, tbody);
-				tda = domConstruct.create("td", {
-					innerHTML: meta_data_section[i] + ":",
-					style: "font-weight: bold",
-					nowrap: "nowrap"
+				var tr = domConstruct.create("tr", {}, tbody);
+				domConstruct.create("td", {
+					innerHTML: meta_data_section[i],
+					style: "font-weight: bold"
 				}, tr);
-				tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+				domConstruct.create("td", {innerHTML: ""}, tr);
 			}
 
 			var value = meta_data[meta_data_section[i]];
@@ -1222,73 +1207,64 @@ define("p3/widget/DataItemFormatter", [
 				var column = value[j].text;
 
 				if(column){
-					displayColumns[column] = 1;
+					displayColumns[column] = true;
 				}
 
 				if(column && (item[column] || item[column] == "0")){
 
-					if(mini == false){
+					if(!mini || (mini && value[j].mini)){
+
+						tr = domConstruct.create("tr", {}, tbody);
+						domConstruct.create("td", {
+							"class": "detailProp",
+							innerHTML: value[j].name
+						}, tr);
+
+						var innerHTML;
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
-							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+							if(typeof(value[j].link) == "function"){
+								innerHTML = value[j].link.apply(this, arguments);
+							}else{
+								innerHTML = "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
+							}
 						}
 						else{
-							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
+							innerHTML = item[column];
 						}
-					}
-					else if(value[j].mini == true){
-						if(value[j].link && item[column] != "-" && item[column] != "0"){
-							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + value[j].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
-						}
-						else{
-							tr = domConstruct.create("tr", {}, tbody);
-							tda = domConstruct.create("td", {"class": "detailProp", innerHTML: value[j].name, nowrap: "nowrap"}, tr);
-							tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
-						}
+
+						domConstruct.create("td", {
+							"class": "detailValue",
+							innerHTML: innerHTML
+						}, tr);
 					}
 				}
 			}
-
 		}
 
-		var additional = 0;
-
+		var additional = true;
 		if(hideExtra == false && mini == false){
 
 			Object.keys(item).sort().forEach(function(key){
-				if(displayColumns[key] != 1 && item[key]){
-					if(additional == 0){
+				if(!displayColumns[key] && item[key]){
+					if(additional){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {
-							innerHTML: "Additional Info:",
+						domConstruct.create("td", {
+							innerHTML: "Additional Info",
 							style: "font-weight: bold",
-							nowrap: "nowrap"
+							colspan: 2
 						}, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+						additional = false;
 					}
-					additional++;
-					tr = domConstruct.create("tr", {}, tbody)
-					tda = domConstruct.create("td", {"class": "detailProp", innerHTML: key, nowrap: "nowrap"}, tr);
+					tr = domConstruct.create("tr", {}, tbody);
+					tda = domConstruct.create("td", {"class": "detailProp", innerHTML: key}, tr);
 					tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
 				}
 			}, this);
 		}
 	}
 
-	function displayDetail(item, column_data, tbody, options){
+	function displayDetail(item, column_data, parent, options){
 		var displayColumns = {};
-		var tr;
-		var tda;
-		var tdb;
 		var mini = false;
 		var hideExtra = false;
 
@@ -1301,93 +1277,86 @@ define("p3/widget/DataItemFormatter", [
 			}
 		}
 
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
+
 		for(var i = 0; i < column_data.length; i++){
 			var column = column_data[i].text;
 
 			if(column){
-				displayColumns[column] = 1;
+				displayColumns[column] = true;
 			}
 
 			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
 
-				if(mini == false){
+				if(!mini || (mini && column_data[i].mini)){
+
+					var tr = domConstruct.create("tr", {}, tbody);
+					domConstruct.create("td", {
+						"class": "detailProp",
+						innerHTML: column_data[i].name
+					}, tr);
+
+					var innerHTML;
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
+						if(typeof(column_data[i].link) == "function"){
+							innerHTML = column_data[i].link.apply(this, arguments);
+						}else{
+							innerHTML = "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>";
+						}
 					}
 					else{
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
+						innerHTML = item[column];
 					}
-				}
-				else if(column_data[i].mini == true){
-					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: "<a href='" + column_data[i].link + item[column] + "' target ='_blank'>" + item[column] + "</a>"}, tr);
-					}
-					else{
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {"class": "detailProp",innerHTML: column_data[i].name, nowrap: "nowrap"}, tr);
-						tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[column]}, tr);
-					}
+
+					domConstruct.create("td", {
+						"class": "detailValue",
+						innerHTML: innerHTML
+					}, tr);
 				}
 			}
 		}
 
-		var additional = 0;
-
+		var additional = true;
 		if(hideExtra == false && mini == false){
-			Object.keys(item).sort().forEach(function(key){
-				if(displayColumns[key] != 1 && item[key]){
-					if(additional == 0){
+			Object.keys(item).sort()
+				.filter(function(key){
+					return !displayColumns[key] && item[key];
+				})
+				.forEach(function(key){
+					if(additional){
 						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-						tdb = domConstruct.create("td", {innerHTML: "<hr>"}, tr);
-
-						tr = domConstruct.create("tr", {}, tbody);
-						tda = domConstruct.create("td", {
-							innerHTML: "Additional Info:",
+						domConstruct.create("td", {
+							colspan: 2,
+							innerHTML: "Additional Info",
 							style: "font-weight: bold"
 						}, tr);
-						tdb = domConstruct.create("td", {innerHTML: ""}, tr);
+						additional = false;
 					}
-					additional++;
 					tr = domConstruct.create("tr", {}, tbody);
-					tda = domConstruct.create("td", {innerHTML: key, nowrap: "nowrap"}, tr);
-					tdb = domConstruct.create("td", {innerHTML: item[key]}, tr);
-				}
-			}, this);
+					domConstruct.create("td", {"class": "detailProp", innerHTML: key}, tr);
+					domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
+				}, this);
 		}
 	}
 
 	return function(item, type, options){
 
-		var new_type = type;
-		var out;
-		if(type == "genome_group"){
-			new_type = "genome_data";
-		}
-		else if(type == "feature_group"){
-			new_type = "feature_data";
-		}
-		else if(type == "experiment"){
-			new_type = "transcriptomics_sample_data";
-		}
-		/*
-		else if (type == "experiment_group")
-		{
-			new_type = "transcriptomics_experiment_data";
-		}
-		*/
-		if(new_type && formatters[new_type]){
-			out = formatters[new_type](item, options)
-		}else{
-			out = formatters["default"](item, options);
+		var new_type;
+		switch(type){
+			case "genome_group":
+				new_type = "genome_data";
+				break;
+			case "feature_group":
+				new_type = "feature_data";
+				break;
+			case "experiment":
+				new_type = "transcriptomics_sample_data";
+				break;
+			default:
+				new_type = type || "default";
 		}
 
-		return out;
+		return formatters[new_type](item, options);
 	}
 });

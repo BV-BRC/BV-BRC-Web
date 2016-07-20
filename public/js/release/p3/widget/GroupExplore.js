@@ -326,7 +326,7 @@ define("p3/widget/GroupExplore", [
 		var g2_s = d3.select("#g2_stroke");
 
 		console.log("default_color", default_color);
-		if(default_color === 'N'){
+		if(default_color === 'Y'){
 			g0.classed("venn_circle", false);
 			g0.classed("venn_circle_color1", true);
 			g0_s.classed("venn_circle_stroke", false);

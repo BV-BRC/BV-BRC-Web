@@ -5,7 +5,7 @@ define("p3/widget/ExternalItemFormatter", [
 			Button, JobManager, TitlePane, xhr, lang){
 
 	var formatters = {
-		"default": function(item, options, node){
+		"default": function(item, options){
 			options = options || {};
 
 			var table = domConstruct.create("table");
@@ -20,7 +20,7 @@ define("p3/widget/ExternalItemFormatter", [
 			return table;
 		},
 
-		"pubmed_data": function(item, options, node){
+		"pubmed_data": function(item, options){
 			options = options || {};
 
 			var term;
@@ -48,7 +48,7 @@ define("p3/widget/ExternalItemFormatter", [
 
 			var eutilSearchURL = window.location.protocol + "//" + "eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?usehistory=y&db=pubmed&term=" + term + "&retmode=json";
 
-			var div = domConstruct.create("div", {class: "pubmed"});
+			var div = domConstruct.create("div", {"class": "pubmed"});
 			var topLevelUl = domConstruct.create("ul", {}, div);
 
 			xhr.get(eutilSearchURL, {
@@ -104,16 +104,15 @@ define("p3/widget/ExternalItemFormatter", [
 				}
 				else{
 					domConstruct.create("li", {innerHTML: "No recent articles found."}, topLevelUl);
-					node.style.display = 'none';
 				}
 			}));
 			return div;
 		}
 	};
 
-	return function(item, type, options, node){
+	return function(item, type, options){
 		type = type || "default";
 
-		return formatters[type](item, options, node)
+		return formatters[type](item, options)
 	}
 });

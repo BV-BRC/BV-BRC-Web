@@ -314,7 +314,7 @@ define([
 
 			this.addAction("ToggleFilters", "fa icon-filter fa-2x", {
 				style: {"font-size": ".5em"},
-				label: "SHOW",
+				label: "FILTERS",
 				validType: ["*"],
 				tooltip: "Toggle the filter display"
 			}, toggleFilters, true, this.rightButtons);
@@ -322,7 +322,7 @@ define([
 			this.watch("minimized", lang.hitch(this, function(attr, oldVal, minimized){
 				//console.log("FilterContainerActionBar minimized: ", minimized)
 				if(this.minimized){
-					this.setButtonText("ToggleFilters", "SHOW")
+					this.setButtonText("ToggleFilters", "FILTERS")
 				}else{
 					this.setButtonText("ToggleFilters", "HIDE")
 				}
@@ -337,7 +337,7 @@ define([
 				}, setAnchor, true, this.rightButtons);
 			}
 
-			this.fullViewNode = domConstruct.create("div", {
+			this.fullViewContentNode = this.fullViewNode = domConstruct.create("div", {
 				"class": "FullFilterView",
 				style: {
 					"white-space": "nowrap",
@@ -350,7 +350,7 @@ define([
 					"overflow-x": "auto"
 				}
 			}, this.domNode)
-			this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
+			//this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
@@ -849,8 +849,12 @@ define([
 				h: bb.h - pe.h
 			};
 
+			console.log("_contentBox: ", this._contentBox);
+
+
+
 			Object.keys(this._ffWidgets).forEach(function(name){
-				this._ffWidgets[name].resize({h: this._contentBox.h - 4});
+				this._ffWidgets[name].resize({h: mb.h - this.absoluteMinSize - 7});
 			}, this);
 
 		},

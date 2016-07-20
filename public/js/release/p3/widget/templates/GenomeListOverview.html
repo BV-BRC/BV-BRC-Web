@@ -1,33 +1,39 @@
 <div>
-    <table style="margin:2px;">
-        <tbody>
-        <tr>
-            <td style="padding:7px;vertical-align:top;min-width:350px;width:30%;">
-                <h3 class="section-title normal-case close2x"><span class="wrap">Reference/Representative Genomes</span></h3>
-                <div class="section">
-                    <div style="padding:7px" data-dojo-attach-point="rgSummaryWidget"
-                         data-dojo-type="p3/widget/ReferenceGenomeSummary">
-                    </div>
-                </div>
-            </td>
-            <td style="padding:7px;vertical-align:top;width:70%;min-width:500px;">
+    <div class="column-sub">
 
-                <div class="section">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Genome Metadata Top 5</span></h3>
-                    <div  class="gmSummaryWidget" data-dojo-attach-point="gmSummaryWidget" data-dojo-type="p3/widget/GenomeMetaSummary"
-                         style="margin:4px;width:100%;">
-                    </div>
-                </div>
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Reference/Representative Genomes</span></h3>
+            <div data-dojo-attach-point="rgSummaryWidget"
+                 data-dojo-type="p3/widget/ReferenceGenomeSummary">
+            </div>
+        </div>
+    </div>
 
-                <div class="section">
-                    <h3 class="section-title normal-case close2x"><span class="wrap">Specialty Gene Summary</span></h3>
-                    <div data-dojo-attach-point="spgSummaryWidget" data-dojo-type="p3/widget/SpecialtyGeneSummary"
-                         style="margin:4px;">
-                    </div>
-                </div>
+    <div class="column-prime">
 
-            </td>
-        </tr>
-        </tbody>
-    </table>
+        <div class="section hidden">
+            <h3 class="section-title"><span class="wrap">AMR Panel Summary</span></h3>
+            <div class="apmSummaryWidget" data-dojo-attach-point="apmSummaryWidget"
+                 data-dojo-type="p3/widget/AMRPanelMetaSummary">
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Genome Metadata Top 5</span></h3>
+            <div class="gmSummaryWidget" data-dojo-attach-point="gmSummaryWidget"
+                 data-dojo-type="p3/widget/GenomeMetaSummary">
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 class="section-title"><span class="wrap">Specialty Gene Summary</span></h3>
+            <div data-dojo-attach-point="spgSummaryWidget"
+                 data-dojo-type="p3/widget/SpecialtyGeneSummary">
+            </div>
+        </div>
+    </div>
+
+    <div class="column-opt">
+
+    </div>
 </div>

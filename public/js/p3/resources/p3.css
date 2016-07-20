@@ -56,6 +56,17 @@ body.patric *:focus {
     outline: 0;
 }
 
+iframe  {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+}
+
 .layoutContainer {
     width: 100%;
     height: 100%;
@@ -518,8 +529,19 @@ div.overview {
 }
 
 .queryValue {
-    color: #ffcb00;
+    background: #ffcb00;
+    color: #333;
     text-transform: none;
+    padding:2px;
+    border-radius:3px;
+}
+
+.queryValue:hover {
+	/*text-decoration: line-through;*/
+	cursor: pointer;
+	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/LVAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAASSURBVHjaYvrPwMDEAMEAAQYACzEBBlU9CW8AAAAASUVORK5CYII=');
+	background-repeat: repeat-x;
+	background-position: center; 
 }
 
 div.tooltip {
@@ -711,19 +733,29 @@ div.pubmed ul li {
 }
 
 .PerspectiveHeader {
-
+	background: #efefef;
+	margin:0px;
+	padding: 4px;
+	border: 2px solid #76a72d;
+	border-radius:2px;	
 }
 
-.PerspectiveQuery,
-.PerspectiveTotalCount {
+.patric .PerspectiveQuery,
+.patric .PerspectiveTotalCount {
     vertical-align:top;
+    font-size: 1.25em;
 }
 
-.PerspectiveType {
-    font-size:.85em;vertical-align:top;margin-top:2px;
+.patric .PerspectiveTotalCount {
+	color: #76a72d;
+	font-weight: bold;
+}
+
+.patric .PerspectiveType {
+    font-size:1.1em;vertical-align:top;margin-top:2px;
 }
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
-    font-size:2.2em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;
+    font-size:3em;float:left;margin-right:4px; font-weight:600;color:#76a72d;margin-top:4px;margin:4px;
 }
 
 .patric.claro .dijitButtonNode {
@@ -731,3 +763,39 @@ div.pubmed ul li {
 }
 
 
+.FacetFilter ::-webkit-scrollbar,
+.dgrid ::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    background: #efefef;
+}
+
+
+.FacetFilter ::-webkit-scrollbar{
+	background: #333;
+	/*border-left: 1px solid #888;*/
+}
+
+
+
+.FacetFilter ::-webkit-scrollbar-thumb,
+.dgrid ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 1ex;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+}
+
+
+.FacetFilter ::-webkit-scrollbar-thumb{
+	background: #333;
+	border: 1px solid #fff;
+}
+
+.FacetFilter ::-webkit-scrollbar-corner, 
+.dgrid ::-webkit-scrollbar-corner {
+    background: #000;
+}
+
+.dgrid ::-webkit-scrollbar:horizontal {
+    display: none;
+}

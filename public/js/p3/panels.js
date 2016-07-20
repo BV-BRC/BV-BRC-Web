@@ -1,11 +1,19 @@
 define([], function(){
 
 	return {
+		quickstart: {
+			title: "PATRIC Quickstart",
+			ctor: "dijit/layout/ContentPane",
+			params: {
+				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+			}
+		},
 		CreateWorkspace: {
 			title: "Create Workspace",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateWorkspace",
 			dataParam: "userId",
+			requireAuth: true,
 			params: {}
 		},
 		CreateFolder: {
@@ -13,12 +21,14 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/CreateFolder",
 			dataParam: "path",
+			requireAuth: true,
 			params: {}
 		},
 		Upload: {
 			title: "Upload",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			dataParam: "path",
 			params: {multiple: true}
 
@@ -27,6 +37,7 @@ define([], function(){
 			title: "Overwrite File",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/Uploader",
+			requireAuth: true,
 			params: {overwrite: true}
 		},
 
@@ -39,16 +50,12 @@ define([], function(){
 			}
 		},
 
-
 		BLAST: {
 			title: "BLAST",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/app/BLAST",
 			params: {}
 		},
-
-
-
 
 		GenomeGroupViewer: {
 			title: "Genome Group",

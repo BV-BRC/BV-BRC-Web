@@ -855,6 +855,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
+					requireAuth: true,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},

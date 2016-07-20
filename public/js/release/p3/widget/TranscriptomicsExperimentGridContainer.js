@@ -51,7 +51,7 @@ define("p3/widget/TranscriptomicsExperimentGridContainer", [
 
 	return declare([GridContainer], {
 		containerType: "transcriptomics_experiment_data",
-		facetFields: ["organism", "strain", "mutant", "condition", "timeseries", "release_date"],
+		facetFields: ["organism", "strain", "mutant", "condition", "timeseries"],
 		maxGenomeCount: 5000,
 		dataModel: "transcriptomics_experiment",
 		getFilterPanel: function(opts){

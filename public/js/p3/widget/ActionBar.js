@@ -1,10 +1,11 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "./Button", "dojo/dom-construct",
-	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse"
+	"dijit/Tooltip", "dojo/dom","dojo/_base/event", "dojo/mouse",
+	"dojo/topic"
 ], function(declare, WidgetBase, on,
 			domClass, Button, domConstruct,
-			Tooltip, dom, Event){
+			Tooltip, dom, Event,mouse,Topic){
 	return declare([WidgetBase], {
 		"baseClass": "ActionBar",
 		constructor: function(){
@@ -151,10 +152,16 @@ define([
 				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
-						console.log("actionButton: ", _self._actions[rel].button);
+						console.log("actionButton: ", _self._actions[rel]);
+						if (_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
+							Topic.publish("/login");
+							return;
+						}
+
 						_self._actions[rel].action.apply(_self, [_self.selection, _self.currentContainerWidget,_self._actions[rel].button]);
 					}
 				}
+				domClass.remove(target,"depressed");
 			});
 
 			on(this.domNode, ".ActionButtonWrapper:mousedown", function(evt){

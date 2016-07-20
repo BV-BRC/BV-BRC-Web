@@ -5,14 +5,14 @@ define([
 	"./ActionBar", "dojo/_base/Deferred", "../WorkspaceManager", "dojo/_base/lang",
 	"./Confirmation", "./SelectionToGroup", "dijit/Dialog", "dijit/TooltipDialog",
 	"dijit/popup", "dojo/text!./templates/IDMapping.html", "dojo/request",
-	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid"
+	"./ContainerActionBar", "./GroupExplore", "./GenomeGrid","./PerspectiveToolTip"
 
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			WorkspaceExplorerView, Topic, ItemDetailPanel,
 			ActionBar, Deferred, WorkspaceManager, lang,
 			Confirmation, SelectionToGroup, Dialog, TooltipDialog,
-			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid){
+			popup, IDMappingTemplate, xhr, ContainerActionBar, GroupExplore, GenomeGrid,PerspectiveToolTipDialog){
 	return declare([BorderContainer], {
 		"baseClass": "WorkspaceBrowser",
 		"disabled": false,
@@ -60,11 +60,51 @@ define([
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-eye fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-perspective-GenomeGroup fa-2x", {
+				label: "VIEW",
+				validTypes: ["genome_group"],
+				multiple: false,
+				tooltip: "Switch to the Genome Group Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"GenomeGroup", perspectiveUrl: "/view/GenomeGroup/" + selection[0].path}),
+						around: button,
+						orient: ["below"]
+					});
+				}
+			}, function(selection){
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
+				}
+			});
+
+			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-perspective-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: true,
-				tooltip: "View items in this genome group"
+				min: 2,
+				tooltip: "Switch to the Genome List Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					var q = selection.map(function(sel){
+						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"GenomeList", perspectiveUrl: "/view/GenomeList/" + q}),
+						around: button,
+						orient: ["below"]
+					});
+				}
 			}, function(selection){
 				if (selection.length==1){
 					Topic.publish("/navigate", {href:"/view/GenomeGroup" + selection[0].path});
@@ -640,8 +680,8 @@ define([
 				dlg.show();
 			}, true);
 
-			this.actionPanel.addAction("GroupExplore", "fa icon-git-compare fa-2x", {
-					label: "GCOMPARE",
+			this.actionPanel.addAction("GroupExplore", "fa icon-venn_circles fa-2x", {
+					label: "VennDiag",
 					ignoreDataType: false,
 					allowMultiTypes: false,
 					min: 2,

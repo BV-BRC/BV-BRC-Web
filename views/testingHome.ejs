@@ -10,6 +10,13 @@
 		{name: "Metabolic Reconstruction", href: "/app/Reconstruct"}
 	] %>
 
+	<% var flows = [
+		{name: "Genomics", rel: "carousel_genomics"},
+		{name: "Comparative Genomics", rel: "carousel_comparative_genomics"},
+		{name: "Transcriptomics", rel: "carousel_transcriptomics"},
+		{name: "Variation Analysis", rel: "carousel_variation_analysis"}
+	] %>
+
 	<% var topNews = [
 		{
 			publishDate: new Date(),
@@ -44,80 +51,165 @@
 
 	<div style="background-color:#000;">
 		<div class="layer" style="text-align: center;">
-			<div style="background:#efefef;width:100%;margin: auto;margin-top:-1px;margin-bottom:10px;padding:4px;">
-				<table style="width:100%;margin-right:4px;">
-					<tr>
-						<td style="width: 200px;padding:4px;vertical-align:top;">
+			<div data-dojo-type="dijit/layout/StackContainer" style="background:#efefef;width:100%;margin: auto;margin-top:-1px;margin-bottom:10px;padding:4px;" id="p3carousel">
 
-							<div style="vertical-align:top;margin: 4px; width:100%; border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Explore</a> Data</div>
-								<div style="text-align:left;">
-									<ul>
-										<li>Genomes</li>
-										<li>Genomic Features</li>
-										<li>Protein Families</li>
-										<li>Pathways</li>
-										<li>Transcriptomics Experiments</li>
-										<li>Antibiotic Resistance</li>
-										<li>Taxonomies</li>
-									</ul>
+				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">
+					<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td style="width: 200px;padding:4px;vertical-align:top;">
+
+								<div style="vertical-align:top;margin: 4px; width:100%; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+									<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Explore</a> Data</div>
+									<div style="text-align:left;">
+										<ul>
+											<li>Genomes</li>
+											<li>Genomic Features</li>
+											<li>Protein Families</li>
+											<li>Pathways</li>
+											<li>Transcriptomics Experiments</li>
+											<li>Antibiotic Resistance</li>
+											<li>Taxonomies</li>
+										</ul>
+									</div>
 								</div>
-							</div>
+								</td>
+							<td style="vertical-align:top;">
+								<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
+									<span class="fa-4x icon-long-arrow-right"></span><br>
+									<span class="fa-4x icon-long-arrow-left"></span>
+								</div>
 							</td>
-						<td style="vertical-align:top;">
-							<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
-								<span class="fa-4x icon-long-arrow-right"></span><br>
-								<span class="fa-4x icon-long-arrow-left"></span>
-							</div>
-						</td>
-						<td style="width:210px;padding:4px;vertical-align:top;">
-							<div style="vertical-align: top; margin: 4px;width:100%;border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div style="font-size:1.2em;font-weight:bold;">Analyze</div>
-								<div style="text-align:left;">
-									<ul>
-									<% services.forEach(function(svc,index) { %>
-										<li style="margin:4px;"><a href="<%- svc.href %>"><%- svc.name %></a></li>
-									<% }) %>
-									</ul>
+							<td style="width:210px;padding:4px;vertical-align:top;">
+								<div style="vertical-align: top; margin: 4px;width:100%;border: 1px solid #ddd;border-radius:4px;background:#fff;">
+									<div style="font-size:1.2em;font-weight:bold;">Analyze</div>
+									<div style="text-align:left;">
+										<ul>
+										<% services.forEach(function(svc,index) { %>
+											<li style="margin:4px;"><a href="<%- svc.href %>"><%- svc.name %></a></li>
+										<% }) %>
+										</ul>
+									</div>
 								</div>
-							</div>
-						</td>
-						<td style="vertical-align:top;">
-							<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
-								<span class="fa-4x icon-long-arrow-right"></span><br>
-								<span class="fa-4x icon-long-arrow-left"></span>
-							</div>
-						</td>
-						<td style="width:200px;padding:4px;padding-right:16px;vertical-align:top;">
-							<div style="vertical-align: top; margin:4px;width:100%; height:250px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
-								<div style="font-size:1.2em;font-weight:bold;">Workspace</div>
-								<div style="text-align: left;">
-									<ul>
-										<li><a class="DialogButton" style="cursor:pointer;" rel="Upload:">Upload Your Data</a>
-											<ul>
-												<li>Contigs</li>
-												<li>Reads</li>
-												<li>Differential Expression Data</li>
-												<li>FASTA Files</li>
-											</ul>
-										</li>
-										<li>Create and Combine Data Groups</li>
-										<li>Store and share analyses</li>
+							</td>
+							<td style="vertical-align:top;">
+								<div style="margin: 4px; width:100%; border: 0px;padding-top:30px;">
+									<span class="fa-4x icon-long-arrow-right"></span><br>
+									<span class="fa-4x icon-long-arrow-left"></span>
 								</div>
-							</div>
+							</td>
+							<td style="width:200px;padding:4px;padding-right:16px;vertical-align:top;">
+								<div style="vertical-align: top; margin:4px;width:100%; height:250px; border: 1px solid #ddd;border-radius:4px;background:#fff;">
+									<div style="font-size:1.2em;font-weight:bold;">Workspace</div>
+									<div style="text-align: left;">
+										<ul>
+											<li><a class="DialogButton" style="cursor:pointer;" rel="Upload:">Upload Your Data</a>
+												<ul>
+													<li>Contigs</li>
+													<li>Reads</li>
+													<li>Differential Expression Data</li>
+													<li>FASTA Files</li>
+												</ul>
+											</li>
+											<li>Create and Combine Data Groups</li>
+											<li>Store and share analyses</li>
+									</div>
+								</div>
 
-						</td>
-					</tr>
-				</table>
+							</td>
+						</tr>
+					</table>
+				</div>
+
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics" class="showOnLoad dijitHidden">
+				<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Comparative Genomics Workflow</div>
+				<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td colspan="3"></td>
+							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/SeqComparison">Proteome Comparison</a></div></td>
+							<td colspan="4"></td>
+						</tr>
+						<tr>
+							<td><div class="FlowBoxItem">Search for Genomes</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Create Genome Set</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Protein Family Sorter</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Heatmap Clustering</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">MSA<br>Gene Trees</div></td>
+						</tr>
+		
+						<tr>
+							<td colspan="3"></td>
+							<td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/ComparativePathway">Comparative Pathways</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Pathway Map<br>Heatmap</div></td>
+						</tr>
+					</table>
+				</div>
+
+
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_genomics" class="genomicsWorkflow showOnLoad dijitHidden">
+					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Genomics Workflow</div>
+					<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Assembly">Assemble</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Annotation">Annotate</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Genomic Overview<br>Genomic Features<br>Specialty Genes<br>Pathways</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Genome Browser<br>Circular Viewer</div></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Preassembled<br>Contigs</div></td><td colspan="4"></td>
+						</tr>
+					</table>
+				</div>
+
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_transcriptomics" class="showOnLoad dijitHidden">
+					<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Gene Expression Analysis</div>
+					<table style="width:100%;margin-right:4px;">
+						<tr>
+							<td><div class="FlowBoxItem DialogButton" rel="Upload:">Upload Reads</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="/app/Rnaseq">RNA-Seq Analysis</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem"><a href="">Differential Expression Analysis</a></div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Heatmap<br>Clustering</div></td>
+							<td> <div class="FlowBoxArrow"><span class="fa-4x icon-arrow-right"></span></div></td>
+							<td><div class="FlowBoxItem">Pathway Analysis</div></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxArrow"><span class="fa-4x icon-arrow-up"></div></td><td colspan="4"></td>
+						</tr>
+						<tr>
+							<td colspan="4"></td><td><div class="FlowBoxItem" class="DialogButton" rel="Upload:">Upload Differential Epxressions</div></td><td colspan="4"></td>
+						</tr>
+					</table>
+				</div>
+				<div data-dojo-type="dijit/layout/ContentPane" id="carousel_variation_analysis" class="showOnLoad dijitHidden">
+					Variation Analysis Workflow Overview
+				</div>
 			</div>
 		</div>
 	</div>
 	<div class="layer" style="text-align: center;">
 
-		<h1>What Can I Do @PATRIC?</h1>
+		<h1>How can I do ... </h1>
 
-		<% services.forEach(function(svc,index) { %>
-			<div class="HomeServiceLink">
+		<% flows.forEach(function(svc,index) { %>
+			<div class="HomeServiceLink" rel="<%- svc.rel %>">
 				<%- svc.name %>
 			</div>
 		<% }) %>
