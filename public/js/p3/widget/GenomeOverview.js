@@ -34,7 +34,7 @@ define([
 			this.genome = genome;
 			this.createSummary(genome);
 
-			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
+			const sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
@@ -46,7 +46,7 @@ define([
 
 		"createSummary": function(genome){
 			domConstruct.empty(this.genomeSummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "genome_data", {hideExtra: true}), this.genomeSummaryNode, "first");
+			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), this.genomeSummaryNode, "first");
 			domConstruct.empty(this.pubmedSummaryNode);
 			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},

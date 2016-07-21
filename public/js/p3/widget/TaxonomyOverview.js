@@ -11,7 +11,7 @@ define([
 			ExternalItemFormatter
 ){
 
-	var searchName = null;
+	let searchName = null;
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
@@ -31,7 +31,7 @@ define([
 
 			searchName = this.genome.taxon_name; 
 
-			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
+			const sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
@@ -48,7 +48,7 @@ define([
 
 		"createSummary": function(genome){
 			domConstruct.empty(this.taxonomySummaryNode);
-			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {hideExtra: true}), this.taxonomySummaryNode, "first");
+			domConstruct.place(DataItemFormatter(genome, "taxonomy_data", {}), this.taxonomySummaryNode, "first");
 			if(searchName != genome.taxon_name){
 				domConstruct.empty(this.pubmedSummaryNode);
 				domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
