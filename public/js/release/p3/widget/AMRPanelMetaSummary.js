@@ -1,18 +1,23 @@
 define("p3/widget/AMRPanelMetaSummary", [
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+	"dojo/_base/declare", "dijit/_WidgetBase",
+	"dojo/on", "dojo/dom-class",
+	"./SummaryWidget", "./D3StackedBarChart"
 
-], function(declare, WidgetBase, on,
-			domClass, SummaryWidget,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, easing){
+], function(declare, WidgetBase,
+			on, domClass,
+			SummaryWidget, D3StackedBarChart){
+
+	var phenotypeDef = {
+		"R": {index: 0, label: "Resistant"},
+		"S": {index: 1, label: "Susceptible"},
+		"I": {index: 2, label: "Intermediate"},
+		"N": {index: 3, label: "Not Defined"}
+	};
 
 	return declare([SummaryWidget], {
 		dataModel: "genome_amr",
 		query: "",
-		baseQuery: "&limit(1)&facet((pivot,(resistant_phenotype,antibiotic)),(pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)",
+		baseQuery: "&limit(1)&facet((pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)",
 		columns: [{
 			label: "Antibiotic",
 			field: "antibiotic"
@@ -25,7 +30,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 		}],
 		processData: function(data){
 
-			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['resistant_phenotype,antibiotic']){
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['antibiotic,resistant_phenotype']){
 				console.log("INVALID SUMMARY DATA", data);
 				return;
 			}
@@ -39,84 +44,51 @@ define("p3/widget/AMRPanelMetaSummary", [
 			}
 
 			var antibiotic_data = data.facet_counts.facet_pivot['antibiotic,resistant_phenotype'];
-			var phenotype_data = data.facet_counts.facet_pivot['resistant_phenotype,antibiotic'];
 
-			// build a antibiotic name index
-			var antibiotics = {};
-			var chartData = {};
-
-			antibiotic_data.forEach(function(d, idx){
-				antibiotics[d.value] = idx;
-			});
-
-			phenotype_data.forEach(function(current){
-				chartData[current.value] = current.pivot.map(function(d){
-					return {text: d.value, x: antibiotics[d.value], y: d.count, phenotype: current.value}
-				});
-			});
-
-			// console.log(antibiotics, chartData);
-
+			var chartData = [];
 			var tableData = [];
+
 			antibiotic_data.forEach(function(d){
 				var antibiotic = d.value;
 				tableData = tableData.concat(d.pivot.map(function(d){
 					return {antibiotic: antibiotic, phenotype: d.value, count: d.count};
 				}));
+
+				var dist = [0, 0, 0, 0];
+				d.pivot.forEach(function(phenotype){
+					if(phenotypeDef.hasOwnProperty(phenotype.value)){
+						dist[phenotypeDef[phenotype.value].index] = phenotype.count;
+					}
+				});
+				var total = dist.reduce(function(a, b){
+					return a+b;
+				});
+
+				chartData.push({
+					label: antibiotic,
+					phenotypes: ["Resistant", "Susceptible", "Intermediate", "Not Defined"],
+					total: total,
+					dist: dist
+				});
 			});
-			// console.log(tableData);
+			// console.log(chartData, tableData);
 			this._tableData = tableData;
 
 			this.set('data', chartData);
 		},
 
 		render_chart: function(){
-
 			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode)
-					.setTheme(Theme)
-					.addPlot("default", {
-						type: "StackedColumns",
-						markers: true,
-						gap: 3,
-						animate: {duration: 1000, easing: easing.linear}
-					})
-					.addAxis("x", {
-						majorLabels: false,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false
-					})
-					.addAxis("y", {
-						title: "Genomes",
-						vertical: true,
-						majorLabels: true,
-						minorTicks: true,
-						minorLabels: true,
-						microTicks: true,
-						natural: true,
-						includeZero: true
-					});
+				this.chart = new D3StackedBarChart(this.chartNode);
 
-				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						var d = o.run.data[o.index];
-						return "[" + d.phenotype + "] " + d.text + " (" + d.y + ")";
-					}
-				});
-
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.addSeries(key, this.data[key]);
-				}));
-
+				const legend = Object.keys(phenotypeDef).map(key => phenotypeDef[key].label);
+				this.chart.renderLegend(legend);
+				this.chart.processData(this.data);
 				this.chart.render();
+
 			}else{
-
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.updateSeries(key, this.data[key]);
-				}));
+				this.chart.processData(this.data);
 				this.chart.render();
-
 			}
 		},
 

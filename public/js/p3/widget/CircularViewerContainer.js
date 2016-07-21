@@ -69,7 +69,7 @@ define([
 						return DataItemFormatter(item, "feature_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item, "feature_data", {hideExtra: true, linkTitle: true})
+						return DataItemFormatter(item, "feature_data", {linkTitle: true})
 					}
 				}
 			})
@@ -122,7 +122,7 @@ define([
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
 					},
 					formatDialogContent: function(item){
-						return DataItemFormatter(item, "sequence_data", {hideExtra: true, linkTitle: true})
+						return DataItemFormatter(item, "sequence_data", {linkTitle: true})
 					}
 				},
 				data: refseqs
