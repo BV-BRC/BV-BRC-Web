@@ -786,7 +786,10 @@ define([
 				text: 'contigs'
 			}, {
 				name: 'Sequences',
-				text: 'sequences'
+				text: 'sequences',
+				link: function(obj){
+					return `<a href="/view/Genome/${obj['genome_id']}#view_tab=sequences">${obj['sequences']}</a>`
+				}
 			}, {
 				name: 'Genome Length',
 				text: 'genome_length'
@@ -795,7 +798,10 @@ define([
 				text: 'gc_content'
 			}, {
 				name: 'PATRIC CDS',
-				text: 'patric_cds'
+				text: 'patric_cds',
+				link: function(obj){
+					return `<a href="/view/Genome/${obj['genome_id']}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">${obj['patric_cds']}</a>`
+				}
 			}, {
 				name: 'RefSeq CDS',
 				text: 'refseq_cds'
@@ -906,7 +912,7 @@ define([
 
 			domConstruct.create("div", {
 				innerHTML: summary,
-				style: "font-weight: bold; padding-left: 10px; margin-bottom: 6px; padding-bottom: 7px; border-bottom: 1px solid #afafaf;",
+				"class": "DataItemSummary",
 				nowrap: "nowrap"
 			}, div);
 
@@ -944,7 +950,7 @@ define([
 				tr = domConstruct.create("tr", {}, tbody);
 				domConstruct.create("td", {
 					innerHTML: meta_data_section[i],
-					style: "font-weight: bold",
+					"class": "DataItemSectionHead",
 					colspan: 2
 				}, tr);
 			}
@@ -960,7 +966,7 @@ define([
 
 						tr = domConstruct.create("tr", {}, tbody);
 						domConstruct.create("td", {
-							"class": "detailProp",
+							"class": "DataItemProperty",
 							innerHTML: value[j].name
 						}, tr);
 
@@ -977,7 +983,7 @@ define([
 						}
 
 						domConstruct.create("td", {
-							"class": "detailValue",
+							"class": "DataItemValue",
 							innerHTML: innerHTML
 						}, tr);
 					}
@@ -1001,7 +1007,7 @@ define([
 
 					const tr = domConstruct.create("tr", {}, tbody);
 					domConstruct.create("td", {
-						"class": "detailProp",
+						"class": "DataItemProperty",
 						innerHTML: column_data[i].name
 					}, tr);
 
@@ -1018,7 +1024,7 @@ define([
 					}
 
 					domConstruct.create("td", {
-						"class": "detailValue",
+						"class": "DataItemValue",
 						innerHTML: innerHTML
 					}, tr);
 				}
