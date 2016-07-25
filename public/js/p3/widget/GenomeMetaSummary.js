@@ -140,16 +140,16 @@ define([
 				})
 			}
 
-			const onClickEventHandler = function(evt){
+			var onClickEventHandler = function(evt){
 				if(evt.type == "onclick" && evt.element == "slice"){
 					// console.log(evt);
-					const target = evt.run.data[evt.index].link;
+					var target = evt.run.data[evt.index].link;
 					if(target){
 						Topic.publish("/navigate", {href: window.location.pathname + target});
 					}
 				}
 				else if(evt.type == "onmouseover"){
-					const target = evt.run.data[evt.index].link;
+					var target = evt.run.data[evt.index].link;
 					if(target && !evt.eventMask.rawNode.style.cursor){
 						// console.log(evt.eventMask.rawNode);
 						evt.eventMask.rawNode.style.cursor = "pointer";
