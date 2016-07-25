@@ -5097,11 +5097,11 @@ table {  font-size:100%; }
 }
 @font-face {
     font-family: 'icomoon';
-    src:    url("icomoon/fonts/icomoon.eot?84pg43");
-    src:    url("icomoon/fonts/icomoon.eot?84pg43#iefix") format('embedded-opentype'),
-        url("icomoon/fonts/icomoon.ttf?84pg43") format('truetype'),
-        url("icomoon/fonts/icomoon.woff?84pg43") format('woff'),
-        url("icomoon/fonts/icomoon.svg?84pg43#icomoon") format('svg');
+    src:    url("icomoon/fonts/icomoon.eot?x9nhfg");
+    src:    url("icomoon/fonts/icomoon.eot?x9nhfg#iefix") format('embedded-opentype'),
+        url("icomoon/fonts/icomoon.ttf?x9nhfg") format('truetype'),
+        url("icomoon/fonts/icomoon.woff?x9nhfg") format('woff'),
+        url("icomoon/fonts/icomoon.svg?x9nhfg#icomoon") format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -5117,6 +5117,9 @@ table {  font-size:100%; }
     
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+.icon-alignment:before {
+    content: "\e97c";
 }
 .icon-apply-perspective-filter:before {
     content: "\e900";
@@ -10206,6 +10209,11 @@ TH.dgrid-cell.field-feature_type {
     background-color: #346a8f;
     color: #fff;
 }
+.homeBottomSection {
+	background: #fff;
+	margin-top: 0px;
+	padding:4px;
+}
 html, body,
 body.patric {
     height: 100%;
@@ -10275,20 +10283,29 @@ iframe  {
     display: none;
 }
 .HomeServiceLink {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
+    line-height:110px;
     background: #fff;
-    border: 1px dashed #999;
-    border-radius: 2px;
+    border:0px;
+    border: 3px solid transparent;
+    border-radius: 4px;
     margin: 16px;
     display: inline-block;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
+    box-shadow: 1px 2px 4px #333;
 }
 .HomeServiceLink:hover {
-    border-color: #555;
-    box-shadow: 0px 0px 24px orange;
+    border-color: #629821;
+}
+.HomeServiceLink > SPAN {
+	vertical-align: middle;
+	display: inline-block;
+  	line-height: normal;  
+	color: #fff;
+	font-weight: bold;
 }
 table.p3basic {
     font-size: 11px;
@@ -10632,13 +10649,12 @@ div.overview {
     padding:2px;
     border-radius:3px;
 }
-.queryValue:hover {
-	
 	cursor: pointer;
 	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/LVAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAASSURBVHjaYvrPwMDEAMEAAQYACzEBBlU9CW8AAAAASUVORK5CYII=');
 	background-repeat: repeat-x;
 	background-position: center;
 }
+*/
 div.tooltip {
     position: absolute;
     padding: 10px;

@@ -5019,7 +5019,7 @@ define([
 				var target = evt.target;
 				var rel;
 				console.log("TARGET: ", target);
-				if (target.attributes.rel.value){
+				if (target.attributes.rel && target.attributes.rel.value){
 					rel = target.attributes.rel.value;
 				}else{
 					rel = target.parentNode.attributes.rel.value;
@@ -89196,7 +89196,6 @@ window.PhyloTree = {
     //            .replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"");
             console.log("tree json string: " + nwk);
             var r = JSON.parse(nwk);
-            r.labels=[{}]; //list of objects that map node id to label
             finalizeTree(r);
             return r;
         }
@@ -89256,10 +89255,8 @@ window.PhyloTree = {
             tree.px = 0;
             visit(tree,                                                                                               
                 function(node){
-                    var tmp_label=[];
                     if(!node.c && node.n) {
                         //try to parse out the genus and species name
-                        node.id = node.n;
                         node.n = node.n.replace(/_/g, " ");
                         var fields = node.n.split(" ");
                         var genusIndex = 0;
@@ -89273,14 +89270,13 @@ window.PhyloTree = {
                         for(var i = 2; genusIndex+i < fields.length; i++) {
                             species = species + " " + fields[genusIndex+i]
                         }
-                        node.species_strain = species ? species: "";
-                        tmp_label.push(node.genus);
-                        tmp_label.push(node.species_strain);
+                        node.species_strain = species ? species: "";                         
                     } else {
-                        node.id="inode"+nodeId;
                         node.n = ""+nodeId;
+                        nodeId++;
                     }
                     if(node.c) {
+                        
                         node.c.forEach(function(child){
                             child.parent = node;
                             if(child.l) {
@@ -89292,13 +89288,10 @@ window.PhyloTree = {
                             return b.d - a.d;
                         });                        
                     } else {
-                        node.label = tmp_label.join(" ");
-                        tree.labels[0][node.id]=node.label;
                         leafCount++;
                         node.ti = tipIndex++;
                         node.py = node.ti;
                     }
-                    nodeId++;
                 },
 
                 function(node){
@@ -89342,14 +89335,10 @@ define([
     tipLinkPrefix : "http://www.google.com/search?q:",
     tipLinkSuffix : "",
     fontWidthForMargin : null,
-    selectionTarget: null,
     containerName: null,
     tipToColors  : null,
     treeData : null,
-    labelIndex: 0,
-    labelLabels: {"PATRIC ID":0},
     tree : null,
-    selected: [],
     svgContainer : null, 
     visit: function(parent, visitFn, childrenFn)
     {
@@ -89365,18 +89354,6 @@ define([
             }
         }
     },
-
-    startup: function(){
-        if(this._started){
-            return;
-        }
-
-        this.watch("labelIndex", lang.hitch(this, "update"));
-
-        this.inherited(arguments);
-    },
-
-
     d3Tree: function(containerName, customOptions)
 {
     this.options= {iNodeRadius: 3, tipNodeRadius: 3, fontSize: 12, phylogram:true, supportCutoff:100};
@@ -89446,23 +89423,6 @@ define([
         this.update();
     },
 
-    addLabels: function(labelMap, labelAlias){ //object map for IDs to labels and a category name for the label
-        this.labelLabels[labelAlias]=this.treeData.labels.length;
-        this.treeData.labels.push(labelMap);
-    },
-
-    selectLabels: function(labelAlias){
-        if (labelAlias in this.labelLabels){
-            var labelIndex = this.labelLabels[labelAlias];
-            this.maxLabelLength = 10;
-            Object.keys(this.treeData.labels[labelIndex]).forEach(lang.hitch(this, function(leafID){
-                this.maxLabelLength = Math.max(this.treeData.labels[labelIndex][leafID].length, this.maxLabelLength);
-            }));
-            this.set('labelIndex', labelIndex);
-        }
-    },
-
-
     getDataURL : function() {
         var svgs = d3.select("svg")
             .attr("version", 1.1)
@@ -89482,21 +89442,19 @@ define([
     },
 
     getSelectedItems : function() {
-            this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
+        var selected = new Array();
+            this.tree.nodes(this.treeData).forEach(function(d){
             if(d.selected && !d.c) {
-                this.selected.push(d);
+                selected.push(d);
             }
-        }));
-        if (this.selectionTarget != null){
-            this.selectionTarget.set("selection",this.selected);
-        }
+        });
+        return selected;
     },
 
     clearSelections : function() {
         this.tree.nodes(this.treeData).forEach(function(d){
             d.selected = false;
         });
-        this.selected = [];
     },
 
     startingBranch : function(d){
@@ -89578,7 +89536,6 @@ define([
         _self.visit(d, function(d){
             d.selected = toggleTo;
         });
-        x = _self.getSelectedItems();
         _self.update();
     },
 
@@ -89628,9 +89585,8 @@ define([
             r = 0;
             r = +(_self.heightPerLeaf/4);
             return r;
-        });
-    if(_self.createLinks){
-        anchors.append("svg:a")
+        })
+        .append("svg:a")
         .attr("xlink:href", function(d){
             var r = "";
             if(!d.c || d.children.length == 0) {
@@ -89638,7 +89594,6 @@ define([
             }
             return r;
         });
-    }
 
     var fullLabels = anchors
         .append("svg:tspan")
@@ -89703,23 +89658,31 @@ define([
         })
         .text(function(d){
             var r = "";
-            if(d.id && _self.treeData.labels.length && d.id in _self.treeData.labels[_self.labelIndex]){
-                r = _self.treeData.labels[_self.labelIndex][d.id];
-            }
-            else if(d.label) {
-                r = d.label
-            }
-            return r;
-        })
-        .attr("id", function(d){
-            var r = "";
-            if(d.id){
-                r = d.id;
+            if(d.genus) {
+                r = d.genus + " ";
             }
             return r;
         })
         ;
 
+    fullLabels
+        .append("svg:tspan")
+        .style("fill", function(d){
+            var r = "";
+            var colorKey = d.genus + " " + d.species;
+            if(_self.tipToColors[colorKey]) {
+                r = _self.tipToColors[colorKey][1];
+            }
+            return r;
+        })
+        .text(function(d){
+            var r = "";
+            if(d.species_strain) {
+                r = d.species_strain;
+            }
+            return r;
+        })
+        ;
 
         nodeGroup
             .transition()
@@ -89873,9 +89836,6 @@ define([
             var r = "node";
             if(d.selected) {
                 r = r + " selected";
-            }
-            if(d.c && d.c.length == 0) {
-                r = r + " leaf";
             }
             return r;
         })
