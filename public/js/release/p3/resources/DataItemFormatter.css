@@ -15,14 +15,22 @@
     padding-right: 5px;
     cursor: initial;
 }
-.detailProp {
-    vertical-align: top;
-    padding: 0 4px 0 6px;
-    width: 30%;
-    
+.DataItemSummary {
+    font-weight: bold;
+    padding: 0 0 7px 10px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #afafaf;
 }
-.detailValue {
+.DataItemSectionHead {
+    background: #efefef;
+    padding: 5px 3px;
+}
+.DataItemProperty {
+    vertical-align: top;
+    padding: 0 4px 0 10px;
+    width: 30%;
+}
+.DataItemValue {
     vertical-align: top;
     word-break: normal;
-    
 }

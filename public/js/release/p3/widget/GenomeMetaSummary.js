@@ -1,12 +1,14 @@
 define("p3/widget/GenomeMetaSummary", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/promise/all", "dojo/when", "dojo/dom-class", "dojo/dom-construct", "dojo/request",
+	"dojo/topic",
 	"dijit/_WidgetBase", "dijit/layout/ContentPane",
 	"dojox/charting/Chart2D", "dojox/charting/action2d/MoveSlice", "dojox/charting/plot2d/Pie",
 	"dojox/charting/action2d/Tooltip", "dojo/fx/easing",
 	"../util/PathJoin", "./SummaryWidget", "./PATRICTheme"
 ], function(declare, lang,
 			on, All, when, domClass, domConstruct, xhr,
+			Topic,
 			WidgetBase, ContentPane,
 			Chart2D, MoveSlice, Pie,
 			ChartTooltip, easing,
@@ -138,6 +140,23 @@ define("p3/widget/GenomeMetaSummary", [
 				})
 			}
 
+			var onClickEventHandler = function(evt){
+				if(evt.type == "onclick" && evt.element == "slice"){
+					// console.log(evt);
+					var target = evt.run.data[evt.index].link;
+					if(target){
+						Topic.publish("/navigate", {href: window.location.pathname + target});
+					}
+				}
+				else if(evt.type == "onmouseover"){
+					var target = evt.run.data[evt.index].link;
+					if(target && !evt.eventMask.rawNode.style.cursor){
+						// console.log(evt.eventMask.rawNode);
+						evt.eventMask.rawNode.style.cursor = "pointer";
+					}
+				}
+			};
+
 			if(!this.host_chart){
 				var cpHostNode = domConstruct.create("div", {"class": "pie-chart-widget"});
 				domConstruct.place(cpHostNode, this.chartNode, "last");
@@ -150,10 +169,10 @@ define("p3/widget/GenomeMetaSummary", [
 					.addPlot("default", {
 						type: this.DonutChart,
 						radius: 70,
-						stroke: "black",
 						labelStyle: "columns"
 					});
-				new MoveSlice(this.host_chart, "default");
+				// new MoveSlice(this.host_chart, "default");
+				this.host_chart.connectToPlot("default", onClickEventHandler);
 
 				var cpDiseaseNode = domConstruct.create("div", {"class": "pie-chart-widget"});
 				domConstruct.place(cpDiseaseNode, this.chartNode, "last");
@@ -166,10 +185,10 @@ define("p3/widget/GenomeMetaSummary", [
 					.addPlot("default", {
 						type: this.DonutChart,
 						radius: 70,
-						stroke: "black",
 						labelStyle: "columns"
 					});
-				new MoveSlice(this.disease_chart, "default");
+				// new MoveSlice(this.disease_chart, "default");
+				this.disease_chart.connectToPlot("default", onClickEventHandler);
 
 				var cpIsolationCountry = domConstruct.create("div", {"class": "pie-chart-widget"});
 				domConstruct.place(cpIsolationCountry, this.chartNode, "last");
@@ -181,10 +200,10 @@ define("p3/widget/GenomeMetaSummary", [
 					.addPlot("default", {
 						type: this.DonutChart,
 						radius: 70,
-						stroke: "black",
 						labelStyle: "columns"
 					});
-				new MoveSlice(this.isolation_country_chart, "default");
+				// new MoveSlice(this.isolation_country_chart, "default");
+				this.isolation_country_chart.connectToPlot("default", onClickEventHandler);
 
 				var cpGenomeStatus = domConstruct.create("div", {"class": "pie-chart-widget"});
 				domConstruct.place(cpGenomeStatus, this.chartNode, "last");
@@ -196,10 +215,10 @@ define("p3/widget/GenomeMetaSummary", [
 					.addPlot("default", {
 						type: this.DonutChart,
 						radius: 70,
-						stroke: "black",
 						labelStyle: "columns"
 					});
-				new MoveSlice(this.genome_status_chart, "default");
+				// new MoveSlice(this.genome_status_chart, "default");
+				this.genome_status_chart.connectToPlot("default", onClickEventHandler);
 
 				Object.keys(this.data).forEach(lang.hitch(this, function(key){
 					switch(key){

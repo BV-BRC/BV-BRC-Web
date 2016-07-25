@@ -13,7 +13,7 @@ define("p3/widget/TaxonomyOverview", [
 			ExternalItemFormatter
 ){
 
-	let searchName = null;
+	var searchName = null;
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "TaxonomyOverview",
@@ -33,7 +33,7 @@ define("p3/widget/TaxonomyOverview", [
 
 			searchName = this.genome.taxon_name; 
 
-			const sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
+			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
@@ -59,14 +59,14 @@ define("p3/widget/TaxonomyOverview", [
 
 		getWikiDescription: function(genome){
 
-			const wikiApiUrl = "https://en.wikipedia.org/w/api.php";
+			var wikiApiUrl = "https://en.wikipedia.org/w/api.php";
 
-			const token = "?action=centralauthtoken&format=json";
-			const query = "?action=query&prop=extracts&exintro=&format=json&titles=";
+			var token = "?action=centralauthtoken&format=json";
+			var query = "?action=query&prop=extracts&exintro=&format=json&titles=";
 
-			const origin = "&origin=" + window.location.origin;
+			var origin = "&origin=" + window.location.origin;
 
-			let taxonName = genome.taxon_name.split(" ").join("+");
+			var taxonName = genome.taxon_name.split(" ").join("+");
 
 			if(searchName != genome.taxon_name){
 
