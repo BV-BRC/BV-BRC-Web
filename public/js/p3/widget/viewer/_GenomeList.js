@@ -195,6 +195,7 @@ define([
 				title: "Genomes",
 				id: this.viewer.id + "_" + "genomes",
 				state: this.state,
+				tooltip: 'Genomes tab contains a list of all genomes associated with a given Phylum, Class, Order, Family, Genus or Species.',
 				disable: false
 			});
 			this.sequences = new SequenceGridContainer({
@@ -206,6 +207,7 @@ define([
 			this.features = new FeatureGridContainer({
 				title: "Features",
 				id: this.viewer.id + "_" + "features",
+				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
 				disabled: true
 			});
 			this.specialtyGenes = new SpecialtyGeneGridContainer({

@@ -36,7 +36,7 @@ define("p3/widget/GenomeOverview", [
 			this.genome = genome;
 			this.createSummary(genome);
 
-			const sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
+			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){

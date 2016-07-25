@@ -37,6 +37,7 @@ define("p3/widget/viewer/GenomeGroup", [
 			// console.log("GROUP PATH: ", parts)
 
 			state.search = "in(genome_id,GenomeGroup(" + encodeURIComponent(parts) + "))";
+			state.ws_path = parts;
 			// console.log("state.search: ", state.search);
 			this.inherited(arguments);
 		},
@@ -44,7 +45,6 @@ define("p3/widget/viewer/GenomeGroup", [
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -54,18 +54,14 @@ define("p3/widget/viewer/GenomeGroup", [
 			}
 			switch(active){
 				case "transcriptomics":
-					var gpath = encodeURIComponent("/" + this.groupPath);
+					var groupPath = encodeURIComponent("/" + this.groupPath);
 
-					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,GenomeGroup(" + gpath + "))"}))
+					activeTab.set("state", lang.mixin({}, this.state, {search: "in(genome_ids,GenomeGroup(" + groupPath + "))"}));
 					break;
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						// console.log("Found Genome_IDS in state object");
-						//var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,GenomeGroup(" + this.groupPath + "))"});
 						activeQueryState = this.state;
-						// console.log("gidQueryState: ", gidQueryState);
-						// console.log("Active Query State: ", activeQueryState);
 					}
 
 					if(activeQueryState){
@@ -75,7 +71,6 @@ define("p3/widget/viewer/GenomeGroup", [
 					}
 					break;
 			}
-			// console.log("Set Active State COMPLETE");
 		},
 
 		buildHeaderContent: function(){
@@ -86,6 +81,7 @@ define("p3/widget/viewer/GenomeGroup", [
 			return new Overview({
 				content: "Genome Group Overview",
 				title: "Overview",
+				isGenomeGroup: true,
 				id: this.viewer.id + "_" + "overview"
 			});
 		}
