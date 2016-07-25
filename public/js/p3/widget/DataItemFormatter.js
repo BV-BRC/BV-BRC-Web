@@ -1,18 +1,18 @@
 define([
-	"dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
+	"dojo/_base/lang", "dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
 	"dijit/form/Button", "../JobManager", "dijit/TitlePane"
-], function(locale, domConstruct, domClass,
+], function(lang, locale, domConstruct, domClass,
 			Button, JobManager, TitlePane){
 
-	const formatters = {
+	var formatters = {
 		"default": function(item, options){
 			options = options || {};
 
-			const table = domConstruct.create("table");
-			const tbody = domConstruct.create("tbody", {}, table);
+			var table = domConstruct.create("table");
+			var tbody = domConstruct.create("tbody", {}, table);
 
 			Object.keys(item).sort().forEach(function(key){
-				const tr = domConstruct.create("tr", {}, tbody);
+				var tr = domConstruct.create("tr", {}, tbody);
 				domConstruct.create("td", {innerHTML: key}, tr);
 				domConstruct.create("td", {innerHTML: item[key]}, tr);
 			}, this);
@@ -26,10 +26,10 @@ define([
 					depth = 1
 				}
 				if(typeof obj == 'object'){
-					const props = Object.keys(obj);
+					var props = Object.keys(obj);
 					props.forEach(function(p){
 						if(typeof obj[p] == 'object'){
-							const tr = domConstruct.create("tr", {}, tbody);
+							var tr = domConstruct.create("tr", {}, tbody);
 							domConstruct.create("td", {
 								style: {"padding-left": (depth * 5) + "px"},
 								innerHTML: p,
@@ -38,7 +38,7 @@ define([
 							domConstruct.create("td", {}, tr);
 							renderObject(obj[p], tbody, depth + 1);
 						}else{
-							const tr = domConstruct.create("tr", {}, tbody);
+							var tr = domConstruct.create("tr", {}, tbody);
 							domConstruct.create("td", {
 								style: {"padding-left": (depth * 10) + "px"},
 								innerHTML: p,
@@ -53,7 +53,7 @@ define([
 		"completed_job": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'App',
 				text: 'app'
 			}, {
@@ -85,7 +85,7 @@ define([
 				data_hide: true
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
 
@@ -95,7 +95,7 @@ define([
 		"failed_job": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'App',
 				text: 'app'
 			}, {
@@ -127,12 +127,12 @@ define([
 				data_hide: true
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
 			displayDetail(item, columns, div, options);
 
-			const tpDiv = domConstruct.create("div", {}, div);
-			const dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
+			var tpDiv = domConstruct.create("div", {}, div);
+			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
 			dlg.watch("open", function(attr, oldVal, open){
 				if(!open){
 					return;
@@ -158,7 +158,7 @@ define([
 		"feature_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Taxon ID',
 				text: 'taxon_id',
 				link: '/view/Taxonomy/'
@@ -166,9 +166,9 @@ define([
 				name: 'Lineage',
 				text: 'lineage_names',
 				link: function(obj){
-					const ids = obj['lineage_ids'];
+					var ids = obj['lineage_ids'];
 					return obj['lineage_names'].map(function(d, idx){
-						return `<a href="/view/Taxonomy/${ids[idx]}">${d}</a>`;
+						return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
 					}).join(", ");
 				}
 			}, {
@@ -179,7 +179,7 @@ define([
 				name: 'Genome Name',
 				text: 'genome_name',
 				link: function(obj){
-					return `<a href="/view/Genome/${obj['genome_id']}">${obj['genome_name']}</a>`;
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', {obj: obj});
 				}
 			}, {
 				name: 'Annotation',
@@ -268,9 +268,9 @@ define([
 				link: 'http://www.ncbi.nlm.nih.gov/protein/'
 			}];
 
-			const label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
 			displayDetail(item, columns, div, options);
 
@@ -280,7 +280,7 @@ define([
 		"spgene_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Genome Name',
 				text: 'genome_name'
 			}, {
@@ -354,9 +354,9 @@ define([
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}];
 
-			const label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
 			displayDetail(item, columns, div, options);
 
@@ -366,7 +366,7 @@ define([
 		"taxonomy_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Taxonomy ID',
 				text: 'taxon_id',
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
@@ -377,9 +377,9 @@ define([
 				name: 'Lineage',
 				text: 'lineage_names',
 				link: function(obj){
-					const ids = obj['lineage_ids'];
+					var ids = obj['lineage_ids'];
 					return obj['lineage_names'].map(function(d, idx){
-						return `<a href="/view/Taxonomy/${ids[idx]}">${d}</a>`;
+						return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
 					}).join(", ");
 				}
 			}, {
@@ -387,7 +387,7 @@ define([
 				text: 'genetic_code'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
 
 			displayDetail(item, columns, div, options);
@@ -398,7 +398,7 @@ define([
 		"pathway_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Pathway ID',
 				text: 'pathway_id'
 			}, {
@@ -427,7 +427,7 @@ define([
 				text: 'gene_cons'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/" + item.pathway_id, options);
 			displayDetail(item, columns, div, options);
 
@@ -437,7 +437,7 @@ define([
 		"proteinfamily_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'ID',
 				text: 'family_id'
 			}, {
@@ -463,7 +463,7 @@ define([
 				text: 'aa_length_std'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/" + item.family_id, options);
 			displayDetail(item, columns, div, options);
 
@@ -473,7 +473,7 @@ define([
 		"sequence_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Genome Name',
 				text: 'genome_name',
 				mini: true
@@ -527,7 +527,7 @@ define([
 				text: 'release_date'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/" + item.genome_id, options);
 			displayDetail(item, columns, div, options);
 
@@ -537,7 +537,7 @@ define([
 		"transcriptomics_experiment_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Experiment ID',
 				text: 'eid'
 			}, {
@@ -595,7 +595,7 @@ define([
 				text: 'description'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
 			displayDetail(item, columns, div, options);
 
@@ -605,7 +605,7 @@ define([
 		"transcriptomics_sample_data": function(item, options){
 			options = options || {};
 
-			const columns = [{
+			var columns = [{
 				name: 'Sample ID',
 				text: 'pid'
 			}, {
@@ -663,7 +663,7 @@ define([
 				text: 'release_date'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
 			displayDetail(item, columns, div, options);
 
@@ -673,8 +673,8 @@ define([
 		"genome_data": function(item, options){
 			options = options || {};
 
-			const metadataGenomeSummaryID = ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
-			const metadataGenomeSummaryValue = {};
+			var metadataGenomeSummaryID = ['Organism Info', 'Isolate Info', 'Host Info', 'Sequence Info', 'Phenotype Info', 'Project Info', 'Others'];
+			var metadataGenomeSummaryValue = {};
 			metadataGenomeSummaryValue['Organism Info'] = [{
 				name: 'Genome ID',
 				text: 'genome_id',
@@ -786,7 +786,10 @@ define([
 				text: 'contigs'
 			}, {
 				name: 'Sequences',
-				text: 'sequences'
+				text: 'sequences',
+				link: function(obj){
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.sequences}</a>', {obj: obj});
+				}
 			}, {
 				name: 'Genome Length',
 				text: 'genome_length'
@@ -795,7 +798,10 @@ define([
 				text: 'gc_content'
 			}, {
 				name: 'PATRIC CDS',
-				text: 'patric_cds'
+				text: 'patric_cds',
+				link: function(obj){
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', {obj: obj});
+				}
 			}, {
 				name: 'RefSeq CDS',
 				text: 'refseq_cds'
@@ -899,14 +905,14 @@ define([
 				text: 'additional_metadata'
 			}];
 
-			const div = domConstruct.create("div");
+			var div = domConstruct.create("div");
 			displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
 
-			const summary = "Length: " + item.genome_length + "bp, Chromosomes: " + (item.chromosomes || 0) + ", Plasmids: " + (item.plasmids || 0) + ", Contigs: " + (item.contigs || 0);
+			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + (item.chromosomes || 0) + ", Plasmids: " + (item.plasmids || 0) + ", Contigs: " + (item.contigs || 0);
 
 			domConstruct.create("div", {
 				innerHTML: summary,
-				style: "font-weight: bold; padding-left: 10px; margin-bottom: 6px; padding-bottom: 7px; border-bottom: 1px solid #afafaf;",
+				"class": "DataItemSummary",
 				nowrap: "nowrap"
 			}, div);
 
@@ -917,42 +923,42 @@ define([
 	};
 
 	function displayHeader(parent, label, iconClass, url, options){
-		const linkTitle = options && options.linkTitle || false;
+		var linkTitle = options && options.linkTitle || false;
 
-		const titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, parent);
+		var titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, parent);
 
 		// span icon
 		domConstruct.create("span", {"class": iconClass}, titleDiv);
 
 		// span label
 		domConstruct.create("span", {
-			innerHTML: (linkTitle) ? `<a href="${url}">${label}</a>` : label
+			innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', {url: url, lable: label}) : label
 		}, titleDiv);
 	}
 
 	function displayDetailBySections(item, meta_data_section, meta_data, parent, options){
 
-		const mini = options && options.mini || false;
+		var mini = options && options.mini || false;
 
-		const table = domConstruct.create("table", {}, parent);
-		const tbody = domConstruct.create("tbody", {}, table);
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
 
-		for(let i = 0; i < meta_data_section.length; i++){
-			let tr;
+		for(var i = 0; i < meta_data_section.length; i++){
+			var tr;
 			if(mini == false){
 
 				tr = domConstruct.create("tr", {}, tbody);
 				domConstruct.create("td", {
 					innerHTML: meta_data_section[i],
-					style: "font-weight: bold",
+					"class": "DataItemSectionHead",
 					colspan: 2
 				}, tr);
 			}
 
-			const value = meta_data[meta_data_section[i]];
+			var value = meta_data[meta_data_section[i]];
 
-			for(let j = 0; j < value.length; j++){
-				const column = value[j].text;
+			for(var j = 0; j < value.length; j++){
+				var column = value[j].text;
 
 				if(column && (item[column] || item[column] == "0")){
 
@@ -960,11 +966,11 @@ define([
 
 						tr = domConstruct.create("tr", {}, tbody);
 						domConstruct.create("td", {
-							"class": "detailProp",
+							"class": "DataItemProperty",
 							innerHTML: value[j].name
 						}, tr);
 
-						let innerHTML;
+						var innerHTML;
 						if(value[j].link && item[column] != "-" && item[column] != "0"){
 							if(typeof(value[j].link) == "function"){
 								innerHTML = value[j].link.apply(this, arguments);
@@ -977,7 +983,7 @@ define([
 						}
 
 						domConstruct.create("td", {
-							"class": "detailValue",
+							"class": "DataItemValue",
 							innerHTML: innerHTML
 						}, tr);
 					}
@@ -987,25 +993,25 @@ define([
 	}
 
 	function displayDetail(item, column_data, parent, options){
-		const mini = options && options.mini || false;
+		var mini = options && options.mini || false;
 
-		const table = domConstruct.create("table", {}, parent);
-		const tbody = domConstruct.create("tbody", {}, table);
+		var table = domConstruct.create("table", {}, parent);
+		var tbody = domConstruct.create("tbody", {}, table);
 
-		for(let i = 0; i < column_data.length; i++){
-			const column = column_data[i].text;
+		for(var i = 0; i < column_data.length; i++){
+			var column = column_data[i].text;
 
 			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
 
 				if(!mini || (mini && column_data[i].mini)){
 
-					const tr = domConstruct.create("tr", {}, tbody);
+					var tr = domConstruct.create("tr", {}, tbody);
 					domConstruct.create("td", {
-						"class": "detailProp",
+						"class": "DataItemProperty",
 						innerHTML: column_data[i].name
 					}, tr);
 
-					let innerHTML;
+					var innerHTML;
 					if(column_data[i].link && item[column] != "-" && item[column] != "0"){
 						if(typeof(column_data[i].link) == "function"){
 							innerHTML = column_data[i].link.apply(this, arguments);
@@ -1018,7 +1024,7 @@ define([
 					}
 
 					domConstruct.create("td", {
-						"class": "detailValue",
+						"class": "DataItemValue",
 						innerHTML: innerHTML
 					}, tr);
 				}
@@ -1028,7 +1034,7 @@ define([
 
 	return function(item, type, options){
 
-		let new_type;
+		var new_type;
 		switch(type){
 			case "genome_group":
 				new_type = "genome_data";

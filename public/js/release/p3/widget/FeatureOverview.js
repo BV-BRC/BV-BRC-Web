@@ -42,8 +42,8 @@ define("p3/widget/FeatureOverview", [
 			domConstruct.empty(this.externalLinkNode);
 
 			if(feature.hasOwnProperty('patric_id')){
-				const linkSEEDViewer = "http://pubseed.theseed.org/?page=Annotation&feature=" + feature.patric_id;
-				const seed = domConstruct.create("a", {
+				var linkSEEDViewer = "http://pubseed.theseed.org/?page=Annotation&feature=" + feature.patric_id;
+				var seed = domConstruct.create("a", {
 					href: linkSEEDViewer,
 					innerHTML: "The SEED Viewer",
 					target: "_blank"
@@ -52,8 +52,8 @@ define("p3/widget/FeatureOverview", [
 			}
 
 			if(feature.hasOwnProperty('aa_sequence')){
-				const linkCDDSearch = "http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E";
-				const dispSequenceID = [];
+				var linkCDDSearch = "http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E";
+				var dispSequenceID = [];
 				if(feature['annotation'] === 'PATRIC'){
 					if(feature['alt_locus_tag']){
 						dispSequenceID.push(feature['alt_locus_tag']);
@@ -72,7 +72,7 @@ define("p3/widget/FeatureOverview", [
 					dispSequenceID.push(feature['product']);
 				}
 
-				const cdd = domConstruct.create("a", {
+				var cdd = domConstruct.create("a", {
 					href: linkCDDSearch + dispSequenceID.join("").replace(" ", "%20") + "%0A" + feature.aa_sequence + "&amp;FULL",
 					innerHTML: "NCBI CDD Search",
 					target: "_blank"
@@ -81,15 +81,15 @@ define("p3/widget/FeatureOverview", [
 			}
 
 			if(feature.hasOwnProperty('refseq_locus_tag')){
-				const linkSTRING = "http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=" + feature.refseq_locus_tag;
-				const string = domConstruct.create("a", {
+				var linkSTRING = "http://string.embl.de/newstring_cgi/show_network_section.pl?identifier=" + feature.refseq_locus_tag;
+				var string = domConstruct.create("a", {
 					href: linkSTRING,
 					innerHTML: "STRING: Protein-Protein Interactions",
 					target: "_blank"
 				}, this.externalLinkNode);
 				domConstruct.place("<br>", string, "after");
 
-				const linkSTITCH = "http://stitch.embl.de/cgi/show_network_section.pl?identifier=" + feature.refseq_locus_tag;
+				var linkSTITCH = "http://stitch.embl.de/cgi/show_network_section.pl?identifier=" + feature.refseq_locus_tag;
 				domConstruct.create("a", {
 					href: linkSTITCH,
 					innerHTML: "STITCH: Chemical-Protein Interaction",
@@ -101,7 +101,7 @@ define("p3/widget/FeatureOverview", [
 			domClass.remove(this.specialPropertiesNode.parentNode, "hidden");
 
 			if(!this.specialPropertiesGrid){
-				const opts = {
+				var opts = {
 					columns: [
 						{label: "Evidence", field: "evidence"},
 						{label: "Property", field: "property"},
@@ -132,11 +132,11 @@ define("p3/widget/FeatureOverview", [
 		_setRelatedFeatureListAttr: function(summary){
 
 			domConstruct.empty(this.relatedFeatureNode);
-			const table = domConstruct.create("table", {"class": "p3basic"}, this.relatedFeatureNode);
-			const thead = domConstruct.create("thead", {}, table);
-			const tbody = domConstruct.create("tbody", {}, table);
+			var table = domConstruct.create("table", {"class": "p3basic"}, this.relatedFeatureNode);
+			var thead = domConstruct.create("thead", {}, table);
+			var tbody = domConstruct.create("tbody", {}, table);
 
-			const htr = domConstruct.create("tr", {}, thead);
+			var htr = domConstruct.create("tr", {}, thead);
 			domConstruct.create("th", {innerHTML: "Annotation"}, htr);
 			domConstruct.create("th", {innerHTML: "Locus Tag"}, htr);
 			domConstruct.create("th", {innerHTML: "Start"}, htr);
@@ -146,7 +146,7 @@ define("p3/widget/FeatureOverview", [
 			domConstruct.create("th", {innerHTML: "Product"}, htr);
 
 			summary.forEach(function(row){
-				const tr = domConstruct.create('tr', {}, tbody);
+				var tr = domConstruct.create('tr', {}, tbody);
 				domConstruct.create("td", {innerHTML: row.annotation}, tr);
 				domConstruct.create("td", {innerHTML: row.alt_locus_tag}, tr);
 				domConstruct.create("td", {innerHTML: row.start}, tr);
@@ -160,7 +160,7 @@ define("p3/widget/FeatureOverview", [
 			domClass.remove(this.idMappingNode.parentNode, "hidden");
 
 			if(!this.idMappingGrid){
-				const opts = {
+				var opts = {
 					columns: [
 						{label: "UniprotKB Accession", field: "uniprotkb_accession"},
 						{label: "ID Type", field: "id_type"},
@@ -176,17 +176,17 @@ define("p3/widget/FeatureOverview", [
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
-			let goLink, ecLink, plfamLink, pgfamLink, figfamLink, pwLink;
+			var goLink, ecLink, plfamLink, pgfamLink, figfamLink, pwLink;
 			if(feature.hasOwnProperty('go')){
 				goLink = feature['go'].map(function(goStr){
-					const go = goStr.split('|');
+					var go = goStr.split('|');
 					return '<a href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=' + go[0] + '" target=_blank>' + go[0] + '</a>&nbsp;' + go[1];
 				}).join('<br>');
 			}
 
 			if(feature.hasOwnProperty('ec')){
 				ecLink = feature['ec'].map(function(ecStr){
-					const ec = ecStr.split('|');
+					var ec = ecStr.split('|');
 					return '<a href="http://enzyme.expasy.org/EC/' + ec[0] + '" target=_blank>' + ec[0] + '</a>&nbsp;' + ec[1];
 				}).join('<br>');
 			}
@@ -205,7 +205,7 @@ define("p3/widget/FeatureOverview", [
 
 			if(feature.hasOwnProperty('pathway')){
 				pwLink = feature['pathway'].map(function(pwStr){
-					const pw = pwStr.split('|');
+					var pw = pwStr.split('|');
 					// https://www.patricbrc.org/portal/portal/patric/CompPathwayMap?cType=genome&cId=83332.12&dm=feature&feature_id=PATRIC.83332.12.NC_000962.CDS.2052.3260.fwd&map=00240&algorithm=PATRIC&ec_number=
 					return '<a href="/view/PathwayMap/annotation=PATRIC&genome_id=' + feature.genome_id + '&pathway_id=' + pw[0] + '&feature_id=' + feature.feature_id + '" target="_blank">KEGG:' + pw[0] + '</a>&nbsp;' + pw[1];
 				}).join('<br>')
@@ -218,10 +218,10 @@ define("p3/widget/FeatureOverview", [
 			}
 			domConstruct.create("span", {innerHTML: "<b>Product: </b>" + feature.product}, this.functionalPropertiesNode);
 
-			const table = domConstruct.create("table", {"class": "p3basic"}, this.functionalPropertiesNode);
-			const tbody = domConstruct.create("tbody", {}, table);
+			var table = domConstruct.create("table", {"class": "p3basic"}, this.functionalPropertiesNode);
+			var tbody = domConstruct.create("tbody", {}, table);
 
-			let htr = domConstruct.create("tr", {}, tbody);
+			var htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "GO Assignments", scope: "row", style: "width:20%"}, htr);
 			domConstruct.create("td", {innerHTML: goLink || '-'}, htr);
 
@@ -273,7 +273,7 @@ define("p3/widget/FeatureOverview", [
 					}
 				}).then(lang.hitch(this, function(data){
 
-					const uniprotKbAccessions = data.map(function(d){
+					var uniprotKbAccessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
 
