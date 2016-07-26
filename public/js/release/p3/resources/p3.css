@@ -10649,12 +10649,6 @@ div.overview {
     padding:2px;
     border-radius:3px;
 }
-	cursor: pointer;
-	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/LVAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAASSURBVHjaYvrPwMDEAMEAAQYACzEBBlU9CW8AAAAASUVORK5CYII=');
-	background-repeat: repeat-x;
-	background-position: center;
-}
-*/
 div.tooltip {
     position: absolute;
     padding: 10px;
