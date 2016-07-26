@@ -339,7 +339,9 @@ define([
 			}));
 
 			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + ((centerPos >= 5000) ? (centerPos - 5000) : 0) + "),lt(end," + (centerPos + 5000) + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
+			var rangeEnd = (centerPos + 5000);
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), {
 				handleAs: "json",
@@ -352,7 +354,13 @@ define([
 			}).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
-				this.set("featureViewer", data);
+				var firstStartPosition = Math.max(data[0].start, rangeStart);
+				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);
+				this.set("featureViewer", {
+					firstStartPosition: firstStartPosition,
+					lastEndPosition: lastEndPosition,
+					features: data
+				});
 			}));
 		},
 		startup: function(){
