@@ -15,7 +15,7 @@ define("p3/widget/AdvancedSearch", [
 		labelsByType: {
 			"genome": "Genomes",
 			"genome_feature": "Genomic Features",
-			"taxonomy": "Taxonomies",
+			"taxonomy": "Taxonomy",
 			"sp_gene": "Specialty Genes",
 			"transcriptomics_experiment": "Transcriptomics Experiments"
 		},
