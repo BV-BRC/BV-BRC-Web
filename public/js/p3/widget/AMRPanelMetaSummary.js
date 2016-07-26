@@ -50,26 +50,28 @@ define([
 
 			antibiotic_data.forEach(function(d){
 				var antibiotic = d.value;
-				tableData = tableData.concat(d.pivot.map(function(d){
-					return {antibiotic: antibiotic, phenotype: d.value, count: d.count};
-				}));
+				if(d.pivot){
+					tableData = tableData.concat(d.pivot.map(function(d){
+						return {antibiotic: antibiotic, phenotype: d.value, count: d.count};
+					}));
 
-				var dist = [0, 0, 0, 0];
-				d.pivot.forEach(function(phenotype){
-					if(phenotypeDef.hasOwnProperty(phenotype.value)){
-						dist[phenotypeDef[phenotype.value].index] = phenotype.count;
-					}
-				});
-				var total = dist.reduce(function(a, b){
-					return a+b;
-				});
+					var dist = [0, 0, 0, 0];
+					d.pivot.forEach(function(phenotype){
+						if(phenotypeDef.hasOwnProperty(phenotype.value)){
+							dist[phenotypeDef[phenotype.value].index] = phenotype.count;
+						}
+					});
+					var total = dist.reduce(function(a, b){
+						return a + b;
+					});
 
-				chartData.push({
-					label: antibiotic,
-					phenotypes: ["Resistant", "Susceptible", "Intermediate", "Not Defined"],
-					total: total,
-					dist: dist
-				});
+					chartData.push({
+						label: antibiotic,
+						phenotypes: ["Resistant", "Susceptible", "Intermediate", "Not Defined"],
+						total: total,
+						dist: dist
+					});
+				}
 			});
 			// console.log(chartData, tableData);
 			this._tableData = tableData;
@@ -81,7 +83,10 @@ define([
 			if(!this.chart){
 				this.chart = new D3StackedBarChart(this.chartNode);
 
-				var legend = Object.keys(phenotypeDef).map(key => phenotypeDef[key].label);
+				var legend = Object.keys(phenotypeDef)
+					.map(function(key){
+						return phenotypeDef[key].label;
+					});
 				this.chart.renderLegend(legend);
 				this.chart.processData(this.data);
 				this.chart.render();

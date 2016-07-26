@@ -36,8 +36,10 @@ define([
 			if(scaleToggle != null){
 				scaleToggle.on('click', function(evt){
 					scaleToggle.removeClass("active");
-					self.normalize = evt.srcElement.className === "normalize";
-					domClass.add(evt.srcElement, "active");
+					var target = evt.srcElement || evt.target;
+
+					self.normalize = target.className == "normalize";
+					domClass.add(target, "active");
 
 					self.scale(function(){
 						return self.sort();
@@ -49,7 +51,7 @@ define([
 			if(sortToggle != null){
 				sortToggle.on('click', function(evt){
 					sortToggle.removeClass("active");
-					domClass.add(evt.srcElement, "active");
+					domClass.add(evt.srcElement || evt.target, "active");
 
 					return self.sort();
 				});
@@ -58,13 +60,15 @@ define([
 
 		processData: function(data){
 
-			this.data = data.map((d, i) => ({
-				"index": i,
-				"label": d.label,
-				"total": parseInt(d.total),
-				"dist": d.dist,
-				"phenotypes": d.phenotypes
-			}));
+			this.data = data.map(function(d, i){
+				return {
+					"index": i,
+					"label": d.label,
+					"total": parseInt(d.total),
+					"dist": d.dist,
+					"phenotypes": d.phenotypes
+				}
+			});
 		},
 
 		render: function(){
@@ -78,8 +82,11 @@ define([
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
-				this.maxValue = this.data.map((d) => d.total || 0)
-					.reduce((a, b) => Math.max(a, b));
+				this.maxValue = this.data.map(function(d){
+					return d.total || 0
+				}).reduce(function(a, b){
+					return Math.max(a, b)
+				});
 			}
 
 			// reset sort condition
@@ -110,47 +117,63 @@ define([
 				.tickPadding(0).tickSize(0);
 
 			this.chart.append("g")
-				.attr("transform", lang.replace('translate({0},{1})',[this.drawTargetParams.margins[3], this.drawTargetParams.margins[0]]))
+				.attr("transform", lang.replace('translate({0},{1})', [this.drawTargetParams.margins[3], this.drawTargetParams.margins[0]]))
 				.call(this.yAxis)
 				.attr("class", "y axis");
 
-			this.seriesSize = this.data.map(d => d['dist'].length).reduce((a, b) => Math.max(a, b));
-			for(let index = 0; index < this.seriesSize; index++){
+			this.seriesSize = this.data.map(function(d){
+				return d['dist'].length
+			})
+				.reduce(function(a, b){
+					return Math.max(a, b)
+				});
+			for(var index = 0; index < this.seriesSize; index++){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
-					.attr("y", d =>{
+					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
 						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
-					.attr("x", (d, i) => self.barPosition(i))
-					.attr("width", () => self.barWidth())
-					.attr("height", d => Math.round(self.barHeight(d['dist'][index], d.total)))
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					})
+					.attr("width", function(){
+						return self.barWidth()
+					})
+					.attr("height", function(d){
+						return Math.round(self.barHeight(d['dist'][index], d.total))
+					})
 					//.on("click", {})
-					.on("mouseover", d =>{
+					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}',[d.label, d.phenotypes[index]], d['dist'][index]);
+						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index]], d['dist'][index]);
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
 							.style("top", (d3.event.pageY - 28) + "px")
 					})
-					.on("mouseout", () => self.tooltipLayer.transition()
-						.duration(500)
-						.style("opacity", 0)
-					);
+					.on("mouseout", function(){
+						self.tooltipLayer.transition()
+							.duration(500)
+							.style("opacity", 0)
+					});
 			}
 
 			// Place the text. We have a little height adjustment on the dy
 			// to make sure text is centered in the block rather than set
 			// along the baseline.
 
-			this.bars.append("text").text(d => d.label)
+			this.bars.append("text").text(function(d){
+				return d.label
+			})
 				.attr("y", Math.round(this.canvasSize.height - 11))
-				.attr("x", (d, i) => self.textPosition(i))
-				.attr("transform", (d, i) =>{
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
 					var y = Math.round(self.canvasSize.height - 11);
 					var x = self.textPosition(i);
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
@@ -180,9 +203,14 @@ define([
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
-				this.maxValue = this.data.map((d) => d.total || 0)
-					.reduce((a, b) => Math.max(a, b));
+				this.maxValue = this.data.map(function(d){
+					return d.total || 0
+				})
+					.reduce(function(a, b){
+						return Math.max(a, b)
+					});
 			}
+			var self = this;
 
 			// update axis
 			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
@@ -190,14 +218,16 @@ define([
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
-			for(let index = 0; index < this.seriesSize; index++){
+			for(var index = 0; index < this.seriesSize; index++){
 				this.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
-					.attr("y", (d) =>{
-						var ancestorHeight = this.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(this.canvasSize.height - this.barHeight(d['dist'][index], d.total) - ancestorHeight);
+					.attr("y", function(d){
+						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
+						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
-					.attr("height", d => Math.round(this.barHeight(d['dist'][index], d.total)));
+					.attr("height", function(d){
+						return Math.round(self.barHeight(d['dist'][index], d.total))
+					});
 			}
 		},
 		sort: function(){
@@ -213,24 +243,24 @@ define([
 
 			if(this.currentSort === "label"){
 				this.bars.sort(function(a, b){
-					let orderCode = 0;
+					var orderCode = 0;
 					if(a.label < b.label){
 						orderCode = -1;
-					} else if (a.label > b.label){
+					}else if(a.label > b.label){
 						orderCode = 1;
 					}
 
-					if (!self.ascendSort) {
+					if(!self.ascendSort){
 						orderCode = orderCode * -1;
 					}
 					return orderCode;
 				});
-			} else if (this.currentSort === "value"){
+			}else if(this.currentSort === "value"){
 				this.bars.sort(function(a, b){
 					var aValue = self.barHeight(a['dist'][0], a.total);
 					var bValue = self.barHeight(b['dist'][0], b.total);
 
-					let orderCode = aValue - bValue;
+					var orderCode = aValue - bValue;
 					if(!self.ascendSort){
 						orderCode = orderCode * -1;
 					}
@@ -238,20 +268,28 @@ define([
 				})
 			}
 
-			for(let index = 0; index < this.seriesSize; index++){
-				this.bars.select(lang.replace('rect.block-{0}',[index]))
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
-					.delay((d, i) => 10 * i)
-					.attr("x", (d, i) => self.barPosition(i));
+					.delay(function(d, i){
+						return 10 * i
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					});
 			}
 
 			this.bars.select("text").transition().duration(600)
-				.delay((d, i) => 10 * i)
-				.attr("x", (d, i) => self.textPosition(i))
-				.attr("transform", (d, i) =>{
+				.delay(function(d, i){
+					return 10 * i
+				})
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
 					var y = Math.round(self.canvasSize.height - 11);
-					var x = this.pf_x_scale(i) + self.pf_x_scale(1) / 2;
-					return lang.replace('rotate(270, {0}, {1})',[x, y]);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
 
 		},
@@ -261,11 +299,15 @@ define([
 				.data(legend)
 				.insert("circle")
 				.attr("cx", 8).attr("cy", 8).attr("r", 8)
-				.attr("class", (d, i) => "bar" + (i + 1) + "-sample");
+				.attr("class", function(d, i){
+					return "bar" + (i + 1) + "-sample"
+				});
 
 			d3.select("p.legend").selectAll("span")
 				.data(legend)
-				.text(d => d);
+				.text(function(d){
+					return d
+				});
 		},
 		prepareSVGDrawTarget: function(params){
 
