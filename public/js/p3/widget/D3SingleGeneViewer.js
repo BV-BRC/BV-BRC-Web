@@ -1,18 +1,20 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
 	"d3/d3"
 ], function(declare, lang,
-			dom, domClass, domConstruct,
+			dom, domClass, domConstruct, domStyle,
 			d3){
 
 	return declare([], {
 		constructor: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
+			this.nodeWidth = domStyle.get(this.node, "width");
+
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("width", 700)
+				.attr("width", this.nodeWidth)
 				.attr("height", 100);
 
 			this.canvas.insert("defs")
@@ -36,7 +38,7 @@ define([
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
 
-			this.x_scale = d3.scale.linear().range([0, 690]).domain([0, totalRange]);
+			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
 			this.canvas.selectAll("g")
 				.data(data.features)
