@@ -1,7 +1,7 @@
 define("p3/widget/DataItemFormatter", [
-	"dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
+	"dojo/_base/lang", "dojo/date/locale", "dojo/dom-construct", "dojo/dom-class",
 	"dijit/form/Button", "../JobManager", "dijit/TitlePane"
-], function(locale, domConstruct, domClass,
+], function(lang, locale, domConstruct, domClass,
 			Button, JobManager, TitlePane){
 
 	var formatters = {
@@ -52,8 +52,8 @@ define("p3/widget/DataItemFormatter", [
 		},
 		"completed_job": function(item, options){
 			options = options || {};
-			options.hideExtra = true;
-			var featureColumns = [{
+
+			var columns = [{
 				name: 'App',
 				text: 'app'
 			}, {
@@ -87,15 +87,15 @@ define("p3/widget/DataItemFormatter", [
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
 
 		"failed_job": function(item, options){
 			options = options || {};
-			options.hideExtra = true;
-			var featureColumns = [{
+
+			var columns = [{
 				name: 'App',
 				text: 'app'
 			}, {
@@ -129,7 +129,7 @@ define("p3/widget/DataItemFormatter", [
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.id, "fa icon-flag-checkered fa-2x", "/workspace/", options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			var tpDiv = domConstruct.create("div", {}, div);
 			var dlg = new TitlePane({title: "Error Output", open: false}, tpDiv);
@@ -158,11 +158,28 @@ define("p3/widget/DataItemFormatter", [
 		"feature_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
+				name: 'Taxon ID',
+				text: 'taxon_id',
+				link: '/view/Taxonomy/'
+			}, {
+				name: 'Lineage',
+				text: 'lineage_names',
+				link: function(obj){
+					var ids = obj['lineage_ids'];
+					return obj['lineage_names'].map(function(d, idx){
+						return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
+					}).join(", ");
+				}
+			}, {
+				name: 'Genome ID',
+				text: 'genome_id',
+				link: "/view/Genome/"
+			}, {
 				name: 'Genome Name',
 				text: 'genome_name',
 				link: function(obj){
-					return "<a href='/view/Genome/" + obj.genome_id + "'>" + obj.genome_name + "</a>";
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', {obj: obj});
 				}
 			}, {
 				name: 'Annotation',
@@ -181,8 +198,9 @@ define("p3/widget/DataItemFormatter", [
 				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
 				mini: true
 			}, {
-				name: 'Alt Locus Tag',
-				text: 'alt_locus_tag'
+				name: 'Protein ID',
+				text: 'protein_id',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
 			}, {
 				name: 'Gene Symbol',
 				text: 'gene',
@@ -191,12 +209,6 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Product',
 				text: 'product',
 				mini: true
-			}, {
-				name: 'NA Length',
-				text: 'na_length'
-			}, {
-				name: 'AA Length',
-				text: 'aa_length'
 			}, {
 				name: 'Start',
 				text: 'start'
@@ -207,13 +219,35 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Strand',
 				text: 'strand'
 			}, {
+				name: 'Location',
+				text: 'location',
+				mini: true
+			}, {
+				name: 'NA Length',
+				text: 'na_length'
+			}, {
+				name: 'NA Sequence',
+				text: 'na_sequence',
+				link: function(obj){
+					return obj.na_sequence.substr(0, 30) + '... ' + '<button onclick="window.open(\'/view/FASTA/dna/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+				}
+			}, {
+				name: 'AA Length',
+				text: 'aa_length'
+			}, {
+				name: 'AA Sequence',
+				text: 'aa_sequence',
+				link: function(obj){
+					return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
+				}
+			}, {
 				name: 'Figfam ID',
 				text: 'figfam_id'
 			}, {
-				name: 'plfam ID',
+				name: 'PATRIC Local Family ID',
 				text: 'plfam_id'
 			}, {
-				name: 'pgfam ID',
+				name: 'PATRIC Global Family ID',
 				text: 'pgfam_id'
 			}, {
 				name: 'EC',
@@ -225,21 +259,6 @@ define("p3/widget/DataItemFormatter", [
 				name: 'GO',
 				text: 'go'
 			}, {
-				name: 'Location',
-				text: 'location',
-				mini: true
-			}, {
-				name: 'Segments',
-				text: 'segments'
-			}, {
-				name: 'Feature ID',
-				text: 'feature_id',
-				data_hide: true
-			}, {
-				name: 'Protein ID',
-				text: 'protein_id',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/'
-			}, {
 				name: 'Gene ID',
 				text: 'gene_id',
 				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
@@ -247,100 +266,13 @@ define("p3/widget/DataItemFormatter", [
 				name: 'gi',
 				text: 'gi',
 				link: 'http://www.ncbi.nlm.nih.gov/protein/'
-			}, {
-				name: 'Pos Group',
-				text: 'pos_group',
-				data_hide: true
-			}, {
-				name: 'NA Sequence',
-				text: 'na_sequence',
-				data_hide: true
-			}, {
-				name: 'AA Sequence',
-				text: 'aa_sequence',
-				data_hide: true
-			}, {
-				name: 'aa_sequence_md5',
-				text: 'aa_sequence_md5',
-				data_hide: true
-			}, {
-				name: 'Uniprotkb Accession',
-				text: 'uniprotkb_accession',
-				data_hide: true
-			}, {
-				name: 'P2 Feature ID',
-				text: 'p2_feature_id',
-				data_hide: true
-			}, {
-				name: 'Annotation Sort',
-				text: 'annotation_sort',
-				data_hide: true
-			}, {
-				name: 'Genome ID',
-				text: 'genome_id',
-				link: "/view/Genome/"
-			}, {
-				name: 'Taxon ID',
-				text: 'taxon_id',
-				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name: 'Sequence ID',
-				text: 'sequence_id',
-				data_hide: true
-			}, {
-				name: 'Accession',
-				text: 'accession',
-				data_hide: true
-			}, {
-				name: 'text',
-				text: 'text',
-				data_hide: true
-			}, {
-				name: 'Version',
-				text: '_version_',
-				data_hide: true
-			}, {
-				name: 'Date Inserted',
-				text: 'date_inserted'
-			}, {
-				name: 'Date Modified',
-				text: 'date_modified'
-			}, {
-				name: 'Public',
-				text: 'public'
-			}, {
-				name: 'Owner',
-				text: 'owner'
-			}, {
-				name: 'User Read',
-				text: 'user_read'
-			}, {
-				name: 'User Write',
-				text: 'user_write'
-			}, {
-				name: 'Document Type',
-				text: 'document_type',
-				data_hide: true
-			}, {
-				name: 'Document ID',
-				text: 'document_id',
-				data_hide: true
 			}];
 
-			var feature_name = "";
-			if(item.patric_id){
-				feature_name = item.patric_id;
-			}
-			else if(item.refseq_locus_tag){
-				feature_name = item.refseq_locus_tag;
-			}
-			else{
-				feature_name = item.alt_locus_tag;
-			}
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
 
 			var div = domConstruct.create("div");
-			displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
-			displayDetail(item, featureColumns, div, options);
+			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -348,7 +280,7 @@ define("p3/widget/DataItemFormatter", [
 		"spgene_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'Genome Name',
 				text: 'genome_name'
 			}, {
@@ -373,10 +305,6 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Source',
 				text: 'source'
-			}, {
-				name: 'Property Source',
-				text: 'property_source',
-				data_hide: true
 			}, {
 				name: 'Source ID',
 				text: 'source_id'
@@ -421,73 +349,27 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Same Genome',
 				text: 'same_genome'
 			}, {
-				name: 'Feature ID',
-				text: 'feature_id',
-				data_hide: true
-			}, {
-				name: 'Genome ID',
-				text: 'genome_id',
-				data_hide: true
-			}, {
 				name: 'Taxon ID',
 				text: 'taxon_id',
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name: 'text',
-				text: 'text',
-				data_hide: true
-			}, {
-				name: 'Version',
-				text: '_version_',
-				data_hide: true
-			}, {
-				name: 'Date Inserted',
-				text: 'date_inserted'
-			}, {
-				name: 'Date Modified',
-				text: 'date_modified'
-			}, {
-				name: 'Public',
-				text: 'public'
-			}, {
-				name: 'Owner',
-				text: 'owner'
-			}, {
-				name: 'User Read',
-				text: 'user_read'
-			}, {
-				name: 'User Write',
-				text: 'user_write'
 			}];
 
-			var feature_name = "";
-			if(item.patric_id){
-				feature_name = item.patric_id;
-			}
-			else if(item.refseq_locus_tag){
-				feature_name = item.refseq_locus_tag;
-			}
-			else{
-				feature_name = item.alt_locus_tag;
-			}
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
 
 			var div = domConstruct.create("div");
-			displayHeader(div, feature_name, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
-			displayDetail(item, featureColumns, div, options);
+			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/SpecialtyGene/" + item.feature_id, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
 
 		"taxonomy_data": function(item, options){
 			options = options || {};
-			var featureColumns = [{
+
+			var columns = [{
 				name: 'Taxonomy ID',
 				text: 'taxon_id',
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-			}, {
-				name: 'Taxon Name',
-				text: 'taxon_name',
-				data_hide: true
 			}, {
 				name: 'Rank',
 				text: 'taxon_rank'
@@ -495,24 +377,11 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Lineage',
 				text: 'lineage_names',
 				link: function(obj){
-					var names = obj.lineage_names;
-					var ids = obj.lineage_ids;
-					return names.map(function(d, idx){
-						return "<a href='/view/Taxonomy/" + ids[idx] + "'>" + d + "</a>";
+					var ids = obj['lineage_ids'];
+					return obj['lineage_names'].map(function(d, idx){
+						return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
 					}).join(", ");
 				}
-			}, {
-				name: 'Other Names',
-				text: 'other_names',
-				data_hide: true
-			}, {
-				name: 'Lineage Ranks',
-				text: 'lineage_ranks',
-				data_hide: true
-			}, {
-				name: 'Lineage IDs',
-				text: 'lineage_ids',
-				data_hide: true
 			}, {
 				name: 'Genetic Code',
 				text: 'genetic_code'
@@ -521,7 +390,7 @@ define("p3/widget/DataItemFormatter", [
 			var div = domConstruct.create("div");
 			displayHeader(div, item.taxon_name, "fa icon-taxonomy fa-2x", "/view/Taxonomy/" + item.taxon_id, options);
 
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -529,7 +398,7 @@ define("p3/widget/DataItemFormatter", [
 		"pathway_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'Pathway ID',
 				text: 'pathway_id'
 			}, {
@@ -556,19 +425,11 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Gene Conservation',
 				text: 'gene_cons'
-			}, {
-				name: 'Count',
-				text: 'count',
-				data_hide: true
-			}, {
-				name: 'Genome EC',
-				text: 'genome_ec',
-				data_hide: true
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.pathway_name, "fa icon-git-pull-request fa-2x", "/view/Pathways/" + item.pathway_id, options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -576,7 +437,7 @@ define("p3/widget/DataItemFormatter", [
 		"proteinfamily_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'ID',
 				text: 'family_id'
 			}, {
@@ -600,19 +461,11 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Std',
 				text: 'aa_length_std'
-			}, {
-				name: 'Count',
-				text: 'count',
-				data_hide: true
-			}, {
-				name: 'Genomes',
-				text: 'genomes',
-				data_hide: true
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.family_id, "fa icon-tasks fa-2x", "/view/ProteinFamilies/" + item.family_id, options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -620,7 +473,7 @@ define("p3/widget/DataItemFormatter", [
 		"sequence_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'Genome Name',
 				text: 'genome_name',
 				mini: true
@@ -667,42 +520,16 @@ define("p3/widget/DataItemFormatter", [
 				text: 'taxon_id',
 				link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
 			}, {
-				name: 'text',
-				text: 'text',
-				data_hide: true
-			}, {
-				name: 'Version',
-				text: '_version_',
-				data_hide: true
-			}, {
 				name: 'Version',
 				text: 'version'
 			}, {
 				name: 'Release Date',
 				text: 'release_date'
-			}, {
-				name: 'Date Inserted',
-				text: 'date_inserted'
-			}, {
-				name: 'Date Modified',
-				text: 'date_modified'
-			}, {
-				name: 'Public',
-				text: 'public'
-			}, {
-				name: 'Owner',
-				text: 'owner'
-			}, {
-				name: 'User Read',
-				text: 'user_read'
-			}, {
-				name: 'User Write',
-				text: 'user_write'
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.sequence_id, "fa icon-contigs fa-2x", "/view/Genome/" + item.genome_id, options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -710,13 +537,9 @@ define("p3/widget/DataItemFormatter", [
 		"transcriptomics_experiment_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'Experiment ID',
 				text: 'eid'
-			}, {
-				name: 'EXPID',
-				text: 'expid',
-				data_hide: true
 			}, {
 				name: 'Title',
 				text: 'title'
@@ -770,33 +593,11 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Description',
 				text: 'description'
-			}, {
-				name: 'text',
-				text: 'text',
-				data_hide: true
-			}, {
-				name: 'Version',
-				text: '_version_',
-				data_hide: true
-			}, {
-				name: 'Date Inserted',
-				text: 'date_inserted'
-			}, {
-				name: 'Date Modified',
-				text: 'date_modified'
-			}, {
-				name: 'Document Type',
-				text: 'document_type',
-				data_hide: true
-			}, {
-				name: 'Document ID',
-				text: 'document_id',
-				data_hide: true
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.title, "fa icon-experiments fa-2x", "/view/TranscriptomicsExperiment/" + item.eid, options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -804,16 +605,12 @@ define("p3/widget/DataItemFormatter", [
 		"transcriptomics_sample_data": function(item, options){
 			options = options || {};
 
-			var featureColumns = [{
+			var columns = [{
 				name: 'Sample ID',
 				text: 'pid'
 			}, {
 				name: 'Experiment ID',
 				text: 'eid'
-			}, {
-				name: 'EXPID',
-				text: 'expid',
-				data_hide: true
 			}, {
 				name: 'Title',
 				text: 'expname'
@@ -864,41 +661,11 @@ define("p3/widget/DataItemFormatter", [
 			}, {
 				name: 'Release Date',
 				text: 'release_date'
-			}, {
-				name: 'Exp Mean',
-				text: 'expmean',
-				data_hide: true
-			}, {
-				name: 'Exp Stddev',
-				text: 'expstddev',
-				data_hide: true
-			}, {
-				name: 'text',
-				text: 'text',
-				data_hide: true
-			}, {
-				name: 'Version',
-				text: '_version_',
-				data_hide: true
-			}, {
-				name: 'Date Inserted',
-				text: 'date_inserted'
-			}, {
-				name: 'Date Modified',
-				text: 'date_modified'
-			}, {
-				name: 'Document Type',
-				text: 'document_type',
-				data_hide: true
-			}, {
-				name: 'Document ID',
-				text: 'document_id',
-				data_hide: true
 			}];
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
-			displayDetail(item, featureColumns, div, options);
+			displayDetail(item, columns, div, options);
 
 			return div;
 		},
@@ -1019,7 +786,10 @@ define("p3/widget/DataItemFormatter", [
 				text: 'contigs'
 			}, {
 				name: 'Sequences',
-				text: 'sequences'
+				text: 'sequences',
+				link: function(obj){
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.sequences}</a>', {obj: obj});
+				}
 			}, {
 				name: 'Genome Length',
 				text: 'genome_length'
@@ -1028,7 +798,10 @@ define("p3/widget/DataItemFormatter", [
 				text: 'gc_content'
 			}, {
 				name: 'PATRIC CDS',
-				text: 'patric_cds'
+				text: 'patric_cds',
+				link: function(obj){
+					return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=features&filter=and(eq(feature_type,CDS),eq(annotation,PATRIC))">{obj.patric_cds}</a>', {obj: obj});
+				}
 			}, {
 				name: 'RefSeq CDS',
 				text: 'refseq_cds'
@@ -1136,69 +909,50 @@ define("p3/widget/DataItemFormatter", [
 			displayHeader(div, item.genome_name, "fa icon-genome fa-2x", "/view/Genome/" + item.genome_id, options);
 
 			var summary = "Length: " + item.genome_length + "bp, Chromosomes: " + (item.chromosomes || 0) + ", Plasmids: " + (item.plasmids || 0) + ", Contigs: " + (item.contigs || 0);
+
 			domConstruct.create("div", {
 				innerHTML: summary,
-				style: "font-weight: bold; padding-left: 10px; margin-bottom: 6px; padding-bottom: 7px; border-bottom: 1px solid #afafaf;",
+				"class": "DataItemSummary",
 				nowrap: "nowrap"
 			}, div);
 
 			displayDetailBySections(item, metadataGenomeSummaryID, metadataGenomeSummaryValue, div, options);
 
 			return div;
-
 		}
 	};
 
-	function displayHeader(div, item_name, icon_name, url, options){
-		var linkTitle = false;
-		if(options){
-			if(options.linkTitle == true){
-				linkTitle = true;
-			}
-		}
+	function displayHeader(parent, label, iconClass, url, options){
+		var linkTitle = options && options.linkTitle || false;
 
-		var titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, div);
+		var titleDiv = domConstruct.create("div", {"class": "DataItemHeader"}, parent);
 
-		var span = domConstruct.create("span", {"class": icon_name}, titleDiv);
+		// span icon
+		domConstruct.create("span", {"class": iconClass}, titleDiv);
 
-		if(linkTitle == true){
-			domConstruct.create("span", {
-				innerHTML: "<a href='" + url + "'>" + item_name + "</a>"
-			}, titleDiv);
-		}
-		else{
-			domConstruct.create("span", {
-				innerHTML: item_name
-			}, titleDiv);
-		}
+		// span label
+		domConstruct.create("span", {
+			innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', {url: url, lable: label}) : label
+		}, titleDiv);
 	}
 
 	function displayDetailBySections(item, meta_data_section, meta_data, parent, options){
-		var displayColumns = {};
-		var mini = false;
-		var hideExtra = false;
 
-		if(options){
-			if(options.mini == true){
-				mini = true;
-			}
-			if(options.hideExtra == true){
-				hideExtra = true;
-			}
-		}
+		var mini = options && options.mini || false;
 
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
 
 		for(var i = 0; i < meta_data_section.length; i++){
+			var tr;
 			if(mini == false){
 
-				var tr = domConstruct.create("tr", {}, tbody);
+				tr = domConstruct.create("tr", {}, tbody);
 				domConstruct.create("td", {
 					innerHTML: meta_data_section[i],
-					style: "font-weight: bold"
+					"class": "DataItemSectionHead",
+					colspan: 2
 				}, tr);
-				domConstruct.create("td", {innerHTML: ""}, tr);
 			}
 
 			var value = meta_data[meta_data_section[i]];
@@ -1206,17 +960,13 @@ define("p3/widget/DataItemFormatter", [
 			for(var j = 0; j < value.length; j++){
 				var column = value[j].text;
 
-				if(column){
-					displayColumns[column] = true;
-				}
-
 				if(column && (item[column] || item[column] == "0")){
 
 					if(!mini || (mini && value[j].mini)){
 
 						tr = domConstruct.create("tr", {}, tbody);
 						domConstruct.create("td", {
-							"class": "detailProp",
+							"class": "DataItemProperty",
 							innerHTML: value[j].name
 						}, tr);
 
@@ -1233,49 +983,17 @@ define("p3/widget/DataItemFormatter", [
 						}
 
 						domConstruct.create("td", {
-							"class": "detailValue",
+							"class": "DataItemValue",
 							innerHTML: innerHTML
 						}, tr);
 					}
 				}
 			}
 		}
-
-		var additional = true;
-		if(hideExtra == false && mini == false){
-
-			Object.keys(item).sort().forEach(function(key){
-				if(!displayColumns[key] && item[key]){
-					if(additional){
-						tr = domConstruct.create("tr", {}, tbody);
-						domConstruct.create("td", {
-							innerHTML: "Additional Info",
-							style: "font-weight: bold",
-							colspan: 2
-						}, tr);
-						additional = false;
-					}
-					tr = domConstruct.create("tr", {}, tbody);
-					tda = domConstruct.create("td", {"class": "detailProp", innerHTML: key}, tr);
-					tdb = domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
-				}
-			}, this);
-		}
 	}
 
 	function displayDetail(item, column_data, parent, options){
-		var displayColumns = {};
-		var mini = false;
-		var hideExtra = false;
-
-		if(options){
-			if(options.mini == true){
-				mini = true;
-			}
-			if(options.hideExtra == true){
-				hideExtra = true;
-			}
-		}
+		var mini = options && options.mini || false;
 
 		var table = domConstruct.create("table", {}, parent);
 		var tbody = domConstruct.create("tbody", {}, table);
@@ -1283,17 +1001,13 @@ define("p3/widget/DataItemFormatter", [
 		for(var i = 0; i < column_data.length; i++){
 			var column = column_data[i].text;
 
-			if(column){
-				displayColumns[column] = true;
-			}
-
 			if(column && (item[column] || item[column] == "0") && !column_data[i].data_hide){
 
 				if(!mini || (mini && column_data[i].mini)){
 
 					var tr = domConstruct.create("tr", {}, tbody);
 					domConstruct.create("td", {
-						"class": "detailProp",
+						"class": "DataItemProperty",
 						innerHTML: column_data[i].name
 					}, tr);
 
@@ -1310,33 +1024,11 @@ define("p3/widget/DataItemFormatter", [
 					}
 
 					domConstruct.create("td", {
-						"class": "detailValue",
+						"class": "DataItemValue",
 						innerHTML: innerHTML
 					}, tr);
 				}
 			}
-		}
-
-		var additional = true;
-		if(hideExtra == false && mini == false){
-			Object.keys(item).sort()
-				.filter(function(key){
-					return !displayColumns[key] && item[key];
-				})
-				.forEach(function(key){
-					if(additional){
-						tr = domConstruct.create("tr", {}, tbody);
-						domConstruct.create("td", {
-							colspan: 2,
-							innerHTML: "Additional Info",
-							style: "font-weight: bold"
-						}, tr);
-						additional = false;
-					}
-					tr = domConstruct.create("tr", {}, tbody);
-					domConstruct.create("td", {"class": "detailProp", innerHTML: key}, tr);
-					domConstruct.create("td", {"class": "detailValue", innerHTML: item[key]}, tr);
-				}, this);
 		}
 	}
 

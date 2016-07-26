@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <table class=\"p3basic stripe far2x left\" style=\"width:80%\">\n                <tbody>\n                <tr>\n                    <th scope=\"row\">Gene ID</th>\n                    <td data-dojo-attach-point=\"geneIdList\"></td>\n                </tr>\n                <tr>\n                    <th scope=\"row\">Protein ID</th>\n                    <td>\n                        <span data-dojo-attach-point=\"proteinIdList\"></span>\n                        &nbsp; &nbsp;\n                        <span data-dojo-attach-point=\"idMappingList\"></span>\n                    </td>\n                </tr>\n                </tbody>\n            </table>\n\n            <div class=\"feature_box far2x right\" data-dojo-attach-point=\"featureBoxNode\"></div>\n            <div class=\"clear\"></div>\n        </div>\n\n        <div class=\"section\">\n            [placeholder for simplified gene browser]\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n                <button data-dojo-attach-event=\"click:onViewNTSequence\">View NT Sequence</button><br/>\n                <button data-dojo-attach-event=\"click:onViewAASequence\">View AA Sequence</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            [placeholder for simplified gene browser]\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 120px\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
@@ -31,10 +31,9 @@ define("p3/widget/FeatureOverview", [
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-			// console.log("Set Feature", feature);
 
-			this.createSummary(feature);
 			this.getSummaryData();
+			this.set("publications", feature);
 			this.set("functionalProperties", feature);
 			this.set("staticLinks", feature);
 		},
@@ -54,7 +53,6 @@ define("p3/widget/FeatureOverview", [
 
 			if(feature.hasOwnProperty('aa_sequence')){
 				var linkCDDSearch = "http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E";
-
 				var dispSequenceID = [];
 				if(feature['annotation'] === 'PATRIC'){
 					if(feature['alt_locus_tag']){
@@ -93,8 +91,8 @@ define("p3/widget/FeatureOverview", [
 
 				var linkSTITCH = "http://stitch.embl.de/cgi/show_network_section.pl?identifier=" + feature.refseq_locus_tag;
 				domConstruct.create("a", {
-					href:linkSTITCH,
-					innerHTML:"STITCH: Chemical-Protein Interaction",
+					href: linkSTITCH,
+					innerHTML: "STITCH: Chemical-Protein Interaction",
 					target: "_blank"
 				}, this.externalLinkNode);
 			}
@@ -112,10 +110,10 @@ define("p3/widget/FeatureOverview", [
 						{label: "Organism", field: "organism"},
 						{
 							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
-								if(val){
-									node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
-								}
+							if(val){
+								node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
 							}
+						}
 						},
 						{label: "Subject coverage", field: "subject_coverage"},
 						{label: "Query coverage", field: "query_coverage"},
@@ -159,36 +157,22 @@ define("p3/widget/FeatureOverview", [
 			});
 		},
 		_setMappedFeatureListAttr: function(summary){
+			domClass.remove(this.idMappingNode.parentNode, "hidden");
 
-			domConstruct.empty(this.idMappingList);
-			var span = domConstruct.create("span", {innerHTML: "<b>UniProt</b> :"}, this.idMappingList);
+			if(!this.idMappingGrid){
+				var opts = {
+					columns: [
+						{label: "UniprotKB Accession", field: "uniprotkb_accession"},
+						{label: "ID Type", field: "id_type"},
+						{label: "Value", field: "id_value"}
+					]
+				};
 
-			summary['accessions'].forEach(function(d){
-				var accession = domConstruct.create("a", {
-					href: "http://www.uniprot.org/uniprot/" + d,
-					target: "_blank",
-					innerHTML: d
-				}, span);
-				domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), accession, "after");
-			});
-
-			var mappedIds = domConstruct.create("a", {innerHTML: summary['total'] + " IDs are mapped"}, this.idMappingList);
-			domConstruct.place(domConstruct.toDom("&nbsp; &nbsp;"), mappedIds, "before");
-
-			var table = domConstruct.create("table", {"class": "hidden"}, this.idMappingList);
-			summary['ids'].forEach(function(id){
-				var tr = domConstruct.create('tr', {}, table);
-				domConstruct.create('th', {innerHTML: id['id_type']}, tr);
-				domConstruct.create('td', {innerHTML: id['id_value']}, tr);
-			});
-
-			on(mappedIds, "click", function(){
-				if(domClass.contains(table, "hidden")){
-					domClass.remove(table, "hidden");
-				}else{
-					domClass.add(table, "hidden");
-				}
-			});
+				this.idMappingGrid = new Grid(opts, this.idMappingNode);
+				this.idMappingGrid.startup();
+			}
+			this.idMappingGrid.refresh();
+			this.idMappingGrid.renderArray(summary);
 		},
 		_setFunctionalPropertiesAttr: function(feature){
 
@@ -228,6 +212,12 @@ define("p3/widget/FeatureOverview", [
 			}
 
 			domConstruct.empty(this.functionalPropertiesNode);
+
+			if(feature.hasOwnProperty('gene')){
+				domConstruct.create("span", {innerHTML: "<b>Gene Symbol: </b>" + feature.gene + "&nbsp; &nbsp;"}, this.functionalPropertiesNode);
+			}
+			domConstruct.create("span", {innerHTML: "<b>Product: </b>" + feature.product}, this.functionalPropertiesNode);
+
 			var table = domConstruct.create("table", {"class": "p3basic"}, this.functionalPropertiesNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
@@ -258,8 +248,20 @@ define("p3/widget/FeatureOverview", [
 			// TODO: implement structure
 			// TODO: implement protein interaction
 		},
+		_setFeatureSummaryAttr: function(feature){
+			domConstruct.empty(this.featureSummaryNode);
+
+			// this feature contains taxonomy info
+			domConstruct.place(DataItemFormatter(feature, "feature_data", {}), this.featureSummaryNode, "first");
+		},
+		_setPublicationsAttr: function(feature){
+			domConstruct.empty(this.pubmedSummaryNode);
+
+			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
+		},
 		getSummaryData: function(){
 
+			// uniprot mapping
 			if(this.feature.gi){
 				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)"), {
 					handleAs: "json",
@@ -275,7 +277,7 @@ define("p3/widget/FeatureOverview", [
 						return d.uniprotkb_accession;
 					});
 
-					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(id_type,id_value)&limit(25000)"), {
+					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(uniprotkb_accession,id_type,id_value)&limit(25000)"), {
 						handleAs: "json",
 						headers: {
 							'Accept': "application/json",
@@ -286,7 +288,7 @@ define("p3/widget/FeatureOverview", [
 					}).then(lang.hitch(this, function(data){
 						if(data.length === 0) return;
 
-						this.set("mappedFeatureList", {accessions: uniprotKbAccessions, total: data.length, ids: data});
+						this.set("mappedFeatureList", data);
 					}));
 				}));
 			}
@@ -304,6 +306,7 @@ define("p3/widget/FeatureOverview", [
 			// 	}));
 			// }
 
+			// specialty gene
 			xhr.get(PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)"), {
 				handleAs: "json",
 				headers: {
@@ -316,51 +319,22 @@ define("p3/widget/FeatureOverview", [
 				if(data.length === 0) return;
 
 				this.set("specialProperties", data);
+			}));
+
+			// get taxonomy info and pass to summary panel
+			xhr.get(PathJoin(this.apiServiceUrl, "/taxonomy/" + this.feature.taxon_id), {
+				handleAs: "json",
+				headers: {
+					'Accept': "application/json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': window.App.authorizationToken || ""
+				}
+			}).then(lang.hitch(this, function(data){
+				if(data.length === 0) return;
+
+				this.set("featureSummary", lang.mixin(this.feature, data));
 			}))
-		},
-		createSummary: function(feature){
-
-			domConstruct.empty(this.featureSummaryNode);
-			domConstruct.place(DataItemFormatter(feature, "feature_data", {hideExtra: true}), this.featureSummaryNode, "first");
-			domConstruct.empty(this.pubmedSummaryNode);
-			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data",{}), this.pubmedSummaryNode, "first");
-
-			if(feature && feature.feature_id){
-				if(feature.patric_id){
-					this.geneIdList.innerHTML = '<span><b>PATRIC ID</b>: ' + feature.patric_id + '</span>&nbsp; ';
-				}
-
-				if(feature.refseq_locus_tag){
-					this.geneIdList.innerHTML += '<span><b>RefSeq</b>: ' + feature.refseq_locus_tag + '</span>&nbsp; ';
-				}
-
-				if(feature.alt_locus_tag){
-					this.geneIdList.innerHTML += '<span><b>Alt Locus Tag</b>: ' + feature.alt_locus_tag + '</span>';
-				}
-
-				this.proteinIdList.innerHTML = '';
-				if(feature.protein_id != null){
-					this.proteinIdList.innerHTML += '<b>RefSeq</b>: <a href="https://www.ncbi.nlm.nih.gov/protein/' + feature.protein_id + '" target="_blank">' + feature.protein_id + '</a>';
-				}
-
-				// feature box
-				this.featureBoxNode.innerHTML = '<div class="gene_symbol">' + (feature.gene || ' ') + '</div>';
-				if(feature.strand == '+'){
-					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-right fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
-				}else{
-					this.featureBoxNode.innerHTML += '<i class="fa icon-long-arrow-left fa-2x" style="transform:scale(3,1);padding-left:20px;"></i>';
-				}
-				this.featureBoxNode.innerHTML += '<div class="feature_type">' + this.feature.feature_type + '</div>';
-
-			}else{
-				console.log("Invalid Feature: ", feature);
-			}
-		},
-		onViewNTSequence: function(){
-			window.open('/view/FASTA/dna/?in(feature_id,(' + this.feature.feature_id + '))');
-		},
-		onViewAASequence: function(){
-			window.open('/view/FASTA/protein/?in(feature_id,(' + this.feature.feature_id + '))');
 		},
 		startup: function(){
 			if(this._started){

@@ -180,7 +180,7 @@ define("p3/app/app", [
 				var target = evt.target;
 				var rel;
 				console.log("TARGET: ", target);
-				if (target.attributes.rel.value){
+				if (target.attributes.rel && target.attributes.rel.value){
 					rel = target.attributes.rel.value;
 				}else{
 					rel = target.parentNode.attributes.rel.value;

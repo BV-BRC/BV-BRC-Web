@@ -266,7 +266,7 @@ define([
 
 			var hmb = domGeometry.getMarginBox(this.categoryNode);
 
-			console.log("FacetFilter _contentBox: ", this._contentBox, " Header MB: ", hmb);
+			// console.log("FacetFilter _contentBox: ", this._contentBox, " Header MB: ", hmb);
 
 			domGeometry.setMarginBox(this.containerNode, {h: this._contentBox.h - hmb.h })
 

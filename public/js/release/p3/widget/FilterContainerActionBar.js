@@ -98,8 +98,8 @@ define("p3/widget/FilterContainerActionBar", [
 			this.minimized = true;
 		},
 		_setStateAttr: function(state){
-			console.log("FilterContainerActionBar setStateAttr oldState ",JSON.stringify(this.state,null,4));
-			console.log("FilterContainerActionBar setStateAttr newState ",JSON.stringify(state,null,4));
+			// console.log("FilterContainerActionBar setStateAttr oldState ",JSON.stringify(this.state,null,4));
+			// console.log("FilterContainerActionBar setStateAttr newState ",JSON.stringify(state,null,4));
 			state = state || {};
 			this._set("state", state);
 			// console.log("_setStateAttr query: ", state.search, this.query);
@@ -848,10 +848,6 @@ define("p3/widget/FilterContainerActionBar", [
 				w: bb.w - pe.w,
 				h: bb.h - pe.h
 			};
-
-			console.log("_contentBox: ", this._contentBox);
-
-
 
 			Object.keys(this._ffWidgets).forEach(function(name){
 				this._ffWidgets[name].resize({h: mb.h - this.absoluteMinSize - 7});

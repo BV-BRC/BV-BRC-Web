@@ -9,29 +9,12 @@
 
     <div class="column-prime">
         <div class="section">
-            <table class="p3basic stripe far2x left" style="width:80%">
-                <tbody>
-                <tr>
-                    <th scope="row">Gene ID</th>
-                    <td data-dojo-attach-point="geneIdList"></td>
-                </tr>
-                <tr>
-                    <th scope="row">Protein ID</th>
-                    <td>
-                        <span data-dojo-attach-point="proteinIdList"></span>
-                        &nbsp; &nbsp;
-                        <span data-dojo-attach-point="idMappingList"></span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
-            <div class="feature_box far2x right" data-dojo-attach-point="featureBoxNode"></div>
-            <div class="clear"></div>
+            [placeholder for simplified gene browser]
         </div>
 
-        <div class="section">
-            [placeholder for simplified gene browser]
+        <div class="section hidden">
+            <h3 class="section-title"><span class="wrap">ID Mapping</span></h3>
+            <div class="SummaryWidget" style="height: 120px" data-dojo-attach-point="idMappingNode"></div>
         </div>
 
         <div class="section">
@@ -43,12 +26,12 @@
 
         <div class="section hidden">
             <h3 class="section-title"><span class="wrap">Special Properties</span></h3>
-            <div style="height: 250px" data-dojo-attach-point="specialPropertiesNode"></div>
+            <div class="SummaryWidget" style="height: 250px" data-dojo-attach-point="specialPropertiesNode"></div>
         </div>
 
         <div class="section">
             <h3 class="section-title"><span class="wrap">Comments</span></h3>
-            <div data-dojo-attach-point="featureCommentsNode">
+            <div class="SummaryWidget" data-dojo-attach-point="featureCommentsNode">
                 [placeholder for comments]
             </div>
         </div>
@@ -58,8 +41,6 @@
         <div class="section">
             <div class="SummaryWidget">
                 <button>Add PATRIC Feature to Workspace</button><br/>
-                <button data-dojo-attach-event="click:onViewNTSequence">View NT Sequence</button><br/>
-                <button data-dojo-attach-event="click:onViewAASequence">View AA Sequence</button>
             </div>
         </div>
         <div class="section">
