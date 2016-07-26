@@ -21,7 +21,7 @@ define([
 
 			this.drawTargetParams = {
 				target: this.node,
-				margins: [10, 0, 0, 30]
+				margins: [10, 0, 0, 40]
 			};
 			var drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
 			this.chart = drawTarget.chart;
@@ -150,10 +150,10 @@ define([
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index]], d['dist'][index]);
+						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index], d['dist'][index]]);
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
-							.style("top", (d3.event.pageY - 28) + "px")
+							.style("top", d3.event.pageY + "px")
 					})
 					.on("mouseout", function(){
 						self.tooltipLayer.transition()
@@ -300,7 +300,7 @@ define([
 				.insert("circle")
 				.attr("cx", 8).attr("cy", 8).attr("r", 8)
 				.attr("class", function(d, i){
-					return "bar" + (i + 1) + "-sample"
+					return "bar" + i + "-sample"
 				});
 
 			d3.select("p.legend").selectAll("span")
