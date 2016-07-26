@@ -83,7 +83,10 @@ define([
 			if(!this.chart){
 				this.chart = new D3StackedBarChart(this.chartNode);
 
-				var legend = Object.keys(phenotypeDef).map(key => phenotypeDef[key].label);
+				var legend = Object.keys(phenotypeDef)
+					.map(function(key){
+						return phenotypeDef[key].label;
+					});
 				this.chart.renderLegend(legend);
 				this.chart.processData(this.data);
 				this.chart.render();
