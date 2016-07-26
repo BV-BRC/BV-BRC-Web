@@ -115,7 +115,7 @@ define([
 				.attr("class", "y axis");
 
 			this.seriesSize = this.data.map(d => d['dist'].length).reduce((a, b) => Math.max(a, b));
-			for(let index = 0; index < this.seriesSize; index++){
+			for(var index = 0; index < this.seriesSize; index++){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
