@@ -23,21 +23,23 @@ define([
 				target: this.node,
 				margins: [10, 0, 0, 30]
 			};
-			const drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
+			var drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
 			this.chart = drawTarget.chart;
 			this.canvas = drawTarget.canvas;
 			this.canvasSize = drawTarget.canvas_size;
 
-			const self = this;
-			const scaleToggle = domQuery(".chart-wrapper .scale li");
-			const sortToggle = domQuery(".chart-wrapper .sort li");
+			var self = this;
+			var scaleToggle = domQuery(".chart-wrapper .scale li");
+			var sortToggle = domQuery(".chart-wrapper .sort li");
 
 			// Set up the scale toggle
 			if(scaleToggle != null){
 				scaleToggle.on('click', function(evt){
 					scaleToggle.removeClass("active");
-					self.normalize = evt.srcElement.className === "normalize";
-					domClass.add(evt.srcElement, "active");
+					var target = evt.srcElement || evt.target;
+
+					self.normalize = target.className == "normalize";
+					domClass.add(target, "active");
 
 					self.scale(function(){
 						return self.sort();
@@ -49,7 +51,7 @@ define([
 			if(sortToggle != null){
 				sortToggle.on('click', function(evt){
 					sortToggle.removeClass("active");
-					domClass.add(evt.srcElement, "active");
+					domClass.add(evt.srcElement || evt.target, "active");
 
 					return self.sort();
 				});
@@ -58,13 +60,15 @@ define([
 
 		processData: function(data){
 
-			this.data = data.map((d, i) => ({
-				"index": i,
-				"label": d.label,
-				"total": parseInt(d.total),
-				"dist": d.dist,
-				"phenotypes": d.phenotypes
-			}));
+			this.data = data.map(function(d, i){
+				return {
+					"index": i,
+					"label": d.label,
+					"total": parseInt(d.total),
+					"dist": d.dist,
+					"phenotypes": d.phenotypes
+				}
+			});
 		},
 
 		render: function(){
@@ -78,12 +82,15 @@ define([
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
-				this.maxValue = this.data.map((d) => d.total || 0)
-					.reduce((a, b) => Math.max(a, b));
+				this.maxValue = this.data.map(function(d){
+					return d.total || 0
+				}).reduce(function(a, b){
+					return Math.max(a, b)
+				});
 			}
 
 			// reset sort condition
-			const sortToggle = domQuery(".chart-wrapper .sort li");
+			var sortToggle = domQuery(".chart-wrapper .sort li");
 			sortToggle.removeClass("active");
 			domClass.add(domQuery(".chart-wrapper .sort .label")[0], "active");
 
@@ -98,7 +105,7 @@ define([
 				.attr("class", "tooltip")
 				.style("opacity", 0);
 
-			const self = this;
+			var self = this;
 
 			this.full_barWidth = self.pf_x_scale(1);
 			this.drawn_barWidth = this.full_barWidth * .525;
@@ -110,50 +117,66 @@ define([
 				.tickPadding(0).tickSize(0);
 
 			this.chart.append("g")
-				.attr("transform", `translate(${this.drawTargetParams.margins[3]}, ${this.drawTargetParams.margins[0]})`)
+				.attr("transform", lang.replace('translate({0},{1})', [this.drawTargetParams.margins[3], this.drawTargetParams.margins[0]]))
 				.call(this.yAxis)
 				.attr("class", "y axis");
 
-			this.seriesSize = this.data.map(d => d['dist'].length).reduce((a, b) => Math.max(a, b));
-			for(let index = 0; index < this.seriesSize; index++){
+			this.seriesSize = this.data.map(function(d){
+				return d['dist'].length
+			})
+				.reduce(function(a, b){
+					return Math.max(a, b)
+				});
+			for(var index = 0; index < this.seriesSize; index++){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
-					.attr("y", d =>{
-						const ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
+					.attr("y", function(d){
+						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
 						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
-					.attr("x", (d, i) => self.barPosition(i))
-					.attr("width", () => self.barWidth())
-					.attr("height", d => Math.round(self.barHeight(d['dist'][index], d.total)))
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					})
+					.attr("width", function(){
+						return self.barWidth()
+					})
+					.attr("height", function(d){
+						return Math.round(self.barHeight(d['dist'][index], d.total))
+					})
 					//.on("click", {})
-					.on("mouseover", d =>{
+					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						const content = `Antibiotic: ${d.label}<br/>Phenotype: ${d.phenotypes[index]}<br/>Count: ${d['dist'][index]}`;
+						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index]], d['dist'][index]);
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
 							.style("top", (d3.event.pageY - 28) + "px")
 					})
-					.on("mouseout", () => self.tooltipLayer.transition()
-						.duration(500)
-						.style("opacity", 0)
-					);
+					.on("mouseout", function(){
+						self.tooltipLayer.transition()
+							.duration(500)
+							.style("opacity", 0)
+					});
 			}
 
 			// Place the text. We have a little height adjustment on the dy
 			// to make sure text is centered in the block rather than set
 			// along the baseline.
 
-			this.bars.append("text").text(d => d.label)
+			this.bars.append("text").text(function(d){
+				return d.label
+			})
 				.attr("y", Math.round(this.canvasSize.height - 11))
-				.attr("x", (d, i) => self.textPosition(i))
-				.attr("transform", (d, i) =>{
-					const y = Math.round(self.canvasSize.height - 11);
-					const x = self.textPosition(i);
-					return `rotate(270, ${x}, ${y})`;
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasSize.height - 11);
+					var x = self.textPosition(i);
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
 				.attr("dy", ".35em");
 
@@ -180,9 +203,14 @@ define([
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
-				this.maxValue = this.data.map((d) => d.total || 0)
-					.reduce((a, b) => Math.max(a, b));
+				this.maxValue = this.data.map(function(d){
+					return d.total || 0
+				})
+					.reduce(function(a, b){
+						return Math.max(a, b)
+					});
 			}
+			var self = this;
 
 			// update axis
 			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
@@ -190,19 +218,22 @@ define([
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
-			for(let index = 0; index < this.seriesSize; index++){
-				this.bars.select(`rect.block-${index}`).transition().duration(600)
-					.attr("y", (d) =>{
-						const ancestorHeight = this.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(this.canvasSize.height - this.barHeight(d['dist'][index], d.total) - ancestorHeight);
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition().duration(600)
+					.attr("y", function(d){
+						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
+						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
-					.attr("height", d => Math.round(this.barHeight(d['dist'][index], d.total)));
+					.attr("height", function(d){
+						return Math.round(self.barHeight(d['dist'][index], d.total))
+					});
 			}
 		},
 		sort: function(){
-			const self = this;
+			var self = this;
 
-			const sortCriteria = domQuery(".chart-wrapper .sort .active")[0].className.split(" ")[0];
+			var sortCriteria = domQuery(".chart-wrapper .sort .active")[0].className.split(" ")[0];
 
 			if(sortCriteria === this.currentSort){
 				this.ascendSort = !this.ascendSort;
@@ -212,24 +243,24 @@ define([
 
 			if(this.currentSort === "label"){
 				this.bars.sort(function(a, b){
-					let orderCode = 0;
+					var orderCode = 0;
 					if(a.label < b.label){
 						orderCode = -1;
-					} else if (a.label > b.label){
+					}else if(a.label > b.label){
 						orderCode = 1;
 					}
 
-					if (!self.ascendSort) {
+					if(!self.ascendSort){
 						orderCode = orderCode * -1;
 					}
 					return orderCode;
 				});
-			} else if (this.currentSort === "value"){
+			}else if(this.currentSort === "value"){
 				this.bars.sort(function(a, b){
-					const aValue = self.barHeight(a['dist'][0], a.total);
-					const bValue = self.barHeight(b['dist'][0], b.total);
+					var aValue = self.barHeight(a['dist'][0], a.total);
+					var bValue = self.barHeight(b['dist'][0], b.total);
 
-					let orderCode = aValue - bValue;
+					var orderCode = aValue - bValue;
 					if(!self.ascendSort){
 						orderCode = orderCode * -1;
 					}
@@ -237,19 +268,28 @@ define([
 				})
 			}
 
-			for(let index = 0; index < this.seriesSize; index++){
-				this.bars.select(`rect.block-${index}`).transition().duration(600)
-					.delay((d, i) => 10 * i)
-					.attr("x", (d, i) => self.barPosition(i));
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition().duration(600)
+					.delay(function(d, i){
+						return 10 * i
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					});
 			}
 
 			this.bars.select("text").transition().duration(600)
-				.delay((d, i) => 10 * i)
-				.attr("x", (d, i) => self.textPosition(i))
-				.attr("transform", (d, i) =>{
-					const y = Math.round(self.canvasSize.height - 11);
-					const x = this.pf_x_scale(i) + self.pf_x_scale(1) / 2;
-					return `rotate(270, ${x}, ${y})`;
+				.delay(function(d, i){
+					return 10 * i
+				})
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasSize.height - 11);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
 
 		},
@@ -259,29 +299,33 @@ define([
 				.data(legend)
 				.insert("circle")
 				.attr("cx", 8).attr("cy", 8).attr("r", 8)
-				.attr("class", (d, i) => "bar" + (i + 1) + "-sample");
+				.attr("class", function(d, i){
+					return "bar" + (i + 1) + "-sample"
+				});
 
 			d3.select("p.legend").selectAll("span")
 				.data(legend)
-				.text(d => d);
+				.text(function(d){
+					return d
+				});
 		},
 		prepareSVGDrawTarget: function(params){
 
-			const chartSize = params.size || this.getContainerSize(params.target);
-			const chartMargin = params.margins || [0, 0, 0, 0];
+			var chartSize = params.size || this.getContainerSize(params.target);
+			var chartMargin = params.margins || [0, 0, 0, 0];
 
-			const canvasSize = {
+			var canvasSize = {
 				width: chartSize.width - chartMargin[1] - chartMargin[3],
 				height: chartSize.height - chartMargin[0] - chartMargin[2]
 			};
 
-			const chart = d3.select(".chart")
+			var chart = d3.select(".chart")
 				.insert("svg", ":first-child")
 				.attr("class", "svgChartContainer")
 				.attr("width", chartSize.width)
 				.attr("height", chartSize.height);
 
-			const canvas = chart.append("g")
+			var canvas = chart.append("g")
 				.attr("class", "svgChartCanvas")
 				.attr("width", canvasSize.width)
 				.attr("height", canvasSize.height)
@@ -295,7 +339,7 @@ define([
 			};
 		},
 		getContainerSize: function(){
-			const container = domQuery(".chart", this.node)[0] || null;
+			var container = domQuery(".chart", this.node)[0] || null;
 
 			if(container){
 				return {
