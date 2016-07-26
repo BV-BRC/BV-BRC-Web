@@ -32,6 +32,7 @@ define([
 				.style("opacity", 0);
 		},
 		render: function(data){
+			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
 
@@ -43,30 +44,31 @@ define([
 				.append("rect")
 				.attr("y", 50)
 				.attr("x", function(d){
-					return this.x_scale(d.start - data.firstStartPosition)
+					return self.x_scale(d.start - data.firstStartPosition)
 				})
 				.attr("width", function(d){
-					return this.x_scale(d.na_length)
+					return self.x_scale(d.na_length)
 				})
 				.attr("height", 15)
 				.attr("fill", '#4f81bd')
 				.on("mouseover", function(d){
-					this.tooltipLayer.transition()
+					self.tooltipLayer.transition()
 						.duration(200)
 						.style("opacity", .95);
+
 					var content = [];
 					content.push('PATRIC ID: ' + d.patric_id);
-					(d.gene) ? content.push('gene: ' + d.gene) : {};
-					content.push("feature type: " + d.feature_type);
-					content.push("strand: " + d.strand);
-					content.push("location: " + d.start + "..." + d.end);
+					(d.gene) ? content.push('Gene: ' + d.gene) : {};
+					content.push("Feature type: " + d.feature_type);
+					content.push("Strand: " + d.strand);
+					content.push("Location: " + d.start + "..." + d.end);
 
-					this.tooltipLayer.html(content.join("<br/>"))
+					self.tooltipLayer.html(content.join("<br/>"))
 						.style("left", d3.event.pageX + "px")
-						.style("top", (d3.event.pageY - 28) + "px")
+						.style("top", d3.event.pageY + "px")
 				})
 				.on("mouseout", function(){
-					this.tooltipLayer.transition()
+					self.tooltipLayer.transition()
 						.duration(500)
 						.style("opacity", 0)
 				})
@@ -81,11 +83,11 @@ define([
 					var start, end;
 
 					if(d.strand === '+'){
-						start = this.x_scale(d.start - data.firstStartPosition);
-						end = this.x_scale(d.end - data.firstStartPosition) - 8;
+						start = self.x_scale(d.start - data.firstStartPosition);
+						end = self.x_scale(d.end - data.firstStartPosition) - 8;
 					}else{
-						start = this.x_scale(d.end - data.firstStartPosition);
-						end = this.x_scale(d.start - data.firstStartPosition) + 8;
+						start = self.x_scale(d.end - data.firstStartPosition);
+						end = self.x_scale(d.start - data.firstStartPosition) + 8;
 					}
 
 					ret.push('M' + start + ',45');
@@ -104,7 +106,7 @@ define([
 				})
 				.attr("y", 40)
 				.attr("x", function(d){
-					this.x_scale(d.start - data.firstStartPosition)
+					return self.x_scale(d.start - data.firstStartPosition)
 				});
 		}
 	});
