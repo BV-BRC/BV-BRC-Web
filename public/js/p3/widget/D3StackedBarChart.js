@@ -190,7 +190,7 @@ define([
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
-			for(let index = 0; index < this.seriesSize; index++){
+			for(var index = 0; index < this.seriesSize; index++){
 				this.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
 					.attr("y", (d) =>{
@@ -213,7 +213,7 @@ define([
 
 			if(this.currentSort === "label"){
 				this.bars.sort(function(a, b){
-					let orderCode = 0;
+					var orderCode = 0;
 					if(a.label < b.label){
 						orderCode = -1;
 					} else if (a.label > b.label){
@@ -230,7 +230,7 @@ define([
 					var aValue = self.barHeight(a['dist'][0], a.total);
 					var bValue = self.barHeight(b['dist'][0], b.total);
 
-					let orderCode = aValue - bValue;
+					var orderCode = aValue - bValue;
 					if(!self.ascendSort){
 						orderCode = orderCode * -1;
 					}
@@ -238,7 +238,7 @@ define([
 				})
 			}
 
-			for(let index = 0; index < this.seriesSize; index++){
+			for(var index = 0; index < this.seriesSize; index++){
 				this.bars.select(lang.replace('rect.block-{0}',[index]))
 					.transition().duration(600)
 					.delay((d, i) => 10 * i)
