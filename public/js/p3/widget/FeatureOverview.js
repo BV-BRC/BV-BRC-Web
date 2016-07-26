@@ -3,13 +3,13 @@ define([
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter){
+			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -257,6 +257,10 @@ define([
 
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
+		_setFeatureViewerAttr: function(data){
+			new D3SingleGeneViewer(this.sgViewerNode)
+				.render(data);
+		},
 		getSummaryData: function(){
 
 			// uniprot mapping
@@ -332,7 +336,32 @@ define([
 				if(data.length === 0) return;
 
 				this.set("featureSummary", lang.mixin(this.feature, data));
-			}))
+			}));
+
+			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
+			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
+			var rangeEnd = (centerPos + 5000);
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+
+			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), {
+				handleAs: "json",
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': window.App.authorizationToken || ""
+				}
+			}).then(lang.hitch(this, function(data){
+				if(data.length === 0) return;
+
+				var firstStartPosition = Math.max(data[0].start, rangeStart);
+				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);
+				this.set("featureViewer", {
+					firstStartPosition: firstStartPosition,
+					lastEndPosition: lastEndPosition,
+					features: data
+				});
+			}));
 		},
 		startup: function(){
 			if(this._started){
