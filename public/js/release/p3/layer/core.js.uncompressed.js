@@ -108388,13 +108388,13 @@ define([
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
 	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
 	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter"
+	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer"
 
 ], function(declare, WidgetBase, on,
 			domClass, Templated, Template,
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter){
+			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -108642,6 +108642,10 @@ define([
 
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
+		_setFeatureViewerAttr: function(data){
+			new D3SingleGeneViewer(this.sgViewerNode)
+				.render(data);
+		},
 		getSummaryData: function(){
 
 			// uniprot mapping
@@ -108717,7 +108721,32 @@ define([
 				if(data.length === 0) return;
 
 				this.set("featureSummary", lang.mixin(this.feature, data));
-			}))
+			}));
+
+			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
+			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
+			var rangeEnd = (centerPos + 5000);
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+
+			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), {
+				handleAs: "json",
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': window.App.authorizationToken || ""
+				}
+			}).then(lang.hitch(this, function(data){
+				if(data.length === 0) return;
+
+				var firstStartPosition = Math.max(data[0].start, rangeStart);
+				var lastEndPosition = Math.min(data[data.length - 1].end, rangeEnd);
+				this.set("featureViewer", {
+					firstStartPosition: firstStartPosition,
+					lastEndPosition: lastEndPosition,
+					features: data
+				});
+			}));
 		},
 		startup: function(){
 			if(this._started){
@@ -109458,6 +109487,123 @@ define(["../Theme", "./gradientGenerator", "./common"], function(Theme, gradient
 	return themes.PrimaryColors;
 });
 
+},
+'p3/widget/D3SingleGeneViewer':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"d3/d3"
+], function(declare, lang,
+			dom, domClass, domConstruct, domStyle,
+			d3){
+
+	return declare([], {
+		constructor: function(target){
+			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
+
+			this.nodeWidth = domStyle.get(this.node, "width");
+
+			this.canvas = d3.select(".chart")
+				.insert("svg", ":first-child")
+				.attr("width", this.nodeWidth)
+				.attr("height", 100);
+
+			this.canvas.insert("defs")
+				.append("marker")
+				.attr("id", "markerArrow")
+				.attr("markerWidth", "10")
+				.attr("markerHeight", "10")
+				.attr("refX", "2")
+				.attr("refY", "6")
+				.attr("orient", "auto")
+				.append("path")
+				.attr("d", "M2,2 L2,11 L10,6 L2,2")
+				.attr("style", "fill: #4f81bd;");
+
+			this.tooltipLayer = d3.select("body").append("div")
+				.attr("class", "tooltip")
+				.style("opacity", 0);
+		},
+		render: function(data){
+			var self = this;
+
+			var totalRange = data.lastEndPosition - data.firstStartPosition;
+
+			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
+
+			this.canvas.selectAll("g")
+				.data(data.features)
+				.enter()
+				.append("rect")
+				.attr("y", 50)
+				.attr("x", function(d){
+					return self.x_scale(d.start - data.firstStartPosition)
+				})
+				.attr("width", function(d){
+					return self.x_scale(d.na_length)
+				})
+				.attr("height", 15)
+				.attr("fill", '#4f81bd')
+				.on("mouseover", function(d){
+					self.tooltipLayer.transition()
+						.duration(200)
+						.style("opacity", .95);
+
+					var content = [];
+					content.push('PATRIC ID: ' + d.patric_id);
+					(d.gene) ? content.push('Gene: ' + d.gene) : {};
+					content.push("Feature type: " + d.feature_type);
+					content.push("Strand: " + d.strand);
+					content.push("Location: " + d.start + "..." + d.end);
+
+					self.tooltipLayer.html(content.join("<br/>"))
+						.style("left", d3.event.pageX + "px")
+						.style("top", d3.event.pageY + "px")
+				})
+				.on("mouseout", function(){
+					self.tooltipLayer.transition()
+						.duration(500)
+						.style("opacity", 0)
+				})
+			;
+
+			this.canvas.selectAll("path")
+				.data(data.features)
+				.enter()
+				.append("path")
+				.attr("d", function(d){
+					var ret = [];
+					var start, end;
+
+					if(d.strand === '+'){
+						start = self.x_scale(d.start - data.firstStartPosition);
+						end = self.x_scale(d.end - data.firstStartPosition) - 8;
+					}else{
+						start = self.x_scale(d.end - data.firstStartPosition);
+						end = self.x_scale(d.start - data.firstStartPosition) + 8;
+					}
+
+					ret.push('M' + start + ',45');
+					ret.push('L' + end + ',45');
+
+					return ret.join(' ');
+				})
+				.attr("style", "stroke: #6666ff; stroke-width: 1px; fill: #4f81bd; marker-end: url(#markerArrow);");
+
+			this.canvas.selectAll("text")
+				.data(data.features)
+				.enter()
+				.append("text")
+				.text(function(d){
+					return d.gene
+				})
+				.attr("y", 40)
+				.attr("x", function(d){
+					return self.x_scale(d.start - data.firstStartPosition)
+				});
+		}
+	});
+});
 },
 'p3/widget/GeneExpressionContainer':function(){
 define([
@@ -118744,7 +118890,7 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            [placeholder for simplified gene browser]\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 120px\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 120px\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

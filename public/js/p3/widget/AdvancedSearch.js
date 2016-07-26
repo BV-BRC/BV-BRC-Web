@@ -15,7 +15,7 @@ define([
 		labelsByType: {
 			"genome": "Genomes",
 			"genome_feature": "Genomic Features",
-			"taxonomy": "Taxonomies",
+			"taxonomy": "Taxonomy",
 			"sp_gene": "Specialty Genes",
 			"transcriptomics_experiment": "Transcriptomics Experiments"
 		},
