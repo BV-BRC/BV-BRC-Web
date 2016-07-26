@@ -117,42 +117,70 @@ define([
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-eye fa-2x", {
-				label: "VIEW",
+			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-perspective-Genome fa-2x", {
+				label: "GENOME",
 				validTypes: ["*"],
 				validContainerTypes: ["genome_group"],
 				multiple: false,
-				tooltip: "View Genome"
+				tooltip: "View Genome. Press and Hold for more options.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+						around: button,
+						orient: ["below"]
+					});
+				}
 			}, function(selection){
 				// console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-eye fa-2x", {
+			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-perspective-Feature fa-2x", {
 				validTypes: ["*"],
-				label: "VIEW",
+				label: "FEATURE",
 				validContainerTypes: ["feature_group"],
 				multiple: false,
-				tooltip: "View Feature"
+				tooltip: "View Feature. Press and Hold for more options.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id}),
+						around: button,
+						orient: ["below"]
+					});
+				}	
 			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Feature/" + sel.feature_id
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-genome fa-2x", {
-				validTypes: ["*"],
+			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-perspective-Genome fa-2x", {
 				label: "GENOME",
+				validTypes: ["*"],
 				validContainerTypes: ["feature_group"],
 				multiple: false,
-				tooltip: "View Genome"
+				tooltip: "View Genome. Press and Hold for more options.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspectiveUrl: "/view/Genome/" + selection[0].genome_id}),
+						around: button,
+						orient: ["below"]
+					});
+				}
 			}, function(selection){
 				console.log("selection: ", selection);
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
+/*
 			this.actionPanel.addAction("ViewCDSFeatures", "MultiButton fa icon-genome-features-cds fa-2x", {
 				validTypes: ["*"],
 				label: "CDS",
@@ -176,6 +204,7 @@ define([
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id + "#view_tab=browser";
 			}, true);
+*/
 
 			this.actionPanel.addAction("DownloadItem", "fa icon-download fa-2x", {
 				label: "DOWNLOAD",
