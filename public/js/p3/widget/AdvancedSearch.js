@@ -228,7 +228,7 @@ define([
 		formattaxonomy: function(docs,total){
 			var q = this.state.search; 
 			console.log("format taxonomy q: ", q);
-			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxa</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
