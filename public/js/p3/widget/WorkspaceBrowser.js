@@ -784,7 +784,7 @@ define([
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq"],
+				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"],
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
