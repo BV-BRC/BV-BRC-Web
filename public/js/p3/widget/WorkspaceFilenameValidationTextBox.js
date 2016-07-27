@@ -25,6 +25,7 @@ define([
 		missingMessage: "A valid name is required.",
 		promptMessage: "Type an informative name",
 		nameIsValid: false,
+		intermediateChanges: true,
 		placeHolder: "",
 
 		_setPathAttr: function(val){
