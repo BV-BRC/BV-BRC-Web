@@ -256,7 +256,7 @@ define([
 				var docs = tRes.result.response.docs;
 				resultCounts[type]={total: total, docs: docs};
 
-				if (total>0 && total<4){
+				if (total>0){ // && total<4){
 					var out=[];
 					foundContent=true;
 					if (this["format" + type]){
