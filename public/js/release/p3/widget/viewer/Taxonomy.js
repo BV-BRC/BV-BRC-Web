@@ -20,7 +20,7 @@ define("p3/widget/viewer/Taxonomy", [
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-		perspectiveLabel: "Taxonomy View",
+		perspectiveLabel: "Taxon View",
 		perspectiveIconClass: "icon-perspective-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
@@ -230,7 +230,7 @@ define("p3/widget/viewer/Taxonomy", [
 
 		createOverviewPanel: function(){
 			return new TaxonomyOverview({
-				title: "Taxonomy Overview",
+				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
 			});
 		},

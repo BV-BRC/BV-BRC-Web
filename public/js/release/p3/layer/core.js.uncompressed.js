@@ -24255,7 +24255,7 @@ define([
 						clear = true;
 						break;
 					case "taxonomy":
-						Topic.publish("/navigate", {href: "/view/TaxonListList/?" + q});
+						Topic.publish("/navigate", {href: "/view/TaxonList/?" + q});
 						clear = true;
 						break;
 					default:
@@ -28738,7 +28738,7 @@ define([
 				label: "DELETE",
 				allowMultiTypes: true,
 				multiple: true,
-				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq"],
+				validTypes: ["genome_group", "feature_group", "experiment_group", "job_result", "unspecified", "contigs", "reads", "diffexp_input_data", "diffexp_input_metadata", "DifferentialExpression", "GenomeAssembly", "GenomeAnnotation", "RNASeq", "feature_protein_fasta"],
 				tooltip: "Delete Selection"
 			}, function(selection){
 				var objs = selection.map(function(s){
@@ -88670,7 +88670,7 @@ define([
 		taxon_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
-		perspectiveLabel: "Taxonomy View",
+		perspectiveLabel: "Taxon View",
 		perspectiveIconClass: "icon-perspective-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
@@ -88880,7 +88880,7 @@ define([
 
 		createOverviewPanel: function(){
 			return new TaxonomyOverview({
-				title: "Taxonomy Overview",
+				title: "Overview",
 				id: this.viewer.id + "_" + "overview"
 			});
 		},
@@ -89235,6 +89235,7 @@ window.PhyloTree = {
     //            .replace(/^\{\"c\"\:\[\{([\w+\.\/-]+)/,"{\"c\":[{\"n\":\"$1\"");
             console.log("tree json string: " + nwk);
             var r = JSON.parse(nwk);
+            r.labels=[{}]; //list of objects that map node id to label
             finalizeTree(r);
             return r;
         }
@@ -89294,8 +89295,10 @@ window.PhyloTree = {
             tree.px = 0;
             visit(tree,                                                                                               
                 function(node){
+                    var tmp_label=[];
                     if(!node.c && node.n) {
                         //try to parse out the genus and species name
+                        node.id = node.n;
                         node.n = node.n.replace(/_/g, " ");
                         var fields = node.n.split(" ");
                         var genusIndex = 0;
@@ -89309,13 +89312,14 @@ window.PhyloTree = {
                         for(var i = 2; genusIndex+i < fields.length; i++) {
                             species = species + " " + fields[genusIndex+i]
                         }
-                        node.species_strain = species ? species: "";                         
+                        node.species_strain = species ? species: "";
+                        tmp_label.push(node.genus);
+                        tmp_label.push(node.species_strain);
                     } else {
+                        node.id="inode"+nodeId;
                         node.n = ""+nodeId;
-                        nodeId++;
                     }
                     if(node.c) {
-                        
                         node.c.forEach(function(child){
                             child.parent = node;
                             if(child.l) {
@@ -89327,10 +89331,13 @@ window.PhyloTree = {
                             return b.d - a.d;
                         });                        
                     } else {
+                        node.label = tmp_label.join(" ");
+                        tree.labels[0][node.id]=node.label;
                         leafCount++;
                         node.ti = tipIndex++;
                         node.py = node.ti;
                     }
+                    nodeId++;
                 },
 
                 function(node){
@@ -89374,10 +89381,14 @@ define([
     tipLinkPrefix : "http://www.google.com/search?q:",
     tipLinkSuffix : "",
     fontWidthForMargin : null,
+    selectionTarget: null,
     containerName: null,
     tipToColors  : null,
     treeData : null,
+    labelIndex: 0,
+    labelLabels: {"PATRIC ID":0},
     tree : null,
+    selected: [],
     svgContainer : null, 
     visit: function(parent, visitFn, childrenFn)
     {
@@ -89393,6 +89404,18 @@ define([
             }
         }
     },
+
+    startup: function(){
+        if(this._started){
+            return;
+        }
+
+        this.watch("labelIndex", lang.hitch(this, "update"));
+
+        this.inherited(arguments);
+    },
+
+
     d3Tree: function(containerName, customOptions)
 {
     this.options= {iNodeRadius: 3, tipNodeRadius: 3, fontSize: 12, phylogram:true, supportCutoff:100};
@@ -89462,6 +89485,23 @@ define([
         this.update();
     },
 
+    addLabels: function(labelMap, labelAlias){ //object map for IDs to labels and a category name for the label
+        this.labelLabels[labelAlias]=this.treeData.labels.length;
+        this.treeData.labels.push(labelMap);
+    },
+
+    selectLabels: function(labelAlias){
+        if (labelAlias in this.labelLabels){
+            var labelIndex = this.labelLabels[labelAlias];
+            this.maxLabelLength = 10;
+            Object.keys(this.treeData.labels[labelIndex]).forEach(lang.hitch(this, function(leafID){
+                this.maxLabelLength = Math.max(this.treeData.labels[labelIndex][leafID].length, this.maxLabelLength);
+            }));
+            this.set('labelIndex', labelIndex);
+        }
+    },
+
+
     getDataURL : function() {
         var svgs = d3.select("svg")
             .attr("version", 1.1)
@@ -89481,19 +89521,21 @@ define([
     },
 
     getSelectedItems : function() {
-        var selected = new Array();
-            this.tree.nodes(this.treeData).forEach(function(d){
+            this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
             if(d.selected && !d.c) {
-                selected.push(d);
+                this.selected.push(d);
             }
-        });
-        return selected;
+        }));
+        if (this.selectionTarget != null){
+            this.selectionTarget.set("selection",this.selected);
+        }
     },
 
     clearSelections : function() {
         this.tree.nodes(this.treeData).forEach(function(d){
             d.selected = false;
         });
+        this.selected = [];
     },
 
     startingBranch : function(d){
@@ -89575,6 +89617,7 @@ define([
         _self.visit(d, function(d){
             d.selected = toggleTo;
         });
+        x = _self.getSelectedItems();
         _self.update();
     },
 
@@ -89624,8 +89667,9 @@ define([
             r = 0;
             r = +(_self.heightPerLeaf/4);
             return r;
-        })
-        .append("svg:a")
+        });
+    if(_self.createLinks){
+        anchors.append("svg:a")
         .attr("xlink:href", function(d){
             var r = "";
             if(!d.c || d.children.length == 0) {
@@ -89633,6 +89677,7 @@ define([
             }
             return r;
         });
+    }
 
     var fullLabels = anchors
         .append("svg:tspan")
@@ -89697,31 +89742,23 @@ define([
         })
         .text(function(d){
             var r = "";
-            if(d.genus) {
-                r = d.genus + " ";
+            if(d.id && _self.treeData.labels.length && d.id in _self.treeData.labels[_self.labelIndex]){
+                r = _self.treeData.labels[_self.labelIndex][d.id];
+            }
+            else if(d.label) {
+                r = d.label
+            }
+            return r;
+        })
+        .attr("id", function(d){
+            var r = "";
+            if(d.id){
+                r = d.id;
             }
             return r;
         })
         ;
 
-    fullLabels
-        .append("svg:tspan")
-        .style("fill", function(d){
-            var r = "";
-            var colorKey = d.genus + " " + d.species;
-            if(_self.tipToColors[colorKey]) {
-                r = _self.tipToColors[colorKey][1];
-            }
-            return r;
-        })
-        .text(function(d){
-            var r = "";
-            if(d.species_strain) {
-                r = d.species_strain;
-            }
-            return r;
-        })
-        ;
 
         nodeGroup
             .transition()
@@ -89875,6 +89912,9 @@ define([
             var r = "node";
             if(d.selected) {
                 r = r + " selected";
+            }
+            if(d.c && d.c.length == 0) {
+                r = r + " leaf";
             }
             return r;
         })
@@ -118886,7 +118926,7 @@ define([
 'url:dijit/templates/CheckedMenuItem.html':"<tr class=\"dijitReset\" data-dojo-attach-point=\"focusNode\" role=\"${role}\" tabIndex=\"-1\" aria-checked=\"${checked}\">\n\t<td class=\"dijitReset dijitMenuItemIconCell\" role=\"presentation\">\n\t\t<span class=\"dijitInline dijitIcon dijitMenuItemIcon dijitCheckedMenuItemIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t\t<span class=\"dijitMenuItemIconChar dijitCheckedMenuItemIconChar\">${!checkedChar}</span>\n\t</td>\n\t<td class=\"dijitReset dijitMenuItemLabel\" colspan=\"2\" data-dojo-attach-point=\"containerNode,labelNode,textDirNode\"></td>\n\t<td class=\"dijitReset dijitMenuItemAccelKey\" style=\"display: none\" data-dojo-attach-point=\"accelKeyNode\"></td>\n\t<td class=\"dijitReset dijitMenuArrowCell\" role=\"presentation\">&#160;</td>\n</tr>\n",
 'url:dijit/templates/TooltipDialog.html':"<div role=\"alertdialog\" tabIndex=\"-1\">\n\t<div class=\"dijitTooltipContainer\" role=\"presentation\">\n\t\t<div data-dojo-attach-point=\"contentsNode\" class=\"dijitTooltipContents dijitTooltipFocusNode\">\n\t\t\t<div data-dojo-attach-point=\"containerNode\"></div>\n\t\t\t${!actionBarTemplate}\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTooltipConnector\" role=\"presentation\" data-dojo-attach-point=\"connectorNode\"></div>\n</div>\n",
 'url:dijit/templates/MenuSeparator.html':"<tr class=\"dijitMenuSeparator\" role=\"separator\">\n\t<td class=\"dijitMenuSeparatorIconCell\">\n\t\t<div class=\"dijitMenuSeparatorTop\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n\t<td colspan=\"3\" class=\"dijitMenuSeparatorLabelCell\">\n\t\t<div class=\"dijitMenuSeparatorTop dijitMenuSeparatorLabel\"></div>\n\t\t<div class=\"dijitMenuSeparatorBottom\"></div>\n\t</td>\n</tr>\n",
-'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxonomies</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
+'url:p3/widget/templates/GlobalSearch.html':"<div class=\"GlobalSearch\">\n\t<table style=\"width:100%;\">\n\t\t<tbody>\n\t\t\t<tr>\t\n\t\t\t\t<td style=\"width:120px\">\n\t\t\t\t\t<span data-dojo-attach-point=\"searchFilter\" data-dojo-type=\"dijit/form/Select\" style=\"display:inline-block;width:100%\">\n\t\t\t\t\t\t<option selected=\"true\" value=\"everything\">Everything</option>\n\t\t\t\t\t\t<option value=\"genomes\">Genomes</option>\n\t\t\t\t\t\t<option value=\"genome_features\">Genomic Features</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"taxonomy\">Taxa</option>\n\t\t\t\t\t\t<option value=\"transcriptomics_experiments\">Transcriptomics Experiments</option>\n\t\t\t\t\t\t<!--<option value=\"amr\">Antibiotic Resistance</option>\n\t\t\t\t\t\t<option value=\"sp_genes\">Specialty Genes</option>\n\t\t\t\t\t\t<option value=\"pathways\">Pathways</option>\n\t\t\t\t\t\t<option value=\"workspaces\">Workspaces</option>-->\n\t\t\t\t\t</span>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t<input data-dojo-type=\"dijit/form/TextBox\" data-dojo-attach-event=\"onChange:onInputChange,keypress:onKeypress\" data-dojo-attach-point=\"searchInput\" style=\"width:100%;\"/>\n\t\t\t\t</td>\n\t\t\t\t<td style=\"width:1em;padding:2px;font-size:1em;\"><i class=\"fa fa-1x icon-search-plus\" data-dojo-attach-event=\"click:onClickAdvanced\" title=\"Advanced Search\"/></td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n",
 'url:dijit/layout/templates/TabContainer.html':"<div class=\"dijitTabContainer\">\n\t<div class=\"dijitTabListWrapper\" data-dojo-attach-point=\"tablistNode\"></div>\n\t<div data-dojo-attach-point=\"tablistSpacer\" class=\"dijitTabSpacer ${baseClass}-spacer\"></div>\n\t<div class=\"dijitTabPaneWrapper ${baseClass}-container\" data-dojo-attach-point=\"containerNode\"></div>\n</div>\n",
 'url:dijit/templates/Menu.html':"<table class=\"dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable\" role=\"menu\" tabIndex=\"${tabIndex}\"\n\t   cellspacing=\"0\">\n\t<tbody class=\"dijitReset\" data-dojo-attach-point=\"containerNode\"></tbody>\n</table>\n",
 'url:dijit/layout/templates/_TabButton.html':"<div role=\"presentation\" data-dojo-attach-point=\"titleNode,innerDiv,tabContent\" class=\"dijitTabInner dijitTabContent\">\n\t<span role=\"presentation\" class=\"dijitInline dijitIcon dijitTabButtonIcon\" data-dojo-attach-point=\"iconNode\"></span>\n\t<span data-dojo-attach-point='containerNode,focusNode' class='tabLabel'></span>\n\t<span class=\"dijitInline dijitTabCloseButton dijitTabCloseIcon\" data-dojo-attach-point='closeNode'\n\t\t  role=\"presentation\">\n\t\t<span data-dojo-attach-point='closeText' class='dijitTabCloseText'>[x]</span\n\t\t\t\t></span>\n</div>\n",
