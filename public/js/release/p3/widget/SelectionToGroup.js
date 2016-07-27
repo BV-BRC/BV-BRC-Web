@@ -37,11 +37,11 @@ define("p3/widget/SelectionToGroup", [
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 		},
-        onChangeOutputType: function(){
-            this.set('type',this.groupTypeBox.get('value'));
+		onChangeOutputType: function(){
+			this.set('type',this.groupTypeBox.get('value'));
 			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
-            this.onChangeTarget(this.type);
-        },
+			this.onChangeTarget(this.type);
+		},
 
 		onChangeTarget: function(target){
 			console.log("onChangeTarget ");
