@@ -148,7 +148,7 @@ define([
 						clear = true;
 						break;
 					case "taxonomy":
-						Topic.publish("/navigate", {href: "/view/TaxonListList/?" + q});
+						Topic.publish("/navigate", {href: "/view/TaxonList/?" + q});
 						clear = true;
 						break;
 					default:
