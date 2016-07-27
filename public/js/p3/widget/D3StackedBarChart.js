@@ -127,7 +127,11 @@ define([
 				.reduce(function(a, b){
 					return Math.max(a, b)
 				});
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
+				series.push(index);
+			}
+			series.forEach(function(index){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
@@ -160,7 +164,7 @@ define([
 							.duration(500)
 							.style("opacity", 0)
 					});
-			}
+			});
 
 			// Place the text. We have a little height adjustment on the dy
 			// to make sure text is centered in the block rather than set
@@ -218,8 +222,12 @@ define([
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
-				this.bars.select(lang.replace('rect.block-{0}', [index]))
+				series.push(index);
+			}
+			series.forEach(function(index){
+				self.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
@@ -228,7 +236,7 @@ define([
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
 					});
-			}
+			});
 		},
 		sort: function(){
 			var self = this;
