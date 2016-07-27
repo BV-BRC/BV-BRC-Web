@@ -37,7 +37,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		containerType: "proteinfamily_data",
 		facetFields: [],
 		enableFilterPanel: false,
-		maxGenomeCount: 1500,
+		maxGenomeCount: 500,
 		constructor: function(){
 			var self = this;
 			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
