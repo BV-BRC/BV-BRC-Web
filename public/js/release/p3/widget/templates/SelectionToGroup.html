@@ -1,8 +1,10 @@
 <div class="SelectionToGroup" style="width:400px;">
 
-     
+    
+    <div data-dojo-attach-point="groupTypeBox" class="dijitHidden">
 	<label>Group Type</label><br>
-    <div data-dojo-type="dijit/form/Select" data-dojo-attach-point="groupTypeBox"  style="display:none;width:95%;margin:10px;" data-dojo-attach-event="onChange:onChangeOutputType" >
+    <div data-dojo-type="dijit/form/Select" data-dojo-attach-point="groupTypeSelect"  style="width:95%;margin:10px;" data-dojo-attach-event="onChange:onChangeOutputType" >
+    </div>
     </div>
     
 	<label>New/Existing</label><br>
