@@ -21,11 +21,14 @@ define("p3/widget/AMRPanelMetaSummary", [
 			label: "Antibiotic",
 			field: "antibiotic"
 		}, {
-			label: "Phenotype",
-			field: "phenotype"
+			label: "Susceptible",
+			field: "S"
 		}, {
-			label: "Genome Count",
-			field: "count"
+			label: "Intermediate",
+			field: "I"
+		}, {
+			label: "Resistant",
+			field: "R"
 		}],
 		processData: function(data){
 
@@ -50,10 +53,14 @@ define("p3/widget/AMRPanelMetaSummary", [
 			antibiotic_data.forEach(function(d){
 				var antibiotic = d.value;
 				if(d.pivot){
-					tableData = tableData.concat(d.pivot.map(function(d){
-						return {antibiotic: antibiotic, phenotype: d.value, count: d.count};
-					}));
+					// process table data
+					var item = {antibiotic: antibiotic};
+					d.pivot.forEach(function(phenotype){
+						item[phenotype.value] = phenotype.count;
+					});
+					tableData.push(item);
 
+					// process chart data
 					var dist = [0, 0, 0];
 					d.pivot.forEach(function(phenotype){
 						if(phenotypeDef.hasOwnProperty(phenotype.value)){
@@ -82,7 +89,6 @@ define("p3/widget/AMRPanelMetaSummary", [
 			if(!this.chart){
 				this.chart = new D3StackedBarChart(this.chartNode);
 				domClass.add(this.chart.node, "amr");
-				console.log(this.chart.node);
 
 				var legend = Object.keys(phenotypeDef)
 					.map(function(key){
