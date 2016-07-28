@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/topic",
 	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/text!./templates/TrackController.html",
-	"./ColorPicker", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when"
+	"./ColorPicker", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when", "FileSaver"
 ], function(declare, WidgetBase, Templated, WidgetsInTemplate, Topic,
 			domConstruct, lang, domGeometry, domStyle, Template,
-			ColorPicker, on, domClass, Dialog, dom, when){
+			ColorPicker, on, domClass, Dialog, dom, when, saveAs){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
 		postCreate: function(){
@@ -22,17 +22,7 @@ define([
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
 				console.log("SVG BEGIN: ", svg.substr(0, 50));
-				var encoded = window.btoa(svg);
-				console.log("Completed Encoding SVG.  Length: ", encoded.length);
-				var e = domConstruct.create("a", {
-					download: "CircularGenome.svg",
-					href: "data:image/svg+xml;base64,\n" + encoded,
-					style: {margin: "4px", border: "1px solid #333", padding: "4px"},
-					innerHTML: "Save Image",
-					alt: "ExportedCircularGenome.svg"
-				})
-				new Dialog({content: e}).show();
-				console.log("E: ", e);
+                saveAs(new Blob([svg]), "CircularGenome.svg");
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
 		},
