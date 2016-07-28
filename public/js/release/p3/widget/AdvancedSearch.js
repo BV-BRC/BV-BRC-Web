@@ -317,7 +317,7 @@ define("p3/widget/AdvancedSearch", [
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)" }
+				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+score)" }
 			})
 
 			console.log("SEARCH: ", q);
