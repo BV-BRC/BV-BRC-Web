@@ -5,14 +5,16 @@ define([
 	"dojo/request", "dojo/_base/lang", "dojo/when",
 	"../ActionBar", "../FilterContainerActionBar", "phyloview/PhyloTree",
 	"d3/d3", "phyloview/TreeNavSVG", "../../util/PathJoin", "dijit/form/Button",
-	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup", "dijit/Dialog", "../ItemDetailPanel"
+	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "../SelectionToGroup",
+    "dijit/Dialog", "../ItemDetailPanel", "dojo/query", "FileSaver"
 ], function(declare, Base, on, Topic,
 			domClass, ContentPane, domConstruct,
 			formatter, TabContainer, Deferred,
 			xhr, lang, when,
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
-			MenuItem, TooltipDialog, popup, SelectionToGroup, Dialog, ItemDetailPanel){
+			MenuItem, TooltipDialog, popup,
+            SelectionToGroup, Dialog, ItemDetailPanel, Query, saveAs){
 
         var schemes = [{
             name: "Zappo", id: "zappo"
@@ -320,10 +322,6 @@ define([
             idMenu.set("content",idMenuDivs.join(""));
 
 
-            var snapMenuDivs=[];
-            snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA</div>');
-            snapMenu.set("content",snapMenuDivs.join(""));
-
             this.tree.startup();
             this.tree.selectLabels("Organism Names");
             this.tree.update();
@@ -373,10 +371,21 @@ define([
 
 
             on(snapMenu.domNode, "click", lang.hitch(this, function(evt){
-                var rel = evt.target.attributes.rel.value;
+                var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value: null;
                 var sel = snapMenu.selection;
                 delete snapMenu.selection;
-                msa.utils.export.saveAsImg(m,"patric_msa.png");
+                if (rel == "msa"){ 
+                    msa.utils.export.saveAsImg(m,"patric_msa.png");
+                }
+                else if (rel == "msa-txt"){
+                    saveAs(new Blob([this.dataMap.clustal]), "msa_patric.txt");
+                }
+                else if (rel == "tree-svg"){
+                    saveAs(new Blob([Query("svg")[0].outerHTML]), "msa_tree.svg");
+                }
+                else if (rel == "tree-newick"){
+                    saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
+                }
                 popup.close(snapMenu);
             }));
 
@@ -486,7 +495,7 @@ define([
 				"ColorSelection",
 				"fa icon-paint-brush fa-2x",
 				{
-					label: "Colors",
+					label: "COLORS",
 					persistent: true,
 					validTypes: ["*"],
                     validContainerTypes:["*"],
@@ -573,9 +582,9 @@ define([
 				false
 			], [
 				"Snapshot",
-				"fa icon-camera fa-2x",
+				"fa icon-download fa-2x",
 				{
-					label: "Capture",
+					label: "DWNLD",
 					persistent: true,
 					validTypes: ["*"],
                     validContainerTypes:["*"],
@@ -586,6 +595,41 @@ define([
 				function(selection){
 					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
+                    var snapMenuDivs=[];
+                    snapMenuDivs.push('<div class="wsActionTooltip" rel="msa">MSA png</div>');
+                    /*var encodedTree = window.btoa(unescape(encodeURIComponent(Query("svg")[0].outerHTML)));
+
+                    var e = domConstruct.create("a", {
+                        download: "MSATree.svg",
+                        href: "data:image/svg+xml;base64,\n" + encodedTree,
+                        style: {"text-decoration": "none", color: "black"},
+                        innerHTML: "Tree svg",
+                        alt: "ExportedMSATree.svg"
+                    });
+
+                    var clustalData = window.btoa(this.dataMap.clustal);
+                    var clustalLink =domConstruct.create("a", {
+                        download: "msa_patric.txt",
+                        href: "data:text/plain;base64,\n" + clustalData,
+                        style: {"text-decoration": "none", color: "black"},
+                        innerHTML: "MSA txt",
+                        alt: "export_msa.txt"
+                    });
+
+                    var treeData = window.btoa(this.data.tree);
+                    var newickLink =domConstruct.create("a", {
+                        download: "tree_newick.txt",
+                        href: "data:text/plain;base64,\n" + treeData,
+                        style: {"text-decoration": "none", color: "black"},
+                        innerHTML: "Tree newick",
+                        alt: "tree_newick.txt"
+                    });*/
+                    snapMenuDivs.push('<div class="wsActionTooltip" rel="msa-txt">'+"MSA txt"+'</div>');
+                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-svg">'+"Tree svg"+'</div>');
+                    snapMenuDivs.push('<div class="wsActionTooltip" rel="tree-newick">'+"Tree newick"+'</div>');
+
+
+                    snapMenu.set("content",snapMenuDivs.join(""));
 					snapMenu.selection = selection;
 					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
 					popup.open({
