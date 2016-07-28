@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/D3StackedBarChart.html':"<div class=\"chart-wrapper\">\n    <nav>\n        <span class=\"label\">Scale</span>\n        <ul class=\"scale\">\n            <li class=\"real active\">Real Values</li>\n            <li class=\"normalize\">Normalize</li>\n        </ul>\n        <span class=\"label\">Order by</span>\n        <ul class=\"sort\">\n            <li class=\"label active\">Name</li>\n            <li class=\"value\">Value</li>\n        </ul>\n    </nav>\n    <!-- This is the div where the chart is actually drawn. -->\n    <div class=\"chart\"></div>\n    <!-- The bar chart looks for this legend. There\"s some SVG in here for the circles. -->\n    <p class=\"legend\">\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n    </p>\n</div>"}});
+'url:p3/widget/templates/D3StackedBarChart.html':"<div class=\"chart-wrapper\">\n    <nav>\n        <span class=\"label\">Scale</span>\n        <ul class=\"scale\">\n            <li class=\"real active\">Counts</li>\n            <li class=\"normalize\">Percent</li>\n        </ul>\n        <span class=\"label\">Order by</span>\n        <ul class=\"sort\">\n            <li class=\"label active\">Name</li>\n            <li class=\"value\">Count</li>\n        </ul>\n    </nav>\n    <!-- This is the div where the chart is actually drawn. -->\n    <div class=\"chart\"></div>\n    <!-- The bar chart looks for this legend. There\"s some SVG in here for the circles. -->\n    <p class=\"legend\">\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n    </p>\n</div>"}});
 define("p3/widget/D3StackedBarChart", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style", "dojo/on",
@@ -129,7 +129,11 @@ define("p3/widget/D3StackedBarChart", [
 				.reduce(function(a, b){
 					return Math.max(a, b)
 				});
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
+				series.push(index);
+			}
+			series.forEach(function(index){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
@@ -162,7 +166,7 @@ define("p3/widget/D3StackedBarChart", [
 							.duration(500)
 							.style("opacity", 0)
 					});
-			}
+			});
 
 			// Place the text. We have a little height adjustment on the dy
 			// to make sure text is centered in the block rather than set
@@ -220,8 +224,12 @@ define("p3/widget/D3StackedBarChart", [
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
-				this.bars.select(lang.replace('rect.block-{0}', [index]))
+				series.push(index);
+			}
+			series.forEach(function(index){
+				self.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
@@ -230,7 +238,7 @@ define("p3/widget/D3StackedBarChart", [
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
 					});
-			}
+			});
 		},
 		sort: function(){
 			var self = this;

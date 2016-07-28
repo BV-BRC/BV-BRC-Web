@@ -74,7 +74,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .pie-chart-widget {
     display: inline-block;
-    width: 335px;
+    width: 278px;
     height: 200px;
 }
 .SummaryWidget .field-reference_genome {
@@ -82,4 +82,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .SummaryWidget .field-category {
     width: 35%;
+}
+.SummaryWidget.apmSummaryWidget {
+    padding-bottom: 11px;
 }

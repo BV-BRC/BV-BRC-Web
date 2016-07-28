@@ -163,7 +163,7 @@ define([
 
 				this.host_chart = new Chart2D(cpHostNode, {
 					title: "Host Name",
-					titlePos: "bottom"
+					titlePos: "top"
 				})
 					.setTheme(Theme)
 					.addPlot("default", {
@@ -179,7 +179,7 @@ define([
 
 				this.disease_chart = new Chart2D(cpDiseaseNode, {
 					title: "Disease",
-					titlePos: "bottom"
+					titlePos: "top"
 				})
 					.setTheme(Theme)
 					.addPlot("default", {
@@ -194,7 +194,7 @@ define([
 				domConstruct.place(cpIsolationCountry, this.chartNode, "last");
 				this.isolation_country_chart = new Chart2D(cpIsolationCountry, {
 					title: "Isolation Country",
-					titlePos: "bottom"
+					titlePos: "top"
 				})
 					.setTheme(Theme)
 					.addPlot("default", {
@@ -209,7 +209,7 @@ define([
 				domConstruct.place(cpGenomeStatus, this.chartNode, "last");
 				this.genome_status_chart = new Chart2D(cpGenomeStatus, {
 					title: "Genome Status",
-					titlePos: "bottom"
+					titlePos: "top"
 				})
 					.setTheme(Theme)
 					.addPlot("default", {
