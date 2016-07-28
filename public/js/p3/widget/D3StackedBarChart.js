@@ -21,7 +21,7 @@ define([
 
 			this.drawTargetParams = {
 				target: this.node,
-				margins: [10, 0, 0, 30]
+				margins: [10, 0, 0, 40]
 			};
 			var drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
 			this.chart = drawTarget.chart;
@@ -127,7 +127,11 @@ define([
 				.reduce(function(a, b){
 					return Math.max(a, b)
 				});
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
+				series.push(index);
+			}
+			series.forEach(function(index){
 
 				self.bars.append("rect")
 					.attr("class", "block-" + index)
@@ -150,17 +154,17 @@ define([
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index]], d['dist'][index]);
+						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index], d['dist'][index]]);
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
-							.style("top", (d3.event.pageY - 28) + "px")
+							.style("top", d3.event.pageY + "px")
 					})
 					.on("mouseout", function(){
 						self.tooltipLayer.transition()
 							.duration(500)
 							.style("opacity", 0)
 					});
-			}
+			});
 
 			// Place the text. We have a little height adjustment on the dy
 			// to make sure text is centered in the block rather than set
@@ -218,8 +222,12 @@ define([
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars
+			var series = [];
 			for(var index = 0; index < this.seriesSize; index++){
-				this.bars.select(lang.replace('rect.block-{0}', [index]))
+				series.push(index);
+			}
+			series.forEach(function(index){
+				self.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
@@ -228,7 +236,7 @@ define([
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
 					});
-			}
+			});
 		},
 		sort: function(){
 			var self = this;
@@ -300,7 +308,7 @@ define([
 				.insert("circle")
 				.attr("cx", 8).attr("cy", 8).attr("r", 8)
 				.attr("class", function(d, i){
-					return "bar" + (i + 1) + "-sample"
+					return "bar" + i + "-sample"
 				});
 
 			d3.select("p.legend").selectAll("span")

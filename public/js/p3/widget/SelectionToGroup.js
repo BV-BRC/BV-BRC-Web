@@ -38,8 +38,8 @@ define([
         onChangeOutputType: function(){
             this.set('type',this.groupTypeSelect.get('value'));
 			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
-            this.onChangeTarget(this.type);
-        },
+			this.onChangeTarget(this.type);
+		},
 
 		onChangeTarget: function(target){
 			console.log("onChangeTarget ");

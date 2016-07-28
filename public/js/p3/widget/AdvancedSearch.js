@@ -15,7 +15,7 @@ define([
 		labelsByType: {
 			"genome": "Genomes",
 			"genome_feature": "Genomic Features",
-			"taxonomy": "Taxonomies",
+			"taxonomy": "Taxonomy",
 			"sp_gene": "Specialty Genes",
 			"transcriptomics_experiment": "Transcriptomics Experiments"
 		},
@@ -33,7 +33,7 @@ define([
 				if (total==1){
 					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=features"].join("");
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false"].join("");
 				}
 			},
 			"taxonomy": function(docs,total){
@@ -228,7 +228,7 @@ define([
 		formattaxonomy: function(docs,total){
 			var q = this.state.search; 
 			console.log("format taxonomy q: ", q);
-			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxonomy</a>&nbsp;(', total, ")</div>"];
+			var out=["<div class=\"searchResultsContainer taxonomyResults\">",'<div class="resultTypeHeader"><a href="/view/TaxonList/?',q,'">Taxa</a>&nbsp;(', total, ")</div>"];
 			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
@@ -256,7 +256,7 @@ define([
 				var docs = tRes.result.response.docs;
 				resultCounts[type]={total: total, docs: docs};
 
-				if (total>0 && total<4){
+				if (total>0){ // && total<4){
 					var out=[];
 					foundContent=true;
 					if (this["format" + type]){
@@ -317,7 +317,7 @@ define([
 						break;
 				}
 
-				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)" }
+				q[type] = {dataType: type, accept: "application/solr+json", query: tq + "&limit(3)&sort(+score)" }
 			})
 
 			console.log("SEARCH: ", q);

@@ -20,11 +20,11 @@ define("p3/widget/FacetFilter", [
 		},
 
 		_setCategoryAttr: function(category){
-			var cat = category.replace("_", " ");
+			var cat = category.replace(/_/g, " ");
 			this._set('category', category);
 
 			if(this._started && this.categoryNode){
-				this.categoryNode.innerHTML = cat.replace("_"," ")
+				this.categoryNode.innerHTML = cat.replace(/_/g," ")
 			}
 		},
 
@@ -219,7 +219,7 @@ define("p3/widget/FacetFilter", [
 			this.inherited(arguments);
 			on(this.domNode, ".FacetValue:click", lang.hitch(this, "toggleItem"))
 			if(this.categoryNode && this.category){
-				this.categoryNode.innerHTML = this.category.replace("_"," ")
+				this.categoryNode.innerHTML = this.category.replace(/_/g," ")
 			}
 			if(!this.data){
 				this.data = new Deferred();

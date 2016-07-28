@@ -89,7 +89,7 @@ define("p3/widget/viewer/Genome", [
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return out.join("&nbsp;&raquo;&nbsp;") + "&nbsp;&raquo;&nbsp;" + genome.genome_name;
 		},
 
 		_setGenomeAttr: function(genome){

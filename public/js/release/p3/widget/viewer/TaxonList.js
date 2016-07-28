@@ -15,6 +15,8 @@ define("p3/widget/viewer/TaxonList", [
 		paramsMap: "query",
 		defaultTab: "taxons",
 		total_taxons: 0,
+                perspectiveLabel: "Taxon List View",
+                perspectiveIconClass: "icon-perspective-Taxonomy",
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);
@@ -58,22 +60,6 @@ define("p3/widget/viewer/TaxonList", [
 
 		onSetState: function(attr, oldVal, state){
 			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
-
-			// if (!state.feature_ids){
-			// 	console.log("	NO Genome_IDS")
-			// 	if (state.search == oldVal.search){
-			// 		console.log("		Same Search")
-			// 		console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
-			// 		this.set("state", lang.mixin({},state,{feature_ids: oldVal.genome_ids}))	
-			// 		return;
-			// 	}else{
-			// 		this.set("query", state.search);
-			// 	}
-			// }else if (state.search!=oldVal.search){
-			// 	console.log("SET QUERY: ", state.search);
-			// 	this.set("query", state.search);
-			// }
-
 			this.set("query", state.search);
 
 			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
@@ -90,7 +76,7 @@ define("p3/widget/viewer/TaxonList", [
 				this.overview.set("content", '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + "</div>");
 			}
 			// this.viewHeader.set("content", '<div style="margin:4px;">Genome List Query: ' + decodeURIComponent(newVal) + ' </div>')
-			this.queryNode.innerHTML = '<i class="fa icon-anchor fa-1x" style="font-size:1.2em;color:#76A72D;vertical-align:top;"></i>&nbsp;Taxon Query:&nbsp;' + decodeURIComponent(newVal);
+			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
@@ -133,14 +119,6 @@ define("p3/widget/viewer/TaxonList", [
 
 			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("total_taxons", lang.hitch(this, "onSetTotalTaxons"));
-
-			//this.overview = this.createOverviewPanel(this.state);
-			this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			this.queryNode = domConstruct.create("span", {innerHTML: " Feature List Query:  "});
-
-			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
-
 			this.taxons= new TaxonGridContainer({
 				title: "Taxons",
 				id: this.viewer.id + "_" + "taxons",

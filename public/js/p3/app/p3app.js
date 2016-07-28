@@ -22,6 +22,7 @@ define([
 		panels: Panels,
 		activeWorkspace: null,
 		activeWorkspacePath: "/",
+		publicApps: ["BLAST"],
 		startup: function(){
 			var _self = this;
 
@@ -211,7 +212,12 @@ define([
 				newState.widgetClass = "p3/widget/app/" + type;
 				newState.value = viewerParams;
 				newState.set = "params";
-				newState.requireAuth = false;
+				newState.requireAuth=true;
+
+				if (_self.publicApps.indexOf(type)>=0) {
+					newState.requireAuth = false;
+				}
+		
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});

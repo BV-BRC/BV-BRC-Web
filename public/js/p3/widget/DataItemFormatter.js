@@ -269,6 +269,7 @@ define([
 			}];
 
 			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
+			//console.log("DataItemFormatter label=", label); 					
 
 			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
@@ -932,7 +933,7 @@ define([
 
 		// span label
 		domConstruct.create("span", {
-			innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', {url: url, lable: label}) : label
+			innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', {url: url, label: label}) : label
 		}, titleDiv);
 	}
 

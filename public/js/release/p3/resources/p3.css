@@ -9942,7 +9942,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .pie-chart-widget {
     display: inline-block;
-    width: 335px;
+    width: 278px;
     height: 200px;
 }
 .SummaryWidget .field-reference_genome {
@@ -9950,6 +9950,9 @@ TH.dgrid-cell.field-feature_type {
 }
 .SummaryWidget .field-category {
     width: 35%;
+}
+.SummaryWidget.apmSummaryWidget {
+    padding-bottom: 11px;
 }
 .patric .dgrid-header .dgrid-cell {
 	font-weight: 600;
@@ -10101,10 +10104,6 @@ TH.dgrid-cell.field-feature_type {
     word-break: normal;
 }
 .chart-wrapper {
-    background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
 }
 .chart-wrapper .chart {
     padding-top: 24px;
@@ -10126,19 +10125,45 @@ TH.dgrid-cell.field-feature_type {
     top: 3px;
     margin: 0 4px 0 14px;
 }
-.chart-wrapper .legend svg .bar1-sample {
+.chart-wrapper.amr .legend svg .bar0-sample {
+    fill: #D32F2F;
+}
+.chart-wrapper.amr .legend svg .bar1-sample {
+    fill: #4CAF50;
+}
+.chart-wrapper.amr .legend svg .bar2-sample {
+    fill: #FFC107;
+}
+.chart-wrapper.amr rect.block-0 {
+    fill: #E53935; 
+    stroke: #D32F2F; 
+}
+.chart-wrapper.amr rect.block-1 {
+    fill: #8BC34A; 
+    stroke: #7CB342; 
+}
+.chart-wrapper.amr rect.block-2 {
+    fill: #FFC107; 
+    stroke: #FFB300; 
+}
+.chart-wrapper.amr text {
+    font-size: 13px;
+    fill: #263238; 
+    pointer-events: none;
+}
+.chart-wrapper .legend svg .bar0-sample {
     fill: #1f497d;
 }
-.chart-wrapper .legend svg .bar2-sample {
+.chart-wrapper .legend svg .bar1-sample {
     fill: #4f81bd;
 }
-.chart-wrapper .legend svg .bar3-sample {
+.chart-wrapper .legend svg .bar2-sample {
     fill: #4bacc6;
 }
-.chart-wrapper .legend svg .bar4-sample {
+.chart-wrapper .legend svg .bar3-sample {
     fill: #f79646;
 }
-.chart-wrapper .legend svg .bar5-sample {
+.chart-wrapper .legend svg .bar4-sample {
     fill: #9bbb59;
 }
 .chart-wrapper rect {
@@ -10649,12 +10674,6 @@ div.overview {
     padding:2px;
     border-radius:3px;
 }
-	cursor: pointer;
-	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/LVAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAASSURBVHjaYvrPwMDEAMEAAQYACzEBBlU9CW8AAAAASUVORK5CYII=');
-	background-repeat: repeat-x;
-	background-position: center;
-}
-*/
 div.tooltip {
     position: absolute;
     padding: 10px;
