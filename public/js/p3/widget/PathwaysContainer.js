@@ -57,6 +57,31 @@ define([
 				this.tabContainer.selectedChildWidget.set('state', state);
 			}
 
+			if (state.autoFilterMessage){
+				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-1x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
+				// var msg = state.autoFilterMessage;
+				if (!this.messagePanel){
+					this.messagePanel = new ContentPane({
+						"class": "WarningPanel",
+						region: "top", 
+						content: msg
+					});
+
+
+					var _self=this;
+					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
+						if (_self.messagePanel){
+							_self.removeChild(_self.messagePanel);
+						}
+					});
+				}else{
+					this.messagePanel.set("content", msg);
+				}
+				this.addChild(this.messagePanel);
+			}else{
+				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+			}
+
 			// this._set("state", state);
 		},
 

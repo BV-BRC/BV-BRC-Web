@@ -33,7 +33,7 @@
 			</td>
 			<td style="text-align:left;">
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Explore</span>
+					<span>Browse</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
 							<table><tbody>
@@ -240,6 +240,15 @@
 						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
 						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">Register</a> </div>
 						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> Login </a></div>
+					</div>
+				</div>
+			</td>
+			<td style="width:1%;" class="showOnLoad ShowWithAuth dijitHidden">
+				<div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'" style="">
+					<span></span>
+					<div data-dojo-type="p3/widget/TooltipDialog">
+						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
+						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
 					</div>
 				</div>
 			</td>

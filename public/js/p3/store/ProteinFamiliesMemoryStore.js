@@ -197,7 +197,7 @@ define([
 			var _self = this;
 
 			// console.warn(this.state.genome_ids, !this.state.genome_ids);
-			if(!this.state.genome_ids){
+			if(!this.state || !this.state.genome_ids){
 				// console.log("No Genome IDS, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
