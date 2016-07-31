@@ -115,7 +115,11 @@ define("phyloview/TreeNavSVG", [
      */
         this.svgContainer = d3.select(this.containerName)
         .html("")
-        .append("svg:svg").attr("width", size.width).attr("height", size.height)
+        .append("svg:svg");
+        this.svgContainer.node().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
+        this.svgContainer.node().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+        
+        this.svgContainer.attr("width", size.width).attr("height", size.height)
         .append("svg:g")
         .attr("class", "container")
         .attr("transform", "translate(" + this.maxLabelLength + ",0)")

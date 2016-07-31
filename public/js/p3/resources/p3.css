@@ -105,6 +105,10 @@ iframe  {
     display: inherit;
 }
 
+.Authenticated TD.ShowWithAuth {
+	display: table-cell;
+}
+
 .patric .Authenticated .ShowWithoutAuth {
     display: none;
 }
@@ -787,4 +791,12 @@ div.pubmed ul li {
 
 .dgrid ::-webkit-scrollbar:horizontal {
     display: none;
+}
+
+.WarningPanel {
+	margin:0px;margin:4px;background: #f9ff85;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;
+}
+
+.WarningBanner {
+	background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;
 }
