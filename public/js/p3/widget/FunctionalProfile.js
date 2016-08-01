@@ -54,11 +54,11 @@ define([
 				Object.keys(topIds).forEach(function(key, idx){
 					var pgfamId = topIds[idx];
 					data.push({
-						label: dict[pgfamId], family_id: pgfamId, count: d[pgfamId],
+						label: dict[pgfamId], pgfam_id: pgfamId, count: d[pgfamId],
 						tooltip: function(obj){
 							var content = [];
 							content.push("Product: " + obj.label);
-							content.push("PATRIC Global Family ID: " + obj.family_id);
+							content.push("PATRIC Global Family ID: " + obj.pgfam_id);
 							content.push("Gene Count: " + obj.count);
 
 							return content.join("<br/>");
