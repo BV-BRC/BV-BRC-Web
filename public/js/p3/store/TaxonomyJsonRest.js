@@ -11,7 +11,8 @@ define([
 		idProperty: "taxon_id",
 		facetFields: [],
 		mayHaveChildren: function(parent){
-			return (parent.taxon_rank != "no rank") && (parent.taxon_rank != "species")
+			return true;
+			// return (parent.taxon_rank != "no rank");// && (parent.taxon_rank != "species")
 		},
 		getChildren: function(parentItem, opts){
 			if(!parentItem.genomes || parentItem.genomes < 1){
@@ -87,9 +88,10 @@ define([
 					nextRank = "subspecies";
 					nextRankQ = "or(eq(taxon_rank,subspecies),eq(taxon_rank,\%22no%20rank\%22))";
 					break;
+	
 				case "subspecies":
 					nextRank = "no rank";
-					nextRankQ = "eq(taxon_rank,\%22no rank\%22)";
+					nextRankQ = "eq(taxon_rank,\%22no%20rank\%22)";
 					break;
 				case "no rank":
 					nextRank = false;
@@ -109,8 +111,9 @@ define([
 			var q = this.query(query, opts)
 
 			when(q.total, function(total){
-				if(total < 1 && nextRank){
-					console.log("SHOULD RECURSE HERE: ", nextRank);
+				console.log("Q TOTAL: ", total);
+				if(total<1 && nextRank){
+					console.log("SHOULD RECURSE HERE: ", nextRank, total);
 					var rec = _self.getChildren({
 						genomes: parentItem.genomes,
 						taxon_id: parentItem.taxon_id,

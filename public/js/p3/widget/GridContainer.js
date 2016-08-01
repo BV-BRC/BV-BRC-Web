@@ -284,6 +284,7 @@ define([
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
+					max:5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
@@ -337,6 +338,7 @@ define([
 					validTypes: ["*"],
 					multiple: true,
 					min:2,
+					max: 5000,
 					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
@@ -451,6 +453,7 @@ define([
 					validTypes: ["*"],
 					multiple: true,
 					min: 2,
+					max: 1000,
 					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
 					validContainerTypes: ["genome_data","sequence_data", "feature_data", "spgene_data", "sequence_data"],
@@ -564,6 +567,7 @@ define([
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
+					max: 5000,
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
@@ -587,6 +591,7 @@ define([
 					ignoreDataType: true,
 					min: 2,
 					multiple: true,
+					max:200,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
 					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
@@ -609,6 +614,7 @@ define([
 					ignoreDataType: true,
 					min: 1,
 					multiple: true,
+					max: 1000,
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
@@ -743,6 +749,7 @@ define([
 					label: "GENES",
 					multiple: true,
 					validTypes: ["*"],
+					max: 5000,
 					validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"],
 					tooltip: "View Experiment Gene List"
 				},
@@ -763,7 +770,7 @@ define([
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
 				{
-					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
+					label: "PTHWY", ignoreDataType: true, multiple: true, max:200, validTypes: ["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
 				},
 				function(selection, containerWidget){
@@ -881,6 +888,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					requireAuth: true,
+					max: 5000,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
@@ -946,6 +954,40 @@ define([
 				function(selection){
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=overview"})
+				},
+				false
+			],
+			[
+				"ViewGenomesFromTaxons",
+				"fa icon-perspective-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					multiple: true,
+					min:2,
+					validTypes: ["*"],
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["taxonomy_data","taxon_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						var map={};
+						selection.forEach(function(sel){
+							if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+						})
+						var taxonIds = Object.keys(map);
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "GenomeList", perspectiveUrl: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))"}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection){
+					var map={};
+					selection.forEach(function(sel){
+						if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+					})
+					var taxonIds = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))#view_tab=overview"})
 				},
 				false
 			]
@@ -1113,17 +1155,40 @@ define([
 			this._firstView = true;
 		},
 
+		getAllSelection: function(query){
+			console.log("getAll Query: ", query);
+		},
+
 		listen: function(){
 			this.grid.on("select", lang.hitch(this, function(evt){
 				// console.log("Selected: ", evt);
-				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					// console.log("rownum: ", rownum);
-					// console.log("Row: ", evt.grid.row(rownum).data);
-					return evt.grid.row(rownum).data;
-				}));
-				// console.log("selection: ", sel);
-				this.selectionActionBar.set("selection", sel);
-				this.itemDetailPanel.set('selection', sel);
+				// if (evt.grid.allSelected){
+				// 	console.log("All Items Selected");
+				// 	this.getAllSelection(evt.grid.query);
+				// }else{
+					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+						// console.log("rownum: ", rownum);
+						// console.log("Row: ", evt.grid.row(rownum).data);
+						var row = evt.grid.row(rownum);
+						// console.log("Row: ", rownum)
+						if (row.data){
+								return row.data;
+						}else{
+							// console.log("No Row: ", rownum)
+							return this.grid._unloadedData[rownum];
+							// var data = {};
+							// // console.log("_self.grid.primaryKey", this.grid.primaryKey);
+							// data[this.grid.primaryKey]=rownum;
+							// // console.log("    DATA: ", data)
+							// return data;
+						}
+					}), this);
+
+					console.log("GridContainer SEL: ", sel)
+					// console.log("selection: ", sel);
+					this.selectionActionBar.set("selection", sel);
+					this.itemDetailPanel.set('selection', sel);
+				// }
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){
