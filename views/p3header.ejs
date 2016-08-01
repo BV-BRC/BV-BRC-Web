@@ -235,16 +235,15 @@
 						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">About PATRIC </a></div>
 						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite PATRIC</a>	</div>
 						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">Contact Us</a></div>
-						<hr>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">Register</a> </div>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> Login </a></div>
 					</div>
 				</div>
 			</td>
 			<td style="width:1%;" class="showOnLoad ShowWithAuth dijitHidden">
-				<div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'" style="">
+				<div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'" style="padding-top:2px">
 					<span></span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
+						<div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span>
+						<hr>
 						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
 						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
 					</div>
