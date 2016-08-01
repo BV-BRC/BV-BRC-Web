@@ -313,10 +313,10 @@ define([
 				ctor = ContentPane;
 			}
 
-			console.log("Ctor: ", ctor);
+			// console.log("Ctor: ", ctor);
 
 
-			console.log("newNavState.requireAuth: ", newNavState.requireAuth, window.App);
+			// console.log("newNavState.requireAuth: ", newNavState.requireAuth, window.App);
 			if(newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
 				var cur = _self.getCurrentContainer();
 				if(cur){
