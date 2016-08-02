@@ -67,8 +67,8 @@ define([], function(){
 		help: {
 			title: "PATRIC Help",
 			layer: "p3/layer/panels",
-			ctor: "dijit/layout/ContentPane",
-			dataParam: "content"
+			ctor: "p3/widget/Help",
+			dataParam: "helpId"
 		}
 	}
 });
