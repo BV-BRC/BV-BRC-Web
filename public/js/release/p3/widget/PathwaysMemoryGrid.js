@@ -2,11 +2,11 @@ define("p3/widget/PathwaysMemoryGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect", "dgrid/selector"
+	"dojo/aspect", "./GridSelector","dojo/when"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
-			aspect, selector){
+			aspect, selector, when){
 	return declare([Grid], {
 		region: "center",
 		query: (this.query || ""),
@@ -18,6 +18,7 @@ define("p3/widget/PathwaysMemoryGrid", [
 		selectionModel: "extended",
 		loadingMessage: "Loading pathways.  This may take several minutes...",
 		deselectOnRefresh: true,
+		fullSelectAll: true,
 		columns: {
 			"Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
@@ -135,6 +136,20 @@ define("p3/widget/PathwaysMemoryGrid", [
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: state || this.state
 			});
+		},
+		_selectAll: function(){
+			var _self=this;
+			var def = new Deferred();
+			when(this.store.query({},this.queryOptions),function(results){
+				console.log("_selectAll results: ", results)
+				_self._unloadedData={};
+
+				def.resolve(results.map(function(obj) { 
+					_self._unloadedData[obj[_self.primaryKey]]=obj;
+					return obj[_self.primaryKey]; 
+				}));
+			})
+			return def.promise;
 		}
 	});
 });

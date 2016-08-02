@@ -38,10 +38,10 @@ define("p3/widget/DownloadTooltipDialog", [
 
 		downloadSelection: function(type,selection){
 		
-			if (this["_to" + type]){
-				var data = this["_to" + type.toLowerCase()](selection);
-				saveAs(new Blob([data]), this.containerType + "_selection." + type);
-			}else{
+			// if (this["_to" + type]){
+			// 	var data = this["_to" + type.toLowerCase()](selection);
+			// 	saveAs(new Blob([data]), this.containerType + "_selection." + type);
+			// }else{
 				var conf = this.downloadableConfig[this.containerType];
 				var sel = selection.map(function(sel){
 					return sel[conf.field || conf.pk]
@@ -80,7 +80,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			}
+			// }
 		},
 
 		_tocsv: function(selection){

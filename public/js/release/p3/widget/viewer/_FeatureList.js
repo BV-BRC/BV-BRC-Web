@@ -2,11 +2,11 @@ define("p3/widget/viewer/_FeatureList", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
+	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview"
 ], function(declare, TabViewerBase, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang){
+			GenomeGridContainer, PathJoin, xhr, lang, Overview){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureList",
 		"disabled": false,
@@ -18,9 +18,6 @@ define("p3/widget/viewer/_FeatureList", [
 		perspectiveLabel: "Feature List Perspective",
 		perspectiveIconClass: "icon-perspective-FeatureList",
 		_setQueryAttr: function(query){
-			console.log(this.id, " _setQueryAttr: ", query, this);
-			//if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-			//console.log("GenomeList SetQuery: ", query, this);
 
 			this._set("query", query);
 			if(!this._started){
@@ -28,11 +25,9 @@ define("p3/widget/viewer/_FeatureList", [
 			}
 
 			var _self = this;
-			console.log('genomeList setQuery - this.query: ', this.query);
 
 			var url = PathJoin(this.apiServiceUrl, "genome_feature", "?" + (this.query) + "&limit(1)"); //&facet((field,genome_id),(limit,35000))");
 
-			console.log("url: ", url);
 			xhr.get(url, {
 				headers: {
 					accept: "application/solr+json",
@@ -41,8 +36,7 @@ define("p3/widget/viewer/_FeatureList", [
 				},
 				handleAs: "json"
 			}).then(function(res){
-				console.log(" URL: ", url);
-				console.log("Get GenomeList Res: ", res);
+
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
@@ -58,7 +52,7 @@ define("p3/widget/viewer/_FeatureList", [
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			// console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 
 			// if (!state.feature_ids){
 			// 	console.log("	NO Genome_IDS")
@@ -95,7 +89,7 @@ define("p3/widget/viewer/_FeatureList", [
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			console.log("Active: ", active, "state: ", this.state);
+			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
@@ -111,10 +105,10 @@ define("p3/widget/viewer/_FeatureList", [
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
+						// console.log("Found Genome_IDS in state object");
+						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
 						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
+						// console.log("Active Query State: ", activeQueryState);
 
 					}
 
@@ -135,7 +129,7 @@ define("p3/widget/viewer/_FeatureList", [
 		},
 
 		createOverviewPanel: function(state){
-			return new ContentPane({
+			return new Overview({
 				content: "Overview",
 				title: "Feature List Overview",
 				id: this.viewer.id + "_" + "overview",
@@ -178,9 +172,9 @@ define("p3/widget/viewer/_FeatureList", [
 
 		},
 		onSetTotalFeatures: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
+			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genome Features ) ";
-			var hasDisabled = false;
+			// var hasDisabled = false;
 
 			// this.viewer.getChildren().forEach(function(child){
 			// 	if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
@@ -215,7 +209,7 @@ define("p3/widget/viewer/_FeatureList", [
 			this.addChild(this.warningPanel);
 		},
 		onSetAnchor: function(evt){
-			console.log("onSetAnchor: ", evt, evt.filter);
+			// console.log("onSetAnchor: ", evt, evt.filter);
 			evt.stopPropagation();
 			evt.preventDefault();
 			var f = evt.filter;
@@ -231,7 +225,7 @@ define("p3/widget/viewer/_FeatureList", [
 				parts.push(evt.filter)
 			}
 
-			console.log("parts: ", parts);
+			// console.log("parts: ", parts);
 
 			if(parts.length > 1){
 				q = "?and(" + parts.join(",") + ")"
@@ -241,7 +235,7 @@ define("p3/widget/viewer/_FeatureList", [
 				q = "";
 			}
 
-			console.log("SetAnchor to: ", q);
+			// console.log("SetAnchor to: ", q);
 			var hp;
 			if(this.hashParams && this.hashParams.view_tab){
 				hp = {view_tab: this.hashParams.view_tab}
@@ -251,7 +245,7 @@ define("p3/widget/viewer/_FeatureList", [
 			l = window.location.pathname + q + "#" + Object.keys(hp).map(function(key){
 					return key + "=" + hp[key]
 				}, this).join("&");
-			console.log("NavigateTo: ", l);
+			// console.log("NavigateTo: ", l);
 			Topic.publish("/navigate", {href: l});
 		}
 	});

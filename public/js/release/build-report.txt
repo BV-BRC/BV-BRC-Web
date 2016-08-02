@@ -1,4 +1,4 @@
-Build started: Sun Jul 31 2016 15:41:06 GMT-0400 (EDT)
+Build started: Mon Aug 01 2016 21:23:07 GMT-0400 (EDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js (compile time:1.558s)
-	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js (compile time:8.964s)
-	/Users/dmachi/work/PATRIC/p3_web/public/js/release/dojo/dojo.js (compile time:10.955s)
-	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:11.446s)
-	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/core.js (compile time:24.398s)
+	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js (compile time:1.3s)
+	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js (compile time:10.988s)
+	/Users/dmachi/work/PATRIC/p3_web/public/js/release/dojo/dojo.js (compile time:12.428s)
+	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:12.65s)
+	/Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/core.js (compile time:28.784s)
 info(106) Optimizing CSS.
 	file: /Users/dmachi/work/PATRIC/p3_web/public/js/dojo/_firebug/firebug.css
 	file: /Users/dmachi/work/PATRIC/p3_web/public/js/dojo/resources/dnd.css
@@ -2005,6 +2005,7 @@ warn(216) dojo/has plugin resource could not be resolved during build-time.
 	plugin resource id: dojo-mobile-parser?:dojo/parser; reference module id: dojox/mvc/parserExtension
 	plugin resource id: dojo-parser?:dojox/mobile/parser; reference module id: dojox/mvc/parserExtension
 	plugin resource id: touch?dojox/gesture/tap; reference module id: dojox/treemap/DrillDownUp
+	plugin resource id: touch?./util/touch; reference module id: p3/widget/PageGrid
 	plugin resource id: touch?./TouchScroll; reference module id: dgrid/List
 	plugin resource id: touch?./util/touch; reference module id: dgrid/Selection
 	plugin resource id: touch?./util/touch; reference module id: dgrid/tree
@@ -2333,7 +2334,7 @@ p3/layer/core:
 	dgrid/css/extensions/ColumnReorder.css
 	p3/store/GenomeJsonRest
 	p3/store/P3JsonRest
-	dgrid/selector
+	p3/widget/GridSelector
 	p3/widget/PerspectiveToolTip
 	p3/widget/AdvancedDownload
 	p3/widget/templates/AdvancedDownload.html
@@ -2452,6 +2453,7 @@ p3/layer/core:
 	p3/store/ArrangeableMemoryStore
 	p3/store/HeatmapDataTypes
 	p3/widget/ProteinFamiliesFilterGrid
+	dgrid/selector
 	p3/widget/Grid
 	dgrid/OnDemandGrid
 	dgrid/OnDemandList
@@ -2609,6 +2611,8 @@ p3/layer/core:
 	p3/widget/CorrelatedGenesActionBar
 	p3/widget/viewer/FeatureList
 	p3/widget/viewer/_FeatureList
+	p3/widget/FeatureListOverview
+	p3/widget/templates/FeatureListOverview.html
 	p3/widget/JobStatus
 	p3/widget/templates/JobStatus.html
 	JBrowse/ConfigAdaptor/conf
@@ -2735,9 +2739,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.558s)
+Done (compile time:1.3s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.558s)
+Done (compile time:1.3s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2752,9 +2756,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:8.964s)
+Done (compile time:10.988s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.558s)
+Done (compile time:1.3s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2769,7 +2773,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:8.964s)
+Done (compile time:10.988s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2892,9 +2896,9 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:10.955s)
+Done (compile time:12.428s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.558s)
+Done (compile time:1.3s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2909,7 +2913,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:8.964s)
+Done (compile time:10.988s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3032,7 +3036,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:10.955s)
+Done (compile time:12.428s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3159,9 +3163,9 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:11.446s)
+Done (compile time:12.65s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:1.558s)
+Done (compile time:1.3s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -3176,7 +3180,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:8.964s)
+Done (compile time:10.988s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3299,7 +3303,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:10.955s)
+Done (compile time:12.428s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3426,266 +3430,266 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:11.446s)
+Done (compile time:12.65s)
 /Users/dmachi/work/PATRIC/p3_web/public/js/release/p3/layer/core.js:
-core.js.uncompressed.js:594: WARNING - unreachable code
+core.js.uncompressed.js:598: WARNING - unreachable code
 	}else if( 0 ){
 	      ^
 
-core.js.uncompressed.js:2957: WARNING - unreachable code
+core.js.uncompressed.js:2961: WARNING - unreachable code
 	}else{
 	     ^
 
-core.js.uncompressed.js:4944: WARNING - unreachable code
+core.js.uncompressed.js:4948: WARNING - unreachable code
 					return;
 					^
 
-core.js.uncompressed.js:5287: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:5291: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
 	^
 
-core.js.uncompressed.js:19268: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:19272: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if(!this.editing){
 			^
 
-core.js.uncompressed.js:29350: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:29354: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(hint == 'avatar'){
 				^
 
-core.js.uncompressed.js:31029: WARNING - unreachable code
+core.js.uncompressed.js:31033: WARNING - unreachable code
 			if(! 1  && typeof this[fn + "Attr"] === "function"){
 			                                                   ^
 
-core.js.uncompressed.js:31068: WARNING - unreachable code
+core.js.uncompressed.js:31072: WARNING - unreachable code
 					if(! 1  && typeof this[fn + "Attr"] === "function"){
 					                                                   ^
 
-core.js.uncompressed.js:31416: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:31420: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(xCss){
 				^
 
-core.js.uncompressed.js:33006: WARNING - unreachable code
+core.js.uncompressed.js:33010: WARNING - unreachable code
 			switch(val){
 			^
 
-core.js.uncompressed.js:38269: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
-				if(!type){
-				^
-
-core.js.uncompressed.js:45854: WARNING - Suspicious code. The result of the 'not' operator is not being used.
+core.js.uncompressed.js:45859: WARNING - Suspicious code. The result of the 'not' operator is not being used.
 !function() {
 ^
 
-core.js.uncompressed.js:45870: WARNING - Suspicious code. The result of the 'getprop' operator is not being used.
+core.js.uncompressed.js:45875: WARNING - Suspicious code. The result of the 'getprop' operator is not being used.
       d3_array(d3_document.documentElement.childNodes)[0].nodeType;
       ^
 
-core.js.uncompressed.js:46889: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:46894: WARNING - If this if/for/while really shouldnt have a body, use {}
       while (!(node = group[i0]) && ++i0 < n) ;
                                               ^
 
-core.js.uncompressed.js:51635: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:51640: WARNING - If this if/for/while really shouldnt have a body, use {}
     while (--i >= 0 && !(f = d3.interpolators[i](a, b))) ;
                                                          ^
 
-core.js.uncompressed.js:56494: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:56508: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(hint == 'avatar'){
 				^
 
-core.js.uncompressed.js:57552: WARNING - unreachable code
+core.js.uncompressed.js:57708: WARNING - unreachable code
 		return out;
 		^
 
-core.js.uncompressed.js:65109: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65280: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0, n = a.length; i < n; f.call(o, a[i], i, a), ++i);
 				                                                           ^
 
-core.js.uncompressed.js:65112: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65283: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); f.call(o, a.next(), i++, a));
 				                                                    ^
 
-core.js.uncompressed.js:65133: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65304: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; i < n; t[i] = f.call(o, a[i], i, a), ++i);
 				                                                    ^
 
-core.js.uncompressed.js:65137: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65308: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); t.push(f.call(o, a.next(), i++, a)));
 				                                                            ^
 
-core.js.uncompressed.js:65336: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65507: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0, n = a.length; i < n; z = f.call(o, z, a[i], i, a), ++i);
 				                                                                  ^
 
-core.js.uncompressed.js:65339: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65510: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); z = f.call(o, z, a.next(), i++, a));
 				                                                           ^
 
-core.js.uncompressed.js:65360: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65531: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 1, n = a.length; i < n; z = f.call(o, z, a[i], i, a), ++i);
 				                                                                  ^
 
-core.js.uncompressed.js:65365: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65536: WARNING - If this if/for/while really shouldnt have a body, use {}
 					for(i = 1; a.hasNext(); z = f.call(o, z, a.next(), i++, a));
 					                                                           ^
 
-core.js.uncompressed.js:65390: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65561: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(var i = a.length; i > 0; --i, z = f.call(o, z, a[i], i, a));
 			                                                               ^
 
-core.js.uncompressed.js:65400: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65571: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a));
 			                                               ^
 
-core.js.uncompressed.js:65423: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65594: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; !pr.call(o, z); t.push(f.call(o, z)), z = g.call(o, z));
 			                                                             ^
 
-core.js.uncompressed.js:65466: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65637: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(var i = a.length - 1; i >= 0; f.call(o, a[i], i, a), --i);
 			                                                             ^
 
-core.js.uncompressed.js:65475: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:65646: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i >= 0; t[j++] = f.call(o, a[i], i, a), --i);
 			                                                  ^
 
-core.js.uncompressed.js:66955: WARNING - unreachable code
+core.js.uncompressed.js:67126: WARNING - unreachable code
 				do{
 				^
 
-core.js.uncompressed.js:72608: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72779: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; i < n; z = f.call(o, z, a[i], i, a), t[++i] = z);
 				                                                           ^
 
-core.js.uncompressed.js:72612: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72783: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(i = 0; a.hasNext(); t.push(z = f.call(o, z, a.next(), i++, a)));
 				                                                                   ^
 
-core.js.uncompressed.js:72636: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72807: WARNING - If this if/for/while really shouldnt have a body, use {}
 				for(var i = 1; i < n; t[i] = z = f.call(o, z, a[i], i, a), ++i);
 				                                                               ^
 
-core.js.uncompressed.js:72641: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72812: WARNING - If this if/for/while really shouldnt have a body, use {}
 					for(i = 1; a.hasNext(); t.push(z = f.call(o, z, a.next(), i++, a)));
 					                                                                   ^
 
-core.js.uncompressed.js:72667: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72838: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a), t[i] = z);
 			                                                         ^
 
-core.js.uncompressed.js:72679: WARNING - If this if/for/while really shouldnt have a body, use {}
+core.js.uncompressed.js:72850: WARNING - If this if/for/while really shouldnt have a body, use {}
 			for(; i > 0; --i, z = f.call(o, z, a[i], i, a), t[i] = z);
 			                                                         ^
 
-core.js.uncompressed.js:73559: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:73730: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				item.hasOwnProperty('product') ? opts.push(item.product) : {};
 				                                                           ^
 
-core.js.uncompressed.js:73560: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:73731: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				item.hasOwnProperty('patric_id') ? opts.push(item.patric_id) : {};
 				                                                               ^
 
-core.js.uncompressed.js:73561: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:73732: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				item.hasOwnProperty('gene') ? opts.push(item.gene) : {};
 				                                                     ^
 
-core.js.uncompressed.js:73562: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:73733: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				item.hasOwnProperty('refseq_locus_tag') ? opts.push(item.refseq_locus_tag) : {};
 				                                                                             ^
 
-core.js.uncompressed.js:73563: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:73734: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				item.hasOwnProperty('protein_id') ? opts.push(item.protein_id) : {};
 				                                                                 ^
 
-core.js.uncompressed.js:75731: WARNING - unreachable code
+core.js.uncompressed.js:73990: WARNING - unreachable code
+		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
+		^
+
+core.js.uncompressed.js:75968: WARNING - unreachable code
 				return;
 				^
 
-core.js.uncompressed.js:77022: WARNING - unreachable code
+core.js.uncompressed.js:77260: WARNING - unreachable code
 			 0 && console.log("FILTER: ", out)
 			 ^
 
-core.js.uncompressed.js:78721: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:78974: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(min_member_count) ? filter.min_member_count = min_member_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:78722: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:78975: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(max_member_count) ? filter.max_member_count = max_member_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:78724: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:78977: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(min_genome_count) ? filter.min_genome_count = min_genome_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:78725: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:78978: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:80179: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80432: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count !== family.genome_count ? skip = true : {};
 					                                                             ^
 
-core.js.uncompressed.js:80181: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80434: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count === family.genome_count ? skip = true : {};
 					                                                             ^
 
-core.js.uncompressed.js:80186: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80439: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count < pfState.min_member_count ? skip = true : {};
 					                                                                ^
 
-core.js.uncompressed.js:80189: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80442: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count > pfState.max_member_count ? skip = true : {};
 					                                                                ^
 
-core.js.uncompressed.js:80194: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80447: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.genome_count < pfState.min_genome_count ? skip = true : {};
 					                                                               ^
 
-core.js.uncompressed.js:80197: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:80450: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.genome_count > pfState.max_genome_count ? skip = true : {};
 					                                                               ^
 
-core.js.uncompressed.js:81277: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81734: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(hint == 'avatar'){
 				^
 
-core.js.uncompressed.js:85974: WARNING - unreachable code
+core.js.uncompressed.js:86431: WARNING - unreachable code
 			return this.maxOuterRadius * trackFrac;
 			^
 
-core.js.uncompressed.js:102238: WARNING - Suspicious code. The result of the 'void' operator is not being used.
+core.js.uncompressed.js:102601: WARNING - Suspicious code. The result of the 'void' operator is not being used.
         dojo.query(".dojoDndItemAnchor").connect("click" , function(){void(0);});
                                                                       ^
 
-core.js.uncompressed.js:102297: WARNING - Suspicious code. The result of the 'void' operator is not being used.
+core.js.uncompressed.js:102660: WARNING - Suspicious code. The result of the 'void' operator is not being used.
         dojo.query(".dojoDndItem").connect("click" , function(){void(0);});
                                                                 ^
 
-core.js.uncompressed.js:103498: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:103861: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if(this.uploadType === "html5"){ }
 			^
 
-core.js.uncompressed.js:103625: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:103988: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if(typeof(xhr.statusText)){} // accessing this error throws an error. Awesomeness.
 					^
 
-core.js.uncompressed.js:109838: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:110210: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					(d.gene) ? content.push('Gene: ' + d.gene) : {};
 					                                             ^
 
-core.js.uncompressed.js:110202: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:110574: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr) : {};
 					                                                           ^
 
-core.js.uncompressed.js:110203: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:110575: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 					                                                               ^
 
-core.js.uncompressed.js:111199: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
+core.js.uncompressed.js:111571: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
 				for (i==0; i<myData.length; i++) {
 				     ^
 
 0 error(s), 64 warning(s)
-Done (compile time:24.398s)
+Done (compile time:28.784s)
 
 
 Has Features Detected
@@ -3767,7 +3771,7 @@ Has Features Detected
 	// dgrid/TouchScroll, dgrid/util/has-css3
 	 'css-transitions':1,
 
-	// dgrid/Selection, dojo/dom
+	// dgrid/Selection, dojo/dom, p3/widget/PageGrid
 	 'css-user-select':1,
 
 	// dojox/mobile/Accordion, dojox/mobile/IconItem, dojox/mobile/Overlay, dojox/mobile/SwapView, dojox/mobile/scrollable
@@ -4031,7 +4035,7 @@ Has Features Detected
 	// dojo/_base/sniff, dojo/sniff, dojo/uacss
 	 'khtml':1,
 
-	// dgrid/Selection, dijit/Editor, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/Mover, dojo/dnd/common, dojo/keys
+	// dgrid/Selection, dijit/Editor, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/Mover, dojo/dnd/common, dojo/keys, p3/widget/PageGrid
 	 'mac':1,
 
 	// dojox/mobile/ScrollablePane, dojox/mobile/Switch, dojox/mobile/scrollable
@@ -4079,10 +4083,10 @@ Has Features Detected
 	// xstyle/core/observe
 	 'observe':1,
 
-	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby
+	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby, p3/widget/GridSelector
 	 'opera':1,
 
-	// dgrid/Selection
+	// dgrid/Selection, p3/widget/PageGrid
 	 'pointer':1,
 
 	// dijit/focus, dijit/form/_FormWidgetMixin, dojo/touch, dojox/gfx/canvasWithEvents
@@ -4115,7 +4119,7 @@ Has Features Detected
 	// dijit/form/_ExpandingTextAreaMixin
 	 'textarea-needs-help-shrinking':1,
 
-	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/calendar/MatrixView, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog
+	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/calendar/MatrixView, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog, p3/widget/PageGrid
 	 'touch':1,
 
 	// dojo/on
@@ -4228,7 +4232,7 @@ Has Features Detected
 	// dgrid/TouchScroll, dgrid/util/has-css3
 	 'css-transitions':1,
 
-	// dgrid/Selection, dojo/dom
+	// dgrid/Selection, dojo/dom, p3/widget/PageGrid
 	 'css-user-select':1,
 
 	// dojox/mobile/Accordion, dojox/mobile/IconItem, dojox/mobile/Overlay, dojox/mobile/SwapView, dojox/mobile/scrollable
@@ -4492,7 +4496,7 @@ Has Features Detected
 	// dojo/_base/sniff, dojo/sniff, dojo/uacss
 	 'khtml':1,
 
-	// dgrid/Selection, dijit/Editor, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/Mover, dojo/dnd/common, dojo/keys
+	// dgrid/Selection, dijit/Editor, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/Mover, dojo/dnd/common, dojo/keys, p3/widget/PageGrid
 	 'mac':1,
 
 	// dojox/mobile/ScrollablePane, dojox/mobile/Switch, dojox/mobile/scrollable
@@ -4540,10 +4544,10 @@ Has Features Detected
 	// xstyle/core/observe
 	 'observe':1,
 
-	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby
+	// dgrid/Grid, dgrid/selector, dijit/Dialog, dijit/Editor, dijit/_editor/RichText, dijit/_editor/plugins/AlwaysShowToolbar, dijit/_editor/plugins/Print, dijit/_editor/selection, dijit/form/SimpleTextarea, dijit/selection, dojo/_base/connect, dojo/_base/sniff, dojo/dnd/autoscroll, dojo/dom-geometry, dojo/sniff, dojo/uacss, dojo/window, dojox/calc/Standard, dojox/calendar/ViewBase, dojox/charting/Chart, dojox/charting/axis2d/Default, dojox/charting/bidi/Chart, dojox/data/HtmlTableStore, dojox/gfx/_gfxBidiSupport, dojox/grid/_FocusManager, dojox/grid/_View, dojox/grid/enhanced/plugins/Printer, dojox/string/sprintf, dojox/string/tokenize, dojox/widget/Standby, p3/widget/GridSelector
 	 'opera':1,
 
-	// dgrid/Selection
+	// dgrid/Selection, p3/widget/PageGrid
 	 'pointer':1,
 
 	// dijit/focus, dijit/form/_FormWidgetMixin, dojo/touch, dojox/gfx/canvasWithEvents
@@ -4576,7 +4580,7 @@ Has Features Detected
 	// dijit/form/_ExpandingTextAreaMixin
 	 'textarea-needs-help-shrinking':1,
 
-	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/calendar/MatrixView, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog
+	// dgrid/List, dgrid/Selection, dgrid/extensions/ColumnResizer, dgrid/extensions/DnD, dgrid/tree, dijit/Dialog, dijit/_HasDropDown, dojo/dnd/Manager, dojo/on, dojo/window, dojox/calendar/MatrixView, dojox/gesture/Base, dojox/gfx/canvasWithEvents, dojox/mobile/ComboBox, dojox/mobile/Switch, dojox/mobile/common, dojox/mobile/scrollable, p3/widget/FlippableDialog, p3/widget/PageGrid
 	 'touch':1,
 
 	// dojo/on
@@ -4615,5 +4619,5 @@ Has Features Detected
 
 Process finished normally
 	errors: 0
-	warnings: 83
-	build time: 95.031 seconds
+	warnings: 84
+	build time: 99.343 seconds

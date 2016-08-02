@@ -44,13 +44,17 @@ define("p3/widget/viewer/_GenomeList", [
 
 			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList+1 + ")");
 
-			xhr.get(url, {
+			xhr.post(PathJoin(this.apiServiceUrl, "genome"),{
 				headers: {
 					accept: "application/solr+json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				handleAs: "json"
+				handleAs: "json",
+				'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+				data: (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList+1 + ")"
+
 			}).then(function(res){
 				//console.log(" URL: ", url);
 				// console.log("Get GenomeList Res: ", res);
@@ -79,15 +83,17 @@ define("p3/widget/viewer/_GenomeList", [
 			var _self = this;
 			// console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(" + this.maxGenomesPerList + ")");
+			// var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(" + this.maxGenomesPerList + ")");
 
-			xhr.get(url, {
+			xhr.post(PathJoin(this.apiServiceUrl, "genome"), {
 				headers: {
 					accept: "application/solr+json",
 					'X-Requested-With': null,
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'Authorization': (window.App.authorizationToken || "")
 				},
-				handleAs: "json"
+				handleAs: "json",
+				data: (this.query) + "&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(" + this.maxGenomesPerList + ")"
 			}).then(function(res){
 				//console.log(" URL: ", url);
 				// console.log("Get GenomeList Res: ", res);
