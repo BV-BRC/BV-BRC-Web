@@ -810,3 +810,21 @@ div.pubmed ul li {
 	cursor: default;
 }
 
+/* =Vertical Rhythm Classes */
+.close {
+  margin-bottom: 2px; }
+
+.close2x {
+  margin-bottom: .4em; }
+
+.far {
+  margin-bottom: .8em; }
+
+.far2x {
+  margin-bottom: 1.6em; }
+
+.far4x {
+  margin-bottom: 3.2em; }
+
+
+

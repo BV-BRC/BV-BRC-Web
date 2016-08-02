@@ -22,6 +22,38 @@
 
 -->
 
+
+	<% var services = [
+		{name: "Acinetobacter", href: "/view/Taxonomy/469"},
+		{name: "Bacillus", href: "/view/Taxonomy/1386"},
+		{name: "Bartonella", href: "/view/Taxonomy/773"},
+		{name: "Borellia", href: "/view/Taxonomy/138"},
+		{name: "Brucella", href: "/view/Taxonomy/234"},
+		{name: "Burkholderia", href: "/view/Taxonomy/32008"},
+		{name: "Campylobacter", href: "/view/Taxonomy/194"},
+		{name: "Chlamydia", href: "/view/Taxonomy/83553"},
+		{name: "Clostridium", href: "/view/Taxonomy/1485"},
+		{name: "Coxiella", href: "/view/Taxonomy/776"},
+		{name: "Ehrlichia", href: "/view/Taxonomy/943"},
+		{name: "Escherichia", href: "/view/Taxonomy/561"},
+		{name: "Francisella", href: "/view/Taxonomy/262"},
+		{name: "Helicobacter", href: "/view/Taxonomy/209"},
+		{name: "Listeria", href: "/view/Taxonomy/1637"},
+		{name: "Mycobacterium", href: "/view/Taxonomy/1763"},
+		{name: "Rickettsia", href: "/view/Taxonomy/780"},
+		{name: "Salmonella", href: "/view/Taxonomy/590"},
+		{name: "Shigella", href: "/view/Taxonomy/620"},
+		{name: "Staphylococcus", href: "/view/Taxonomy/1279"},
+		{name: "Streptococcus", href: "/view/Taxonomy/1301"},
+		{name: "Vibrio", href: "/view/Taxonomy/662"},
+		{name: "Yersinia", href: "/view/Taxonomy/629"}
+	] 
+
+
+	var servicesMiddle= Math.round(services.length/2);
+
+	%>
+
 	<div class="P3Header">
 		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
 			<td style="text-align:left;width:220px;">
@@ -54,59 +86,16 @@
 									<td style='vertical-align: top;width:225px;'>
 										<div class="menuHeader">by NIAID Bacterial Pathogen</div>
 										<table>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/1386">Bacillus</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/262">Francisella</a></td>
-											</tr>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/773">Bartonella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/209">Helicobacter</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/138">Borrelia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1637">Listeria</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/234">Brucella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1763">Mycobacterium</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/32008">Burkholderia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/780">Rickettsia</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/194">Camplyobacter</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/590">Salmonella</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/810">Chlamydia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/620">Shigella</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/1485">Clostridium</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1279">Staphylococcus</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/776">Coxiella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1301">Streptococcus</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/943">Ehrlichia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/662">Vibrio</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/561">Escherichia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/629">Yersinia</a></td>
-											</tr>
+											<% for (var i=0; i<servicesMiddle;i++){ %>
+												<tr>
+													<td><a class="navigationLink" href="<%- services[i].href %>"><%- services[i].name %></a></td>
+													<td>
+													<% if (services[servicesMiddle+i]) { %>
+														<a class="navigationLink" href="<%- services[servicesMiddle+i].href %>"><%- services[servicesMiddle+i].name %></a>
+													<% } %>
+													</td>
+												</tr>
+											<% } %>
 											<tr><td>&nbsp;</td></tr>
 											<tr>
 												<td><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></td>
