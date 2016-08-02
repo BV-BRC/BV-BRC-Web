@@ -804,3 +804,9 @@ div.pubmed ul li {
 .WarningBanner {
 	background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;
 }
+
+.patric .fa.icon-caret-down.noHoverIcon:hover{
+	color: #333;
+	cursor: default;
+}
+
