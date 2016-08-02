@@ -150,6 +150,6 @@ define([
 				}));
 			})
 			return def.promise;
-		},
+		}
 	});
 });
