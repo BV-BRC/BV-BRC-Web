@@ -28,6 +28,12 @@ define([
 			// will use '{label} ({count})' if tooltip is omitted.
 		 */
 		render: function(data){
+			if(this.data !== data){
+				this.data = data;
+			}else{
+				return;
+			}
+
 			var self = this;
 
 			var maxValue = data.map(function(d){
@@ -36,13 +42,13 @@ define([
 				.reduce(function(a, b){
 					return Math.max(a, b);
 				});
-			var label = data.map(function(d){
+			var labels = data.map(function(d){
 				return d.label;
 			});
 
 			this.y_scale = d3.scale.ordinal()
 				.rangeRoundBands([self.margin.top, (self.nodeHeight - self.margin.top - self.margin.bottom)], .3, 0)
-				.domain(label);
+				.domain(labels);
 			this.y_scale_range = this.y_scale.range();
 			// console.log(this.y_scale.rangeBand(), this.y_scale_range);
 
@@ -53,7 +59,7 @@ define([
 			this.yAxis = d3.svg.axis()
 				.scale(this.y_scale)
 				.orient("left")
-				.tickFormat(function(d) {
+				.tickFormat(function(d){
 					return (d.length > 32) ? d.substr(0, 32) + '...' : d;
 				})
 				.tickPadding(2).tickSize(1);
@@ -63,6 +69,9 @@ define([
 				.orient("bottom")
 				.tickFormat(d3.format(",.0d"))
 				.tickPadding(2).tickSize(1);
+
+			this.canvas.selectAll("g.axis").remove();
+			this.canvas.select("g.bars").remove();
 
 			this.canvas.append("g")
 				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.margin.top]))
@@ -75,6 +84,7 @@ define([
 				.attr("class", "x axis");
 
 			this.canvas.append("g")
+				.attr("class", "bars")
 				.selectAll("rect")
 				.data(data)
 				.enter()
