@@ -75,7 +75,7 @@ define([
 		},
 		refresh: function(){
 			if(this.data){
-				var jobHeader = '<div><div style="width:370px;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">';
+				var jobHeader = '<div><div style="width:370px;" ><h3 style="color:#888;font-size:1.3em;font-weight:normal;" class="normal-case close2x"><span style="background:white" class="wrap">';
 				if(this.data.autoMeta && this.data.autoMeta.app){
 					jobHeader = jobHeader + this._appLabel + " ";
 				}
@@ -83,7 +83,7 @@ define([
 				//this.viewer.set('content',jobHeader);
 
 				var output = [];
-				output.push(jobHeader + '<table class="basic stripe far2x" id="data-table"><tbody>');
+				output.push(jobHeader + '<table class="p3basic striped far2x" id="data-table"><tbody>');
 				var job_output = [];
 
 				if(this.data.autoMeta){
@@ -106,8 +106,8 @@ define([
 
 				var result_output = [];
 				if(this._resultObjects){
-					result_output.push('<div style="display:inline-block;" ><h3 style="background:white;" class="section-title normal-case close2x"><span style="background:white" class="wrap">Result Files</span></h3>');
-					result_output.push('<table class="basic stripe far2x"><tbody>');
+					result_output.push('<div style="display:inline-block;" ><h3 style="color:#888;font-size:1.3em;font-weight:normal;" class="normal-case close2x"><span class="wrap">Result Files</span></h3>');
+					result_output.push('<table class="p3basic striped far2x"><tbody>');
 					result_output.push('<tr><th></th><th>Filename</th><th>Type</th><th>File size</th>')
 					var header_row = result_output.length - 1;
 					result_output.push('</tr>');
