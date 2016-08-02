@@ -7,14 +7,14 @@ define([
 			d3){
 
 	return declare([], {
-		constructor: function(target){
-			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
+		constructor: function(target, className){
+			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "only");
 
 			this.nodeWidth = domStyle.get(this.node, "width");
 			this.nodeHeight = 250;
 			this.margin = {top: 0, right: 10, bottom: 20, left: 250};
 
-			this.canvas = d3.select(".chart")
+			this.canvas = d3.select(".chart." + className)
 				.insert("svg", ":first-child")
 				.attr("width", this.nodeWidth)
 				.attr("height", this.nodeHeight);
