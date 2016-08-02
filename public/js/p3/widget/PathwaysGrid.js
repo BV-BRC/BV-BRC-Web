@@ -23,6 +23,7 @@ define([
 		primaryKey: "id",
 		selectionModel: "extended",
 		deselectOnRefresh: true,
+		fullSelectAll: false,
 		columns: {
 			"Selection Checkboxes": selector({}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},

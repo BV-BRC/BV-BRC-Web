@@ -45,7 +45,9 @@ define([
 	downloadSelectionTT.startup();
 
 	var idMappingTTDialog = new TooltipDialog({
-		content: IDMappingTemplate, onMouseLeave: function(){
+		style: "overflow: visible;",
+		content: IDMappingTemplate, 
+		onMouseLeave: function(){
 			popup.close(idMappingTTDialog);
 		}
 	});
@@ -56,9 +58,8 @@ define([
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-
+		return;
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
-
 		popup.close(idMappingTTDialog);
 	});
 
@@ -651,7 +652,7 @@ define([
 								popup.open({
 									popup: idMappingTTDialog,
 									around: self.selectionActionBar._actions.idmapping.button,
-									orient: ["below"]
+									orient: ["before-centered"]
 								});
 							});
 
@@ -683,7 +684,7 @@ define([
 										popup.open({
 											popup: idMappingTTDialog,
 											around: self.selectionActionBar._actions.idmapping.button,
-											orient: ["below"]
+											orient: ["before-centered"]
 										});
 									});
 									return;
@@ -711,7 +712,7 @@ define([
 										popup.open({
 											popup: idMappingTTDialog,
 											around: self.selectionActionBar._actions.idmapping.button,
-											orient: ["below"]
+											orient: ["before-centered"]
 										});
 									});
 
@@ -738,7 +739,7 @@ define([
 					popup.open({
 						popup: idMappingTTDialog,
 						around: this.selectionActionBar._actions.idmapping.button,
-						orient: ["below"]
+						orient: ["before-centered"]
 					});
 				},
 				false

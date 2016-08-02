@@ -503,6 +503,7 @@ div.overview {
     color: #444;
 }
 
+/*
 .claro .dijitTooltipContainer {
 
 }
@@ -515,6 +516,7 @@ div.overview {
     height: 20px;
 
 }
+*/
 
 #faceted_tracksel .faceted_tracksel_on_off.tab {
     top: 170px;
@@ -563,6 +565,7 @@ div.overview {
 }
 */
 
+/*
 div.tooltip {
     position: absolute;
     padding: 10px;
@@ -572,6 +575,7 @@ div.tooltip {
     border-radius: 4px;
     pointer-events: none;
 }
+*/
 
 .kegg-map-legend-color-box {
     float: left;

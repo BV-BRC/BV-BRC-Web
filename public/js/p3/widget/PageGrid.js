@@ -145,38 +145,43 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 					return obj[_self.primaryKey]; 
 				});
 			})
-		}
+		},
 
-		,selectAll: function(){
+		fullSelectAll: true,
+
+		selectAll: function(){
 			// if (this.totalRows>this.maxSelectAll){
 			// 	console.log("Table Too Large for Select All");
 			// 	return;
 			// }
-			var _self=this;
-			if (this._selectAll){
-				this._selectAll().then(function(ids){
-					console.log("ids: ", ids)
-					_self._all=true;
-					_self.selection={};
+			console.log("FullSelectAll? ", this.fullSelectAll);
+			if (this.fullSelectAll){
+				var _self=this;
+				if (this._selectAll){
+					this._selectAll().then(function(ids){
+						console.log("ids: ", ids)
+						_self._all=true;
+						_self.selection={};
 
 
-					console.log("Select " + ids.length + " Items");
-					ids.forEach(function(id){
+						console.log("Select " + ids.length + " Items");
+						ids.forEach(function(id){
 
-						_self._select(id,null,true);
-					});
-					console.log("Call _fireSelectionEvents");
-					_self._fireSelectionEvents();
-				})
+							_self._select(id,null,true);
+						});
+						console.log("Call _fireSelectionEvents");
+						_self._fireSelectionEvents();
+					})
+				}
+			}else{
+		        this.allSelected = true;
+				this.selection = {}; // we do this to clear out pages from previous sorts
+				for(var i in this._rowIdToObject){
+					var row = this.row(this._rowIdToObject[i]);
+					this._select(row.id, null, true);
+				 }
+				this._fireSelectionEvents();
 			}
-			// else{
-	  //       this.allSelected = true;
-			// this.selection = {}; // we do this to clear out pages from previous sorts
-			// for(var i in this._rowIdToObject){
-			// 	var row = this.row(this._rowIdToObject[i]);
-			// 	this._select(row.id, null, true);
-			 // }
-			// this._fireSelectionEvents();
 		 },
 
         _initSelectionEvents: function(){
