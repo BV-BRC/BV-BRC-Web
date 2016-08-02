@@ -10,8 +10,7 @@ define("p3/widget/TaxonomyOverview", [
 			domClass, Templated, Template,
 			xhr, lang, when,
 			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
-			ExternalItemFormatter
-){
+			ExternalItemFormatter){
 
 	var searchName = null;
 
@@ -31,15 +30,26 @@ define("p3/widget/TaxonomyOverview", [
 				this.set("taxonomy", state.taxonomy);
 			}
 
-			searchName = this.genome.taxon_name; 
+			searchName = this.genome.taxon_name;
 
-			var sumWidgets = ["rgSummaryWidget", "gmSummaryWidget", "spgSummaryWidget", "apmSummaryWidget"];
+			// widgets called by genome ids
+			var sumWidgets = ["apmSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
-					this[w].set('query', this.state.search)
+					this[w].set('query', this.state.search);
 				}
-			}, this)
+			}, this);
+
+			// widgets called by taxon_id
+			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
+
+			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
+			sumWidgets.forEach(function(w){
+				if(this[w]){
+					this[w].set('query', taxonQuery);
+				}
+			}, this);
 		},
 
 		"_setTaxonomyAttr": function(genome){

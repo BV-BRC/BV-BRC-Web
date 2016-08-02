@@ -86,3 +86,6 @@ TH.dgrid-cell.field-feature_type {
 .SummaryWidget.apmSummaryWidget {
     padding-bottom: 11px;
 }
+.SummaryWidget .field-label {
+    width: 80%;
+}

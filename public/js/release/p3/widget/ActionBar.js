@@ -28,17 +28,18 @@ define("p3/widget/ActionBar", [
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			//console.log("setSelection", sel);
+			console.log("setSelection", sel, sel.length);
 			this.selection = sel;
 
 //			return;
 			var valid;
 			var selectionTypes = {};
-			sel.forEach(function(s){
+			sel.filter(function(x){ return !!x; }).forEach(function(s){
 				var type = s.document_type || s.type;
 				//console.log("Checking s: ", type, s);
 				if(!type){
 					// console.log("MISSING TYPE: ", s);
+					return;
 				}
 				if(type == "job_result"){
 					if(s.autoMeta && s.autoMeta.app){

@@ -1,7 +1,7 @@
 define("p3/widget/FeatureGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "dgrid/selector"
+	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "./GridSelector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, selector){
@@ -25,6 +25,7 @@ define("p3/widget/FeatureGrid", [
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
+		selectAllFields: ["patric_id","genome_id","genome_name","refseq_locus_tag"],
 		store: store,
 		columns: {
 			"Selection Checkboxes": selector({}),

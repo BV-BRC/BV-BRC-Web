@@ -9969,6 +9969,9 @@ TH.dgrid-cell.field-feature_type {
 .SummaryWidget.apmSummaryWidget {
     padding-bottom: 11px;
 }
+.SummaryWidget .field-label {
+    width: 80%;
+}
 .patric .dgrid-header .dgrid-cell {
 	font-weight: 600;
 }
@@ -10653,15 +10656,6 @@ div.overview {
     margin: 4px 4px 4px 10px;
     color: #444;
 }
-.claro .dijitTooltipContainer {
-}
-.claro .dijitTooltipBelow .dijitTooltipConnector {
-    top: 0;
-    left: 3px;
-    background-position: -31px 0;
-    width: 16px;
-    height: 20px;
-}
 #faceted_tracksel .faceted_tracksel_on_off.tab {
     top: 170px;
     font-size: .6em;
@@ -10691,15 +10685,6 @@ div.overview {
     text-transform: none;
     padding:2px;
     border-radius:3px;
-}
-div.tooltip {
-    position: absolute;
-    padding: 10px;
-    font: 15px sans-serif;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 4px;
-    pointer-events: none;
 }
 .kegg-map-legend-color-box {
     float: left;
@@ -10884,4 +10869,8 @@ div.pubmed ul li {
 }
 .WarningBanner {
 	background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;
+}
+.patric .fa.icon-caret-down.noHoverIcon:hover{
+	color: #333;
+	cursor: default;
 }
