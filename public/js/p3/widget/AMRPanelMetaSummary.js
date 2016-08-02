@@ -8,15 +8,15 @@ define([
 			SummaryWidget, D3StackedBarChart){
 
 	var phenotypeDef = {
-		"R": {index: 0, label: "Resistant"},
-		"S": {index: 1, label: "Susceptible"},
-		"I": {index: 2, label: "Intermediate"}
+		"Resistant": 0,
+		"Susceptible": 1,
+		"Intermediate": 2
 	};
 
 	return declare([SummaryWidget], {
 		dataModel: "genome_amr",
 		query: "",
-		baseQuery: "&in(resistant_phenotype,(R,S,I))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)",
+		baseQuery: "&in(resistant_phenotype,(Resistant,Susceptible,Intermediate))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)",
 		columns: [{
 			label: "Antibiotic",
 			field: "antibiotic"
@@ -64,7 +64,7 @@ define([
 					var dist = [0, 0, 0];
 					d.pivot.forEach(function(phenotype){
 						if(phenotypeDef.hasOwnProperty(phenotype.value)){
-							dist[phenotypeDef[phenotype.value].index] = phenotype.count;
+							dist[phenotypeDef[phenotype.value]] = phenotype.count;
 						}
 					});
 					var total = dist.reduce(function(a, b){
@@ -90,10 +90,7 @@ define([
 				this.chart = new D3StackedBarChart(this.chartNode);
 				domClass.add(this.chart.node, "amr");
 
-				var legend = Object.keys(phenotypeDef)
-					.map(function(key){
-						return phenotypeDef[key].label;
-					});
+				var legend = Object.keys(phenotypeDef);
 				this.chart.renderLegend(legend);
 				this.chart.processData(this.data);
 				this.chart.render();

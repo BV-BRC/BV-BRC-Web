@@ -112,3 +112,22 @@ TH.dgrid-cell.field-feature_type {
 .SummaryWidget .field-label {
     width: 80%;
 }
+
+.patric .fpSummaryWidget.SummaryWidget .chartNode,
+.patric .fpSummaryWidget.SummaryWidget .tableNode {
+    min-height: 250px;
+}
+
+.patric .idmSummeryWidget.SummaryWidget {
+    height: 120px;
+}
+.patric .spgSummaryWidget.SummaryWidget {
+    height: 250px;
+}
+
+/* feature comments */
+.SummaryWidget .field-source,
+.SummaryWidget .field-property,
+.SummaryWidget .field-evidence_code {
+    width: 10%;
+}

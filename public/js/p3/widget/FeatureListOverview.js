@@ -27,7 +27,7 @@ define([
 			this._set("state", state);
 
 			// console.log(state.search);
-			var sumWidgets = ["fpSummaryWidget"];
+			var sumWidgets = ["fpSummaryWidget", "tpSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
