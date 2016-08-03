@@ -70,21 +70,8 @@
 						<div >
 							<table><tbody>
 								<tr>
-									<td style='vertical-align: top;width:175px'>
-										<div class="menuHeader">by Data Type</div>
-											<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>
-											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>-->
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))">Antibiotic Resistance</a></div>
-											<div><a class="navigationLink" href="/view/FeatureList/?keyword(*)">Genomic Features</a></div>
-											<div><a class="navigationLink" href="/view/SpecialtyGeneList/?keyword(*)">Specialty Genes</a></div>
-											<!--<div><a class="navigationLink" href="/view/PathwayList/?keyword(*)">Pathways</a></div>-->
-											<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>
-									</td>
-									<td style='width:5px;'></td>
 									<td style='vertical-align: top;width:225px;'>
-										<div class="menuHeader">by NIAID Bacterial Pathogen</div>
+										<div class="menuHeader">Bacterial Pathogens</div>
 										<table>
 											<% for (var i=0; i<servicesMiddle;i++){ %>
 												<tr>
@@ -104,6 +91,19 @@
 										</table>
 									</td>
 									<td style="width:5px;"></td>
+									<td style='vertical-align: top;width:175px'>
+										<div class="menuHeader">Data Types</div>
+											<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>
+											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>-->
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
+											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))">Antibiotic Resistance</a></div>
+											<div><a class="navigationLink" href="/view/FeatureList/?keyword(*)">Genomic Features</a></div>
+											<div><a class="navigationLink" href="/view/SpecialtyGeneList/?keyword(*)">Specialty Genes</a></div>
+											<!--<div><a class="navigationLink" href="/view/PathwayList/?keyword(*)">Pathways</a></div>-->
+											<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>
+									</td>
+									<td style='width:5px;'></td>
 									<td style='vertical-align:top;width:200px;'>
 										<div class="menuHeader">Specialty Data Collections</div>
 										<div><a class="" href="//enews.patricbrc.org/patric-collaborations/">PATRIC Collaborations</a></div>
@@ -205,6 +205,7 @@
 						<div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
 						<div><a class="" href="/content/Tutorials">Tutorials</a></div>
  						<div><a class="" href="/content/UserGuide">User Guides</a></div>
+ 						<hr>
 						<div><a class="" href="/content/ReportProblem">Report a Problem</a></div>
 						<div><a class="" href="/content/ContactUs">Contact Us</a></div>
 					</div>
@@ -212,8 +213,8 @@
 
 			</div>
 			</td>
-			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
-				<input class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
+			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;"> 
+					<input style="width:100%" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
 			</td>
 
 			<td  class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding:2px;width:125px;">
