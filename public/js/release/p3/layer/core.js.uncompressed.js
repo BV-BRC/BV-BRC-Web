@@ -14323,8 +14323,8 @@ define([], function(){
 		help: {
 			title: "PATRIC Help",
 			layer: "p3/layer/panels",
-			ctor: "dijit/layout/ContentPane",
-			dataParam: "content"
+			ctor: "p3/widget/Help",
+			dataParam: "helpId"
 		}
 	}
 });
@@ -109051,6 +109051,17 @@ define([
 			xhr, lang, Chart2D, Theme, MoveSlice,
 			ChartTooltip, domConstruct, PathJoin, Grid,
 			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
+
+	var xhrOption = {
+		handleAs: "json",
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+			'X-Requested-With': null,
+			'Authorization': window.App.authorizationToken || ""
+		}
+	};
+
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
 		disabled: false,
@@ -109302,33 +109313,44 @@ define([
 			new D3SingleGeneViewer(this.sgViewerNode)
 				.render(data);
 		},
+		_setFeatureCommentsAttr: function(data){
+			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
+
+			if(!this.featureCommentsGrid){
+				var opts = {
+					columns: [
+						{label: "Source", field: "source"},
+						{label: "Property", field: "property"},
+						{label: "Value", field: "value"},
+						{label: "Evidence Code", field: "evidence_code"},
+						{
+							label: "Comment", field: "comment", renderCell: function(obj, val, node){
+							node.innerHTML = val;
+						}
+						}
+					]
+				};
+
+				this.featureCommentsGrid = new Grid(opts, this.featureCommentsNode);
+				this.featureCommentsGrid.startup();
+			}
+
+			this.featureCommentsGrid.refresh();
+			this.featureCommentsGrid.renderArray(data);
+		},
 		getSummaryData: function(){
 
 			// uniprot mapping
 			if(this.feature.gi){
-				xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)"), {
-					handleAs: "json",
-					headers: {
-						'Accept': "application/json",
-						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-						'X-Requested-With': null,
-						'Authorization': window.App.authorizationToken || ""
-					}
-				}).then(lang.hitch(this, function(data){
+				var url = PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)");
+				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
 
 					var uniprotKbAccessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
 
-					xhr.get(PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(uniprotkb_accession,id_type,id_value)&limit(25000)"), {
-						handleAs: "json",
-						headers: {
-							'Accept': "application/json",
-							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-							'X-Requested-With': null,
-							'Authorization': window.App.authorizationToken || ""
-						}
-					}).then(lang.hitch(this, function(data){
+					var url = PathJoin(this.apiServiceUrl, "id_ref/?in(uniprotkb_accession,(" + uniprotKbAccessions + "))&select(uniprotkb_accession,id_type,id_value)&limit(25000)");
+					xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
 						if(data.length === 0) return;
 
 						this.set("mappedFeatureList", data);
@@ -109350,49 +109372,27 @@ define([
 			// }
 
 			// specialty gene
-			xhr.get(PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)"), {
-				handleAs: "json",
-				headers: {
-					'Accept': "application/json",
-					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': window.App.authorizationToken || ""
-				}
-			}).then(lang.hitch(this, function(data){
+			var spgUrl = PathJoin(this.apiServiceUrl, "/sp_gene/?eq(feature_id," + this.feature.feature_id + ")&select(evidence,property,source,source_id,organism,pmid,subject_coverage,query_coverage,identity,e_value)");
+			xhr.get(spgUrl, xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
 				this.set("specialProperties", data);
 			}));
 
 			// get taxonomy info and pass to summary panel
-			xhr.get(PathJoin(this.apiServiceUrl, "/taxonomy/" + this.feature.taxon_id), {
-				handleAs: "json",
-				headers: {
-					'Accept': "application/json",
-					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': window.App.authorizationToken || ""
-				}
-			}).then(lang.hitch(this, function(data){
+			xhr.get(PathJoin(this.apiServiceUrl, "/taxonomy/" + this.feature.taxon_id), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
 				this.set("featureSummary", lang.mixin(this.feature, data));
 			}));
 
+			// single gene viewer
 			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
 			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
 			var rangeEnd = (centerPos + 5000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
-			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), {
-				handleAs: "json",
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-					'X-Requested-With': null,
-					'Authorization': window.App.authorizationToken || ""
-				}
-			}).then(lang.hitch(this, function(data){
+			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
 
 				var firstStartPosition = Math.max(data[0].start, rangeStart);
@@ -109403,6 +109403,16 @@ define([
 					features: data
 				});
 			}));
+
+			// feature comments
+			if(this.feature.refseq_locus_tag){
+				var url = PathJoin(this.apiServiceUrl, "/structured_assertion/?eq(refseq_locus_tag," + this.feature.refseq_locus_tag + ")");
+				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
+					if(data.length === 0) return;
+
+					this.set("featureComments", data);
+				}));
+			}
 		},
 		startup: function(){
 			if(this._started){
@@ -113997,7 +114007,7 @@ define([
 			this._set("state", state);
 
 			// console.log(state.search);
-			var sumWidgets = ["fpSummaryWidget"];
+			var sumWidgets = ["fpSummaryWidget", "tpSummaryWidget"];
 
 			sumWidgets.forEach(function(w){
 				if(this[w]){
@@ -119595,8 +119605,8 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 120px\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget\" style=\"height: 250px\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\">\n                [placeholder for comments]\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
-'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n<!--\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n-->\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n<!--\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>-->\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div class=\"fpSummaryWidget\" data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Taxonomy Profile</span></h3>\n            <div class=\"tpSummaryWidget\" data-dojo-attach-point=\"tpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/TaxonomyProfile\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
 }});

@@ -1,17 +1,17 @@
 define("p3/widget/viewer/SpecialtyGeneList", [
 	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../PageGrid", "../formatter", "../SpecialtyGeneGridContainer", "../SequenceGridContainer",
-	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
+	"../PageGrid", "../formatter", "../SpecialtyGeneGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang"
 ], function(declare, TabViewerBase, on,
 			domClass, ContentPane, domConstruct,
-			Grid, formatter, SpecialtyGeneGridContainer, SequenceGridContainer,
-			GenomeGridContainer, PathJoin, xhr, lang){
+			Grid, formatter, SpecialtyGeneGridContainer, 
+			PathJoin, xhr, lang){
 	return declare([TabViewerBase], {
 		"baseClass": "SpecialtyGeneList",
 		"disabled": false,
 		"containerType": "spgene_data",
 		"query": null,
+		defaultTab: "specialtyGenes",
 		paramsMap: "query",
 		perspectiveLabel: "Specialty Gene List View",
 		perspectiveIconClass: "icon-perspective-FeatureList",
@@ -41,8 +41,6 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 				},
 				handleAs: "json"
 			}).then(function(res){
-				console.log(" URL: ", url);
-				console.log("Get GenomeList Res: ", res);
 				if(res && res.response && res.response.docs){
 					var features = res.response.docs;
 					if(features){
@@ -52,7 +50,7 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 					console.log("Invalid Response for: ", url);
 				}
 			}, function(err){
-				console.log("Error Retreiving Genomes: ", err)
+				console.log("Error Retreiving Specialty Genes: ", err)
 			});
 
 		},
@@ -75,27 +73,27 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 			// 	this.set("query", state.search);
 			// }
 
-			this.set("query", state.search);
-
-			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			if(active == "specialtyGenes"){
-				this.setActivePanelState()
-			}
-			;
-
 			this.inherited(arguments);
+			this.set("query", state.search);
+			this.setActivePanelState();
+			// //console.log("this.viewer: ", this.viewer.selectedChildWidget, " call set state: ", state);
+			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
+
+			// 	this.setActivePanelState()
+			// };
+			// ;
+
 		},
 
 		onSetQuery: function(attr, oldVal, newVal){
-			this.overview.set("content", '<div style="margin:4px;">Specialty Gene List Query: ' + decodeURIComponent(newVal) + "</div>");
+			// this.overview.set("content", '<div style="margin:4px;">Specialty Gene List Query: ' + decodeURIComponent(newVal) + "</div>");
 			// this.viewHeader.set("content", '<div style="margin:4px;">Specialty Gene Query: ' + decodeURIComponent(newVal) + ' </div>')
 			this.queryNode.innerHTML = decodeURIComponent(newVal);
 		},
 
 		setActivePanelState: function(){
 
-			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
+			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "specialtyGenes";
 			console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
@@ -108,22 +106,6 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 			switch(active){
 				case "specialtyGenes":
 					activeTab.set("state", this.state);
-					break;
-				default:
-					var activeQueryState;
-					if(this.state && this.state.genome_ids){
-						console.log("Found Genome_IDS in state object");
-						var activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
-						// console.log("gidQueryState: ", gidQueryState);
-						console.log("Active Query State: ", activeQueryState);
-
-					}
-
-					if(activeQueryState){
-						activeTab.set("state", activeQueryState);
-					}else{
-						console.warn("MISSING activeQueryState for PANEL: " + active);
-					}
 					break;
 			}
 			console.log("Set Active State COMPLETE");
@@ -150,34 +132,13 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 			this.watch("query", lang.hitch(this, "onSetQuery"));
 			this.watch("total_features", lang.hitch(this, "onSetTotalSpecialtyGenes"));
 
-			this.overview = this.createOverviewPanel(this.state);
-
-			domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
 
 			this.specialtyGenes = new SpecialtyGeneGridContainer({
 				title: "Specialty Genes",
 				id: this.viewer.id + "_" + "specialtyGenes",
-				disabled: false
+				disabled: false,
 			});
-			// this.sequences = new SequenceGridContainer({
-			// 	title: "Sequences",
-			// 	id: this.viewer.id + "_" + "sequences",
-			// 	state: this.state,
-			// 	disable: true
-			// });
-
-			// this.genomes = new GenomeGridContainer({
-			// 	title: "Genomes",
-			// 	id: this.viewer.id + "_" + "genomes",
-			// 	state: this.state,
-			// 	disable: true
-			// });
-
-			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.specialtyGenes);
-			// this.viewer.addChild(this.sequences);
-			// this.viewer.addChild(this.genomes);
 
 		},
 		onSetTotalSpecialtyGenes: function(attr, oldVal, newVal){
@@ -185,20 +146,6 @@ define("p3/widget/viewer/SpecialtyGeneList", [
 			this.totalCountNode.innerHTML = " ( " + newVal + "  Specialty Genes ) ";
 			var hasDisabled = false;
 
-			// this.viewer.getChildren().forEach(function(child){
-			// 	if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
-			// 		hasDisabled = true;
-			// 		child.set("disabled", true);
-			// 	}else{
-			// 		child.set("disabled", false);
-			// 	}
-			// });
-
-			// if(hasDisabled){
-			// 	this.showWarning();
-			// }else{
-			// 	this.hideWarning();
-			// }
 		},
 		hideWarning: function(){
 			if(this.warningPanel){
