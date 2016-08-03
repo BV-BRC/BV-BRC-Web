@@ -73,7 +73,7 @@ define("p3/widget/FunctionalProfile", [
 		render_chart: function(){
 
 			if(!this.chart){
-				this.chart = new D3HorizontalBarChart(this.chartNode);
+				this.chart = new D3HorizontalBarChart(this.chartNode, "fnProfile");
 				this.chart.render(this.data);
 			}else{
 

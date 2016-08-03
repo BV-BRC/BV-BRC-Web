@@ -7,14 +7,14 @@ define("p3/widget/D3HorizontalBarChart", [
 			d3){
 
 	return declare([], {
-		constructor: function(target){
-			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
+		constructor: function(target, className){
+			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "only");
 
 			this.nodeWidth = domStyle.get(this.node, "width");
 			this.nodeHeight = 250;
-			this.margin = [10, 10, 20, 10];
+			this.margin = {top: 0, right: 10, bottom: 20, left: 250};
 
-			this.canvas = d3.select(".chart")
+			this.canvas = d3.select(".chart." + className)
 				.insert("svg", ":first-child")
 				.attr("width", this.nodeWidth)
 				.attr("height", this.nodeHeight);
@@ -28,6 +28,12 @@ define("p3/widget/D3HorizontalBarChart", [
 			// will use '{label} ({count})' if tooltip is omitted.
 		 */
 		render: function(data){
+			if(this.data !== data){
+				this.data = data;
+			}else{
+				return;
+			}
+
 			var self = this;
 
 			var maxValue = data.map(function(d){
@@ -36,18 +42,26 @@ define("p3/widget/D3HorizontalBarChart", [
 				.reduce(function(a, b){
 					return Math.max(a, b);
 				});
-			var total = data.length;
+			var labels = data.map(function(d){
+				return d.label;
+			});
 
-			this.y_scale = d3.scale.linear()
-				.range([0, (self.nodeHeight - self.margin[0] - self.margin[2])])
-				.domain([0, total]);
+			this.y_scale = d3.scale.ordinal()
+				.rangeRoundBands([self.margin.top, (self.nodeHeight - self.margin.top - self.margin.bottom)], .3, 0)
+				.domain(labels);
+			this.y_scale_range = this.y_scale.range();
+			// console.log(this.y_scale.rangeBand(), this.y_scale_range);
+
 			this.x_scale = d3.scale.linear()
-				.range([0, (self.nodeWidth - self.margin[1] - self.margin[3])])
+				.range([0, (self.nodeWidth - self.margin.right - self.margin.left)])
 				.domain([0, maxValue]);
 
 			this.yAxis = d3.svg.axis()
 				.scale(this.y_scale)
 				.orient("left")
+				.tickFormat(function(d){
+					return (d.length > 32) ? d.substr(0, 32) + '...' : d;
+				})
 				.tickPadding(2).tickSize(1);
 
 			this.xAxis = d3.svg.axis()
@@ -56,40 +70,42 @@ define("p3/widget/D3HorizontalBarChart", [
 				.tickFormat(d3.format(",.0d"))
 				.tickPadding(2).tickSize(1);
 
-
-			// this.canvas.append("g")
-			// 	.attr("transform", "translate(10, 10)")
-			// 	.call(this.yAxis)
-			// 	.attr("class", "y axis");
+			this.canvas.selectAll("g.axis").remove();
+			this.canvas.select("g.bars").remove();
 
 			this.canvas.append("g")
-				.attr("transform", "translate(10, 230)")
+				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.margin.top]))
+				.call(this.yAxis)
+				.attr("class", "y axis");
+
+			this.canvas.append("g")
+				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.nodeHeight - self.margin.bottom]))
 				.call(this.xAxis)
 				.attr("class", "x axis");
 
-
 			this.canvas.append("g")
+				.attr("class", "bars")
 				.selectAll("rect")
 				.data(data)
 				.enter()
 				.append("rect")
 				.attr("x", function(){
-					return self.x_scale(0) + self.margin[3];
+					return self.x_scale(0) + self.margin.left;
 				})
 				.attr("y", function(d, i){
-					return self.y_scale(i) + self.margin[0] + 1;
+					return self.y_scale_range[i] + self.margin.top;
 				})
 				.attr("width", function(d){
 					return self.x_scale(d.count)
 				})
-				.attr("height", ((self.nodeHeight - self.margin[0] - self.margin[2]) / total - 12 ))
+				.attr("height", self.y_scale.rangeBand())
 				.attr("fill", '#1976D2')
 				.on("mouseover", function(d){
 					self.tooltipLayer.transition()
 						.duration(200)
 						.style("opacity", .95);
 
-					var content = (d.tooltip)? d.tooltip.apply(this, arguments): lang.replace('{label} ({count})', d);
+					var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', d);
 
 					self.tooltipLayer.html(content)
 						.style("left", d3.event.pageX + "px")
@@ -99,21 +115,6 @@ define("p3/widget/D3HorizontalBarChart", [
 					self.tooltipLayer.transition()
 						.duration(500)
 						.style("opacity", 0)
-				});
-
-			this.canvas.append("g")
-				.selectAll("text")
-				.data(data)
-				.enter()
-				.append("text")
-				.text(function(d){
-					return d.label
-				})
-				.attr("x", function(d){
-					return self.x_scale(0) + self.margin[3] + 20;
-				})
-				.attr("y", function(d, i){
-					return self.y_scale(i) + self.margin[0];
 				});
 		}
 	});
