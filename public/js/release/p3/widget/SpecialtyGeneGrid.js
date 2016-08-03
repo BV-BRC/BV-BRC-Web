@@ -1,7 +1,7 @@
 define("p3/widget/SpecialtyGeneGrid", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"./PageGrid", "./formatter", "../store/SpecialtyGeneJsonRest", "dgrid/selector"
+	"./PageGrid", "./formatter", "../store/SpecialtyGeneJsonRest", "./GridSelector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, selector){

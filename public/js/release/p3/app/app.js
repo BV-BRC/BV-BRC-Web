@@ -315,6 +315,8 @@ define("p3/app/app", [
 
 			// console.log("Ctor: ", ctor);
 
+
+			// console.log("newNavState.requireAuth: ", newNavState.requireAuth, window.App);
 			if(newNavState.requireAuth && (!window.App.user || !window.App.user.id)){
 				var cur = _self.getCurrentContainer();
 				if(cur){

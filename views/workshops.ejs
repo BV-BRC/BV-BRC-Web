@@ -1,0 +1,11 @@
+						<% if (workShops && workShops.length>0) { %>
+							<div class="section-title">Upcoming Workshops</div>
+							<% workShops.forEach(function(svc,index) { %>
+								<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- svc.publishDate.toLocaleDateString() %></span></div>
+								<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
+									<!--<span style="float:left;width:75px;margin-top:8px;padding:4px;color:#fff;background:#000;margin-top:-35px;;"><%- svc.publishDate.toLocaleDateString() %></span>-->
+									<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><%- svc.title %> </div>
+	
+								</div>
+							<% }) %>
+						<% } %>

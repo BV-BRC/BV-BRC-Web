@@ -39,6 +39,12 @@
 .Authenticated .TopMenuLink.HideWithAuth {
 	display: none;
 }
+.Authenticated .P3Header .ShowWithAuth {
+	display: inherit;
+}
+.Authenticated .P3Header TD.ShowWithAuth {
+	display: table-cell;
+}
 .Authenticated .TopMenuLink.ShowWithAuth {
 	display: inline;
 }

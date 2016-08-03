@@ -37,6 +37,11 @@ define([
 			this.feature_id = id;
 			this.state.feature_id = id;
 
+			if (id.match(/^fig/)){
+				id = "?eq(patric_id," + id + ")&limit(1)";
+			}
+
+			console.log("Get Feature: ", id);
 			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
 				headers: {
 					accept: "application/json",
@@ -45,7 +50,11 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(feature){
-				this.set("feature", feature)
+				if (feature instanceof Array){
+					this.set("feature", feature[0])
+				}else{
+					this.set("feature", feature)
+				}
 			}));
 		},
 

@@ -267,6 +267,10 @@ define([
 
 			if(this.user && this.user.id){
 				domAttr.set("YourWorkspaceLink", 'href', '/workspace/' + this.user.id)
+				var n = dom.byId("signedInAs");
+				if (n){
+					n.innerHTML = this.user.id.replace("@patricbrc.org","");
+				}
 			}
 			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
 

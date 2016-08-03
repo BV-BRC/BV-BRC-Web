@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/IDMapping.html':"<div>\n\t<table class=\"idMappingTable\" style=\"width:300px\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"2\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td></tr>\n\t\t<tr><td rel=\"DIP\">DIP</td><td rel=\"DisProt\">DisProt</td></tr>\n\t\t<tr><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td></tr>\n\t\t<tr><td rel=\"EchoBase\">EchoBASE</td><td rel='EcoGene'>EcoGene</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td></tr>\n\t\t<tr><td rel=\"GenoList\">GenoList</td><td rel=\"GenomeReviews\">GenomeReviews</td></tr>\n\t\t<tr><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td></tr>\n\t\t<tr><td rel=\"Leproma\">Leproma</td><td rel=\"MEROPS\">MEROPS</td></tr>\n\t\t<tr><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td></tr>\n\t\t<tr><td rel=\"PDB\">PDB</td><td rel=\"PeroxiBase\">PeroxiBase</td></tr>\n\t\t<tr><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td></tr>\n\t\t<tr><td rel=\"Reactome\">Reactome</td><td rel=\"RefSeq_NT\">RefSeq_NT</td></tr>\n\t\t<tr><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td></tr>\n\t\t<tr><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td></tr>\n\t\t<tr><td rel=\"World-2DPAGE\">World-2DPAGE</td><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
+'url:p3/widget/templates/IDMapping.html':"<div>\t\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\">PATRIC Identifiers</th><th class=\"idMappingHeader\" >REFSEQ Identifiers</th></tr>\n\t\t<tr><td rel=\"patric_id\">PATRIC ID</td><td rel=\"refseq_locus_tag\">RefSeq Locus Tag</td></tr>\n\t\t<tr><td rel=\"feature_id\" >Feature ID</td><td rel=\"protein_id\">RefSeq</td></tr>\n\t\t<tr><td rel=\"alt_locus_tag\">Alt Locus Tag</td><td rel=\"gene_id\">Gene ID</td></tr>\n\t\t<tr><td></td><td rel=\"gi\">GI</td></tr>\n\t</tbody>\n\t</table>\n\t<table class=\"idMappingTable\" style=\"width:315px;\">\n\t<tbody>\n\t\t<tr><th class=\"idMappingHeader\" colspan=\"3\">Other Identifiers</th></tr>\n\t\t<tr><td rel=\"Allergome\">Allergome</td><td rel=\"BioCyc\">BioCyc</td><td rel=\"DIP\">DIP</td></tr>\n\t\t<tr><td rel=\"DisProt\">DisProt</td><td rel=\"DrugBank\">DrugBank</td><td rel=\"ECO2DBASE\">ECO2DBASE</td></tr>\n\t\t<tr><td rel=\"EMBL\">EMBL</td><td rel=\"EMBL-CDS\">EMBL-CDS</td><td rel=\"EchoBase\">EchoBASE</td></tr>\n\t\t<tr><td rel='EcoGene'>EcoGene</td><td rel=\"EnsemblGenome\">EnsemblGenome</td><td rel=\"EnsemblGenome_PRO\">EnsemblGenome_PRO</td></tr>\n\t\t<tr><td rel=\"EnsemblGenome_TRS\">EnsemblGenome_TRS</td><td rel=\"GeneTree\">GeneTree</td><td rel=\"GenoList\">GenoList</td></tr>\n\t\t<tr><td rel=\"GenomeReviews\">GenomeReviews</td><td rel=\"HOGENOM\">HOGENOM</td><td rel=\"HSSP\">HSSP</td></tr>\n\t\t<tr><td rel=\"KEGG\">KEGG</td><td rel=\"LegioList\">LegioList</td><td rel=\"Leproma\">Leproma</td></tr>\n\t\t<tr><td rel=\"MEROPS\">MEROPS</td><td rel=\"MINT\">MINT</td><td rel=\"NMPDR\">NMPDR</td></tr>\n\t\t<tr><td rel=\"OMA\">OMA</td><td rel=\"OrthoDB\">OrthoDB</td><td rel=\"PDB\">PDB</td></tr>\n\t\t<tr><td rel=\"PeroxiBase\">PeroxiBase</td><td rel=\"PptaseDB\">PptaseDB</td><td rel=\"ProtClustDB\">ProtClustDB</td></tr>\n\t\t<tr><td rel=\"PsuedoCAP\">PseudoCAP</td><td rel=\"REBASE\">REBASE</td><td rel=\"Reactome\">Reactome</td></tr>\n\t\t<tr><td rel=\"RefSeq_NT\">RefSeq_NT</td><td rel=\"TCDB\">TCDB</td><td rel=\"TIGR\">TIGR</td></tr>\n\t\t<tr><td rel=\"TubercuList\">TubercuList</td><td rel=\"UniParc\">UniParc</td><td rel=\"UniProtKB-Accession\">UnitProtKB-Accesssion</td></tr>\n\t\t<tr><td rel=\"UniRef100\">UniRef100</td><td rel=\"UniProtKB-ID\">UnitProtKB-ID</td><td rel=\"UniRef100\">UniRef100</td></tr>\n\t\t<tr><td rel=\"UniRef50\">UniRef50</td><td rel=\"UniRef90\">UniRef90</td><td rel=\"World-2DPAGE\">World-2DPAGE</td></tr>\n\t\t<tr><td rel=\"eggNOG\">eggNOG</td></tr>\n\t</tbody>\n\t</table>\n</div>\n"}});
 define("p3/widget/GridContainer", [
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/dom-construct",
 	"dojo/request", "dojo/when","dojo/dom-class",
@@ -47,7 +47,9 @@ define("p3/widget/GridContainer", [
 	downloadSelectionTT.startup();
 
 	var idMappingTTDialog = new TooltipDialog({
-		content: IDMappingTemplate, onMouseLeave: function(){
+		style: "overflow: visible;",
+		content: IDMappingTemplate, 
+		onMouseLeave: function(){
 			popup.close(idMappingTTDialog);
 		}
 	});
@@ -58,9 +60,8 @@ define("p3/widget/GridContainer", [
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-
+		return;
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
-
 		popup.close(idMappingTTDialog);
 	});
 
@@ -82,6 +83,7 @@ define("p3/widget/GridContainer", [
 		queryOptions: null,
 		columns: null,
 		enableAnchorButton: false,
+		showAutoFilterMessage: true,
 
 		_setColumnsAttr: function(columns){
 			if(this.grid){
@@ -160,6 +162,32 @@ define("p3/widget/GridContainer", [
 				// console.log("GridContainer call filterPanel set state: ", state)
 				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
 			}
+
+			if (this.showAutoFilterMessage && state.autoFilterMessage){
+				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-1x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
+				// var msg = state.autoFilterMessage;
+				if (!this.messagePanel){
+					this.messagePanel = new ContentPane({
+						"class": "WarningPanel",
+						region: "top", 
+						content: msg
+					});
+
+					var _self=this;
+					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
+						if (_self.messagePanel){
+							_self.removeChild(_self.messagePanel);
+						}
+					});
+				}else{
+					this.messagePanel.set("content", msg);
+				}
+				this.addChild(this.messagePanel);
+			}else{
+				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+			}
+
+
 			this.set("query", q.join("&"));
 
 		},
@@ -259,6 +287,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					ignoreDataType: true,
 					tooltip: "Download Selection",
+					max:5000,
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
@@ -312,6 +341,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					multiple: true,
 					min:2,
+					max: 5000,
 					tooltip: "Switch to Feature List View. Press and Hold for more options.",
 					validContainerTypes: ["feature_data", "transcriptomics_gene_data","spgene_data"],
 					pressAndHold: function(selection,button,opts,evt){
@@ -426,6 +456,7 @@ define("p3/widget/GridContainer", [
 					validTypes: ["*"],
 					multiple: true,
 					min: 2,
+					max: 1000,
 					tooltip: "Switch to Genome List View. Press and Hold for more options.",
 					ignoreDataType: true,
 					validContainerTypes: ["genome_data","sequence_data", "feature_data", "spgene_data", "sequence_data"],
@@ -539,6 +570,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					multiple: true,
 					validTypes: ["*"],
+					max: 5000,
 					tooltip: "View FASTA Data",
 					tooltipDialog: viewFASTATT,
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data"]
@@ -562,6 +594,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					min: 2,
 					multiple: true,
+					max:200,
 					validTypes: ["*"],
 					tooltip: "Multiple Sequence Alignment",
 					validContainerTypes: ["feature_data", "spgene_data", "proteinfamily_data", "pathway_data", "transcriptomics_gene_data"]
@@ -584,6 +617,7 @@ define("p3/widget/GridContainer", [
 					ignoreDataType: true,
 					min: 1,
 					multiple: true,
+					max: 1000,
 					validTypes: ["*"],
 					tooltip: "ID Mapping",
 					tooltipDialog: idMappingTTDialog,
@@ -620,7 +654,7 @@ define("p3/widget/GridContainer", [
 								popup.open({
 									popup: idMappingTTDialog,
 									around: self.selectionActionBar._actions.idmapping.button,
-									orient: ["below"]
+									orient: ["before-centered"]
 								});
 							});
 
@@ -652,7 +686,7 @@ define("p3/widget/GridContainer", [
 										popup.open({
 											popup: idMappingTTDialog,
 											around: self.selectionActionBar._actions.idmapping.button,
-											orient: ["below"]
+											orient: ["before-centered"]
 										});
 									});
 									return;
@@ -680,7 +714,7 @@ define("p3/widget/GridContainer", [
 										popup.open({
 											popup: idMappingTTDialog,
 											around: self.selectionActionBar._actions.idmapping.button,
-											orient: ["below"]
+											orient: ["before-centered"]
 										});
 									});
 
@@ -707,7 +741,7 @@ define("p3/widget/GridContainer", [
 					popup.open({
 						popup: idMappingTTDialog,
 						around: this.selectionActionBar._actions.idmapping.button,
-						orient: ["below"]
+						orient: ["before-centered"]
 					});
 				},
 				false
@@ -718,6 +752,7 @@ define("p3/widget/GridContainer", [
 					label: "GENES",
 					multiple: true,
 					validTypes: ["*"],
+					max: 5000,
 					validContainerTypes: ["transcriptomics_experiment_data", "transcriptomics_sample_data"],
 					tooltip: "View Experiment Gene List"
 				},
@@ -738,7 +773,7 @@ define("p3/widget/GridContainer", [
 				"PathwaySummary",
 				"fa icon-git-pull-request fa-2x",
 				{
-					label: "PTHWY", ignoreDataType: true, multiple: true, validTypes: ["*"], tooltip: "Pathway Summary",
+					label: "PTHWY", ignoreDataType: true, multiple: true, max:200, validTypes: ["*"], tooltip: "Pathway Summary",
 					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
 				},
 				function(selection, containerWidget){
@@ -856,6 +891,7 @@ define("p3/widget/GridContainer", [
 					multiple: true,
 					validTypes: ["*"],
 					requireAuth: true,
+					max: 5000,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
@@ -921,6 +957,40 @@ define("p3/widget/GridContainer", [
 				function(selection){
 					var sel = selection[0];
 					Topic.publish("/navigate", {href: "/view/Taxonomy/" + sel.taxon_id + "#view_tab=overview"})
+				},
+				false
+			],
+			[
+				"ViewGenomesFromTaxons",
+				"fa icon-perspective-GenomeList fa-2x",
+				{
+					label: "GENOMES",
+					multiple: true,
+					min:2,
+					validTypes: ["*"],
+					tooltip: "Switch to Genome List View. Press and Hold for more options.",
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["taxonomy_data","taxon_data"],
+					pressAndHold: function(selection,button,opts,evt){
+						var map={};
+						selection.forEach(function(sel){
+							if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+						})
+						var taxonIds = Object.keys(map);
+						popup.open({
+							popup: new PerspectiveToolTipDialog({perspective: "GenomeList", perspectiveUrl: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))"}),
+							around: button,
+							orient: ["below"]
+						});
+					}
+				},
+				function(selection){
+					var map={};
+					selection.forEach(function(sel){
+						if (!map[sel.taxon_id]){ map[sel.taxon_id]=true }
+					})
+					var taxonIds = Object.keys(map);
+					Topic.publish("/navigate", {href: "/view/GenomeList/?in(taxon_lineage_ids,(" + taxonIds.join(",") + "))#view_tab=overview"})
 				},
 				false
 			]
@@ -1088,17 +1158,40 @@ define("p3/widget/GridContainer", [
 			this._firstView = true;
 		},
 
+		getAllSelection: function(query){
+			console.log("getAll Query: ", query);
+		},
+
 		listen: function(){
 			this.grid.on("select", lang.hitch(this, function(evt){
 				// console.log("Selected: ", evt);
-				var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
-					// console.log("rownum: ", rownum);
-					// console.log("Row: ", evt.grid.row(rownum).data);
-					return evt.grid.row(rownum).data;
-				}));
-				// console.log("selection: ", sel);
-				this.selectionActionBar.set("selection", sel);
-				this.itemDetailPanel.set('selection', sel);
+				// if (evt.grid.allSelected){
+				// 	console.log("All Items Selected");
+				// 	this.getAllSelection(evt.grid.query);
+				// }else{
+					var sel = Object.keys(evt.selected).map(lang.hitch(this, function(rownum){
+						// console.log("rownum: ", rownum);
+						// console.log("Row: ", evt.grid.row(rownum).data);
+						var row = evt.grid.row(rownum);
+						// console.log("Row: ", rownum)
+						if (row.data){
+								return row.data;
+						}else{
+							// console.log("No Row: ", rownum)
+							return this.grid._unloadedData[rownum];
+							// var data = {};
+							// // console.log("_self.grid.primaryKey", this.grid.primaryKey);
+							// data[this.grid.primaryKey]=rownum;
+							// // console.log("    DATA: ", data)
+							// return data;
+						}
+					}), this);
+
+					console.log("GridContainer SEL: ", sel)
+					// console.log("selection: ", sel);
+					this.selectionActionBar.set("selection", sel);
+					this.itemDetailPanel.set('selection', sel);
+				// }
 			}));
 
 			this.grid.on("deselect", lang.hitch(this, function(evt){

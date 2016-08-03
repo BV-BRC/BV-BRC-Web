@@ -35,8 +35,8 @@ define([
 				this.workspaceObjectSelector.set("path", this.path);
 			}
 		},
-		onChangeOutputType: function(){
-			this.set('type',this.groupTypeBox.get('value'));
+        onChangeOutputType: function(){
+            this.set('type',this.groupTypeSelect.get('value'));
 			this.set("path", WorkspaceManager.getDefaultFolder(this.type));
 			this.onChangeTarget(this.type);
 		},
@@ -86,10 +86,10 @@ define([
 			this.workspaceObjectSelector.set('type', [this.type]);
             if(this.inputType in this.conversionTypes){
                 this.selectType = true;
-                domStyle.set(this.groupTypeBox.domNode, "display", "");
-                this.groupTypeBox.set("options",this.conversionTypes[this.inputType]);
-                this.groupTypeBox.set("value",this.conversionTypes[this.inputType][0]["value"]);
-                this.groupTypeBox.set("displayedValue",this.conversionTypes[this.inputType][0]["label"]);
+				domClass.remove(this.groupTypeBox, "dijitHidden");
+                this.groupTypeSelect.set("options",this.conversionTypes[this.inputType]);
+                this.groupTypeSelect.set("value",this.conversionTypes[this.inputType][0]["value"]);
+                this.groupTypeSelect.set("displayedValue",this.conversionTypes[this.inputType][0]["label"]);
             }
 		},
 

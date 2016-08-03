@@ -2,7 +2,7 @@ define("p3/widget/TranscriptomicsGeneFilterGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"dgrid/selector", "put-selector/put",
+	"./GridSelector", "put-selector/put",
 	"./Grid", "../store/ArrangeableMemoryStore"
 ], function(declare, lang, Deferred,
 			on, request, domStyle, aspect, Topic,

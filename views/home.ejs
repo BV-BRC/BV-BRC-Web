@@ -17,31 +17,12 @@
 		{name: "Variation Analysis", rel: "carousel_variation_analysis", background: "#34698e"}
 	] %>
 
-	<% var topNews = [
-		{
-			publishDate: new Date(),
-			title: "Vulputate Inceptos Parturient",
-			summary: "<p>Maecenas faucibus mollis interdum. Donec sed odio dui. Donec ullamcorper nulla non metus auctor fringilla. Sed posuere consectetur est at lobortis. Nulla vitae elit libero, a pharetra augue. Cras mattis consectetur purus sit amet fermentum.</p><p>Etiam porta sem malesuada magna mollis euismod. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.</p>"
-		},
-		{
-			publishDate: new Date(),
-			title: "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
-			summary: "<p>Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Cras justo odio, dapibus ac facilisis in, egestas eget quam.</p>"
-		},
-		{
-			publishDate: new Date(),
-			title: "Cras justo odio, dapibus ac facilisis in, egestas eget quam.",
-			summary: "<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Sed posuere consectetur est at lobortis.</p>"
-		}
-	] %>
-
-
 	<% var workShops = [
-		{
+		/*{
 			publishDate: new Date(),
 			title: "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
 			summary: "Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Cras justo odio, dapibus ac facilisis in, egestas eget quam."
-		}
+		}*/
 	] %>
 
 
@@ -49,7 +30,8 @@
 
 <div>
 
-	<div style="background-color:#f3f3f3;">
+	<div style="background-color:#f3f3f3;padding-top:10px;">
+		<% include Banner%>
 		<div class="layer" style="text-align: center;margin-bottom:0px;">
 			<div data-dojo-type="dijit/layout/StackContainer" style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;" id="p3carousel">
 
@@ -59,7 +41,7 @@
 							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #34698e;background:#fff;border-radius:4px;">
 
 								<div style="vertical-align:top;margin: 0px; width:100%;">
-									<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Explore</a> Data</div>
+									<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Browse</a> Data</div>
 									<div style="text-align:left;">
 										<ul>
 											<li>Genomes</li>
@@ -218,31 +200,21 @@
 				<tr>
 					<td style="vertical-align:top;width:60%;">
 						<div class="section-title">Recent News</div>
-						<% topNews.forEach(function(svc,index) { %>
-							<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- svc.publishDate.toLocaleDateString() %></span></div>
+						<% news.forEach(function(svc,index) { %>
+							<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- new Date(Date.parse(svc.pubDate)).toLocaleDateString() %></span></div>
 							<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
-								<!--<span style="float:left;width:75px;margin-top:8px;padding:4px;color:#fff;background:#000;margin-top:-35px;;"><%- svc.publishDate.toLocaleDateString() %></span>-->
-								<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><%- svc.title %> </div>
+								<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><a href="<%- svc.link %>"><%- svc.title %></a></div>
 								<div style="text-align:left;padding-left:20px;"><%- svc.summary %></div>
 							</div>
 						<% }) %>
+						<div style="text-align:right;"><a href="http://enews.patricbrc.org">Read More</a></div>
 					</td>
 					<td style="width:10px;"></td>
 					<td style="vertical-align:top;">
 						<div class="section-title">Top 10 Genera	</div>
 						<div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10" style="width:100%;height:315px;margin:4px;margin-bottom: 5px;"></div>
 						<div style="text-align:right;"><a class="navigationLink" href="/view/TaxonList/?&eq(taxon_rank,genus)">Explore All Genera</a></div>
-						<div class="section-title">Upcoming Workshops</div>
-						<% workShops.forEach(function(svc,index) { %>
-							<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- svc.publishDate.toLocaleDateString() %></span></div>
-							<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
-								<!--<span style="float:left;width:75px;margin-top:8px;padding:4px;color:#fff;background:#000;margin-top:-35px;;"><%- svc.publishDate.toLocaleDateString() %></span>-->
-								<div style="font-size:1.3em;text-align:left;padding-left: 20px;color:#000;"><%- svc.title %> </div>
-
-							</div>
-						<% }) %>
-						
-
+						<% include workshops %>
 					</td>
 		
 				</tr>

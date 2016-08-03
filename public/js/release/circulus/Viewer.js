@@ -29,6 +29,9 @@ define("circulus/Viewer", [
 			this.inherited(arguments);
 			this.surfaceNode = domConstruct.create("div", {style: {width: "100%",height:"100%"}}, this.domNode);
 			this.surface = gfx.createSurface(this.surfaceNode,500,500);
+
+            this.surface.rawNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
+            this.surface.rawNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
 			this.group = this.surface.createGroup();
 		},
 
