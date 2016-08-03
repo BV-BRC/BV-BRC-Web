@@ -22,13 +22,13 @@ define([
 			field: "antibiotic"
 		}, {
 			label: "Susceptible",
-			field: "S"
+			field: "Susceptible"
 		}, {
 			label: "Intermediate",
-			field: "I"
+			field: "Intermediate"
 		}, {
 			label: "Resistant",
-			field: "R"
+			field: "Resistant"
 		}],
 		processData: function(data){
 
