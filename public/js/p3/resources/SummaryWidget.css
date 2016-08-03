@@ -81,6 +81,11 @@ TH.dgrid-cell.field-feature_type {
     height: 175px;
 }
 
+.patric .rgSummaryWidget.SummaryWidget .chartNode,
+.patric .rgSummaryWidget.SummaryWidget .tableNode {
+    min-height: 250px;
+}
+
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
     min-height: 400px;
