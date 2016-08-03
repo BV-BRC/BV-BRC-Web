@@ -163,6 +163,9 @@ define([
 
 				this.host_chart = new Chart2D(cpHostNode, {
 					title: "Host Name",
+					titleGap: 30,
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -179,6 +182,8 @@ define([
 
 				this.disease_chart = new Chart2D(cpDiseaseNode, {
 					title: "Disease",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -194,6 +199,8 @@ define([
 				domConstruct.place(cpIsolationCountry, this.chartNode, "last");
 				this.isolation_country_chart = new Chart2D(cpIsolationCountry, {
 					title: "Isolation Country",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -209,6 +216,8 @@ define([
 				domConstruct.place(cpGenomeStatus, this.chartNode, "last");
 				this.genome_status_chart = new Chart2D(cpGenomeStatus, {
 					title: "Genome Status",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
