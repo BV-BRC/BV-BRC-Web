@@ -18,11 +18,16 @@
     display: block;
 }
 
+.SummaryWidget div.chartNode,
+.SummaryWidget div.tableNode {
+    height: 175px;
+}
+
 .SummaryWidget .actionButtons .fa {
     color: #333;
 }
 
-.SummaryWidget .actionButtions .fa:hover {
+.SummaryWidget .actionButtons .fa:hover {
     color: orange;
 }
 
@@ -40,14 +45,11 @@
     border: 1px solid #333;
     display: inline-block;
     background: #333;
-    padding:0px;
-    padding-top: 2px;
-    padding-bottom:2px;
+    padding: 2px 0 2px 0;
     margin-bottom: 4px;
-    font-size:.7em;
+    font-size: .7em;
     text-align: center;
 }
-
 
 .SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .actionButtonsRadio .ChartButton.fa {
@@ -56,83 +58,76 @@
 }
 
 .SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
-.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa  {
+.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa {
     color: #333;
     background: #efefef;
-    padding:2px;
+    padding: 2px;
     border-radius: 2px;
-    vertical-align:middle;
+    vertical-align: middle;
 }
-
-
 
 TH.dgrid-cell.field-feature_type {
-    border-left: 0px;
+    border-left: 0;
 }
 
-.dgrid-cell.field-PATRIC,
-.dgrid-cell.field-RefSeq {
+.patric .SummaryWidget .field-PATRIC,
+.patric .SummaryWidget .field-RefSeq {
     width: 20%;
     text-align: right;
 }
 
-.SummaryWidget div.chartNode,
-.SummaryWidget div.tableNode {
-    height: 175px;
-}
-
-.patric .rgSummaryWidget.SummaryWidget .chartNode,
-.patric .rgSummaryWidget.SummaryWidget .tableNode {
-    min-height: 250px;
-}
-
-.patric .gmSummaryWidget.SummaryWidget .chartNode,
-.patric .gmSummaryWidget.SummaryWidget .tableNode {
-    min-height: 400px;
-}
-
-.patric .pfSummaryWidget.SummaryWidget .chartNode,
-.patric .pfSummaryWidget.SummaryWidget .tableNode {
-    height: 275px;
-}
-
-.pie-chart-widget {
+.patric .SummaryWidget .pie-chart-widget {
     display: inline-block;
     width: 278px;
     height: 200px;
 }
 
-.SummaryWidget .field-reference_genome {
+/* reference/representative genome */
+.patric .rgSummaryWidget.SummaryWidget .chartNode,
+.patric .rgSummaryWidget.SummaryWidget .tableNode {
+    min-height: 250px;
+}
+
+.patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
     width: 40px;
 }
 
-.SummaryWidget .field-category {
-    width: 35%;
-}
-
-.SummaryWidget.apmSummaryWidget {
+/* genomes by antimicrobial resistance at taxon overview */
+.patric .apmSummaryWidget.SummaryWidget {
     padding-bottom: 11px;
 }
 
-.SummaryWidget .field-label {
-    width: 80%;
+/* genome metadata summary widget at taxon overview */
+.patric .gmSummaryWidget.SummaryWidget .chartNode,
+.patric .gmSummaryWidget.SummaryWidget .tableNode {
+    min-height: 400px;
 }
 
+/* protein feature summary widget at genome overview */
+.patric .pfSummaryWidget.SummaryWidget .chartNode,
+.patric .pfSummaryWidget.SummaryWidget .tableNode {
+    height: 275px;
+}
+
+/* function profile summary widget at feature-list overview */
 .patric .fpSummaryWidget.SummaryWidget .chartNode,
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
     min-height: 250px;
 }
 
+/* ID Mapping at feature overview */
 .patric .idmSummeryWidget.SummaryWidget {
     height: 120px;
 }
+
+/* special properties summary widget at feature overview */
 .patric .spgSummaryWidget.SummaryWidget {
     height: 250px;
 }
 
-/* feature comments */
-.SummaryWidget .field-source,
-.SummaryWidget .field-property,
-.SummaryWidget .field-evidence_code {
+/* feature comments summary widget at feature overview */
+.patric .fcSummaryWidget.SummaryWidget .field-source,
+.patric .fcSummaryWidget.SummaryWidget .field-property,
+.patric .fcSummaryWidget.SummaryWidget .field-evidence_code {
     width: 10%;
 }
