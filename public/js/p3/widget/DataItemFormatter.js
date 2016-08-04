@@ -471,6 +471,29 @@ define([
 			return div;
 		},
 
+        "msa_details": function(item, options){
+            options = options || {};
+            var columns =[{
+                name: "No. of Members",
+                text: "numFeatures"
+            }, {
+                name: "No. of Organisms",
+                text: "numOrganisms"
+            }, {
+                name: "Min AA Length",
+                text: "minLength"
+            }, {
+                name: "Max AA Length",
+                text: "maxLength"
+            }];
+			var div = domConstruct.create("div");
+			displayHeader(div, "MSA", "fa icon-alignment fa-2x", "/view/MSA/", options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
+
 		"sequence_data": function(item, options){
 			options = options || {};
 

@@ -129,7 +129,7 @@ define([
 		"loading": false,
 		data: null,
 		dataMap: {},
-		dataStats: {},
+		dataStats: {"_formatterType":"msa_details"},
 		tree: null,
 		phylogram: false,
 		maxSequences: 500,
@@ -190,6 +190,7 @@ define([
 		onSetData: function(attr, oldVal, data){
 			this.createDataMap();
 			this.render();
+            this.itemDetailPanel.set("selection",[this.dataStats]);
 		},
 
         onSelection: function(){
@@ -490,6 +491,7 @@ define([
 			});
 			this.addChild(this.selectionActionBar);
 			//this.addChild(this.itemDetailPanel);
+            this.itemDetailPanel.startup();
             this.setupActions();
 		},
 
