@@ -17,7 +17,7 @@ var defaults = {
 	"appLabel": "dev",
 	"cookieKey": "JSESSIONID",
 	"cookieDomain": ".patric.local",
-
+	"newsFeedRSS": "http://enews.patricbrc.org/feed",
 	"sessionTTL": 2628000000,
 
 	workspaceServiceURL: "",

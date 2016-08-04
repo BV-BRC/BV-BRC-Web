@@ -16,8 +16,10 @@ define([
 			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
 			domConstr.place(buttonContainer, this.containerNode, "last");
 
-			this.cancelButton = new Button({label: this.cancelLabel, onClick: lang.hitch(this, "_onCancel")});
-			domConstr.place(this.cancelButton.domNode, buttonContainer, "last");
+			if (this.cancelLabel){
+				this.cancelButton = new Button({label: this.cancelLabel, onClick: lang.hitch(this, "_onCancel")});
+				domConstr.place(this.cancelButton.domNode, buttonContainer, "last");
+			}
 			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this, "_onSubmit")});
 			domConstr.place(this.okButton.domNode, buttonContainer, "last");
 		},

@@ -100,9 +100,17 @@ iframe  {
     display: none;
 }
 
+.Authenticated .HideWithAuth {
+	display: none;
+}
+
 .Authenticated .ShowWithAuth,
 .patric .Authenticated .ShowWithAuth {
     display: inherit;
+}
+
+.Authenticated TD.ShowWithAuth {
+	display: table-cell;
 }
 
 .patric .Authenticated .ShowWithoutAuth {
@@ -499,6 +507,7 @@ div.overview {
     color: #444;
 }
 
+/*
 .claro .dijitTooltipContainer {
 
 }
@@ -511,6 +520,7 @@ div.overview {
     height: 20px;
 
 }
+*/
 
 #faceted_tracksel .faceted_tracksel_on_off.tab {
     top: 170px;
@@ -559,6 +569,7 @@ div.overview {
 }
 */
 
+/*
 div.tooltip {
     position: absolute;
     padding: 10px;
@@ -568,6 +579,7 @@ div.tooltip {
     border-radius: 4px;
     pointer-events: none;
 }
+*/
 
 .kegg-map-legend-color-box {
     float: left;
@@ -788,3 +800,35 @@ div.pubmed ul li {
 .dgrid ::-webkit-scrollbar:horizontal {
     display: none;
 }
+
+.WarningPanel {
+	margin:0px;margin:4px;background: #f9ff85;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;
+}
+
+.WarningBanner {
+	background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;
+}
+
+.patric .fa.icon-caret-down.noHoverIcon:hover{
+	color: #333;
+	cursor: default;
+}
+
+/* =Vertical Rhythm Classes */
+.close {
+  margin-bottom: 2px; }
+
+.close2x {
+  margin-bottom: .4em; }
+
+.far {
+  margin-bottom: .8em; }
+
+.far2x {
+  margin-bottom: 1.6em; }
+
+.far4x {
+  margin-bottom: 3.2em; }
+
+
+

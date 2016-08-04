@@ -43,7 +43,7 @@ define("p3/widget/PathwaySummaryGridContainer", [
 			if(!state){
 				return;
 			}
-			// console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
+			console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);

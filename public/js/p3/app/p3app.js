@@ -267,6 +267,10 @@ define([
 
 			if(this.user && this.user.id){
 				domAttr.set("YourWorkspaceLink", 'href', '/workspace/' + this.user.id)
+				var n = dom.byId("signedInAs");
+				if (n){
+					n.innerHTML = this.user.id.replace("@patricbrc.org","");
+				}
 			}
 			Topic.subscribe("/userWorkspaces", lang.hitch(this, "updateUserWorkspaceList"));
 
@@ -274,12 +278,12 @@ define([
 		},
 
 		updateUserWorkspaceList: function(data){
-			 console.log("updateUserWorkspaceList: ", data);
-			var wsNode = dom.byId("YourWorkspaces")
+			 // console.log("updateUserWorkspaceList: ", data);
+			var wsNode = dom.byId("YourWorkspaces");
 			domConstruct.empty("YourWorkspaces");
-			console.log("Your Workspaces Node: ", wsNode);
+			// console.log("Your Workspaces Node: ", wsNode);
 			data.forEach(function(ws){
-				console.log("Create Link for Workspace: ", ws.path);
+				// console.log("Create Link for Workspace: ", ws.path);
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
 				domConstruct.create("a", {

@@ -2,7 +2,7 @@ define("p3/widget/GeneExpressionGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/GeneExpressionMemoryStore", "dgrid/selector"
+	"./PageGrid", "./formatter", "../store/GeneExpressionMemoryStore", "./GridSelector"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			BorderContainer, ContentPane,

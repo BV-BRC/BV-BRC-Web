@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
-	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang","dgrid/selector"
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang","./GridSelector"
 
 ], function(declare, Grid, Tree, on, Selection,
 			Store, DijitRegistryExt, lang,selector){
@@ -16,6 +16,7 @@ define([
 			selector({}),
 			Tree({
 				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
+					// console.log("Should Expand? ", row, level, prevExpanded)
 					return (prevExpanded || (level < 1))
 				}
 			}),

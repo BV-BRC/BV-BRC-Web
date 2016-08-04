@@ -22,6 +22,38 @@
 
 -->
 
+
+	<% var services = [
+		{name: "Acinetobacter", href: "/view/Taxonomy/469"},
+		{name: "Bacillus", href: "/view/Taxonomy/1386"},
+		{name: "Bartonella", href: "/view/Taxonomy/773"},
+		{name: "Borellia", href: "/view/Taxonomy/138"},
+		{name: "Brucella", href: "/view/Taxonomy/234"},
+		{name: "Burkholderia", href: "/view/Taxonomy/32008"},
+		{name: "Campylobacter", href: "/view/Taxonomy/194"},
+		{name: "Chlamydia", href: "/view/Taxonomy/810"},
+		{name: "Clostridium", href: "/view/Taxonomy/1485"},
+		{name: "Coxiella", href: "/view/Taxonomy/776"},
+		{name: "Ehrlichia", href: "/view/Taxonomy/943"},
+		{name: "Escherichia", href: "/view/Taxonomy/561"},
+		{name: "Francisella", href: "/view/Taxonomy/262"},
+		{name: "Helicobacter", href: "/view/Taxonomy/209"},
+		{name: "Listeria", href: "/view/Taxonomy/1637"},
+		{name: "Mycobacterium", href: "/view/Taxonomy/1763"},
+		{name: "Rickettsia", href: "/view/Taxonomy/780"},
+		{name: "Salmonella", href: "/view/Taxonomy/590"},
+		{name: "Shigella", href: "/view/Taxonomy/620"},
+		{name: "Staphylococcus", href: "/view/Taxonomy/1279"},
+		{name: "Streptococcus", href: "/view/Taxonomy/1301"},
+		{name: "Vibrio", href: "/view/Taxonomy/662"},
+		{name: "Yersinia", href: "/view/Taxonomy/629"}
+	] 
+
+
+	var servicesMiddle= Math.round(services.length/2);
+
+	%>
+
 	<div class="P3Header">
 		<table style="width:100%;margin:0px;padding:0px;border-collapse:collapse;border-spacing:0px;"><tbody><tr>
 			<td style="text-align:left;width:220px;">
@@ -33,14 +65,35 @@
 			</td>
 			<td style="text-align:left;">
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Explore</span>
+					<span>Browse</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
 							<table><tbody>
 								<tr>
+									<td style='vertical-align: top;width:225px;'>
+										<div class="menuHeader">Bacterial Pathogens</div>
+										<table>
+											<% for (var i=0; i<servicesMiddle;i++){ %>
+												<tr>
+													<td><a class="navigationLink" href="<%- services[i].href %>"><%- services[i].name %></a></td>
+													<td>
+													<% if (services[servicesMiddle+i]) { %>
+														<a class="navigationLink" href="<%- services[servicesMiddle+i].href %>"><%- services[servicesMiddle+i].name %></a>
+													<% } %>
+													</td>
+												</tr>
+											<% } %>
+											<tr><td>&nbsp;</td></tr>
+											<tr>
+												<td><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></td>
+												<td><a class="navigationLink" href="/view/Taxonomy/2157">All Archaea</a></td>
+											</tr>
+										</table>
+									</td>
+									<td style="width:5px;"></td>
 									<td style='vertical-align: top;width:175px'>
-										<div class="menuHeader">by Data Type</div>
-											<div><i class="fa icon-caret-down fa-1x"></i>&nbsp;Genomes</div>
+										<div class="menuHeader">Data Types</div>
+											<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>
 											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>-->
 											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
 											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
@@ -51,68 +104,15 @@
 											<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>
 									</td>
 									<td style='width:5px;'></td>
-									<td style='vertical-align: top;width:225px;'>
-										<div class="menuHeader">by NIAID Bacterial Pathogen</div>
-										<table>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/1386">Bacillus</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/262">Francisella</a></td>
-											</tr>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/773">Bartonella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/209">Helicobacter</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/138">Borrelia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1637">Listeria</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/234">Brucella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1763">Mycobacterium</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/32008">Burkholderia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/780">Rickettsia</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/194">Camplyobacter</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/590">Salmonella</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/810">Chlamydia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/620">Shigella</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/1485">Clostridium</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1279">Staphylococcus</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/776">Coxiella</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/1301">Streptococcus</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/943">Ehrlichia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/662">Vibrio</a></td>
-											</tr>
-
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/561">Escherichia</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/629">Yersinia</a></td>
-											</tr>
-											<tr><td>&nbsp;</td></tr>
-											<tr>
-												<td><a class="navigationLink" href="/view/Taxonomy/2">All Bacteria</a></td>
-												<td><a class="navigationLink" href="/view/Taxonomy/2157">All Archaea</a></td>
-											</tr>
-										</table>
+									<td style='vertical-align:top;width:200px;'>
+										<div class="menuHeader">Specialty Data Collections</div>
+										<div><a class="" href="http://enews.patricbrc.org/patric-collaborations/">PATRIC Collaborations</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/patric-dbps/">PATRIC DBPs</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-clinical-proteomics/">NIAID Clinical Proteomics</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-genome-sequencing/">NIAID Genome Sequencing</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-structural-genomics/">NIAID Structural Genomics</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-systems-biology/">NIAID Systems Biology</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-functional-genomics/">NIAID Functional Genomics</a></div>
 									</td>	
 								</tr>
 							</tbody></table>
@@ -127,33 +127,29 @@
 							<table><tbody>
 								<tr>
 									<td style='vertical-align: top;width:175px'>
-										<div class="ShowWithAuth">
-										<div><i class="fa icon-caret-down fa-1x"></i>&nbsp;<a class="navigationLink" id="YourWorkspaceLink">Your Workspaces</a></div>
-										<div id="YourWorkspaces">
-
+										<div class="HideWithAuth">
+											Please <a class="loginLink">login</a> to view your workspaces.
 										</div>
+
+										<div class="ShowWithAuth">
+											<div><i class="fa icon-caret-down fa-1x noHoverIcon" style="color:#333;cursor:normal;"></i>&nbsp;<a class="navigationLink" id="YourWorkspaceLink">Your Workspaces</a></div>
+										
+										<div id="YourWorkspaces">
+										</div>
+
 										<!--<div><a class="navigationLink" href="/workspace/">Shared with You</a></div>
 										<div id="SharedWithYouWorkspaces">
 										</div>
 										</div>
+
 										<div><a class="navigationLink" href="/workspace/public">Public</a></div>
 										<div id="PublicWorkspaces">
 										</div>
+
 										<div><a class="navigationLink" href="/workspace/published">Published</a></div>
 										<div id="PublishedWorkspaces">
 										</div>-->
 
-									</td>
-									<td style="width:5px;"></td>
-									<td style='vertical-align:top;width:200px;'>
-										<div class="menuHeader">Specialty Workspaces</div>
-										<div><a class="" href="//enews.patricbrc.org/patric-collaborations/">PATRIC Collaborations</a></div>
-										<div><a class="" href="//enews.patricbrc.org/patric-dbps/">PATRIC DBPs</a></div>
-										<div><a class="" href="//enews.patricbrc.org/niaid-clinical-proteomics/">NIAID Clinical Proteomics</a></div>
-										<div><a class="" href="//enews.patricbrc.org/niaid-genome-sequencing/">NIAID Genome Sequencing</a></div>
-										<div><a class="" href="//enews.patricbrc.org/niaid-structural-genomics/">NIAID Structural Genomics</a></div>
-										<div><a class="" href="//enews.patricbrc.org/niaid-systems-biology/">NIAID Systems Biology</a></div>
-										<div><a class="" href="//enews.patricbrc.org/niaid-functional-genomics/">NIAID Functional Genomics</a></div>
 									</td>
 	
 								</tr>
@@ -209,6 +205,7 @@
 						<div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
 						<div><a class="" href="/content/Tutorials">Tutorials</a></div>
  						<div><a class="" href="/content/UserGuide">User Guides</a></div>
+ 						<hr>
 						<div><a class="" href="/content/ReportProblem">Report a Problem</a></div>
 						<div><a class="" href="/content/ContactUs">Contact Us</a></div>
 					</div>
@@ -216,8 +213,8 @@
 
 			</div>
 			</td>
-			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;">
-				<input class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
+			<td style="vertical-align:middle;padding:2px;padding-right:10px;margin:0px;"> 
+					<input style="width:100%" class="showOnLoad dijitHidden" data-dojo-type="p3/widget/GlobalSearch" style="font-size:1em;" />
 			</td>
 
 			<td  class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding:2px;width:125px;">
@@ -229,17 +226,23 @@
 				<div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
 					<span></span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div><a class="TopMenuLink" href="/content/news" title="News">PATRIC News</a>  </div>
-						<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> 
+						<div><a class="TopMenuLink" href="http://enews.patricbrc.org/" title="News">PATRIC News</a>  </div>
+						<!--<div><a class="TopMenuLink" href="/content/workshops" title="Upcoming Workshops"> Upcoming Workshops </a> </div> -->
 						<hr>
 						<div><a class="TopMenuLink" href="/content/about" title="About PATRIC">About PATRIC </a></div>
 						<div><a class="TopMenuLink" href="/content/CitePATRIC" title="Cite PATRIC">Cite PATRIC</a>	</div>
 						<div><a class="TopMenuLink" href="/content/ContactUs" title="Contact Us">Contact Us</a></div>
+					</div>
+				</div>
+			</td>
+			<td style="width:1%;" class="showOnLoad ShowWithAuth dijitHidden">
+				<div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x'" style="padding-top:2px">
+					<span></span>
+					<div data-dojo-type="p3/widget/TooltipDialog">
+						<div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span>
 						<hr>
 						<div><a class="ShowWithAuth TopMenuLink" href="<%- request.applicationOptions.accountURL %>">Account Settings</a> </div>
 						<div><a class="ShowWithAuth TopMenuLink" href="/logout">Logout</a> </div>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/register">Register</a> </div>
-						<div><a class="HideWithAuth loginLink TopMenuLink" href="/login"> Login </a></div>
 					</div>
 				</div>
 			</td>

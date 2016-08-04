@@ -62,6 +62,13 @@ define([], function(){
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/viewer/GenomeList",
 			params: {}
+		},
+
+		help: {
+			title: "PATRIC Help",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/Help",
+			dataParam: "helpId"
 		}
 	}
 });

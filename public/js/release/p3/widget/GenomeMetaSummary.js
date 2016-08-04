@@ -1,14 +1,14 @@
 define("p3/widget/GenomeMetaSummary", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/promise/all", "dojo/when", "dojo/dom-class", "dojo/dom-construct", "dojo/request",
-	"dojo/topic",
+	"dojo/topic", "dojo/query", "dojo/dom-style",
 	"dijit/_WidgetBase", "dijit/layout/ContentPane",
 	"dojox/charting/Chart2D", "dojox/charting/action2d/MoveSlice", "dojox/charting/plot2d/Pie",
 	"dojox/charting/action2d/Tooltip", "dojo/fx/easing",
 	"../util/PathJoin", "./SummaryWidget", "./PATRICTheme"
 ], function(declare, lang,
 			on, All, when, domClass, domConstruct, xhr,
-			Topic,
+			Topic, domQuery, domStyle,
 			WidgetBase, ContentPane,
 			Chart2D, MoveSlice, Pie,
 			ChartTooltip, easing,
@@ -158,11 +158,14 @@ define("p3/widget/GenomeMetaSummary", [
 			};
 
 			if(!this.host_chart){
-				var cpHostNode = domConstruct.create("div", {"class": "pie-chart-widget"});
+				var cpHostNode = domConstruct.create("div", {"class": "pie-chart-widget host_name"});
 				domConstruct.place(cpHostNode, this.chartNode, "last");
 
 				this.host_chart = new Chart2D(cpHostNode, {
 					title: "Host Name",
+					titleGap: 30,
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -174,11 +177,13 @@ define("p3/widget/GenomeMetaSummary", [
 				// new MoveSlice(this.host_chart, "default");
 				this.host_chart.connectToPlot("default", onClickEventHandler);
 
-				var cpDiseaseNode = domConstruct.create("div", {"class": "pie-chart-widget"});
+				var cpDiseaseNode = domConstruct.create("div", {"class": "pie-chart-widget disease"});
 				domConstruct.place(cpDiseaseNode, this.chartNode, "last");
 
 				this.disease_chart = new Chart2D(cpDiseaseNode, {
 					title: "Disease",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -190,10 +195,12 @@ define("p3/widget/GenomeMetaSummary", [
 				// new MoveSlice(this.disease_chart, "default");
 				this.disease_chart.connectToPlot("default", onClickEventHandler);
 
-				var cpIsolationCountry = domConstruct.create("div", {"class": "pie-chart-widget"});
+				var cpIsolationCountry = domConstruct.create("div", {"class": "pie-chart-widget isolation_country"});
 				domConstruct.place(cpIsolationCountry, this.chartNode, "last");
 				this.isolation_country_chart = new Chart2D(cpIsolationCountry, {
 					title: "Isolation Country",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -205,10 +212,12 @@ define("p3/widget/GenomeMetaSummary", [
 				// new MoveSlice(this.isolation_country_chart, "default");
 				this.isolation_country_chart.connectToPlot("default", onClickEventHandler);
 
-				var cpGenomeStatus = domConstruct.create("div", {"class": "pie-chart-widget"});
+				var cpGenomeStatus = domConstruct.create("div", {"class": "pie-chart-widget genome_status"});
 				domConstruct.place(cpGenomeStatus, this.chartNode, "last");
 				this.genome_status_chart = new Chart2D(cpGenomeStatus, {
 					title: "Genome Status",
+					titleFontColor: "#424242",
+					titleFont: "normal normal bold 12pt Tahoma",
 					titlePos: "top"
 				})
 					.setTheme(Theme)
@@ -267,8 +276,17 @@ define("p3/widget/GenomeMetaSummary", [
 							break;
 					}
 				}));
-
 			}
+
+			// check data exists and hide it
+			Object.keys(this.data).forEach(lang.hitch(this, function(key){
+				var target = domQuery(".pie-chart-widget." + key)[0];
+				if(this.data[key].length === 0){
+					domStyle.set(target, "display", "none");
+				}else{
+					domStyle.set(target, "display", "inline-block");
+				}
+			}))
 		},
 
 		render_table: function(){

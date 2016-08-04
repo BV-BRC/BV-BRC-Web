@@ -2,15 +2,24 @@ define([
 	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin",
-	"dgrid/extensions/ColumnReorder"
+	"dgrid/extensions/ColumnReorder","dojo/on","dojo/has","dojo/has!touch?./util/touch","./Confirmation"
 ],
 function(declare, Grid, Store, DijitRegistry, Pagination,
 		 Keyboard, Selection, formatter, ColumnResizer,
 		 ColumnHider, DnD, DnDSource,
 		 Deferred, aspect, lang, PathJoin,
-		 ColumnReorder
+		 ColumnReorder,on,has,touchUtil,Confirmation
 
 ){
+
+	var ctrlEquiv = has("mac") ? "metaKey" : "ctrlKey",
+        hasUserSelect = has("css-user-select"),
+        hasPointer = has("pointer"),
+        hasMSPointer = hasPointer && hasPointer.slice(0, 2) === "MS",
+        downType = hasPointer ? hasPointer + (hasMSPointer ? "Down" : "down") : "mousedown",
+        upType = hasPointer ? hasPointer + (hasMSPointer ? "Up" : "up") : "mouseup";
+
+
 	return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer,DijitRegistry, Selection], {
 		constructor: function(){
 			this.dndParams.creator = lang.hitch(this, function(item, hint){
@@ -33,9 +42,11 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 		bufferRows: 100,
 		maxRowsPerPage: 200,
 		pagingDelay: 250,
+		maxSelectAll: 10000,
 //		pagingMethod: "throttleDelayed",
 		farOffRemoval: 2000,
-		pageSizeOptions: [100,200,500],
+		// pageSizeOptions: [100,200,500],
+		selectAllFields: [],
 		keepScrollPosition: true,
 		rowHeight: 24,
 		loadingMessage: "Loading...",
@@ -103,6 +114,149 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 			});
 			//console.log("store: ", store);
 			return store;
-		}
+		},
+
+		_selectAll: function(){
+			var query = this.query;
+
+			console.log("_sort: ", this._sortOptions, this);
+			var fields=[this.primaryKey]
+			var query = query + "&limit(" + this.maxSelectAll + ")";
+			var sort = this.get("sort");
+			console.log(" get sort: ", sort, "QueryOPtions.sort: ", this.queryOptions.sort);
+			if ((!sort || (sort&&sort.length<1)) && this.queryOptions && this.queryOptions.sort){
+				sort = this.queryOptions.sort;
+			}
+
+			sort = sort.map(function(s){
+				return (s.descending?"-":"+" ) + s.attribute 
+			})
+			query = query + "&sort(" + sort.join(",") + ")";
+
+			query = query + "&select(" + fields.concat(this.selectAllFields||[]).join(",") + ")";
+
+			var _self=this;
+			if (this.totalRows > this.maxSelectAll){
+				new Confirmation({content: "This table exceeds the maximum selectable size of " + this.maxSelectAll + " rows.  Only the first " + this.maxSelectAll + " will be selected",cancelLabel:false}).show()
+			}
+			return this.store.query(query).then(function(results){
+				console.log("_selectAll results: ", results)
+				_self._unloadedData={};
+
+				return results.map(function(obj) { 
+					_self._unloadedData[obj[_self.primaryKey]]=obj;
+					return obj[_self.primaryKey]; 
+				});
+			})
+		},
+
+		fullSelectAll: true,
+
+		selectAll: function(){
+			// if (this.totalRows>this.maxSelectAll){
+			// 	console.log("Table Too Large for Select All");
+			// 	return;
+			// }
+			console.log("FullSelectAll? ", this.fullSelectAll);
+			if (this.fullSelectAll){
+				var _self=this;
+				if (this._selectAll){
+					this._selectAll().then(function(ids){
+						console.log("ids: ", ids)
+						_self._all=true;
+						_self.selection={};
+
+
+						console.log("Select " + ids.length + " Items");
+						ids.forEach(function(id){
+
+							_self._select(id,null,true);
+						});
+						console.log("Call _fireSelectionEvents");
+						_self._fireSelectionEvents();
+					})
+				}
+			}else{
+		        this.allSelected = true;
+				this.selection = {}; // we do this to clear out pages from previous sorts
+				for(var i in this._rowIdToObject){
+					var row = this.row(this._rowIdToObject[i]);
+					this._select(row.id, null, true);
+				 }
+				this._fireSelectionEvents();
+			}
+		 },
+
+        _initSelectionEvents: function(){
+                // summary:
+                //              Performs first-time hookup of event handlers containing logic
+                //              required for selection to operate.
+
+                var grid = this,
+                        contentNode = this.contentNode,
+                        selector = this.selectionDelegate;
+
+                this._selectionEventQueues = {
+                        deselect: [],
+                        select: []
+                };
+
+                if(has("touch") && !has("pointer") && this.selectionTouchEvents){
+                        // Listen for taps, and also for mouse/keyboard, making sure not
+                        // to trigger both for the same interaction
+                        on(contentNode, touchUtil.selector(selector, this.selectionTouchEvents), function(evt){
+                                grid._handleSelect(evt, this);
+                                grid._ignoreMouseSelect = this;
+                        });
+                        on(contentNode, on.selector(selector, this.selectionEvents), function(event){
+                                if(grid._ignoreMouseSelect !== this){
+                                        grid._handleSelect(event, this);
+                                }else if(event.type === upType){
+                                        grid._ignoreMouseSelect = null;
+                                }
+                        });
+                }else{
+                        // Listen for mouse/keyboard actions that should cause selections
+                        on(contentNode, on.selector(selector, this.selectionEvents), function(event){
+                                grid._handleSelect(event, this);
+                        });
+                }
+
+                // Also hook up spacebar (for ctrl+space)
+                if(this.addKeyHandler){
+                        this.addKeyHandler(32, function(event){
+                                grid._handleSelect(event, event.target);
+                        });
+                }
+
+                // If allowSelectAll is true, bind ctrl/cmd+A to (de)select all rows,
+                // unless the event was received from an editor component.
+                // (Handler further checks against _allowSelectAll, which may be updated
+                // if selectionMode is changed post-init.)
+                if(this.allowSelectAll){
+                        this.on("keydown", function(event) {
+                                if(event[ctrlEquiv] && event.keyCode == 65 &&
+                                                !/\bdgrid-input\b/.test(event.target.className)){
+                                        event.preventDefault();
+                                    	if (grid.selection && Object.keys(grid.selection).length>0){
+                                    		console.log("ClearSelection()")
+                                    		grid.clearSelection();
+                                    	}else{
+                                    		console.log("selectAll()");
+                                    		grid.selectAll();
+                                    	}
+                                }
+                        });
+                }
+
+                // Update aspects if there is a store change
+                if(this._setStore){
+                        aspect.after(this, "_setStore", function(){
+                                grid._updateDeselectionAspect();
+                        });
+                }
+                this._updateDeselectionAspect();
+        }
+
 	});
 });

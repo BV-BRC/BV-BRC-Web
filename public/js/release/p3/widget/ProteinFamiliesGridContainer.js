@@ -38,6 +38,7 @@ define("p3/widget/ProteinFamiliesGridContainer", [
 		facetFields: [],
 		enableFilterPanel: false,
 		maxGenomeCount: 500,
+		showAutoFilterMessage: false,
 		constructor: function(){
 			var self = this;
 			Topic.subscribe("ProteinFamilies", lang.hitch(self, function(){
