@@ -9897,10 +9897,14 @@ font-size: 12px;
 .SummaryWidget.tableView .tableNode {
     display: block;
 }
+.SummaryWidget div.chartNode,
+.SummaryWidget div.tableNode {
+    height: 175px;
+}
 .SummaryWidget .actionButtons .fa {
     color: #333;
 }
-.SummaryWidget .actionButtions .fa:hover {
+.SummaryWidget .actionButtons .fa:hover {
     color: orange;
 }
 .SummaryWidget.tableView .actionButtons .TableButton.fa,
@@ -9915,11 +9919,9 @@ font-size: 12px;
     border: 1px solid #333;
     display: inline-block;
     background: #333;
-    padding:0px;
-    padding-top: 2px;
-    padding-bottom:2px;
+    padding: 2px 0 2px 0;
     margin-bottom: 4px;
-    font-size:.7em;
+    font-size: .7em;
     text-align: center;
 }
 .SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
@@ -9928,24 +9930,35 @@ font-size: 12px;
     background: #333;
 }
 .SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
-.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa  {
+.SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa {
     color: #333;
     background: #efefef;
-    padding:2px;
+    padding: 2px;
     border-radius: 2px;
-    vertical-align:middle;
+    vertical-align: middle;
 }
 TH.dgrid-cell.field-feature_type {
-    border-left: 0px;
+    border-left: 0;
 }
-.dgrid-cell.field-PATRIC,
-.dgrid-cell.field-RefSeq {
+.patric .SummaryWidget .field-PATRIC,
+.patric .SummaryWidget .field-RefSeq {
     width: 20%;
     text-align: right;
 }
-.SummaryWidget div.chartNode,
-.SummaryWidget div.tableNode {
-    height: 175px;
+.patric .SummaryWidget .pie-chart-widget {
+    display: inline-block;
+    width: 278px;
+    height: 200px;
+}
+.patric .rgSummaryWidget.SummaryWidget .chartNode,
+.patric .rgSummaryWidget.SummaryWidget .tableNode {
+    min-height: 250px;
+}
+.patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
+    width: 40px;
+}
+.patric .apmSummaryWidget.SummaryWidget {
+    padding-bottom: 11px;
 }
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
@@ -9954,23 +9967,6 @@ TH.dgrid-cell.field-feature_type {
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
     height: 275px;
-}
-.pie-chart-widget {
-    display: inline-block;
-    width: 278px;
-    height: 200px;
-}
-.SummaryWidget .field-reference_genome {
-    width: 40px;
-}
-.SummaryWidget .field-category {
-    width: 35%;
-}
-.SummaryWidget.apmSummaryWidget {
-    padding-bottom: 11px;
-}
-.SummaryWidget .field-label {
-    width: 80%;
 }
 .patric .fpSummaryWidget.SummaryWidget .chartNode,
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
@@ -9982,9 +9978,9 @@ TH.dgrid-cell.field-feature_type {
 .patric .spgSummaryWidget.SummaryWidget {
     height: 250px;
 }
-.SummaryWidget .field-source,
-.SummaryWidget .field-property,
-.SummaryWidget .field-evidence_code {
+.patric .fcSummaryWidget.SummaryWidget .field-source,
+.patric .fcSummaryWidget.SummaryWidget .field-property,
+.patric .fcSummaryWidget.SummaryWidget .field-evidence_code {
     width: 10%;
 }
 .patric .dgrid-header .dgrid-cell {
@@ -10266,6 +10262,15 @@ TH.dgrid-cell.field-feature_type {
 .chart-wrapper nav li.active {
     background-color: #346a8f;
     color: #fff;
+}
+.patric div.tooltip {
+    position: absolute;
+    padding: 10px;
+    font: 15px sans-serif;
+    background: lightsteelblue;
+    border: 0;
+    border-radius: 4px;
+    pointer-events: none;
 }
 .homeBottomSection {
 	background: #fff;

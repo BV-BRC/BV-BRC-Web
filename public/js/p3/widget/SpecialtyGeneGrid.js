@@ -29,7 +29,7 @@ define([
 			source_id: {label: "Source ID", field: "source_id", hidden: false},
 			gene: {label: "Gene", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
-			pubmed: {label: "Pubmed", field: "pubmed", hidden: false},
+			pubmed: {label: "Pubmed", field: "pmid", hidden: false},
 			identity: {label: "Identity", field: "identity", hidden: false},
 			evalue: {label: "E-value", field: "e_value", hidden: false}
 		},
