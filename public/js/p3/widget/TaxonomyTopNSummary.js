@@ -1,20 +1,33 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+	"dojo/dom-class","dgrid/Grid","../store/TaxonomyJsonRest",
+	"dojo/request", "dojo/_base/lang","dgrid/extensions/DijitRegistry",
+	"dojo/when","dojo/_base/lang"
 ], function(declare, WidgetBase, on,
-			domClass, SummaryWidget,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, easing){
-	var LOG10 = Math.log(10);
+			domClass, Grid,Store,
+			xhr, lang, dgridRegistry,
+			when,lang
+){
 
-	return declare([SummaryWidget], {
+	var store = new Store({});
+
+	return declare([Grid,dgridRegistry], {
 		dataModel: "taxonomy",
-		query: "&eq(taxon_rank,genus)",
-		count: 5,
-		view: "table",
-		baseQuery: "&sort(-genomes)",
+		store: store,
+		query: "&eq(taxon_rank,genus)&sort(-genomes)",
+		count: 10,
+		postCreate: function(){
+			this.inherited(arguments);
+			domClass.add(this.domNode,"dgrid-autoheight");
+		},
+		startup: function(){
+			this.inherited(arguments);
+			when(this.store.query(this.query + "&limit(" + this.count + ")"), lang.hitch(this,function(results){
+				console.log("Results: ", results)
+				this.renderArray(results);
+			}))
+
+		},
 		columns: [{
 			label: "Name",
 			field: "taxon_name",
@@ -24,94 +37,6 @@ define([
 		}, {
 			label: "Genomes",
 			field: "genomes"
-		}],
-
-                onSetQuery: function(attr, oldVal, query){
-                        // console.log("SummaryWidget Query: ", this.query + this.baseQuery);
-                        return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
-                                handleAs: "json",
-                                headers: this.headers,
-                                data: this.query + this.baseQuery + "&limit(" + this.count + ")"
-                        }).then(lang.hitch(this, "processData"));
-                },
-
-		processData: function(data){
-			console.log("Process data: ", data);
-			if(!data){
-				console.log("INVALID SUMMARY DATA", data);
-				return;
-			}
-
-			this.set('data', data.response.docs);
-		},
-
-		render_chart: function(){
-
-			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode)
-					.setTheme(Theme)
-					.addPlot("default", {
-						type: "ClusteredColumns",
-						markers: true,
-						gap: 3,
-						animate: {duration: 1000, easing: easing.linear}
-					})
-					.addAxis("x", {
-						majorLabels: false,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false,
-						labels: this._chartLabels
-					})
-					.addAxis("y", {
-						title: "Feature Count",
-						vertical: true,
-						majorLabels: true,
-						minorTicks: true,
-						minorLabels: true,
-						microTicks: true,
-						natural: true,
-						includeZero: true,
-						labels: [
-							{value: 0, text: "1"},
-							{value: 1, text: "10"},
-							{value: 2, text: "100"},
-							{value: 3, text: "1000"},
-							{value: 4, text: "10^4"},
-							{value: 5, text: "10^5"},
-							{value: 6, text: "10^6"},
-							{value: 7, text: "10^7"},
-							{value: 8, text: "10^8"},
-							{value: 9, text: "10^9"}
-						]
-					});
-
-/*				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						var d = o.run.data[o.index];
-						return "[" + d.annotation + "] " + d.text + "s (" + d.count + ")"
-					}
-				});
-*/
-
-				this.chart.addSeries("TaxonomyGenomeCount", this.data);
-				this.chart.render();
-			}else{
-
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.updateSeries(key, this.data[key]);
-				}));
-				this.chart.render();
-
-			}
-		},
-
-		render_table: function(){
-			this.inherited(arguments);
-			console.log("RenderArray: ", this.get('data'));
-			this.grid.refresh();
-			this.grid.renderArray(this.get("data")||[]);
-		}
-
+		}]
 	})
 });
