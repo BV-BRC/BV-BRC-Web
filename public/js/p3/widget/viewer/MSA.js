@@ -14,7 +14,7 @@ define([
 			ActionBar, ContainerActionBar, PhyloTree,
 			d3, d3Tree, PathJoin, Button,
 			MenuItem, TooltipDialog, popup,
-            SelectionToGroup, Dialog, ItemDetailPanel, Query, saveAs){
+            SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs){
 
         var schemes = [{
             name: "Zappo", id: "zappo"
@@ -129,6 +129,7 @@ define([
 		"loading": false,
 		data: null,
 		dataMap: {},
+		dataStats: {"_formatterType":"msa_details"},
 		tree: null,
 		phylogram: false,
 		maxSequences: 500,
@@ -189,6 +190,7 @@ define([
 		onSetData: function(attr, oldVal, data){
 			this.createDataMap();
 			this.render();
+            this.itemDetailPanel.set("selection",[this.dataStats]);
 		},
 
         onSelection: function(){
@@ -203,7 +205,12 @@ define([
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
             this.alt_labels={};
-            this.dataMap["idType"]=null;
+            this.dataStats["idType"]=null;
+            this.dataStats["numFeatures"]=0;
+            this.dataStats["numOrganisms"]=0;
+            this.dataStats["minLength"]=1000000;
+            this.dataStats["maxLength"]=0;
+            this.dataStats["genomeIDs"]={};
 			this.data.alignment.split("\n").forEach(function(line){
 				if(line.slice(0, 1) == ">"){
 					var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
@@ -213,21 +220,26 @@ define([
 					if(!(headerInfo[1] in this.dataMap)){
 						geneID = headerInfo[1];
 						clustal.push(geneID + "\t");
+                        this.dataStats["numFeatures"]+=1;
                         if (geneID.startsWith("fig|")){
                             record["patric_id"]=geneID;
-                            if (this.dataMap["idType"] == null){
-                                this.dataMap["idType"]="patric_id";
+                            if (this.dataStats["idType"] == null){
+                                this.dataStats["idType"]="patric_id";
                             }
 
                         }
                         else {
                             record["feature_id"]=geneID;
-                            if (this.dataMap["idType"] == null){
-                                this.dataMap["idType"]="feature_id";
+                            if (this.dataStats["idType"] == null){
+                                this.dataStats["idType"]="feature_id";
                             }
                         }
                         record["genome_name"]=this.data.map[headerInfo[2]];
                         record["genome_id"]=headerInfo[2];
+                        if (!(headerInfo[2] in this.dataStats["genomeIDs"])){
+                            this.dataStats["genomeIDs"][headerInfo[2]]=1;
+                            this.dataStats["numOrganisms"] += 1;
+                        }
 						this.dataMap[geneID] = record;
                         this.alt_labels[geneID]=this.data.map[geneID]["genome_name"];
 					}
@@ -240,7 +252,16 @@ define([
 					geneID = null;
 				}
 			}, this);
-			this.dataMap.clustal = clustal.join("\n");
+            Object.keys(this.data.map).forEach(lang.hitch(this, function(geneID){
+                if (this.data.map[geneID].aa_length > this.dataStats["maxLength"]){
+                    this.dataStats["maxLength"]=this.data.map[geneID].aa_length;
+                }
+                if (this.data.map[geneID].aa_length < this.dataStats["minLength"]){
+                    this.dataStats["minLength"]=this.data.map[geneID].aa_length;
+                }
+            }));
+			this.dataStats.clustal = clustal.join("\n");
+                    
 		},
 
 		createViewerData: function(){
@@ -273,7 +294,7 @@ define([
 			//domConstruct.place(combineDiv,msaDiv,"last");
 			//this.contentPane.set('content', "<pre>" + JSON.stringify(this.data,null,3) + "</pre>");
 			var msa_models = {
-				seqs: msa.io.clustal.parse(this.dataMap.clustal)
+				seqs: msa.io.clustal.parse(this.dataStats.clustal)
 			};
 
 			var opts = {};
@@ -378,10 +399,10 @@ define([
                     msa.utils.export.saveAsImg(m,"patric_msa.png");
                 }
                 else if (rel == "msa-txt"){
-                    saveAs(new Blob([this.dataMap.clustal]), "msa_patric.txt");
+                    saveAs(new Blob([this.dataStats.clustal]), "msa_patric.txt");
                 }
                 else if (rel == "tree-svg"){
-                    saveAs(new Blob([Query("svg")[0].outerHTML]), "msa_tree.svg");
+                    saveAs(new Blob([query("svg")[0].outerHTML]), "msa_tree.svg");
                 }
                 else if (rel == "tree-newick"){
                     saveAs(new Blob([this.data.tree]), "msa_tree.nwk");
@@ -458,39 +479,72 @@ define([
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
-				style: "width:48px;text-align:center;",
+				style: "width:56px;text-align:center;",
 				splitter: false,
 				currentContainerWidget: this
 			});
+			this.itemDetailPanel = new ItemDetailPanel({
+				region: "right",
+				style: "width:300px",
+				splitter: true,
+				layoutPriority: 1
+			});
 			this.addChild(this.selectionActionBar);
+			//this.addChild(this.itemDetailPanel);
+            this.itemDetailPanel.startup();
             this.setupActions();
 		},
 
 
 		selectionActions: [
-			[
-				"InfoButton",
-				"fa icon-info-circle fa-2x",
-				{
-					label: "Info",
-					persistent: true,
-					validTypes: ["*"],
-                    validContainerTypes:["*"],
-					tooltip: "MSA Information",
-                    tooltipDialog: infoMenu,
-                    ignoreDataType: true
-				},
-				function(selection){
-					// console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
-					// console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
-					popup.open({
-						popup: this.selectionActionBar._actions.InfoButton.options.tooltipDialog,
-						around: this.selectionActionBar._actions.InfoButton.button,
-						orient: ["below"]
-					});
-				},
-				true
-			],
+            [
+                "ToggleItemDetail",
+                "fa icon-chevron-circle-left fa-2x",
+                {
+                        label: "SHOW",
+                        persistent: true,
+                        validTypes: ["*"],
+                        tooltip: "Toggle Details Pane"
+                },
+                function(selection,container,button){
+                        // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+                        var children = this.getChildren();
+                        // console.log("Children: ", children);
+                        if(children.some(function(child){
+                                        return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
+                                }, this)){
+                                // console.log("Remove Item Detail Panel");
+                                this.removeChild(this.itemDetailPanel);
+                                console.log("Button Node: ", button)
+
+                                query(".ActionButtonText",button).forEach(function(node){
+                                        node.innerHTML="SHOW";
+                                })
+
+                                query(".ActionButton",button).forEach(function(node){
+                                        console.log("ActionButtonNode: ",node)
+                                        domClass.remove(node, "icon-chevron-circle-right");
+                                        domClass.add(node, "icon-chevron-circle-left");
+                                })
+                        }
+                        else{
+                                // console.log("Re-add child: ", this.itemDetailPanel);
+                                this.addChild(this.itemDetailPanel);
+
+                                query(".ActionButtonText",button).forEach(function(node){
+                                        node.innerHTML="HIDE";
+                                })
+
+                                query(".ActionButton",button).forEach(function(node){
+                                        console.log("ActionButtonNode: ",node)
+                                        domClass.remove(node, "icon-chevron-circle-left");
+                                        domClass.add(node, "icon-chevron-circle-right");
+                                })
+                        }
+                },
+                true
+            ],
 			[
 				"ColorSelection",
 				"fa icon-paint-brush fa-2x",
@@ -565,7 +619,7 @@ define([
 						selection: selection,
 						type: type,
                         inputType: "feature_data",
-                        idType: this.dataMap.idType, 
+                        idType: this.dataStats.idType, 
 						path: null //set by type
 					});
 					on(dlg.domNode, "dialogAction", function(evt){
@@ -663,6 +717,8 @@ define([
 			this.watch("loading", lang.hitch(this, "onSetLoading"));
 			this.watch("data", lang.hitch(this, "onSetData"));
 			this.watch("selection", lang.hitch(this, "onSelection"));
+
+
 
 			this.inherited(arguments);
 		}
