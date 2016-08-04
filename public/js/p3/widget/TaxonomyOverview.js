@@ -43,6 +43,10 @@ define([
 			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
 
 			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
+			// check whether we have extra filter
+			if(this.state.taxonomy && this.state.genome_ids && this.state.taxonomy.genomes !== this.state.genome_ids.length){
+				taxonQuery += "&" + this.state.search;
+			}
 			sumWidgets.forEach(function(w){
 				if(this[w]){
 					this[w].set('query', taxonQuery);
