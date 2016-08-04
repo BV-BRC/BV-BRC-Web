@@ -291,11 +291,18 @@ define("p3/widget/GridContainer", [
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
-				function(selection){
-					// console.log("this.currentContainerType: ", this.containerType);
-					// console.log("GridContainer selection: ", selection);
+				function(selection,container){
+					console.log("this.currentContainerType: ", this.containerType);
+					console.log("GridContainer selection: ", selection);
+					console.log("   ARGS: ", arguments);
+
+
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					if (container && container.grid){
+						this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("grid", container.grid);
+					}
+
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
 
 					setTimeout(lang.hitch(this, function(){
@@ -891,7 +898,7 @@ define("p3/widget/GridContainer", [
 					multiple: true,
 					validTypes: ["*"],
 					requireAuth: true,
-					max: 5000,
+					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
@@ -942,7 +949,6 @@ define("p3/widget/GridContainer", [
 					multiple: false,
 					validTypes: ["*"],
 					tooltip: "Switch to Taxonomy View. Press and Hold for more options.",
-					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["taxonomy_data","taxon_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						console.log("PressAndHold");

@@ -1,18 +1,19 @@
 define("p3/widget/DownloadTooltipDialog", [
 	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse",
+	"dojo/_base/lang", "dojo/mouse","rql/js-array",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class","FileSaver"
+	"./AdvancedDownload", "dojo/dom-class","FileSaver","dojo/when"
 ], function(declare, on, domConstruct,
-			lang, Mouse,
+			lang, Mouse,rql,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
-			AdvancedDownload, domClass, saveAs){
+			AdvancedDownload, domClass, saveAs, when){
 
 	return declare([TooltipDialog], {
 		containerType: "",
 		selection: null,
+		grid: null,
 
 		_setSelectionAttr: function(val){
 			// console.log("DownloadTooltipDialog set selection: ", val);
@@ -38,14 +39,20 @@ define("p3/widget/DownloadTooltipDialog", [
 
 		downloadSelection: function(type,selection){
 		
-			// if (this["_to" + type]){
-			// 	var data = this["_to" + type.toLowerCase()](selection);
-			// 	saveAs(new Blob([data]), this.containerType + "_selection." + type);
-			// }else{
-				var conf = this.downloadableConfig[this.containerType];
-				var sel = selection.map(function(sel){
-					return sel[conf.field || conf.pk]
-				});
+			var conf = this.downloadableConfig[this.containerType];
+			var sel = selection.map(function(sel){
+				return sel[conf.field || conf.pk]
+			});
+
+			console.log("DOWNLOAD TYPE: ", type)
+			if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
+				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
+				when(this.grid.store.query({}), lang.hitch(this,function(results){
+					results = rql.query(query,{},results);
+					var data = this["_to" + type.toLowerCase()](results);
+					saveAs(new Blob([data]), this.containerType + "_selection." + type);
+				}));
+			}else{
 
 				var accept;
 				switch(type){
@@ -80,7 +87,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			// }
+			 }
 		},
 
 		_tocsv: function(selection){
@@ -235,6 +242,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				pk: "pathway_id",
 				dataType: "pathway",
 				"label": "Pathways",
+				"generateDownloadFromStore": true,
 				tableData: true
 			},
 			"gene_expression_data": {

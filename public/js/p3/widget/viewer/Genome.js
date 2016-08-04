@@ -87,7 +87,7 @@ define([
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
 			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
 			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
 			return out.join("&nbsp;&raquo;&nbsp;") + "&nbsp;&raquo;&nbsp;" + genome.genome_name;
 		},

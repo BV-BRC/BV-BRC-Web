@@ -39105,8 +39105,10 @@ define([
 			var buttonContainer = domConstr.create("div", {style: {"text-align": "right"}});
 			domConstr.place(buttonContainer, this.containerNode, "last");
 
-			this.cancelButton = new Button({label: this.cancelLabel, onClick: lang.hitch(this, "_onCancel")});
-			domConstr.place(this.cancelButton.domNode, buttonContainer, "last");
+			if (this.cancelLabel){
+				this.cancelButton = new Button({label: this.cancelLabel, onClick: lang.hitch(this, "_onCancel")});
+				domConstr.place(this.cancelButton.domNode, buttonContainer, "last");
+			}
 			this.okButton = new Button({label: this.okLabel, type: "submit", onClick: lang.hitch(this, "_onSubmit")});
 			domConstr.place(this.okButton.domNode, buttonContainer, "last");
 		},
@@ -56481,13 +56483,13 @@ define([
 	"dojo/_base/declare", "dgrid/Grid", "dojo/store/JsonRest", "dgrid/extensions/DijitRegistry", "dgrid/extensions/Pagination",
 	"dgrid/Keyboard", "dgrid/Selection", "./formatter", "dgrid/extensions/ColumnResizer", "dgrid/extensions/ColumnHider",
 	"dgrid/extensions/DnD", "dojo/dnd/Source", "dojo/_base/Deferred", "dojo/aspect", "dojo/_base/lang", "../util/PathJoin",
-	"dgrid/extensions/ColumnReorder","dojo/on","dojo/has","dojo/has!touch?./util/touch"
+	"dgrid/extensions/ColumnReorder","dojo/on","dojo/has","dojo/has!touch?./util/touch","./Confirmation"
 ],
 function(declare, Grid, Store, DijitRegistry, Pagination,
 		 Keyboard, Selection, formatter, ColumnResizer,
 		 ColumnHider, DnD, DnDSource,
 		 Deferred, aspect, lang, PathJoin,
-		 ColumnReorder,on,has,touchUtil 
+		 ColumnReorder,on,has,touchUtil,Confirmation
 
 ){
 
@@ -56521,7 +56523,7 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 		bufferRows: 100,
 		maxRowsPerPage: 200,
 		pagingDelay: 250,
-		maxSelectAll: 5000,
+		maxSelectAll: 10000,
 //		pagingMethod: "throttleDelayed",
 		farOffRemoval: 2000,
 		// pageSizeOptions: [100,200,500],
@@ -56615,6 +56617,9 @@ function(declare, Grid, Store, DijitRegistry, Pagination,
 			query = query + "&select(" + fields.concat(this.selectAllFields||[]).join(",") + ")";
 
 			var _self=this;
+			if (this.totalRows > this.maxSelectAll){
+				new Confirmation({content: "This table exceeds the maximum selectable size of " + this.maxSelectAll + " rows.  Only the first " + this.maxSelectAll + " will be selected",cancelLabel:false}).show()
+			}
 			return this.store.query(query).then(function(results){
 				 0 && console.log("_selectAll results: ", results)
 				_self._unloadedData={};
@@ -74217,11 +74222,18 @@ define([
 					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
-				function(selection){
-					//  0 && console.log("this.currentContainerType: ", this.containerType);
-					//  0 && console.log("GridContainer selection: ", selection);
+				function(selection,container){
+					 0 && console.log("this.currentContainerType: ", this.containerType);
+					 0 && console.log("GridContainer selection: ", selection);
+					 0 && console.log("   ARGS: ", arguments);
+
+
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", selection);
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", this.containerType);
+					if (container && container.grid){
+						this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("grid", container.grid);
+					}
+
 					this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
 
 					setTimeout(lang.hitch(this, function(){
@@ -74817,7 +74829,7 @@ define([
 					multiple: true,
 					validTypes: ["*"],
 					requireAuth: true,
-					max: 5000,
+					max: 10000,
 					tooltip: "Copy selection to a new or existing group",
 					validContainerTypes: ["genome_data", "feature_data", "transcriptomics_experiment_data", "transcriptomics_gene_data"]
 				},
@@ -74868,7 +74880,6 @@ define([
 					multiple: false,
 					validTypes: ["*"],
 					tooltip: "Switch to Taxonomy View. Press and Hold for more options.",
-					tooltipDialog: downloadSelectionTT,
 					validContainerTypes: ["taxonomy_data","taxon_data"],
 					pressAndHold: function(selection,button,opts,evt){
 						 0 && console.log("PressAndHold");
@@ -76443,19 +76454,20 @@ define([
 'p3/widget/DownloadTooltipDialog':function(){
 define([
 	"dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-	"dojo/_base/lang", "dojo/mouse",
+	"dojo/_base/lang", "dojo/mouse","rql/js-array",
 	"dojo/topic", "dojo/query", "dijit/layout/ContentPane",
 	"dijit/Dialog", "dijit/popup", "dijit/TooltipDialog",
-	"./AdvancedDownload", "dojo/dom-class","FileSaver"
+	"./AdvancedDownload", "dojo/dom-class","FileSaver","dojo/when"
 ], function(declare, on, domConstruct,
-			lang, Mouse,
+			lang, Mouse,rql,
 			Topic, query, ContentPane,
 			Dialog, popup, TooltipDialog,
-			AdvancedDownload, domClass, saveAs){
+			AdvancedDownload, domClass, saveAs, when){
 
 	return declare([TooltipDialog], {
 		containerType: "",
 		selection: null,
+		grid: null,
 
 		_setSelectionAttr: function(val){
 			//  0 && console.log("DownloadTooltipDialog set selection: ", val);
@@ -76481,14 +76493,20 @@ define([
 
 		downloadSelection: function(type,selection){
 		
-			// if (this["_to" + type]){
-			// 	var data = this["_to" + type.toLowerCase()](selection);
-			// 	saveAs(new Blob([data]), this.containerType + "_selection." + type);
-			// }else{
-				var conf = this.downloadableConfig[this.containerType];
-				var sel = selection.map(function(sel){
-					return sel[conf.field || conf.pk]
-				});
+			var conf = this.downloadableConfig[this.containerType];
+			var sel = selection.map(function(sel){
+				return sel[conf.field || conf.pk]
+			});
+
+			 0 && console.log("DOWNLOAD TYPE: ", type)
+			if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this["_to" + type]){
+				var query = "in(" + (conf.field || conf.pk) + ",(" + sel.join(",") + "))&sort(+" + conf.pk + ")&limit(2500000)"
+				when(this.grid.store.query({}), lang.hitch(this,function(results){
+					results = rql.query(query,{},results);
+					var data = this["_to" + type.toLowerCase()](results);
+					saveAs(new Blob([data]), this.containerType + "_selection." + type);
+				}));
+			}else{
 
 				var accept;
 				switch(type){
@@ -76523,7 +76541,7 @@ define([
 				}, this.domNode);
 				domConstruct.create('input', {type: "hidden", value: encodeURIComponent(query), name: "rql"}, form);
 				form.submit();
-			// }
+			 }
 		},
 
 		_tocsv: function(selection){
@@ -76678,6 +76696,7 @@ define([
 				pk: "pathway_id",
 				dataType: "pathway",
 				"label": "Pathways",
+				"generateDownloadFromStore": true,
 				tableData: true
 			},
 			"gene_expression_data": {
@@ -76726,6 +76745,436 @@ define([
 		}
 	});
 
+});
+
+},
+'rql/js-array':function(){
+/*
+ * An implementation of RQL for JavaScript arrays. For example:
+ * require("./js-array").query("a=3", {}, [{a:1},{a:3}]) -> [{a:3}]
+ *
+ */
+
+({define:typeof define!="undefined"?define:function(deps, factory){module.exports = factory(exports, require("./parser"), require("./query"), require("./util/each"), require("./util/contains"));}}).
+define(["exports", "./parser", "./query", "./util/each", "./util/contains"], function(exports, parser, QUERY, each, contains){
+//({define:typeof define!="undefined"?define:function(deps, factory){module.exports = factory(exports, require("./parser"));}}).
+//define(["exports", "./parser"], function(exports, parser){
+
+var parseQuery = parser.parseQuery;
+var stringify = typeof JSON !== "undefined" && JSON.stringify || function(str){
+	return '"' + str.replace(/"/g, "\\\"") + '"';
+};
+var nextId = 1;
+exports.jsOperatorMap = {
+	"eq" : "===",
+	"ne" : "!==",
+	"le" : "<=",
+	"ge" : ">=",
+	"lt" : "<",
+	"gt" : ">"
+};
+exports.operators = {
+	sort: function(){
+		var terms = [];
+		for(var i = 0; i < arguments.length; i++){
+			var sortAttribute = arguments[i];
+			var firstChar = sortAttribute.charAt(0);
+			var term = {attribute: sortAttribute, ascending: true};
+			if (firstChar == "-" || firstChar == "+") {
+				if(firstChar == "-"){
+					term.ascending = false;
+				}
+				term.attribute = term.attribute.substring(1);
+			}
+			terms.push(term);
+		}
+		this.sort(function(a, b){
+			for (var term, i = 0; term = terms[i]; i++) {
+				if (a[term.attribute] != b[term.attribute]) {
+					return term.ascending == a[term.attribute] > b[term.attribute] ? 1 : -1;
+				}
+			}
+			return 0;
+		});
+		return this;
+	},
+	match: filter(function(value, regex){
+		return new RegExp(regex).test(value);
+	}),
+	"in": filter(function(value, values){
+		return contains(values, value);
+	}),
+	out: filter(function(value, values){
+		return !contains(values, value);
+	}),
+	contains: filter(function(array, value){
+		if(typeof value == "function"){
+			return array instanceof Array && each(array, function(v){
+				return value.call([v]).length;
+			});
+		}
+		else{
+			return array instanceof Array && contains(array, value);
+		}
+	}),
+	excludes: filter(function(array, value){
+		if(typeof value == "function"){
+			return !each(array, function(v){
+				return value.call([v]).length;
+			});
+		}
+		else{
+			return !contains(array, value);
+		}
+	}),
+	or: function(){
+		var items = [];
+		var idProperty = "__rqlId" + nextId++;
+		try{
+			for(var i = 0; i < arguments.length; i++){
+				var group = arguments[i].call(this);
+				for(var j = 0, l = group.length;j < l;j++){
+					var item = group[j];
+					// use marker to do a union in linear time.
+					if(!item[idProperty]){
+						item[idProperty] = true;
+						items.push(item);
+					}
+				}
+			}
+		}finally{
+			// cleanup markers
+			for(var i = 0, l = items.length; i < l; i++){
+				delete items[idProperty];
+			}
+		}
+		return items;
+	},
+	and: function(){
+		var items = this;
+		// TODO: use condition property
+		for(var i = 0; i < arguments.length; i++){
+			items = arguments[i].call(items);
+		}
+		return items;
+	},
+	select: function(){
+		var args = arguments;
+		var argc = arguments.length;
+		return each(this, function(object, emit){
+			var selected = {};
+			for(var i = 0; i < argc; i++){
+				var propertyName = args[i];
+				var value = evaluateProperty(object, propertyName);
+				if(typeof value != "undefined"){
+					selected[propertyName] = value;
+				}
+			}
+			emit(selected);
+		});
+	},
+	unselect: function(){
+		var args = arguments;
+		var argc = arguments.length;
+		return each(this, function(object, emit){
+			var selected = {};
+			for (var i in object) if (object.hasOwnProperty(i)) {
+				selected[i] = object[i];
+			}
+			for(var i = 0; i < argc; i++) {
+				delete selected[args[i]];
+			}
+			emit(selected);
+		});
+	},
+	values: function(first){
+		if(arguments.length == 1){
+			return each(this, function(object, emit){
+				emit(object[first]);
+			});
+		}
+		var args = arguments;
+		var argc = arguments.length;
+		return each(this, function(object, emit){
+			var selected = [];
+			if (argc === 0) {
+				for(var i in object) if (object.hasOwnProperty(i)) {
+					selected.push(object[i]);
+				}
+			} else {
+				for(var i = 0; i < argc; i++){
+					var propertyName = args[i];
+					selected.push(object[propertyName]);
+				}
+			}
+			emit(selected);
+		});
+	},
+	limit: function(limit, start, maxCount){
+		var totalCount = this.length;
+		start = start || 0;
+		var sliced = this.slice(start, start + limit);
+		if(maxCount){
+			sliced.start = start;
+			sliced.end = start + sliced.length - 1;
+			sliced.totalCount = Math.min(totalCount, typeof maxCount === "number" ? maxCount : Infinity);
+		}
+		return sliced;
+	},
+	distinct: function(){
+		var primitives = {};
+		var needCleaning = [];
+		var newResults = this.filter(function(value){
+			if(value && typeof value == "object"){
+				if(!value.__found__){
+					value.__found__ = function(){};// get ignored by JSON serialization
+					needCleaning.push(value);
+					return true;
+				}
+			}else{
+				if(!primitives[value]){
+					primitives[value] = true;
+					return true;
+				}
+			}
+		});
+		each(needCleaning, function(object){
+			delete object.__found__;
+		});
+		return newResults;
+	},
+	recurse: function(property){
+		// TODO: this needs to use lazy-array
+		var newResults = [];
+		function recurse(value){
+			if(value instanceof Array){
+				each(value, recurse);
+			}else{
+				newResults.push(value);
+				if(property){
+					value = value[property];
+					if(value && typeof value == "object"){
+						recurse(value);
+					}
+				}else{
+					for(var i in value){
+						if(value[i] && typeof value[i] == "object"){
+							recurse(value[i]);
+						}
+					}
+				}
+			}
+		}
+		recurse(this);
+		return newResults;
+	},
+	aggregate: function(){
+		var distinctives = [];
+		var aggregates = [];
+		for(var i = 0; i < arguments.length; i++){
+			var arg = arguments[i];
+			if(typeof arg === "function"){
+				 aggregates.push(arg);
+			}else{
+				distinctives.push(arg);
+			}
+		}
+		var distinctObjects = {};
+		var dl = distinctives.length;
+		each(this, function(object){
+			var key = "";
+			for(var i = 0; i < dl;i++){
+				key += '/' + object[distinctives[i]];
+			}
+			var arrayForKey = distinctObjects[key];
+			if(!arrayForKey){
+				arrayForKey = distinctObjects[key] = [];
+			}
+			arrayForKey.push(object);
+		});
+		var al = aggregates.length;
+		var newResults = [];
+		for(var key in distinctObjects){
+			var arrayForKey = distinctObjects[key];
+			var newObject = {};
+			for(var i = 0; i < dl;i++){
+				var property = distinctives[i];
+				newObject[property] = arrayForKey[0][property];
+			}
+			for(var i = 0; i < al;i++){
+				var aggregate = aggregates[i];
+				newObject[i] = aggregate.call(arrayForKey);
+			}
+			newResults.push(newObject);
+		}
+		return newResults;
+	},
+	between: filter(function(value, range){
+		return value >= range[0] && value < range[1];
+	}),
+	sum: reducer(function(a, b){
+		return a + b;
+	}),
+	mean: function(property){
+		return exports.operators.sum.call(this, property)/this.length;
+	},
+	max: reducer(function(a, b){
+		return Math.max(a, b);
+	}),
+	min: reducer(function(a, b){
+		return Math.min(a, b);
+	}),
+	count: function(){
+		return this.length;
+	},
+	first: function(){
+		return this[0];
+	},
+	one: function(){
+		if(this.length > 1){
+			throw new TypeError("More than one object found");
+		}
+		return this[0];
+	}
+};
+exports.filter = filter;
+function filter(condition, not){
+	// convert to boolean right now
+	var filter = function(property, second){
+		if(typeof second == "undefined"){
+			second = property;
+			property = undefined;
+		}
+		var args = arguments;
+		var filtered = [];
+		for(var i = 0, length = this.length; i < length; i++){
+			var item = this[i];
+			if(condition(evaluateProperty(item, property), second)){
+				filtered.push(item);
+			}
+		}
+		return filtered;
+	};
+	filter.condition = condition;
+	return filter;
+};
+function reducer(func){
+	return function(property){
+		var result = this[0];
+		if(property){
+			result = result && result[property];
+			for(var i = 1, l = this.length; i < l; i++) {
+				result = func(result, this[i][property]);
+			}
+		}else{
+			for(var i = 1, l = this.length; i < l; i++) {
+				result = func(result, this[i]);
+			}
+		}
+		return resul;t
+	}
+}
+exports.evaluateProperty = evaluateProperty;
+function evaluateProperty(object, property){
+	if(property instanceof Array){
+		each(property, function(part){
+			object = object[decodeURIComponent(part)];
+		});
+		return object;
+	}else if(typeof property == "undefined"){
+		return object;
+	}else{
+		return object[decodeURIComponent(property)];
+	}
+};
+var conditionEvaluator = exports.conditionEvaluator = function(condition){
+	var jsOperator = exports.jsOperatorMap[term.name];
+	if(jsOperator){
+		js += "(function(item){return item." + term[0] + jsOperator + "parameters[" + (index -1) + "][1];});";
+	}
+	else{
+		js += "operators['" + term.name + "']";
+	}
+	return eval(js);
+};
+exports.executeQuery = function(query, options, target){
+	return exports.query(query, options, target);
+}
+exports.query = query;
+exports.missingOperator = function(operator){
+	throw new Error("Operator " + operator + " is not defined");
+}
+function query(query, options, target){
+	options = options || {};
+	query = parseQuery(query, options.parameters);
+	function t(){}
+	t.prototype = exports.operators;
+	var operators = new t;
+	// inherit from exports.operators
+	for(var i in options.operators){
+		operators[i] = options.operators[i];
+	}
+	function op(name){
+		return operators[name]||exports.missingOperator(name);
+	}
+	var parameters = options.parameters || [];
+	var js = "";
+	function queryToJS(value){
+		if(value && typeof value === "object" && !(value instanceof RegExp)){
+			if(value instanceof Array){
+				return '[' + each(value, function(value, emit){
+					emit(queryToJS(value));
+				}) + ']';
+			}else{
+				var jsOperator = exports.jsOperatorMap[value.name];
+				if(jsOperator){
+					// item['foo.bar'] ==> (item && item.foo && item.foo.bar && ...)
+					var path = value.args[0];
+					var target = value.args[1];
+					if (typeof target == "undefined"){
+						var item = "item";
+						target = path;
+					}else if(path instanceof Array){
+						var item = "item";
+						var escaped = [];
+						for(var i = 0;i < path.length; i++){
+							escaped.push(stringify(path[i]));
+							item +="&&item[" + escaped.join("][") + ']';
+						}
+					}else{
+						var item = "item&&item[" + stringify(path) + "]";
+					}
+					// use native Array.prototype.filter if available
+					var condition = item + jsOperator + queryToJS(target);
+					if (typeof Array.prototype.filter === 'function') {
+						return "(function(){return this.filter(function(item){return " + condition + "})})";
+						//???return "this.filter(function(item){return " + condition + "})";
+					} else {
+						return "(function(){var filtered = []; for(var i = 0, length = this.length; i < length; i++){var item = this[i];if(" + condition + "){filtered.push(item);}} return filtered;})";
+					}
+				}else{
+					if (value instanceof Date){
+						return value.valueOf();
+					}
+					return "(function(){return op('" + value.name + "').call(this" +
+						(value && value.args && value.args.length > 0 ? (", " + each(value.args, function(value, emit){
+								emit(queryToJS(value));
+							}).join(",")) : "") +
+						")})";
+				}
+			}
+		}else{
+			return typeof value === "string" ? stringify(value) : value;
+		}
+	}
+	var evaluator = eval("(1&&function(target){return " + queryToJS(query) + ".call(target);})");
+	return target ? evaluator(target) : evaluator;
+}
+function throwMaxIterations(){
+	throw new Error("Query has taken too much computation, and the user is not allowed to execute resource-intense queries. Increase maxIterations in your config file to allow longer running non-indexed queries to be processed.");
+}
+exports.maxIterations = 10000;
+return exports;
 });
 
 },
@@ -77597,7 +78046,7 @@ define([
 			source_id: {label: "Source ID", field: "source_id", hidden: false},
 			gene: {label: "Gene", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
-			pubmed: {label: "Pubmed", field: "pubmed", hidden: false},
+			pubmed: {label: "Pubmed", field: "pmid", hidden: false},
 			identity: {label: "Identity", field: "identity", hidden: false},
 			evalue: {label: "E-value", field: "e_value", hidden: false}
 		},
@@ -77652,7 +78101,7 @@ define([
 			Store){
 	return declare([Store], {
 		dataModel: "sp_gene",
-		idProperty: "patric_id",
+		idProperty: "id",
 		facetFields: []
 	});
 });
@@ -91804,7 +92253,7 @@ define([
 			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
 			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
 			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
 			return out.join("&nbsp;&raquo;&nbsp;") + "&nbsp;&raquo;&nbsp;" + genome.genome_name;
 		},
@@ -119598,14 +120047,14 @@ define([
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
 'url:dojox/widget/ColorPicker/ColorPicker.html':"<table class=\"dojoxColorPicker\" dojoAttachEvent=\"onkeypress: _handleKey\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t<tr>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxColorPickerBox\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img title=\"${saturationPickerTitle}\" alt=\"${saturationPickerTitle}\" class=\"dojoxColorPickerPoint\" src=\"${_pickerPointer}\" tabIndex=\"0\" dojoAttachPoint=\"cursorNode\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<img role=\"presentation\" alt=\"\" dojoAttachPoint=\"colorUnderlay\" dojoAttachEvent=\"onclick: _setPoint, onmousedown: _stopDrag\" class=\"dojoxColorPickerUnderlay\" src=\"${_underlay}\" ondragstart=\"return false\">\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t<div class=\"dojoxHuePicker\">\n\t\t\t\t<!-- Forcing ABS in style attr due to dojo DND issue with not picking it up form the class. -->\n\t\t\t\t<img dojoAttachPoint=\"hueCursorNode\" tabIndex=\"0\" class=\"dojoxHuePickerPoint\" title=\"${huePickerTitle}\" alt=\"${huePickerTitle}\" src=\"${_huePickerPointer}\" style=\"position: absolute; top: 0px; left: 0px;\">\n\t\t\t\t<div class=\"dojoxHuePickerUnderlay\" dojoAttachPoint=\"hueNode\">\n\t\t\t\t    <img role=\"presentation\" alt=\"\" dojoAttachEvent=\"onclick: _setHuePoint, onmousedown: _stopDrag\" src=\"${_hueUnderlay}\">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</td>\n\t\t<td valign=\"top\">\n\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerPreviewContainer\">\n\t\t\t\t\t\t<table cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td valign=\"top\" class=\"dojoxColorPickerRightPad\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"previewNode\" class=\"dojoxColorPickerPreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td valign=\"top\">\n\t\t\t\t\t\t\t\t\t<div dojoAttachPoint=\"safePreviewNode\" class=\"dojoxColorPickerWebSafePreview\"></div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t\t<tr>\n\t\t\t\t\t<td valign=\"bottom\">\n\t\t\t\t\t\t<table class=\"dojoxColorPickerOptional\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerRgb\" dojoAttachPoint=\"rgbNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_r\">${redLabel}</label></td><td><input id=\"${_uId}_r\" dojoAttachPoint=\"Rval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_g\">${greenLabel}</label></td><td><input id=\"${_uId}_g\" dojoAttachPoint=\"Gval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_b\">${blueLabel}</label></td><td><input id=\"${_uId}_b\" dojoAttachPoint=\"Bval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"></td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t\t<div class=\"dijitInline dojoxColorPickerHsv\" dojoAttachPoint=\"hsvNode\">\n\t\t\t\t\t\t\t\t\t\t<table cellpadding=\"1\" cellspacing=\"1\" role=\"presentation\">\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_h\">${hueLabel}</label></td><td><input id=\"${_uId}_h\" dojoAttachPoint=\"Hval\"size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${degLabel}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_s\">${saturationLabel}</label></td><td><input id=\"${_uId}_s\" dojoAttachPoint=\"Sval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t<tr><td><label for=\"${_uId}_v\">${valueLabel}</label></td><td><input id=\"${_uId}_v\" dojoAttachPoint=\"Vval\" size=\"1\" dojoAttachEvent=\"onchange: _colorInputChange\"> ${percentSign}</td></tr>\n\t\t\t\t\t\t\t\t\t\t</table>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t<td colspan=\"2\">\n\t\t\t\t\t\t\t\t\t<div class=\"dojoxColorPickerHex\" dojoAttachPoint=\"hexNode\" aria-live=\"polite\">\t\n\t\t\t\t\t\t\t\t\t\t<label for=\"${_uId}_hex\">&nbsp;${hexLabel}&nbsp;</label><input id=\"${_uId}_hex\" dojoAttachPoint=\"hexCode, focusNode, valueNode\" size=\"6\" class=\"dojoxColorPickerHexCode\" dojoAttachEvent=\"onchange: _colorInputChange\">\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</td>\n\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t</table>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>\n\t\t</td>\n\t</tr>\n</table>\n\n",
 'url:dijit/templates/ColorPalette.html':"<div class=\"dijitInline dijitColorPalette\" role=\"grid\">\n\t<table data-dojo-attach-point=\"paletteTableNode\" class=\"dijitPaletteTable\" cellSpacing=\"0\" cellPadding=\"0\" role=\"presentation\">\n\t\t<tbody data-dojo-attach-point=\"gridNode\"></tbody>\n\t</table>\n</div>\n",
-'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
+'url:p3/widget/templates/GenomeListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genome Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/app/templates/Annotation.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm App ${baseClass}\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 400px;margin:auto;\">\n    <div class=\"apptitle\" id=\"apptitle\">\n\t\t<h3>Genome Annotation</h3>\n  \t  \t<p>Annotates genomes using RASTtk.</p>\n    </div>\n\t<div style=\"width:400px; margin:auto\" class=\"formFieldsContainer\">\n\t\t<div id=\"annotationBox\" style=\"width:400px;\" class=\"appbox appshadow\">\n\t\t\t<div class=\"headerrow\">\n\t\t\t\t<div style=\"width:85%;display:inline-block;\">\n\t\t\t\t\t<label class=\"appboxlabel\">Parameters</label>\n\t\t\t\t\t<div name=\"parameterinfo\" class=\"infobox iconbox infobutton dialoginfo\">\n\t\t\t\t\t\t<i class=\"fa icon-info-circle fa\"></i>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Contigs</label><br>\n\t\t\t\t\t<div data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"contigs\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation',missingMessage:'Contigs must be provided.'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Domain</label><br>\n\t\t\t\t\t<select data-dojo-type=\"dijit/form/Select\" name=\"domain\" data-dojo-attach-point=\"workspaceName\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"Bacteria\">Bacteria</option>\n\t\t\t\t\t\t<option value=\"Archaea\">Archaea</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"approwsegment\" style=\"margin-left: 0px; text-align:left; width:70%\">\n\t\t\t\t\t<label class=\"paramlabel\">Taxonomy Name</label>\n                    <div name=\"taxoninfo\" class=\"infobox iconbox infobutton tooltipinfo\">\n                        <i class=\"fa icon-info-circle fa\"></i>\n                    </div><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/TaxonNameSelector\" name=\"scientific_name\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"scientific_nameWidget\"></div>\n\t\t\t\t</div> \n\t\t\t\t<div class=\"approwsegment\" style=\"text-align:left; width:20%\">\n\t\t\t\t\t<label>Taxonomy ID</label><br>\n\t\t\t\t\t<div data-dojo-attach-event=\"onChange:onTaxIDChange\" data-dojo-type=\"p3/widget/TaxIDSelector\" value=\"\"  name=\"tax_id\" maxHeight=200 style=\"width:100%\" required=\"true\" data-dojo-attach-point=\"tax_idWidget\"></div>\n\t\t\t\t</div> \n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>My Label</label><br>\n                    <div data-dojo-type=\"dijit/form/ValidationTextBox\"  data-dojo-attach-event=\"onChange:updateOutputName\" name=\"my_label\" data-dojo-attach-point=\"myLabelWidget\" required=\"true\" data-dojo-props=\"intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\" style=\"width:380px\">\n\t\t\t\t\t<label>Output Name</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_nameWidget\" style=\"width:380px; background-color:#F0F1F3\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" name=\"output_file\" style=\"width:100%\" required=\"true\" data-dojo-props=\"readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Genetic Code</label><br>\n\t\t\t\t\t<select data-dojo-attach-point=\"genetic_code\" data-dojo-type=\"dijit/form/Select\" name=\"code\" style=\"width:100%\" required=\"true\" data-dojo-props=\"intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'\">\n\t\t\t\t\t\t<option value=\"11\">11 (Archaea & most Bacteria)</option>\n\t\t\t\t\t\t<option value=\"4\">4 (Mycoplasma, Spiroplasma, & Ureaplasma )</option>\n\t\t\t\t\t</select>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class=\"approw\" style=\"display:none\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Optional Annotation Source</label><br>\n                     <div data-dojo-attach-event=\"onChange:onSuggestNameChange\" data-dojo-type=\"p3/widget/GenomeNameSelector\" name=\"reference_genome_id\" maxHeight=200 style=\"width:100%\" required=\"false\" data-dojo-attach-point=\"ref_genome_id\"></div>\n                </div>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"approw\">\n\t\t\t\t<div class=\"appFieldLong\">\n\t\t\t\t\t<label>Output Folder</label><br>\n\t\t\t\t\t<div data-dojo-attach-point=\"output_pathWidget\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" name=\"output_path\" style=\"width:100%\" required=\"true\" data-dojo-props=\"type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'\" data-dojo-attach-event=\"onChange:onOutputPathChange\"></div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t\n\t\t</div>\n\t\t</div>\n\t<div class=\"appSubmissionArea\">\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t    Submitting Annotation Job\n\t\t</div>\n\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tAnnotation Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Annotate</div>\n\t\t</div>\n\t</div>\n</form>\n\n",
 'url:p3/widget/app/templates/Sleep.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\n    <div style=\"width: 420px;margin:auto;margin-top: 10px;padding:10px;\">\n\t\t<h2>Sleep</h2>\n\t\t<p>Sleep Application For Testing Purposes</p>\n\t\t<div style=\"margin-top:10px;text-align:left\">\n\t\t\t<label>Sleep Time</label><br>\n\t\t\t<input data-dojo-type=\"dijit/form/NumberSpinner\" value=\"10\" name=\"sleep_time\" require=\"true\" data-dojo-props=\"constraints:{min:1,max:100}\" />\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"workingMessage\" class=\"messageContainer workingMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSubmitting Sleep Job\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"errorMessage\" class=\"messageContainer errorMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tError Submitting Job\t\n\t\t</div>\n\t\t<div data-dojo-attach-point=\"submittedMessage\" class=\"messageContainer submittedMessage\" style=\"margin-top:10px; text-align:center;\">\n\t\t\tSleep Job has been queued.\n\t\t</div>\n\t\t<div style=\"margin-top: 10px; text-align:center;\">\n\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t<div data-dojo-attach-point=\"resetButton\" type=\"reset\" data-dojo-type=\"dijit/form/Button\">Reset</div>\n\t\t\t<div data-dojo-attach-point=\"submitButton\" type=\"submit\" data-dojo-type=\"dijit/form/Button\">Run</div>\n\t\t</div>\t\n\t</div>\n</form>\n\n",
-'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"taxonomySummaryNode\">\n                Loading Taxonomy Summary...\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/TaxonomyOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"taxonomySummaryNode\">\n                Loading Taxonomy Summary...\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Reference/Representative Genomes</span></h3>\n            <div class=\"rgSummaryWidget\" data-dojo-attach-point=\"rgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ReferenceGenomeSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Antimicrobial Resistance</span></h3>\n            <div class=\"apmSummaryWidget\" data-dojo-attach-point=\"apmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelMetaSummary\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomes by Metadata</span></h3>\n            <div class=\"gmSummaryWidget\" data-dojo-attach-point=\"gmSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeMetaSummary\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div class=\"fpSummaryWidget\" data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Taxonomy Profile</span></h3>\n            <div class=\"tpSummaryWidget\" data-dojo-attach-point=\"tpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/TaxonomyProfile\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}
