@@ -10,12 +10,12 @@ define([
 		constructor: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
-			this.nodeWidth = domStyle.get(this.node, "width");
+			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
 
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("width", this.nodeWidth)
-				.attr("height", 70);
+				.attr("preserveAspectRatio", "xMidYMid meet")
+				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
 
 			this.canvas.insert("defs")
 				.append("marker")
