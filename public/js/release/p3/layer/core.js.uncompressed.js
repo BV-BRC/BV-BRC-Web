@@ -25610,7 +25610,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -37350,6 +37349,29 @@ define([
 
 			return div;
 		},
+
+        "msa_details": function(item, options){
+            options = options || {};
+            var columns =[{
+                name: "No. of Members",
+                text: "numFeatures"
+            }, {
+                name: "No. of Organisms",
+                text: "numOrganisms"
+            }, {
+                name: "Min AA Length",
+                text: "minLength"
+            }, {
+                name: "Max AA Length",
+                text: "maxLength"
+            }];
+			var div = domConstruct.create("div");
+			displayHeader(div, "MSA", "fa icon-alignment fa-2x", "/view/MSA/", options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
 
 		"sequence_data": function(item, options){
 			options = options || {};
@@ -84644,11 +84666,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./TrackController", "circulus/Viewer", "circulus/LineTrack",
-	"circulus/SectionTrack", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
 ], function(declare, BorderContainer, on,
 			ActionBar, ContainerActionBar, TabContainer,
 			TrackController, CirculusViewer, LineTrack,
-			SectionTrack, lang, xhr, DataItemFormatter, PathJoin){
+			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
 
 	return declare([BorderContainer], {
 		gutters: true,
@@ -84752,13 +84774,26 @@ define([
 			console.log("RefSeqs: ", refseqs);
 
 			this.viewer.addTrack({
+				type: SectionTrackWithLabel,
+				options: {
+					title: "Position Label (Mbp)",
+					trackWidth: 0.1,
+					//fill: "#eeeeee",
+					stroke: null,
+					gap: 1,
+					background: {fill: null, stroke: null}
+				},
+				data: refseqs
+			}, "perimeter", false);
+
+			this.viewer.addTrack({
 				type: SectionTrack,
 				options: {
 					title: "Contigs/Chromosomes",
-					trackWidth: 0.02,
+					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
-					gap: .5,
+					gap: 1,
 					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
@@ -84768,7 +84803,7 @@ define([
 					}
 				},
 				data: refseqs
-			}, "perimeter", true);
+			}, "outer", true);
 
 			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
 			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
@@ -84804,7 +84839,7 @@ define([
 					min: 0,
 					trackWidth: 0.18,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
@@ -84820,7 +84855,7 @@ define([
 					scoreProperty: "skew",
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#F3CDA0", stroke: null}
 				}
 			}, "outer");
@@ -85022,10 +85057,12 @@ define([
 					console.log("Click Visible");
 					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
+						console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
 						event.track.set('visible', false)
 					}else{
+						console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
 						event.track.set('visible', true)
@@ -88065,7 +88102,7 @@ define([
 				// console.log("Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
-			var lastSectionEnd=0;
+			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
 			var gap = (this.gap);
@@ -88128,6 +88165,275 @@ define([
 
 			// console.log("Set Sections: ", sections)
 			this.set("sections", sections)
+
+		}
+	});
+});
+
+
+},
+'circulus/SectionTrackWithLabel':function(){
+define([
+        "dojo/_base/declare","dojox/gfx","dojox/gfx/matrix",
+        "dojo/_base/lang","./SectionTrack","dojo/on","dijit/Dialog",
+        "dijit/TooltipDialog","dijit/popup"
+],function(
+        declare,gfx,matrix,
+        lang,Track,on,Dialog,
+        TooltipDialog,Popup
+){
+
+	var TTDialog = new TooltipDialog({
+		onMouseLeave: function(){
+		    Popup.close(TTDialog);
+		}
+	})
+	Popup.moveOffScreen(TTDialog);
+
+	return declare([Track], {
+		max:100,
+		min: 0,
+		stroke: null,
+		//stroke:"",//{color: "black", width:.25},
+		fill: "grey",
+		sectionIdProperty: "accession",
+		sections: null,
+		referenceTrack: null,
+
+		constructor: function(){
+			this.surface.connect("onclick", lang.hitch(this,function(evt){
+				console.log("ON CLICK: ", evt)
+				if (evt.gfxTarget.data){
+					if (!this.dialog){
+						this.dialog = new Dialog({});
+					}
+
+					this.dialog.set('content',this.formatDialogContent(evt.gfxTarget.data));
+					this.dialog.show();
+				}
+			}));
+			var inside=false;
+			var timer;
+			// on(this.surface.getEventSource(),"mouseover", function(evt){
+			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
+				inside=true;
+				console.log("Mouse Over EVT: ", evt)
+				if (!evt.gfxTarget.data){
+					return;
+				}
+				var cur = evt.gfxTarget.getFill();
+				// console.log("Current: ", cur)
+				evt.gfxTarget.currentFill = cur;
+				evt.gfxTarget.setFill('#ff0000');
+
+				TTDialog.set('content', this.formatPopupContent(evt.gfxTarget.data))
+
+				Popup.open({
+					// parent: this,
+					x: evt.x-10,
+					y: evt.y+15,
+					popup: TTDialog
+					//around: evt.gfxTarget.rawNode
+				})
+			}))
+
+			// on(this.surface.getEventSource(),"mouseout", function(evt){
+			this.surface.connect("onmouseout", function(evt){
+				inside=false;
+				// console.log("Mouse Out EVT: ", evt, evt.gfxTarget.currentFill);
+				if (evt.gfxTarget.currentFill){
+					evt.gfxTarget.setFill(evt.gfxTarget.currentFill)
+				}
+				if (timer){
+					clearTimeout(timer);
+				}
+				timer = setTimeout(function(){
+					if (!inside){
+						Popup.close(TTDialog);
+					}
+				},1500)
+				
+			})
+		},
+
+		render: function(){
+			console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			if (this.visible){
+				// console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
+				this.renderBackground();
+
+				if (this.data && this.data.length>0){
+					// console.log("RENDER DATA: ", this.data)
+					this.set("loading", false)
+					this.renderData(this.data);		
+				}else{
+					this.set("loading", true);
+				}
+			}
+		},
+		//gap: .25,
+
+		renderData: function(data) {
+			var totalLength = 0;
+			var numSections = data.length;
+			var sections={}
+			data.forEach(function(d){
+				totalLength += d.length;
+				console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+			})
+
+			var lastSectionEnd=270;
+
+			var deg = (360 - (this.gap*numSections))/totalLength;
+			console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+
+			var gap = (this.gap);
+			data.forEach(lang.hitch(this,function(d,index){
+				var trackWidth = this.get("trackWidth");
+				// console.log("Render Section Data GroupIdx: ", this.surface.groupIdx);
+
+				d.startAngle = deg + lastSectionEnd;
+				d.endAngle = (deg*d.length) + lastSectionEnd;
+				sections[d[this.sectionIdProperty]]=d;
+				var startRads = d.startAngle *Math.PI/180;
+				var rads = d.endAngle *Math.PI/180;
+				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
+				console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+
+				var innerStart= {
+					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
+					y: this.centerPoint.y + this.internalRadius * Math.sin(startRads)
+				}
+
+				var outerStart = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(startRads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(startRads)
+				}
+
+				var outerEnd = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(rads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(rads)
+				}
+				var innerEnd = {
+					x: this.centerPoint.x + (this.internalRadius) * Math.cos(rads),
+					y: this.centerPoint.y  + (this.internalRadius) * Math.sin(rads) 
+				}
+
+				var outerRadius = this.internalRadius + trackWidth;
+				var innerRadius = this.internalRadius;
+				var large=false;
+				if ((deg*d.length)>180){
+					large=true;
+				}
+
+				var i=0;
+				var line;
+				var textShape;
+				var	textouterEnd;
+				textouterEnd = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth) * Math.cos(startRads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth) * Math.sin(startRads)
+				}
+				
+				var unit = 10000;
+				
+				if (totalLength >5000000) {
+					unit = 100000;
+				}
+				else if (totalLength <300000)
+				{
+					unit = 1000;
+				}
+				
+				var factor = unit/1000000;	
+				var decimal = Math									
+				var ticks = Math.round(d.length/unit);	
+				//console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " ticks: ", ticks, " factor: ", factor);
+				var mydeg = deg;
+				var mystartRads = startRads;
+
+				var myText = 0;
+				myText = myText.toFixed(Math.log10(1/factor)-1);
+
+				line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+				textShape = this.surface.createTextPath({text: myText})
+						.moveTo(outerStart)
+						.lineTo(textouterEnd)
+						.setFill("grey")
+						.setFont({size: "8pt"});
+
+				if (this.fill) {
+					line.setStroke(this.fill);
+					//textShape.setStroke(this.fill);
+					textShape.setFill(this.fill);
+				}
+				this._foregroundColorPaths.push(line);
+				this._foregroundColorPaths.push(textShape);
+				
+
+				for (i=0; i<ticks-1; i++)
+				{
+				 	mydeg = d.startAngle + i*unit*(360 - (this.gap*numSections))/totalLength;
+					mystartRads = mydeg *Math.PI/180;
+					//console.log("i: ", i, " mydeg: ", mydeg, " mystartRads: ", mystartRads);
+
+					innerStart= {
+						x: this.centerPoint.x + this.internalRadius * Math.cos(mystartRads),
+						y: this.centerPoint.y + this.internalRadius * Math.sin(mystartRads)
+					}
+
+					outerStart = {
+						x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(mystartRads),
+						y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(mystartRads)
+					}
+
+					textouterEnd = {
+						x: this.centerPoint.x + (this.internalRadius + trackWidth) * Math.cos(mystartRads),
+						y: this.centerPoint.y + (this.internalRadius + trackWidth) * Math.sin(mystartRads)
+					}
+
+					//console.log("Degrees: ", mydeg, " i: ", i, " ticks: ", ticks);
+
+					myText = i*factor;
+					myText = myText.toFixed(Math.log10(1/factor)-1);
+					if (i!=0) {					
+						if (i%10 == 0)
+						{
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+							textShape = this.surface.createTextPath({text: myText})
+								.moveTo(outerStart)
+								.lineTo(textouterEnd)
+								.setFill("grey")
+								.setFont({size: "8pt"});
+						}
+						else if (i%5 == 0)
+						{
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+						}
+						else
+						{
+							outerStart = {
+								x: this.centerPoint.x + (this.internalRadius + trackWidth/10) * Math.cos(mystartRads),
+								y: this.centerPoint.y + (this.internalRadius + trackWidth/10) * Math.sin(mystartRads)
+							}
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");					
+						}
+							
+						if (this.fill) {
+							line.setStroke(this.fill);
+							//textShape.setStroke(this.fill);
+							textShape.setFill(this.fill);
+						}
+						this._foregroundColorPaths.push(line);
+						this._foregroundColorPaths.push(textShape);
+						
+					}
+				
+				}	
+			}));
+
+			console.log("Set Sections: ", sections);
+			this.set("sections", sections);
 
 		}
 	});
@@ -92093,6 +92399,12 @@ define([
 			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
 
 			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
+			// check whether we have extra filter
+			if(this.state.taxonomy && this.state.genome_ids
+				&& this.state.genome_ids.length !== 25000
+				&& this.state.taxonomy.genomes !== this.state.genome_ids.length){
+				taxonQuery += "&" + this.state.search;
+			}
 			sumWidgets.forEach(function(w){
 				if(this[w]){
 					this[w].set('query', taxonQuery);
@@ -109849,7 +110161,8 @@ define([
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
-					features: data
+					features: data,
+					pinStart: this.feature.start
 				});
 			}));
 
@@ -110616,12 +110929,12 @@ define([
 		constructor: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
-			this.nodeWidth = domStyle.get(this.node, "width");
+			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
 
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("width", this.nodeWidth)
-				.attr("height", 100);
+				.attr("preserveAspectRatio", "xMidYMid meet")
+				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
 
 			this.canvas.insert("defs")
 				.append("marker")
@@ -110643,6 +110956,7 @@ define([
 			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
+			var pinStart = data.pinStart;
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
@@ -110658,7 +110972,9 @@ define([
 					return self.x_scale(d.na_length)
 				})
 				.attr("height", 15)
-				.attr("fill", '#4f81bd')
+				.attr("fill", function(d){
+					return (d.start === pinStart) ? '#E53935' : '#1976D2';
+				})
 				.on("mouseover", function(d){
 					self.tooltipLayer.transition()
 						.duration(200)
@@ -120021,7 +120337,7 @@ define([
 'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\n        <div class=\"experiment containerContentSection\">\n            <div class=\"tip\">\n                \n                <div class='tipHeader'>\n                    <span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: purple;\"></span>\n                </div>\n                <div>Significant by z-score: abs(z-score) &gt;= 2. Significant by log ratio: abs(log ratio) &gt;=1.</div>\n            </div>\n        </div>\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
 'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
