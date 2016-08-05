@@ -1,12 +1,8 @@
 .chart-wrapper {
-/*    background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-    background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);*/
 }
 .chart-wrapper .chart {
     padding-top: 24px;
-    height: 150px;
+    height: 200px;
 }
 .chart-wrapper .chart .svgChartContainer {
     border-bottom: 1px solid silver;
