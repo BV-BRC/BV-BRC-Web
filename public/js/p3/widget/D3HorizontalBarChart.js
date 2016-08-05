@@ -116,6 +116,33 @@ define([
 						.duration(500)
 						.style("opacity", 0)
 				});
+		},
+		resize: function(){
+			var self = this;
+			clearTimeout(this.resizer);
+
+			this.resizer = setTimeout(function(){
+				self.doResize()
+			}, 300);
+		},
+		doResize: function(){
+			var self = this;
+
+			this.nodeWidth = domStyle.get(this.node, "width");
+
+			// update chart and canvas width
+			this.canvas.attr("width", this.nodeWidth);
+
+			// update axis
+			this.x_scale.range([0, (self.nodeWidth - self.margin.right - self.margin.left)]);
+			this.xAxis.scale(this.x_scale);
+			this.canvas.select("g.x").transition().call(this.xAxis);
+
+			// update bars
+			this.canvas.selectAll("rect").transition()
+				.attr("width", function(d){
+					return self.x_scale(d.count)
+				});
 		}
 	});
 });
