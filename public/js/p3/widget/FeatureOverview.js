@@ -359,7 +359,8 @@ define([
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
-					features: data
+					features: data,
+					pinStart: this.feature.start
 				});
 			}));
 

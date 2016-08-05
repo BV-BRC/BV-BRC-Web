@@ -117,7 +117,7 @@ define([
 					//fill: "#eeeeee",
 					stroke: null,
 					gap: 1,
-					background: {fill: null, stroke: null},
+					background: {fill: null, stroke: null}
 				},
 				data: refseqs
 			}, "perimeter", false);

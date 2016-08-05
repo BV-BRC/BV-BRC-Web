@@ -207,7 +207,7 @@ define("circulus/SectionTrack", [
 				// console.log("Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
-			var lastSectionEnd=0;
+			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
 			var gap = (this.gap);

@@ -10,12 +10,12 @@ define([
 		constructor: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
-			this.nodeWidth = domStyle.get(this.node, "width");
+			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
 
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("width", this.nodeWidth)
-				.attr("height", 100);
+				.attr("preserveAspectRatio", "xMidYMid meet")
+				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
 
 			this.canvas.insert("defs")
 				.append("marker")
@@ -37,6 +37,7 @@ define([
 			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
+			var pinStart = data.pinStart;
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
@@ -52,7 +53,9 @@ define([
 					return self.x_scale(d.na_length)
 				})
 				.attr("height", 15)
-				.attr("fill", '#4f81bd')
+				.attr("fill", function(d){
+					return (d.start === pinStart) ? '#E53935' : '#1976D2';
+				})
 				.on("mouseover", function(d){
 					self.tooltipLayer.transition()
 						.duration(200)
