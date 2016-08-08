@@ -71,6 +71,10 @@ define([
 			dlg.show();
 		},
 
+		onDownload: function(){
+			window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
+		},
+
 		startup: function(){
 			if(this._started){
 				return;
