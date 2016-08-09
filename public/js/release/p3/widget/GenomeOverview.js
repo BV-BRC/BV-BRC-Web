@@ -13,19 +13,6 @@ define("p3/widget/GenomeOverview", [
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
 			ExternalItemFormatter){
 
-	// building add to group dialog for this page
-	var dlg = new Dialog({title: "Add This Genome To Group"});
-	var stg = new SelectionToGroup({
-		selection: [],
-		type: 'genome_group'
-	});
-	on(dlg.domNode, "dialogAction", function(evt){
-		dlg.hide();
-	});
-	domConstruct.place(stg.domNode, dlg.containerNode, "first");
-	stg.startup();
-	dlg.startup();
-
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "GenomeOverview",
 		disabled: false,
@@ -41,14 +28,12 @@ define("p3/widget/GenomeOverview", [
 			}
 		},
 
-		_setGenomeAttr: function(genome){
+		"_setGenomeAttr": function(genome){
 			if(this.genome && (this.genome.genome_id == genome.genome_id)){
 				// console.log("Genome ID Already Set")
 				return;
 			}
 			this.genome = genome;
-
-			stg.selection.push(genome);
 
 			this.createSummary(genome);
 
@@ -62,7 +47,7 @@ define("p3/widget/GenomeOverview", [
 
 		},
 
-		createSummary: function(genome){
+		"createSummary": function(genome){
 			domConstruct.empty(this.genomeSummaryNode);
 			domConstruct.place(DataItemFormatter(genome, "genome_data", {}), this.genomeSummaryNode, "first");
 			domConstruct.empty(this.pubmedSummaryNode);
@@ -70,6 +55,20 @@ define("p3/widget/GenomeOverview", [
 		},
 
 		onAddGenome: function(){
+			var dlg = new Dialog({title: "Add This Genome To Group"});
+			var stg = new SelectionToGroup({
+				selection: [this.genome],
+				type: 'genome_group'
+			});
+			on(dlg.domNode, "dialogAction", function(evt){
+				dlg.hide();
+				setTimeout(function(){
+					dlg.destroy();
+				}, 2000);
+			});
+			domConstruct.place(stg.domNode, dlg.containerNode, "first");
+			stg.startup();
+			dlg.startup();
 			dlg.show();
 		},
 
