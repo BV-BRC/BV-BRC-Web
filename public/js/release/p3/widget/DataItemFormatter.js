@@ -694,6 +694,58 @@ define("p3/widget/DataItemFormatter", [
 			return div;
 		},
 
+		"transcriptomics_gene_data": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: "Genome Name",
+				text: "genome_name"
+			},{
+				name: "Accession",
+				text: "accession"
+			},{
+				name: "PATRIC ID",
+				text: "patric_id"
+			},{
+				name: "RefSeq Locus Tag",
+				text: "refseq_locus_tag"
+			},{
+				name: "Alt Locus Tag",
+				text: "alt_locus_tag"
+			},{
+				name: "Gene Symbol",
+				text: "gene"
+			},{
+				name: "Product",
+				text: "product"
+			},{
+				name: "Start",
+				text: "start"
+			},{
+				name: "End",
+				text: "end"
+			},{
+				name: "Strand",
+				text: "strand"
+			},{
+				name: "Comparisons",
+				text: "sample_size"
+			},{
+				name: "Up",
+				text: "up"
+			},{
+				name: "Down",
+				text: "down"
+			}];
+
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
+			var div = domConstruct.create("div");
+			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
 		"genome_data": function(item, options){
 			options = options || {};
 
@@ -1070,7 +1122,8 @@ define("p3/widget/DataItemFormatter", [
 				new_type = "transcriptomics_sample_data";
 				break;
 			default:
-				new_type = type || "default";
+				new_type = (formatters[type])? type : "default";
+				// console.log("display in " + new_type + " format");
 		}
 
 		return formatters[new_type](item, options);
