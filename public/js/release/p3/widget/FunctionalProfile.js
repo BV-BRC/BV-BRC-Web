@@ -66,6 +66,18 @@ define("p3/widget/FunctionalProfile", [
 			});
 		},
 
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
+		},
+
 		render_chart: function(){
 
 			if(!this.chart){

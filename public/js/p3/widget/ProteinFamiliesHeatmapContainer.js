@@ -578,7 +578,15 @@ define([
 
 				// re-draw heatmap
 				Topic.publish("ProteinFamilies", "refreshHeatmap");
-			}));
+			}), function(err){
+
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
+				new Dialog({
+					title: err.status,
+					content: err.text
+				}).show();
+			});
 		}
 	});
 });
