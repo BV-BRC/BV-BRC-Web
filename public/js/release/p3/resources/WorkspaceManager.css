@@ -340,6 +340,9 @@ th.dgrid-cell.wsItemType {
 .folder .containerContentSection.folder {
 	display: block;
 }
+.experiment .containerContentSection.experiment {
+    display: block;
+}
 .dataItemSelection {
 	font-size: .85em;
 	

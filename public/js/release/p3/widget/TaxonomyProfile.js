@@ -89,6 +89,20 @@ define("p3/widget/TaxonomyProfile", [
 			);
 		},
 
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			// console.log("resize is called in TaxonoyProfile");
+
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
+		},
+
 		render_chart: function(){
 
 			if(!this.chart){

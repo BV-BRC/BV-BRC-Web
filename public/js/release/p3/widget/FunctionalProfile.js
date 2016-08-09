@@ -10,7 +10,7 @@ define("p3/widget/FunctionalProfile", [
 	return declare([SummaryWidget], {
 		dataModel: "genome_feature",
 		query: "",
-		baseQuery: "&limit(1)&facet((field,pgfam_id),(mincount,1),(limit,-1))&json(nl,map)",
+		baseQuery: "&ne(pgfam_id,%22%22)&limit(1)&facet((field,pgfam_id),(mincount,1),(sort,count),(limit,10))&json(nl,map)",
 		columns: [
 			{label: "Function", field: "label"},
 			{
@@ -28,11 +28,7 @@ define("p3/widget/FunctionalProfile", [
 
 			var self = this;
 			var d = res.facet_counts.facet_fields.pgfam_id; // now key-value pair
-			var topIds = Object.keys(d).sort(function(a, b){
-				return d[b] - d[a]; // descending
-			}).filter(function(d, i){
-				return i < 10;
-			});
+			var topIds = Object.keys(d);
 
 			xhr.post(PathJoin(this.apiServiceUrl, "/protein_family_ref/"), {
 				handleAs: "json",
@@ -68,6 +64,18 @@ define("p3/widget/FunctionalProfile", [
 
 				self.set('data', data);
 			});
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
 		},
 
 		render_chart: function(){

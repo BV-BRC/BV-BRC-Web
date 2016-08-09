@@ -1,9 +1,9 @@
 define("p3/widget/AMRPanelMetaSummary", [
-	"dojo/_base/declare", "dijit/_WidgetBase",
+	"dojo/_base/declare", "dojo/_base/lang", "dijit/_WidgetBase",
 	"dojo/on", "dojo/dom-class",
 	"./SummaryWidget", "./D3StackedBarChart"
 
-], function(declare, WidgetBase,
+], function(declare, lang, WidgetBase,
 			on, domClass,
 			SummaryWidget, D3StackedBarChart){
 
@@ -83,6 +83,20 @@ define("p3/widget/AMRPanelMetaSummary", [
 			this._tableData = tableData;
 
 			this.set('data', chartData);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			// console.log("resize is called in TaxonoyProfile");
+
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
 		},
 
 		render_chart: function(){

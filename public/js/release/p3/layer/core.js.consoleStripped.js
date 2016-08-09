@@ -14229,7 +14229,7 @@ define(["dojo/request", "dojo/_base/Deferred"
 					"X-Requested-With": false
 				},
 				handleAs: "json",
-				timeout: 600000,
+				timeout: 1200000,
 				data: JSON.stringify({id: idx++, method: method, params: params, jsonrpc: "2.0"})
 			}), function(response){
 				//  0 && console.log("JSON RPC RESPONSE: ", response);
@@ -14242,9 +14242,13 @@ define(["dojo/request", "dojo/_base/Deferred"
 					return;
 				}
 			}, function(err){
-				var message = err.response.data.error.message;
-				message = message.split("\n\n\n")[0];
-				def.reject(message || err.message);
+				try{
+					var message = err.response.data.error.message;
+					message = message.split("\n\n\n")[0];
+					def.reject(message || err.message);
+				}catch(e){
+					def.reject(err.response);
+				}
 			});
 
 			return def.promise;
@@ -25610,7 +25614,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -37351,6 +37354,29 @@ define([
 			return div;
 		},
 
+        "msa_details": function(item, options){
+            options = options || {};
+            var columns =[{
+                name: "No. of Members",
+                text: "numFeatures"
+            }, {
+                name: "No. of Organisms",
+                text: "numOrganisms"
+            }, {
+                name: "Min AA Length",
+                text: "minLength"
+            }, {
+                name: "Max AA Length",
+                text: "maxLength"
+            }];
+			var div = domConstruct.create("div");
+			displayHeader(div, "MSA", "fa icon-alignment fa-2x", "/view/MSA/", options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
+
 		"sequence_data": function(item, options){
 			options = options || {};
 
@@ -37546,6 +37572,58 @@ define([
 
 			var div = domConstruct.create("div");
 			displayHeader(div, item.expname, "fa icon-experiments fa-2x", "/view/TranscriptomicsComparison/" + item.pid, options);
+			displayDetail(item, columns, div, options);
+
+			return div;
+		},
+
+		"transcriptomics_gene_data": function(item, options){
+			options = options || {};
+
+			var columns = [{
+				name: "Genome Name",
+				text: "genome_name"
+			},{
+				name: "Accession",
+				text: "accession"
+			},{
+				name: "PATRIC ID",
+				text: "patric_id"
+			},{
+				name: "RefSeq Locus Tag",
+				text: "refseq_locus_tag"
+			},{
+				name: "Alt Locus Tag",
+				text: "alt_locus_tag"
+			},{
+				name: "Gene Symbol",
+				text: "gene"
+			},{
+				name: "Product",
+				text: "product"
+			},{
+				name: "Start",
+				text: "start"
+			},{
+				name: "End",
+				text: "end"
+			},{
+				name: "Strand",
+				text: "strand"
+			},{
+				name: "Comparisons",
+				text: "sample_size"
+			},{
+				name: "Up",
+				text: "up"
+			},{
+				name: "Down",
+				text: "down"
+			}];
+
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
+			var div = domConstruct.create("div");
+			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
 			displayDetail(item, columns, div, options);
 
 			return div;
@@ -37927,7 +38005,8 @@ define([
 				new_type = "transcriptomics_sample_data";
 				break;
 			default:
-				new_type = type || "default";
+				new_type = (formatters[type])? type : "default";
+				//  0 && console.log("display in " + new_type + " format");
 		}
 
 		return formatters[new_type](item, options);
@@ -59591,16 +59670,16 @@ define([
 },
 'p3/widget/GenomeOverview':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dijit/_WidgetsInTemplateMixin",
-	"dojo/dom-class", "dijit/_TemplatedMixin", "dojo/text!./templates/GenomeOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "./GenomeFeatureSummary", "./DataItemFormatter",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/dom-class", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
+	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
+	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
 	"./ExternalItemFormatter"
 
-], function(declare, WidgetBase, on, _WidgetsInTemplateMixin,
-			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, GenomeFeatureSummary, DataItemFormatter,
+], function(declare, lang, on, xhr,
+			domClass, Template, domConstruct,
+			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
+			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
 			ExternalItemFormatter){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -59619,11 +59698,12 @@ define([
 		},
 
 		"_setGenomeAttr": function(genome){
-			if (this.genome && (this.genome.genome_id == genome.genome_id)){
+			if(this.genome && (this.genome.genome_id == genome.genome_id)){
 				//  0 && console.log("Genome ID Already Set")
 				return;
 			}
 			this.genome = genome;
+
 			this.createSummary(genome);
 
 			var sumWidgets = ["apSummaryWidget", "gfSummaryWidget", "pfSummaryWidget", "spgSummaryWidget"];
@@ -59643,6 +59723,28 @@ define([
 			domConstruct.place(ExternalItemFormatter(genome, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 
+		onAddGenome: function(){
+			var dlg = new Dialog({title: "Add This Genome To Group"});
+			var stg = new SelectionToGroup({
+				selection: [this.genome],
+				type: 'genome_group'
+			});
+			on(dlg.domNode, "dialogAction", function(evt){
+				dlg.hide();
+				setTimeout(function(){
+					dlg.destroy();
+				}, 2000);
+			});
+			domConstruct.place(stg.domNode, dlg.containerNode, "first");
+			stg.startup();
+			dlg.startup();
+			dlg.show();
+		},
+
+		onDownload: function(){
+			window.open('ftp://ftp.patricbrc.org/patric2/patric3/genomes/' + this.genome.genome_id);
+		},
+
 		startup: function(){
 			if(this._started){
 				return;
@@ -59652,6 +59754,369 @@ define([
 			if(this.genome){
 				this.set("genome", this.genome);
 			}
+		}
+	});
+});
+
+},
+'p3/widget/GenomeFeatureSummary':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
+	"dojo/dom-class", "./SummaryWidget",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
+
+], function(declare, WidgetBase, on,
+			domClass, SummaryWidget,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct, PathJoin, easing){
+	var LOG10 = Math.log(10);
+
+	return declare([SummaryWidget], {
+		dataModel: "genome_feature",
+		query: "",
+		view: "table",
+		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&ne(feature_type,source)&facet((pivot,(annotation,feature_type)),(mincount,0))",
+		columns: [{
+			label: " ",
+			field: "feature_type"
+		}, {
+			label: "PATRIC",
+			field: "PATRIC",
+			renderCell: function(obj, val, node){
+				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
+			}
+		}, {
+			label: "RefSeq",
+			field: "RefSeq",
+			renderCell: function(obj, val, node){
+				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
+			}
+		}],
+		processData: function(data){
+			//  0 && console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
+
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']){
+				 0 && console.log("INVALID SUMMARY DATA", data);
+				return;
+			}
+			data = data.facet_counts.facet_pivot['annotation,feature_type'];
+			var gfData = {};
+			this._chartLabels = [];
+			var byFeature = {};
+
+			var values = {};
+
+			data.forEach(function(summary){
+				summary.pivot.forEach(function(pv, idx){
+					values[pv.value] = true;
+					byFeature[pv.value] = {feature_type: pv.value};
+				});
+			});
+
+			var values = Object.keys(values);
+
+			values.forEach(function(val, idx){
+				this._chartLabels.push({text: val, value: idx + 1})
+			}, this);
+
+			data.forEach(function(summary){
+				if(!gfData[summary.value]){
+					gfData[summary.value] = []
+				}
+
+				values.forEach(function(val, idx){
+					if(!summary.pivot.some(function(pv){
+							if(pv.value == val){
+								gfData[summary.value].push({
+									text: pv.value,
+									x: idx,
+									y: Math.log(pv.count) / LOG10,
+									count: pv.count,
+									annotation: summary.value
+								});
+								byFeature[pv.value][summary.value] = pv.count;
+								return true;
+							}
+							return false;
+						})){
+						gfData[summary.value].push({text: val, y: 0, x: idx, annotation: summary.value});
+					}
+				})
+			});
+
+			this._tableData = Object.keys(byFeature).map(function(f){
+				return byFeature[f];
+			});
+
+			this.set('data', gfData);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				this.chart = new Chart2D(this.chartNode)
+					.setTheme(Theme)
+					.addPlot("default", {
+						type: "ClusteredColumns",
+						markers: true,
+						gap: 3,
+						animate: {duration: 1000, easing: easing.linear}
+					})
+					.addAxis("x", {
+						majorLabels: false,
+						minorTicks: false,
+						minorLabels: false,
+						microTicks: false,
+						labels: this._chartLabels
+					})
+					.addAxis("y", {
+						title: "Feature Count",
+						vertical: true,
+						majorLabels: true,
+						minorTicks: true,
+						minorLabels: true,
+						microTicks: true,
+						natural: true,
+						includeZero: true,
+						labels: [
+							{value: 0, text: "1"},
+							{value: 1, text: "10"},
+							{value: 2, text: "100"},
+							{value: 3, text: "1000"},
+							{value: 4, text: "10^4"},
+							{value: 5, text: "10^5"},
+							{value: 6, text: "10^6"},
+							{value: 7, text: "10^7"},
+							{value: 8, text: "10^8"},
+							{value: 9, text: "10^9"}
+						]
+					});
+
+				new ChartTooltip(this.chart, "default", {
+					text: function(o){
+						var d = o.run.data[o.index];
+						return "[" + d.annotation + "] " + d.text + "s (" + d.count + ")"
+					}
+				});
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.addSeries(key, this.data[key]);
+				}));
+
+				this.chart.render();
+			}else{
+
+				Object.keys(this.data).forEach(lang.hitch(this, function(key){
+					this.chart.updateSeries(key, this.data[key]);
+				}));
+				this.chart.render();
+
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+			//  0 && console.log("RenderArray: ", this._tableData);
+			this.grid.refresh();
+			this.grid.renderArray(this._tableData);
+			this.grid.sort([{attribute: "PATRIC", descending: true}])
+		}
+	})
+});
+},
+'p3/widget/SummaryWidget':function(){
+define([
+	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
+	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
+	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
+	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
+	"dgrid/extensions/CompoundColumns"
+
+], function(declare, WidgetBase, on, domGeometry, domStyle,
+			domClass, Templated, Template,
+			xhr, lang, Chart2D, Theme, MoveSlice,
+			ChartTooltip, domConstruct, PathJoin, Grid, CompoundColumns){
+	return declare([WidgetBase, Templated], {
+		baseClass: "SummaryWidget",
+		templateString: Template,
+		dataModel: "",
+		query: "",
+		baseQuery: "",
+		data: null,
+		view: "chart",
+		apiServiceUrl: window.App.dataAPI,
+		loading: false,
+		gridOptions: {
+			style: "border: 0px;"
+		},
+		showChart: function(){
+			this.set('view', "chart")
+		},
+		showTable: function(){
+			this.set("view", "table")
+		},
+		onSetView: function(attr, oldVal, view){
+			//  0 && console.log("onSetView ", view);
+			if(oldVal){
+				domClass.remove(this.domNode, oldVal + "View")
+			}
+			domClass.add(this.domNode, view + "View");
+			this["render_" + this.view]();
+		},
+
+		headers: {
+			"accept": "application/solr+json",
+			"content-type": "application/rqlquery+x-www-form-urlencoded",
+			'X-Requested-With': null,
+			'Authorization': (window.App.authorizationToken || "")
+		},
+
+		onSetQuery: function(attr, oldVal, query){
+			//  0 && console.log("SummaryWidget Query: ", this.query + this.baseQuery);
+			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
+				handleAs: "json",
+				headers: this.headers,
+				data: this.query + this.baseQuery
+			}).then(lang.hitch(this, "processData"));
+		},
+
+		onSetData: function(attr, oldVal, data){
+			this["render_" + this.view]();
+		},
+
+		processData: function(data){
+			this.set('data', data);
+		},
+
+		render_chart: function(){
+		},
+
+		render_table: function(){
+			if(!this.grid){
+				var opts = this.gridOptions || {};
+				opts.columns = this.columns;
+				var CompoundColumnGrid = declare([Grid, CompoundColumns]);
+				this.grid = new CompoundColumnGrid(opts, this.tableNode);
+				this.grid.startup();
+			}
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+			domClass.add(this.domNode, this.view + "View");
+
+			this.watch("view", lang.hitch(this, "onSetView"));
+			this.watch("query", lang.hitch(this, "onSetQuery"));
+			this.watch("data", lang.hitch(this, "onSetData"));
+
+			if(this.query && this.dataModel){
+				this.onSetQuery("query", this.query, this.query);
+			}
+		},
+
+		resize: function(changeSize, resultSize){
+			var node = this.domNode;
+
+			// set margin box size, unless it wasn't specified, in which case use current size
+			if(changeSize){
+
+				domGeometry.setMarginBox(node, changeSize);
+			}
+
+			// If either height or width wasn't specified by the user, then query node for it.
+			// But note that setting the margin box and then immediately querying dimensions may return
+			// inaccurate results, so try not to depend on it.
+
+			var mb = resultSize || {};
+			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
+			if(!("h" in mb) || !("w" in mb)){
+				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
+			}
+
+			// Compute and save the size of my border box and content box
+			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
+			var cs = domStyle.getComputedStyle(node);
+			var me = domGeometry.getMarginExtents(node, cs);
+			var be = domGeometry.getBorderExtents(node, cs);
+			var bb = (this._borderBox = {
+				w: mb.w - (me.w + be.w),
+				h: mb.h - (me.h + be.h)
+			});
+			var pe = domGeometry.getPadExtents(node, cs);
+			this._contentBox = {
+				l: domStyle.toPixelValue(node, cs.paddingLeft),
+				t: domStyle.toPixelValue(node, cs.paddingTop),
+				w: bb.w - pe.w,
+				h: bb.h - pe.h
+			};
+
+			var actionBarMB = domGeometry.getMarginBox(this.actionButtonsNode);
+
+			domGeometry.setMarginBox(this.chartNode, {h: this._contentBox.h - actionBarMB.h});
+			domGeometry.setMarginBox(this.tableNode, {h: this._contentBox.h - actionBarMB.h});
+			// this._browser.resize();
+		}
+	})
+});
+
+},
+'dijit/_Templated':function(){
+define([
+	"./_WidgetBase",
+	"./_TemplatedMixin",
+	"./_WidgetsInTemplateMixin",
+	"dojo/_base/array", // array.forEach
+	"dojo/_base/declare", // declare
+	"dojo/_base/lang", // lang.extend lang.isArray
+	"dojo/_base/kernel" // kernel.deprecated
+], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, array, declare, lang, kernel){
+
+	// module:
+	//		dijit/_Templated
+
+	// These arguments can be specified for widgets which are used in templates.
+	// Since any widget can be specified as sub widgets in template, mix it
+	// into the base widget class.  (This is a hack, but it's effective.)
+	// Remove for 2.0.   Also, hide from API doc parser.
+	lang.extend(_WidgetBase, /*===== {} || =====*/ {
+		waiRole: "",
+		waiState:""
+	});
+
+	return declare("dijit._Templated", [_TemplatedMixin, _WidgetsInTemplateMixin], {
+		// summary:
+		//		Deprecated mixin for widgets that are instantiated from a template.
+		//		Widgets should use _TemplatedMixin plus if necessary _WidgetsInTemplateMixin instead.
+
+		// widgetsInTemplate: [protected] Boolean
+		//		Should we parse the template to find widgets that might be
+		//		declared in markup inside it?  False by default.
+		widgetsInTemplate: false,
+
+		constructor: function(){
+			kernel.deprecated(this.declaredClass + ": dijit._Templated deprecated, use dijit._TemplatedMixin and if necessary dijit._WidgetsInTemplateMixin", "", "2.0");
+		},
+
+		_processNode: function(baseNode, getAttrFunc){
+			var ret = this.inherited(arguments);
+
+			// Do deprecated waiRole and waiState
+			var role = getAttrFunc(baseNode, "waiRole");
+			if(role){
+				baseNode.setAttribute("role", role);
+			}
+			var values = getAttrFunc(baseNode, "waiState");
+			if(values){
+				array.forEach(values.split(/\s*,\s*/), function(stateValue){
+					if(stateValue.indexOf('-') != -1){
+						var pair = stateValue.split('-');
+						baseNode.setAttribute("aria-"+pair[0], pair[1]);
+					}
+				});
+			}
+
+			return ret;
 		}
 	});
 });
@@ -73040,369 +73505,6 @@ define(["dijit/Tooltip", "dojo/_base/lang", "dojo/_base/declare", "dojo/_base/wi
 });
 
 },
-'p3/widget/GenomeFeatureSummary':function(){
-define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "./SummaryWidget",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "./PATRICTheme", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dojo/fx/easing"
-
-], function(declare, WidgetBase, on,
-			domClass, SummaryWidget,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, easing){
-	var LOG10 = Math.log(10);
-
-	return declare([SummaryWidget], {
-		dataModel: "genome_feature",
-		query: "",
-		view: "table",
-		baseQuery: "&limit(1)&in(annotation,(PATRIC,RefSeq))&ne(feature_type,source)&facet((pivot,(annotation,feature_type)),(mincount,0))",
-		columns: [{
-			label: " ",
-			field: "feature_type"
-		}, {
-			label: "PATRIC",
-			field: "PATRIC",
-			renderCell: function(obj, val, node){
-				node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + "</a>") : "0"
-			}
-		}, {
-			label: "RefSeq",
-			field: "RefSeq",
-			renderCell: function(obj, val, node){
-				node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + "</a>") : "0"
-			}
-		}],
-		processData: function(data){
-			//  0 && console.log("FACET PIVOTS: ", data.facet_counts.facet_pivot['annotation,feature_type'])
-
-			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['annotation,feature_type']){
-				 0 && console.log("INVALID SUMMARY DATA", data);
-				return;
-			}
-			data = data.facet_counts.facet_pivot['annotation,feature_type'];
-			var gfData = {};
-			this._chartLabels = [];
-			var byFeature = {};
-
-			var values = {};
-
-			data.forEach(function(summary){
-				summary.pivot.forEach(function(pv, idx){
-					values[pv.value] = true;
-					byFeature[pv.value] = {feature_type: pv.value};
-				});
-			});
-
-			var values = Object.keys(values);
-
-			values.forEach(function(val, idx){
-				this._chartLabels.push({text: val, value: idx + 1})
-			}, this);
-
-			data.forEach(function(summary){
-				if(!gfData[summary.value]){
-					gfData[summary.value] = []
-				}
-
-				values.forEach(function(val, idx){
-					if(!summary.pivot.some(function(pv){
-							if(pv.value == val){
-								gfData[summary.value].push({
-									text: pv.value,
-									x: idx,
-									y: Math.log(pv.count) / LOG10,
-									count: pv.count,
-									annotation: summary.value
-								});
-								byFeature[pv.value][summary.value] = pv.count;
-								return true;
-							}
-							return false;
-						})){
-						gfData[summary.value].push({text: val, y: 0, x: idx, annotation: summary.value});
-					}
-				})
-			});
-
-			this._tableData = Object.keys(byFeature).map(function(f){
-				return byFeature[f];
-			});
-
-			this.set('data', gfData);
-		},
-
-		render_chart: function(){
-
-			if(!this.chart){
-				this.chart = new Chart2D(this.chartNode)
-					.setTheme(Theme)
-					.addPlot("default", {
-						type: "ClusteredColumns",
-						markers: true,
-						gap: 3,
-						animate: {duration: 1000, easing: easing.linear}
-					})
-					.addAxis("x", {
-						majorLabels: false,
-						minorTicks: false,
-						minorLabels: false,
-						microTicks: false,
-						labels: this._chartLabels
-					})
-					.addAxis("y", {
-						title: "Feature Count",
-						vertical: true,
-						majorLabels: true,
-						minorTicks: true,
-						minorLabels: true,
-						microTicks: true,
-						natural: true,
-						includeZero: true,
-						labels: [
-							{value: 0, text: "1"},
-							{value: 1, text: "10"},
-							{value: 2, text: "100"},
-							{value: 3, text: "1000"},
-							{value: 4, text: "10^4"},
-							{value: 5, text: "10^5"},
-							{value: 6, text: "10^6"},
-							{value: 7, text: "10^7"},
-							{value: 8, text: "10^8"},
-							{value: 9, text: "10^9"}
-						]
-					});
-
-				new ChartTooltip(this.chart, "default", {
-					text: function(o){
-						var d = o.run.data[o.index];
-						return "[" + d.annotation + "] " + d.text + "s (" + d.count + ")"
-					}
-				});
-
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.addSeries(key, this.data[key]);
-				}));
-
-				this.chart.render();
-			}else{
-
-				Object.keys(this.data).forEach(lang.hitch(this, function(key){
-					this.chart.updateSeries(key, this.data[key]);
-				}));
-				this.chart.render();
-
-			}
-		},
-
-		render_table: function(){
-			this.inherited(arguments);
-			//  0 && console.log("RenderArray: ", this._tableData);
-			this.grid.refresh();
-			this.grid.renderArray(this._tableData);
-			this.grid.sort([{attribute: "PATRIC", descending: true}])
-		}
-	})
-});
-},
-'p3/widget/SummaryWidget':function(){
-define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
-	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"dgrid/extensions/CompoundColumns"
-
-], function(declare, WidgetBase, on, domGeometry, domStyle,
-			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid, CompoundColumns){
-	return declare([WidgetBase, Templated], {
-		baseClass: "SummaryWidget",
-		templateString: Template,
-		dataModel: "",
-		query: "",
-		baseQuery: "",
-		data: null,
-		view: "chart",
-		apiServiceUrl: window.App.dataAPI,
-		loading: false,
-		gridOptions: {
-			style: "border: 0px;"
-		},
-		showChart: function(){
-			this.set('view', "chart")
-		},
-		showTable: function(){
-			this.set("view", "table")
-		},
-		onSetView: function(attr, oldVal, view){
-			//  0 && console.log("onSetView ", view);
-			if(oldVal){
-				domClass.remove(this.domNode, oldVal + "View")
-			}
-			domClass.add(this.domNode, view + "View");
-			this["render_" + this.view]();
-		},
-
-		headers: {
-			"accept": "application/solr+json",
-			"content-type": "application/rqlquery+x-www-form-urlencoded",
-			'X-Requested-With': null,
-			'Authorization': (window.App.authorizationToken || "")
-		},
-
-		onSetQuery: function(attr, oldVal, query){
-			//  0 && console.log("SummaryWidget Query: ", this.query + this.baseQuery);
-			return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
-				handleAs: "json",
-				headers: this.headers,
-				data: this.query + this.baseQuery
-			}).then(lang.hitch(this, "processData"));
-		},
-
-		onSetData: function(attr, oldVal, data){
-			this["render_" + this.view]();
-		},
-
-		processData: function(data){
-			this.set('data', data);
-		},
-
-		render_chart: function(){
-		},
-
-		render_table: function(){
-			if(!this.grid){
-				var opts = this.gridOptions || {};
-				opts.columns = this.columns;
-				var CompoundColumnGrid = declare([Grid, CompoundColumns]);
-				this.grid = new CompoundColumnGrid(opts, this.tableNode);
-				this.grid.startup();
-			}
-		},
-
-		postCreate: function(){
-			this.inherited(arguments);
-			domClass.add(this.domNode, this.view + "View");
-
-			this.watch("view", lang.hitch(this, "onSetView"));
-			this.watch("query", lang.hitch(this, "onSetQuery"));
-			this.watch("data", lang.hitch(this, "onSetData"));
-
-			if(this.query && this.dataModel){
-				this.onSetQuery("query", this.query, this.query);
-			}
-		},
-
-		resize: function(changeSize, resultSize){
-			var node = this.domNode;
-
-			// set margin box size, unless it wasn't specified, in which case use current size
-			if(changeSize){
-
-				domGeometry.setMarginBox(node, changeSize);
-			}
-
-			// If either height or width wasn't specified by the user, then query node for it.
-			// But note that setting the margin box and then immediately querying dimensions may return
-			// inaccurate results, so try not to depend on it.
-
-			var mb = resultSize || {};
-			lang.mixin(mb, changeSize || {});       // changeSize overrides resultSize
-			if(!("h" in mb) || !("w" in mb)){
-				mb = lang.mixin(domGeometry.getMarginBox(node), mb);    // just use domGeometry.marginBox() to fill in missing values
-			}
-
-			// Compute and save the size of my border box and content box
-			// (w/out calling domGeometry.getContentBox() since that may fail if size was recently set)
-			var cs = domStyle.getComputedStyle(node);
-			var me = domGeometry.getMarginExtents(node, cs);
-			var be = domGeometry.getBorderExtents(node, cs);
-			var bb = (this._borderBox = {
-				w: mb.w - (me.w + be.w),
-				h: mb.h - (me.h + be.h)
-			});
-			var pe = domGeometry.getPadExtents(node, cs);
-			this._contentBox = {
-				l: domStyle.toPixelValue(node, cs.paddingLeft),
-				t: domStyle.toPixelValue(node, cs.paddingTop),
-				w: bb.w - pe.w,
-				h: bb.h - pe.h
-			};
-
-			var actionBarMB = domGeometry.getMarginBox(this.actionButtonsNode);
-
-			domGeometry.setMarginBox(this.chartNode, {h: this._contentBox.h - actionBarMB.h});
-			domGeometry.setMarginBox(this.tableNode, {h: this._contentBox.h - actionBarMB.h});
-			// this._browser.resize();
-		}
-	})
-});
-
-},
-'dijit/_Templated':function(){
-define([
-	"./_WidgetBase",
-	"./_TemplatedMixin",
-	"./_WidgetsInTemplateMixin",
-	"dojo/_base/array", // array.forEach
-	"dojo/_base/declare", // declare
-	"dojo/_base/lang", // lang.extend lang.isArray
-	"dojo/_base/kernel" // kernel.deprecated
-], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, array, declare, lang, kernel){
-
-	// module:
-	//		dijit/_Templated
-
-	// These arguments can be specified for widgets which are used in templates.
-	// Since any widget can be specified as sub widgets in template, mix it
-	// into the base widget class.  (This is a hack, but it's effective.)
-	// Remove for 2.0.   Also, hide from API doc parser.
-	lang.extend(_WidgetBase, /*===== {} || =====*/ {
-		waiRole: "",
-		waiState:""
-	});
-
-	return declare("dijit._Templated", [_TemplatedMixin, _WidgetsInTemplateMixin], {
-		// summary:
-		//		Deprecated mixin for widgets that are instantiated from a template.
-		//		Widgets should use _TemplatedMixin plus if necessary _WidgetsInTemplateMixin instead.
-
-		// widgetsInTemplate: [protected] Boolean
-		//		Should we parse the template to find widgets that might be
-		//		declared in markup inside it?  False by default.
-		widgetsInTemplate: false,
-
-		constructor: function(){
-			kernel.deprecated(this.declaredClass + ": dijit._Templated deprecated, use dijit._TemplatedMixin and if necessary dijit._WidgetsInTemplateMixin", "", "2.0");
-		},
-
-		_processNode: function(baseNode, getAttrFunc){
-			var ret = this.inherited(arguments);
-
-			// Do deprecated waiRole and waiState
-			var role = getAttrFunc(baseNode, "waiRole");
-			if(role){
-				baseNode.setAttribute("role", role);
-			}
-			var values = getAttrFunc(baseNode, "waiState");
-			if(values){
-				array.forEach(values.split(/\s*,\s*/), function(stateValue){
-					if(stateValue.indexOf('-') != -1){
-						var pair = stateValue.split('-');
-						baseNode.setAttribute("aria-"+pair[0], pair[1]);
-					}
-				});
-			}
-
-			return ret;
-		}
-	});
-});
-
-},
 'dgrid/extensions/CompoundColumns':function(){
 define([
 	"dojo/_base/lang",
@@ -83542,7 +83644,15 @@ define([
 
 				// re-draw heatmap
 				Topic.publish("ProteinFamilies", "refreshHeatmap");
-			}));
+			}), function(err){
+
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
+				new Dialog({
+					title: err.status,
+					content: err.text
+				}).show();
+			});
 		}
 	});
 });
@@ -84644,11 +84754,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./TrackController", "circulus/Viewer", "circulus/LineTrack",
-	"circulus/SectionTrack", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
 ], function(declare, BorderContainer, on,
 			ActionBar, ContainerActionBar, TabContainer,
 			TrackController, CirculusViewer, LineTrack,
-			SectionTrack, lang, xhr, DataItemFormatter, PathJoin){
+			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
 
 	return declare([BorderContainer], {
 		gutters: true,
@@ -84752,13 +84862,26 @@ define([
 			 0 && console.log("RefSeqs: ", refseqs);
 
 			this.viewer.addTrack({
+				type: SectionTrackWithLabel,
+				options: {
+					title: "Position Label (Mbp)",
+					trackWidth: 0.1,
+					//fill: "#eeeeee",
+					stroke: null,
+					gap: 1,
+					background: {fill: null, stroke: null}
+				},
+				data: refseqs
+			}, "perimeter", false);
+
+			this.viewer.addTrack({
 				type: SectionTrack,
 				options: {
 					title: "Contigs/Chromosomes",
-					trackWidth: 0.02,
+					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
-					gap: .5,
+					gap: 1,
 					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
@@ -84768,7 +84891,7 @@ define([
 					}
 				},
 				data: refseqs
-			}, "perimeter", true);
+			}, "outer", true);
 
 			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
 			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
@@ -84804,7 +84927,7 @@ define([
 					min: 0,
 					trackWidth: 0.18,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
@@ -84820,7 +84943,7 @@ define([
 					scoreProperty: "skew",
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#F3CDA0", stroke: null}
 				}
 			}, "outer");
@@ -85022,10 +85145,12 @@ define([
 					 0 && console.log("Click Visible");
 					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
+						 0 && console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
 						event.track.set('visible', false)
 					}else{
+						 0 && console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
 						event.track.set('visible', true)
@@ -88065,7 +88190,7 @@ define([
 				//  0 && console.log("Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
-			var lastSectionEnd=0;
+			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
 			var gap = (this.gap);
@@ -88128,6 +88253,275 @@ define([
 
 			//  0 && console.log("Set Sections: ", sections)
 			this.set("sections", sections)
+
+		}
+	});
+});
+
+
+},
+'circulus/SectionTrackWithLabel':function(){
+define([
+        "dojo/_base/declare","dojox/gfx","dojox/gfx/matrix",
+        "dojo/_base/lang","./SectionTrack","dojo/on","dijit/Dialog",
+        "dijit/TooltipDialog","dijit/popup"
+],function(
+        declare,gfx,matrix,
+        lang,Track,on,Dialog,
+        TooltipDialog,Popup
+){
+
+	var TTDialog = new TooltipDialog({
+		onMouseLeave: function(){
+		    Popup.close(TTDialog);
+		}
+	})
+	Popup.moveOffScreen(TTDialog);
+
+	return declare([Track], {
+		max:100,
+		min: 0,
+		stroke: null,
+		//stroke:"",//{color: "black", width:.25},
+		fill: "grey",
+		sectionIdProperty: "accession",
+		sections: null,
+		referenceTrack: null,
+
+		constructor: function(){
+			this.surface.connect("onclick", lang.hitch(this,function(evt){
+				 0 && console.log("ON CLICK: ", evt)
+				if (evt.gfxTarget.data){
+					if (!this.dialog){
+						this.dialog = new Dialog({});
+					}
+
+					this.dialog.set('content',this.formatDialogContent(evt.gfxTarget.data));
+					this.dialog.show();
+				}
+			}));
+			var inside=false;
+			var timer;
+			// on(this.surface.getEventSource(),"mouseover", function(evt){
+			this.surface.connect("onmouseover", lang.hitch(this,function(evt){
+				inside=true;
+				 0 && console.log("Mouse Over EVT: ", evt)
+				if (!evt.gfxTarget.data){
+					return;
+				}
+				var cur = evt.gfxTarget.getFill();
+				//  0 && console.log("Current: ", cur)
+				evt.gfxTarget.currentFill = cur;
+				evt.gfxTarget.setFill('#ff0000');
+
+				TTDialog.set('content', this.formatPopupContent(evt.gfxTarget.data))
+
+				Popup.open({
+					// parent: this,
+					x: evt.x-10,
+					y: evt.y+15,
+					popup: TTDialog
+					//around: evt.gfxTarget.rawNode
+				})
+			}))
+
+			// on(this.surface.getEventSource(),"mouseout", function(evt){
+			this.surface.connect("onmouseout", function(evt){
+				inside=false;
+				//  0 && console.log("Mouse Out EVT: ", evt, evt.gfxTarget.currentFill);
+				if (evt.gfxTarget.currentFill){
+					evt.gfxTarget.setFill(evt.gfxTarget.currentFill)
+				}
+				if (timer){
+					clearTimeout(timer);
+				}
+				timer = setTimeout(function(){
+					if (!inside){
+						Popup.close(TTDialog);
+					}
+				},1500)
+				
+			})
+		},
+
+		render: function(){
+			 0 && console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			if (this.visible){
+				//  0 && console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
+				this.renderBackground();
+
+				if (this.data && this.data.length>0){
+					//  0 && console.log("RENDER DATA: ", this.data)
+					this.set("loading", false)
+					this.renderData(this.data);		
+				}else{
+					this.set("loading", true);
+				}
+			}
+		},
+		//gap: .25,
+
+		renderData: function(data) {
+			var totalLength = 0;
+			var numSections = data.length;
+			var sections={}
+			data.forEach(function(d){
+				totalLength += d.length;
+				 0 && console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+			})
+
+			var lastSectionEnd=270;
+
+			var deg = (360 - (this.gap*numSections))/totalLength;
+			 0 && console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+
+			var gap = (this.gap);
+			data.forEach(lang.hitch(this,function(d,index){
+				var trackWidth = this.get("trackWidth");
+				//  0 && console.log("Render Section Data GroupIdx: ", this.surface.groupIdx);
+
+				d.startAngle = deg + lastSectionEnd;
+				d.endAngle = (deg*d.length) + lastSectionEnd;
+				sections[d[this.sectionIdProperty]]=d;
+				var startRads = d.startAngle *Math.PI/180;
+				var rads = d.endAngle *Math.PI/180;
+				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
+				 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+
+				var innerStart= {
+					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
+					y: this.centerPoint.y + this.internalRadius * Math.sin(startRads)
+				}
+
+				var outerStart = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(startRads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(startRads)
+				}
+
+				var outerEnd = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(rads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(rads)
+				}
+				var innerEnd = {
+					x: this.centerPoint.x + (this.internalRadius) * Math.cos(rads),
+					y: this.centerPoint.y  + (this.internalRadius) * Math.sin(rads) 
+				}
+
+				var outerRadius = this.internalRadius + trackWidth;
+				var innerRadius = this.internalRadius;
+				var large=false;
+				if ((deg*d.length)>180){
+					large=true;
+				}
+
+				var i=0;
+				var line;
+				var textShape;
+				var	textouterEnd;
+				textouterEnd = {
+					x: this.centerPoint.x + (this.internalRadius + trackWidth) * Math.cos(startRads),
+					y: this.centerPoint.y + (this.internalRadius + trackWidth) * Math.sin(startRads)
+				}
+				
+				var unit = 10000;
+				
+				if (totalLength >5000000) {
+					unit = 100000;
+				}
+				else if (totalLength <300000)
+				{
+					unit = 1000;
+				}
+				
+				var factor = unit/1000000;	
+				var decimal = Math									
+				var ticks = Math.round(d.length/unit);	
+				// 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " ticks: ", ticks, " factor: ", factor);
+				var mydeg = deg;
+				var mystartRads = startRads;
+
+				var myText = 0;
+				myText = myText.toFixed(Math.log10(1/factor)-1);
+
+				line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+				textShape = this.surface.createTextPath({text: myText})
+						.moveTo(outerStart)
+						.lineTo(textouterEnd)
+						.setFill("grey")
+						.setFont({size: "8pt"});
+
+				if (this.fill) {
+					line.setStroke(this.fill);
+					//textShape.setStroke(this.fill);
+					textShape.setFill(this.fill);
+				}
+				this._foregroundColorPaths.push(line);
+				this._foregroundColorPaths.push(textShape);
+				
+
+				for (i=0; i<ticks-1; i++)
+				{
+				 	mydeg = d.startAngle + i*unit*(360 - (this.gap*numSections))/totalLength;
+					mystartRads = mydeg *Math.PI/180;
+					// 0 && console.log("i: ", i, " mydeg: ", mydeg, " mystartRads: ", mystartRads);
+
+					innerStart= {
+						x: this.centerPoint.x + this.internalRadius * Math.cos(mystartRads),
+						y: this.centerPoint.y + this.internalRadius * Math.sin(mystartRads)
+					}
+
+					outerStart = {
+						x: this.centerPoint.x + (this.internalRadius + trackWidth/5) * Math.cos(mystartRads),
+						y: this.centerPoint.y + (this.internalRadius + trackWidth/5) * Math.sin(mystartRads)
+					}
+
+					textouterEnd = {
+						x: this.centerPoint.x + (this.internalRadius + trackWidth) * Math.cos(mystartRads),
+						y: this.centerPoint.y + (this.internalRadius + trackWidth) * Math.sin(mystartRads)
+					}
+
+					// 0 && console.log("Degrees: ", mydeg, " i: ", i, " ticks: ", ticks);
+
+					myText = i*factor;
+					myText = myText.toFixed(Math.log10(1/factor)-1);
+					if (i!=0) {					
+						if (i%10 == 0)
+						{
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+							textShape = this.surface.createTextPath({text: myText})
+								.moveTo(outerStart)
+								.lineTo(textouterEnd)
+								.setFill("grey")
+								.setFont({size: "8pt"});
+						}
+						else if (i%5 == 0)
+						{
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");
+						}
+						else
+						{
+							outerStart = {
+								x: this.centerPoint.x + (this.internalRadius + trackWidth/10) * Math.cos(mystartRads),
+								y: this.centerPoint.y + (this.internalRadius + trackWidth/10) * Math.sin(mystartRads)
+							}
+							line = this.surface.createLine({ x1: innerStart.x, y1: innerStart.y, x2:outerStart.x, y2:outerStart.y }).setStroke("grey");					
+						}
+							
+						if (this.fill) {
+							line.setStroke(this.fill);
+							//textShape.setStroke(this.fill);
+							textShape.setFill(this.fill);
+						}
+						this._foregroundColorPaths.push(line);
+						this._foregroundColorPaths.push(textShape);
+						
+					}
+				
+				}	
+			}));
+
+			 0 && console.log("Set Sections: ", sections);
+			this.set("sections", sections);
 
 		}
 	});
@@ -92093,6 +92487,12 @@ define([
 			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
 
 			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
+			// check whether we have extra filter
+			if(this.state.taxonomy && this.state.genome_ids
+				&& this.state.genome_ids.length !== 25000
+				&& this.state.taxonomy.genomes !== this.state.genome_ids.length){
+				taxonQuery += "&" + this.state.search;
+			}
 			sumWidgets.forEach(function(w){
 				if(this[w]){
 					this[w].set('query', taxonQuery);
@@ -109489,17 +109889,17 @@ define([
 },
 'p3/widget/FeatureOverview':function(){
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer"
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
+	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
+	"../util/PathJoin", "dgrid/Grid",
+	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
-], function(declare, WidgetBase, on,
-			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
+], function(declare, lang, on, xhr,
+			domClass, domConstruct, Template,
+			WidgetBase, Templated, Dialog,
+			PathJoin, Grid,
+			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -109510,6 +109910,19 @@ define([
 			'Authorization': window.App.authorizationToken || ""
 		}
 	};
+
+	// building add to group dialog for this page
+	var dlg = new Dialog({title: "Add This Feature To Group"});
+	var stg = new SelectionToGroup({
+		selection: [],
+		type: 'feature_group'
+	});
+	on(dlg.domNode, "dialogAction", function(evt){
+		dlg.hide();
+	});
+	domConstruct.place(stg.domNode, dlg.containerNode, "first");
+	stg.startup();
+	dlg.startup();
 
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
@@ -109530,6 +109943,8 @@ define([
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
+
+			stg.selection.push(feature);
 
 			this.getSummaryData();
 			this.set("publications", feature);
@@ -109794,6 +110209,8 @@ define([
 				var url = PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)");
 				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
 
+					if(data.length === 0) return;
+
 					var uniprotKbAccessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
@@ -109836,7 +110253,7 @@ define([
 			}));
 
 			// single gene viewer
-			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
+			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
 			var rangeEnd = (centerPos + 5000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
@@ -109849,7 +110266,8 @@ define([
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
-					features: data
+					features: data,
+					pinStart: this.feature.start
 				});
 			}));
 
@@ -109863,6 +110281,10 @@ define([
 				}));
 			}
 		},
+
+		onAddFeature: function(evt){
+			dlg.show();
+		},
 		startup: function(){
 			if(this._started){
 				return;
@@ -109870,736 +110292,6 @@ define([
 			this.inherited(arguments);
 		}
 	});
-});
-
-},
-'dojox/charting/themes/ThreeD':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "../Theme", "./gradientGenerator", "./PrimaryColors", "dojo/colors" /* for sanitize */, "./common"],
-	function(lang, ArrayUtil, Theme, gradientGenerator, PrimaryColors, themes){
-
-	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],	// the same is in PrimaryColors
-		defaultFill = {type: "linear", space: "shape", x1: 0, y1: 0, x2: 100, y2: 0},
-		// 3D cylinder map is calculated using dojox.gfx3d
-		cyl3dMap = [
-			{o: 0.00, i: 174}, {o: 0.08, i: 231}, {o: 0.18, i: 237}, {o: 0.30, i: 231},
-			{o: 0.39, i: 221}, {o: 0.49, i: 206}, {o: 0.58, i: 187}, {o: 0.68, i: 165},
-			{o: 0.80, i: 128}, {o: 0.90, i: 102}, {o: 1.00, i: 174}
-		],
-		hiliteIndex = 2, hiliteIntensity = 100,
-		cyl3dFills = ArrayUtil.map(colors, function(c){
-			var fill = lang.delegate(defaultFill),
-				colors = fill.colors = gradientGenerator.generateGradientByIntensity(c, cyl3dMap),
-				hilite = colors[hiliteIndex].color;
-			// add highlight
-			hilite.r += hiliteIntensity;
-			hilite.g += hiliteIntensity;
-			hilite.b += hiliteIntensity;
-			hilite.sanitize();
-			return fill;
-		});
-
-	themes.ThreeD = PrimaryColors.clone();
-	themes.ThreeD.series.shadow = {dx: 1, dy: 1, width: 3, color: [0, 0, 0, 0.15]};
-
-	themes.ThreeD.next = function(elementType, mixin, doPost){
-		if(elementType == "bar" || elementType == "column"){
-			// custom processing for bars and columns: substitute fills
-			var index = this._current % this.seriesThemes.length,
-				s = this.seriesThemes[index], old = s.fill;
-			s.fill = cyl3dFills[index];
-			var theme = Theme.prototype.next.apply(this, arguments);
-			// cleanup
-			s.fill = old;
-			return theme;
-		}
-		return Theme.prototype.next.apply(this, arguments);
-	};
-	
-	return themes.ThreeD;
-});
-
-},
-'dojox/charting/Theme':function(){
-define(["dojo/_base/lang", "dojo/_base/declare", "dojo/_base/Color", "./SimpleTheme",
-	    "dojox/color/_base", "dojox/color/Palette", "dojox/gfx/gradutils"],
-	function(lang, declare, Color, SimpleTheme, colorX, Palette){
-	
-	var Theme = declare("dojox.charting.Theme", SimpleTheme, {
-	// summary:
-	//		A Theme is a pre-defined object, primarily JSON-based, that makes up the definitions to
-	//		style a chart. It extends SimpleTheme with additional features like color definition by
-	//		palettes and gradients definition.
-	});
-
-	/*=====
-	var __DefineColorArgs = {
-		// summary:
-		//		The arguments object that can be passed to define colors for a theme.
-		// num: Number?
-		//		The number of colors to generate.  Defaults to 5.
-		// colors: String[]|dojo/_base/Color[]?
-		//		A pre-defined set of colors; this is passed through to the Theme directly.
-		// hue: Number?
-		//		A hue to base the generated colors from (a number from 0 - 359).
-		// saturation: Number?
-		//		If a hue is passed, this is used for the saturation value (0 - 100).
-		// low: Number?
-		//		An optional value to determine the lowest value used to generate a color (HSV model)
-		// high: Number?
-		//		An optional value to determine the highest value used to generate a color (HSV model)
-		// base: String|dojo/_base/Color?
-		//		A base color to use if we are defining colors using dojox.color.Palette
-		// generator: String?
-		//		The generator function name from dojox/color/Palette.
-	};
-	=====*/
-	lang.mixin(Theme, {
-
-		defineColors: function(kwArgs){
-			// summary:
-			//		Generate a set of colors for the theme based on keyword
-			//		arguments.
-			// kwArgs: __DefineColorArgs
-			//		The arguments object used to define colors.
-			// returns: dojo/_base/Color[]
-			//		An array of colors for use in a theme.
-			//
-			// example:
-			//	|	var colors = Theme.defineColors({
-			//	|		base: "#369",
-			//	|		generator: "compound"
-			//	|	});
-			//
-			// example:
-			//	|	var colors = Theme.defineColors({
-			//	|		hue: 60,
-			//	|		saturation: 90,
-			//	|		low: 30,
-			//	|		high: 80
-			//	|	});
-			kwArgs = kwArgs || {};
-			var l, c = [], n = kwArgs.num || 5;	// the number of colors to generate
-			if(kwArgs.colors){
-				// we have an array of colors predefined, so fix for the number of series.
-				l = kwArgs.colors.length;
-				for(var i = 0; i < n; i++){
-					c.push(kwArgs.colors[i % l]);
-				}
-				return c;	//	dojo.Color[]
-			}
-			if(kwArgs.hue){
-				// single hue, generate a set based on brightness
-				var s = kwArgs.saturation || 100,	// saturation
-					st = kwArgs.low || 30,
-					end = kwArgs.high || 90;
-				// we'd like it to be a little on the darker side.
-				l = (end + st) / 2;
-				// alternately, use "shades"
-				return Palette.generate(
-					colorX.fromHsv(kwArgs.hue, s, l), "monochromatic"
-				).colors;
-			}
-			if(kwArgs.generator){
-				//	pass a base color and the name of a generator
-				return colorX.Palette.generate(kwArgs.base, kwArgs.generator).colors;
-			}
-			return c;	//	dojo.Color[]
-		},
-
-		generateGradient: function(fillPattern, colorFrom, colorTo){
-			var fill = lang.delegate(fillPattern);
-			fill.colors = [
-				{offset: 0, color: colorFrom},
-				{offset: 1, color: colorTo}
-			];
-			return fill;
-		},
-
-		generateHslColor: function(color, luminance){
-			color = new Color(color);
-			var hsl    = color.toHsl(),
-				result = colorX.fromHsl(hsl.h, hsl.s, luminance);
-			result.a = color.a;	// add missing opacity
-			return result;
-		},
-
-		generateHslGradient: function(color, fillPattern, lumFrom, lumTo){
-			color = new Color(color);
-			var hsl       = color.toHsl(),
-				colorFrom = colorX.fromHsl(hsl.h, hsl.s, lumFrom),
-				colorTo   = colorX.fromHsl(hsl.h, hsl.s, lumTo);
-			colorFrom.a = colorTo.a = color.a;	// add missing opacity
-			return Theme.generateGradient(fillPattern, colorFrom, colorTo);	// Object
-		}
-	});
-
-	// for compatibility
-	Theme.defaultMarkers = SimpleTheme.defaultMarkers;
-	Theme.defaultColors = SimpleTheme.defaultColors;
-	Theme.defaultTheme = SimpleTheme.defaultTheme;
-
-	return Theme;
-});
-
-},
-'dojox/color/Palette':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "./_base"],
-	function(lang, arr, dxc){
-
-	/***************************************************************
-	*	dojox.color.Palette
-	*
-	*	The Palette object is loosely based on the color palettes
-	*	at Kuler (http://kuler.adobe.com).  They are 5 color palettes
-	*	with the base color considered to be the third color in the
-	*	palette (for generation purposes).
-	*
-	*	Palettes can be generated from well-known algorithms or they
-	* 	can be manually created by passing an array to the constructor.
-	*
-	*	Palettes can be transformed, using a set of specific params
-	*	similar to the way shapes can be transformed with dojox.gfx.
-	*	However, unlike with transformations in dojox.gfx, transforming
-	* 	a palette will return you a new Palette object, in effect
-	* 	a clone of the original.
-	***************************************************************/
-
-	//	ctor ----------------------------------------------------------------------------
-	dxc.Palette = function(/* String|Array|dojox.color.Color|dojox.color.Palette */base){
-		// summary:
-		//		An object that represents a palette of colors.
-		// description:
-		//		A Palette is a representation of a set of colors.  While the standard
-		//		number of colors contained in a palette is 5, it can really handle any
-		//		number of colors.
-		//
-		//		A palette is useful for the ability to transform all the colors in it
-		//		using a simple object-based approach.  In addition, you can generate
-		//		palettes using dojox.color.Palette.generate; these generated palettes
-		//		are based on the palette generators at http://kuler.adobe.com.
-
-		// colors: dojox.color.Color[]
-		//		The actual color references in this palette.
-		this.colors = [];
-		if(base instanceof dxc.Palette){
-			this.colors = base.colors.slice(0);
-		}
-		else if(base instanceof dxc.Color){
-			this.colors = [ null, null, base, null, null ];
-		}
-		else if(lang.isArray(base)){
-			this.colors = arr.map(base.slice(0), function(item){
-				if(lang.isString(item)){ return new dxc.Color(item); }
-				return item;
-			});
-		}
-		else if (lang.isString(base)){
-			this.colors = [ null, null, new dxc.Color(base), null, null ];
-		}
-	}
-
-	//	private functions ---------------------------------------------------------------
-
-	//	transformations
-	function tRGBA(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var r=(param=="dr")?item.r+val:item.r,
-				g=(param=="dg")?item.g+val:item.g,
-				b=(param=="db")?item.b+val:item.b,
-				a=(param=="da")?item.a+val:item.a
-			ret.colors.push(new dxc.Color({
-				r: Math.min(255, Math.max(0, r)),
-				g: Math.min(255, Math.max(0, g)),
-				b: Math.min(255, Math.max(0, b)),
-				a: Math.min(1, Math.max(0, a))
-			}));
-		});
-		return ret;
-	}
-
-	function tCMY(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toCmy(),
-				c=(param=="dc")?o.c+val:o.c,
-				m=(param=="dm")?o.m+val:o.m,
-				y=(param=="dy")?o.y+val:o.y;
-			ret.colors.push(dxc.fromCmy(
-				Math.min(100, Math.max(0, c)),
-				Math.min(100, Math.max(0, m)),
-				Math.min(100, Math.max(0, y))
-			));
-		});
-		return ret;
-	}
-
-	function tCMYK(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toCmyk(),
-				c=(param=="dc")?o.c+val:o.c,
-				m=(param=="dm")?o.m+val:o.m,
-				y=(param=="dy")?o.y+val:o.y,
-				k=(param=="dk")?o.b+val:o.b;
-			ret.colors.push(dxc.fromCmyk(
-				Math.min(100, Math.max(0, c)),
-				Math.min(100, Math.max(0, m)),
-				Math.min(100, Math.max(0, y)),
-				Math.min(100, Math.max(0, k))
-			));
-		});
-		return ret;
-	}
-
-	function tHSL(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toHsl(),
-				h=(param=="dh")?o.h+val:o.h,
-				s=(param=="ds")?o.s+val:o.s,
-				l=(param=="dl")?o.l+val:o.l;
-			ret.colors.push(dxc.fromHsl(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, l))));
-		});
-		return ret;
-	}
-
-	function tHSV(p, param, val){
-		var ret = new dxc.Palette();
-		ret.colors = [];
-		arr.forEach(p.colors, function(item){
-			var o=item.toHsv(),
-				h=(param=="dh")?o.h+val:o.h,
-				s=(param=="ds")?o.s+val:o.s,
-				v=(param=="dv")?o.v+val:o.v;
-			ret.colors.push(dxc.fromHsv(h%360, Math.min(100, Math.max(0, s)), Math.min(100, Math.max(0, v))));
-		});
-		return ret;
-	}
-
-	//	helper functions
-	function rangeDiff(val, low, high){
-		//	given the value in a range from 0 to high, find the equiv
-		//		using the range low to high.
-		return high-((high-val)*((high-low)/high));
-	}
-
-/*=====
-var __transformArgs = {
-	// summary:
-	//		The keywords argument to be passed to the dojox.color.Palette.transform function.  Note that
-	//		while all arguments are optional, *some* arguments must be passed.  The basic concept is that
-	//		you pass a delta value for a specific aspect of a color model (or multiple aspects of the same
-	//		color model); for instance, if you wish to transform a palette based on the HSV color model,
-	//		you would pass one of "dh", "ds", or "dv" as a value.
-	// use: String?
-	//		Specify the color model to use for the transformation.  Can be "rgb", "rgba", "hsv", "hsl", "cmy", "cmyk".
-	// dr: Number?
-	//		The delta to be applied to the red aspect of the RGB/RGBA color model.
-	// dg: Number?
-	//		The delta to be applied to the green aspect of the RGB/RGBA color model.
-	// db: Number?
-	//		The delta to be applied to the blue aspect of the RGB/RGBA color model.
-	// da: Number?
-	//		The delta to be applied to the alpha aspect of the RGBA color model.
-	// dc: Number?
-	//		The delta to be applied to the cyan aspect of the CMY/CMYK color model.
-	// dm: Number?
-	//		The delta to be applied to the magenta aspect of the CMY/CMYK color model.
-	// dy: Number?
-	//		The delta to be applied to the yellow aspect of the CMY/CMYK color model.
-	// dk: Number?
-	//		The delta to be applied to the black aspect of the CMYK color model.
-	// dh: Number?
-	//		The delta to be applied to the hue aspect of the HSL/HSV color model.
-	// ds: Number?
-	//		The delta to be applied to the saturation aspect of the HSL/HSV color model.
-	// dl: Number?
-	//		The delta to be applied to the luminosity aspect of the HSL color model.
-	// dv: Number?
-	//		The delta to be applied to the value aspect of the HSV color model.
-};
-var __generatorArgs = {
-	// summary:
-	//		The keyword arguments object used to create a palette based on a base color.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-};
-var __analogousArgs = {
-	// summary:
-	//		The keyword arguments object that is used to create a 5 color palette based on the
-	//		analogous rules as implemented at http://kuler.adobe.com, using the HSV color model.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-	// high: Number?
-	//		The difference between the hue of the base color and the highest hue.  In degrees, default is 60.
-	// low: Number?
-	//		The difference between the hue of the base color and the lowest hue.  In degrees, default is 18.
-};
-var __splitComplementaryArgs = {
-	// summary:
-	//		The keyword arguments object used to create a palette based on the split complementary rules
-	//		as implemented at http://kuler.adobe.com.
-	// base: dojo/_base/Color
-	//		The base color to be used to generate the palette.
-	// da: Number?
-	//		The delta angle to be used to determine where the split for the complementary rules happen.
-	//		In degrees, the default is 30.
-};
-=====*/
-
-	//	object methods ---------------------------------------------------------------
-	lang.extend(dxc.Palette, {
-		transform: function(/*__transformArgs*/kwArgs){
-			// summary:
-			//		Transform the palette using a specific transformation function
-			//		and a set of transformation parameters.
-			// description:
-			//		{palette}.transform is a simple way to uniformly transform
-			//		all of the colors in a palette using any of 5 formulae:
-			//		RGBA, HSL, HSV, CMYK or CMY.
-			//
-			//		Once the forumula to be used is determined, you can pass any
-			//		number of parameters based on the formula "d"[param]; for instance,
-			//		{ use: "rgba", dr: 20, dg: -50 } will take all of the colors in
-			//		palette, add 20 to the R value and subtract 50 from the G value.
-			//
-			//		Unlike other types of transformations, transform does *not* alter
-			//		the original palette but will instead return a new one.
-			var fn=tRGBA;	//	the default transform function.
-			if(kwArgs.use){
-				//	we are being specific about the algo we want to use.
-				var use=kwArgs.use.toLowerCase();
-				if(use.indexOf("hs")==0){
-					if(use.charAt(2)=="l"){ fn=tHSL; }
-					else { fn=tHSV; }
-				}
-				else if(use.indexOf("cmy")==0){
-					if(use.charAt(3)=="k"){ fn=tCMYK; }
-					else { fn=tCMY; }
-				}
-			}
-			//	try to guess the best choice.
-			else if("dc" in kwArgs || "dm" in kwArgs || "dy" in kwArgs){
-				if("dk" in kwArgs){ fn = tCMYK; }
-				else { fn = tCMY; }
-			}
-			else if("dh" in kwArgs || "ds" in kwArgs){
-				if("dv" in kwArgs){ fn = tHSV; }
-				else { fn = tHSL; }
-			}
-
-			var palette = this;
-			for(var p in kwArgs){
-				//	ignore use
-				if(p=="use"){ continue; }
-				palette = fn(palette, p, kwArgs[p]);
-			}
-			return palette;		//	dojox.color.Palette
-		},
-		clone: function(){
-			// summary:
-			//		Clones the current palette.
-			return new dxc.Palette(this);	//	dojox.color.Palette
-		}
-	});
-
-	lang.mixin(dxc.Palette, {
-		generators: {
-			analogous:function(/* __analogousArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the analogous rules as implemented at
-				//		http://kuler.adobe.com.
-				var high=args.high||60, 	//	delta between base hue and highest hue (subtracted from base)
-					low=args.low||18,		//	delta between base hue and lowest hue (added to base)
-					base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv=base.toHsv();
-
-				//	generate our hue angle differences
-				var h=[
-					(hsv.h+low+360)%360,
-					(hsv.h+Math.round(low/2)+360)%360,
-					hsv.h,
-					(hsv.h-Math.round(high/2)+360)%360,
-					(hsv.h-high+360)%360
-				];
-
-				var s1=Math.max(10, (hsv.s<=95)?hsv.s+5:(100-(hsv.s-95))),
-					s2=(hsv.s>1)?hsv.s-1:21-hsv.s,
-					v1=(hsv.v>=92)?hsv.v-9:Math.max(hsv.v+9, 20),
-					v2=(hsv.v<=90)?Math.max(hsv.v+5, 20):(95+Math.ceil((hsv.v-90)/2)),
-					s=[ s1, s2, hsv.s, s1, s1 ],
-					v=[ v1, v2, hsv.v, v1, v2 ]
-
-				return new dxc.Palette(arr.map(h, function(hue, i){
-					return dxc.fromHsv(hue, s[i], v[i]);
-				}));		//	dojox.color.Palette
-			},
-
-			monochromatic: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the monochromatic rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-				
-				//	figure out the saturation and value
-				var s1 = (hsv.s-30>9)?hsv.s-30:hsv.s+30,
-					s2 = hsv.s,
-					v1 = rangeDiff(hsv.v, 20, 100),
-					v2 = (hsv.v-20>20)?hsv.v-20:hsv.v+60,
-					v3 = (hsv.v-50>20)?hsv.v-50:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(hsv.h, s1, v1),
-					dxc.fromHsv(hsv.h, s2, v3),
-					base,
-					dxc.fromHsv(hsv.h, s1, v3),
-					dxc.fromHsv(hsv.h, s2, v2)
-				]);		//	dojox.color.Palette
-			},
-
-			triadic: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the triadic rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = (hsv.h+57+360)%360,
-					h2 = (hsv.h-157+360)%360,
-					s1 = (hsv.s>20)?hsv.s-10:hsv.s+10,
-					s2 = (hsv.s>90)?hsv.s-10:hsv.s+10,
-					s3 = (hsv.s>95)?hsv.s-5:hsv.s+5,
-					v1 = (hsv.v-20>20)?hsv.v-20:hsv.v+20,
-					v2 = (hsv.v-30>20)?hsv.v-30:hsv.v+30,
-					v3 = (hsv.v-30>70)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, hsv.v),
-					dxc.fromHsv(hsv.h, s2, v2),
-					base,
-					dxc.fromHsv(h2, s2, v1),
-					dxc.fromHsv(h2, s3, v3)
-				]);		//	dojox.color.Palette
-			},
-
-			complementary: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the complementary rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
-					s1 = Math.max(hsv.s-10, 0),
-					s2 = rangeDiff(hsv.s, 10, 100),
-					s3 = Math.min(100, hsv.s+20),
-					v1 = Math.min(100, hsv.v+30),
-					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(hsv.h, s1, v1),
-					dxc.fromHsv(hsv.h, s2, v2),
-					base,
-					dxc.fromHsv(h1, s3, v2),
-					dxc.fromHsv(h1, hsv.s, hsv.v)
-				]);		//	dojox.color.Palette
-			},
-
-			splitComplementary: function(/* __splitComplementaryArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the split complementary rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					dangle = args.da || 30,
-					hsv = base.toHsv();
-
-				var baseh = ((hsv.h*2)+137<360)?(hsv.h*2)+137:Math.floor(hsv.h/2)-137,
-					h1 = (baseh-dangle+360)%360,
-					h2 = (baseh+dangle)%360,
-					s1 = Math.max(hsv.s-10, 0),
-					s2 = rangeDiff(hsv.s, 10, 100),
-					s3 = Math.min(100, hsv.s+20),
-					v1 = Math.min(100, hsv.v+30),
-					v2 = (hsv.v>20)?hsv.v-30:hsv.v+30;
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, v1),
-					dxc.fromHsv(h1, s2, v2),
-					base,
-					dxc.fromHsv(h2, s3, v2),
-					dxc.fromHsv(h2, hsv.s, hsv.v)
-				]);		//	dojox.color.Palette
-			},
-
-			compound: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the compound rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var h1 = ((hsv.h*2)+18<360)?(hsv.h*2)+18:Math.floor(hsv.h/2)-18,
-					h2 = ((hsv.h*2)+120<360)?(hsv.h*2)+120:Math.floor(hsv.h/2)-120,
-					h3 = ((hsv.h*2)+99<360)?(hsv.h*2)+99:Math.floor(hsv.h/2)-99,
-					s1 = (hsv.s-40>10)?hsv.s-40:hsv.s+40,
-					s2 = (hsv.s-10>80)?hsv.s-10:hsv.s+10,
-					s3 = (hsv.s-25>10)?hsv.s-25:hsv.s+25,
-					v1 = (hsv.v-40>10)?hsv.v-40:hsv.v+40,
-					v2 = (hsv.v-20>80)?hsv.v-20:hsv.v+20,
-					v3 = Math.max(hsv.v, 20);
-
-				return new dxc.Palette([
-					dxc.fromHsv(h1, s1, v1),
-					dxc.fromHsv(h1, s2, v2),
-					base,
-					dxc.fromHsv(h2, s3, v3),
-					dxc.fromHsv(h3, s2, v2)
-				]);		//	dojox.color.Palette
-			},
-
-			shades: function(/* __generatorArgs */args){
-				// summary:
-				//		Create a 5 color palette based on the shades rules as implemented at
-				//		http://kuler.adobe.com.
-				var base = lang.isString(args.base)?new dxc.Color(args.base):args.base,
-					hsv = base.toHsv();
-
-				var s  = (hsv.s==100 && hsv.v==0)?0:hsv.s,
-					v1 = (hsv.v-50>20)?hsv.v-50:hsv.v+30,
-					v2 = (hsv.v-25>=20)?hsv.v-25:hsv.v+55,
-					v3 = (hsv.v-75>=20)?hsv.v-75:hsv.v+5,
-					v4 = Math.max(hsv.v-10, 20);
-
-				return new dxc.Palette([
-					new dxc.fromHsv(hsv.h, s, v1),
-					new dxc.fromHsv(hsv.h, s, v2),
-					base,
-					new dxc.fromHsv(hsv.h, s, v3),
-					new dxc.fromHsv(hsv.h, s, v4)
-				]);		//	dojox.color.Palette
-			}
-		},
-		generate: function(/* String|dojox.color.Color */base, /* Function|String */type){
-			// summary:
-			//		Generate a new Palette using any of the named functions in
-			//		dojox.color.Palette.generators or an optional function definition.  Current
-			//		generators include "analogous", "monochromatic", "triadic", "complementary",
-			//		"splitComplementary", and "shades".
-			if(lang.isFunction(type)){
-				return type({ base: base });	//	dojox.color.Palette
-			}
-			else if(dxc.Palette.generators[type]){
-				return dxc.Palette.generators[type]({ base: base });	//	dojox.color.Palette
-			}
-			throw new Error("dojox.color.Palette.generate: the specified generator ('" + type + "') does not exist.");
-		}
-	});
-	
-	return dxc.Palette;
-});
-
-},
-'dojox/charting/themes/gradientGenerator':function(){
-define(["dojo/_base/lang", "dojo/_base/array", "dojo/_base/Color", "../Theme", "dojox/color/_base", "./common"], 
-	function(lang, arr, Color, Theme, dxcolor, themes){
-	
-	var gg = lang.getObject("gradientGenerator", true, themes);
-
-	gg.generateFills = function(colors, fillPattern, lumFrom, lumTo){
-		// summary:
-		//		generates 2-color gradients using pure colors, a fill pattern, and two luminance values
-		// colors: Array
-		//		Array of colors to generate gradients for each.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		return arr.map(colors, function(c){	// Array
-			return Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo);
-		});
-	};
-	
-	gg.updateFills = function(themes, fillPattern, lumFrom, lumTo){
-		// summary:
-		//		transforms solid color fills into 2-color gradients using a fill pattern, and two luminance values
-		// themes: Array
-		//		Array of mini-themes (usually series themes or marker themes), which fill will be transformed.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		arr.forEach(themes, function(t){
-			if(t.fill && !t.fill.type){
-				t.fill = Theme.generateHslGradient(t.fill, fillPattern, lumFrom, lumTo);
-			}
-		});
-	};
-	
-	gg.generateMiniTheme = function(colors, fillPattern, lumFrom, lumTo, lumStroke){
-		// summary:
-		//		generates mini-themes with 2-color gradients using colors, a fill pattern, and three luminance values
-		// colors: Array
-		//		Array of colors to generate gradients for each.
-		// fillPattern: Object
-		//		Gradient fill descriptor which colors list will be generated.
-		// lumFrom: Number
-		//		Initial luminance value (0-100).
-		// lumTo: Number
-		//		Final luminance value (0-100).
-		// lumStroke: Number
-		//		Stroke luminance value (0-100).
-		return arr.map(colors, function(c){	// Array
-			c = new dxcolor.Color(c);
-			return {
-				fill:   Theme.generateHslGradient(c, fillPattern, lumFrom, lumTo),
-				stroke: {color: Theme.generateHslColor(c, lumStroke)}
-			};
-		});
-	};
-	
-	gg.generateGradientByIntensity = function(color, intensityMap){
-		// summary:
-		//		generates gradient colors using an intensity map
-		// color: dojo.Color
-		//		Color to use to generate gradients.
-		// intensityMap: Array
-		//		Array of tuples {o, i}, where o is a gradient offset (0-1),
-		//		and i is an intensity (0-255).
-		color = new Color(color);
-		return arr.map(intensityMap, function(stop){	// Array
-			var s = stop.i / 255;
-			return {
-				offset: stop.o,
-				color:  new Color([color.r * s, color.g * s, color.b * s, color.a])
-			};
-		});
-	};
-	
-	return gg;
-});
-
-},
-'dojox/charting/themes/PrimaryColors':function(){
-define(["../Theme", "./gradientGenerator", "./common"], function(Theme, gradientGenerator, themes){
-
-	var colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "./common"],
-		defaultFill = {type: "linear", space: "plot", x1: 0, y1: 0, x2: 0, y2: 100};
-
-	themes.PrimaryColors = new Theme({
-		seriesThemes: gradientGenerator.generateMiniTheme(colors, defaultFill, 90, 40, 25)
-	});
-	
-	return themes.PrimaryColors;
 });
 
 },
@@ -110616,12 +110308,12 @@ define([
 		constructor: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
-			this.nodeWidth = domStyle.get(this.node, "width");
+			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
 
 			this.canvas = d3.select(".chart")
 				.insert("svg", ":first-child")
-				.attr("width", this.nodeWidth)
-				.attr("height", 100);
+				.attr("preserveAspectRatio", "xMidYMid meet")
+				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
 
 			this.canvas.insert("defs")
 				.append("marker")
@@ -110643,6 +110335,7 @@ define([
 			var self = this;
 
 			var totalRange = data.lastEndPosition - data.firstStartPosition;
+			var pinStart = data.pinStart;
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
@@ -110658,7 +110351,9 @@ define([
 					return self.x_scale(d.na_length)
 				})
 				.attr("height", 15)
-				.attr("fill", '#4f81bd')
+				.attr("fill", function(d){
+					return (d.start === pinStart) ? '#E53935' : '#1976D2';
+				})
 				.on("mouseover", function(d){
 					self.tooltipLayer.transition()
 						.duration(200)
@@ -120021,11 +119716,11 @@ define([
 'url:dgrid/css/extensions/ColumnResizer.css':{"cssText":".dgrid-column-resizer{position:absolute;width:2px;background-color:#666;z-index:1000;}.dgrid-resize-handle{height:100px;width:0;position:absolute;right:-4px;top:-4px;cursor:col-resize;z-index:999;border-left:5px solid transparent;outline:none;}html.has-ie-6 .dgrid-resize-handle{border-color:pink;filter:chroma(color=pink);}html.has-mozilla .dgrid .dgrid-resize-handle:focus, html.has-opera .dgrid .dgrid-resize-handle:focus{outline:none;}.dgrid-resize-header-container{height:100%;}html.has-touch .dgrid-resize-handle{border-left:20px solid transparent;}html.has-touch .dgrid-column-resizer{width:2px;}html.has-no-quirks .dgrid-resize-header-container{position:relative;}html.has-ie-6 .dgrid-resize-header-container{position:static;}.dgrid-header .dgrid-cell-padding{overflow:hidden;}html.has-ie-6 .dgrid-header .dgrid-cell-padding{margin-right:4px;}html.has-ie-6 .dgrid-header .dgrid-sort-arrow{margin-right:0;}html.has-quirks .dgrid-header .dgrid-cell-padding, html.has-ie-6 .dgrid-header .dgrid-cell{position:relative;}#dgrid-css-extensions-ColumnResizer-loaded{display:none;}","xCss":"html.has-mozilla .dgrid .dgrid-resize-handle:{/3};{/2filter:chroma(color=pink);}"},
 'url:dgrid/css/extensions/ColumnHider.css':".dgrid-hider-toggle{background-position:0 -192px;background-color:transparent;border:none;cursor:pointer;position:absolute;right:0;top:0;}.dgrid-rtl-swap .dgrid-hider-toggle{right:auto;left:0;}.dgrid-hider-menu{position:absolute;top:0;right:17px;width:184px;background-color:#fff;border:1px solid black;z-index:99999;padding:4px;overflow-x:hidden;overflow-y:auto;}.dgrid-rtl-swap .dgrid-hider-menu{right:auto;left:17px;}.dgrid-hider-menu-row{position:relative;padding:2px;}.dgrid-hider-menu-check{position:absolute;top:2px;left:2px;padding:0;}.dgrid-hider-menu-label{display:block;padding-left:20px;}html.has-quirks .dgrid-hider-menu-check, html.has-ie-6-7 .dgrid-hider-menu-check{top:0;left:0;}#dgrid-css-extensions-ColumnHider-loaded{display:none;}",
 'url:dojo/resources/dnd.css':{"cssText":".dojoDndAvatar{font-size:75%;color:black;}.dojoDndAvatarHeader td{padding-left:20px;padding-right:4px;height:16px;}.dojoDndAvatarHeader{background:#ccc;}.dojoDndAvatarItem{background:#eee;}.dojoDndMove .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");background-repeat:no-repeat;}.dojoDndMove .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");background-repeat:no-repeat;}.dojoDndCopy .dojoDndAvatarCanDrop .dojoDndAvatarHeader{background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");background-repeat:no-repeat;}.dojoDndHandle{cursor:move;}.dojoDndIgnore{cursor:default;}.dj_a11y .dojoDndAvatar{font-size:1em;font-weight:bold;}.dj_a11y .dojoDndAvatarHeader td{padding-left:2px !important;}.dj_a11y .dojoDndAvatarHeader td span{padding-right:5px;}","xCss":"{/4background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAdRQTFRF////xAAAxgAAxQAAqQAA//7+wgAA5BcZ+aSo+vr6wwAA2AgI2gsN+KKn+fj44BMT/Pz8whgk3xISnE5O5xwfqiwuqBoc4BYW+q+yqSos28jI8ISLsV5etSMj2QoMyQAA70lMwAAA3snJ7Dg80gQE18bGkSoq9VteslBQ805Srg4O18jIoVxc1QYFoVBQzSUn5BobzCAhnRkZnltbt1BR+/r66VRVnQAA5llZ0A0N3B4f9HN51QcIuh4m/vv74xUX42JjrAAA3MfH5Tc40Cgp4xcZ+rG1+ra5wD094kRFsAMD3Q0OzzU11AcH5B4gkQAAuh4n6CIk3Q8Q4RMT4T09tiUl2goKzQICql5e2goLyx0mkAAA+KSo4xUY+amt6TI15x8i3MnJ2hMT3RETqV1dpBkakRgY0kJCm11d7GJkxwAA6B4g1EdH6UtS+Hh6vwAAvAAA9FJV3yssmltbsQYKzyoq+8fJ7CcoogAAqxod2hAR0QQE8WRm18fH1sbGzCgo5hwfiygoxAICsFxc4Swt3hARyBgY8UZK2gwNxQQFujIyoFBQzAIB2QkJwg4T3hAQ4iMk0jA/4i800Ck2rQUHt1JTtFJTogACyggIyxQVkxgY////r0RZCwAAAJx0Uk5T//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Av2dfGwAAAPlJREFUeNpimA0ETs22goIBMkogNsPs2ZwmE3nzCjXVrSdPFQAJmEpKt4skNCjXZJfnigoABTRcDWLjM/3Y2dnt2SdNm80gFcXfb+Y8QVxIqDWIP7gvkSFFIazFs8iqSo4nspenIzmCoTIwiQEEWIHAzoZbjKHEO4QBBlirVaYzTOG2QAj0hJszpOo6lEm4u8XFcHBw8DLJGzEY+5Z6hHbJarGAACOzDoOqF2Nbek69DxcjIxcjk2Mtw2xh5k5DfZeZzMzMbMxsekCX8jUqMjEyNs2wZGNiU+MEeY5PuIIti4kpv4ClmxPs29mz64rTov1nZWiD2AABBgANUUMsH6hU6gAAAABJRU5ErkJggg==\");}{/5background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAFfKj/FAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwBQTFRF////tQAA+vr6tgAAtAAAtwAAugAAsgAA1sjIwgMDuAAAzBMTyQUF5lRY28jItl1e0iQj3sjIyhEQvgEBqAABmVBQswAAtgIC1BAQ0g4O41FR1RARtAoKtwoKtgYG2hwezS0ttlBRoQEBrQgL2ico1BAS1iIim1BQqBsdsBkbxwUGmRsb0TQ04yotug0OxQQEmV1dqyosqgkK1A0O5zM1vwICnFBQq11dsAUFwAEBll1dvwUFvAAA61FU3jg50iMinV1d2CgprgAArgQEmhsb3RsesQAApAkJvgIC0w4Q2xga3RsdlQAA609SkgAAulBRl11duQcIsRkcuQAAuxoapgAA0w8QtAQE3C0uiioq2hgYwwMD4yosvwkOuwAAvQEB0QsM3D084UlJpQkJyQUGnhkZzRYVtFBR3jQ1yg0O18jIqyor5jM26HBuyRAQvRobqgAA0gwNp11dzAcI3BkbsAAA3R0fzQwOzxoalhkZ2hga6nh30R4dtAEEu1BRxAUGzwoK0R0c3R0gnxscxQsL1BARjSoq3UJBxgQEvwIB////i4uLjIyMjY2Njo6Oj4+PkJCQkZGRkpKSk5OTlJSUlZWVlpaWl5eXmJiYmZmZmpqam5ubnJycnZ2dnp6en5+foKCgoaGhoqKio6OjpKSkpaWlpqamp6enqKioqampqqqqq6urrKysra2trq6ur6+vsLCwsbGxsrKys7OztLS0tbW1tra2t7e3uLi4ubm5urq6u7u7vLy8vb29vr6+v7+/wMDAwcHBwsLCw8PDxMTExcXFxsbGx8fHyMjIycnJysrKy8vLzMzMzc3Nzs7Oz8/P0NDQ0dHR0tLS09PT1NTU1dXV1tbW19fX2NjY2dnZ2tra29vb3Nzc3d3d3t7e39/f4ODg4eHh4uLi4+Pj5OTk5eXl5ubm5+fn6Ojo6enp6urq6+vr7Ozs7e3t7u7u7+/v8PDw8fHx8vLy8/Pz9PT09fX19vb29/f3+Pj4+fn5+vr6+/v7/Pz8/f39/v7+////HiIvgAAAAIt0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AIXDFe8AAAEzSURBVHjaYuhyZ1D+ARBADBxdDHHWAAHEwPFKp5qhq6mJESCAGLq0A7oYdKv/KDE0fatmZChvamoDCCCGrsiYpnD9zF8MzU28P3/fi2NlKNL6Jpj4J5eZoetXLSMLc1sXQAAxdHVZJbtwdHUx/OKNk2vqaOtiCKn+nVT9liuLIa7l3tc//E2VDFGdcT+/6zT5MLh6/KkT/MZoztDWydrZ2cTSxdDlz8XC7PSrCyDAgOb8Es23zWmq8pKXUf8FNK9LlFenurquia2uulrR2qyLwcBXmv/ljx/VO379esHfxOrAYFTW1BTX/vrPj3d1HU1NzH4MGiU8etVf/wgK/v0pqBPHnMrAF8ujsEtQv8naWlBQgLmAD+jstno25qamziZGRpa2X0BbgECQv02kTZNfEMQGAJv1bGIYdwMjAAAAAElFTkSuQmCC\");}{/6background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKjSURBVHjajFNfSFNhFP993+5tuKlp05iIoc2mbmSztPYQBDnpoYhJJVT03MMggp5820uIvfQQiyAfjUpQIyK09VJZmH+nSUqliIqKNcfu5v7eu9t373U6q4fO4dxzOZzf7zvnfN8hsiwjK/usRHFOvhKeRmd1s+VgXZkSWNiYWxsf/u5PLsKX+iaPIEdIloAQwu+/ip7bl2+53a4bWMIyVhJLEGURRi4fJZIJH98Nyl19Xf2hZ2hjOEnFqR8efGkbCTzteG0bJxMIhCbBMVXAFoMFRwy1eLM5AKM+H7ZUDTo72mdWn0gOhYQU3QSkDfS72i+4OcohlUnCaqzBPdt9yEzdo+eh0+nUKiVJUv+rxSo87nzQF+qVL9GtQXqqrfWKO55KIBjbRDl/SAVnRYhHEI8nVIvEo6qfzsyi6ayzla8kJyk1yx7bmRMMHEQRKYbP8Sh3RowgDCGhWXjbR7YE6OwGwpfDw1UcK2n5IszARE3oPf1iD5gwHTs3tSemDN3x6iiifAymusIWrrDkgHk+OI/3zZ/wLyHanHMDiCSjICJFgk+X0WQqjVBcwHRkAv8rkUSUWQQJhuWC68H1ArHU7PA2IuAdQ33B8T3JU8I4cotQWhDYgYRnQUFcI8SObvvduuszK7OgCxST3tEdEiWZ3qF/tSFbZZWUe4huil/whUfCALvqjCWDBm/TbjsKrkoDqHZY80ou+QGIa/BR2YTh5YHVl2oy3SUJJUO75WctS5pkpB+gXNmwFs6HHnYEDNfyamN5cfbktqef0QCuChf8i36wLBWM5/iKIShPOa0uE1skjcSKHq5Jd1Gqz0DWyxrBTuPM5pgNsZMn2DKJcvrPbQRs7LyfcKIYHtZ7M4wwqyXHsI55+BGEDw34jLfagBX5LcAALB80VcHjUxMAAAAASUVORK5CYII=\");}{/7background-image:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAALASURBVHjajFNNTxNRFD0z0+kEDbRISFtQ2wgoIZGUiKkx8WPRpYSKiYmBxh/QnStjYuLCX2BSXbgSWBBW3WFiExGMSY3RUlu+rA1Cy1g+SiHQ6XRm3vN1SpriijuZ92byzj33nnvf5fC/tcIHG0Iur9Pv7HS6KCXYlGV5a2E7ij2E2RtrhHMN3yKuYvrB4/uBu0O3kS2vY6OYQ1krg2MoK7Xi1+ff+Bb5EUEcDxleayQQMYj467ev+lJ6CqlsChVSQSG1B83QYfEIUFWGFyjOix348ubrIokRb5WEN91Z5KrzXHEWK5srIISgudSCpeerSL/IwKa2Qjc0lI4UxLd/ouuRpw8DmK668rDDNxIMBJZY5N2DAgxiQNEU9Lv769oGPF4oqsKy0WDoBtJHGdiv2wJog49nS+jO8C0sysvQWMHKepnpVtmu1glKumL+V4lVowLK1CgXWW3aEbJ0Djr8OTVrai4uFWHn7bBqEqQmqU5g27fBUXBA4HmsH6xDbSdQ2SN1C35u8Ek/vTx8Bbsbe3g/+gGnsY6XTsg0DzHBasAJBkqVMtxON05rPRd6AcpaaAEsO3t52S10uz6uzeLZ/FM4mpxQmd5uew9GekdMh6nkFJLbSYi8iHQhjbn0J4AptBDIllxiJ3pjVAjyhMNkctIs1GH5CPe6huoE44lxzKRmqj2r3RwRtQw2EeVJHuGNhTQoO6SEgicCOMoxLF9PWRKq4Y4dLTUSqQjoWYR5/Q9iqflExCGdg8JaWGFt0nQN+cOtOkFBKZwsAgGac4ioa4hxxxMhdozx8Zabnr7Mfg5aRQNVCYLXgubxxPeJWvQqlKXelsHiziS8jEjjGsZKdI1hWuqyBWSRXRi9YkYyTahtZ0tAy19E5HdsmOjJYarbmV74mnsQsl4S/AoMF63Kpqzta4iWVhE+XD45zv8EGADyTT+DjqKTvQAAAABJRU5ErkJggg==\");}"},
-'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
+'url:p3/widget/templates/ItemDetailPanel.html':"<div class=\"ItemDetailPanel noSelection dataItem\">\n\t<div class=\"noItemSelection\">\n\t\tNothing selected.\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t\t<div class=\"tip\">\n\t\t\t\t\t\n\t\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>The PATRIC workspace is for managing files, groups, and job results. <a class=\"HelpLink\" href=\"http://enews.patricbrc.org/faqs/workspace-faqs/\" target=\"_blank\">Learn more.</a></div>\n\t\t\t\t</div>\n\t\t</div> \n\n\n\t\t<div class=\"resultContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Select one or more items on the left to see their details and possible actions.</div>\n\t\t\t</div>\n\t\t</div>\n\n        <div class=\"experiment containerContentSection\">\n            <div class=\"tip\">\n                \n                <div class='tipHeader'>\n                    <span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: purple;\"></span>\n                </div>\n                <div>Significant by z-score: abs(z-score) &gt;= 2. Significant by log ratio: abs(log ratio) &gt;=1.</div>\n            </div>\n        </div>\n\n\t\t<div class=\"folder containerContentSection\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color:orange;\"></span> \n\t\t\t\t</div>\n\t\t\t\t\t<p>Click an item's icon (e.g.,  <span class=\"fa icon-folder fa-1x\"></span>, <span class=\"fa icon-genome-features fa-1x\"></span> ) or double click on a row to drill down into that item.</p>\n\n\t\t\t</div>\n\t\t</div>\n\n\t</div>\n\n\t<div class=\"multipleItemSelection\">\n\t\t<div data-dojo-attach-point=\"countDisplayNode\">N items selected.</div>\n\t</div>\n\n\t<div class=\"singleItemSelection\">\n\t\t<div class=\"workspaceItemSelection\">\n\t<div>\n\t\t<table class=\"ItemDetailHeaderTable\">\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td style=\"width:1%\"><i class=\"fa fa-1x\" data-dojo-attach-point=\"typeIcon\" ></i></td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<div class=\"ItemDetailHeader\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-attach-point=\"nameWidget\" disabled=\"true\"></div>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n\t<div style=\"font-size:1em\">\n\t\t<div class=\"ItemDetailAttribute\">Type: <div class=\"ItemDetailAttributeValue\" data-dojo-attach-event=\"onChange:saveType\" data-dojo-attach-point=\"typeNode\" data-dojo-type=\"dijit/InlineEditBox\" data-dojo-props=\"editor:'dijit.form.Select', autoSave:false, editorParams:{ \n                    options:[]}\" value=\"\" disabled=\"true\"></div></div>\n\t\t</br>\n\t\t<div class=\"ItemDetailAttribute\">Owner: <span class=\"ItemDetailAttributeValue\"  data-dojo-attach-point=\"owner_idNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Created: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"creation_timeNode\"></span></div></br>\n\t\t<div class=\"ItemDetailAttribute\">Path: <span class=\"ItemDetailAttributeValue\" data-dojo-attach-point=\"pathNode\"></span></div>\n\t\t<div style=\"display:none;\" data-dojo-attach-point=\"idNode\"></div>\n\t</div>\n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"featureGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Features of interest can be added to groups in PATRIC. When a new feature group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"genomeGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Genomes of interest can be added to groups in PATRIC. When a new genome group is created it will appear here.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>The default location for experiments added through the Expression Import service.</div>\n\t\t\t</div>\n\t</div> \n\t<div style=\"display:none\" class=\"specialHelp\" data-dojo-attach-point=\"experimentGroupHelp\">\n\t\t\t<div class=\"tip\">\n\t\t\t\t\n\t\t\t\t<div class='tipHeader'>\n\t\t\t\t\t<span class=\"fa icon-lightbulb-o fa-2x\" style=\"color: orange;\"></span>\n\t\t\t\t</div>\n\t\t\t\t<div>Experiments of interest can be added to groups in PATRIC. When a new experiment group is created it will appear here. PATRIC contains curated datasets representing transcriptomic experiments. Both curated datasets and experiments created by the Expression Import service can be added to a group.</div>\n\t\t\t</div>\n\t</div> \n\t<div data-dojo-attach-point=\"autoMeta\">\n\n\t</div>\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"userMetadataTable\">\n\t\t</tbody>\n\t</table>\n\t</div>\n\t<div data-dojo-attach-point=\"dataItemSelection\" class=\"dataItemSelection\">\n\t\t<DIV data-dojo-attach-point=\"itemBody\">\n\t\t\n\t\t</DIV>\n\t</div>\n\n\t</div>\n</div>\n",
 'url:dijit/templates/TitlePane.html':"<div>\n\t<div data-dojo-attach-event=\"ondijitclick:_onTitleClick, onkeydown:_onTitleKey\"\n\t\t\tclass=\"dijitTitlePaneTitle\" data-dojo-attach-point=\"titleBarNode\" id=\"${id}_titleBarNode\">\n\t\t<div class=\"dijitTitlePaneTitleFocus\" data-dojo-attach-point=\"focusNode\">\n\t\t\t<span data-dojo-attach-point=\"arrowNode\" class=\"dijitInline dijitArrowNode\" role=\"presentation\"></span\n\t\t\t><span data-dojo-attach-point=\"arrowNodeInner\" class=\"dijitArrowNodeInner\"></span\n\t\t\t><span data-dojo-attach-point=\"titleNode\" class=\"dijitTitlePaneTextNode\"></span>\n\t\t</div>\n\t</div>\n\t<div class=\"dijitTitlePaneContentOuter\" data-dojo-attach-point=\"hideNode\" role=\"presentation\">\n\t\t<div class=\"dijitReset\" data-dojo-attach-point=\"wipeNode\" role=\"presentation\">\n\t\t\t<div class=\"dijitTitlePaneContentInner\" data-dojo-attach-point=\"containerNode\" role=\"region\" id=\"${id}_pane\" aria-labelledby=\"${id}_titleBarNode\">\n\t\t\t\t<!-- nested divs because wipeIn()/wipeOut() doesn't work right on node w/padding etc.  Put padding on inner div. -->\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:dijit/templates/Tooltip.html':"<div class=\"dijitTooltip dijitTooltipLeft\" id=\"dojoTooltip\" data-dojo-attach-event=\"mouseenter:onMouseEnter,mouseleave:onMouseLeave\"\n\t><div class=\"dijitTooltipConnector\" data-dojo-attach-point=\"connectorNode\"></div\n\t><div class=\"dijitTooltipContainer dijitTooltipContents\" data-dojo-attach-point=\"containerNode\" role='alert'></div\n></div>\n",
 'url:p3/widget/templates/Confirmation.html':"<div class=\"confirmationPanel\">\n\t<div data-dojo-attach-point=\"containerNode\">\n\t\t${content}\n\t</div>\n\t<div>\n\t\t<button type=\"cancel\" data-dojo-type=\"dijit/form/Button\">Cancel</button>\n\t\t<button type=\"submit\" data-dojo-type=\"dijit/form/Button\">Confirm</button>\n\t</div>\n</div>\n",
-'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n    \n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeSelect\"  style=\"width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    </div>\n    \n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n    \n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden', data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
+'url:p3/widget/templates/SelectionToGroup.html':"<div class=\"SelectionToGroup\" style=\"width:400px;\">\n\n\n    <div data-dojo-attach-point=\"groupTypeBox\" class=\"dijitHidden\">\n\t<label>Group Type</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" data-dojo-attach-point=\"groupTypeSelect\"  style=\"width:95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeOutputType\" >\n    </div>\n    </div>\n\n\t<label>New/Existing</label><br>\n    <div data-dojo-type=\"dijit/form/Select\" style=\"width: 95%;margin:10px;\" data-dojo-attach-event=\"onChange:onChangeTarget\" data-dojo-attach-point=\"targetType\">\n\t\t<option value=\"new\">New Group</option>\n\t\t<option value=\"existing\" selected=\"true\">Existing Group</option>\n\t</div>\n\n\n\n\t<label>Group Name</label><br>\n\t<div data-dojo-attach-point=\"groupNameBox\" data-dojo-type=\"p3/widget/WorkspaceFilenameValidationTextBox\" style=\"width:95%;margin:10px;\" class='dijitHidden' data-dojo-props=\"promptMessage:'Enter New Group Name'\" data-dojo-attach-event=\"onChange:onChangeTarget\" >\n\t</div>\n\n\t<div data-dojo-attach-point=\"workspaceObjectSelector\" data-dojo-type=\"p3/widget/WorkspaceObjectSelector\" style=\"width:95%;margin:10px;\" data-dojo-props=\"type:['genome_group']\" data-dojo-attach-event=\"onChange:onChangeTarget\" class=''>\n\t</div>\n\n\n\n\t<div class=\"buttonContainer\" style=\"text-align: right;\">\n\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Cancel\" data-dojo-attach-event=\"onClick:onCancel\"></div>\n<!--\t\t<div data-dojo-type=\"dijit/form/Button\" label=\"Split\" disabled='true'></div> -->\n\t\t<div data-dojo-type=\"dijit/form/Button\" disabled='true' label=\"Copy\" data-dojo-attach-point=\"copyButton\" data-dojo-attach-event=\"onClick:onCopy\"></div>\n\t</div>\n</div>\n",
 'url:dijit/form/templates/Select.html':"<table class=\"dijit dijitReset dijitInline dijitLeft\"\n\tdata-dojo-attach-point=\"_buttonNode,tableNode,focusNode,_popupStateNode\" cellspacing='0' cellpadding='0'\n\trole=\"listbox\" aria-haspopup=\"true\"\n\t><tbody role=\"presentation\"><tr role=\"presentation\"\n\t\t><td class=\"dijitReset dijitStretch dijitButtonContents\" role=\"presentation\"\n\t\t\t><div class=\"dijitReset dijitInputField dijitButtonText\"  data-dojo-attach-point=\"containerNode,textDirNode\" role=\"presentation\"></div\n\t\t\t><div class=\"dijitReset dijitValidationContainer\"\n\t\t\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t/></div\n\t\t\t><input type=\"hidden\" ${!nameAttrSetting} data-dojo-attach-point=\"valueNode\" value=\"${value}\" aria-hidden=\"true\"\n\t\t/></td\n\t\t><td class=\"dijitReset dijitRight dijitButtonNode dijitArrowButton dijitDownArrowButton dijitArrowButtonContainer\"\n\t\t\tdata-dojo-attach-point=\"titleNode\" role=\"presentation\"\n\t\t\t><input class=\"dijitReset dijitInputField dijitArrowButtonInner\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t${_buttonInputDisabled}\n\t\t/></td\n\t></tr></tbody\n></table>\n",
 'url:p3/widget/templates/FlippableDialog.html':"<div class=\"flippableDialog dijitDialog\" role=\"dialog\" aria-labelledby=\"${id}_title\">\n\t<div class=\"flipper\">\n\t        <div data-dojo-attach-point=\"titleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"titleNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogTitle\" id=\"${id}_title\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"closeText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n\t        <div data-dojo-attach-point=\"backpaneTitleBar\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitleBar dijitDialogTitleBar\">\n       \t         <span data-dojo-attach-point=\"backpaneTitle\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpaneTitle dijitDialogTitle\" id=\"${id}_backpaneTitle\"\n       \t                         role=\"heading\" level=\"1\"></span>\n       \t         <span data-dojo-attach-point=\"backcloseButtonNode\" class=\"dijitDialogCloseIcon\" data-dojo-attach-event=\"ondijitclick: onCancel\" title=\"${buttonCancel}\" role=\"button\" tabindex=\"-1\">\n       \t                 <span data-dojo-attach-point=\"backCloseText\" class=\"closeText\" title=\"${buttonCancel}\">x</span>\n       \t         </span>\n       \t \t</div>\n        \n        <div data-dojo-attach-point=\"containerNode\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"dijitDialogPaneContent\"></div>\n        <div data-dojo-attach-point=\"backPane\" style=\"backface-visibility:hidden; -webkit-backface-visibility:hidden;\" class=\"backpane dijitDialogPaneContent\"></div>\n        ${!actionBarTemplate}\n\t</div>\n</div>\n",
 'url:p3/widget/templates/Uploader.html':"<form dojoAttachPoint=\"containerNode\" class=\"PanelForm\"\n    dojoAttachEvent=\"onreset:_onReset,onsubmit:_onSubmit,onchange:validate\">\n\t<div style=\"margin-left:5px; border:solid 1px #B5BCC7;\">\n\t\t<div style=\"padding: 5px; background-color:#eee; margin-bottom:5px;\">${pathLabel} <span data-dojo-attach-point=\"destinationPath\">${path}</span></div>\n\t\t<div style=\"padding: 5px;\">\n\t\t\t<div style=\"width:300px\">\n\t\t\t\t${typeLabel}<select data-dojo-type=\"dijit/form/Select\" name=\"type\" data-dojo-attach-event=\"onChange:onUploadTypeChanged\" data-dojo-attach-point=\"uploadType\" style=\"vertical-align: top;width:200px\" required=\"true\" data-dojo-props=\"\">\n\t\t\t</select>\n\t\t\t</div></br>\n\t\t\t<div data-dojo-attach-point=\"typeDescriptionContainer\" style=\"width: 450px;margin:auto;font-size: .9em; margin-bottom:10px; color: #333; border: 2px solid orange; border-radius: 4px;min-height:40px;padding:4px;\"></div>\n\t\n\t\t\t<div data-dojo-attach-point=\"fileFilterContainer\" style=\"font-size:.85em;margin-bottom: 10px;\" class='dijitHidden'>\n\t\t\t\t<input data-dojo-type=\"dijit/form/CheckBox\" data-dojo-attach-point=\"showAllFormats\" data-dojo-attach-event=\"onChange:onChangeShowAllFormats\" checked=\"true\"/><span>Restrict file selection to the common extensions for this file type: </span><br/><span style=\"margin-left: 25px;\" data-dojo-attach-point=\"formatListNode\"></span>\n\t\t\t</div>\n\n\n\t\t\t<div class=\"fileUploadButton\" style=\"border-radius:2px\" data-dojo-attach-point=\"fileUploadButton\">\n\t\t\t\t<span>${buttonLabel}</span>\n\t\t\t\t<!-- <input type=\"file\" data-dojo-attach-point=\"fileInput\" data-dojo-attach-event=\"onchange:onFileSelectionChange\" /> -->\n\t\t\t</div>\n\t\t\t<div data-dojo-attach-point=\"fileTableContainer\"></div>\n\n\t\t\t<div class=\"workingMessage\" style=\"width:400px;\" data-dojo-attach-point=\"workingMessage\">\n\t\t\t</div>\n\n\t\t\t<div style=\"margin-left:20px;margin-top:20px;text-align:right;\">\n\t\t\t\t<div data-dojo-attach-point=\"cancelButton\" data-dojo-attach-event=\"onClick:onCancel\" data-dojo-type=\"dijit/form/Button\">Cancel</div>\n\t\t\t\t<div data-dojo-attach-point=\"saveButton\" type=\"submit\" disabled=\"true\" data-dojo-type=\"dijit/form/Button\">Upload Files</div>\n\t\t\t</div>\t\n\t\t</div>\n\t</div>\n</form>\n",
@@ -120040,7 +119735,7 @@ define([
 'url:p3/widget/templates/WorkspaceGlobalController.html':"<div>\n\n        <span data-dojo-attach-point='pathNode'>${path}</span>\n        <!--<a style=\"float:right\" class=\"DialogButton\" href rel=\"CreateWorkspace\">Create Workspace</a>-->\n\n</div>\n",
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
-'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">AMR Panel Summary</span></h3>\n            <div data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n            <div data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">AMR Panel Summary</span></h3>\n            <div data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Genomic Feature Summary</span></h3>\n            <div data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Protein Feature Summary</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Specialty Gene Summary</span></h3>\n            <div data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Workspace</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
@@ -120054,7 +119749,7 @@ define([
 'url:dojox/form/resources/TriStateCheckBox.html':"<div class=\"dijit dijitReset dijitInline\" role=\"presentation\"\n\t><div class=\"dojoxTriStateCheckBoxInner\" dojoAttachPoint=\"stateLabelNode\"></div\n\t><input ${!nameAttrSetting} type=\"${type}\" role=\"${type}\" dojoAttachPoint=\"focusNode\"\n\tclass=\"dijitReset dojoxTriStateCheckBoxInput\" dojoAttachEvent=\"onclick:_onClick\"\n/></div>\n",
 'url:dojox/form/resources/Uploader.html':"<span class=\"dijit dijitReset dijitInline\"\n\t><span class=\"dijitReset dijitInline dijitButtonNode\"\n\t\tdata-dojo-attach-event=\"ondijitclick:_onClick\"\n\t\t><span class=\"dijitReset dijitStretch dijitButtonContents\"\n\t\t\tdata-dojo-attach-point=\"titleNode,focusNode\"\n\t\t\trole=\"button\" aria-labelledby=\"${id}_label\"\n\t\t\t><span class=\"dijitReset dijitInline dijitIcon\" data-dojo-attach-point=\"iconNode\"></span\n\t\t\t><span class=\"dijitReset dijitToggleButtonIconChar\">&#x25CF;</span\n\t\t\t><span class=\"dijitReset dijitInline dijitButtonText\"\n\t\t\t\tid=\"${id}_label\"\n\t\t\t\tdata-dojo-attach-point=\"containerNode\"\n\t\t\t></span\n\t\t></span\n\t></span\n\t> \n\t<input ${!nameAttrSetting} type=\"${type}\" value=\"${value}\" class=\"dijitOffScreen\" tabIndex=\"-1\" data-dojo-attach-point=\"valueNode\" />\n</span>\n",
 'url:dijit/form/templates/Spinner.html':"<div class=\"dijit dijitReset dijitInline dijitLeft\"\n\tid=\"widget_${id}\" role=\"presentation\"\n\t><div class=\"dijitReset dijitButtonNode dijitSpinnerButtonContainer\"\n\t\t><input class=\"dijitReset dijitInputField dijitSpinnerButtonInner\" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t/><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitUpArrowButton\"\n\t\t\tdata-dojo-attach-point=\"upArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9650; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t\t><div class=\"dijitReset dijitLeft dijitButtonNode dijitArrowButton dijitDownArrowButton\"\n\t\t\tdata-dojo-attach-point=\"downArrowNode\"\n\t\t\t><div class=\"dijitArrowButtonInner\"\n\t\t\t\t><input class=\"dijitReset dijitInputField\" value=\"&#9660; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t\t\t\t\t${_buttonInputDisabled}\n\t\t\t/></div\n\t\t></div\n\t></div\n\t><div class='dijitReset dijitValidationContainer'\n\t\t><input class=\"dijitReset dijitInputField dijitValidationIcon dijitValidationInner\" value=\"&#935; \" type=\"text\" tabIndex=\"-1\" readonly=\"readonly\" role=\"presentation\"\n\t/></div\n\t><div class=\"dijitReset dijitInputField dijitInputContainer\"\n\t\t><input class='dijitReset dijitInputInner' data-dojo-attach-point=\"textbox,focusNode\" type=\"${type}\" data-dojo-attach-event=\"onkeydown:_onKeyDown\"\n\t\t\trole=\"spinbutton\" autocomplete=\"off\" ${!nameAttrSetting}\n\t/></div\n></div>\n",
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <!--\n            <div class=\"BrowserHeader\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            -->\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddFeature\">Add Feature to Workspace</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
 'url:p3/widget/templates/FeatureListOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Feature Group Info</span></h3>\n            <div data-dojo-attach-point=\"ggiSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeGroupInfoSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Function Profile</span></h3>\n            <div class=\"fpSummaryWidget\" data-dojo-attach-point=\"fpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/FunctionalProfile\">\n            </div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Taxonomy Profile</span></h3>\n            <div class=\"tpSummaryWidget\" data-dojo-attach-point=\"tpSummaryWidget\"\n                 data-dojo-type=\"p3/widget/TaxonomyProfile\">\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\"></div>\n</div>\n",
 'url:p3/widget/templates/JobStatus.html':"<div class=\"JobStatusButton\" data-dojo-attach-event=\"onclick:openJobs\">\n\t<span>Jobs</span>\n\t<span class=\"JobStatusCount\">\n\t\t<span class=\"JobsComplete\" data-dojo-attach-point=\"jobsCompleteNode\">0</span><span class=\"JobsRunning\" data-dojo-attach-point=\"jobsRunningNode\">0</span><span class=\"JobsQueued\" data-dojo-attach-point=\"jobsQueuedNode\">0</span><span class=\"JobsSuspended\" data-dojo-attach-point=\"jobsSuspendedNode\">0</span>\n\t</span>\t\n</div>\n",
 '*now':function(r){r(['dojo/i18n!*preload*p3/layer/nls/core*["ar","ca","cs","da","de","el","en-gb","en-us","es-es","fi-fi","fr-fr","he-il","hu","it-it","ja-jp","ko-kr","nl-nl","nb","pl","pt-br","pt-pt","ru","sk","sl","sv","th","tr","zh-tw","zh-cn","ROOT"]']);}

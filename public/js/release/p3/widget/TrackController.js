@@ -93,10 +93,12 @@ define("p3/widget/TrackController", [
 					console.log("Click Visible");
 					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
+						console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
 						event.track.set('visible', false)
 					}else{
+						console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
 						event.track.set('visible', true)
