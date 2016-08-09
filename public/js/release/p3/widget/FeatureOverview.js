@@ -1,17 +1,17 @@
 require({cache:{
-'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"SummaryWidget\">\n                <button>Add PATRIC Feature to Workspace</button><br/>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
+'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <!--\n            <div class=\"BrowserHeader\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            -->\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddFeature\">Add Feature to Workspace</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer"
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
+	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
+	"../util/PathJoin", "dgrid/Grid",
+	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
-], function(declare, WidgetBase, on,
-			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
+], function(declare, lang, on, xhr,
+			domClass, domConstruct, Template,
+			WidgetBase, Templated, Dialog,
+			PathJoin, Grid,
+			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -22,6 +22,19 @@ define("p3/widget/FeatureOverview", [
 			'Authorization': window.App.authorizationToken || ""
 		}
 	};
+
+	// building add to group dialog for this page
+	var dlg = new Dialog({title: "Add This Feature To Group"});
+	var stg = new SelectionToGroup({
+		selection: [],
+		type: 'feature_group'
+	});
+	on(dlg.domNode, "dialogAction", function(evt){
+		dlg.hide();
+	});
+	domConstruct.place(stg.domNode, dlg.containerNode, "first");
+	stg.startup();
+	dlg.startup();
 
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
@@ -42,6 +55,8 @@ define("p3/widget/FeatureOverview", [
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
+
+			stg.selection.push(feature);
 
 			this.getSummaryData();
 			this.set("publications", feature);
@@ -306,6 +321,8 @@ define("p3/widget/FeatureOverview", [
 				var url = PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)");
 				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
 
+					if(data.length === 0) return;
+
 					var uniprotKbAccessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
@@ -348,7 +365,7 @@ define("p3/widget/FeatureOverview", [
 			}));
 
 			// single gene viewer
-			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
+			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
 			var rangeEnd = (centerPos + 5000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
@@ -375,6 +392,10 @@ define("p3/widget/FeatureOverview", [
 					this.set("featureComments", data);
 				}));
 			}
+		},
+
+		onAddFeature: function(evt){
+			dlg.show();
 		},
 		startup: function(){
 			if(this._started){

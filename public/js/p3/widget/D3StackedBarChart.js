@@ -15,8 +15,6 @@ define([
 		constructor: function(target){
 			this.node = domConstruct.place(this.templateString, target, "only");
 
-			d3.select(window).on('resize', lang.hitch(this, this.resize));
-
 			this.currentSort = "label";
 			this.ascendSort = true;
 			this.normalize = false;
@@ -382,7 +380,7 @@ define([
 
 			// console.log("resize canvasWidth: ", canvasWidth);
 
-			this.pf_x_scale = d3.scale.linear().range([0, canvasWidth]).domain([0, this.data.length]);
+			this.pf_x_scale.range([0, canvasWidth]);
 
 			// update chart and canvas width
 			this.chart.attr("width", chartWidth);
