@@ -14,7 +14,7 @@ define(["dojo/request", "dojo/_base/Deferred"
 					"X-Requested-With": false
 				},
 				handleAs: "json",
-				timeout: 600000,
+				timeout: 1200000,
 				data: JSON.stringify({id: idx++, method: method, params: params, jsonrpc: "2.0"})
 			}), function(response){
 				// console.log("JSON RPC RESPONSE: ", response);
