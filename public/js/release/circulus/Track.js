@@ -20,6 +20,7 @@ define("circulus/Track", [
 		stroke: "",
 		data: null,
 		visible: true,
+		hideable: null,
 		alignBackgroundToReferenceTrack: true,
 		loadingText: "LOADING DATA",
 		constructor: function(viewer,options,data){
@@ -41,7 +42,7 @@ define("circulus/Track", [
 			var _self=this;
 
 			this.watch("visible", function(attr,oldVal,vis){
-				if (vis){
+				if (vis && _self.data.length>0){
 					_self.render();
 				}else{
 					options.surface.clear();
