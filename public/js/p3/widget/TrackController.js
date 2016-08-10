@@ -85,7 +85,7 @@ define([
 			console.log("Track check event.track", event.track);
 			console.log("Track check event.track.hideable", event.track.hideable);
 
-			if(!event.isReferenceTrack && !event.track.hideable){
+			if(!event.isReferenceTrack && event.track.hideable != false){
 				var visibleButton = domConstruct.create("i", {
 					'class': "fa " + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + " fa-2x",
 					style: {margin: "2px"}
