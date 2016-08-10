@@ -152,6 +152,12 @@ define([
 		},
 		reload: function(){
 			var self = this;
+
+			if(!self._loadingDeferred.isResolved()){
+				self._loadingDeferred.cancel('reloaded');
+				// console.log(self._loadingDeferred.isResolved(), self._loadingDeferred.isCanceled(), self._loadingDeferred.isRejected());
+			}
+
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
