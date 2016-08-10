@@ -52,6 +52,7 @@ define("p3/widget/CircularViewerContainer", [
 				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"]
 
 			var query = "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
+			//console.log("******track title:", title, " query:", PathJoin(this.apiServiceUrl, "genome_feature", query));
 
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
@@ -82,11 +83,17 @@ define("p3/widget/CircularViewerContainer", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
+				//console.log("******track title:", title, " refseqs:", refseqs);
+				
+				if (refseqs.length == 0) {
+					track.set('loading', false);
+					return refseqs;
+				} 
+				
 				refseqs = refseqs.filter(function(r){
 					if(strand === null){
-						return true
+						return true;
 					}
-					;
 					if(strand){
 						return r.strand && r.strand == "+"
 					}else{
@@ -100,14 +107,17 @@ define("p3/widget/CircularViewerContainer", [
 					return a.name > b.name;
 				})
 
-				track.set("data", refseqs)
+				//console.log("******before set data track title:", title, " refseqs:", refseqs);
+
+				track.set("data", refseqs);
+				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
 		},
 
 		onSetReferenceSequences: function(attr, oldVal, refseqs){
-			console.log("RefSeqs: ", refseqs);
+			// console.log("RefSeqs: ", refseqs);
 
 			this.viewer.addTrack({
 				type: SectionTrackWithLabel,
@@ -198,7 +208,7 @@ define("p3/widget/CircularViewerContainer", [
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				console.log("GC CONTENT: ", gcContentData);
+				// console.log("GC CONTENT: ", gcContentData);
 				gcContentTrack.set('data', gcContentData)
 				gcSkewTrack.set('data', gcContentData)
 			}))
@@ -251,7 +261,7 @@ define("p3/widget/CircularViewerContainer", [
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("CircularViewerContainer onSetState", state);
+			// console.log("CircularViewerContainer onSetState", state);
 			if(state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
 			}
@@ -276,7 +286,7 @@ define("p3/widget/CircularViewerContainer", [
 		},
 
 		onFirstView: function(){
-			console.log("onFirstView()");
+			// console.log("onFirstView()");
 			if(this._firstView){
 				return;
 			}

@@ -113,11 +113,11 @@ define("p3/widget/viewer/Taxonomy", [
 			if (!state.taxonomy && state.taxon_id){
 				// console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
 				if (oldState && oldState.taxon_id){
-					console.log("oldState.taxon_id: ", oldState.taxon_id)
+					// console.log("oldState.taxon_id: ", oldState.taxon_id)
 					
 					if ((state.taxon_id == oldState.taxon_id)){
 						if (oldState.taxonomy || this.taxonomy){
-							console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
+							// console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
 							state.taxonomy = oldState.taxonomy || this.taxonomy;
 						}else{
 							console.log("oldState missing Taxonomy");
@@ -198,16 +198,16 @@ define("p3/widget/viewer/Taxonomy", [
 					var prop = "genome_id";
 					if (active == "transcriptomics"){ prop = "genome_ids"; }
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
-					console.log("ACTIVE MAX: ", activeMax);
+					// console.log("ACTIVE MAX: ", activeMax);
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
 						//console.log("Found Genome_IDS in state object");
 						if (this.state.genome_ids.length <= activeMax){
-							console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
+							// console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
 							activeQueryState = lang.mixin({}, this.state, {search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						} else if (this.state.referenceGenomes && this.state.referenceGenomes.length<=activeMax){
 							var ids = this.state.referenceGenomes.map(function(x){ return x.genome_id })
-							console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
+							// console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
 							activeQueryState = lang.mixin({}, this.state, {genome_ids:ids, autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						} else if (this.state.referenceGenomes) {
@@ -233,7 +233,7 @@ define("p3/widget/viewer/Taxonomy", [
 
 
 					if(activeQueryState){
-						console.log("Active Query State: ", activeQueryState);
+						// console.log("Active Query State: ", activeQueryState);
 
 						activeTab.set("state", activeQueryState);
 					}else{

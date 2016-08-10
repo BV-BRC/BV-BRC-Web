@@ -26,7 +26,7 @@ define("phyloview/TreeNavSVG", [
     tipToColors  : null,
     treeData : null,
     labelIndex: 0,
-    labelLabels: {"PATRIC ID":0},
+    labelLabels: {"Default ID":0},
     tree : null,
     selected: [],
     svgContainer : null, 
@@ -165,6 +165,7 @@ define("phyloview/TreeNavSVG", [
     },
 
     getSelectedItems : function() {
+            this.selected =[];
             this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
             if(d.selected && !d.c) {
                 this.selected.push(d);

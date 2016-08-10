@@ -1,13 +1,13 @@
 require({cache:{
 'url:p3/widget/templates/FeatureOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"featureSummaryNode\">\n                Loading Feature Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"sgViewerNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">ID Mapping</span></h3>\n            <div class=\"SummaryWidget idmSummeryWidget\" data-dojo-attach-point=\"idMappingNode\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Functional Properties</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"functionalPropertiesNode\">\n                Loading Functional Properties...\n            </div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Special Properties</span></h3>\n            <div class=\"SummaryWidget spgSummaryWidget\" data-dojo-attach-point=\"specialPropertiesNode\"></div>\n        </div>\n\n        <div class=\"section hidden\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Comments</span></h3>\n            <div class=\"SummaryWidget fcSummaryWidget\" data-dojo-attach-point=\"featureCommentsNode\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <!--\n            <div class=\"BrowserHeader\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddFeature\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n            </div>\n            -->\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddFeature\">Add Feature to Workspace</button>\n            </div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">External Tools</span></h3>\n            <div class=\"SummaryWidget\" data-dojo-attach-point=\"externalLinkNode\"></div>\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n"}});
 define("p3/widget/FeatureOverview", [
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
 	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
-], function(declare, lang, on, xhr,
+], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
@@ -22,19 +22,6 @@ define("p3/widget/FeatureOverview", [
 			'Authorization': window.App.authorizationToken || ""
 		}
 	};
-
-	// building add to group dialog for this page
-	var dlg = new Dialog({title: "Add This Feature To Group"});
-	var stg = new SelectionToGroup({
-		selection: [],
-		type: 'feature_group'
-	});
-	on(dlg.domNode, "dialogAction", function(evt){
-		dlg.hide();
-	});
-	domConstruct.place(stg.domNode, dlg.containerNode, "first");
-	stg.startup();
-	dlg.startup();
 
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
@@ -55,8 +42,6 @@ define("p3/widget/FeatureOverview", [
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-
-			stg.selection.push(feature);
 
 			this.getSummaryData();
 			this.set("publications", feature);
@@ -394,7 +379,27 @@ define("p3/widget/FeatureOverview", [
 			}
 		},
 
-		onAddFeature: function(evt){
+		onAddFeature: function(){
+
+			if(!window.App.user || !window.App.user.id){
+				Topic.publish("/login");
+				return;
+			}
+
+			var dlg = new Dialog({title: "Add This Feature To Group"});
+			var stg = new SelectionToGroup({
+				selection: [this.feature],
+				type: 'feature_group'
+			});
+			on(dlg.domNode, "dialogAction", function(evt){
+				dlg.hide();
+				setTimeout(function(){
+					dlg.destroy();
+				}, 2000);
+			});
+			domConstruct.place(stg.domNode, dlg.containerNode, "first");
+			stg.startup();
+			dlg.startup();
 			dlg.show();
 		},
 		startup: function(){

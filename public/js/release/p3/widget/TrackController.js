@@ -19,7 +19,7 @@ define("p3/widget/TrackController", [
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
-			console.log("saveSVG()");
+			// console.log("saveSVG()");
 			if(this.viewer){
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
@@ -32,7 +32,7 @@ define("p3/widget/TrackController", [
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
 			}
-			console.log("addTrack Event: ", event);
+			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
 			var color = domConstruct.create("td", {}, tr);
 			var fg, bg;
@@ -83,8 +83,11 @@ define("p3/widget/TrackController", [
 					"font-size": ".85em"
 				}
 			}, tr);
+			
+			console.log("Track check event.track", event.track);
+			console.log("Track check event.track.hideable", event.track.hideable);
 
-			if(!event.isReferenceTrack){
+			if(!event.isReferenceTrack && event.track.hideable != false){
 				var visibleButton = domConstruct.create("i", {
 					'class': "fa " + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + " fa-2x",
 					style: {margin: "2px"}

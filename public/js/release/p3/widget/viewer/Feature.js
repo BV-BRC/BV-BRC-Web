@@ -41,7 +41,7 @@ define("p3/widget/viewer/Feature", [
 				id = "?eq(patric_id," + id + ")&limit(1)";
 			}
 
-			console.log("Get Feature: ", id);
+			// console.log("Get Feature: ", id);
 			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
 				headers: {
 					accept: "application/json",
