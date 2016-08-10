@@ -35,14 +35,14 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			],
 			[
 				"Cluster",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Advanced", multiple: false, validTypes: ["*"]},
 				function(){
 					var self = this;

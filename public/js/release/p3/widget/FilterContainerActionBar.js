@@ -308,7 +308,7 @@ define("p3/widget/FilterContainerActionBar", [
 			};
 
 			function toggleFilters(){
-				console.log("Toggle the Filters Panel", _self.domNode);
+				// console.log("Toggle the Filters Panel", _self.domNode);
 				on.emit(_self.currentContainerWidget.domNode, "ToggleFilters", {});
 			}
 

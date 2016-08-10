@@ -1,10 +1,10 @@
 define("p3/widget/GeneExpressionContainer", [
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/request", "dojo/when", "dojo/_base/Deferred",
 	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
 	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
-], function(declare, lang, on, Topic, domConstruct,
+], function(declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
 			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
@@ -61,88 +61,119 @@ define("p3/widget/GeneExpressionContainer", [
 				return;
 			}
 
-			var filterPanel = this._buildFilterPanel();
+			self = this;
+			var q = this.state.search;			
+			xhr.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
+				data: q,
+				headers: {
+					"accept": "application/solr+json",
+					"content-type": "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(function(res){
+				console.log("*********************In chechData: res:", res);
+				//var def = new Deferred();
+				//setTimeout(function(){
+				//  def.resolve(res);
+				//}, 2000);
+				//console.log("*********************In chechData: res:", res);
+				console.log("*********************In chechData: res.response.numFound:", res.response.numFound);
+				if (res && res.response.numFound == 0) {
+					var messagePane = new ContentPane({
+							region: "top",
+							content:"<p>No data found</p>"
+					});
+					self.addChild(messagePane);
+				} else {
+					var filterPanel = self._buildFilterPanel();
+					console.log("GeneExpressionGridContainer onFirstView: this", self);
+					console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
+					self.tabContainer = new StackContainer({region: "center", id: self.id + "_TabContainer"});
+					var tabController = new TabController({
+						containerId: self.id + "_TabContainer",
+						region: "top",
+						"class": "TextTabButtons"
+					});
 
-			console.log("GeneExpressionGridContainer onFirstView: this", this);
-			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
-			this.tabContainer = new StackContainer({region: "center", id: this.id + "_TabContainer"});
-			var tabController = new TabController({
-				containerId: this.id + "_TabContainer",
-				region: "top",
-				"class": "TextTabButtons"
-			});
+					// for charts
+					// outer BorderContainer
+					var bc1 = new BorderContainer({
+						region: "top",
+						title: "Chart",
+						style: "height: 350px;",
+						gutters: false
+					});
 
+					var bc = new BorderContainer({
+						region: "top",
+						title: "Chart",
+						style: "height: 350px;"
+					});
 
+					console.log("Before creating GeneExpressionChartContainer", self);
 
-			// for charts
-			// outer BorderContainer
-			var bc1 = new BorderContainer({
-				region: "top",
-				title: "Chart",
-				style: "height: 350px;",
-				gutters: false
-			});
+					var chartContainer1 = new GeneExpressionChartContainer({
+						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer1",
+						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+						title: "Chart",
+						content: "Gene Expression Chart",
+						state: self.state,
+						tgtate: self.tgState,
+						apiServer: self.apiServer
+					});
+					chartContainer1.startup();
 
-			var bc = new BorderContainer({
-				region: "top",
-				title: "Chart",
-				style: "height: 350px;"
-			});
+					var chartContainer2 = new GeneExpressionMetadataChartContainer({
+						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer2",
+						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+						title: "Chart",
+						content: "Gene Expression Metadata Chart",
+						state: self.state,
+						tgtate: self.tgState,
+						apiServer: self.apiServer
+					});
+					chartContainer2.startup();
 
-			console.log("Before creating GeneExpressionChartContainer", this);
+					//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
 
-			var chartContainer1 = new GeneExpressionChartContainer({
-				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
-				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
-				title: "Chart",
-				content: "Gene Expression Chart",
-				state: this.state,
-				tgtate: this.tgState,
-				apiServer: this.apiServer
-			});
-			chartContainer1.startup();
+					// for data grid			
+					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
+						title: "Table",
+						content: "Gene Expression Table"
+					});
 
-			var chartContainer2 = new GeneExpressionMetadataChartContainer({
-				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
-				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
-				title: "Chart",
-				content: "Gene Expression Metadata Chart",
-				state: this.state,
-				tgtate: this.tgState,
-				apiServer: this.apiServer
-			});
-			chartContainer2.startup();
+					console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 
-			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
-			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
+					self.watch("state", lang.hitch(self, "onSetState"));
 
-			// for data grid
+					self.addChild(tabController);
+					self.addChild(filterPanel);
+					self.tabContainer.addChild(bc1);
+					bc1.addChild(bc);
+					bc.addChild(chartContainer1);
+					bc.addChild(chartContainer2);
+					self.tabContainer.addChild(self.GeneExpressionGridContainer);
+					self.addChild(self.tabContainer);
 			
-			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
-				title: "Table",
-				content: "Gene Expression Table"
+					Topic.subscribe(self.id+"_TabContainer-selectChild", lang.hitch(self,function(page){
+						page.set('state', self.state)
+						page.set('visible', true);
+					}));				
+				}
+				
+			}, function(err){
+					var messagePane = new ContentPane({
+							region: "top",
+							content:"<p>No data found</p>"
+					});
+					self.addChild(messagePane);
 			});
-
-			console.log("onFirstView create GeneExpressionGrid: ", this.GeneExpressionGridContainer);
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
-			this.addChild(tabController);
-			this.addChild(filterPanel);
-			this.tabContainer.addChild(bc1);
-			bc1.addChild(bc);
-			bc.addChild(chartContainer1);
-			bc.addChild(chartContainer2);
-			this.tabContainer.addChild(this.GeneExpressionGridContainer);
-			this.addChild(this.tabContainer);
 			
-			Topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
-				page.set('state', this.state)
-				page.set('visible', true);
-			}));
-			this.inherited(arguments);
-			this._firstView = true;
+			self.inherited(arguments);
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
+			self._firstView = true;
 		},
 
 		_buildFilterPanel: function(){

@@ -25614,6 +25614,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -38340,7 +38341,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			console.log("setSelection", sel, sel.length);
+			// console.log("setSelection", sel, sel.length);
 			this.selection = sel;
 
 //			return;
@@ -38465,7 +38466,7 @@ define([
 				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
-						console.log("actionButton: ", _self._actions[rel]);
+						// console.log("actionButton: ", _self._actions[rel]);
 						if (_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
 							Topic.publish("/login");
 							return;
@@ -38517,18 +38518,18 @@ define([
 				var _self=this;
 				var timer;
 				on(wrapper,"mousedown", function(evt){
-					console.log("Handle Press MouseDownAction");
+					// console.log("Handle Press MouseDownAction");
 
 					var cancelClick=false;
 	
 					timer = setTimeout(function(){
 						cancelClick=true;
-						console.log("Selection in ActionBar: ", _self.selection, _self);
+						// console.log("Selection in ActionBar: ", _self.selection, _self);
 						opts.pressAndHold(_self.get("selection"),wrapper,opts,evt);
 					}, 800)
 
 					on.once(wrapper, "click", function(clickEvt){
-						console.log("Cancel Click: ", cancelClick)
+						// console.log("Cancel Click: ", cancelClick)
 						if (timer){
 							clearTimeout(timer);
 						}
@@ -58971,7 +58972,7 @@ define([
 		},
 
 		getReferenceAndRepresentativeGenomes: function(){
-			console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
+			// console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
 			var query = this.get('query');
 
 			var _self = this;
@@ -59113,7 +59114,7 @@ define([
 		},
 
 		onSetReferenceGenomes: function(attr, oldVal, referenceGenomes){
-			console.log("onSetReferenceGenomes: ", referenceGenomes);
+			// console.log("onSetReferenceGenomes: ", referenceGenomes);
 			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 
 
@@ -59232,7 +59233,7 @@ define([
 			}
 		},
 		onSetTotalGenomes: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
+			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 
 			if (newVal>500){
@@ -59670,13 +59671,13 @@ define([
 },
 'p3/widget/GenomeOverview':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
 	"./ExternalItemFormatter"
 
-], function(declare, lang, on, xhr,
+], function(declare, lang, on, xhr, Topic,
 			domClass, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
@@ -59724,6 +59725,12 @@ define([
 		},
 
 		onAddGenome: function(){
+
+			if(!window.App.user || !window.App.user.id){
+				Topic.publish("/login");
+				return;
+			}
+
 			var dlg = new Dialog({title: "Add This Genome To Group"});
 			var stg = new SelectionToGroup({
 				selection: [this.genome],
@@ -75226,7 +75233,7 @@ define([
 						}
 					}), this);
 
-					console.log("GridContainer SEL: ", sel)
+					// console.log("GridContainer SEL: ", sel)
 					// console.log("selection: ", sel);
 					this.selectionActionBar.set("selection", sel);
 					this.itemDetailPanel.set('selection', sel);
@@ -75618,7 +75625,7 @@ define([
 			};
 
 			function toggleFilters(){
-				console.log("Toggle the Filters Panel", _self.domNode);
+				// console.log("Toggle the Filters Panel", _self.domNode);
 				on.emit(_self.currentContainerWidget.domNode, "ToggleFilters", {});
 			}
 
@@ -81012,6 +81019,12 @@ define([
 		},
 		reload: function(){
 			var self = this;
+
+			if(!self._loadingDeferred.isResolved()){
+				self._loadingDeferred.cancel('reloaded');
+				// console.log(self._loadingDeferred.isResolved(), self._loadingDeferred.isCanceled(), self._loadingDeferred.isRejected());
+			}
+
 			delete self._loadingDeferred;
 			self._loaded = false;
 			self.loadData();
@@ -83101,14 +83114,14 @@ define([
 			],
 			[
 				"Cluster",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Advanced", multiple: false, validTypes: ["*"]},
 				function(){
 					var self = this;
@@ -84804,6 +84817,7 @@ define([
 				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"]
 
 			var query = "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
+			//console.log("******track title:", title, " query:", PathJoin(this.apiServiceUrl, "genome_feature", query));
 
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
@@ -84834,11 +84848,17 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
+				//console.log("******track title:", title, " refseqs:", refseqs);
+				
+				if (refseqs.length == 0) {
+					track.set('loading', false);
+					return refseqs;
+				} 
+				
 				refseqs = refseqs.filter(function(r){
 					if(strand === null){
-						return true
+						return true;
 					}
-					;
 					if(strand){
 						return r.strand && r.strand == "+"
 					}else{
@@ -84852,14 +84872,17 @@ define([
 					return a.name > b.name;
 				})
 
-				track.set("data", refseqs)
+				//console.log("******before set data track title:", title, " refseqs:", refseqs);
+
+				track.set("data", refseqs);
+				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
 		},
 
 		onSetReferenceSequences: function(attr, oldVal, refseqs){
-			console.log("RefSeqs: ", refseqs);
+			// console.log("RefSeqs: ", refseqs);
 
 			this.viewer.addTrack({
 				type: SectionTrackWithLabel,
@@ -84950,7 +84973,7 @@ define([
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				console.log("GC CONTENT: ", gcContentData);
+				// console.log("GC CONTENT: ", gcContentData);
 				gcContentTrack.set('data', gcContentData)
 				gcSkewTrack.set('data', gcContentData)
 			}))
@@ -85003,7 +85026,7 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("CircularViewerContainer onSetState", state);
+			// console.log("CircularViewerContainer onSetState", state);
 			if(state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
 			}
@@ -85028,7 +85051,7 @@ define([
 		},
 
 		onFirstView: function(){
-			console.log("onFirstView()");
+			// console.log("onFirstView()");
 			if(this._firstView){
 				return;
 			}
@@ -85071,7 +85094,7 @@ define([
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
-			console.log("saveSVG()");
+			// console.log("saveSVG()");
 			if(this.viewer){
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
@@ -85084,7 +85107,7 @@ define([
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
 			}
-			console.log("addTrack Event: ", event);
+			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
 			var color = domConstruct.create("td", {}, tr);
 			var fg, bg;
@@ -85135,8 +85158,11 @@ define([
 					"font-size": ".85em"
 				}
 			}, tr);
+			
+			console.log("Track check event.track", event.track);
+			console.log("Track check event.track.hideable", event.track.hideable);
 
-			if(!event.isReferenceTrack){
+			if(!event.isReferenceTrack && event.track.hideable != false){
 				var visibleButton = domConstruct.create("i", {
 					'class': "fa " + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + " fa-2x",
 					style: {margin: "2px"}
@@ -89529,7 +89555,7 @@ define([
 			//we have to make the default query exclude the actual sequences themselves or it is way too slow
 			var sel = "&select(" + this.defaultFieldList.join(",") + ")";
 			query = query + sel;
-			console.log("Query: ", query);
+			// console.log("Query: ", query);
 			return Store.prototype.query.apply(this, [query, opts]);
 		}
 	});
@@ -90233,11 +90259,11 @@ define([
 			if (!state.taxonomy && state.taxon_id){
 				// console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
 				if (oldState && oldState.taxon_id){
-					console.log("oldState.taxon_id: ", oldState.taxon_id)
+					// console.log("oldState.taxon_id: ", oldState.taxon_id)
 					
 					if ((state.taxon_id == oldState.taxon_id)){
 						if (oldState.taxonomy || this.taxonomy){
-							console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
+							// console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
 							state.taxonomy = oldState.taxonomy || this.taxonomy;
 						}else{
 							console.log("oldState missing Taxonomy");
@@ -90318,16 +90344,16 @@ define([
 					var prop = "genome_id";
 					if (active == "transcriptomics"){ prop = "genome_ids"; }
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
-					console.log("ACTIVE MAX: ", activeMax);
+					// console.log("ACTIVE MAX: ", activeMax);
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
 						//console.log("Found Genome_IDS in state object");
 						if (this.state.genome_ids.length <= activeMax){
-							console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
+							// console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
 							activeQueryState = lang.mixin({}, this.state, {search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						} else if (this.state.referenceGenomes && this.state.referenceGenomes.length<=activeMax){
 							var ids = this.state.referenceGenomes.map(function(x){ return x.genome_id })
-							console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
+							// console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
 							activeQueryState = lang.mixin({}, this.state, {genome_ids:ids, autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
 						} else if (this.state.referenceGenomes) {
@@ -90353,7 +90379,7 @@ define([
 
 
 					if(activeQueryState){
-						console.log("Active Query State: ", activeQueryState);
+						// console.log("Active Query State: ", activeQueryState);
 
 						activeTab.set("state", activeQueryState);
 					}else{
@@ -90887,7 +90913,7 @@ define([
     tipToColors  : null,
     treeData : null,
     labelIndex: 0,
-    labelLabels: {"PATRIC ID":0},
+    labelLabels: {"Default ID":0},
     tree : null,
     selected: [],
     svgContainer : null, 
@@ -91026,6 +91052,7 @@ define([
     },
 
     getSelectedItems : function() {
+            this.selected =[];
             this.tree.nodes(this.treeData).forEach(lang.hitch(this, function(d){
             if(d.selected && !d.c) {
                 this.selected.push(d);
@@ -109734,7 +109761,7 @@ define([
 				id = "?eq(patric_id," + id + ")&limit(1)";
 			}
 
-			console.log("Get Feature: ", id);
+			// console.log("Get Feature: ", id);
 			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
 				headers: {
 					accept: "application/json",
@@ -109889,13 +109916,13 @@ define([
 },
 'p3/widget/FeatureOverview':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
 	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
 	"../util/PathJoin", "dgrid/Grid",
 	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
-], function(declare, lang, on, xhr,
+], function(declare, lang, on, xhr, Topic,
 			domClass, domConstruct, Template,
 			WidgetBase, Templated, Dialog,
 			PathJoin, Grid,
@@ -109910,19 +109937,6 @@ define([
 			'Authorization': window.App.authorizationToken || ""
 		}
 	};
-
-	// building add to group dialog for this page
-	var dlg = new Dialog({title: "Add This Feature To Group"});
-	var stg = new SelectionToGroup({
-		selection: [],
-		type: 'feature_group'
-	});
-	on(dlg.domNode, "dialogAction", function(evt){
-		dlg.hide();
-	});
-	domConstruct.place(stg.domNode, dlg.containerNode, "first");
-	stg.startup();
-	dlg.startup();
 
 	return declare([WidgetBase, Templated], {
 		baseClass: "FeatureOverview",
@@ -109943,8 +109957,6 @@ define([
 
 		_setFeatureAttr: function(feature){
 			this.feature = feature;
-
-			stg.selection.push(feature);
 
 			this.getSummaryData();
 			this.set("publications", feature);
@@ -110282,7 +110294,27 @@ define([
 			}
 		},
 
-		onAddFeature: function(evt){
+		onAddFeature: function(){
+
+			if(!window.App.user || !window.App.user.id){
+				Topic.publish("/login");
+				return;
+			}
+
+			var dlg = new Dialog({title: "Add This Feature To Group"});
+			var stg = new SelectionToGroup({
+				selection: [this.feature],
+				type: 'feature_group'
+			});
+			on(dlg.domNode, "dialogAction", function(evt){
+				dlg.hide();
+				setTimeout(function(){
+					dlg.destroy();
+				}, 2000);
+			});
+			domConstruct.place(stg.domNode, dlg.containerNode, "first");
+			stg.startup();
+			dlg.startup();
 			dlg.show();
 		},
 		startup: function(){
@@ -110417,12 +110449,12 @@ define([
 },
 'p3/widget/GeneExpressionContainer':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/request", "dojo/when", "dojo/_base/Deferred",
 	"dijit/layout/BorderContainer",  "dijit/layout/TabContainer", "dijit/layout/StackContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
 	"./GeneExpressionGridContainer", "./GeneExpressionChartContainer", "./GeneExpressionMetadataChartContainer",  "dijit/TooltipDialog", "dijit/Dialog", "dijit/popup"
-], function(declare, lang, on, Topic, domConstruct,
+], function(declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
 			BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
@@ -110479,88 +110511,119 @@ define([
 				return;
 			}
 
-			var filterPanel = this._buildFilterPanel();
+			self = this;
+			var q = this.state.search;			
+			xhr.post(window.App.dataServiceURL + '/transcriptomics_gene/', {
+				data: q,
+				headers: {
+					"accept": "application/solr+json",
+					"content-type": "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': (window.App.authorizationToken || "")
+				},
+				handleAs: "json"
+			}).then(function(res){
+				console.log("*********************In chechData: res:", res);
+				//var def = new Deferred();
+				//setTimeout(function(){
+				//  def.resolve(res);
+				//}, 2000);
+				//console.log("*********************In chechData: res:", res);
+				console.log("*********************In chechData: res.response.numFound:", res.response.numFound);
+				if (res && res.response.numFound == 0) {
+					var messagePane = new ContentPane({
+							region: "top",
+							content:"<p>No data found</p>"
+					});
+					self.addChild(messagePane);
+				} else {
+					var filterPanel = self._buildFilterPanel();
+					console.log("GeneExpressionGridContainer onFirstView: this", self);
+					console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", self.tgState);
+					self.tabContainer = new StackContainer({region: "center", id: self.id + "_TabContainer"});
+					var tabController = new TabController({
+						containerId: self.id + "_TabContainer",
+						region: "top",
+						"class": "TextTabButtons"
+					});
 
-			console.log("GeneExpressionGridContainer onFirstView: this", this);
-			console.log("GeneExpressionGridContainer onFirstView after _buildFilterPanel(): this.tgState", this.tgState);
-			this.tabContainer = new StackContainer({region: "center", id: this.id + "_TabContainer"});
-			var tabController = new TabController({
-				containerId: this.id + "_TabContainer",
-				region: "top",
-				"class": "TextTabButtons"
-			});
+					// for charts
+					// outer BorderContainer
+					var bc1 = new BorderContainer({
+						region: "top",
+						title: "Chart",
+						style: "height: 350px;",
+						gutters: false
+					});
 
+					var bc = new BorderContainer({
+						region: "top",
+						title: "Chart",
+						style: "height: 350px;"
+					});
 
+					console.log("Before creating GeneExpressionChartContainer", self);
 
-			// for charts
-			// outer BorderContainer
-			var bc1 = new BorderContainer({
-				region: "top",
-				title: "Chart",
-				style: "height: 350px;",
-				gutters: false
-			});
+					var chartContainer1 = new GeneExpressionChartContainer({
+						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer1",
+						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
+						title: "Chart",
+						content: "Gene Expression Chart",
+						state: self.state,
+						tgtate: self.tgState,
+						apiServer: self.apiServer
+					});
+					chartContainer1.startup();
 
-			var bc = new BorderContainer({
-				region: "top",
-				title: "Chart",
-				style: "height: 350px;"
-			});
+					var chartContainer2 = new GeneExpressionMetadataChartContainer({
+						region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: self.id + "_chartContainer2",
+						//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
+						title: "Chart",
+						content: "Gene Expression Metadata Chart",
+						state: self.state,
+						tgtate: self.tgState,
+						apiServer: self.apiServer
+					});
+					chartContainer2.startup();
 
-			console.log("Before creating GeneExpressionChartContainer", this);
+					//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
 
-			var chartContainer1 = new GeneExpressionChartContainer({
-				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
-				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer1",
-				title: "Chart",
-				content: "Gene Expression Chart",
-				state: this.state,
-				tgtate: this.tgState,
-				apiServer: this.apiServer
-			});
-			chartContainer1.startup();
+					// for data grid			
+					self.GeneExpressionGridContainer = new GeneExpressionGridContainer({
+						title: "Table",
+						content: "Gene Expression Table"
+					});
 
-			var chartContainer2 = new GeneExpressionMetadataChartContainer({
-				region: "leading", style: "height: 350px; width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
-				//region: "leading", style: "width: 500px;", doLayout: false, id: this.id + "_chartContainer2",
-				title: "Chart",
-				content: "Gene Expression Metadata Chart",
-				state: this.state,
-				tgtate: this.tgState,
-				apiServer: this.apiServer
-			});
-			chartContainer2.startup();
+					console.log("onFirstView create GeneExpressionGrid: ", self.GeneExpressionGridContainer);
 
-			//console.log("onFirstView new GeneExpressionGridContainer state: ", this.state);
-			//console.log(" onFirstView new GeneExpressionGridContainer this.apiServer: ", this.apiServer);
+					self.watch("state", lang.hitch(self, "onSetState"));
 
-			// for data grid
+					self.addChild(tabController);
+					self.addChild(filterPanel);
+					self.tabContainer.addChild(bc1);
+					bc1.addChild(bc);
+					bc.addChild(chartContainer1);
+					bc.addChild(chartContainer2);
+					self.tabContainer.addChild(self.GeneExpressionGridContainer);
+					self.addChild(self.tabContainer);
 			
-			this.GeneExpressionGridContainer = new GeneExpressionGridContainer({
-				title: "Table",
-				content: "Gene Expression Table"
+					Topic.subscribe(self.id+"_TabContainer-selectChild", lang.hitch(self,function(page){
+						page.set('state', self.state)
+						page.set('visible', true);
+					}));				
+				}
+				
+			}, function(err){
+					var messagePane = new ContentPane({
+							region: "top",
+							content:"<p>No data found</p>"
+					});
+					self.addChild(messagePane);
 			});
-
-			console.log("onFirstView create GeneExpressionGrid: ", this.GeneExpressionGridContainer);
-
-			this.watch("state", lang.hitch(this, "onSetState"));
-
-			this.addChild(tabController);
-			this.addChild(filterPanel);
-			this.tabContainer.addChild(bc1);
-			bc1.addChild(bc);
-			bc.addChild(chartContainer1);
-			bc.addChild(chartContainer2);
-			this.tabContainer.addChild(this.GeneExpressionGridContainer);
-			this.addChild(this.tabContainer);
 			
-			Topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
-				page.set('state', this.state)
-				page.set('visible', true);
-			}));
-			this.inherited(arguments);
-			this._firstView = true;
+			self.inherited(arguments);
 			//console.log("new GeneExpressionGridContainer arguments: ", arguments);
+			self._firstView = true;
 		},
 
 		_buildFilterPanel: function(){
@@ -112227,14 +112290,14 @@ define([
 	"dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dijit/layout/TabController", "dijit/layout/ContentPane",
 	"dijit/form/RadioButton", "dijit/form/Textarea", "dijit/form/TextBox", "dijit/form/Button", "dijit/form/Select",
 	"./ActionBar", "./ContainerActionBar",
-	"dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/themes/Distinctive", "../store/GeneExpressionMetadataChartMemoryStore",  
-	"dojo/aspect",  "dojo/_base/Deferred", "dojo/fx/easing", "dojo/when", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Highlight", 
+	"dojox/charting/Chart2D", "dojox/charting/themes/WatersEdge", "dojox/charting/themes/Distinctive", "../store/GeneExpressionMetadataChartMemoryStore",
+	"dojo/aspect",  "dojo/_base/Deferred", "dojo/fx/easing", "dojo/when", "dojox/charting/action2d/MoveSlice", "dojox/charting/action2d/Highlight",
 	"dojox/charting/action2d/Tooltip", "dojox/charting/plot2d/Pie", "dojo/dom-style"
 ], function(declare, lang, on, Topic, domConstruct,
 			BorderContainer, TabContainer, StackController, ContentPane,
 			RadioButton, TextArea, TextBox, Button, Select,
 			ActionBar, ContainerActionBar,
-			Chart2D, Theme, Distinctive, Store, aspect, Deferred, easing, when, MoveSlice, Highlight, 
+			Chart2D, Theme, Distinctive, Store, aspect, Deferred, easing, when, MoveSlice, Highlight,
 			Tooltip, Pie, domStyle){
 	var tgState = {
 		keyword: "",
@@ -112243,7 +112306,7 @@ define([
 		upZscore: 0,
 		downZscore: 0
 	};
-	
+
 	return declare([BorderContainer], {
 		id: "GEChartContainer",
 		gutters: false,
@@ -112253,25 +112316,25 @@ define([
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;
-			console.log("GeneExpressionMetadataChartContainer Constructor: this", this);
-			console.log("GeneExpressionMetadataChartContainer Constructor: state", this.state);
+			// console.log("GeneExpressionMetadataChartContainer Constructor: this", this);
+			// console.log("GeneExpressionMetadataChartContainer Constructor: state", this.state);
 
 			Topic.subscribe("GeneExpression", lang.hitch(self, function(){
-				console.log("GeneExpressionMetadataChartContainer subscribe GeneExpression:", arguments);
+				// console.log("GeneExpressionMetadataChartContainer subscribe GeneExpression:", arguments);
 				var key = arguments[0], value = arguments[1];
 
 				if(key === "applyConditionFilter" || key === "updateTgState") {
 					self.tgState = value;
 					self.store.reload();
 
-					console.log("GeneExpressionMetadataChartContainer Constructor: key=, tgState=", key, self.tgState);
+					// console.log("GeneExpressionMetadataChartContainer Constructor: key=, tgState=", key, self.tgState);
 
 					// for strain
 					when(self.processData("strain"), function(chartData){
 						if (self.pschart) {
 							self.pschart.updateSeries("Strains", chartData[2]);
 							self.pschart.render();
-						} 
+						}
 						if (self.bschart) {
 							self.bschart.addAxis("x", {
 								vertical: true,
@@ -112291,7 +112354,7 @@ define([
 						if (self.pmchart) {
 							self.pmchart.updateSeries("Mutants", chartData[2]);
 							self.pmchart.render();
-						} 
+						}
 						if (self.bmchart) {
 							self.bmchart.addAxis("x", {
 								vertical: true,
@@ -112311,7 +112374,7 @@ define([
 						if (self.pcchart) {
 							self.pcchart.updateSeries("Conditions", chartData[2]);
 							self.pcchart.render();
-						} 
+						}
 						if (self.bcchart) {
 							self.bcchart.addAxis("x", {
 								vertical: true,
@@ -112325,13 +112388,12 @@ define([
 							self.bcchart.updateSeries("TopConditionss",chartData[1]);
 							self.bcchart.render();
 						}
-					});				
-					
+					});
 				}
 			}));
 		},
 		onSetState: function(attr, oldVal, state){
-			console.log("GeneExpressionMetadataChartContainer onSetState set state: ", state);
+			// console.log("GeneExpressionMetadataChartContainer onSetState set state: ", state);
 			this._set('state', state);
 		},
 
@@ -112352,21 +112414,21 @@ define([
 			}
 			//console.log("GeneExpressionMetadataChartContainer this._set: ", this.state);
 		},
-		
+
 		startup: function(){
 			//console.log("GeneExpressionGridContainer startup()");
 			if (this._started) { return; }
 			this.inherited(arguments);
 			var self=this;
 			this._set("state", this.get("state"));
-			console.log("GeneExpressionMetadataChartContainer startup(), tgState", this.tgState);
+			// console.log("GeneExpressionMetadataChartContainer startup(), tgState", this.tgState);
 
 			var chartTabContainer1 = new TabContainer({region: "center", style: "height: 300px; width: 500px; ", doLayout: false, id: this.id + "_chartTabContainer1"});
 			this.cp1 = new ContentPane({
 					title: "Strain",
 					style: "height: 300px; width: 400px;"
 			});
-								
+
 			this.cp2 = new ContentPane({
 					title: "Gene Modification",
 					style: "height: 300px; width: 400px;"
@@ -112384,10 +112446,10 @@ define([
        			showLabel: false,
 				onClick: lang.hitch(this, function(){
 					if (self.bschart) {
-						console.log("before this.bschart.destroy() called", self.bschart);
+						// console.log("before this.bschart.destroy() called", self.bschart);
 						self.bschart.destroy();
-						delete self.bschart;						
-						console.log("this.bschart.destroy() called", self.bschart);
+						delete self.bschart;
+						// console.log("this.bschart.destroy() called", self.bschart);
 						when(self.store.query({}), function(data){
 							self.showStrainPieChart();
 						});
@@ -112396,7 +112458,7 @@ define([
 			});
 			domStyle.set(show_all_strain.domNode, {"width":"36px"});
 			domStyle.set(show_all_strain.domNode.firstChild, "display", "block");
-						
+
 			domConstruct.place(show_all_strain.domNode, this.cp1.containerNode, "last");
 
 			var show_top_strain = new Button({
@@ -112415,7 +112477,7 @@ define([
 				})
 			});
 			domStyle.set(show_top_strain.domNode, {"width":"36px"});
-			domStyle.set(show_top_strain.domNode.firstChild, "display", "block");			
+			domStyle.set(show_top_strain.domNode.firstChild, "display", "block");
 
 			domConstruct.place(show_top_strain.domNode, this.cp1.containerNode, "last");
 
@@ -112435,7 +112497,7 @@ define([
 				})
 			});
 			domStyle.set(show_all_mutant.domNode, {"width":"36px"});
-			domStyle.set(show_all_mutant.domNode.firstChild, "display", "block");			
+			domStyle.set(show_all_mutant.domNode.firstChild, "display", "block");
 
 			domConstruct.place(show_all_mutant.domNode, this.cp2.containerNode, "last");
 
@@ -112447,7 +112509,7 @@ define([
 				onClick: lang.hitch(this, function(){
 					if (self.pmchart) {
 						self.pmchart.destroy();
-						delete self.pmchart;												
+						delete self.pmchart;
 						when(self.store.query({}), function(data){
 							self.showMutantBarChart();
 						});
@@ -112455,7 +112517,7 @@ define([
 				})
 			});
 			domStyle.set(show_top_mutant.domNode, {"width":"36px"});
-			domStyle.set(show_top_mutant.domNode.firstChild, "display", "block");			
+			domStyle.set(show_top_mutant.domNode.firstChild, "display", "block");
 
 			domConstruct.place(show_top_mutant.domNode, this.cp2.containerNode, "last");
 
@@ -112467,7 +112529,7 @@ define([
 				onClick: lang.hitch(this, function(){
 					if (self.bcchart) {
 						self.bcchart.destroy();
-						delete self.bcchart;																		
+						delete self.bcchart;
 						when(self.store.query({}), function(data){
 							self.showConditionPieChart();
 						});
@@ -112475,7 +112537,7 @@ define([
 				})
 			});
 			domStyle.set(show_all_condition.domNode, {"width":"36px"});
-			domStyle.set(show_all_condition.domNode.firstChild, "display", "block");			
+			domStyle.set(show_all_condition.domNode.firstChild, "display", "block");
 
 			domConstruct.place(show_all_condition.domNode, this.cp3.containerNode, "last");
 
@@ -112487,7 +112549,7 @@ define([
 				onClick: lang.hitch(this, function(){
 					if (self.pcchart) {
 						self.pcchart.destroy();
-						delete self.pcchart;																								
+						delete self.pcchart;
 						when(self.store.query({}), function(data){
 							self.showConditionBarChart();
 						});
@@ -112495,10 +112557,10 @@ define([
 				})
 			});
 			domStyle.set(show_top_condition.domNode, {"width":"36px"});
-			domStyle.set(show_top_condition.domNode.firstChild, "display", "block");			
+			domStyle.set(show_top_condition.domNode.firstChild, "display", "block");
 
 			domConstruct.place(show_top_condition.domNode, this.cp3.containerNode, "last");
-					
+
 			chartTabContainer1.addChild(this.cp1);
 			chartTabContainer1.addChild(this.cp2);
 			chartTabContainer1.addChild(this.cp3);
@@ -112507,7 +112569,7 @@ define([
 			//console.log("###Before GeneExpressionMetadataChartContainer startup() Create Store: store=", this.store);		
 
 			aspect.before(this, 'renderArray', function(results){
-				console.log("GeneExpressionMetadataChartContainer aspect.before: results=", results);
+				// console.log("GeneExpressionMetadataChartContainer aspect.before: results=", results);
 				Deferred.when(results.total, function(x){
 					this.set("totalRows", x);
 				});
@@ -112519,7 +112581,7 @@ define([
 			//console.log("###After GeneExpressionChartContainer startup() Create Store: store.data=", this.store.data); 
 
 
-			// Donut chart 	
+			// Donut chart
 			this.Donut = declare(Pie, {
 				render: function (dim, offsets) {
 					// Call the Pie's render method
@@ -112552,18 +112614,18 @@ define([
 				//labelWiring: "cccc",
 				labelStyle: "columns"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pschart, "default");
 			new Highlight(this.pschart, "default");
-			new Tooltip(this.pschart, "default");	 
+			new Tooltip(this.pschart, "default");
 
-			when(this.processData("strain"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("strain"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pschart.addSeries("Strains",chartData[2]);
 				self.pschart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
 			});
-		
+
 			// pie chart for mutant
 			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "first");
 			this.pmchart = new Chart2D(pmchartNode);
@@ -112575,17 +112637,17 @@ define([
 				//labelWiring: "cccc",
 				labelStyle: "columns"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pmchart, "default");
 			new Highlight(this.pmchart, "default");
-			new Tooltip(this.pmchart, "default");	 
+			new Tooltip(this.pmchart, "default");
 
-			when(this.processData("mutant"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("mutant"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pmchart.addSeries("Mutants",chartData[2]);
 				self.pmchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
-			});						
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
+			});
 
 			// pie chart for condition
 			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "first");
@@ -112598,18 +112660,18 @@ define([
 				//labelWiring: "cccc",
 				labelStyle: "columns"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pcchart, "default");
 			new Highlight(this.pcchart, "default");
-			new Tooltip(this.pcchart, "default");	 
+			new Tooltip(this.pcchart, "default");
 
-			when(this.processData("condition"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("condition"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pcchart.addSeries("Conditions",chartData[2]);
 				self.pcchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
 			});
-			
+
 			this.watch("state", lang.hitch(this, "onSetState"));
 			this.inherited(arguments);
 			this._started = true;
@@ -112622,23 +112684,23 @@ define([
 		},
 
 		createStore: function(server, token, state, filter_type){
-			console.log("###GeneExpressionChartContainer Create Store: state=", this.state);
+			// console.log("###GeneExpressionChartContainer Create Store: state=", this.state);
 			var store = new Store({
 				token: token,
 				apiServer: this.apiServer || window.App.dataServiceURL,
 				state: this.state || state,
-				filter_type: filter_type 
+				filter_type: filter_type
 			});
 			//store.watch('refresh', lang.hitch(this, "refresh"));
 			this.watch("state", lang.hitch(this, "onSetState"));
 
-			console.log("Create Store: store=", store);
+			// console.log("Create Store: store=", store);
 
 			return store;
 		},
 
 		showStrainPieChart: function(){
-			console.log("showPieChart");
+			// console.log("showPieChart");
 			var self=this;
 			self.store.reload();
 			//var pschartNode = domConstruct.create("div",{style: "height: 300px; width: 500px;"}); domConstruct.place(pschartNode, this.cp1.containerNode, "last");
@@ -112653,22 +112715,22 @@ define([
 				labelStyle: "columns",
 				style: "position:absolute; left:200px; float:left"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pschart, "default");
 			new Highlight(this.pschart, "default");
-			new Tooltip(this.pschart, "default");	 
+			new Tooltip(this.pschart, "default");
 
-			when(this.processData("strain"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("strain"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pschart.addSeries("Strains",chartData[2]);
 				self.pschart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
 			});
 		},
-		
+
 		// pie chart for mutant
 		showMutantPieChart: function(){
-			console.log("showPieChart");
+			// console.log("showPieChart");
 			var self=this;
 			self.store.reload();
 			var pmchartNode = domConstruct.create("div",{}); domConstruct.place(pmchartNode, this.cp2.containerNode, "last");
@@ -112681,22 +112743,22 @@ define([
 				//labelWiring: "cccc",
 				labelStyle: "columns"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pmchart, "default");
 			new Highlight(this.pmchart, "default");
-			new Tooltip(this.pmchart, "default");	 
+			new Tooltip(this.pmchart, "default");
 
-			when(this.processData("mutant"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("mutant"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pmchart.addSeries("Mutants",chartData[2]);
 				self.pmchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
-			});	
-		},					
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
+			});
+		},
 
 		// pie chart for condition
 		showConditionPieChart: function(){
-			console.log("showPieChart");
+			// console.log("showPieChart");
 			var self=this;
 			self.store.reload();
 			var pcchartNode = domConstruct.create("div",{}); domConstruct.place(pcchartNode, this.cp3.containerNode, "last");
@@ -112709,27 +112771,27 @@ define([
 				//labelWiring: "cccc",
 				labelStyle: "columns"
 			}).setTheme(Distinctive);
-		
+
 			new MoveSlice(this.pcchart, "default");
 			new Highlight(this.pcchart, "default");
-			new Tooltip(this.pcchart, "default");	 
+			new Tooltip(this.pcchart, "default");
 
-			when(this.processData("condition"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+			when(this.processData("condition"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				self.pcchart.addSeries("Conditions",chartData[2]);
 				self.pcchart.render();
-				console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer update chart = new Chart2D, chartData", chartData);
 			});
 		},
-		
+
 		showStrainBarChart: function(){
-			console.log("showBarChart");
+			// console.log("showBarChart");
 			var self=this;
 			self.store.reload();
 			var bschartNode = domConstruct.create("div",{}); domConstruct.place(bschartNode, this.cp1.containerNode, "last");
 			// chart for log_ratio
 			this.bschart = new Chart2D(bschartNode);
-			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			// console.log("GeneExpressionChartContainer after chart = new Chart2D");
 			this.bschart.setTheme(Distinctive);
 
 			// Add the only/default plot
@@ -112739,15 +112801,15 @@ define([
 				gap: 5,
 				labels: true,
 				labelStyle: "outside",
-				labelOffset: 15, 
+				labelOffset: 15,
 				animate: {duration: 1000, easing: easing.linear}
 			});
 
 			new Highlight(this.bschart, "default");
 			new Tooltip(this.bschart, "default");
-			 
-			when(this.processData("strain"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+
+			when(this.processData("strain"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				// Add axes
 				self.bschart.addAxis("x", {
 					vertical: true,
@@ -112760,18 +112822,18 @@ define([
 				self.bschart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
 				self.bschart.addSeries("TopStrains",chartData[1]);
 				self.bschart.render();
-				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
-			});			
+				// console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData);
+			});
 		},
 
 		showMutantBarChart: function(){
-			console.log("showBarChart");
+			// console.log("showBarChart");
 			var self=this;
 			self.store.reload();
 			var bmchartNode = domConstruct.create("div",{}); domConstruct.place(bmchartNode, this.cp2.containerNode, "last");
 			// chart for log_ratio
 			this.bmchart = new Chart2D(bmchartNode);
-			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			// console.log("GeneExpressionChartContainer after chart = new Chart2D");
 			this.bmchart.setTheme(Distinctive);
 
 			// Add the only/default plot
@@ -112781,15 +112843,15 @@ define([
 				gap: 5,
 				labels: true,
 				labelStyle: "outside",
-				labelOffset: 15, 
+				labelOffset: 15,
 				animate: {duration: 1000, easing: easing.linear}
 			});
 
 			new Highlight(this.bmchart, "default");
 			new Tooltip(this.bmchart, "default");
-			 
-			when(this.processData("mutant"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+
+			when(this.processData("mutant"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				// Add axes
 				self.bmchart.addAxis("x", {
 					vertical: true,
@@ -112802,17 +112864,17 @@ define([
 				self.bmchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
 				self.bmchart.addSeries("TopMutants",chartData[1]);
 				self.bmchart.render();
-				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData);
 			});
 		},
-		
+
 		showConditionBarChart: function(){
-			console.log("showBarChart");
+			// console.log("showBarChart");
 			var self=this;
 			self.store.reload();
 			var bcchartNode = domConstruct.create("div",{}); domConstruct.place(bcchartNode, this.cp3.containerNode, "last");
 			this.bcchart = new Chart2D(bcchartNode);
-			console.log("GeneExpressionChartContainer after chart = new Chart2D");
+			// console.log("GeneExpressionChartContainer after chart = new Chart2D");
 			this.bcchart.setTheme(Distinctive);
 
 			// Add the only/default plot
@@ -112822,15 +112884,15 @@ define([
 				gap: 5,
 				labels: true,
 				labelStyle: "outside",
-				labelOffset: 15, 
+				labelOffset: 15,
 				animate: {duration: 1000, easing: easing.linear}
 			});
 
 			new Highlight(this.bcchart, "default");
 			new Tooltip(this.bcchart, "default");
-			 
-			when(this.processData("condition"), function(chartData){ 
-				console.log("ChartData: ", chartData);
+
+			when(this.processData("condition"), function(chartData){
+				// console.log("ChartData: ", chartData);
 				// Add axes
 				self.bcchart.addAxis("x", {
 					vertical: true,
@@ -112843,21 +112905,21 @@ define([
 				self.bcchart.addAxis("y", {title: "Comparisons", titleOrientation: "away", min: 0, fixLower: "major", fixUpper: "major" });
 				self.bcchart.addSeries("TopConditionss",chartData[1]);
 				self.bcchart.render();
-				console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData); 					
+				// console.log("GeneExpressionChartContainer top 5 chart = new Chart2D, chartData", chartData);
 			});
 		},
 
 		processData: function(filter_type){
-			console.log("GeneExpressionChartContainer processData: this.store ", this.store);
+			// console.log("GeneExpressionChartContainer processData: this.store ", this.store);
 			return when(this.store.query({}), function(data){
-				console.log("GeneExpressionChartContainer processData: filter_type, data ", filter_type, data);
+				// console.log("GeneExpressionChartContainer processData: filter_type, data ", filter_type, data);
 				if(!data){
 					console.log("INVALID Chart DATA", data);
 					return;
 				}
 
 				var myData = [];
-				
+
 				if (filter_type === "strain") {
 					myData = data[0];
 					//console.log("GeneExpressionChartContainer processData: strain, myData ", filter_type, myData);
@@ -112870,24 +112932,24 @@ define([
 					myData = data[2];
 					//console.log("GeneExpressionChartContainer processData: condition, myData ", filter_type, myData);
 				}
-				console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
+				// console.log("GeneExpressionChartContainer processData: filter_type, myData ", filter_type, myData);
 
 				if(!myData){
 					console.log("INVALID Chart DATA", data);
 					return;
 				}
-								
+
 				var xData = [];
 				var yData = [];
 				var pieData =[];
 				var chartData = {};
 				var i=0;
-				var j=0;				
+				var j=0;
 				while(i<myData.length)
 				{
 					if (j<5 && j<myData.length) {
 						xData.push(myData[i]);
-						yData.push(myData[i+1]);	
+						yData.push(myData[i+1]);
 						j++;
 					}
 					var txt = myData[i];
@@ -112899,14 +112961,14 @@ define([
 				xData.map(function(val, idx) {
 					xLabel.push({text: val, value: idx+1});
 				});
-	
+
 				chartData[0]=xLabel;
 				chartData[1]=yData;
 				chartData[2]=pieData;
-				console.log("GeneExpressionChartContainer processData: xData, yData, xLabel, pieData", xData, yData, xLabel, pieData);
+				// console.log("GeneExpressionChartContainer processData: xData, yData, xLabel, pieData", xData, yData, xLabel, pieData);
 				return chartData;
 			});
-		}						
+		}
 	});
 });
 },
