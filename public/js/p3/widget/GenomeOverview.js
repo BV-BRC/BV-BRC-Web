@@ -1,11 +1,11 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
 	"dojo/dom-class", "dojo/text!./templates/GenomeOverview.html", "dojo/dom-construct",
 	"dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dijit/Dialog",
 	"../util/PathJoin", "./SelectionToGroup", "./GenomeFeatureSummary", "./DataItemFormatter",
 	"./ExternalItemFormatter"
 
-], function(declare, lang, on, xhr,
+], function(declare, lang, on, xhr, Topic,
 			domClass, Template, domConstruct,
 			WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
 			PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
@@ -53,6 +53,12 @@ define([
 		},
 
 		onAddGenome: function(){
+
+			if(!window.App.user || !window.App.user.id){
+				Topic.publish("/login");
+				return;
+			}
+
 			var dlg = new Dialog({title: "Add This Genome To Group"});
 			var stg = new SelectionToGroup({
 				selection: [this.genome],
