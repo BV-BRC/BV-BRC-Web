@@ -1,6 +1,6 @@
 define("circulus/SectionTrackWithLabel", [
         "dojo/_base/declare","dojox/gfx","dojox/gfx/matrix",
-        "dojo/_base/lang","./SectionTrack","dojo/on","dijit/Dialog",
+        "dojo/_base/lang","./Track","dojo/on","dijit/Dialog",
         "dijit/TooltipDialog","dijit/popup"
 ],function(
         declare,gfx,matrix,
@@ -23,8 +23,8 @@ define("circulus/SectionTrackWithLabel", [
 		fill: "grey",
 		sectionIdProperty: "accession",
 		sections: null,
-		referenceTrack: null,
-
+		hideable: false,
+/*
 		constructor: function(){
 			this.surface.connect("onclick", lang.hitch(this,function(evt){
 				console.log("ON CLICK: ", evt)
@@ -80,7 +80,7 @@ define("circulus/SectionTrackWithLabel", [
 				
 			})
 		},
-
+*/
 		render: function(){
 			console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
@@ -96,7 +96,7 @@ define("circulus/SectionTrackWithLabel", [
 				}
 			}
 		},
-		//gap: .25,
+		gap: .25,
 
 		renderData: function(data) {
 			var totalLength = 0;
