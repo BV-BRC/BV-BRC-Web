@@ -110,7 +110,7 @@ define([
 				//console.log("******before set data track title:", title, " refseqs:", refseqs);
 
 				track.set("data", refseqs);
-				/console.log("******after track title:", title, " refseqs:", refseqs);
+				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
