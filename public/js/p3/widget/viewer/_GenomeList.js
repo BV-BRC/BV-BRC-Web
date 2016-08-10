@@ -77,7 +77,7 @@ define([
 		},
 
 		getReferenceAndRepresentativeGenomes: function(){
-			console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
+			// console.log("GET REFERENCE AND REPRESENTATIVE GENOMES")
 			var query = this.get('query');
 
 			var _self = this;
@@ -219,7 +219,7 @@ define([
 		},
 
 		onSetReferenceGenomes: function(attr, oldVal, referenceGenomes){
-			console.log("onSetReferenceGenomes: ", referenceGenomes);
+			// console.log("onSetReferenceGenomes: ", referenceGenomes);
 			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 
 
@@ -338,7 +338,7 @@ define([
 			}
 		},
 		onSetTotalGenomes: function(attr, oldVal, newVal){
-			console.log("ON SET TOTAL GENOMES: ", newVal);
+			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 
 			if (newVal>500){

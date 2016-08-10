@@ -86,7 +86,6 @@ define([
 					if(strand === null){
 						return true
 					}
-					;
 					if(strand){
 						return r.strand && r.strand == "+"
 					}else{
@@ -107,7 +106,7 @@ define([
 		},
 
 		onSetReferenceSequences: function(attr, oldVal, refseqs){
-			console.log("RefSeqs: ", refseqs);
+			// console.log("RefSeqs: ", refseqs);
 
 			this.viewer.addTrack({
 				type: SectionTrackWithLabel,
@@ -198,7 +197,7 @@ define([
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				console.log("GC CONTENT: ", gcContentData);
+				// console.log("GC CONTENT: ", gcContentData);
 				gcContentTrack.set('data', gcContentData)
 				gcSkewTrack.set('data', gcContentData)
 			}))
@@ -251,7 +250,7 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("CircularViewerContainer onSetState", state);
+			// console.log("CircularViewerContainer onSetState", state);
 			if(state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
 			}
@@ -276,7 +275,7 @@ define([
 		},
 
 		onFirstView: function(){
-			console.log("onFirstView()");
+			// console.log("onFirstView()");
 			if(this._firstView){
 				return;
 			}
