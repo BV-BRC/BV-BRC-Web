@@ -190,7 +190,6 @@ define([
 		onSetData: function(attr, oldVal, data){
 			this.createDataMap();
 			this.render();
-            this.itemDetailPanel.set("selection",[this.dataStats]);
 		},
 
         onSelection: function(){
@@ -204,7 +203,7 @@ define([
 		createDataMap: function(){
 			var geneID = null;
 			var clustal = ["CLUSTAL"];
-            this.alt_labels={};
+            this.alt_labels={"genome_name":{},"patric_id":{}};
             this.dataStats["idType"]=null;
             this.dataStats["numFeatures"]=0;
             this.dataStats["numOrganisms"]=0;
@@ -241,7 +240,8 @@ define([
                             this.dataStats["numOrganisms"] += 1;
                         }
 						this.dataMap[geneID] = record;
-                        this.alt_labels[geneID]=this.data.map[geneID]["genome_name"];
+                        this.alt_labels["genome_name"][geneID]=this.data.map[geneID]["genome_name"];
+                        this.alt_labels["patric_id"][geneID]=this.data.map[geneID]["patric_id"];
 					}
 				}
 				else if(line.trim() != "" && geneID in this.dataMap){
@@ -335,11 +335,11 @@ define([
 			this.tree.setTree(this.data.tree);
 			//this.tree.setTree(this.data.tree);
             
-            this.tree.addLabels(this.alt_labels, "Organism Names");
             var idMenuDivs=[];
-            Object.keys(this.tree.labelLabels).forEach(lang.hitch(this, function(labelAlias){
-                idMenuDivs.push('<div class="wsActionTooltip" rel="'+labelAlias+'">'+labelAlias+'</div>');
-            }));
+            this.tree.addLabels(this.alt_labels["genome_name"], "Organism Names");
+            idMenuDivs.push('<div class="wsActionTooltip" rel="'+"Organism Names"+'">'+"Organism Names"+'</div>');
+            this.tree.addLabels(this.alt_labels["patric_id"], "PATRIC ID");
+            idMenuDivs.push('<div class="wsActionTooltip" rel="'+"PATRIC ID"+'">'+"PATRIC ID"+'</div>');
             idMenu.set("content",idMenuDivs.join(""));
 
 
@@ -501,7 +501,7 @@ define([
                 "ToggleItemDetail",
                 "fa icon-chevron-circle-left fa-2x",
                 {
-                        label: "SHOW",
+                        label: "DETAILS",
                         persistent: true,
                         validTypes: ["*"],
                         tooltip: "Toggle Details Pane"
@@ -519,7 +519,7 @@ define([
                                 console.log("Button Node: ", button)
 
                                 query(".ActionButtonText",button).forEach(function(node){
-                                        node.innerHTML="SHOW";
+                                        node.innerHTML="DETAILS";
                                 })
 
                                 query(".ActionButton",button).forEach(function(node){
@@ -570,11 +570,11 @@ define([
 				},
 				true
 			],
-		/*	[
+			[
 				"IDSelection",
 				"fa icon-pencil-square fa-2x",
 				{
-					label: "ID Type",
+					label: "ID TYPE",
 					persistent: true,
 					validTypes: ["*"],
                     validContainerTypes:["*"],
@@ -594,7 +594,7 @@ define([
 					});
 				},
 				true
-			],*/
+			],
             [
 				"AddGroup",
 				"fa icon-object-group fa-2x",
