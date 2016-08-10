@@ -1191,7 +1191,7 @@ define([
 						}
 					}), this);
 
-					console.log("GridContainer SEL: ", sel)
+					// console.log("GridContainer SEL: ", sel)
 					// console.log("selection: ", sel);
 					this.selectionActionBar.set("selection", sel);
 					this.itemDetailPanel.set('selection', sel);

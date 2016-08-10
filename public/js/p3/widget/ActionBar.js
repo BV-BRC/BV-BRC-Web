@@ -28,7 +28,7 @@ define([
 			this.set("selection", []);
 		},
 		_setSelectionAttr: function(sel){
-			console.log("setSelection", sel, sel.length);
+			// console.log("setSelection", sel, sel.length);
 			this.selection = sel;
 
 //			return;
@@ -153,7 +153,7 @@ define([
 				if(target && target.attributes && target.attributes.rel){
 					var rel = target.attributes.rel.value;
 					if(_self._actions[rel]){
-						console.log("actionButton: ", _self._actions[rel]);
+						// console.log("actionButton: ", _self._actions[rel]);
 						if (_self._actions[rel].options && _self._actions[rel].options.requireAuth && (!window.App.user || !window.App.user.id)){
 							Topic.publish("/login");
 							return;
@@ -205,18 +205,18 @@ define([
 				var _self=this;
 				var timer;
 				on(wrapper,"mousedown", function(evt){
-					console.log("Handle Press MouseDownAction");
+					// console.log("Handle Press MouseDownAction");
 
 					var cancelClick=false;
 	
 					timer = setTimeout(function(){
 						cancelClick=true;
-						console.log("Selection in ActionBar: ", _self.selection, _self);
+						// console.log("Selection in ActionBar: ", _self.selection, _self);
 						opts.pressAndHold(_self.get("selection"),wrapper,opts,evt);
 					}, 800)
 
 					on.once(wrapper, "click", function(clickEvt){
-						console.log("Cancel Click: ", cancelClick)
+						// console.log("Cancel Click: ", cancelClick)
 						if (timer){
 							clearTimeout(timer);
 						}

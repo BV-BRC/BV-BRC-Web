@@ -17,7 +17,7 @@ define([
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
-			console.log("saveSVG()");
+			// console.log("saveSVG()");
 			if(this.viewer){
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
@@ -30,7 +30,7 @@ define([
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
 			}
-			console.log("addTrack Event: ", event);
+			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
 			var color = domConstruct.create("td", {}, tr);
 			var fg, bg;
