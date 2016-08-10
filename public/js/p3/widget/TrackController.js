@@ -17,7 +17,7 @@ define([
 		hiddenIconClass: "icon-eye-slash",
 
 		saveSVG: function(){
-			console.log("saveSVG()");
+			// console.log("saveSVG()");
 			if(this.viewer){
 				console.log("Call Export SVG");
 				var svg = this.viewer.exportSVG();
@@ -30,7 +30,7 @@ define([
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
 			}
-			console.log("addTrack Event: ", event);
+			// console.log("addTrack Event: ", event);
 			var tr = domConstruct.create("tr", {}, this.trackTable);
 			var color = domConstruct.create("td", {}, tr);
 			var fg, bg;
@@ -81,8 +81,11 @@ define([
 					"font-size": ".85em"
 				}
 			}, tr);
+			
+			console.log("Track check event.track", event.track);
+			console.log("Track check event.track.hideable", event.track.hideable);
 
-			if(!event.isReferenceTrack){
+			if(!event.isReferenceTrack && event.track.hideable != false){
 				var visibleButton = domConstruct.create("i", {
 					'class': "fa " + (event.track.visible ? this.visibleIconClass : this.hiddenIconClass) + " fa-2x",
 					style: {margin: "2px"}
@@ -91,10 +94,12 @@ define([
 					console.log("Click Visible");
 					if(domClass.contains(visibleButton, this.visibleIconClass)){
 						// hide
+						console.log("hide");
 						domClass.remove(visibleButton, this.visibleIconClass);
 						domClass.add(visibleButton, this.hiddenIconClass);
 						event.track.set('visible', false)
 					}else{
+						console.log("show");
 						domClass.remove(visibleButton, this.hiddenIconClass);
 						domClass.add(visibleButton, this.visibleIconClass);
 						event.track.set('visible', true)

@@ -9378,6 +9378,9 @@ th.dgrid-cell.wsItemType {
 .folder .containerContentSection.folder {
 	display: block;
 }
+.experiment .containerContentSection.experiment {
+    display: block;
+}
 .dataItemSelection {
 	font-size: .85em;
 	
@@ -9960,6 +9963,10 @@ TH.dgrid-cell.field-feature_type {
 .patric .apmSummaryWidget.SummaryWidget {
     padding-bottom: 11px;
 }
+.patric .apmSummaryWidget.SummaryWidget .chartNode,
+.patric .apmSummaryWidget.SummaryWidget .tableNode {
+    min-height: 225px;
+}
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
     min-height: 400px;
@@ -10136,7 +10143,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .chart-wrapper .chart {
     padding-top: 24px;
-    height: 150px;
+    height: 200px;
 }
 .chart-wrapper .chart .svgChartContainer {
     border-bottom: 1px solid silver;

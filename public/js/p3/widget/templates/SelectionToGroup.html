@@ -1,22 +1,22 @@
 <div class="SelectionToGroup" style="width:400px;">
 
-    
+
     <div data-dojo-attach-point="groupTypeBox" class="dijitHidden">
 	<label>Group Type</label><br>
     <div data-dojo-type="dijit/form/Select" data-dojo-attach-point="groupTypeSelect"  style="width:95%;margin:10px;" data-dojo-attach-event="onChange:onChangeOutputType" >
     </div>
     </div>
-    
+
 	<label>New/Existing</label><br>
     <div data-dojo-type="dijit/form/Select" style="width: 95%;margin:10px;" data-dojo-attach-event="onChange:onChangeTarget" data-dojo-attach-point="targetType">
 		<option value="new">New Group</option>
 		<option value="existing" selected="true">Existing Group</option>
 	</div>
 
-    
+
 
 	<label>Group Name</label><br>
-	<div data-dojo-attach-point="groupNameBox" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;" class='dijitHidden', data-dojo-props="promptMessage:'Enter New Group Name'" data-dojo-attach-event="onChange:onChangeTarget" >
+	<div data-dojo-attach-point="groupNameBox" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" style="width:95%;margin:10px;" class='dijitHidden' data-dojo-props="promptMessage:'Enter New Group Name'" data-dojo-attach-event="onChange:onChangeTarget" >
 	</div>
 
 	<div data-dojo-attach-point="workspaceObjectSelector" data-dojo-type="p3/widget/WorkspaceObjectSelector" style="width:95%;margin:10px;" data-dojo-props="type:['genome_group']" data-dojo-attach-event="onChange:onChangeTarget" class=''>

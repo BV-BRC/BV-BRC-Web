@@ -96,6 +96,10 @@ TH.dgrid-cell.field-feature_type {
 .patric .apmSummaryWidget.SummaryWidget {
     padding-bottom: 11px;
 }
+.patric .apmSummaryWidget.SummaryWidget .chartNode,
+.patric .apmSummaryWidget.SummaryWidget .tableNode {
+    min-height: 225px;
+}
 
 /* genome metadata summary widget at taxon overview */
 .patric .gmSummaryWidget.SummaryWidget .chartNode,

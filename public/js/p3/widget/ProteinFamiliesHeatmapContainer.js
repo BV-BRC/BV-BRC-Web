@@ -35,14 +35,14 @@ define([
 			],
 			[
 				"Cluster",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Advanced", multiple: false, validTypes: ["*"]},
 				function(){
 					var self = this;
@@ -578,7 +578,15 @@ define([
 
 				// re-draw heatmap
 				Topic.publish("ProteinFamilies", "refreshHeatmap");
-			}));
+			}), function(err){
+
+				Topic.publish("ProteinFamilies", "hideLoadingMask");
+
+				new Dialog({
+					title: err.status,
+					content: err.text
+				}).show();
+			});
 		}
 	});
 });

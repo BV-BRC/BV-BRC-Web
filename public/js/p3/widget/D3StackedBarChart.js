@@ -363,8 +363,56 @@ define([
 			}
 		},
 		resize: function(){
-			// TODO: catch event and resize
-			console.log("resizing...");
+			var self = this;
+			clearTimeout(this.resizer);
+
+			this.resizer = setTimeout(function(){
+				self.doResize()
+			}, 300);
+		},
+		doResize: function(){
+			var container = domQuery(".chart", this.node)[0] || null;
+
+			var chartWidth = domStyle.get(container, "width");
+			var canvasWidth = chartWidth - this.drawTargetParams.margins[1] - this.drawTargetParams.margins[3];
+
+			this.canvasSize.width = canvasWidth;
+
+			// console.log("resize canvasWidth: ", canvasWidth);
+
+			this.pf_x_scale.range([0, canvasWidth]);
+
+			// update chart and canvas width
+			this.chart.attr("width", chartWidth);
+			this.canvas.attr("width", canvasWidth);
+
+			// update bars
+			this.full_barWidth = this.pf_x_scale(1);
+			this.drawn_barWidth = this.full_barWidth * .525;
+			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+
+			var self = this;
+			for(var index = 0; index < this.seriesSize; index++){
+				this.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition()
+					.attr("width", function(){
+						return self.barWidth()
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					});
+			}
+
+			this.bars.select("text")
+				.transition()
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasSize.height - 11);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
+				})
 		}
 	})
 });

@@ -1,15 +1,15 @@
 define([
-	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on",
-	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/FeatureOverview.html",
-	"dojo/request", "dojo/_base/lang", "dojox/charting/Chart2D", "dojox/charting/themes/ThreeD", "dojox/charting/action2d/MoveSlice",
-	"dojox/charting/action2d/Tooltip", "dojo/dom-construct", "../util/PathJoin", "dgrid/Grid",
-	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer"
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/request", "dojo/topic",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/text!./templates/FeatureOverview.html",
+	"dijit/_WidgetBase", "dijit/_Templated", "dijit/Dialog",
+	"../util/PathJoin", "dgrid/Grid",
+	"./DataItemFormatter", "./ExternalItemFormatter", "./D3SingleGeneViewer", "./SelectionToGroup"
 
-], function(declare, WidgetBase, on,
-			domClass, Templated, Template,
-			xhr, lang, Chart2D, Theme, MoveSlice,
-			ChartTooltip, domConstruct, PathJoin, Grid,
-			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer){
+], function(declare, lang, on, xhr, Topic,
+			domClass, domConstruct, Template,
+			WidgetBase, Templated, Dialog,
+			PathJoin, Grid,
+			DataItemFormatter, ExternalItemFormatter, D3SingleGeneViewer, SelectionToGroup){
 
 	var xhrOption = {
 		handleAs: "json",
@@ -304,6 +304,8 @@ define([
 				var url = PathJoin(this.apiServiceUrl, "id_ref/?and(eq(id_type,GI)&eq(id_value," + this.feature.gi + "))&select(uniprotkb_accession)&limit(0)");
 				xhr.get(url, xhrOption).then(lang.hitch(this, function(data){
 
+					if(data.length === 0) return;
+
 					var uniprotKbAccessions = data.map(function(d){
 						return d.uniprotkb_accession;
 					});
@@ -346,7 +348,7 @@ define([
 			}));
 
 			// single gene viewer
-			var centerPos = (this.feature.start + this.feature.end + 1) / 2;
+			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
 			var rangeEnd = (centerPos + 5000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
@@ -359,7 +361,8 @@ define([
 				this.set("featureViewer", {
 					firstStartPosition: firstStartPosition,
 					lastEndPosition: lastEndPosition,
-					features: data
+					features: data,
+					pinStart: this.feature.start
 				});
 			}));
 
@@ -372,6 +375,30 @@ define([
 					this.set("featureComments", data);
 				}));
 			}
+		},
+
+		onAddFeature: function(){
+
+			if(!window.App.user || !window.App.user.id){
+				Topic.publish("/login");
+				return;
+			}
+
+			var dlg = new Dialog({title: "Add This Feature To Group"});
+			var stg = new SelectionToGroup({
+				selection: [this.feature],
+				type: 'feature_group'
+			});
+			on(dlg.domNode, "dialogAction", function(evt){
+				dlg.hide();
+				setTimeout(function(){
+					dlg.destroy();
+				}, 2000);
+			});
+			domConstruct.place(stg.domNode, dlg.containerNode, "first");
+			stg.startup();
+			dlg.startup();
+			dlg.show();
 		},
 		startup: function(){
 			if(this._started){

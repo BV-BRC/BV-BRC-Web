@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/TabContainer",
 	"./TrackController", "circulus/Viewer", "circulus/LineTrack",
-	"circulus/SectionTrack", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
+	"circulus/SectionTrack", "circulus/SectionTrackWithLabel", "dojo/_base/lang", "dojo/request", "./DataItemFormatter", "../util/PathJoin"
 ], function(declare, BorderContainer, on,
 			ActionBar, ContainerActionBar, TabContainer,
 			TrackController, CirculusViewer, LineTrack,
-			SectionTrack, lang, xhr, DataItemFormatter, PathJoin){
+			SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin){
 
 	return declare([BorderContainer], {
 		gutters: true,
@@ -52,6 +52,7 @@ define([
 				"location", "protein_id", "refseq_locus_tag", "taxon_id", "accession", "end", "genome_name", "product", "genome_id", "annotation", "start"]
 
 			var query = "?and(eq(genome_id," + gid + "),ne(feature_type,source)," + filter + ")&sort(+accession,+start)" + "&select(" + fields.join(",") + ")&limit(25000)";
+			//console.log("******track title:", title, " query:", PathJoin(this.apiServiceUrl, "genome_feature", query));
 
 			var track = this.viewer.addTrack({
 				type: SectionTrack,
@@ -82,11 +83,17 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
+				//console.log("******track title:", title, " refseqs:", refseqs);
+				
+				if (refseqs.length == 0) {
+					track.set('loading', false);
+					return refseqs;
+				} 
+				
 				refseqs = refseqs.filter(function(r){
 					if(strand === null){
-						return true
+						return true;
 					}
-					;
 					if(strand){
 						return r.strand && r.strand == "+"
 					}else{
@@ -100,23 +107,39 @@ define([
 					return a.name > b.name;
 				})
 
-				track.set("data", refseqs)
+				//console.log("******before set data track title:", title, " refseqs:", refseqs);
+
+				track.set("data", refseqs);
+				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
 		},
 
 		onSetReferenceSequences: function(attr, oldVal, refseqs){
-			console.log("RefSeqs: ", refseqs);
+			// console.log("RefSeqs: ", refseqs);
+
+			this.viewer.addTrack({
+				type: SectionTrackWithLabel,
+				options: {
+					title: "Position Label (Mbp)",
+					trackWidth: 0.1,
+					//fill: "#eeeeee",
+					stroke: null,
+					gap: 1,
+					background: {fill: null, stroke: null}
+				},
+				data: refseqs
+			}, "perimeter", false);
 
 			this.viewer.addTrack({
 				type: SectionTrack,
 				options: {
 					title: "Contigs/Chromosomes",
-					trackWidth: 0.02,
+					trackWidth: 0.03,
 					fill: "#000F7D",
 					stroke: null,
-					gap: .5,
+					gap: 1,
 					background: {fill: null, stroke: null},
 					formatPopupContent: function(item){
 						return DataItemFormatter(item, "sequence_data", {mini: true, linkTitle: true})
@@ -126,7 +149,7 @@ define([
 					}
 				},
 				data: refseqs
-			}, "perimeter", true);
+			}, "outer", true);
 
 			this.addFeatureTrack("CDS - FWD", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22\+%22))", true, "#307D32", null)
 			this.addFeatureTrack("CDS - REV", this.state.genome_ids[0], "and(eq(annotation,PATRIC),eq(feature_type,CDS),eq(strand,%22-%22))", false, "#833B76", null)
@@ -162,7 +185,7 @@ define([
 					min: 0,
 					trackWidth: 0.18,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#EBD4F4", stroke: null}
 				}
 			}, "outer");
@@ -178,14 +201,14 @@ define([
 					scoreProperty: "skew",
 					trackWidth: 0.1,
 					stroke: {width: .5, color: "black"},
-					gap: .35,
+					gap: 1,
 					background: {fill: "#F3CDA0", stroke: null}
 				}
 			}, "outer");
 
 			this.getReferenceSequences(this.genome_id, true).then(lang.hitch(this, function(data){
 				var gcContentData = this.getGCContent(data);
-				console.log("GC CONTENT: ", gcContentData);
+				// console.log("GC CONTENT: ", gcContentData);
 				gcContentTrack.set('data', gcContentData)
 				gcSkewTrack.set('data', gcContentData)
 			}))
@@ -238,7 +261,7 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			console.log("CircularViewerContainer onSetState", state);
+			// console.log("CircularViewerContainer onSetState", state);
 			if(state.genome_ids && state.genome_ids[0]){
 				this.set("genome_id", state.genome_ids[0]);
 			}
@@ -263,7 +286,7 @@ define([
 		},
 
 		onFirstView: function(){
-			console.log("onFirstView()");
+			// console.log("onFirstView()");
 			if(this._firstView){
 				return;
 			}
