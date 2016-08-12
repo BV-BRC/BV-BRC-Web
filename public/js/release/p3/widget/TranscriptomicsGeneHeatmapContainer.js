@@ -62,14 +62,14 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			],
 			[
 				"Cluster",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Cluster", multiple: false, validTypes: ["*"]},
 				"cluster",
 				true
 			],
 			[
 				"Advanced Clustering",
-				"fa icon-make-group fa-2x",
+				"fa icon-cluster fa-2x",
 				{label: "Advanced", multiple: false, validTypes: ["*"]},
 				function(){
 					var self = this;
@@ -112,7 +112,7 @@ define("p3/widget/TranscriptomicsGeneHeatmapContainer", [
 			],
 			[
 				"Show Significant",
-				"fa filter fa-2x",
+				"fa icon-filter fa-2x",
 				{label: "Show", multiple: false, validTypes: ["*"]},
 				function(){
 					if(this.containerActionBar._actions['Show Significant'].options.tooltipDialog == null){
