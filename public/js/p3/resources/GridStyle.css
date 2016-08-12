@@ -7,6 +7,11 @@
         border-right: 1px solid #bbb;
 }
 
+/*  */
+.patric .dgrid-cell.field-Selection-Checkboxes {
+    width: 21px;
+}
+
 /* feature grid */
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
