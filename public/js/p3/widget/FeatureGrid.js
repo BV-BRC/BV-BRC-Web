@@ -11,10 +11,9 @@ define([
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false}, {
-					attribute: "strand",
-					descending: false
-				}, {attribute: "start", descending: false}]
+				sort: [{attribute: "genome_name", descending: false},
+					{attribute: "accession", descending: false},
+					{attribute: "start", descending: false}]
 			};
 			// console.log("this.queryOptions: ", this.queryOptions);
 		},
@@ -38,14 +37,14 @@ define([
 			annotation: {label: "Annotation", field: "annotation", hidden: true},
 			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
 			start: {label: "Start", field: "start", hidden: true},
-			end: {label: "END", field: "end", hidden: true},
-			na_length: {label: "NA Length", field: "na_length", hidden: true},
+			end: {label: "End", field: "end", hidden: true},
+			na_length: {label: "Length (NT)", field: "na_length", hidden: true},
 			strand: {label: "Strand", field: "strand", hidden: true},
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
-			figfam: {label: "FIGfam", field: "figfam_id", hidden: true},
+			figfam: {label: "FIGfam ID", field: "figfam_id", hidden: true},
 			plfam: {label: "PATRIC Local family", field: "plfam_id"},
 			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
-			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
+			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
