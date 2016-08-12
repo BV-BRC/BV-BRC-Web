@@ -25614,7 +25614,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -28559,7 +28558,7 @@ define([
 				tooltip: "View Gene List"
 			}, function(selection){
 				console.log("View Gene List", selection);
-				window.location = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsSampleId=&wsExperimentId=" + selection.map(function(s){
+				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + selection.map(function(s){
 						return s.path;
 					})
 			}, true);
@@ -28574,7 +28573,7 @@ define([
 				console.log("this.currentContainerType: ", this.currentContainerType, this);
 				console.log("View Gene List", selection);
 				var expPath = this.currentContainerWidget.get('path');
-				window.location = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=&expId=&sampleId=&wsExperimentId=" + expPath + "&wsSampleId=" + selection.map(function(s){
+				window.location = "/view/TranscriptomicsExperiment/?&wsExpId=" + expPath + "&wsComparisonId=" + selection.map(function(s){
 						return s.pid;
 					})
 			}, true);
@@ -28586,26 +28585,22 @@ define([
 				tooltip: "View Experiment Group Gene List"
 			}, function(selection){
 				console.log("View Gene List2", selection);
-				var expids = []
+				var eids = []
 				var wsExps = []
 				selection.forEach(function(s){
 					if(s.path){
 						wsExps.push(s.path);
-					}else if(s.expid){
-						expids.push(s.expid);
+					}else if(s.eid){
+						eids.push(s.eid);
 					}
 
 				});
-				var url = "/portal/portal/patric/TranscriptomicsGene?cType=taxon&cId=131567&dm=result&log_ratio=&zscore=";
-				if(expids && expids.length > 0){
-					url = url + "&expId=" + expids.join(",") + "&sampleId=";
-				}else{
-					url = url + "&expId=&sampleId=";
+				var url = "/view/TranscriptomicsExperiment/?";
+				if(eids && eids.length > 0){
+					url = url + "in(eid,(" + eids.join(",") + "))";
 				}
 				if(wsExps && wsExps.length > 0){
-					url = url + "&wsExperimentId=" + wsExps.join(",") + "&wsSampleId=";
-				}else{
-					url = url + "&wsExperimentId=&wsSampleId=";
+					url = url + "&wsExpId=" + wsExps.join(",");
 				}
 
 				window.location = url;
