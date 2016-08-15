@@ -86,6 +86,27 @@ define([
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
 
+			this.on("dgrid-refresh-complete", function(){
+				// console.log(_self.query.match(/CDS/));
+				if(_self.query.match(/CDS/)){
+					// CDS feature
+					_self.toggleColumnHiddenState('plfam', false);
+					_self.toggleColumnHiddenState('pgfam', false);
+
+					_self.toggleColumnHiddenState('start', true);
+					_self.toggleColumnHiddenState('end', true);
+					_self.toggleColumnHiddenState('strand', true);
+				}else{
+					// Non-CDS feature types
+					_self.toggleColumnHiddenState('plfam', true);
+					_self.toggleColumnHiddenState('pgfam', true);
+
+					_self.toggleColumnHiddenState('start', false);
+					_self.toggleColumnHiddenState('end', false);
+					_self.toggleColumnHiddenState('strand', false);
+				}
+			});
+
 			this.inherited(arguments);
 
 			this.refresh();
