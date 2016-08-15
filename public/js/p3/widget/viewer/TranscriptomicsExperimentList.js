@@ -15,7 +15,7 @@ define([
 		paramsMap: "query",
 		defaultTab: "experiments",
 		perspectiveLabel: "Experiments View",
-		perspectiveIconClass: "icon-perspective-GenomeList",
+		perspectiveIconClass: "icon-selection-GenomeList",
 		total_experiments: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){

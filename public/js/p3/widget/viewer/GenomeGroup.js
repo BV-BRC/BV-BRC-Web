@@ -12,7 +12,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		groupPath: null,
 		perspectiveLabel: "Genome Group View",
-		perspectiveIconClass: "icon-perspective-GenomeGroup",
+		perspectiveIconClass: "icon-selection-GenomeGroup",
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},

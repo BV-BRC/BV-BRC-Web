@@ -23,7 +23,7 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Genome View",
-		perspectiveIconClass: "icon-perspective-Genome",
+		perspectiveIconClass: "icon-selection-Genome",
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
