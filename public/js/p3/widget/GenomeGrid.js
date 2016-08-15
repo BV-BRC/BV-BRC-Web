@@ -18,15 +18,14 @@ define([
 		store: store,
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
-			genome_id: {
-				label: 'Genome ID',
-				field: 'genome_id',
-				hidden: true
-			},
+			"Selection Checkboxes": selector({unhidable: true}),
 			genome_name: {
 				label: 'Genome Name',
 				field: 'genome_name'
+			},
+			genome_id: {
+				label: 'Genome ID',
+				field: 'genome_id'
 			},
 			taxon_id: {
 				label: 'NCBI Taxon ID',
@@ -37,7 +36,6 @@ define([
 				label: 'Genome Status',
 				field: 'genome_status'
 			},
-			/* genome_browser: {label:'Genome Browser', field:'genome_id', formatter:renderGenomeBrowserByGenome}, */
 			genome_length: {
 				label: 'Size',
 				field: 'genome_length',
@@ -339,48 +337,32 @@ define([
 				hidden: true,
 				formatter: formatter.dateOnly
 			},
-
 			date_modified: {
 				label: 'Last Index Date',
 				field: 'date_modified',
 				hidden: true,
 				formatter: formatter.dateOnly
 			}
-
 		},
-		defaultSortProperty: "genome_name",
 		constructor: function(){
 			this.queryOptions = {
 				sort: [{attribute: this.defaultSortProperty, descending: false}]
 			};
 		},
 		startup: function(){
-			var _self = this
-			// if (this.defaultSortProperty) {
-			// 	this.set("sort", this.defaultSortProperty);
-			// }
+			var _self = this;
+
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				// console.log('after emit');
-				//if (row.data.type == "folder"){
-				//                              Topic.publish("/select", []);
-
-				//                              Topic.publish("/navigate", {href:"/workspace" + row.data.path })
-				//                              _selection={};
-				//}
 			});
-			//_selection={};
-			//Topic.publish("/select", []);
 
 			this.on("dgrid-select", function(evt){
-				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -389,14 +371,8 @@ define([
 					cancelable: true
 				};
 				on.emit(_self.domNode, "select", newEvt);
-				//console.log("dgrid-select");
-				//var rows = evt.rows;
-				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-				//Topic.publish("/select", sel);
 			});
 			this.on("dgrid-deselect", function(evt){
-				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -405,7 +381,6 @@ define([
 					cancelable: true
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
-				return;
 			});
 			this.inherited(arguments);
 		}

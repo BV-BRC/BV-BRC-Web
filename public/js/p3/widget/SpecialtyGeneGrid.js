@@ -18,7 +18,7 @@ define([
 		primaryKey: "id",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			evidence: {label: "Evidence", field: "evidence", hidden: false},
 			property: {label: "Property", field: "property", hidden: false},
 			source: {label: "Source", field: "source", hidden: false},
@@ -40,18 +40,16 @@ define([
 			var _self = this;
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -62,7 +60,6 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

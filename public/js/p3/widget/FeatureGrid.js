@@ -1,8 +1,8 @@
 define([
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/_base/declare", "dojo/_base/lang", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "./GridSelector"
-], function(declare, BorderContainer, on,
+], function(declare, lang, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, selector){
 
@@ -27,8 +27,9 @@ define([
 		selectAllFields: ["patric_id","genome_id","genome_name","refseq_locus_tag"],
 		store: store,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
+			genome_id: {label: 'Genome ID', field: 'genome_id'},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
@@ -48,10 +49,6 @@ define([
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
-
-//		queryOptions: {
-//			sort: [{ attribute: "genome_name", descending: true }]
-//		},
 
 		startup: function(){
 			var _self = this;

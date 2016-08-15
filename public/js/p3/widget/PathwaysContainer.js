@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/lang",
 	"./ActionBar", "./ContainerActionBar", "dijit/layout/StackContainer", "dijit/layout/TabController",
 	"./PathwaysMemoryGridContainer", "dijit/layout/ContentPane", "./GridContainer", "dijit/TooltipDialog",
-	"../store/PathwayMemoryStore","dojo/dom-construct","dojo/topic","./GridSelector"
+	"../store/PathwayMemoryStore", "dojo/dom-construct", "dojo/topic", "./GridSelector"
 ], function(declare, BorderContainer, on, lang,
 			ActionBar, ContainerActionBar, TabContainer, StackController,
 			PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-			PathwayMemoryStore,domConstruct,topic,selector){
+			PathwayMemoryStore, domConstruct, topic, selector){
 	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
@@ -52,25 +52,23 @@ define([
 				return;
 			}
 
-
-			if (this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView ){
+			if(this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView){
 				this.tabContainer.selectedChildWidget.set('state', state);
 			}
 
-			if (state.autoFilterMessage){
+			if(state.autoFilterMessage){
 				var msg = '<table><tr style="background: #f9ff85;"><td><div class="WarningBanner">' + state.autoFilterMessage + "&nbsp;<i class='fa-1x icon-question-circle-o DialogButton' rel='help:GenomesLimit' /></div></td><td style='width:30px;'><i style='font-weight:400;color:#333;cursor:pointer;' class='fa-1x icon-cancel-circle close closeWarningBanner' style='color:#333;font-weight:200;'></td></tr></table>";
 				// var msg = state.autoFilterMessage;
-				if (!this.messagePanel){
+				if(!this.messagePanel){
 					this.messagePanel = new ContentPane({
 						"class": "WarningPanel",
-						region: "top", 
+						region: "top",
 						content: msg
 					});
 
-
-					var _self=this;
+					var _self = this;
 					on(this.messagePanel.domNode, ".closeWarningBanner:click", function(evt){
-						if (_self.messagePanel){
+						if(_self.messagePanel){
 							_self.removeChild(_self.messagePanel);
 						}
 					});
@@ -79,7 +77,9 @@ define([
 				}
 				this.addChild(this.messagePanel);
 			}else{
-				if (this.messagePanel) { this.removeChild(this.messagePanel) }
+				if(this.messagePanel){
+					this.removeChild(this.messagePanel)
+				}
 			}
 
 			// this._set("state", state);
@@ -101,7 +101,7 @@ define([
 		},
 
 		selectChild: function(child){
-			topic.publish(this.id + "-selectChild", child); 
+			topic.publish(this.id + "-selectChild", child);
 		},
 
 		onFirstView: function(){
@@ -111,18 +111,15 @@ define([
 			//console.log("PathwaysContainer onFirstView()");
 			this.tabContainer = new TabContainer({region: "center", id: this.id + "_TabContainer"});
 
-
 			var tabController = new StackController({
 				containerId: this.id + "_TabContainer",
 				region: "top",
 				"class": "TextTabButtons"
 			});
 
-
 			var pathwayStore = this.pathwayStore = new PathwayMemoryStore({
 				type: "pathway"
 			});
-
 
 			var ecNumberStore = this.ecNumberStore = new PathwayMemoryStore({type: "ecnumber"});
 			var geneStore = this.geneStore = new PathwayMemoryStore({type: "genes"});
@@ -142,7 +139,6 @@ define([
 				visible: true
 			});
 
-
 			this.addChild(tabController);
 			this.addChild(this.tabContainer);
 			this.tabContainer.addChild(this.pathwaysGrid);
@@ -155,8 +151,8 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
-					"Selection Checkboxes": selector({}),
-					idx: {label: 'Index', field:'idx', hidden: true},
+					"Selection Checkboxes": selector({unhidable: true}),
+					idx: {label: 'Index', field: 'idx', hidden: true},
 					pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 					pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 					pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -181,8 +177,8 @@ define([
 				defaultFilter: this.defaultFilter,
 				facetFields: ["annotation", "pathway_class"],
 				columns: {
-					"Selection Checkboxes": selector({}),
-					idx: {label: 'Index', field:'idx', hidden: true},
+					"Selection Checkboxes": selector({unhidable: true}),
+					idx: {label: 'Index', field: 'idx', hidden: true},
 					feature_id: {label: 'Feature ID', field: 'feature_id', hidden: true},
 					genome_name: {label: 'Genome Name', field: 'genome_name'},
 					accession: {label: 'Accession', field: 'accession', hidden: true},
@@ -203,12 +199,10 @@ define([
 				}
 			});
 
-			
 			this.tabContainer.addChild(this.ecNumbersGrid);
 			this.tabContainer.addChild(this.genesGrid);
 
-			
-			topic.subscribe(this.id+"_TabContainer-selectChild", lang.hitch(this,function(page){
+			topic.subscribe(this.id + "_TabContainer-selectChild", lang.hitch(this, function(page){
 				page.set('state', this.state)
 			}));
 
