@@ -34,6 +34,7 @@ body.patric {
     height: 100%;
     margin: 0;
     overflow: hidden;
+    overflow-x: auto;
     padding: 0;
     background: #fff;
     line-height: 1.5;
@@ -41,6 +42,7 @@ body.patric {
     color: #333333;
     font-size: .9em;
     font-weight: 200;
+    min-width: 1024px;
 }
 
 A, A:visited {
