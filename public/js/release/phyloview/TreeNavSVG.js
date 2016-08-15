@@ -62,7 +62,7 @@ define("phyloview/TreeNavSVG", [
     // build the options object
     this.options = dojo.mixin(this.options, customOptions);
     this.heightPerLeaf = this.options.fontSize + 2;
-    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 9),
+    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 5),
     this.colorSpecies = customOptions.colorSpecies;
     this.colorGenus = customOptions.colorGenus;
     this.containerName=containerName;
@@ -271,7 +271,7 @@ define("phyloview/TreeNavSVG", [
        //console.log("update()");
         var nodes = this.tree.nodes(this.treeData);
         var links = this.tree.links(nodes);
-        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
+        var treeWidth = Math.max(50, size.width - (this.fontWidthForMargin * this.maxLabelLength));//*(this.fontWidthForMargin);
  
         //adjust y values (because x and y are reversed) for nodes based on the branch lengths
         for(var i = nodes.length-1; i >=0; i--) {

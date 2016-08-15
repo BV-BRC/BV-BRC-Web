@@ -21,7 +21,7 @@ define("p3/widget/viewer/Taxonomy", [
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
 		perspectiveLabel: "Taxon View",
-		perspectiveIconClass: "icon-perspective-Taxonomy",
+		perspectiveIconClass: "icon-selection-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
 

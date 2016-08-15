@@ -16,7 +16,7 @@ define("p3/widget/viewer/TaxonList", [
 		defaultTab: "taxons",
 		total_taxons: 0,
                 perspectiveLabel: "Taxon List View",
-                perspectiveIconClass: "icon-perspective-Taxonomy",
+                perspectiveIconClass: "icon-selection-Taxonomy",
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){
 			console.log(this.id, " _setQueryAttr: ", query, this);

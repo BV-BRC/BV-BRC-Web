@@ -25614,6 +25614,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -28037,7 +28038,7 @@ define([
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-perspective-GenomeGroup fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeGroup fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: false,
@@ -28063,7 +28064,7 @@ define([
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-perspective-GenomeList fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: true,
@@ -28094,7 +28095,7 @@ define([
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-perspective-Genome fa-2x", {
+			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
 				validTypes: ["*"],
 				validContainerTypes: ["genome_group"],
@@ -28115,7 +28116,7 @@ define([
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-perspective-Feature fa-2x", {
+			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-selection-Feature fa-2x", {
 				validTypes: ["*"],
 				label: "FEATURE",
 				validContainerTypes: ["feature_group"],
@@ -28136,7 +28137,7 @@ define([
 				window.location = "/view/Feature/" + sel.feature_id
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-perspective-Genome fa-2x", {
+			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
 				validTypes: ["*"],
 				validContainerTypes: ["feature_group"],
@@ -58912,7 +58913,7 @@ define([
 		totalGenomes: 0,
 		defaultTab: "overview",
 		perspectiveLabel: "Genome List View",
-		perspectiveIconClass: "icon-perspective-GenomeList",
+		perspectiveIconClass: "icon-selection-GenomeList",
 
 		showQuickstartKey: "hideQuickstart",
 
@@ -74352,7 +74353,7 @@ define([
 				false
 			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -74377,7 +74378,7 @@ define([
 			],
 			[
 				"ViewFeatureItems",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -74407,7 +74408,7 @@ define([
 
 			 [
 				"ViewSpgeneItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -74433,7 +74434,7 @@ define([
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -74462,7 +74463,7 @@ define([
 
 			[
 				"ViewGenomeItem",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -74492,7 +74493,7 @@ define([
 
 			[
 				"ViewGenomeItems",
-				"MultiButton fa icon-perspective-GenomeList fa-2x",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					validTypes: ["*"],
@@ -74546,7 +74547,7 @@ define([
 			// ], 
 			[
 				"ViewCDSFeaturesSeq",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -74978,7 +74979,7 @@ define([
 				false
 			], [
 				"ViewTaxon",
-				"fa icon-perspective-Taxonomy fa-2x",
+				"fa icon-selection-Taxonomy fa-2x",
 				{
 					label: "TAXONOMY",
 					multiple: false,
@@ -75003,7 +75004,7 @@ define([
 			],
 			[
 				"ViewGenomesFromTaxons",
-				"fa icon-perspective-GenomeList fa-2x",
+				"fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					multiple: true,
@@ -75641,7 +75642,7 @@ define([
 			}));
 
 			if(this.enableAnchorButton){
-				this.addAction("AnchorCurrentFilters", "fa icon-apply-perspective-filter fa-2x", {
+				this.addAction("AnchorCurrentFilters", "fa icon-selection-Filter fa-2x", {
 					style: {"font-size": ".5em"},
 					label: "APPLY",
 					validType: ["*"],
@@ -84843,19 +84844,19 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
-				//console.log("******track title:", title, " refseqs:", refseqs);
+				//console.log("******track title:", title, " refseqs:", refseqs, " strand", strand);
 				
 				if (refseqs.length == 0) {
 					track.set('loading', false);
 					return refseqs;
 				} 
-				
+								
 				refseqs = refseqs.filter(function(r){
 					if(strand === null){
 						return true;
 					}
 					if(strand){
-						return r.strand && r.strand == "+"
+						return r.strand && r.strand == "+";
 					}else{
 						return r.strand != "+";
 					}
@@ -84868,9 +84869,7 @@ define([
 				})
 
 				//console.log("******before set data track title:", title, " refseqs:", refseqs);
-
 				track.set("data", refseqs);
-				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
@@ -84926,7 +84925,7 @@ define([
 						return "#21DFD7";
 				}
 			};
-			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", false, fillFn, null, {
+			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", null, fillFn, null, {
 				fill: null,
 				stroke: null
 			});
@@ -90163,7 +90162,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
 		perspectiveLabel: "Taxon View",
-		perspectiveIconClass: "icon-perspective-Taxonomy",
+		perspectiveIconClass: "icon-selection-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
 
@@ -90845,7 +90844,7 @@ window.PhyloTree = {
                     if(node.c) {
                         node.c.forEach(function(child){
                             child.parent = node;
-                            if(child.l) {
+                            if(child.l || child.l == 0) {
                                 child.px = node.px + child.l;
                             }
                         });
@@ -90945,7 +90944,7 @@ define([
     // build the options object
     this.options = dojo.mixin(this.options, customOptions);
     this.heightPerLeaf = this.options.fontSize + 2;
-    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 9),
+    this.fontWidthForMargin = Math.max(this.options.fontSize*2/3, 5),
     this.colorSpecies = customOptions.colorSpecies;
     this.colorGenus = customOptions.colorGenus;
     this.containerName=containerName;
@@ -91154,7 +91153,7 @@ define([
        //console.log("update()");
         var nodes = this.tree.nodes(this.treeData);
         var links = this.tree.links(nodes);
-        var treeWidth = size.width - this.maxLabelLength*(this.fontWidthForMargin);
+        var treeWidth = Math.max(50, size.width - (this.fontWidthForMargin * this.maxLabelLength));//*(this.fontWidthForMargin);
  
         //adjust y values (because x and y are reversed) for nodes based on the branch lengths
         for(var i = nodes.length-1; i >=0; i--) {
@@ -92612,7 +92611,7 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Genome View",
-		perspectiveIconClass: "icon-perspective-Genome",
+		perspectiveIconClass: "icon-selection-Genome",
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
@@ -109737,7 +109736,7 @@ define([
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Feature View",
-		perspectiveIconClass: "icon-perspective-Feature",
+		perspectiveIconClass: "icon-selection-Feature",
 
 		_setFeature_idAttr: function(id){
 
@@ -113943,7 +113942,7 @@ define([
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		perspectiveLabel: "Feature List Perspective",
-		perspectiveIconClass: "icon-perspective-FeatureList",
+		perspectiveIconClass: "icon-selection-FeatureList",
 		_setQueryAttr: function(query){
 
 			this._set("query", query);
