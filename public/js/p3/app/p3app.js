@@ -286,11 +286,34 @@ define([
 				// console.log("Create Link for Workspace: ", ws.path);
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
+				if (ws.name=="home"){
+					domConstruct.create("i", {"class": "fa icon-caret-down fa-1x noHoverIcon", style: {"margin-right":"4px"}},d);
+				}
 				domConstruct.create("a", {
 					'class': 'navigationLink',
 					href: "/workspace" + ws.path,
 					innerHTML: ws.name
 				}, d);
+
+				if (ws.name=="home"){
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Genome%20Groups",
+						innerHTML: "Genome Groups"
+					},d)
+
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Feature%20Groups",
+						innerHTML: "Feature Groups"
+					},d)
+				}
 			})
 		},
 

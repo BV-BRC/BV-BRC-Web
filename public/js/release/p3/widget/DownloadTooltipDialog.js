@@ -186,7 +186,7 @@ define("p3/widget/DownloadTooltipDialog", [
 				"class": "wsActionTooltip",
 				style: "padding:4px;",
 				rel: "advancedDownload",
-				innerHTML: "Advanced"
+				innerHTML: "More Options"
 			}, td);
 
 			this.set("content", dstContent);

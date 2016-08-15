@@ -62,7 +62,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeGroup fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: false,
