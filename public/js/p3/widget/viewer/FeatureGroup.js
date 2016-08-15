@@ -12,7 +12,7 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 		groupPath: null,
 		perspectiveLabel: "Feature Group View",
-		perspectiveIconClass: "icon-perspective-FeatureList",
+		perspectiveIconClass: "icon-selection-FeatureList",
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},
