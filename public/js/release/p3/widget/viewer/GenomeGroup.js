@@ -12,7 +12,7 @@ define("p3/widget/viewer/GenomeGroup", [
 		apiServiceUrl: window.App.dataAPI,
 		groupPath: null,
 		perspectiveLabel: "Genome Group View",
-		perspectiveIconClass: "icon-selection-GenomeGroup",
+		perspectiveIconClass: "icon-selection-GenomeList",
 		onSetQuery: function(attr, oldVal, newVal){
 			//prevent default action
 		},

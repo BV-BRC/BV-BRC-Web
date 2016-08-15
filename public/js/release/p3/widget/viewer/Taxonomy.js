@@ -256,7 +256,7 @@ define("p3/widget/viewer/Taxonomy", [
 				out.push(this.filteredTaxon);
 			}
 
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return out.join(" &raquo; ");
 		},
 
 		createOverviewPanel: function(){

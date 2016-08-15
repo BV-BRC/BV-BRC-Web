@@ -288,11 +288,34 @@ define([
 				// console.log("Create Link for Workspace: ", ws.path);
 
 				var d = domConstruct.create("div", {style: {"padding-left": "12px"}}, wsNode);
+				if (ws.name=="home"){
+					domConstruct.create("i", {"class": "fa icon-caret-down fa-1x noHoverIcon", style: {"margin-right":"4px"}},d);
+				}
 				domConstruct.create("a", {
 					'class': 'navigationLink',
 					href: "/workspace" + ws.path,
 					innerHTML: ws.name
 				}, d);
+
+				if (ws.name=="home"){
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Genome%20Groups",
+						innerHTML: "Genome Groups"
+					},d)
+
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Feature%20Groups",
+						innerHTML: "Feature Groups"
+					},d)
+				}
 			})
 		},
 
@@ -28038,7 +28061,7 @@ define([
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeGroup fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: false,
@@ -76745,7 +76768,7 @@ define([
 				"class": "wsActionTooltip",
 				style: "padding:4px;",
 				rel: "advancedDownload",
-				innerHTML: "Advanced"
+				innerHTML: "More Options"
 			}, td);
 
 			this.set("content", dstContent);
@@ -79240,7 +79263,7 @@ define([
 		},
 		postCreate: function(){
 			// create a loading mask
-			this.loadingMask = new Standby({target: this.id, image: "/public/js/p3/resources/images/ripple.svg",color: "#efefef"});
+			this.loadingMask = new Standby({target: this.id, image: "/public/js/p3/resources/images/ring-alt.svg",color: "#efefef"});
 			this.addChild(this.loadingMask);
 			this.loadingMask.startup();
 		},
@@ -79544,6 +79567,7 @@ define([
 		}
 	});
 });
+
 },
 'dijit/form/Textarea':function(){
 define([
@@ -90397,7 +90421,7 @@ define([
 				out.push(this.filteredTaxon);
 			}
 
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return out.join(" &raquo; ");
 		},
 
 		createOverviewPanel: function(){
@@ -92677,7 +92701,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;") + "&nbsp;&raquo;&nbsp;" + genome.genome_name;
+			return out.join(" &raquo; ") + " &raquo; " + genome.genome_name;
 		},
 
 		_setGenomeAttr: function(genome){
