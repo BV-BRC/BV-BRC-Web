@@ -50,15 +50,15 @@ define([
 
 			domConstruct.empty(this.externalLinkNode);
 
-			if(feature.hasOwnProperty('patric_id')){
-				var linkSEEDViewer = "http://pubseed.theseed.org/?page=Annotation&feature=" + feature.patric_id;
-				var seed = domConstruct.create("a", {
-					href: linkSEEDViewer,
-					innerHTML: "The SEED Viewer",
-					target: "_blank"
-				}, this.externalLinkNode);
-				domConstruct.place("<br>", seed, "after");
-			}
+			// if(feature.hasOwnProperty('patric_id')){
+			// 	var linkSEEDViewer = "http://pubseed.theseed.org/?page=Annotation&feature=" + feature.patric_id;
+			// 	var seed = domConstruct.create("a", {
+			// 		href: linkSEEDViewer,
+			// 		innerHTML: "The SEED Viewer",
+			// 		target: "_blank"
+			// 	}, this.externalLinkNode);
+			// 	domConstruct.place("<br>", seed, "after");
+			// }
 
 			if(feature.hasOwnProperty('aa_sequence')){
 				var linkCDDSearch = "http://www.ncbi.nlm.nih.gov/Structure/cdd/wrpsb.cgi?SEQUENCE=%3E";
@@ -171,9 +171,8 @@ define([
 			if(!this.idMappingGrid){
 				var opts = {
 					columns: [
-						{label: "UniprotKB Accession", field: "uniprotkb_accession"},
-						{label: "ID Type", field: "id_type"},
-						{label: "Value", field: "id_value"}
+						{label: "Database", field: "id_type"},
+						{label: "Identifier", field: "id_value"}
 					]
 				};
 
@@ -222,15 +221,22 @@ define([
 
 			domConstruct.empty(this.functionalPropertiesNode);
 
-			if(feature.hasOwnProperty('gene')){
-				domConstruct.create("span", {innerHTML: "<b>Gene Symbol: </b>" + feature.gene + "&nbsp; &nbsp;"}, this.functionalPropertiesNode);
-			}
-			domConstruct.create("span", {innerHTML: "<b>Product: </b>" + feature.product}, this.functionalPropertiesNode);
-
-			var table = domConstruct.create("table", {"class": "p3basic"}, this.functionalPropertiesNode);
+			var table = domConstruct.create("table", {"class": "p3basic striped"}, this.functionalPropertiesNode);
 			var tbody = domConstruct.create("tbody", {}, table);
 
-			var htr = domConstruct.create("tr", {}, tbody);
+			var htr;
+			if(feature.hasOwnProperty('gene')){
+				htr = domConstruct.create("tr", {}, tbody);
+				domConstruct.create("th", {innerHTML: "Gene Symbol", scope: "row"}, htr);
+				domConstruct.create("td", {innerHTML: feature.gene}, htr);
+			}
+			if(feature.hasOwnProperty('product')){
+				htr = domConstruct.create("tr", {}, tbody);
+				domConstruct.create("th", {innerHTML: "Product", scope: "row"}, htr);
+				domConstruct.create("td", {innerHTML: feature.product}, htr);
+			}
+
+			htr = domConstruct.create("tr", {}, tbody);
 			domConstruct.create("th", {innerHTML: "GO Assignments", scope: "row", style: "width:20%"}, htr);
 			domConstruct.create("td", {innerHTML: goLink || '-'}, htr);
 
@@ -349,8 +355,8 @@ define([
 
 			// single gene viewer
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
-			var rangeStart = (centerPos >= 5000) ? (centerPos - 5000) : 0;
-			var rangeEnd = (centerPos + 5000);
+			var rangeStart = (centerPos >= 1000) ? (centerPos - 1000) : 0;
+			var rangeEnd = (centerPos + 1000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){

@@ -768,9 +768,6 @@ define([
 				text: 'genome_status',
 				mini: true
 			}, {
-				name: 'Organism Name',
-				text: 'organism_name'
-			}, {
 				name: 'Strain',
 				text: 'strain'
 			}, {

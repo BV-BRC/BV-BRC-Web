@@ -91,6 +91,9 @@ TH.dgrid-cell.field-feature_type {
 .patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
     width: 40px;
 }
+.patric .rgSummaryWidget.SummaryWidget .field-genome_name {
+    white-space: normal;
+}
 
 /* genomes by antimicrobial resistance at taxon overview */
 .patric .apmSummaryWidget.SummaryWidget {
@@ -107,6 +110,24 @@ TH.dgrid-cell.field-feature_type {
     min-height: 400px;
 }
 
+/* Antimicrobial Resistance at genome overview */
+.patric .apSummaryWidget.SummaryWidget TH {
+    text-align: center;
+}
+.patric .apSummaryWidget.SummaryWidget .field-antibiotic,
+.patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
+    width: 15%;
+}
+
+/* specialty genes at genome overview */
+.patric .spgSummaryWidget.SummaryWidget .field-source_x {
+    width: 20%;
+}
+.patric .spgSummaryWidget.SummaryWidget .field-y {
+    width: 20%;
+    text-align: right;
+}
+
 /* protein feature summary widget at genome overview */
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
@@ -121,7 +142,7 @@ TH.dgrid-cell.field-feature_type {
 
 /* ID Mapping at feature overview */
 .patric .idmSummeryWidget.SummaryWidget {
-    height: 120px;
+    height: 250px;
 }
 
 /* special properties summary widget at feature overview */

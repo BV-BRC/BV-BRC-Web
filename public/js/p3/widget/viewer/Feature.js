@@ -41,6 +41,8 @@ define([
 				id = "?eq(patric_id," + id + ")&limit(1)";
 			}
 
+			// TODO: implement redirection here
+
 			// console.log("Get Feature: ", id);
 			xhr.get(PathJoin(this.apiServiceUrl, "genome_feature", id), {
 				headers: {
@@ -125,9 +127,6 @@ define([
 			}
 			if(feature.hasOwnProperty('refseq_locus_tag')){
 				content.push(feature.refseq_locus_tag);
-			}
-			if(feature.hasOwnProperty('alt_locus_tag')){
-				content.push(feature.alt_locus_tag);
 			}
 			if(feature.hasOwnProperty('gene')){
 				content.push(feature.gene);
