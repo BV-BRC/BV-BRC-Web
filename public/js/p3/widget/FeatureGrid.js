@@ -24,7 +24,7 @@ define([
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
-		selectAllFields: ["patric_id","genome_id","genome_name","refseq_locus_tag"],
+		selectAllFields: ["patric_id", "genome_id", "genome_name", "refseq_locus_tag"],
 		store: store,
 		columns: {
 			"Selection Checkboxes": selector({unhidable: true}),
@@ -49,7 +49,45 @@ define([
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
+		_setQuery: function(query){
+			this.inherited(arguments);
+			this.updateColumnHiddenState(query);
+		},
+		updateColumnHiddenState: function(query){
+			// console.log("updateColumnHiddenState: ", query);
+			var _self = this;
+			if(!query){
+				return;
+			}
+			// console.log(query.match(/CDS/), query.match(/eq\(genome_id/))
+			// show or hide columns based on CDS vs Non-CDS feature type
+			if(query.match(/CDS/)){
+				_self.toggleColumnHiddenState('plfam', false);
+				_self.toggleColumnHiddenState('pgfam', false);
 
+				_self.toggleColumnHiddenState('feature_type', true);
+				_self.toggleColumnHiddenState('start', true);
+				_self.toggleColumnHiddenState('end', true);
+				_self.toggleColumnHiddenState('strand', true);
+			}else{
+				_self.toggleColumnHiddenState('plfam', true);
+				_self.toggleColumnHiddenState('pgfam', true);
+
+				_self.toggleColumnHiddenState('feature_type', false);
+				_self.toggleColumnHiddenState('start', false);
+				_self.toggleColumnHiddenState('end', false);
+				_self.toggleColumnHiddenState('strand', false);
+			}
+
+			// hide genome_name and genome_id if feature list is rendered genome view
+			if(query.match(/eq\(genome_id/)){
+				_self.toggleColumnHiddenState('genome_name', true);
+				_self.toggleColumnHiddenState('genome_id', true);
+			}else{
+				_self.toggleColumnHiddenState('genome_name', false);
+				_self.toggleColumnHiddenState('genome_id', false);
+			}
+		},
 		startup: function(){
 			var _self = this;
 
@@ -84,27 +122,6 @@ define([
 					cancelable: true
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
-			});
-
-			this.on("dgrid-refresh-complete", function(){
-				// console.log(_self.query.match(/CDS/));
-				if(_self.query.match(/CDS/)){
-					// CDS feature
-					_self.toggleColumnHiddenState('plfam', false);
-					_self.toggleColumnHiddenState('pgfam', false);
-
-					_self.toggleColumnHiddenState('start', true);
-					_self.toggleColumnHiddenState('end', true);
-					_self.toggleColumnHiddenState('strand', true);
-				}else{
-					// Non-CDS feature types
-					_self.toggleColumnHiddenState('plfam', true);
-					_self.toggleColumnHiddenState('pgfam', true);
-
-					_self.toggleColumnHiddenState('start', false);
-					_self.toggleColumnHiddenState('end', false);
-					_self.toggleColumnHiddenState('strand', false);
-				}
 			});
 
 			this.inherited(arguments);
