@@ -25637,7 +25637,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -88370,7 +88369,7 @@ define([
 		},
 */
 		render: function(){
-			 0 && console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			// 0 && console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
 				//  0 && console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
 				this.renderBackground();
@@ -88392,13 +88391,13 @@ define([
 			var sections={}
 			data.forEach(function(d){
 				totalLength += d.length;
-				 0 && console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+				// 0 && console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
 			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
-			 0 && console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+			// 0 && console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
 
 			var gap = (this.gap);
 			data.forEach(lang.hitch(this,function(d,index){
@@ -88411,7 +88410,7 @@ define([
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
 				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
-				 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+				// 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
 
 				var innerStart= {
 					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
@@ -88545,7 +88544,7 @@ define([
 				}	
 			}));
 
-			 0 && console.log("Set Sections: ", sections);
+			// 0 && console.log("Set Sections: ", sections);
 			this.set("sections", sections);
 
 		}
