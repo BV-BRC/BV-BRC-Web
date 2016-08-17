@@ -22,7 +22,7 @@ define("p3/widget/viewer/_GenomeList", [
 		totalGenomes: 0,
 		defaultTab: "overview",
 		perspectiveLabel: "Genome List View",
-		perspectiveIconClass: "icon-perspective-GenomeList",
+		perspectiveIconClass: "icon-selection-GenomeList",
 
 		showQuickstartKey: "hideQuickstart",
 

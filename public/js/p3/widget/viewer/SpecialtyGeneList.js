@@ -14,7 +14,7 @@ define([
 		defaultTab: "specialtyGenes",
 		paramsMap: "query",
 		perspectiveLabel: "Specialty Gene List View",
-		perspectiveIconClass: "icon-perspective-FeatureList",
+		perspectiveIconClass: "icon-selection-FeatureList",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		_setQueryAttr: function(query){

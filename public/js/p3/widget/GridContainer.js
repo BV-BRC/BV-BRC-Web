@@ -315,7 +315,7 @@ define([
 				false
 			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -340,7 +340,7 @@ define([
 			],
 			[
 				"ViewFeatureItems",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -370,7 +370,7 @@ define([
 
 			 [
 				"ViewSpgeneItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -396,7 +396,7 @@ define([
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -425,7 +425,7 @@ define([
 
 			[
 				"ViewGenomeItem",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -455,7 +455,7 @@ define([
 
 			[
 				"ViewGenomeItems",
-				"MultiButton fa icon-perspective-GenomeList fa-2x",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					validTypes: ["*"],
@@ -509,7 +509,7 @@ define([
 			// ], 
 			[
 				"ViewCDSFeaturesSeq",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -941,7 +941,7 @@ define([
 				false
 			], [
 				"ViewTaxon",
-				"fa icon-perspective-Taxonomy fa-2x",
+				"fa icon-selection-Taxonomy fa-2x",
 				{
 					label: "TAXONOMY",
 					multiple: false,
@@ -966,7 +966,7 @@ define([
 			],
 			[
 				"ViewGenomesFromTaxons",
-				"fa icon-perspective-GenomeList fa-2x",
+				"fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					multiple: true,

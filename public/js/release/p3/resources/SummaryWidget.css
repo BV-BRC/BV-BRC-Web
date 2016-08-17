@@ -74,6 +74,9 @@ TH.dgrid-cell.field-feature_type {
 .patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
     width: 40px;
 }
+.patric .rgSummaryWidget.SummaryWidget .field-genome_name {
+    white-space: normal;
+}
 .patric .apmSummaryWidget.SummaryWidget {
     padding-bottom: 11px;
 }
@@ -85,6 +88,20 @@ TH.dgrid-cell.field-feature_type {
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
     min-height: 400px;
 }
+.patric .apSummaryWidget.SummaryWidget TH {
+    text-align: center;
+}
+.patric .apSummaryWidget.SummaryWidget .field-antibiotic,
+.patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
+    width: 15%;
+}
+.patric .spgSummaryWidget.SummaryWidget .field-source_x {
+    width: 20%;
+}
+.patric .spgSummaryWidget.SummaryWidget .field-y {
+    width: 20%;
+    text-align: right;
+}
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
     height: 275px;
@@ -94,7 +111,7 @@ TH.dgrid-cell.field-feature_type {
     min-height: 250px;
 }
 .patric .idmSummeryWidget.SummaryWidget {
-    height: 120px;
+    height: 250px;
 }
 .patric .spgSummaryWidget.SummaryWidget {
     height: 250px;

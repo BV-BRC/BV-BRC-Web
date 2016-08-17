@@ -83,19 +83,19 @@ define("p3/widget/CircularViewerContainer", [
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(refseqs){
-				//console.log("******track title:", title, " refseqs:", refseqs);
+				//console.log("******track title:", title, " refseqs:", refseqs, " strand", strand);
 				
 				if (refseqs.length == 0) {
 					track.set('loading', false);
 					return refseqs;
 				} 
-				
+								
 				refseqs = refseqs.filter(function(r){
 					if(strand === null){
 						return true;
 					}
 					if(strand){
-						return r.strand && r.strand == "+"
+						return r.strand && r.strand == "+";
 					}else{
 						return r.strand != "+";
 					}
@@ -108,9 +108,7 @@ define("p3/widget/CircularViewerContainer", [
 				})
 
 				//console.log("******before set data track title:", title, " refseqs:", refseqs);
-
 				track.set("data", refseqs);
-				//console.log("******after track title:", title, " refseqs:", refseqs);
 
 				return refseqs;
 			}));
@@ -166,7 +164,7 @@ define("p3/widget/CircularViewerContainer", [
 						return "#21DFD7";
 				}
 			};
-			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", false, fillFn, null, {
+			this.addFeatureTrack("Non-CDS Features", this.state.genome_ids[0], "and(eq(annotation,PATRIC),ne(feature_type,CDS))", null, fillFn, null, {
 				fill: null,
 				stroke: null
 			});

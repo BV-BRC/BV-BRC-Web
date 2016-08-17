@@ -21,7 +21,7 @@ define([
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Feature View",
-		perspectiveIconClass: "icon-perspective-Feature",
+		perspectiveIconClass: "icon-selection-Feature",
 
 		_setFeature_idAttr: function(id){
 
@@ -37,7 +37,7 @@ define([
 			this.feature_id = id;
 			this.state.feature_id = id;
 
-			if (id.match(/^fig/)){
+			if(id.match(/^fig/)){
 				id = "?eq(patric_id," + id + ")&limit(1)";
 			}
 
@@ -50,17 +50,22 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(feature){
-				if (feature instanceof Array){
-					this.set("feature", feature[0])
+				if(feature instanceof Array){
+					// this.set("feature", feature[0])
+					this.redirectToPATRICFeature(feature[0]);
 				}else{
-					this.set("feature", feature)
+					// this.set("feature", feature)
+					this.redirectToPATRICFeature(feature);
 				}
 			}));
 		},
 
 		setActivePanelState: function(){
 			var activeQueryState;
-			if (!this._started){ console.log("Feature Viewer not started"); return; }
+			if(!this._started){
+				console.log("Feature Viewer not started");
+				return;
+			}
 
 			if(this.state.feature_id){
 				activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + this.state.feature_id + ")"});
@@ -69,9 +74,6 @@ define([
 			var activeTab = this[active];
 
 			switch(active){
-				//case "pathways":
-				//	activeTab.set("state", state);
-				//	break;
 				case "overview":
 				case "correlatedGenes":
 					if(this.state && this.state.feature){
@@ -126,9 +128,6 @@ define([
 			if(feature.hasOwnProperty('refseq_locus_tag')){
 				content.push(feature.refseq_locus_tag);
 			}
-			if(feature.hasOwnProperty('alt_locus_tag')){
-				content.push(feature.alt_locus_tag);
-			}
 			if(feature.hasOwnProperty('gene')){
 				content.push(feature.gene);
 			}
@@ -136,7 +135,36 @@ define([
 				content.push(feature.product);
 			}
 
-			return content.map(function(d){ return '<span><b>' + d + '</b></span>';}).join(' <span class="pipe">|</span> ');
+			return content.map(function(d){
+				return '<span><b>' + d + '</b></span>';
+			}).join(' <span class="pipe">|</span> ');
+		},
+
+		redirectToPATRICFeature: function(feature){
+
+			if(feature.annotation === 'PATRIC'){
+				this.set("feature", feature);
+			}else{
+				if(feature.hasOwnProperty('pos_group')){
+					xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/?and(eq(annotation,PATRIC),eq(pos_group," + encodeURIComponent('"' + feature.pos_group + '"') + "))"), {
+						headers: {
+							accept: "application/json",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						handleAs: "json"
+					}).then(lang.hitch(this, function(features){
+						if(features.length === 0){
+							// no PATRIC feature found
+							this.set("feature", feature);
+						}else{
+							this.set("feature", features[0]);
+						}
+					}));
+				}else{
+					this.set("feature", feature);
+				}
+			}
 		},
 
 		_setFeatureAttr: function(feature){
@@ -153,7 +181,7 @@ define([
 		createOverviewPanel: function(){
 			return new FeatureOverview({
 				content: "Overview",
-				title: "Feature Overview",
+				title: "Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});

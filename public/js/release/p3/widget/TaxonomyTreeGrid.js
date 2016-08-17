@@ -1,19 +1,19 @@
 define("p3/widget/TaxonomyTreeGrid", [
 	"dojo/_base/declare", "dgrid/OnDemandGrid", "dgrid/tree", "dojo/on", "dgrid/Selection",
-	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang","./GridSelector"
+	"../store/TaxonomyJsonRest", "dgrid/extensions/DijitRegistry", "dojo/_base/lang", "./GridSelector"
 
 ], function(declare, Grid, Tree, on, Selection,
-			Store, DijitRegistryExt, lang,selector){
+			Store, DijitRegistryExt, lang, selector){
 	return declare([Grid, DijitRegistryExt, Selection], {
 		constructor: function(){
 			this.queryOptions = {
 				sort: [{attribute: "taxon_name", descending: false}]
 			};
-			console.log("this.queryOptions: ", this.queryOptions);
+			// console.log("this.queryOptions: ", this.queryOptions);
 		},
 		store: new Store({}),
 		columns: [
-			selector({}),
+			selector({unhidable: true}),
 			Tree({
 				label: "Name", field: "taxon_name", shouldExpand: function(row, level, prevExpanded){
 					// console.log("Should Expand? ", row, level, prevExpanded)
@@ -25,7 +25,6 @@ define("p3/widget/TaxonomyTreeGrid", [
 		],
 		startup: function(){
 			var _self = this;
-			//sort: [{attribute: "taxon_name"}];
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
@@ -40,7 +39,6 @@ define("p3/widget/TaxonomyTreeGrid", [
 			});
 
 			this.on("dgrid-select", function(evt){
-				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -49,15 +47,9 @@ define("p3/widget/TaxonomyTreeGrid", [
 					cancelable: true
 				};
 				on.emit(_self.domNode, "select", newEvt);
-				//console.log("dgrid-select");
-				//var rows = evt.rows;
-				//Object.keys(rows).forEach(function(key){ _selection[rows[key].data.id]=rows[key].data; });
-				//var sel = Object.keys(_selection).map(function(s) { return _selection[s]; });
-				//Topic.publish("/select", sel);
 			});
 
 			this.on("dgrid-deselect", function(evt){
-				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -66,15 +58,7 @@ define("p3/widget/TaxonomyTreeGrid", [
 					cancelable: true
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
-				return;
 			});
-
-			// this.on("dgrid-refresh-complete", lang.hitch(this,function(){
-			// 	console.log("Refresh complete, expand first row");
-			// 	setTimeout(lang.hitch(this, function(){
-			// 		this.expand(0,true);
-			// 	}),250);
-			// }))
 
 			this.inherited(arguments);
 		}

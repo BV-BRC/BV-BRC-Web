@@ -12,11 +12,6 @@
             <div data-dojo-attach-point="sgViewerNode"></div>
         </div>
 
-        <div class="section hidden">
-            <h3 class="section-title"><span class="wrap">ID Mapping</span></h3>
-            <div class="SummaryWidget idmSummeryWidget" data-dojo-attach-point="idMappingNode"></div>
-        </div>
-
         <div class="section">
             <h3 class="section-title"><span class="wrap">Functional Properties</span></h3>
             <div class="SummaryWidget" data-dojo-attach-point="functionalPropertiesNode">
@@ -30,6 +25,11 @@
         </div>
 
         <div class="section hidden">
+            <h3 class="section-title"><span class="wrap">External Database Identifiers</span></h3>
+            <div class="SummaryWidget idmSummeryWidget" data-dojo-attach-point="idMappingNode"></div>
+        </div>
+
+        <div class="section hidden">
             <h3 class="section-title"><span class="wrap">Comments</span></h3>
             <div class="SummaryWidget fcSummaryWidget" data-dojo-attach-point="featureCommentsNode"></div>
         </div>
@@ -37,17 +37,13 @@
 
     <div class="column-opt">
         <div class="section">
-            <!--
-            <div class="BrowserHeader">
+            <div class="BrowserHeader right">
                 <div class="ActionButtonWrapper" data-dojo-attach-event="onclick:onAddFeature" style="margin-top: 2px">
                     <div class="ActionButton fa icon-object-group fa-2x"></div>
                     <div class="ActionButtonText">Add To Group</div>
                 </div>
             </div>
-            -->
-            <div class="SummaryWidget">
-                <button data-dojo-attach-event="onclick:onAddFeature">Add Feature to Workspace</button>
-            </div>
+            <div class="clear"></div>
         </div>
         <div class="section">
             <h3 class="section-title"><span class="wrap">External Tools</span></h3>

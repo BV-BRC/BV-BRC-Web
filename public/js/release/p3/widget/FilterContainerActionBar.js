@@ -329,7 +329,7 @@ define("p3/widget/FilterContainerActionBar", [
 			}));
 
 			if(this.enableAnchorButton){
-				this.addAction("AnchorCurrentFilters", "fa icon-apply-perspective-filter fa-2x", {
+				this.addAction("AnchorCurrentFilters", "fa icon-selection-Filter fa-2x", {
 					style: {"font-size": ".5em"},
 					label: "APPLY",
 					validType: ["*"],

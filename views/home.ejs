@@ -31,14 +31,17 @@
 <div>
 
 	<div style="background-color:#f3f3f3;padding-top:10px;">
-		<% include Banner%>
+		<div class="layer">
+			<% include masthead %>
+			<% include Banner%>
+		</div>
 		<div class="layer" style="text-align: center;margin-bottom:0px;">
 			<div data-dojo-type="dijit/layout/StackContainer" style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;" id="p3carousel">
 
 				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">
 					<table style="width:100%;margin-right:4px;">
 						<tr>
-							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #34698e;background:#fff;border-radius:4px;">
+							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
 
 								<div style="vertical-align:top;margin: 0px; width:100%;">
 									<div style="font-size:1.2em;"><a style="font-weight:bold" class="DialogButton" rel="Search:">Search</a> or <a style="font-weight:bold" class="DialogButton" rel="Explore:">Browse</a> Data</div>
@@ -76,7 +79,7 @@
 									<span class="fa-4x icon-long-arrow-left"></span>
 								</div>
 							</td>
-							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #9732ce;background:#fff;border-radius:4px;">
+							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
 								<div style="vertical-align: top; margin:0px;width:100%;">
 									<div style="font-size:1.2em;font-weight:bold;">Workspace</div>
 									<div style="text-align: left;">
@@ -186,7 +189,7 @@
 	<div class="homeBottomSection">
 		<div class="layer" style="text-align: center;">
 
-			<h1>How do I...</h1>
+			<h1>Common Workflows</h1>
 
 			<div style="margin-bottom:12px;">
 				<% flows.forEach(function(svc,index) { %>

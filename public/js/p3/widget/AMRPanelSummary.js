@@ -19,18 +19,18 @@ define([
 			{
 				label: "Measurement",
 				children: [
-					{label: "sign", field: "measurement_sign"},
-					{label: "value", field: "measurement_value"},
-					{label: "units", field: "measurement_unit"}
+					{label: "Sign", field: "measurement_sign"},
+					{label: "Value", field: "measurement_value"},
+					{label: "Units", field: "measurement_unit"}
 				]
 			},
 			{
 				label: "Laboratory typing",
 				children: [
-					{label: "method", field: "laboratory_typing_method"},
-					{label: "platform", field: "laboratory_typing_platform"},
-					{label: "vendor", field: "vendor"},
-					{label: "version", field: "laboratory_typing_method_version"}
+					{label: "Method", field: "laboratory_typing_method"},
+					{label: "Platform", field: "laboratory_typing_platform"},
+					{label: "Vendor", field: "vendor"},
+					{label: "Version", field: "laboratory_typing_method_version"}
 				]
 			},
 			{label: "Testing standard", field: "testing_standard"}

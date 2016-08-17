@@ -107,6 +107,7 @@ define([
 
 			this.grid.refresh();
 			this.grid.renderArray(this._tableData);
+			this.grid.sort([{attribute: "reference_genome"}]);
 		}
 	})
 });
