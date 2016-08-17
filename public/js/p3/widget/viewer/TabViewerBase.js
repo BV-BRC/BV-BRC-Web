@@ -51,7 +51,7 @@ define([
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({
 				content: "",
-				class: "breadcrumb",
+				"class": "breadcrumb",
 				region: "top"
 			});
 
