@@ -62,7 +62,7 @@ define("p3/widget/WorkspaceBrowser", [
 
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-perspective-GenomeGroup fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroup", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: false,
@@ -88,7 +88,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-perspective-GenomeList fa-2x", {
+			this.actionPanel.addAction("ViewGenomeGroups", "MultiButton fa icon-selection-GenomeList fa-2x", {
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: true,
@@ -119,7 +119,7 @@ define("p3/widget/WorkspaceBrowser", [
 				}
 			});
 
-			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-perspective-Genome fa-2x", {
+			this.actionPanel.addAction("ViewGenomeItem", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
 				validTypes: ["*"],
 				validContainerTypes: ["genome_group"],
@@ -140,7 +140,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
 
-			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-perspective-Feature fa-2x", {
+			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-selection-Feature fa-2x", {
 				validTypes: ["*"],
 				label: "FEATURE",
 				validContainerTypes: ["feature_group"],
@@ -161,7 +161,7 @@ define("p3/widget/WorkspaceBrowser", [
 				window.location = "/view/Feature/" + sel.feature_id
 			}, true);
 
-			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-perspective-Genome fa-2x", {
+			this.actionPanel.addAction("ViewGenomeFromFeature", "MultiButton fa icon-selection-Genome fa-2x", {
 				label: "GENOME",
 				validTypes: ["*"],
 				validContainerTypes: ["feature_group"],

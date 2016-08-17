@@ -21,7 +21,7 @@ define("p3/widget/viewer/Feature", [
 		feature_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Feature View",
-		perspectiveIconClass: "icon-perspective-Feature",
+		perspectiveIconClass: "icon-selection-Feature",
 
 		_setFeature_idAttr: function(id){
 

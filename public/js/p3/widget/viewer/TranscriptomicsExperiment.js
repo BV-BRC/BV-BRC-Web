@@ -10,7 +10,7 @@ define([
 		"query": null,
 		containerType: "transcriptomics_experiment",
 		perspectiveLabel: "Specialty Gene List View",
-		perspectiveIconClass: "icon-perspective-FeatureList",
+		perspectiveIconClass: "icon-selection-FeatureList",
 		apiServiceUrl: window.App.dataAPI,
 
 		onSetState: function(attr, oldVal, state){

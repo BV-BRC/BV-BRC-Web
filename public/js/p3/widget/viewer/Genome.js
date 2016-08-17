@@ -23,7 +23,7 @@ define([
 		genome_id: "",
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Genome View",
-		perspectiveIconClass: "icon-perspective-Genome",
+		perspectiveIconClass: "icon-selection-Genome",
 
 		_setGenome_idAttr: function(id){
 			// console.log("_setGenome_IDAttr: ", id, this.genome_id);
@@ -89,7 +89,7 @@ define([
 			var out = taxon_lineage_names.map(function(id, idx){
 				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
 			});
-			return out.join("&nbsp;&raquo;&nbsp;") + "&nbsp;&raquo;&nbsp;" + genome.genome_name;
+			return out.join(" &raquo; ") + " &raquo; " + genome.genome_name;
 		},
 
 		_setGenomeAttr: function(genome){

@@ -21,7 +21,7 @@ define("p3/widget/viewer/Taxonomy", [
 		apiServiceUrl: window.App.dataAPI,
 		taxonomy: null,
 		perspectiveLabel: "Taxon View",
-		perspectiveIconClass: "icon-perspective-Taxonomy",
+		perspectiveIconClass: "icon-selection-Taxonomy",
 		postCreate: function(){
 			this.inherited(arguments);
 
@@ -256,7 +256,7 @@ define("p3/widget/viewer/Taxonomy", [
 				out.push(this.filteredTaxon);
 			}
 
-			return out.join("&nbsp;&raquo;&nbsp;");
+			return out.join(" &raquo; ");
 		},
 
 		createOverviewPanel: function(){

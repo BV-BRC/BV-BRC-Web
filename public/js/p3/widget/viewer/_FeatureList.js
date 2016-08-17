@@ -16,7 +16,7 @@ define([
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
 		perspectiveLabel: "Feature List Perspective",
-		perspectiveIconClass: "icon-perspective-FeatureList",
+		perspectiveIconClass: "icon-selection-FeatureList",
 		_setQueryAttr: function(query){
 
 			this._set("query", query);

@@ -317,7 +317,7 @@ define("p3/widget/GridContainer", [
 				false
 			], [
 				"ViewFeatureItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -342,7 +342,7 @@ define("p3/widget/GridContainer", [
 			],
 			[
 				"ViewFeatureItems",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -372,7 +372,7 @@ define("p3/widget/GridContainer", [
 
 			 [
 				"ViewSpgeneItem",
-				"MultiButton fa icon-perspective-Feature fa-2x",
+				"MultiButton fa icon-selection-Feature fa-2x",
 				{
 					label: "FEATURE",
 					validTypes: ["*"],
@@ -398,7 +398,7 @@ define("p3/widget/GridContainer", [
 				false
 			], [
 				"ViewGenomeItemFromGenome",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -427,7 +427,7 @@ define("p3/widget/GridContainer", [
 
 			[
 				"ViewGenomeItem",
-				"MultiButton fa icon-perspective-Genome fa-2x",
+				"MultiButton fa icon-selection-Genome fa-2x",
 				{
 					label: "GENOME",
 					validTypes: ["*"],
@@ -457,7 +457,7 @@ define("p3/widget/GridContainer", [
 
 			[
 				"ViewGenomeItems",
-				"MultiButton fa icon-perspective-GenomeList fa-2x",
+				"MultiButton fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					validTypes: ["*"],
@@ -511,7 +511,7 @@ define("p3/widget/GridContainer", [
 			// ], 
 			[
 				"ViewCDSFeaturesSeq",
-				"MultiButton fa icon-perspective-FeatureList fa-2x",
+				"MultiButton fa icon-selection-FeatureList fa-2x",
 				{
 					label: "FEATURES",
 					validTypes: ["*"],
@@ -943,7 +943,7 @@ define("p3/widget/GridContainer", [
 				false
 			], [
 				"ViewTaxon",
-				"fa icon-perspective-Taxonomy fa-2x",
+				"fa icon-selection-Taxonomy fa-2x",
 				{
 					label: "TAXONOMY",
 					multiple: false,
@@ -968,7 +968,7 @@ define("p3/widget/GridContainer", [
 			],
 			[
 				"ViewGenomesFromTaxons",
-				"fa icon-perspective-GenomeList fa-2x",
+				"fa icon-selection-GenomeList fa-2x",
 				{
 					label: "GENOMES",
 					multiple: true,
