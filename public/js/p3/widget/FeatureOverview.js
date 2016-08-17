@@ -339,8 +339,8 @@ define([
 
 			// single gene viewer
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
-			var rangeStart = (centerPos >= 1000) ? (centerPos - 1000) : 0;
-			var rangeEnd = (centerPos + 1000);
+			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
+			var rangeEnd = (centerPos + 3000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
