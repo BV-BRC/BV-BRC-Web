@@ -28,7 +28,7 @@ define([
 			source_id: {label: "Source ID", field: "source_id", hidden: false},
 			gene: {label: "Gene", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
-			function: {label: "Function", field: "function", hidden: true},
+			"function": {label: "Function", field: "function", hidden: true},
 			classification: {label: "Classification", field: "classification", hidden: true},
 			pubmed: {label: "Pubmed", field: "pmid", hidden: false},
 			subj_coverage: {label: "Subject Coverage", field: "subject_coverage", hidden: true},

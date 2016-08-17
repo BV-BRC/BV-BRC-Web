@@ -2,7 +2,7 @@ define("p3/widget/CorrelatedGenesGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/request", "dojo/aspect", "dojo/dom-construct", "dojo/dom-class",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-	"./PageGrid", "./formatter", "../store/CorrelatedGenesMemoryStore", "./GridSelector" 
+	"./PageGrid", "./formatter", "../store/CorrelatedGenesMemoryStore", "./GridSelector"
 ], function(declare, lang, Deferred,
 			on, request, aspect, domConstruct, domClass,
 			BorderContainer, ContentPane,
@@ -20,19 +20,23 @@ define("p3/widget/CorrelatedGenesGrid", [
 		columns: {
 			// "Selection Checkboxes": selector({}), // no selector for now.
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
+			genome_id: {label: 'Genome ID', field: 'genome_id'},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
-			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: false},
+			alt_locus_tag: {label: "Alt Locus Tag", field: "alt_locus_tag", hidden: true},
 			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
 			annotation: {label: "Annotation", field: "annotation", hidden: true},
 			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
 			start: {label: "Start", field: "start", hidden: true},
-			end: {label: "END", field: "end", hidden: true},
-			na_length: {label: "NA Length", field: "na_length", hidden: true},
+			end: {label: "End", field: "end", hidden: true},
+			na_length: {label: "Length (NT)", field: "na_length", hidden: true},
 			strand: {label: "Strand", field: "strand", hidden: true},
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
-			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
+			figfam: {label: "FIGfam ID", field: "figfam_id", hidden: true},
+			plfam: {label: "PATRIC Local family", field: "plfam_id"},
+			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
+			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false},
 
