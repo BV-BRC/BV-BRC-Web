@@ -121,6 +121,30 @@ define([
 		},
 
 		buildHeaderContent: function(feature){
+
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", feature.taxon_id), {
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(taxon){
+				var taxon_lineage_names = taxon.lineage_names.slice(1);
+				var taxon_lineage_ids = taxon.lineage_ids.slice(1);
+				var taxon_lineage_ranks = taxon.lineage_ranks.splice(1);
+
+				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus"];
+				var lastIndex = taxon_lineage_names.length - 1;
+				var out = taxon_lineage_names
+					.filter(function(id, idx){
+						var rank = taxon_lineage_ranks[idx];
+						return (visibleRanks.indexOf(rank) > -1 || idx === lastIndex);
+					})
+					.map(function(id, idx){
+						return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+					});
+				this.queryNode.innerHTML = out.join(" &raquo; ");
+			}));
+
 			var content = [];
 			if(feature.hasOwnProperty('patric_id')){
 				content.push(feature.patric_id);
@@ -135,9 +159,9 @@ define([
 				content.push(feature.product);
 			}
 
-			return content.map(function(d){
-				return '<span><b>' + d + '</b></span>';
-			}).join(' <span class="pipe">|</span> ');
+			this.totalCountNode.innerHTML = "<br/>" + content.map(function(d){
+					return '<span><b>' + d + '</b></span>';
+				}).join(' <span class="pipe">|</span> ');
 		},
 
 		redirectToPATRICFeature: function(feature){
@@ -171,8 +195,9 @@ define([
 
 			this.feature = this.state.feature = feature;
 
-			this.queryNode.innerHTML = this.buildHeaderContent(feature);
-			domConstruct.empty(this.totalCountNode);
+			// this.queryNode.innerHTML = this.buildHeaderContent(feature);
+			this.buildHeaderContent(feature);
+			// domConstruct.empty(this.totalCountNode);
 
 			this.setActivePanelState();
 			this.resize();
