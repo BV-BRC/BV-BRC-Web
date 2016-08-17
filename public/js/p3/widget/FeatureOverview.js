@@ -42,6 +42,7 @@ define([
 			this.feature = feature;
 
 			this.getSummaryData();
+			this.set("featureSummary", feature);
 			this.set("publications", feature);
 			this.set("functionalProperties", feature);
 			this.set("staticLinks", feature);
@@ -225,39 +226,29 @@ define([
 			var tbody = domConstruct.create("tbody", {}, table);
 
 			var htr;
-			if(feature.hasOwnProperty('gene')){
-				htr = domConstruct.create("tr", {}, tbody);
-				domConstruct.create("th", {innerHTML: "Gene Symbol", scope: "row"}, htr);
-				domConstruct.create("td", {innerHTML: feature.gene}, htr);
-			}
-			if(feature.hasOwnProperty('product')){
-				htr = domConstruct.create("tr", {}, tbody);
-				domConstruct.create("th", {innerHTML: "Product", scope: "row"}, htr);
-				domConstruct.create("td", {innerHTML: feature.product}, htr);
-			}
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "GO Assignments", scope: "row", style: "width:20%"}, htr);
-			domConstruct.create("td", {innerHTML: goLink || '-'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "EC Assignments", scope: "row"}, htr);
-			domConstruct.create("td", {innerHTML: ecLink || '-'}, htr);
-
-			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "PATRIC Local Family Assignments", scope: "row"}, htr);
+			domConstruct.create("th", {innerHTML: "PATRIC Local Family", scope: "row", style: "width:20%"}, htr);
 			domConstruct.create("td", {innerHTML: plfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "PATRIC Global Family Assignments", scope: "row"}, htr);
+			domConstruct.create("th", {innerHTML: "PATRIC Global Family", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: pgfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "FIGfam Assignments", scope: "row"}, htr);
+			domConstruct.create("th", {innerHTML: "FIGfam", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: figfamLink || '-'}, htr);
 
 			htr = domConstruct.create("tr", {}, tbody);
-			domConstruct.create("th", {innerHTML: "Pathway Assignments", scope: "row"}, htr);
+			domConstruct.create("th", {innerHTML: "GO Terms", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: goLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "EC Numbers", scope: "row"}, htr);
+			domConstruct.create("td", {innerHTML: ecLink || '-'}, htr);
+
+			htr = domConstruct.create("tr", {}, tbody);
+			domConstruct.create("th", {innerHTML: "Pathways", scope: "row"}, htr);
 			domConstruct.create("td", {innerHTML: pwLink || '-'}, htr);
 
 			// TODO: implement structure
@@ -344,13 +335,6 @@ define([
 				if(data.length === 0) return;
 
 				this.set("specialProperties", data);
-			}));
-
-			// get taxonomy info and pass to summary panel
-			xhr.get(PathJoin(this.apiServiceUrl, "/taxonomy/" + this.feature.taxon_id), xhrOption).then(lang.hitch(this, function(data){
-				if(data.length === 0) return;
-
-				this.set("featureSummary", lang.mixin(this.feature, data));
 			}));
 
 			// single gene viewer
