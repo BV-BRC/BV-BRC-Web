@@ -91,20 +91,20 @@ define([
 				},
 				handleAs: "json"
 			}).then(lang.hitch(this, function(taxon){
-				var taxon_lineage_names = taxon.lineage_names.slice(1);
-				var taxon_lineage_ids = taxon.lineage_ids.slice(1);
-				var taxon_lineage_ranks = taxon.lineage_ranks.splice(1);
+				var taxon_lineage_names = taxon.lineage_names;
+				var taxon_lineage_ids = taxon.lineage_ids;
+				var taxon_lineage_ranks = taxon.lineage_ranks;
 
-				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus"];
+				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+				var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+					return visibleRanks.indexOf(rank) > -1;
+				}).map(function(rank){
+					return taxon_lineage_ranks.indexOf(rank);
+				});
 
-				var out = taxon_lineage_names
-					.filter(function(id, idx){
-						var rank = taxon_lineage_ranks[idx];
-						return visibleRanks.indexOf(rank) > -1;
-					})
-					.map(function(id, idx){
-						return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
-					});
+				var out = visibleIndexes.map(function(idx){
+					return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+				});
 				this.queryNode.innerHTML = out.join(" &raquo; ") + " &raquo; " + '<span class="current">' + genome.genome_name + '</span>';
 			}));
 		},

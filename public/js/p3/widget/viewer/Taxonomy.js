@@ -273,22 +273,28 @@ define([
 		},
 
 		buildHeaderContent: function(taxon){
-			var taxon_lineage_names = taxon.lineage_names.slice(1);
-			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
-			var taxon_lineage_ranks = taxon.lineage_ranks.slice(1);
+			var taxon_lineage_names = taxon.lineage_names;
+			var taxon_lineage_ids = taxon.lineage_ids;
+			var taxon_lineage_ranks = taxon.lineage_ranks;
 
-			var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus"];
+			var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+			var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+				return visibleRanks.indexOf(rank) > -1;
+			}).map(function(rank){
+				return taxon_lineage_ranks.indexOf(rank);
+			});
 
-			var lastIndex = taxon_lineage_names.length - 1;
-			var lastName = taxon_lineage_names[lastIndex];
-			var out = taxon_lineage_names
-				.filter(function(id, idx){
-					var rank = taxon_lineage_ranks[idx];
-					return (visibleRanks.indexOf(rank) > -1 || idx === lastIndex);
-				})
-				.map(function(id, idx){
-					return '<a class="navigationLink' + ((id === lastName) ? ' current' : '') + '" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
-				});
+			var lastVisibleIndex = visibleIndexes[visibleIndexes.length - 1];
+			var lastIndex = taxon_lineage_ranks.length - 1;
+
+			if(lastVisibleIndex < lastIndex){
+				visibleIndexes.push(taxon_lineage_ranks.length - 1);
+				lastVisibleIndex = visibleIndexes[visibleIndexes.length - 1];
+			}
+
+			var out = visibleIndexes.map(function(idx){
+				return '<a class="navigationLink' + ((idx === lastVisibleIndex) ? ' current' : '') + '" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+			});
 
 			if(this.filteredTaxon){
 				out.push(this.filteredTaxon);
