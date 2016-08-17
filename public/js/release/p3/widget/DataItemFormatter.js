@@ -158,20 +158,49 @@ define("p3/widget/DataItemFormatter", [
 		"feature_data": function(item, options){
 			options = options || {};
 
-			var columns = [{
+			var sectionList = ['Summary', 'Identifiers', 'Genome', 'Location', 'Sequences'];
+			var section = {};
+
+			section['Summary'] = [{
+				name: 'RefSeq Locus Tag',
+				text: 'refseq_locus_tag',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
+				mini: true
+			},{
+				name: 'Gene Symbol',
+				text: 'gene',
+				mini: true
+			}, {
+				name: 'Product',
+				text: 'product',
+				mini: true
+			}, {
+				name: 'Annotation',
+				text: 'annotation'
+			}, {
+				name: 'Feature Type',
+				text: 'feature_type'
+			}];
+
+			section['Identifiers'] = [{
+				name: 'Protein ID',
+				text: 'protein_id',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+			}, {
+				name: 'Gene ID',
+				text: 'gene_id',
+				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
+			}, {
+				name: 'gi',
+				text: 'gi',
+				link: 'http://www.ncbi.nlm.nih.gov/protein/'
+			}];
+
+			section['Genome'] = [{
 				name: 'Taxon ID',
 				text: 'taxon_id',
 				link: '/view/Taxonomy/'
-			}, {
-				name: 'Lineage',
-				text: 'lineage_names',
-				link: function(obj){
-					var ids = obj['lineage_ids'];
-					return obj['lineage_names'].map(function(d, idx){
-						return lang.replace('<a href="/view/Taxonomy/{0}">{1}</a>', [ids[idx], d]);
-					}).join(", ");
-				}
-			}, {
+			},{
 				name: 'Genome ID',
 				text: 'genome_id',
 				link: "/view/Genome/"
@@ -181,34 +210,11 @@ define("p3/widget/DataItemFormatter", [
 				link: function(obj){
 					return lang.replace('<a href="/view/Genome/{obj.genome_id}">{obj.genome_name}</a>', {obj: obj});
 				}
-			}, {
-				name: 'Annotation',
-				text: 'annotation'
-			}, {
-				name: 'Feature Type',
-				text: 'feature_type'
-			}, {
-				name: 'PATRIC ID',
-				text: 'patric_id',
-				link: '/view/Feature/',
-				mini: true
-			}, {
-				name: 'RefSeq Locus Tag',
-				text: 'refseq_locus_tag',
-				link: 'http://www.ncbi.nlm.nih.gov/gene/?term=',
-				mini: true
-			}, {
-				name: 'Protein ID',
-				text: 'protein_id',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/'
-			}, {
-				name: 'Gene Symbol',
-				text: 'gene',
-				mini: true
-			}, {
-				name: 'Product',
-				text: 'product',
-				mini: true
+			}];
+
+			section['Location'] = [{
+				name: 'Accession',
+				text: 'accession'
 			}, {
 				name: 'Start',
 				text: 'start'
@@ -222,7 +228,9 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Location',
 				text: 'location',
 				mini: true
-			}, {
+			}];
+
+			section['Sequences'] = [{
 				name: 'NA Length',
 				text: 'na_length'
 			}, {
@@ -240,40 +248,14 @@ define("p3/widget/DataItemFormatter", [
 				link: function(obj){
 					return obj.aa_sequence.substr(0, 22) + '... ' + '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
 				}
-			}, {
-				name: 'Figfam ID',
-				text: 'figfam_id'
-			}, {
-				name: 'PATRIC Local Family ID',
-				text: 'plfam_id'
-			}, {
-				name: 'PATRIC Global Family ID',
-				text: 'pgfam_id'
-			}, {
-				name: 'EC',
-				text: 'ec'
-			}, {
-				name: 'Pathway',
-				text: 'pathway'
-			}, {
-				name: 'GO',
-				text: 'go'
-			}, {
-				name: 'Gene ID',
-				text: 'gene_id',
-				link: 'http://www.ncbi.nlm.nih.gov/gene/?term='
-			}, {
-				name: 'gi',
-				text: 'gi',
-				link: 'http://www.ncbi.nlm.nih.gov/protein/'
 			}];
 
-			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.alt_locus_tag;
-			//console.log("DataItemFormatter label=", label); 					
+			var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : item.feature_id;
 
 			var div = domConstruct.create("div");
 			displayHeader(div, label, "fa icon-genome-features fa-2x", "/view/Feature/" + item.feature_id, options);
-			displayDetail(item, columns, div, options);
+
+			displayDetailBySections(item, sectionList, section, div, options);
 
 			return div;
 		},
@@ -767,9 +749,6 @@ define("p3/widget/DataItemFormatter", [
 				name: 'Genome Status',
 				text: 'genome_status',
 				mini: true
-			}, {
-				name: 'Organism Name',
-				text: 'organism_name'
 			}, {
 				name: 'Strain',
 				text: 'strain'

@@ -2,11 +2,11 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"./PageGrid", "./formatter", "../store/PathwayJsonRest", "dojo/aspect",
-	"dojo/_base/Deferred","./GridSelector"
+	"dojo/_base/Deferred", "./GridSelector"
 ], function(declare, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, aspect,
-			Deferred,selector){
+			Deferred, selector){
 
 	var store = new Store({});
 
@@ -25,7 +25,7 @@ define([
 		deselectOnRefresh: true,
 		fullSelectAll: false,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -40,15 +40,12 @@ define([
 		},
 		_setTotalRows: function(rows){
 			this.totalRows = rows;
-			console.log("Total Rows: ", rows);
+
 			if(this.controlButton){
-				console.log("this.controlButton: ", this.controlButton);
 				if(!this._originalTitle){
 					this._originalTitle = this.controlButton.get('label');
 				}
 				this.controlButton.set('label', this._originalTitle + " (" + rows + ")");
-
-				console.log(this.controlButton);
 			}
 		},
 
@@ -63,18 +60,18 @@ define([
 
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
+				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -85,7 +82,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
+				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

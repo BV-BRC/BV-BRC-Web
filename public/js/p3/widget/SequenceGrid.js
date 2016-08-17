@@ -18,9 +18,10 @@ define([
 		primaryKey: "sequence_id",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			sequence_id: {label: "Sequence ID", field: "sequence_id", hidden: true},
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
+			genome_id: {label: 'Genome ID', field: 'genome_id'},
 			accession: {label: "Accession", field: "accession", hidden: false},
 			length: {label: "Length (bp)", field: "length", hidden: false},
 			gc_content: {label: "GC Content %", field: "gc_content", hidden: false},
@@ -32,14 +33,13 @@ define([
 			var _self = this;
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){

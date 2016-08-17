@@ -2,7 +2,7 @@ define([
 	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on", "dojo/_base/Deferred",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"dojo/_base/xhr", "dojo/_base/lang", "./PageGrid", "./formatter", "../store/PathwayMemoryStore", "dojo/request",
-	"dojo/aspect", "./GridSelector","dojo/when"
+	"dojo/aspect", "./GridSelector", "dojo/when"
 ], function(declare, BorderContainer, on, Deferred,
 			domClass, ContentPane, domConstruct,
 			xhr, lang, Grid, formatter, Store, request,
@@ -20,7 +20,7 @@ define([
 		deselectOnRefresh: true,
 		fullSelectAll: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			pathway_id: {label: 'Pathway ID', field: 'pathway_id'},
 			pathway_name: {label: 'Pathway Name', field: 'pathway_name'},
 			pathway_class: {label: 'Pathway Class', field: 'pathway_class'},
@@ -87,37 +87,36 @@ define([
 
 			var oldState = this.get('state');
 
-			var ov,nv;
-			if (oldState){
+			var ov, nv;
+			if(oldState){
 				ov = oldState.search;
-				if (oldState.hashParams.filter){
+				if(oldState.hashParams.filter){
 					ov = ov + oldState.hashParams.filter;
 				}
 			}
 
-			if (state){
+			if(state){
 				nv = state.search;
-				if (state.hashParams.filter){
+				if(state.hashParams.filter){
 					nv = nv + state.hashParams.filter;
 				}
 			}
 
 			this.state = state;
 
-			if (ov!=nv){
+			if(ov != nv){
 				//console.log("New State in Pathways Memory Grid: ", nv);
-			
+
 				if(!this.store){
 					this.set('store', this.createStore(this.apiServer, this.apiToken || window.App.authorizationToken, state));
 				}else{
-					this.store.set("state", lang.mixin({},state));
+					this.store.set("state", lang.mixin({}, state));
 				}
 
 				this.refresh()
 			}else{
 				this.refresh()
 			}
-
 
 		},
 
@@ -138,17 +137,16 @@ define([
 			});
 		},
 		_selectAll: function(){
-			var _self=this;
+			var _self = this;
 			var def = new Deferred();
-			when(this.store.query({},this.queryOptions),function(results){
-				console.log("_selectAll results: ", results)
-				_self._unloadedData={};
+			when(this.store.query({}, this.queryOptions), function(results){
+				_self._unloadedData = {};
 
-				def.resolve(results.map(function(obj) { 
-					_self._unloadedData[obj[_self.primaryKey]]=obj;
-					return obj[_self.primaryKey]; 
+				def.resolve(results.map(function(obj){
+					_self._unloadedData[obj[_self.primaryKey]] = obj;
+					return obj[_self.primaryKey];
 				}));
-			})
+			});
 			return def.promise;
 		}
 	});

@@ -18,7 +18,7 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 		primaryKey: "eid",
 		deselectOnRefresh: true,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			eid: {label: "Experiment ID", field: "eid", hidden: true},
 			title: {label: "Title", field: "title", hidden: false},
 			samples: {label: "Comparisons", field: "samples", hidden: false},
@@ -39,18 +39,18 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 			var _self = this;
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
-				console.log("dblclick row:", row)
+				// console.log("dblclick row:", row)
 				on.emit(_self.domNode, "ItemDblClick", {
 					item_path: row.data.path,
 					item: row.data,
 					bubbles: true,
 					cancelable: true
 				});
-				console.log('after emit');
+				// console.log('after emit');
 			});
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
+				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -61,7 +61,7 @@ define("p3/widget/TranscriptomicsExperimentGrid", [
 				on.emit(_self.domNode, "select", newEvt);
 			});
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
+				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

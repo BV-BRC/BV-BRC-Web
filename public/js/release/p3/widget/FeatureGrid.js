@@ -1,8 +1,8 @@
 define("p3/widget/FeatureGrid", [
-	"dojo/_base/declare", "dijit/layout/BorderContainer", "dojo/on",
+	"dojo/_base/declare", "dojo/_base/lang", "dijit/layout/BorderContainer", "dojo/on",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"./PageGrid", "./formatter", "../store/GenomeFeatureJsonRest", "./GridSelector"
-], function(declare, BorderContainer, on,
+], function(declare, lang, BorderContainer, on,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, Store, selector){
 
@@ -11,10 +11,9 @@ define("p3/widget/FeatureGrid", [
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false}, {
-					attribute: "strand",
-					descending: false
-				}, {attribute: "start", descending: false}]
+				sort: [{attribute: "genome_name", descending: false},
+					{attribute: "accession", descending: false},
+					{attribute: "start", descending: false}]
 			};
 			// console.log("this.queryOptions: ", this.queryOptions);
 		},
@@ -25,11 +24,12 @@ define("p3/widget/FeatureGrid", [
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
 		deselectOnRefresh: true,
-		selectAllFields: ["patric_id","genome_id","genome_name","refseq_locus_tag"],
+		selectAllFields: ["patric_id", "genome_id", "genome_name", "refseq_locus_tag"],
 		store: store,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
+			genome_id: {label: 'Genome ID', field: 'genome_id'},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
@@ -38,22 +38,56 @@ define("p3/widget/FeatureGrid", [
 			annotation: {label: "Annotation", field: "annotation", hidden: true},
 			feature_type: {label: "Feature Type", field: "feature_type", hidden: true},
 			start: {label: "Start", field: "start", hidden: true},
-			end: {label: "END", field: "end", hidden: true},
-			na_length: {label: "NA Length", field: "na_length", hidden: true},
+			end: {label: "End", field: "end", hidden: true},
+			na_length: {label: "Length (NT)", field: "na_length", hidden: true},
 			strand: {label: "Strand", field: "strand", hidden: true},
 			protein_id: {label: "Protein ID", field: "protein_id", hidden: true},
-			figfam: {label: "FIGfam", field: "figfam_id", hidden: true},
+			figfam: {label: "FIGfam ID", field: "figfam_id", hidden: true},
 			plfam: {label: "PATRIC Local family", field: "plfam_id"},
 			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
-			aa_length: {label: "AA Length", field: "aa_length", hidden: true},
+			aa_length: {label: "Length (AA)", field: "aa_length", hidden: true},
 			gene: {label: "Gene Symbol", field: "gene", hidden: false},
 			product: {label: "Product", field: "product", hidden: false}
 		},
+		_setQuery: function(query){
+			this.inherited(arguments);
+			this.updateColumnHiddenState(query);
+		},
+		updateColumnHiddenState: function(query){
+			// console.log("updateColumnHiddenState: ", query);
+			var _self = this;
+			if(!query){
+				return;
+			}
+			// console.log(query.match(/CDS/), query.match(/eq\(genome_id/))
+			// show or hide columns based on CDS vs Non-CDS feature type
+			if(query.match(/CDS/)){
+				_self.toggleColumnHiddenState('plfam', false);
+				_self.toggleColumnHiddenState('pgfam', false);
 
-//		queryOptions: {
-//			sort: [{ attribute: "genome_name", descending: true }]
-//		},
+				_self.toggleColumnHiddenState('feature_type', true);
+				_self.toggleColumnHiddenState('start', true);
+				_self.toggleColumnHiddenState('end', true);
+				_self.toggleColumnHiddenState('strand', true);
+			}else{
+				_self.toggleColumnHiddenState('plfam', true);
+				_self.toggleColumnHiddenState('pgfam', true);
 
+				_self.toggleColumnHiddenState('feature_type', false);
+				_self.toggleColumnHiddenState('start', false);
+				_self.toggleColumnHiddenState('end', false);
+				_self.toggleColumnHiddenState('strand', false);
+			}
+
+			// hide genome_name and genome_id if feature list is rendered genome view
+			if(query.match(/eq\(genome_id/)){
+				_self.toggleColumnHiddenState('genome_name', true);
+				_self.toggleColumnHiddenState('genome_id', true);
+			}else{
+				_self.toggleColumnHiddenState('genome_name', false);
+				_self.toggleColumnHiddenState('genome_id', false);
+			}
+		},
 		startup: function(){
 			var _self = this;
 

@@ -31,9 +31,9 @@ define([
 		baseQuery: "&limit(1)&facet((field,source),(mincount,1))&json(nl,map)",
 		columns: [
 			{label: " ", field: "category"},
-			{label: "Source", field: "source"},
+			{label: "Source", field: "source_x"},
 			{label: "Genes", field: "y", renderCell: function(obj, val, node){
-				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=eq(source,' + obj.source + ')" target="_blank">' + val + "</a>";
+				node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=eq(source,' + obj.source_x + ')" target="_blank">' + val + "</a>";
 			}}
 		],
 		processData: function(res){
@@ -49,7 +49,7 @@ define([
 			Object.keys(d).forEach(function(key, idx){
 				chartLabels.push({text: key, value: idx + 1});
 				var cat = sourcePropertyMap[key];
-				data.push({category: cat, source: key, y: d[key]});
+				data.push({category: cat, source_x: key, y: d[key]});
 			});
 
 			this.set('data', data);

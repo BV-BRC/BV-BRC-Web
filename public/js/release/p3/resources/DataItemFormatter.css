@@ -24,6 +24,7 @@
 .DataItemSectionHead {
     background: #efefef;
     padding: 5px 3px;
+    font-weight: bold;
 }
 .DataItemProperty {
     vertical-align: top;

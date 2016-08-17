@@ -13,7 +13,6 @@ define("p3/widget/TaxonGrid", [
 			this.queryOptions = {
 				sort: [{attribute: "genomes", descending: true}]
 			};
-			console.log("this.queryOptions: ", this.queryOptions);
 		},
 		region: "center",
 		query: (this.query || ""),
@@ -24,7 +23,7 @@ define("p3/widget/TaxonGrid", [
 		deselectOnRefresh: true,
 		store: store,
 		columns: {
-			"Selection Checkboxes": selector({}),
+			"Selection Checkboxes": selector({unhidable: true}),
 			taxon_id: {label: "Taxon ID", field: "taxon_id", hidden: false},
 			taxon_rank: {label: "Taxon Rank", field: "taxon_rank", hidden: false},
 			taxon_name: {label: "Taxon Name", field: "taxon_name", hidden: false},
@@ -48,7 +47,7 @@ define("p3/widget/TaxonGrid", [
 			});
 
 			this.on("dgrid-select", function(evt){
-				console.log('dgrid-select: ', evt);
+				// console.log('dgrid-select: ', evt);
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,
@@ -60,7 +59,7 @@ define("p3/widget/TaxonGrid", [
 			});
 
 			this.on("dgrid-deselect", function(evt){
-				console.log("dgrid-select");
+				// console.log("dgrid-select");
 				var newEvt = {
 					rows: evt.rows,
 					selected: evt.grid.selection,

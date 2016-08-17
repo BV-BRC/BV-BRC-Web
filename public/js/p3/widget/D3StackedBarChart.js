@@ -114,6 +114,7 @@ define([
 			this.yAxis = d3.svg.axis()
 				.scale(this.pf_y_scale)
 				.orient("left")
+				.tickFormat(d3.format(",.0d"))
 				.tickPadding(0).tickSize(0);
 
 			this.chart.append("g")
@@ -217,8 +218,8 @@ define([
 			var self = this;
 
 			// update axis
-			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
-			this.yAxis = d3.svg.axis().scale(this.pf_y_scale).orient("left").tickPadding(0).tickSize(0);
+			this.pf_y_scale.domain([this.maxValue, 0]);
+			this.yAxis.scale(this.pf_y_scale);
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 
 			// update bars

@@ -10040,6 +10040,9 @@ TH.dgrid-cell.field-feature_type {
 .patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
     width: 40px;
 }
+.patric .rgSummaryWidget.SummaryWidget .field-genome_name {
+    white-space: normal;
+}
 .patric .apmSummaryWidget.SummaryWidget {
     padding-bottom: 11px;
 }
@@ -10051,6 +10054,20 @@ TH.dgrid-cell.field-feature_type {
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
     min-height: 400px;
 }
+.patric .apSummaryWidget.SummaryWidget TH {
+    text-align: center;
+}
+.patric .apSummaryWidget.SummaryWidget .field-antibiotic,
+.patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
+    width: 15%;
+}
+.patric .spgSummaryWidget.SummaryWidget .field-source_x {
+    width: 20%;
+}
+.patric .spgSummaryWidget.SummaryWidget .field-y {
+    width: 20%;
+    text-align: right;
+}
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
     height: 275px;
@@ -10060,7 +10077,7 @@ TH.dgrid-cell.field-feature_type {
     min-height: 250px;
 }
 .patric .idmSummeryWidget.SummaryWidget {
-    height: 120px;
+    height: 250px;
 }
 .patric .spgSummaryWidget.SummaryWidget {
     height: 250px;
@@ -10076,6 +10093,12 @@ TH.dgrid-cell.field-feature_type {
 .dgrid-header .dojoDndTarget .dgrid-cell {
         display: table-cell; 
         border-right: 1px solid #bbb;
+}
+.patric .dgrid-cell.field-Selection-Checkboxes {
+    width: 21px;
+}
+.patric .dgrid-cell.field-genome_id {
+    width: 8%;
 }
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
@@ -10100,8 +10123,11 @@ TH.dgrid-cell.field-feature_type {
     width: 8%;
     text-align: center;
 }
-.dgrid-cell.field-description {
-    width: 40%;
+.patric .dgrid-cell.field-accession {
+    width: 10%;
+}
+.patric .dgrid-cell.field-description {
+    width: 35%;
 }
 .dgrid-cell.field-pathway_name,
 .dgrid-cell.field-pathway_class,
@@ -10150,7 +10176,7 @@ TH.dgrid-cell.field-feature_type {
 	font-weight: bold;
 }
 .TaxonTreeGrid .dgrid-cell {
-    border: 0px;
+    border: 0;
 }
 .TaxonTreeGrid .dgrid-cell.field-genomes {
     width: 60px;
@@ -10209,6 +10235,7 @@ TH.dgrid-cell.field-feature_type {
 .DataItemSectionHead {
     background: #efefef;
     padding: 5px 3px;
+    font-weight: bold;
 }
 .DataItemProperty {
     vertical-align: top;
@@ -10466,7 +10493,7 @@ iframe  {
 	font-weight: bold;
 }
 table.p3basic {
-    font-size: 11px;
+    
     border-collapse: separate;
     empty-cells: hide;
     border-bottom: #d3d3d3 1px solid;
@@ -10485,9 +10512,10 @@ table.p3basic td, th {
     border-top: #d3d3d3 1px solid;
     border-left: #d3d3d3 1px solid;
 }
-table.striped tr:nth-child(even) td,
+table.striped tr:nth-child(odd) td,
+table.striped tr:nth-child(odd) th,
 table tr.even td {
-    background: #e5ecf9;
+    background: #efefef;
 }
 .claro .dijitDialog {
     perspective: 2000;

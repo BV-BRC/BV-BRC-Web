@@ -6,6 +6,12 @@
         display: table-cell; 
         border-right: 1px solid #bbb;
 }
+.patric .dgrid-cell.field-Selection-Checkboxes {
+    width: 21px;
+}
+.patric .dgrid-cell.field-genome_id {
+    width: 8%;
+}
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
 .dgrid-cell.field-figfam_id {
@@ -29,8 +35,11 @@
     width: 8%;
     text-align: center;
 }
-.dgrid-cell.field-description {
-    width: 40%;
+.patric .dgrid-cell.field-accession {
+    width: 10%;
+}
+.patric .dgrid-cell.field-description {
+    width: 35%;
 }
 .dgrid-cell.field-pathway_name,
 .dgrid-cell.field-pathway_class,
@@ -79,7 +88,7 @@
 	font-weight: bold;
 }
 .TaxonTreeGrid .dgrid-cell {
-    border: 0px;
+    border: 0;
 }
 .TaxonTreeGrid .dgrid-cell.field-genomes {
     width: 60px;
