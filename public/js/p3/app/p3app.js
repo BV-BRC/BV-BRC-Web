@@ -313,6 +313,16 @@ define([
 						href: "/workspace" + ws.path + "/Feature%20Groups",
 						innerHTML: "Feature Groups"
 					},d)
+
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Experiment%20Groups",
+						innerHTML: "Experiment Groups"
+					},d)
+
 				}
 			})
 		},
