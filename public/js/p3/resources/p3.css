@@ -767,33 +767,49 @@ div.pubmed ul li {
 }
 
 .PerspectiveHeader {
-	background: #efefef;
-	margin:0px;
-	padding: 4px;
-	border: 2px solid #76a72d;
-	border-radius:2px;
+	/*background: #efefef;*/
+	margin:0;
+	padding: 0;
+	/*border: 2px solid #76a72d;*/
+	/*border-radius:2px;*/
 }
 
 .patric .PerspectiveQuery,
 .patric .PerspectiveTotalCount {
-    vertical-align:top;
-    font-size: 1.25em;
+    /*vertical-align:top;*/
+    /*font-size: 1.25em;*/
+}
+
+.patric .PerspectiveQuery .current {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #76a72d;
 }
 
 .patric .PerspectiveTotalCount {
 	color: #76a72d;
-	font-weight: bold;
+	/*font-weight: bold;*/
 }
 
 .patric .PerspectiveType {
-    font-size:1.1em;vertical-align:top;margin-top:2px;
+    /*font-size:1.1em;*/
+    /*vertical-align:top;*/
+    /*margin-top:2px;*/
 }
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
-    font-size:3em;float:left;margin-right:4px;color:#76a72d;margin-top:4px;margin:4px;
+    font-size:2.4em;
+    float:left;
+    color:#76a72d;
+    margin:4px;
+    padding-right: 3px;
+}
+
+.patric.claro .breadcrumb.dijitContentPane {
+    padding: 8px 8px 3px 8px;
 }
 
 .patric.claro .dijitButtonNode {
-    background-image: none;;
+    background-image: none;
 }
 
 
@@ -835,11 +851,21 @@ div.pubmed ul li {
 }
 
 .WarningPanel {
-	margin:0px;margin:4px;background: #f9ff85;padding:4px;border:0px solid #aaa;border-radius:4px;font-weight:200;
+	margin:4px;
+    background: #f9ff85;
+    padding:4px;
+    border:0px solid #aaa;
+    border-radius:4px;
+    font-weight:200;
 }
 
 .WarningBanner {
-	background: #f9ff85;text-align:left;margin:4px;margin-bottom: 0px;margin-top: 0px;padding:4px;border:0px solid #aaa;border-radius:4px;
+	background: #f9ff85;
+    text-align:left;
+    margin: 0 4px;
+    padding:4px;
+    border:0px solid #aaa;
+    border-radius:4px;
 }
 
 .patric .fa.icon-caret-down.noHoverIcon:hover{

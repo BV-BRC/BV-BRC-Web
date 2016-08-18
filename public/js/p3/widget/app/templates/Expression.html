@@ -37,6 +37,12 @@
 					</select>
 				</div>
 			</div>
+            <div class="approw">
+                <div class="text-align:left;">
+                    <label>Target Genome</label><br>
+                    <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome_id" maxHeight=200 style="width:90%" data-dojo-props="placeHolder: 'Optional'", required="false" data-dojo-attach-point="genome_nameWidget"></div>
+                </div> 
+            </div>
 			
 		</div>
 		</td>
@@ -62,12 +68,12 @@
 				<div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description" style="width:100%" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment description must be provided.',trim:true,placeHolder:'Description'"></div>
 				</div>
 			</div>
-                       <div class="approw">
-                                <div class="appField">
-                                        <label>Organism Name</label><br>
-                                        <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200 style="width:100%" required="false" data-dojo-attach-point="scientific_nameWidget"></div>
-                                </div>
-                        </div>
+            <div class="approw">
+                    <div class="appField">
+                            <label>Organism Name</label><br>
+                            <div data-dojo-type="p3/widget/TaxonNameSelector" name="organism" maxHeight=200 style="width:100%" required="false" data-dojo-attach-point="scientific_nameWidget"></div>
+                    </div>
+            </div>
 
 			<div class="approw">
 				<div class="appField">

@@ -84,12 +84,29 @@ define("p3/widget/viewer/Genome", [
 		},
 
 		buildHeaderContent: function(genome){
-			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
-			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
-			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
-			});
-			return out.join(" &raquo; ") + " &raquo; " + genome.genome_name;
+
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(taxon){
+				var taxon_lineage_names = taxon.lineage_names;
+				var taxon_lineage_ids = taxon.lineage_ids;
+				var taxon_lineage_ranks = taxon.lineage_ranks;
+
+				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+				var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+					return visibleRanks.indexOf(rank) > -1;
+				}).map(function(rank){
+					return taxon_lineage_ranks.indexOf(rank);
+				});
+
+				var out = visibleIndexes.map(function(idx){
+					return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+				});
+				this.queryNode.innerHTML = out.join(" &raquo; ") + " &raquo; " + '<span class="current">' + genome.genome_name + '</span>';
+			}));
 		},
 
 		_setGenomeAttr: function(genome){
@@ -99,7 +116,8 @@ define("p3/widget/viewer/Genome", [
 
 			// this.viewHeader.set("content", this.buildHeaderContent(genome));
 
-			this.queryNode.innerHTML = this.buildHeaderContent(genome);
+			// this.queryNode.innerHTML = this.buildHeaderContent(genome);
+			this.buildHeaderContent(genome);
 			domConstruct.empty(this.totalCountNode);
 			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// var activeTab = this[active];
@@ -120,8 +138,7 @@ define("p3/widget/viewer/Genome", [
 
 		createOverviewPanel: function(){
 			return new GenomeOverview({
-				title: "Genome Overview",
-				style: "overflow:auto;",
+				title: "Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
