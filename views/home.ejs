@@ -11,10 +11,10 @@
 	] %>
 
 	<% var flows = [
-		{name: "Annotate and Assemble Genomes", rel: "carousel_genomics", background: "#34698e"},
-		{name: "Comparative Genomics", rel: "carousel_comparative_genomics", background: "#34698e"},
-		{name: "Transcriptomics", rel: "carousel_transcriptomics", background: "#34698e"},
-		{name: "Variation Analysis", rel: "carousel_variation_analysis", background: "#34698e"}
+		{name: "FIRST US CASE", secondary: "COLISTIN-RESISTANT E. COLI", rel: "carousel_news1", background: "#34698e"},
+		{name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_news2", background: "#34698e"},
+		{name: "ASSEMBLE AND ANNOTATE",secondary: "GENOMES", rel: "carousel_news3", background: "#34698e"},
+		{name: "SUPPORTING",secondary: "THE TB COMMUNITY", rel: "carousel_news4", background: "#34698e"}
 	] %>
 
 	<% var workShops = [
@@ -28,7 +28,7 @@
 
 
 
-<div>
+<div class="home"kkkjj>
 
 	<div style="background-color:#f3f3f3;padding-top:10px;">
 		<div class="layer">
@@ -36,9 +36,9 @@
 			<% include Banner%>
 		</div>
 		<div class="layer" style="text-align: center;margin-bottom:0px;">
-			<div data-dojo-type="dijit/layout/StackContainer" style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;" id="p3carousel">
-
-				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">
+			<div data-dojo-type="dijit/layout/StackContainer" class="carousel" style="background:#f3f3f3;width:100%;margin: auto;margin-top:-1px;margin-bottom:0px;padding:4px;" id="p3carousel">
+<!--
+				<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="id:'carousel_home'">		
 					<table style="width:100%;margin-right:4px;">
 						<tr>
 							<td style="width: 200px;padding:0px;vertical-align:top;border:4px solid #629821;background:#fff;border-radius:4px;">
@@ -101,9 +101,27 @@
 						</tr>
 					</table>
 				</div>
+-->
 
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news1" class="CarouselContent showOnLoad dijitHidden">
+				<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2016/05/Screen-Shot-2016-05-27-at-1.18.24-PM1.png"><h2 class="xxxl sans-alternate upper highlight-e">First US Case of E. Coli Resistant to Colistin</h2><h3 class="xl highlight-f upper far"></h3><p>The assembled genome of Colistin-resistant <em>E. coli</em> MRSN 388634 is now available in PATRIC <a href="https://www.patricbrc.org/portal/portal/patric/Genome?cType=genome&amp;cId=562.10576">here</a>. Sequence reads for MRSN388634 have been deposited in the NCBI Short Read Archive by researchers at the Walter Reed Army Institute of Research and Walter Reed National Military Medical Center under Accession number SRP075674. The authors report the presence of mcr-1 in an <em>E. coli</em> cultured from a patient with a urinary tract infection in the United States. The early version of the publication can be found at “<a href="http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf">http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf</a>”.
 
-			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics" class="showOnLoad dijitHidden">
+	A provisional assembly and annotation is provided in PATRIC using the PATRIC Genome Assembly and Genome Annotation services and can be accessed <a href="https://www.patricbrc.org/portal/portal/patric/Genome?cType=genome&amp;cId=562.10576">here</a>. We will provide the GenBank version of the assembly once the genome becomes available in GenBank. We would like to thank the members of the Walter Reed team for their early release of the data in the Short Read Archive.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href=" https://www.patricbrc.org/portal/portal/patric/Genome?cType=genome&amp;cId=562.10576">Genome</a></p></div>
+			</div>
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news2" class="CarouselContent showOnLoad dijitHidden">
+<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg"><h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2><h3 class="xl highlight-f upper far">for Infectious Disease Research</h3><p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics through gene mutation or acquisition of antibiotic resistance genes. &nbsp;PATRIC collects known antibiotic resistance genes from reputed external databases and publications and maps them to homologous genes using BLASTP, so you can easily find and analyze them with PATRIC tools. &nbsp;We also incorporate antibiotic susceptibility testing results as additional genome metadata.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="AntibioticResistance">Explore Data</a></p></div>
+			</div>
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news3" class="CarouselContent showOnLoad dijitHidden">
+			<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2015/03/Assemble-Annotate_carousel2.png"><h2 class="xxxl sans-alternate upper highlight-e">Assemble and Annotate</h2><h3 class="xl highlight-f upper far">Your Genome Sequences</h3><p>PATRIC's new Genome Assembly Service App performs automatic genome assembly using the latest computational tools. Single or multiple assemblers can be invoked to compare results. PATRIC's new&nbsp;Genome Annotation Service App utilizes the RASTtk (Rapid Annotation using Subsystem Technology tookit) to enables researchers to build custom annotation pipelines for annotation of bacterial and archaeal genomes. &nbsp;These services are delivered through a new PATRIC Workspace that also supports other services including Differential Expression.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="http://enews.patricbrc.org/feature/assemble-and-annotate-your-genome-sequences/">LEARN MORE</a></p></div>
+			</div>
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news4" class="CarouselContent showOnLoad dijitHidden">
+			<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2013/05/Mycobacterium_tuberculosis_14313982_1.jpg"><h2 class="xxxl sans-alternate upper highlight-e">Supporting the TB Research Community</h2><h3 class="xl highlight-f upper far">THROUGH NEW TB@PATRIC RESOURCES</h3><p>PATRIC announces new web-based features designed to serve TB researchers worldwide. This resource provides fast searching and powerful comparative analysis tools for all <i>Mycobacterium tuberculosis</i> genomes, including the H37Rv reference genome, its variants and other members in the tuberculosis complex. Also included are important reference genomes, <i>M. smegmatis</i> and <i>M. marinum</i>.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="https://www.patricbrc.org/portal/portal/patric/TB">Visit TB@PATRIC</a></p></div>
+			</div>
+
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_comparative_genomics" class="CarouselContent showOnLoad dijitHidden">
 				<div style="font-weight:bold;font-size:1.2em;margin-bottom:10px;">Comparative Genomics Workflow</div>
 				<table style="width:100%;margin-right:4px;">
 						<tr>
@@ -186,23 +204,74 @@
 			</div>
 		</div>
 	</div>
+
+
+	<div style="margin:0px;padding:0px;background: #5a8621;margin-bottom:4px; box-shadow:0px 0px 96px -23px rgba(0,0,0,0.75);z-index:1000;position: relative;">
+		<div style="margin:auto;width:925px;padding:0px;" >
+			<table style="width:100%" cellspacing="0" cellpadding="0">
+				<tbody>
+					<tr>
+						<% flows.forEach(function(svc,index) { %>
+							<td style="width:25%" class="HomeServiceLink<% if (index<1) { %> selected <% } %>" rel="<%- svc.rel %>">
+								<H3 class="highlight-b"><%- svc.name %></H3>
+								<H4><%- svc.secondary %></H4>
+							</td>
+						<% }) %>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 	<div class="homeBottomSection">
 		<div class="layer" style="text-align: center;">
-
-			<h1>Common Workflows</h1>
-
-			<div style="margin-bottom:12px;">
-				<% flows.forEach(function(svc,index) { %>
-					<div class="HomeServiceLink" rel="<%- svc.rel %>" style="background-color:<%- svc.background %>">
-						<span><%- svc.name %></span>
-					</div>
-				<% }) %>
-
-			</div>
 			<table style="width: 100%">
 				<tr>
-					<td style="vertical-align:top;width:60%;">
-						<div class="section-title">Recent News</div>
+					<td style="vertical-align:top;width:70%;">
+
+						<article class="dlp-hp">
+							<h2 class="wp-headline section-title section-title-b"><span class="wrap"><span class="wrap">Browse Data</span></span></h2>
+							<ul class="no-decoration no-underline-links">
+								<li class="first"><figure><a href="Genomes"><img src="/patric/images/dlp-hp-genomes.png" alt="Genomes"></a>
+									<figcaption>GENOMES</figcaption>
+								</figure></li>
+								<li><figure><a href="GenomicFeatures"><img src="/patric/images/dlp-hp-features.png" alt="Genomic Features"></a>
+									<figcaption>GENOMIC FEATURES</figcaption>
+								</figure></li>
+								<li><figure><a href="SpecialtyGenes"><img src="/patric/images/dlp-hp-specialtygenes.png" alt="Specialty Genes"></a>
+									<figcaption>SPECIALTY GENES</figcaption>
+								</figure></li>
+								<li><figure><a href="ProteinFamilies"><img src="/patric/images/dlp-hp-proteins.png" alt="Protein Families"></a>
+									<figcaption>PROTEIN FAMILIES</figcaption>
+								</figure></li>
+								<li><figure><a href="Pathways"><img src="/patric/images/dlp-hp-pathways.png" alt="Pathways"></a>
+									<figcaption>PATHWAYS</figcaption>
+								</figure></li>
+								<li class="last"><figure><a href="Transcriptomics"><img src="/patric/images/dlp-hp-transcriptomics.png" alt="Transcriptomic Experiments"></a>
+									<figcaption>EXPERIMENTS</figcaption>
+								</figure></li>
+							</ul>
+						</article>
+
+						<article class="tools" style="overflow:hidden;">
+					
+						<h2 class="wp-headline section-title section-title-b tools_headline" ><span class="wrap">What Can I Do @ PATRIC?</span></h2>
+					<div>
+						<div class="column" style="width: 311px;display:inline-block;vertical-align:top;float:left;margin-right:10px;">
+							<ul class="no-decoration no-underline-links"><li class="clear"><figure class="figure-right"><a href="/app/Assembly"><img src="http://enews.patricbrc.org/wp-content/uploads/2015/03/Assembly-thumb-100x75.png" alt="Genome Assembly"></a></figure><h4 class="bold"><a href="/app/Assembly">Genome Assembly</a></h4><p>The Genome Assembly Service App can be used to perform an automatic genome assembly using the latest computational tools. Single or multiple assemblers can be invoked to compare results.&nbsp;<strong>Note:&nbsp;</strong><em>You must have a PATRIC user account and be logged in to use this service.</em></p></li><li class="clear"><figure class="figure-right"><a href="FIGfam?cType=taxon&amp;cId=131567&amp;dm=&amp;bm=tool"><img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/protein_family_sorter_for_homepage_tool.png" alt="Protein Family Sorter"></a></figure><h4 class="bold"><a href="FIGfam?cType=taxon&amp;cId=131567&amp;dm=&amp;bm=tool">Protein Family Sorter</a></h4><p>Compares protein families across closely related or diverse groups of genomes, visualizes them using interactive heatmaps, and generates multiple sequence alignments and phylogenetic trees for individual families. The heatmap view is an interactive visualization tool that provides an overview of the distribution of proteins across a selected set of genomes.</p></li><li class="clear"><figure class="figure-right"><a href="GenomeList?cType=taxon&amp;cId=2&amp;dataSource=&amp;displayMode=&amp;pk="><img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/collage-100x75-05.png" alt="Genome Metadata"></a></figure><h4 class="bold"><a href="GenomeList?cType=taxon&amp;cId=2&amp;dataSource=&amp;displayMode=&amp;pk=">Genome Metadata</a></h4><p>Supports searching for and locating genomes of interest based on various combinations of 61 different metadata fields. For instance, all genomes that have been isolated from humans, genomes related by phylogeny, or genomes related by lifestyle.</p></li></ul>
+						</div>
+						<div class="column last" >
+							<ul class="no-decoration no-underline-links"><li class="clear"><figure class="figure-right"><a href="/app/Annotation"><img src="http://enews.patricbrc.org/wp-content/uploads/2012/05/Genome-Annotation-thumb-100x70.png" alt="Genome Annotation"></a></figure><h4 class="bold"><a href="/app/Annotation">Genome Annotation</a></h4><p>The Genome Annotation Service is a fully-automated pipeline for annotating bacterial and archaeal genomes using RAST (Rapid Annotation using Subsystem Technology) to provide high quality genome annotations.&nbsp;<strong>Note:&nbsp;</strong><em>You must have a PATRIC user account and be logged in to use this service.</em></p></li><li class="clear"><figure class="figure-right"><a href="PathwayFinder?cType=taxon&amp;cId=&amp;dm="><img src="http://enews.patricbrc.org/wp-content/uploads/2012/03/comparative_pathways_for_homepage_tool.png" alt="Comparative Pathway Tool"></a></figure><h4 class="bold"><a href="PathwayFinder?cType=taxon&amp;cId=&amp;dm=">Comparative Pathway Tool</a></h4><p>Supports comparison of consistently annotated metabolic pathways across closely related or diverse groups of genomes and visualizes them using interactive KEGG maps and heatmaps. The heatmap view is an interactive visualization&nbsp;tool that provides an overview of the distribution of genomes across the set of EC numbers within a selected pathway.</p></li><li class="clear"><figure class="figure-right"><a href="TranscriptomicsGeneExp?cType=feature&amp;cId=18154431&amp;sampleId=&amp;colId=&amp;log_ratio=&amp;zscore"><img src="http://enews.patricbrc.org/wp-content/uploads/2013/06/gene_page_homepage_tool.jpg" alt="Gene Page Transcriptomics"></a></figure><h4 class="bold"><a href="TranscriptomicsGeneExp?cType=feature&amp;cId=18154431&amp;sampleId=&amp;colId=&amp;log_ratio=&amp;zscore">Gene Page Transcriptomics</a></h4><p>Summarizes all comparisons in which a gene is differentially expressed and associated metadata such as Strain, Gene Modification, and Experimental Condition.&nbsp;Expression value based filters and metadata graphical summaries enable quick discovery of top experimental conditions and gene manipulations related to the differential expression of the gene. <b>Note:</b> <i>Links to example Gene Page for </i><i>VBIMycTub87468_2933</i><i>.&nbsp;</i></p></li></ul>
+						</div>
+						<!-- <div class="right">
+							<a class="double-arrow-link" href="Tools">Show all available
+								tools</a>
+						</div>
+						-->
+					</div>
+				</article>
+
+
+						<h2 class="section-title section-title-b"><span class="wrap">Recent News</span></h2>
 						<% news.forEach(function(svc,index) { %>
 							<div style="text-align:left;margin:0px;margin-top:10px;margin-left:4px;"><span style="padding:4px;color:#fff;background:#000;"><%- new Date(Date.parse(svc.pubDate)).toLocaleDateString() %></span></div>
 							<div style="border:1px solid #ddd;text-align:center;padding-top:6px;margin:4px;margin-bottom:8px;margin-top:0px;">
@@ -214,8 +283,8 @@
 					</td>
 					<td style="width:10px;"></td>
 					<td style="vertical-align:top;">
-						<div class="section-title">Top 10 Genera	</div>
-						<div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10" style="width:100%;margin:4px;margin-bottom: 5px;"></div>
+						<h2 class="section-title section-title-b"><span class="wrap">Top 10 Genera</span></h2>
+						<div data-dojo-type="p3/widget/TaxonomyTopNSummary" data-dojo-props="count:10" style="width:100%;margin:0px;"></div>
 						<div style="text-align:right;"><a class="navigationLink" href="/view/Taxonomy/2">Explore All Genera</a></div>
 						<% include workshops %>
 					</td>
