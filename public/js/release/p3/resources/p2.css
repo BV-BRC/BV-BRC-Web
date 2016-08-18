@@ -1754,30 +1754,37 @@ a.button {
 h1 {
   font-size: 30px;
   line-height: 32px;
+  font-weight: normal;
   margin-bottom: 0.5em; }
 h2 {
   font-size: 20px;
   line-height: 28px;
+  font-weight: normal;
   margin-bottom: 0.125em; }
 h3 {
   font-size: 16px;
   line-height: 20px;
+  font-weight: normal;
   margin-bottom: 0.125em; }
 h4 {
   font-size: 14px;
   line-height: 16px;
+  font-weight: normal;
   margin-bottom: 0.25em; }
 h5 {
   font-size: 10px;
   line-height: 12px;
+  font-weight: normal;
   margin-bottom: 1.50em; }
 h6 {
   font-size: 10px;
   line-height: 12px;
+  font-weight: normal;
   margin-bottom: 1.50em; }
 h2.xxxl {
   font-size: 40px;
   line-height: 36px; }
+  font-weight: 100;
 h2.xxl {
   font-size: 30px; }
 h2.xl {
