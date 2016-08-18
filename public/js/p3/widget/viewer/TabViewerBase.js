@@ -1,18 +1,10 @@
 define([
 	"dojo/_base/declare", "./Base", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../GenomeOverview",
-	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
-	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer" /*,"JBrowse/Browser"*/, "../InteractionsContainer"
+	"../formatter", "../TabContainer"
 ], function(declare, ViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, GenomeOverview,
-			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
-			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer /*, JBrowser*/, InteractionsContainer){
+			formatter, TabContainer){
 	return declare([ViewerBase], {
 		"query": null,
 		genome_id: "",
@@ -25,7 +17,6 @@ define([
 				return;
 			}
 
-			// console.log("    Cal setActivePanelState");
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
 					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
@@ -51,7 +42,6 @@ define([
 					console.log("No view-tab supplied in State Object");
 				}
 			}
-
 		},
 
 		setActivePanelState: function(){
@@ -61,20 +51,26 @@ define([
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({
 				content: "",
+				"class": "breadcrumb",
 				region: "top"
 			});
 
-
-			headerContent = domConstruct.create("div",{"class":"PerspectiveHeader", style:"padding:0px;"});
+			var headerContent = domConstruct.create("div", {"class": "PerspectiveHeader"});
 			domConstruct.place(headerContent, this.viewHeader.containerNode, "last");
 
-			domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass},headerContent);
-			this.perspectiveTypeNode = domConstruct.create("span",{"class": "PerspectiveType", innerHTML: this.perspectiveLabel},headerContent)
-			domConstruct.create("br",{},headerContent);
-			this.queryNode = domConstruct.create("span",{"class": "PerspectiveQuery"},headerContent)
-			this.totalCountNode = domConstruct.create("span", {"class": "PerspectiveTotalCount", innerHTML: "( loading... )"},headerContent);;
+			domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass}, headerContent);
 
+			domConstruct.create("div", {
+				"class": "PerspectiveType",
+				innerHTML: this.perspectiveLabel
+			}, headerContent);
 
+			this.queryNode = domConstruct.create("span", {"class": "PerspectiveQuery"}, headerContent);
+
+			this.totalCountNode = domConstruct.create("span", {
+				"class": "PerspectiveTotalCount",
+				innerHTML: "( loading... )"
+			}, headerContent);
 
 			this.viewer = new TabContainer({
 				region: "center"

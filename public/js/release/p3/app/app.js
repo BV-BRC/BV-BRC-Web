@@ -183,13 +183,18 @@ define("p3/app/app", [
 				if (target.attributes.rel && target.attributes.rel.value){
 					rel = target.attributes.rel.value;
 				}else{
-					rel = target.parentNode.attributes.rel.value;
+					target = target.parentNode;
+					rel = target.attributes.rel.value;
 				}
 
 				console.log("SELECT ", rel);
 				console.log("Child: ", Registry.byId(rel))
 				Registry.byId("p3carousel").selectChild(Registry.byId(rel));
+				query(".HomeServiceLink").removeClass("selected");
+				domClass.add(target,"selected");
 
+
+				/*
 				if (timer){
 					clearTimeout(timer);
 				}
@@ -197,6 +202,7 @@ define("p3/app/app", [
 				timer = setTimeout(function(){
 					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
 				},120000)
+				*/
 			});
 
 			on(document, ".loginLink:click", showAuthDlg);

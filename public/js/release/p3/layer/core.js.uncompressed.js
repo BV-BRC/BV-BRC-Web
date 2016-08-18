@@ -315,6 +315,16 @@ define([
 						href: "/workspace" + ws.path + "/Feature%20Groups",
 						innerHTML: "Feature Groups"
 					},d)
+
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Experiment%20Groups",
+						innerHTML: "Experiment Groups"
+					},d)
+
 				}
 			})
 		},
@@ -5055,13 +5065,18 @@ define([
 				if (target.attributes.rel && target.attributes.rel.value){
 					rel = target.attributes.rel.value;
 				}else{
-					rel = target.parentNode.attributes.rel.value;
+					target = target.parentNode;
+					rel = target.attributes.rel.value;
 				}
 
 				console.log("SELECT ", rel);
 				console.log("Child: ", Registry.byId(rel))
 				Registry.byId("p3carousel").selectChild(Registry.byId(rel));
+				query(".HomeServiceLink").removeClass("selected");
+				domClass.add(target,"selected");
 
+
+				/*
 				if (timer){
 					clearTimeout(timer);
 				}
@@ -5069,6 +5084,7 @@ define([
 				timer = setTimeout(function(){
 					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
 				},120000)
+				*/
 			});
 
 			on(document, ".loginLink:click", showAuthDlg);
@@ -25637,6 +25653,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -59308,18 +59325,10 @@ define([
 define([
 	"dojo/_base/declare", "./Base", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../GenomeOverview",
-	"dojo/request", "dojo/_base/lang", "../FeatureGridContainer", "../SpecialtyGeneGridContainer",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
-	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
-	"../TranscriptomicsContainer" /*,"JBrowse/Browser"*/, "../InteractionsContainer"
+	"../formatter", "../TabContainer"
 ], function(declare, ViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, GenomeOverview,
-			xhr, lang, FeatureGridContainer, SpecialtyGeneGridContainer,
-			ActionBar, ContainerActionBar, PathwaysContainer, ProteinFamiliesContainer,
-			DiseaseContainer, PublicationGridContainer, CircularViewerContainer,
-			TranscriptomicsContainer /*, JBrowser*/, InteractionsContainer){
+			formatter, TabContainer){
 	return declare([ViewerBase], {
 		"query": null,
 		genome_id: "",
@@ -59332,7 +59341,6 @@ define([
 				return;
 			}
 
-			// console.log("    Cal setActivePanelState");
 			if(!state.hashParams){
 				if(oldState.hashParams && oldState.hashParams.view_tab){
 					state.hashParams = {"view_tab": oldState.hashParams.view_tab}
@@ -59358,7 +59366,6 @@ define([
 					console.log("No view-tab supplied in State Object");
 				}
 			}
-
 		},
 
 		setActivePanelState: function(){
@@ -59368,20 +59375,26 @@ define([
 			this.inherited(arguments);
 			this.viewHeader = new ContentPane({
 				content: "",
+				"class": "breadcrumb",
 				region: "top"
 			});
 
-
-			headerContent = domConstruct.create("div",{"class":"PerspectiveHeader", style:"padding:0px;"});
+			var headerContent = domConstruct.create("div", {"class": "PerspectiveHeader"});
 			domConstruct.place(headerContent, this.viewHeader.containerNode, "last");
 
-			domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass},headerContent);
-			this.perspectiveTypeNode = domConstruct.create("span",{"class": "PerspectiveType", innerHTML: this.perspectiveLabel},headerContent)
-			domConstruct.create("br",{},headerContent);
-			this.queryNode = domConstruct.create("span",{"class": "PerspectiveQuery"},headerContent)
-			this.totalCountNode = domConstruct.create("span", {"class": "PerspectiveTotalCount", innerHTML: "( loading... )"},headerContent);;
+			domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass}, headerContent);
 
+			domConstruct.create("div", {
+				"class": "PerspectiveType",
+				innerHTML: this.perspectiveLabel
+			}, headerContent);
 
+			this.queryNode = domConstruct.create("span", {"class": "PerspectiveQuery"}, headerContent);
+
+			this.totalCountNode = domConstruct.create("span", {
+				"class": "PerspectiveTotalCount",
+				innerHTML: "( loading... )"
+			}, headerContent);
 
 			this.viewer = new TabContainer({
 				region: "center"
@@ -88369,7 +88382,7 @@ define([
 		},
 */
 		render: function(){
-			//console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
 				// console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
 				this.renderBackground();
@@ -88391,13 +88404,13 @@ define([
 			var sections={}
 			data.forEach(function(d){
 				totalLength += d.length;
-				//console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+				console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
 			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
-			//console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+			console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
 
 			var gap = (this.gap);
 			data.forEach(lang.hitch(this,function(d,index){
@@ -88410,7 +88423,7 @@ define([
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
 				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
-				//console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+				console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
 
 				var innerStart= {
 					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
@@ -88544,7 +88557,7 @@ define([
 				}	
 			}));
 
-			//console.log("Set Sections: ", sections);
+			console.log("Set Sections: ", sections);
 			this.set("sections", sections);
 
 		}
@@ -90189,7 +90202,7 @@ define([
 
 		_setTaxon_idAttr: function(id){
 			// console.log("*** SET TAXON ID ", id);
-			if (id && this.taxon_id==id ){
+			if(id && this.taxon_id == id){
 				//console.log("Taxon ID Already set, skip");
 				return;
 			}
@@ -90210,7 +90223,7 @@ define([
 			// console.log("onSetTaxonomy: ", taxonomy);
 			this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
-			this.taxonomy = this.state.taxonomy=taxonomy;
+			this.taxonomy = this.state.taxonomy = taxonomy;
 			// this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
 			this.setActivePanelState();
 			// this.overview.set('taxonomy', taxonomy);
@@ -90228,20 +90241,21 @@ define([
 
 			var parts = state.pathname.split("/");
 
-
 			state.taxon_id = parts[parts.length - 1]
 			this.set('taxon_id', state.taxon_id);
-	
+
 			// this.set("taxon_id", parts[parts.length - 1]);
 			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
-			state.search = state.search.replace(s,"");
+			state.search = state.search.replace(s, "");
 			if(state.search){
 				console.log("GENERATE ENGLISH QUERY for ", state.search, s);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
 				var sx = [s];
-				if (state.search && state.search!=s) { sx.push(state.search) }
-				state.search = sx.join("&").replace("&&","&");
-				if (this.taxonomy){
+				if(state.search && state.search != s){
+					sx.push(state.search)
+				}
+				state.search = sx.join("&").replace("&&", "&");
+				if(this.taxonomy){
 					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
 				}
 
@@ -90249,18 +90263,18 @@ define([
 				// console.log("USE state.search: ", s);
 				state.search = s;
 				this.filteredTaxon = false;
-				if (this.taxonomy){
+				if(this.taxonomy){
 					this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
 				}
 			}
 
-			if (!state.taxonomy && state.taxon_id){
+			if(!state.taxonomy && state.taxon_id){
 				// console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
-				if (oldState && oldState.taxon_id){
+				if(oldState && oldState.taxon_id){
 					// console.log("oldState.taxon_id: ", oldState.taxon_id)
-					
-					if ((state.taxon_id == oldState.taxon_id)){
-						if (oldState.taxonomy || this.taxonomy){
+
+					if((state.taxon_id == oldState.taxon_id)){
+						if(oldState.taxonomy || this.taxonomy){
 							// console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
 							state.taxonomy = oldState.taxonomy || this.taxonomy;
 						}else{
@@ -90271,11 +90285,14 @@ define([
 			}
 
 			if(!state.genome_ids){
-				 // console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
+				// console.log("	NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
 				if(state.search == oldState.search){
 					// console.log("		Same Search")
 					// console.log("		OLD Genome_IDS: ", oldState.genome_ids);
-					this.set("state", lang.mixin({}, state, {genome_ids: oldState.genome_ids, referenceGenomes:oldState.referenceGenomes||[]}));
+					this.set("state", lang.mixin({}, state, {
+						genome_ids: oldState.genome_ids,
+						referenceGenomes: oldState.referenceGenomes || []
+					}));
 					return;
 				}else{
 					this.set("query", state.search);
@@ -90325,76 +90342,116 @@ define([
 			}
 			switch(active){
 				case "overview":
-					if (this.state && this.state.genome_ids){
-						activeTab.set('state', lang.mixin({}, this.state,{search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))", hashParams: lang.mixin({},this.state.hashParams)}));
+					if(this.state && this.state.genome_ids){
+						activeTab.set('state', lang.mixin({}, this.state, {
+							search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))",
+							hashParams: lang.mixin({}, this.state.hashParams)
+						}));
 					}
 					break;
 				case "taxontree":
 					// activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
-					activeTab.set('state', lang.mixin({}, this.state, {search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")", hashParams: lang.mixin({},this.state.hashParams)}));
+					activeTab.set('state', lang.mixin({}, this.state, {
+						search: "eq(taxon_id," + encodeURIComponent(this.state.taxon_id) + ")",
+						hashParams: lang.mixin({}, this.state.hashParams)
+					}));
 					break;
 				case "phylogeny":
 				case "genomes":
-					activeTab.set("state", lang.mixin({},this.state));
+					activeTab.set("state", lang.mixin({}, this.state));
 					break;
 				default:
 					var activeQueryState;
 					var prop = "genome_id";
-					if (active == "transcriptomics"){ prop = "genome_ids"; }
+					if(active == "transcriptomics"){
+						prop = "genome_ids";
+					}
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
 					// console.log("ACTIVE MAX: ", activeMax);
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
 						//console.log("Found Genome_IDS in state object");
-						if (this.state.genome_ids.length <= activeMax){
+						if(this.state.genome_ids.length <= activeMax){
 							// console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
-							activeQueryState = lang.mixin({}, this.state, {search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
-						} else if (this.state.referenceGenomes && this.state.referenceGenomes.length<=activeMax){
-							var ids = this.state.referenceGenomes.map(function(x){ return x.genome_id })
+							activeQueryState = lang.mixin({}, this.state, {
+								search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams)
+							});
+						}else if(this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax){
+							var ids = this.state.referenceGenomes.map(function(x){
+								return x.genome_id
+							})
 							// console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
-							activeQueryState = lang.mixin({}, this.state, {genome_ids:ids, autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
-						} else if (this.state.referenceGenomes) {
-							var referenceOnly = this.state.referenceGenomes.filter(function(x){ return x.reference_genome=="Reference"}).map(function(x){ return x.genome_id })
-							console.log("USING ONLY REFERENCE GENOMES. Count: " +  referenceOnly.length);
-							if (referenceOnly.length<=activeMax){
+							activeQueryState = lang.mixin({}, this.state, {
+								genome_ids: ids,
+								autoFilterMessage: autoFilterMessage,
+								search: "in(" + prop + ",(" + ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams)
+							});
+						}else if(this.state.referenceGenomes){
+							var referenceOnly = this.state.referenceGenomes.filter(function(x){
+								return x.reference_genome == "Reference"
+							}).map(function(x){
+								return x.genome_id
+							})
+							console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
+							if(referenceOnly.length <= activeMax){
 								autoFilterMessage = "This tab has been filtered to view data limited to Reference Genomes in your view.";
-								activeQueryState = lang.mixin({}, this.state, {genome_ids:referenceOnly,autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + referenceOnly.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
-							}else if (!referenceOnly || referenceOnly.length<1){
+								activeQueryState = lang.mixin({}, this.state, {
+									genome_ids: referenceOnly,
+									autoFilterMessage: autoFilterMessage,
+									search: "in(" + prop + ",(" + referenceOnly.join(",") + "))",
+									hashParams: lang.mixin({}, this.state.hashParams)
+								});
+							}else if(!referenceOnly || referenceOnly.length < 1){
 								autoFilterMessage = "There are too many genomes in your view.  This tab will not show any data";
-								activeQueryState = lang.mixin({}, this.state, {genome_ids:[],referenceGenomsautoFilterMessage: autoFilterMessage, search: "",hashParams: lang.mixin({},this.state.hashParams)});
+								activeQueryState = lang.mixin({}, this.state, {
+									genome_ids: [],
+									referenceGenomsautoFilterMessage: autoFilterMessage,
+									search: "",
+									hashParams: lang.mixin({}, this.state.hashParams)
+								});
 							}
 						}
-						// console.log("gidQueryState: ", gidQueryState);
-						// console.log("Active Query State: ", activeQueryState);
-
 					}
 
-
-					if (activeQueryState && active=="proteinFamilies"){
-						activeQueryState.search="";
+					if(activeQueryState && active == "proteinFamilies"){
+						activeQueryState.search = "";
 					}
-
 
 					if(activeQueryState){
-						// console.log("Active Query State: ", activeQueryState);
-
 						activeTab.set("state", activeQueryState);
 					}else{
 						console.warn("MISSING activeQueryState for PANEL: " + active);
 					}
 					break;
 			}
-			// console.log("Set Active State COMPLETE");
 		},
 
 		buildHeaderContent: function(taxon){
-			var taxon_lineage_names = taxon.lineage_names.slice(1);
-			var taxon_lineage_ids = taxon.lineage_ids.slice(1);
-			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
+			var taxon_lineage_names = taxon.lineage_names;
+			var taxon_lineage_ids = taxon.lineage_ids;
+			var taxon_lineage_ranks = taxon.lineage_ranks;
+
+			var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+			var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+				return visibleRanks.indexOf(rank) > -1;
+			}).map(function(rank){
+				return taxon_lineage_ranks.indexOf(rank);
 			});
-			// console.log("buildHeaderContent filteredTaxon: ", this.filteredTaxon)
+
+			var lastVisibleIndex = visibleIndexes[visibleIndexes.length - 1];
+			var lastIndex = taxon_lineage_ranks.length - 1;
+
+			if(lastVisibleIndex < lastIndex){
+				visibleIndexes.push(taxon_lineage_ranks.length - 1);
+				lastVisibleIndex = visibleIndexes[visibleIndexes.length - 1];
+			}
+
+			var out = visibleIndexes.map(function(idx){
+				return '<a class="navigationLink' + ((idx === lastVisibleIndex) ? ' current' : '') + '" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+			});
 
 			if(this.filteredTaxon){
 				out.push(this.filteredTaxon);
@@ -92659,12 +92716,29 @@ define([
 		},
 
 		buildHeaderContent: function(genome){
-			var taxon_lineage_names = genome.taxon_lineage_names.slice(1);
-			var taxon_lineage_ids = genome.taxon_lineage_ids.slice(1);
-			var out = taxon_lineage_names.map(function(id, idx){
-				return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + id + '</a>';
-			});
-			return out.join(" &raquo; ") + " &raquo; " + genome.genome_name;
+
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", genome.taxon_id), {
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(taxon){
+				var taxon_lineage_names = taxon.lineage_names;
+				var taxon_lineage_ids = taxon.lineage_ids;
+				var taxon_lineage_ranks = taxon.lineage_ranks;
+
+				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+				var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+					return visibleRanks.indexOf(rank) > -1;
+				}).map(function(rank){
+					return taxon_lineage_ranks.indexOf(rank);
+				});
+
+				var out = visibleIndexes.map(function(idx){
+					return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+				});
+				this.queryNode.innerHTML = out.join(" &raquo; ") + " &raquo; " + '<span class="current">' + genome.genome_name + '</span>';
+			}));
 		},
 
 		_setGenomeAttr: function(genome){
@@ -92674,7 +92748,8 @@ define([
 
 			// this.viewHeader.set("content", this.buildHeaderContent(genome));
 
-			this.queryNode.innerHTML = this.buildHeaderContent(genome);
+			// this.queryNode.innerHTML = this.buildHeaderContent(genome);
+			this.buildHeaderContent(genome);
 			domConstruct.empty(this.totalCountNode);
 			// var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
 			// var activeTab = this[active];
@@ -92695,8 +92770,7 @@ define([
 
 		createOverviewPanel: function(){
 			return new GenomeOverview({
-				title: "Genome Overview",
-				style: "overflow:auto;",
+				title: "Overview",
 				id: this.viewer.id + "_" + "overview",
 				state: this.state
 			});
@@ -109823,6 +109897,31 @@ define([
 		},
 
 		buildHeaderContent: function(feature){
+
+			xhr.get(PathJoin(this.apiServiceUrl, "taxonomy", feature.taxon_id), {
+				headers: {
+					accept: "application/json"
+				},
+				handleAs: "json"
+			}).then(lang.hitch(this, function(taxon){
+				var taxon_lineage_names = taxon.lineage_names;
+				var taxon_lineage_ids = taxon.lineage_ids;
+				var taxon_lineage_ranks = taxon.lineage_ranks;
+
+				var visibleRanks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"];
+				var visibleIndexes = taxon_lineage_ranks.filter(function(rank){
+					return visibleRanks.indexOf(rank) > -1;
+				}).map(function(rank){
+					return taxon_lineage_ranks.indexOf(rank);
+				});
+
+				var out = visibleIndexes.map(function(idx){
+						return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+					});
+
+				this.queryNode.innerHTML = out.join(" &raquo; ");
+			}));
+
 			var content = [];
 			if(feature.hasOwnProperty('patric_id')){
 				content.push(feature.patric_id);
@@ -109837,9 +109936,9 @@ define([
 				content.push(feature.product);
 			}
 
-			return content.map(function(d){
-				return '<span><b>' + d + '</b></span>';
-			}).join(' <span class="pipe">|</span> ');
+			this.totalCountNode.innerHTML = "<br/>" + content.map(function(d){
+					return '<span><b>' + d + '</b></span>';
+				}).join(' <span class="pipe">|</span> ');
 		},
 
 		redirectToPATRICFeature: function(feature){
@@ -109873,8 +109972,9 @@ define([
 
 			this.feature = this.state.feature = feature;
 
-			this.queryNode.innerHTML = this.buildHeaderContent(feature);
-			domConstruct.empty(this.totalCountNode);
+			// this.queryNode.innerHTML = this.buildHeaderContent(feature);
+			this.buildHeaderContent(feature);
+			// domConstruct.empty(this.totalCountNode);
 
 			this.setActivePanelState();
 			this.resize();
@@ -110266,8 +110366,8 @@ define([
 
 			// single gene viewer
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
-			var rangeStart = (centerPos >= 1000) ? (centerPos - 1000) : 0;
-			var rangeEnd = (centerPos + 1000);
+			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
+			var rangeEnd = (centerPos + 3000);
 			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
