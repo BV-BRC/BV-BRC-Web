@@ -315,6 +315,16 @@ define([
 						href: "/workspace" + ws.path + "/Feature%20Groups",
 						innerHTML: "Feature Groups"
 					},d)
+
+					domConstruct.create("br",{},d);
+
+					domConstruct.create("a", {
+						'class': 'navigationLink',
+						"style": {"padding-left": "16px"},
+						href: "/workspace" + ws.path + "/Experiment%20Groups",
+						innerHTML: "Experiment Groups"
+					},d)
+
 				}
 			})
 		},
@@ -5055,13 +5065,18 @@ define([
 				if (target.attributes.rel && target.attributes.rel.value){
 					rel = target.attributes.rel.value;
 				}else{
-					rel = target.parentNode.attributes.rel.value;
+					target = target.parentNode;
+					rel = target.attributes.rel.value;
 				}
 
 				 0 && console.log("SELECT ", rel);
 				 0 && console.log("Child: ", Registry.byId(rel))
 				Registry.byId("p3carousel").selectChild(Registry.byId(rel));
+				query(".HomeServiceLink").removeClass("selected");
+				domClass.add(target,"selected");
 
+
+				/*
 				if (timer){
 					clearTimeout(timer);
 				}
@@ -5069,6 +5084,7 @@ define([
 				timer = setTimeout(function(){
 					Registry.byId("p3carousel").selectChild(Registry.byId("carousel_home"));
 				},120000)
+				*/
 			});
 
 			on(document, ".loginLink:click", showAuthDlg);
@@ -25637,6 +25653,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 

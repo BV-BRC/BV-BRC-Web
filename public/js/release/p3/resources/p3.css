@@ -1,4 +1,4 @@
-
+@import url("http://fonts.googleapis.com/css?family=Didact+Gothic");
 .dijitReset {
 	
 	margin:0;
@@ -8959,9 +8959,37 @@ background-color: #FF00FF;
 	font-size: .5em;
 }
 .carousel {
-	height: 250px;
-	background: black;
-	margin-top: 6px;
+	font-family: tahoma,arial,verdana,sans-serif;
+}
+.CarouselContent {
+	text-align: left;
+}
+.CarouselContent H2,
+.CarouselContent H3,
+.CarouselContent H4 {
+	font-weight: 100;
+	margin-bottom: .124em;
+	margin-top: 5px;
+}
+.CarouselContent IMG.right {
+	float: right;
+	margin-left: 20px;
+	height: 240px;
+}
+.CarouselContent .button {
+    padding: 5px 10px;
+    line-height: 1.1em;
+    text-decoration: none;
+    color: white;
+    border-radius: 5px;
+    display: inline-block;
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #86b834), color-stop(100%, #659626));
+    background-image: -webkit-linear-gradient(#86b834, #659626);
+    background-image: -moz-linear-gradient(#86b834, #659626);
+    background-image: -o-linear-gradient(#86b834, #659626);
+    background-image: -ms-linear-gradient(#86b834, #659626);
+    background-image: linear-gradient(#86b834, #659626);
+    border: rgba(101, 150, 37, 0.7) 1px outset;
 }
 .Drawer {
 	position: absolute;
@@ -10386,10 +10414,96 @@ TH.dgrid-cell.field-feature_type {
     border-radius: 4px;
     pointer-events: none;
 }
+.home {
+	font-size: 12px;
+}
+.home .section-title-b {
+    background: #c3c3c3;
+    border-radius: 0px;
+    text-align: left;
+    box-shadow: none;
+    padding-left: 0px;
+    margin-top: 12px;
+}
+.section-title span.wrap {
+    background: #fff;
+    padding-right: 0.3em;
+    text-transform: uppercase;
+    color: #666666;
+    font-weight: normal;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
 .homeBottomSection {
 	background: #fff;
 	margin-top: 0px;
 	padding:4px;
+}
+.home h2 {
+	font-size: 20px;
+}
+.home h4 {
+    font-size: 14px;
+    line-height: 16px;
+    margin-bottom: 0.25em;
+}
+.home figure {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	vertical-align: top;
+}
+.home ul {
+	margin:0px;
+}
+.dlp-hp ul li {
+    display: inline-table;
+}
+.tools ul li {
+	width: 310px;
+	vertical-align: top;
+	text-align: left;
+}
+.dlp-hp ul li {
+    vertical-align: bottom;
+    width: 103px;
+}
+.home .no-decoration {
+    padding-left: 0;
+}
+.home .no-decoration li {
+    background-image: none;
+    padding-left: 0;
+    margin-left: 0;
+    list-style: none;
+}
+.dlp-hp li {
+    line-height: 1.2;
+    margin: 5px 0;
+}
+.home figure img {
+    border: 0;
+    
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.home .two-thirds-col > .column .two-col {
+    overflow: hidden;
+    
+}
+.home .column .two-col .column {
+    display: inline;
+    float: left;
+    margin-right: 17px;
+    width: 311px;
+}
+.column.last {
+	display: inline;
+	    float: left;
+    margin-right: 0;
+    width: 311px;
 }
 html, body,
 body.patric {
@@ -10467,30 +10581,47 @@ iframe  {
 .patric .Authenticated .ShowWithoutAuth {
     display: none;
 }
+TD.HomeServiceLink {
+	border-spacing: 0 0;
+	border-collapse: separate; 
+}
 .HomeServiceLink {
-    width: 110px;
-    height: 110px;
-    line-height:110px;
-    background: #fff;
+    height: 75px;
     border:0px;
-    border: 3px solid transparent;
-    border-radius: 4px;
-    margin: 16px;
-    display: inline-block;
+    border: 1px solid transparent;
+    border-left: #87b934 1px solid;
+    border-right: #2a5d40 1px solid;
+    margin: 0px;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
-    box-shadow: 1px 2px 4px #333;
+}
+.HomeServiceLink.selected {
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #659626), color-stop(100%, #86b834));
+    background-image: -webkit-linear-gradient(#659626, #86b834);
+    background-image: -moz-linear-gradient(#659626, #86b834);
+    background-image: -o-linear-gradient(#659626, #86b834);
+    background-image: -ms-linear-gradient(#659626, #86b834);
+    background-image: linear-gradient(#659626, #86b834);
 }
 .HomeServiceLink:hover {
-    border-color: #629821;
 }
-.HomeServiceLink > SPAN {
-	vertical-align: middle;
-	display: inline-block;
-  	line-height: normal;  
+.HomeServiceLink H3,
+.HomeServiceLink H4 {
+  margin: 0;
+  padding:0px;
+  padding-left: 15px;
+  border: 0;
+  font-size: 14px;
+  font-family: "Didact Gothic",Arial, Helvetica, sans-serif; 
+  font-weight: 100;
+  text-align: left;
+  line-height: 16px;
+}
+.HomeServiceLink H4 {
 	color: #fff;
-	font-weight: bold;
+	font-size: 12px;
+	line-height: 14px;
 }
 table.p3basic {
     
@@ -10924,15 +11055,13 @@ table {
 }
 .menuHeader,
 .section-title {
-    background-color: #34698e;
-    color: #efefef;
-    padding: 2px;
-    padding-left: 20px;
-    border-radius: 6px;
-    border-top-left-radius: 25px;
-    border-bottom-right-radius: 25px;
-    box-shadow: 2px 2px 2px #555;
-    margin-bottom: 8px;
+	
+    background: #34598e;
+    border-radius: 0px;
+    text-align: left;
+    box-shadow: none;
+    padding-left: 0px;
+    margin-top: 12px;
 }
 .menuHeader {
     padding-left: 4px;
@@ -11038,6 +11167,7 @@ div.pubmed ul li {
 	color: #333;
 	cursor: default;
 }
+.HomeServiceLink .close,
 .close {
   margin-bottom: 2px; }
 .close2x {
@@ -11048,3 +11178,61 @@ div.pubmed ul li {
   margin-bottom: 1.6em; }
 .far4x {
   margin-bottom: 3.2em; }
+.sans-alternate {
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif; }
+.light {
+  color: #666666; }
+.highlight {
+  color: #1fa1c3; }
+.highlight-b {
+  color: #ccff99; }
+.highlight-c {
+  color: #227194; }
+.highlight-d {
+  color: #7bc4d8; }
+.highlight-e {
+  color: #09456f; }
+.highlight-f {
+  color: #87b934; }
+h1,h2,h3,h4,h5,h6 {
+	font-weight: 100;
+}
+h1 {
+  font-size: 3em;
+  line-height: 1;
+  margin-bottom: 0.50em; }
+h2 {
+  font-size: 2em;
+  margin-bottom: 0.75em; }
+h3 {
+  font-size: 1.5em;
+  line-height: 1;
+  margin-bottom: 1.00em; }
+h4 {
+  font-size: 1.2em;
+  line-height: 1.25;
+  margin-bottom: 1.25em; }
+h5 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 1.50em; }
+h6 {
+  font-size: 1em;
+  font-weight: bold; }
+h2.xxxl {
+  font-size: 40px;
+  line-height: 36px; }
+h2.xxl {
+  font-size: 30px; }
+h2.xl {
+  font-size: 26px; }
+h3.xl {
+  font-size: 20px; }
+.upper {
+    text-transform: uppercase;
+}
+.figure-right {
+    float: right;
+    display: inline;
+    margin: 0 0 10px 10px;
+}
