@@ -10818,19 +10818,6 @@ div.tools-workflow-list ul li p {
 .svgChartContainer {
   display: block;
 }
-svg.definitions {
-  height: 1px;
-  width: 1px;
-  position: absolute;
-  left: -99999em;
-}
-svg.definitions #tile1 rect.function {
-  fill: #cfdde6;
-}
-svg.definitions #tile1 line.function {
-  stroke: #c0ced8;
-  stroke-width: 1px;
-}
 .chart {
   height: 272px;
   width: 100%;}
@@ -11051,9 +11038,6 @@ svg.definitions #tile1 line.function {
   margin-left: 14px;
   margin-right: 4px;
 }
-#dlp-proteinfamilies-dist-genera .legend svg .bar1-sample {
-  fill: url(#tile1);
-}
 #dlp-proteinfamilies-dist-genera .legend svg .bar2-sample {
   fill: #9ac85c;
 }
@@ -11061,10 +11045,6 @@ svg.definitions #tile1 line.function {
   strokes-width: 0px;
   shape-rendering: crispEdges;
   fill: #000;
-}
-#dlp-proteinfamilies-dist-genera rect.block-0 {
-  fill: url(/portal/portal/patric/ProteinFamilies#tile1) #990000;
-  stroke: #a1c1d6;
 }
 #dlp-proteinfamilies-dist-genera rect.block-1 {
   fill: #9ac85c;

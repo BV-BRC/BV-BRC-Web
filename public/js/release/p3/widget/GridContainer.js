@@ -781,7 +781,7 @@ define("p3/widget/GridContainer", [
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, max:200, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
 
@@ -871,11 +871,6 @@ define("p3/widget/GridContainer", [
 									return;
 									break;
 							}
-							break;
-						case "pathway_summary_data":
-							selection.map(function(d){
-								ids = ids.concat(d['feature_ids']);
-							});
 							break;
 						default:
 							// feature_data or spgene_data
