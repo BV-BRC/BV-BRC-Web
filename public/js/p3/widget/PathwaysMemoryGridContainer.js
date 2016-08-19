@@ -202,7 +202,7 @@ define([
 					}else if(this.state.hasOwnProperty('genome')){
 						url['genome_id'] = this.state.genome.genome_id;
 					}else if(this.state.hasOwnProperty('genome_ids')){
-						url['genome_id'] = this.state.genome_ids[0];
+						url['genome_ids'] = this.state.genome_ids;
 					}
 
 					switch(this.type){

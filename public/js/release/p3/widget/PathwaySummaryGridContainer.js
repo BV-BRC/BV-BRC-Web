@@ -43,7 +43,7 @@ define("p3/widget/PathwaySummaryGridContainer", [
 			if(!state){
 				return;
 			}
-			console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
+			// console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
 			if(this.grid){
 				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
@@ -53,6 +53,36 @@ define("p3/widget/PathwaySummaryGridContainer", [
 
 			this._set("state", state);
 		},
+
+		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"ViewPathwayMap",
+				"fa icon-map-o fa-2x",
+				{
+					label: "Map",
+					multiple: false,
+					validTypes: ["*"],
+					tooltip: "View PathwayMap",
+					validContainerTypes: ["pathway_summary_data"]
+				},
+				function(selection){
+					// console.log(selection, this.state);
+
+					var url = {annotation: 'PATRIC'};
+
+					url['pathway_id'] = selection[0].pathway_id;
+					url['feature_id'] = selection[0].feature_ids;
+					url['genome_id'] = selection[0].genome_ids;
+
+					var params = Object.keys(url).map(function(p){
+						return p + "=" + url[p]
+					}).join("&");
+					// console.log(params);
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+				},
+				false
+			]
+		]),
 
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
