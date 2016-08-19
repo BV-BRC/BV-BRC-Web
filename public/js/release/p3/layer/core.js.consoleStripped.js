@@ -25653,7 +25653,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -78658,7 +78657,7 @@ define([
 					}else if(this.state.hasOwnProperty('genome')){
 						url['genome_id'] = this.state.genome.genome_id;
 					}else if(this.state.hasOwnProperty('genome_ids')){
-						url['genome_id'] = this.state.genome_ids[0];
+						url['genome_ids'] = this.state.genome_ids;
 					}
 
 					switch(this.type){
@@ -114043,11 +114042,11 @@ define([
 },
 'p3/widget/viewer/_FeatureList':function(){
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
 	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview"
-], function(declare, TabViewerBase, on,
+], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
 			GenomeGridContainer, PathJoin, xhr, lang, Overview){

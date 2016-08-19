@@ -36,6 +36,10 @@ define("p3/widget/viewer/PathwayMap", [
 				state.genome_ids = [state.genome_id];
 				this.viewer.set('visible', true);
 			}
+			else if(state.hasOwnProperty('genome_ids')){
+				state.genome_ids = state.genome_ids.split(',');
+				this.viewer.set('visible', true);
+			}
 			else if(state.hasOwnProperty('taxon_id')){
 				var self = this;
 				when(this.getGenomeIdsByTaxonId(state.taxon_id), function(genomeIds){
@@ -49,8 +53,6 @@ define("p3/widget/viewer/PathwayMap", [
 				.then(lang.hitch(this, function(content){
 					this.viewerHeader.set('content', content);
 				}));
-
-			// this.viewer.set('visible', true);
 		},
 
 		getGenomeIdsByTaxonId: function(taxon_id){
