@@ -90905,7 +90905,7 @@ window.PhyloTree = {
                         node.c.forEach(function(child){
                             child.parent = node;
                             if(child.l || child.l == 0) {
-                                child.px = node.px + child.l;
+                                child.px = node.px + child.l + .02;
                             }
                         });
 
@@ -91016,6 +91016,7 @@ define([
     // size of the diagram
     var canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
     var size = { width:dojo.position(dojo.query(containerName)[0]).w, height: canvasHeight};
+    this.margin = {top: 10, right: 10, bottom: 10, left: 10};
     
     },
     setTree : function(treeString) {
@@ -91038,7 +91039,8 @@ define([
             return d.c && d.c.length > 0 ? d.c : null;
         });
         canvasHeight = this.leafCount * this.heightPerLeaf + this.topMargin;
-        size = { width:dojo.position(dojo.query(this.containerName)[0]).w, height: canvasHeight};
+        
+        size = { width:dojo.position(dojo.query(this.containerName)[0]).w - this.margin.left - this.margin.right, height: canvasHeight - this.margin.top - this.margin.bottom};
 
         this.tree = d3.layout.tree()
             .sort(null)
@@ -91060,11 +91062,12 @@ define([
         .append("svg:svg");
         this.svgContainer.node().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "http://www.w3.org/2000/svg");
         this.svgContainer.node().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
-        
-        this.svgContainer.attr("width", size.width).attr("height", size.height)
+       
+
+        this.svgContainer.attr("width", size.width + this.margin.left + this.margin.right).attr("height", size.height + this.margin.top + this.margin.bottom)
         .append("svg:g")
         .attr("class", "container")
-        .attr("transform", "translate(" + this.maxLabelLength + ",0)")
+        .attr("transform", "translate(" + (this.margin.left+this.maxLabelLength) + ","+this.margin.top+")")
         ;
 
         this.init();
@@ -91221,9 +91224,9 @@ define([
             var toRoot = d.px ? d.px : 0;
             // 0 && console.log("toRoot: " + toRoot);
             if(this.options.phylogram) {
-                d.y = treeWidth * toRoot / this.maxNodeDistanceToRoot; //for phylogram
+                d.y = _self.margin.left+(treeWidth * toRoot / this.maxNodeDistanceToRoot); //for phylogram
             } else {
-                d.y = treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth; //for cladogram
+                d.y = _self.margin.left+(treeWidth * (this.maxNodeDepth - d.cx) / this.maxNodeDepth); //for cladogram
             }
             d.x = d.py*this.heightPerLeaf + this.topMargin;
         }
@@ -91508,8 +91511,8 @@ define([
         .attr("transform", function(d)
         {
             //return "translate(" + d.y + "," + d.x + ")";
-            return "translate(" + 0 + "," + d.x + ")";
-        })
+            return "translate(" + _self.margin.left + "," + d.x + ")";
+        }, _self)
         .on("click", this.click);
 
     nodeGroup.append("svg:circle")
@@ -91835,11 +91838,17 @@ define([
                                                                 speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
                                         if(speciesColor == genusColor) {
                                                 sColorIndex++;
+                                                if(sColorIndex >= speciesRainbow.length){
+                                                    sColorIndex = 0;
+                                                }
                                                 speciesColor =
                                                         this.getColorHex(speciesRainbow[sColorIndex][0],
                                                                         speciesRainbow[sColorIndex][1], speciesRainbow[sColorIndex][2]);
                                         }
                                         sColorIndex++;
+                                        if(sColorIndex >= speciesRainbow.length){
+                                            sColorIndex = 0;
+                                        }
                                         if(colorSpecies) {
                                             speciesToColor[speciesInGenus[j]] = [genusColor, speciesColor];
                                         } else if(colorGenus) {

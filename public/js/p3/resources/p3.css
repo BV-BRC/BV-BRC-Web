@@ -29,6 +29,20 @@
 
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 
+.bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary, blockquote, q, th, td, caption, table,
+div, span, object, iframe, p,
+pre, a, abbr, acronym, address,
+code, del, dfn, em, img,
+dl, dt, dd, ol, ul, li, fieldset,
+form, label, legend,
+caption, tbody, tfoot, thead, tr {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+
 html, body,
 body.patric {
     height: 100%;
@@ -893,6 +907,34 @@ div.pubmed ul li {
 .sans-alternate {
   font-family: "Didact Gothic", Arial, Helvetica, sans-serif; }
 
+/* =Font size */
+.smallest {
+  font-size: 11px;
+  line-height: 13px; }
+
+.small {
+  font-size: 12px;
+  line-height: 13px; }
+
+.normal {
+  font-size: 13px; }
+
+.large {
+  font-size: 14px;
+  line-height: 18px; }
+
+.largest {
+  font-size: 16px;
+  line-height: 18px; }
+
+.mega {
+  font-size: 34px;
+  line-height: 28px; }
+
+/* =Text Colors */
+.ondark {
+  color: #fff; }
+
 .light {
   color: #666666; }
 
@@ -913,6 +955,45 @@ div.pubmed ul li {
 
 .highlight-f {
   color: #87b934; }
+
+/* =Link Styles */
+.linkstyle-highlight a {
+  color: #1fa1c3; }
+
+.linkstyle-highlight-b a {
+  color: #7bc4d8; }
+
+.linkstyle-highlight-c a {
+  color: white; }
+  .linkstyle-highlight-c a:visited {
+    color: white; }
+  .linkstyle-highlight-c a:hover {
+    color: white; }
+  .linkstyle-highlight-c a:active {
+    color: white; }
+
+.linkstyle-highlight-d a {
+  color: #666666; }
+  .linkstyle-highlight-d a:visited {
+    color: #666666; }
+  .linkstyle-highlight-d a:hover {
+    color: black; }
+  .linkstyle-highlight-d a:active {
+    color: #666666; }
+
+.no-underline-links a {
+  text-decoration: none; }
+
+a.double-arrow-link:after {
+  content: ' »'; }
+
+a.icon-left {
+  display: inline-block;
+  line-height: 16px;
+  padding-left: 25px;
+  background-position: left center;
+  background-repeat: no-repeat; }
+
 
 h1,h2,h3,h4,h5,h6 {
 	font-weight: 100;
@@ -966,5 +1047,51 @@ h3.xl {
     float: right;
     display: inline;
     margin: 0 0 10px 10px;
+}
+
+
+body footer.main-footer {
+  background: #34698e;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #09456f), color-stop(100%, #34698e));
+  background-image: -webkit-linear-gradient(#09456f, #34698e);
+  background-image: -moz-linear-gradient(#09456f, #34698e);
+  background-image: -o-linear-gradient(#09456f, #34698e);
+  background-image: -ms-linear-gradient(#09456f, #34698e);
+  background-image: linear-gradient(#09456f, #34698e);
+  border-top: #227194;
+  padding: 12px 0px 30px 0px;
+  min-height:165px;
+}
+
+footer.main-footer .container {
+  overflow: hidden;
+}
+footer.main-footer .container .column {
+  display: inline;
+  float: left;
+  margin-right: 17px;
+  width: 229px;
+  border-left: #547f9d 1px solid;
+  margin-right: -1px;
+  font-weight: 100;
+}
+* html body footer.main-footer .container .column {
+  overflow-x: hidden;
+}
+body footer.main-footer .container .column .wrapper {
+  overflow: hidden;
+  padding: 0px 15px;
+}
+  body footer.main-footer .container .column.last {
+  display: inline;
+  float: left;
+  margin-right: 0;
+  width: 229px;
+}
+* html body footer.main-footer .container .column.last {
+  overflow-x: hidden;
+}
+body footer.main-footer ul.left {
+  width: 99px;
 }
 
