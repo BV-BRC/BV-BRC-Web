@@ -106,6 +106,14 @@ define([
 				var features = response.response.docs;
 
 				if(features.length == 0){
+
+					var summary = {
+						total: _self.state.feature_ids.length,
+						found: 0,
+						pathways: 0
+					};
+					Topic.publish("PathwaySummary", "updateHeader", summary);
+
 					_self.setData([]);
 					_self._loaded = true;
 					return true;
@@ -199,11 +207,12 @@ define([
 						found: Object.keys(featureIdMap).length,
 						pathways: Object.keys(pathwayIdMap).length
 					};
-					// publish summary
+					// console.log("update header: ", summary);
+					Topic.publish("PathwaySummary", "updateHeader", summary);
 
 					_self.setData(data);
 					_self._loaded = true;
-					Topic.publish("ProteinFamilies", "hideLoadingMask");
+					// Topic.publish("ProteinFamilies", "hideLoadingMask");
 					return true;
 				}, function(err){
 					console.error("Error in ProteinFamiliesStore: ", err)
