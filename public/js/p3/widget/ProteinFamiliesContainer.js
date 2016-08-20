@@ -14,6 +14,8 @@ define([
 
 	return declare([BorderContainer], {
 		id: "PFContainer",
+		tooltip: 'The "Protein Families" tab contains a list of Protein Families for genomes associated with the current view',
+
 		gutters: false,
 		state: null,
 		pfState: null,
