@@ -72,7 +72,7 @@ define("p3/widget/PathwaySummaryGridContainer", [
 
 					url['pathway_id'] = selection[0].pathway_id;
 					url['feature_id'] = selection[0].feature_ids;
-					url['genome_id'] = selection[0].genome_ids;
+					url['genome_ids'] = selection[0].genome_ids;
 
 					var params = Object.keys(url).map(function(p){
 						return p + "=" + url[p]
