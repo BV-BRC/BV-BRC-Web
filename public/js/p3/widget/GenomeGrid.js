@@ -269,12 +269,14 @@ define([
 			antimicrobial_resistance: {
 				label: 'Antimicrobial Resistance',
 				field: 'antimicrobial_resistance',
-				hidden: true
+				hidden: true,
+				sortable: false
 			},
 			antimicrobial_resistance_evidence: {
 				label: 'Antimicrobial Resistance Evidence',
 				field: 'antimicrobial_resistance_evidence',
-				hidden: true
+				hidden: true,
+				sortable: false
 			},
 			gram_stain: {
 				label: 'Gram Stain',
@@ -324,12 +326,14 @@ define([
 			comments: {
 				label: 'Comments',
 				field: 'comments',
-				hidden: true
+				hidden: true,
+				sortable: false
 			},
 			additional_metadata: {
 				label: 'Additional Metadata',
 				field: 'additional_metadata',
-				hidden: true
+				hidden: true,
+				sortable: false
 			},
 			date_inserted: {
 				label: 'Index Date',

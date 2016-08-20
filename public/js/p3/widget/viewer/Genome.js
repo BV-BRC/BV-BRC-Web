@@ -216,7 +216,8 @@ define([
 			this.browser = new GenomeBrowser({
 				title: "Browser",
 				id: this.viewer.id + "_" + "browser",
-				state: lang.mixin({}, this.state)
+				state: lang.mixin({}, this.state),
+				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser'
 			});
 
 			this.circular = new CircularViewerContainer({
