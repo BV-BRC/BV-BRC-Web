@@ -15,6 +15,7 @@ define("p3/widget/GeneExpressionContainer", [
 		gutters: false,
 		state: null,
 		tgState: null,
+		tooltip: 'The "Transcriptomics" tab shows gene expression data available for the current gene',
 		apiServer: window.App.dataServiceURL,
 		constructor: function(){
 			var self = this;

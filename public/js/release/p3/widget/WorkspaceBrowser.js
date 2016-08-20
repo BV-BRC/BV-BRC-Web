@@ -115,6 +115,7 @@ define("p3/widget/WorkspaceBrowser", [
 						return "in(genome_id,GenomeGroup(" + encodeURIComponent(sel.path) + "))"
 					})
 					q = "or(" + q.join(",") + ")";
+					//console.log("Genome Groups q=", q);
 					Topic.publish("/navigate", {href:"/view/GenomeList/?" + q});
 				}
 			});
@@ -139,6 +140,64 @@ define("p3/widget/WorkspaceBrowser", [
 				var sel = selection[0];
 				window.location = "/view/Genome/" + sel.genome_id
 			}, true);
+
+			this.actionPanel.addAction("ViewFeatureGroup", "MultiButton fa icon-selection-FeatureList fa-2x", {
+				label: "VIEW",
+				validTypes: ["feature_group"],
+				multiple: false,
+				tooltip: "Switch to the Feature Group Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"FeatureGroup", perspectiveUrl: "/view/FeatureGroup/" + selection[0].path}),
+						around: button,
+						orient: ["below"]
+					});
+				}
+			}, function(selection){
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+				}
+			});
+
+			this.actionPanel.addAction("ViewFeatureGroups", "MultiButton fa icon-selection-FeatureList fa-2x", {
+				label: "VIEW",
+				validTypes: ["feature_group"],
+				multiple: true,
+				min: 2,
+				tooltip: "Switch to the Feature List Perspective.",
+				pressAndHold: function(selection,button,opts,evt){
+					console.log("PressAndHold");
+					console.log("Selection: ", selection, selection[0])
+					var q = selection.map(function(sel){
+						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					popup.open({
+						popup: new PerspectiveToolTipDialog({perspective:"FeatureList", perspectiveUrl: "/view/FeatureList/" + q}),
+						around: button,
+						orient: ["below"]
+					});
+				}
+			}, function(selection){
+				if (selection.length==1){
+					Topic.publish("/navigate", {href:"/view/FeatureGroup" + selection[0].path});
+				}else{
+					var q = selection.map(function(sel){
+						return "in(feature_id,FeatureGroup(" + encodeURIComponent(sel.path) + "))"
+					})
+					q = "or(" + q.join(",") + ")";
+					//console.log("Feature Groups q=", q);
+					Topic.publish("/navigate", {href:"/view/FeatureList/?" + q});
+				}
+			});
 
 			this.actionPanel.addAction("ViewFeatureGroupItem", "MultiButton fa icon-selection-Feature fa-2x", {
 				validTypes: ["*"],

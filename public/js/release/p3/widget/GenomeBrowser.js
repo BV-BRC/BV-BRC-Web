@@ -39,6 +39,7 @@ define("p3/widget/GenomeBrowser", [
 			GenomeView){
 
 	var Browser = declare([JBrowser], {
+		tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 		makeFullViewLink: function(){
 			return domConstruct.create("span", {});
 		},
