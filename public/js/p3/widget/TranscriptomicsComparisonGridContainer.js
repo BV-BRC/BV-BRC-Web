@@ -63,7 +63,7 @@ define([
 				true
 			]
 		]),
-		selectionActions: GridContainer.prototype.selectionActions.concat([
+/*		selectionActions: GridContainer.prototype.selectionActions.concat([
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -85,6 +85,7 @@ define([
 				false
 			]
 		]),
+*/		
 		gridCtor: Grid
 
 	});
