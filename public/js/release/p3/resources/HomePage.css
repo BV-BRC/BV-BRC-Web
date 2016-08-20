@@ -43,6 +43,12 @@
 .dlp-hp ul li {
     display: inline-table;
 }
+.tools h4 {
+	margin-top: 20px;
+}
+.tools h4:first-child {
+	margin-top: 4px;
+}
 .tools ul li {
 	width: 310px;
 	vertical-align: top;

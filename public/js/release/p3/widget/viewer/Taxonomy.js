@@ -35,7 +35,6 @@ define("p3/widget/viewer/Taxonomy", [
 				title: "Taxonomy",
 				id: this.viewer.id + "_" + "taxontree",
 				state: this.state
-				// query: (this.taxon_id)?("eq(taxon_id," + this.taxon_id + ")"):""
 			});
 			this.viewer.addChild(this.phylogeny, 1);
 			this.viewer.addChild(this.taxontree, 2);
