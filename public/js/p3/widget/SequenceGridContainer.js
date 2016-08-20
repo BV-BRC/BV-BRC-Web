@@ -29,6 +29,7 @@ define([
 		dataModel: "genome_sequence",
 		primaryKey: "sequence_id",
 		maxDownloadSize: 25000,
+		tooltip: 'The "Sequences" tab contains a list of genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view',
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",

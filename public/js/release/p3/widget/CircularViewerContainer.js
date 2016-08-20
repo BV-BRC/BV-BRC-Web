@@ -12,6 +12,7 @@ define("p3/widget/CircularViewerContainer", [
 		gutters: true,
 		query: null,
 		genome_id: "",
+		tooltip: 'The "Circular Viewer" tab provides circular overview of the entire genome and its genomic features',
 		apiServiceUrl: window.App.dataAPI,
 
 		_setQueryAttr: function(query){
