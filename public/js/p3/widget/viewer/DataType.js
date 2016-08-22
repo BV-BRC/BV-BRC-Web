@@ -64,13 +64,20 @@ define([
 		_activatePopularGenomeListTab: function(){
 			var links = domQuery(".data-box.popular-box .genome-link");
 			links.forEach(function(link){
+
 				link.addEventListener('click', function(evt){
 					var link = evt.srcElement.dataset.genomeHref;
+					// console.log(evt, link);
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
 					// console.log(evt);
 					var targetTab = evt.srcElement.hash;
+
+					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
+						domClass.remove(l, "ui-state-active");
+					});
+					domClass.add(evt.srcElement.parentElement, "ui-state-active");
 
 					domQuery(".genome-data").forEach(function(panel){
 						if("#" + panel.id == targetTab){
@@ -79,7 +86,7 @@ define([
 							domClass.add(panel, "hidden");
 						}
 					});
-				})
+				});
 			});
 		},
 
@@ -102,23 +109,25 @@ define([
 		},
 		_buildAntibioticResistancePopularPanel: function(popularList){
 
-			var template = "<div class='genome-data right half group no-decoration hidden' id='genome-tab{0}'>" +
-				"<div class='far2x'>" +
-					"<div class='left left-align-text'>" +
-					"<h3>Antibiotic Resistance Genes:</h3>" +
-					"{1}" +
-					"</div>" +
-					"<div class='clear'></div>" +
-				"</div>" +
-				"<h3>Explore Genomic Features in </h3>" +
-					"<div class='three-quarter'>{2}</div>" +
-				"</div>";
+			var template = [
+				"<div class='genome-data right half group no-decoration hidden' id='genome-tab{0}'>",
+				"<div class='far2x'>",
+					"<div class='left left-align-text'>",
+					"<h3>Antibiotic Resistance Genes:</h3>",
+					"{1}",
+					"</div>",
+					"<div class='clear'></div>",
+				"</div>",
+				"<h3>Explore Genomic Features in </h3>",
+					"<div class='three-quarter'>{2}</div>",
+				"</div>"
+			].join("\n");
 
 			return popularList.map(function(genome, idx){
 
 				var specialtyGenes = genome.specialtyGenes.map(function(spg){
 					return lang.replace(attributeTemplate, {attr: spg});
-				});
+				}).join("\n");
 
 				var links = genome.links.map(function(link, i){
 
@@ -127,9 +136,9 @@ define([
 					}else{
 						return lang.replace("<a class='left' href='{0}'>{1}</a>", [link.link, link.name]);
 					}
-				});
+				}).join("\n");
 
-				return lang.replace(template, [(idx+1), specialtyGenes.join(""), links.join("")]);
+				return lang.replace(template, [(idx+1), specialtyGenes, links]);
 			});
 		},
 
