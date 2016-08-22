@@ -10821,6 +10821,42 @@ div.tools-workflow-list ul li p {
 .data-tab .group .append-1 {
   padding-right: 28px;
 }
+.dlp .genome-data table.basic {
+  width:450px;
+  border:none;
+  border-collapse: separate;
+  font-size:11px;
+  position: inherit;
+}
+.dlp .genome-data table.no-decoration tr th {
+  background: none;
+  border: none;
+}
+.dlp .genome-data .right-align-text {
+  text-align: right;
+}
+.dlp .genome-data .attribute-line {
+  width:50px;
+  padding-right:10px;
+  font-size: 14px;
+}
+.dlp .genome-data span {
+  line-height: 21px;
+}
+.dlp .genome-data .genome-data-icon.feature {
+  background-image: url(/patric/images/icon-popular-feature.png);
+  position: inherit;
+  background-color: inherit;
+}
+.dlp .genome-data .genome-data-icon.experiment {
+  background-image: url(/patric/images/icon-popular-experiment.png);
+}
+.dlp .genome-data .genome-data-icon.pathway {
+  background-image: url(/patric/images/icon-popular-pathway.png)
+}
+.dlp .genome-data .genome-data-icon.proteinfamily {
+  background-image: url(/patric/images/icon-popular-proteinfamily.png)
+}
 .svgChartContainer {
   display: block;
 }
@@ -11836,6 +11872,12 @@ div.overview {
 }
 .two-third {
     width: 66.6666666%;
+}
+.quarter {
+    width: 25%;
+}
+.three-quarter {
+    width: 75%;
 }
 .has-border {
     border: #dfdfdf 1px solid;
