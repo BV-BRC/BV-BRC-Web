@@ -682,6 +682,14 @@ div.tooltip {
     width: 66.6666666%;
 }
 
+.quarter {
+    width: 25%;
+}
+
+.three-quarter {
+    width: 75%;
+}
+
 .has-border {
     border: #dfdfdf 1px solid;
 }
