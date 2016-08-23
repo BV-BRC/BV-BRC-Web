@@ -10590,13 +10590,17 @@ ul.data-tab-toolbar li.first {
   border: #dbe3e5 1px solid;
   padding: 10px;
 }
-.tabbed .tab-headers .ui-state-active {
+.patric .dlp .tabbed .tab-headers .ui-state-active {
   border-bottom: #f4f4f4 1px solid;
   background: #f4f4f4;
 }
-.data-tab {
+.patric .dlp .data-tab {
   margin-bottom: 40px;
   padding-left: 21px;
+}
+.patric .dlp .inline li {
+  display: inline-block;
+  vertical-align: middle;
 }
 .data-box {
   padding: 20px;
@@ -10695,6 +10699,7 @@ ul.data-tab-toolbar li.first {
   background: #d8e0e5;
   border: #c0cbcf 1px solid;
   padding: 20px;
+  height: 380px;
 }
 .popular-box.tabbed .genome-data .column {
   width: 50%;
@@ -10835,6 +10840,9 @@ div.tools-workflow-list ul li p {
 .dlp .genome-data .right-align-text {
   text-align: right;
 }
+.dlp .genome-data .center-text {
+  text-align: center;
+}
 .dlp .genome-data .attribute-line {
   width:50px;
   padding-right:10px;
@@ -10969,6 +10977,7 @@ div.tools-workflow-list ul li p {
 #dlp-genomes-numberGenomes .axis text {
   fill: #3e3e3e;
   font-size: 11px;
+  stroke: initial;
 }
 #dlp-genomes-numberGenomes .chart {
   width: 288px;
@@ -11014,19 +11023,19 @@ div.tools-workflow-list ul li p {
   cursor: pointer;
 }
 #dlp-genomes-chart .bar-0 {
-  fill: url(/portal/portal/patric/Genomes#bar-0);
+  fill: rgb(91,138,170);
 }
 #dlp-genomes-chart .bar-1 {
-  fill: url(/portal/portal/patric/Genomes#bar-1);
+  fill: rgb(151,199,90);
 }
 #dlp-genomes-chart .bar-2 {
-  fill: url(/portal/portal/patric/Genomes#bar-2);
+  fill: rgb(251,232,153);
 }
 #dlp-genomes-chart .bar-3 {
-  fill: url(/portal/portal/patric/Genomes#bar-3);
+  fill: rgb(102,130,149);
 }
 #dlp-genomes-chart .bar-4 {
-  fill: url(/portal/portal/patric/Genomes#bar-4);
+  fill: rgb(206,192,142);
 }
 #dlp-genomes-chart .sawtooth {
   fill: #f4f4f4;
