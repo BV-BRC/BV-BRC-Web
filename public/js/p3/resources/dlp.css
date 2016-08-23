@@ -349,6 +349,9 @@ div.tools-workflow-list ul li p {
 .dlp .genome-data .right-align-text {
   text-align: right;
 }
+.dlp .genome-data .center-text {
+  text-align: center;
+}
 
 .dlp .genome-data .attribute-line {
   width:50px;

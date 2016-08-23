@@ -682,6 +682,57 @@ define([
 
 		_setPathwaysAttr: function(data){
 
+			var popularList = data['popularGenomes']['popularList'];
+
+			var popularTabList = this._buildPathwaysPopularPanel(popularList);
+			var popularListUl = this._buildPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			this._activatePopularGenomeListTab();
+		},
+
+		_buildPathwaysPopularPanel: function(popularList){
+
+			var template = [
+				"<div class='genome-data right half group no-decoration hidden' id='genome-tab{0}'>",
+					"<div class='far'>",
+					"<h3>Summary of Top 10 Pathways:</h3>",
+					"<table class='basic no-decoration far2x'>",
+					"<tr>",
+						"<th scope='column'>EC numbers</th>",
+						"<th scope='column'>Genes</th>",
+						"<th scope='column'>Pathway Name</th>",
+					"</tr>",
+					"{1}",
+					"</table>",
+					"<a class='double-arrow-link' href='{2}'>View All Pathways in This Genome</a>",
+					"</div>",
+				"</div>"
+			].join("\n");
+
+			var pathwayTableTemplate = [
+				"<tr>",
+					"<td class='center-text'><a href='{p.ec_link}'>{p.ec_count}</a></td>",
+					"<td class='center-text'><a href='{p.gene_link}'>{p.gene_count}</a></td>",
+					"<td><a href='{p.name_link}'>{p.name}</a></td>",
+				"</tr>"
+			].join("\n");
+
+			return popularList.map(function(genome, idx){
+
+				var pathwayTable = genome.popularData.map(function(p){
+					return lang.replace(pathwayTableTemplate, {p: p});
+				}).join("\n");
+
+				return lang.replace(template, [(idx + 1), pathwayTable, genome.link]);
+			})
 		},
 
 		_setProteinFamiliesAttr: function(data){
@@ -690,7 +741,57 @@ define([
 
 		_setSpecialtyGenesAttr: function(data){
 
+			var popularList = data['popularGenomes']['popularList'];
+
+			var popularTabList = this._buildSpecialtyGenesPopularPanel(popularList);
+			var popularListUl = this._buildPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			this._activatePopularGenomeListTab();
 		},
+
+		_buildSpecialtyGenesPopularPanel: function(popularList){
+
+			var template = [
+				"<div class='genome-data right half group no-decoration hidden' id='genome-tab{0}'>",
+					"<div class='far2x'>",
+						"<div class='left left-align-text'>",
+							"<h3>Specialty Genes:</h3>",
+								"{1}",
+							"<div class='clear'></div>",
+						"</div>",
+						"<div class='clear'></div>",
+					"</div>",
+					"<h3>Explore Genomic Features in </h3>",
+					"<div class='three-quarter'>{2}</div>",
+				"</div>"
+			].join("\n");
+
+			return popularList.map(function(genome, idx){
+
+				var specialtyGenes = genome.specialtyGenes.map(function(spg){
+					return lang.replace(attributeTemplate, {attr: spg});
+				}).join("\n");
+
+				var links = genome.links.map(function(link, i){
+					if(i%2){ // odd
+						return lang.replace("<a class='right' href='{0}'>{1}</a><br/>", [link.link, link.name]);
+					}else{
+						return lang.replace("<a class='left' href='{0}'>{1}</a>", [link.link, link.name]);
+					}
+				}).join("\n");
+
+				return lang.replace(template, [(idx + 1), specialtyGenes, links]);
+			})
+		},
+
 		_setTranscriptomicsAttr: function(data){
 
 			// select genomes
