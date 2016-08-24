@@ -27,48 +27,12 @@ define([
 			this.chart = drawTarget.chart;
 			this.canvas = drawTarget.canvas;
 			this.canvasSize = drawTarget.canvas_size;
-
-			var self = this;
-			var scaleToggle = domQuery(".chart-wrapper .scale li");
-			var sortToggle = domQuery(".chart-wrapper .sort li");
-
-			// Set up the scale toggle
-			if(scaleToggle != null){
-				scaleToggle.on('click', function(evt){
-					scaleToggle.removeClass("active");
-					var target = evt.srcElement || evt.target;
-
-					self.normalize = target.className == "normalize";
-					domClass.add(target, "active");
-
-					self.scale(function(){
-						return self.sort();
-					});
-				});
-			}
-
-			// Set up the sort controls
-			if(sortToggle != null){
-				sortToggle.on('click', function(evt){
-					sortToggle.removeClass("active");
-					domClass.add(evt.srcElement || evt.target, "active");
-
-					return self.sort();
-				});
-			}
 		},
 
 		processData: function(data){
 
-			this.data = data.map(function(d, i){
-				return {
-					"index": i,
-					"label": d.label,
-					"total": parseInt(d.total),
-					"dist": d.dist,
-					"phenotypes": d.phenotypes
-				}
-			});
+			// TODO: implement check dirty
+			this.data = data;
 		},
 
 		render: function(){
@@ -78,7 +42,7 @@ define([
 			d3.selectAll("g.bar").remove();
 
 			// reset scale params
-			this.normalize = domQuery(".chart-wrapper .scale .active")[0].className.split(" ")[0] === "normalize" || false;
+			this.normalize = domQuery(".chart-wrapper nav .scale .active")[0].className.split(" ")[0] === "normalize" || false;
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
@@ -90,9 +54,9 @@ define([
 			}
 
 			// reset sort condition
-			var sortToggle = domQuery(".chart-wrapper .sort li");
+			var sortToggle = domQuery(".chart-wrapper nav .sort li");
 			sortToggle.removeClass("active");
-			domClass.add(domQuery(".chart-wrapper .sort .label")[0], "active");
+			// domClass.add(domQuery(".chart-wrapper nav .sort .label")[0], "active");
 
 			// axis
 			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
@@ -155,7 +119,10 @@ define([
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index], d['dist'][index]]);
+
+						arguments[1] = index;
+						var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', d);
+
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
 							.style("top", d3.event.pageY + "px")
@@ -303,7 +270,44 @@ define([
 
 		},
 
-		renderLegend: function(legend){
+		renderNav: function(html){
+
+			domConstruct.place(html, domQuery(".chart-wrapper nav")[0], "only");
+
+			var self = this;
+			var scaleToggle = domQuery(".chart-wrapper nav .scale li");
+			var sortToggle = domQuery(".chart-wrapper nav .sort li");
+
+			// Set up the scale toggle
+			if(scaleToggle != null){
+				scaleToggle.on('click', function(evt){
+					scaleToggle.removeClass("active");
+					var target = evt.srcElement || evt.target;
+
+					self.normalize = target.className == "normalize";
+					domClass.add(target, "active");
+
+					self.scale(function(){
+						return self.sort();
+					});
+				});
+			}
+
+			// Set up the sort controls
+			if(sortToggle != null){
+				sortToggle.on('click', function(evt){
+					sortToggle.removeClass("active");
+					domClass.add(evt.srcElement || evt.target, "active");
+
+					return self.sort();
+				});
+			}
+		},
+
+		renderLegend: function(title, legend){
+
+			d3.select("p.legend").select("label").text(title);
+
 			d3.select("p.legend").selectAll("svg")
 				.data(legend)
 				.insert("circle")

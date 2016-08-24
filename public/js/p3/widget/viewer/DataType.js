@@ -3,12 +3,46 @@ define([
 	"dojo/dom-construct", "dojo/query", "dojo/dom-class",
 	"dijit/layout/ContentPane", "dijit/_WidgetBase", "dijit/_TemplatedMixin",
 	"d3/d3",
-	"./Base", "../../util/PathJoin"
+	"./Base", "../../util/PathJoin", "../D3StackedBarChart", "../D3HistogramChart"
 ], function(declare, lang, when, request, String, Topic,
 			domConstruct, domQuery, domClass,
 			ContentPane, WidgetBase, Templated,
 			d3,
-			ViewerBase, PathJoin){
+			ViewerBase, PathJoin, Chart, HistogramChart){
+
+	var pathwayNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Real Values</li>",
+				"<li class='normalize'>Normalize</li>",
+			"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Genus</li>",
+				"<li class='value'>Conserved</li>",
+			"</ul>"
+	].join("\n");
+
+	var proteinfamilyNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Real Values</li>",
+				"<li class='normalize'>Normalize</li>",
+			"</ul>",
+		"<span class='label'>Data Set</span>",
+			"<ul class='dataset'>",
+				"<li class='fvh active'>Functional vs. Hypothetical</li>",
+				"<li class='cva'>Core vs. Accessory</li>",
+		"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Genus</li>",
+			"</ul>",
+			"<ul class='sort'>",
+				"<li class='functional'>Functional</li>",
+				"<li class='hypothetical'>Hypothetical</li>",
+			"</ul>"
+	].join("\n");
 
 	var attributeTemplate = [
 		"<a class='left right-align-text attribute-line' href='{attr.link}'>",
@@ -696,6 +730,32 @@ define([
 			domConstruct.place(popularListNode, tabDiv);
 
 			this._activatePopularGenomeListTab();
+
+			// render pathway conservation chart
+			this._renderPathwayConservation(data['conservation']['data']);
+		},
+
+		_renderPathwayConservation: function(data){
+
+			var legend = ["80 ~ 100 %", "60 ~ 80 %", "40 ~ 60 %", "20 ~ 40 %", "< 20 %"];
+			var processed = data.map(function(d, idx){
+				return {
+					"index": idx,
+					"label": d.pathogen,
+					"total": d.total,
+					"tooltip": function(d, idx){
+						return lang.replace('Genus: {0}<br/>Conservation: {1}<br/>Count: {2}', [d.label, legend[idx], d.dist[idx]]);
+					},
+					"dist": d.dist
+				}
+			});
+
+			var targetNode = domQuery("#dlp-pathways-conservation")[0];
+			var pathwayChart = new Chart(targetNode);
+			pathwayChart.renderNav(pathwayNavBarHtml);
+			pathwayChart.renderLegend("Pathway Conservation Across %Genomes: ", legend);
+			pathwayChart.processData(processed);
+			pathwayChart.render();
 		},
 
 		_buildPathwaysPopularPanel: function(popularList){
@@ -737,6 +797,111 @@ define([
 
 		_setProteinFamiliesAttr: function(data){
 
+			var popularList = data['popularGenomes']['popularList'];
+
+			var popularTabList = this._buildProteinFamiliesPopularPanel();
+			var popularListUl = this._buildProteinFamiliesPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			// this._activatePopularGenomeListTab();
+			this._activateProteinFamiliesPopularGenomeListTab();
+
+			// render protein family distribution chart
+			this._renderProteinFamiliesDistribution(data['FIGfams']['data']);
+			// render popular genome chart
+			this._renderProteinFamiliesByGenus();
+		},
+
+		_buildProteinFamiliesPopularGenomeList: function(popularList){
+
+			var template = [
+				"<li class='left'>",
+					"<a onmouseover=ProteinFamilyDistChart.update('{0}') data-genome-href='{1}' class='genome-link ui-tabs-anchor' href='#genome-tab{2}'>{3}</a>",
+					"<div class='arrow_far'></div>",
+				"</li>",
+				"<li class='right'>",
+					"<a onmouseover=ProteinFamilyDistChart.update('{4}') data-genome-href='{5}' class='genome-link ui-tabs-anchor' href='#genome-tab{6}'>{7}</a>",
+					"<div class='arrow'></div>",
+				"</li>"
+			].join("\n");
+
+			var rtn = ["<ul class='no-decoration genome-list tab-headers third'>"];
+			for (var i = 0, len = popularList.length / 2; i < len; i++){
+				var idxLeft = i;
+				var idxRight = i + 11;
+
+				rtn.push(lang.replace(template, [JSON.stringify(popularList[idxLeft].popularData), popularList[idxLeft].link, idxLeft, popularList[idxLeft].popularName, JSON.stringify(popularList[idxRight].popularData), popularList[idxRight].link, idxRight, popularList[idxRight].popularName]));
+			}
+			rtn.push("</ul>");
+
+			return rtn;
+		},
+		_activateProteinFamiliesPopularGenomeListTab: function(){
+			var links = domQuery(".data-box.popular-box .genome-link");
+			links.forEach(function(link){
+
+				link.addEventListener('click', function(evt){
+					var link = evt.srcElement.dataset.genomeHref;
+					Topic.publish('/navigate', {href: link});
+				});
+				link.addEventListener('mouseover', function(evt){
+					var targetTab = evt.srcElement.hash;
+
+					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
+						domClass.remove(l, "ui-state-active");
+					});
+					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+				});
+			});
+		},
+
+		_buildProteinFamiliesPopularPanel: function(){
+
+			return [
+				"<div class='genome-data right half'>",
+					"<div id='dlp-proteinfamilies-dist-genus'>",
+						"<div class='chart'></div>",
+					"</div>",
+				"</div>"];
+		},
+
+		_renderProteinFamiliesByGenus: function(){
+			var targetNode = domQuery("#dlp-proteinfamilies-dist-genus")[0];
+
+			window.ProteinFamilyDistChart = new HistogramChart(targetNode, "dlp");
+			window.ProteinFamilyDistChart.renderTitle("Conservation Across %Genomes", "# of Protein Families");
+		},
+
+		_renderProteinFamiliesDistribution: function(data){
+
+			var legend = ["Functional", "Hypothetical"];
+
+			var processed = data.map(function(datum, i){
+				return {
+					"index": i,
+					"label": datum.pathogen,
+					"genomes": datum.genomes,
+					"total": parseInt(datum.total),
+					"tooltip": function(d, idx){
+						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label,legend[idx], d.dist[idx]])
+					},
+					"dist": [parseInt(datum.functional), parseInt(datum.hypothetical)]
+				};
+			});
+
+			var targetNode = domQuery("#dlp-proteinfamilies-dist-genera")[0];
+			var pfChart = new Chart(targetNode);
+			pfChart.renderNav(proteinfamilyNavBarHtml);
+			pfChart.renderLegend("Legend: ", legend);
+			pfChart.processData(processed);
+			pfChart.render();
 		},
 
 		_setSpecialtyGenesAttr: function(data){
