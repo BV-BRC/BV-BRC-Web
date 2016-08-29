@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/when", "dojo/request", "dojo/string", "dojo/topic",
-	"dojo/dom-construct", "dojo/query", "dojo/dom-class",
+	"dojo/dom-construct", "dojo/query", "dojo/dom-class", "dojo/dom-style",
 	"dijit/layout/ContentPane", "dijit/_WidgetBase", "dijit/_TemplatedMixin",
 	"d3/d3",
 	"./Base", "../../util/PathJoin", "../D3StackedBarChart", "../D3HistogramChart", "../D3HorizontalBarChart"
 ], function(declare, lang, when, request, String, Topic,
-			domConstruct, domQuery, domClass,
+			domConstruct, domQuery, domClass, domStyle,
 			ContentPane, WidgetBase, Templated,
 			d3,
 			ViewerBase, PathJoin, StackedBarChart, HistogramChart, HorizontalBarChart){
@@ -101,23 +101,43 @@ define([
 			return popularListUl;
 		},
 
+		_initialSelection: function(el){
+
+			var event;
+			if(document.createEvent) {
+				event = document.createEvent("HTMLEvents");
+				event.initEvent("mouseover", true, true);
+			}else{
+				event = document.createEventObject();
+				event.eventType = "mouseover";
+			}
+			event.eventName = "initialMouseOver";
+
+			if(document.createEvent){
+				el.dispatchEvent(event);
+			}else{
+				el.fireEvent("on" + event.eventType, event);
+			}
+		},
+
 		_activatePopularGenomeListTab: function(){
 			var links = domQuery(".data-box.popular-box .genome-link");
 			links.forEach(function(link){
 
 				link.addEventListener('click', function(evt){
-					var link = evt.srcElement.dataset.genomeHref;
-					// console.log(evt, link);
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
+
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
-					// console.log(evt);
-					var targetTab = evt.srcElement.hash;
+					var target = evt.target || evt.srcElement;
+					var targetTab = target.hash;
 
 					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
 						domClass.remove(l, "ui-state-active");
 					});
-					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+					domClass.add(target.parentElement, "ui-state-active");
 
 					domQuery(".genome-data").forEach(function(panel){
 						if("#" + panel.id == targetTab){
@@ -128,6 +148,8 @@ define([
 					});
 				});
 			});
+
+			this._initialSelection(links[0])
 		},
 
 		_setAntibioticResistanceAttr: function(data){
@@ -811,13 +833,13 @@ define([
 			domConstruct.place(popularTabNode, tabDiv);
 			domConstruct.place(popularListNode, tabDiv);
 
-			// this._activatePopularGenomeListTab();
-			this._activateProteinFamiliesPopularGenomeListTab();
-
 			// render protein family distribution chart
 			this._renderProteinFamiliesDistribution(data['FIGfams']['data']);
 			// render popular genome chart
 			this._renderProteinFamiliesByGenus();
+
+			// this._activatePopularGenomeListTab();
+			this._activateProteinFamiliesPopularGenomeListTab();
 		},
 
 		_buildProteinFamiliesPopularGenomeList: function(popularList){
@@ -849,18 +871,22 @@ define([
 			links.forEach(function(link){
 
 				link.addEventListener('click', function(evt){
-					var link = evt.srcElement.dataset.genomeHref;
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
-					var targetTab = evt.srcElement.hash;
+					var target = evt.target || evt.srcElement;
+					// var targetTab = target.hash;
 
 					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
 						domClass.remove(l, "ui-state-active");
 					});
-					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+					domClass.add(target.parentElement, "ui-state-active");
 				});
 			});
+
+			this._initialSelection(links[0]);
 		},
 
 		_buildProteinFamiliesPopularPanel: function(){
@@ -974,16 +1000,17 @@ define([
 			domConstruct.place(popularTabNode, tabDiv);
 			domConstruct.place(popularListNode, tabDiv);
 
-			// this._activatePopularGenomeListTab();
-			this._activateTranscriptomicsPopularGenomeListTab();
-
 			// render top 5 species
+			this._renderTranscriptomicsTopSpecies(data['topSpecies']['data']);
 
 			// render featured experiments
 			this._renderTranscriptomicsFeaturedExperiments(data['featuredExperiment']['data']);
 
 			// render select genomes
 			this._renderTranscriptomicsPopularPanelChart();
+
+			// this._activatePopularGenomeListTab();
+			this._activateTranscriptomicsPopularGenomeListTab();
 		},
 
 		_buildTranscriptomicsPopularGenomeList: function(popularList){
@@ -992,13 +1019,13 @@ define([
 
 			var template = [
 				"<li>",
-					"<a onmouseover=TranscriptomicsSelectGenome.update('{0}') class='genome-link' href='#genome-tab{1}'>{2}</a>",
+					"<a onmouseover=TranscriptomicsSelectGenome.update('{0}') class='genome-link' href='#genome-tab{1}' data-genome-href='{2}'>{3}</a>",
 					"<div class='arrow'></div>",
 				"</li>"
 			].join("\n");
 
 			popularList.forEach(function(genome, idx){
-				popularListUl.push(lang.replace(template, [encodeURIComponent(JSON.stringify(genome)), (idx + 1), genome.popularName]));
+				popularListUl.push(lang.replace(template, [encodeURIComponent(JSON.stringify(genome)), (idx + 1), genome.link, genome.popularName]));
 			});
 			popularListUl.push("</ul>");
 
@@ -1010,30 +1037,34 @@ define([
 			links.forEach(function(link){
 
 				link.addEventListener('click', function(evt){
-					var link = evt.srcElement.dataset.genomeHref;
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
-					var targetTab = evt.srcElement.hash;
+					var target = evt.target || evt.srcElement;
+					// var targetTab = target.hash;
 
 					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
 						domClass.remove(l, "ui-state-active");
 					});
-					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+					domClass.add(target.parentElement, "ui-state-active");
 				});
 			});
+
+			this._initialSelection(links[0]);
 		},
 
 		_renderTranscriptomicsPopularPanelChart: function(){
 
 			var self = this;
-			// var gmTargetNode = domQuery("")[0];
-			// var ecTargetNode = domQuery("")[0];
 
 			self.topGeneModificationChart = new HorizontalBarChart();
 			self.topGeneModificationChart.init("#dlp-transcriptomics-top-mutants", "dlp-tr-gm", {top: 0, bottom: 38, left: 145});
+			self.topGeneModificationChart.renderTitle("Experiments");
 			self.topExperimentConditionChart = new HorizontalBarChart();
 			self.topExperimentConditionChart.init("#dlp-transcriptomics-top-conditions", "dlp-tr-ec", {top: 0, bottom: 38, left: 145});
+			self.topExperimentConditionChart.renderTitle("Experiments");
 
 			window.TranscriptomicsSelectGenome = (function(){
 				return {
@@ -1063,9 +1094,77 @@ define([
 			];
 		},
 
-		_renderTranscriptomicsTopSpecies: function(){
+		_renderTranscriptomicsTopSpecies: function(data){
 
-			var targetNode = domQuery("#dlp-transcriptomics-top-species")
+			// var chart = new HorizontalBarChart();
+			// chart.init("#dlp-transcriptomics-top-species", "dlp-tr-top-sp", {top: 0, bottom: 0, left: 10});
+			// chart.render(data);
+
+			var container = d3.select("#dlp-transcriptomics-top-species .chart");
+			var containerWidth = domStyle.get(container, "width") || 408;
+			var containerHeight = domStyle.get(container, "height") || 272;
+
+			var chart = d3.select(".chart")
+				.insert("svg", ":first-child")
+				.attr("class", "svgChartContainer")
+				.attr("width", containerWidth)
+				.attr("height", containerHeight);
+
+			var chartWidth = domStyle.get(chart, "width") || 408;
+			var chartHeight = domStyle.get(chart, "height") || 272;
+
+			var canvas = chart.append("g")
+				.attr("class", "svgChartCanvas")
+				.attr("width", chartWidth)
+				.attr("height", chartHeight);
+
+			var upperBound = d3.max(data, function(d, i) {
+				return d.count;
+			});
+			var xScale = d3.scale.linear().domain([0, upperBound]).range([0, chartWidth]);
+			var yScale = d3.scale.linear().domain([0, data.length]).range([0, chartHeight]);
+
+			var bars = canvas.selectAll("g.bar").data(data).enter().append("g");
+
+			// add rect bar
+			bars.append("rect").attr("class", function(d, i) {
+				return "bar-" + i;
+			}).attr("height", function(d, i) {
+				return 45;
+			}).attr("width", function(d, i) {
+				return xScale(d.count);
+			}).attr("y", function(d, i) {
+				return yScale(i);
+			}).attr("rx", 3).attr("ry", 3)
+				.on("click", function(d, i) {
+
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
+
+			// add text
+			bars.append("text").attr("class", "label1")
+				.attr("x", "10")
+				.attr("y", function(d, i) {
+					return yScale(i) + 20;
+				}).text(function(d) {
+				return d.label;
+			})
+				.on("click", function(d, i) {
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
+			bars.append("text").attr("class", "label2")
+				.attr("x", "10")
+				.attr("y", function(d, i) {
+					return yScale(i) + 38;
+				}).text(function(d) {
+				return d.count + " Experiments";
+			})
+				.on("click", function(d, i) {
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
 		},
 
 		_renderTranscriptomicsFeaturedExperiments: function(list){
