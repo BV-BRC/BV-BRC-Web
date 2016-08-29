@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/D3StackedBarChart.html':"<div class=\"chart-wrapper\">\n    <nav>\n        <span class=\"label\">Scale</span>\n        <ul class=\"scale\">\n            <li class=\"real active\">Counts</li>\n            <li class=\"normalize\">Percent</li>\n        </ul>\n        <span class=\"label\">Order by</span>\n        <ul class=\"sort\">\n            <li class=\"label active\">Name</li>\n            <li class=\"value\">Count</li>\n        </ul>\n    </nav>\n    <!-- This is the div where the chart is actually drawn. -->\n    <div class=\"chart\"></div>\n    <!-- The bar chart looks for this legend. There\"s some SVG in here for the circles. -->\n    <p class=\"legend\">\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n    </p>\n</div>"}});
+'url:p3/widget/templates/D3StackedBarChart.html':"<div class=\"chart-wrapper\">\n    <nav>\n        <span class=\"label\">Scale</span>\n        <ul class=\"scale\">\n            <li class=\"real active\">Counts</li>\n            <li class=\"normalize\">Percent</li>\n        </ul>\n        <span class=\"label\">Order by</span>\n        <ul class=\"sort\">\n            <li class=\"label active\">Name</li>\n            <li class=\"value\">Count</li>\n        </ul>\n    </nav>\n    <!-- This is the div where the chart is actually drawn. -->\n    <div class=\"chart\"></div>\n    <!-- The bar chart looks for this legend. There\"s some SVG in here for the circles. -->\n    <p class=\"legend\">\n        <label></label>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n    </p>\n</div>"}});
 define("p3/widget/D3StackedBarChart", [
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style", "dojo/on",
@@ -14,64 +14,59 @@ define("p3/widget/D3StackedBarChart", [
 		data: null,
 		templateString: Template,
 
-		constructor: function(target){
+		init: function(target, className, margin){
+			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
+
 			this.node = domConstruct.place(this.templateString, target, "only");
 
 			this.currentSort = "label";
 			this.ascendSort = true;
 			this.normalize = false;
 
-			this.drawTargetParams = {
-				target: this.node,
-				margins: [10, 0, 0, 40]
-			};
-			var drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
-			this.chart = drawTarget.chart;
-			this.canvas = drawTarget.canvas;
-			this.canvasSize = drawTarget.canvas_size;
+			this.margin = margin = lang.mixin({top: 10, right: 0, bottom: 0, left: 40}, margin);
 
-			var self = this;
-			var scaleToggle = domQuery(".chart-wrapper .scale li");
-			var sortToggle = domQuery(".chart-wrapper .sort li");
+			var container = domQuery(".chart", this.node)[0];
 
-			// Set up the scale toggle
-			if(scaleToggle != null){
-				scaleToggle.on('click', function(evt){
-					scaleToggle.removeClass("active");
-					var target = evt.srcElement || evt.target;
+			var containerWidth = domStyle.get(container, "width");
+			var containerHeight = domStyle.get(container, "height");
 
-					self.normalize = target.className == "normalize";
-					domClass.add(target, "active");
+			this.canvasWidth = containerWidth - margin.right - margin.left;
+			this.canvasHeight = containerHeight - margin.top - margin.bottom;
 
-					self.scale(function(){
-						return self.sort();
-					});
-				});
+			// console.log(containerWidth, containerHeight, this.canvasWidth, this.canvasHeight);
+
+			if(className){
+				d3.select(".chart-wrapper").attr("class", "chart-wrapper " + className);
 			}
 
-			// Set up the sort controls
-			if(sortToggle != null){
-				sortToggle.on('click', function(evt){
-					sortToggle.removeClass("active");
-					domClass.add(evt.srcElement || evt.target, "active");
+			this.chart = d3.select(".chart")
+				.insert("svg", ":first-child")
+				.attr("class", "svgChartContainer")
+				.attr("width", containerWidth)
+				.attr("height", containerHeight);
 
-					return self.sort();
-				});
+			this.canvas = this.chart.append("g")
+				.attr("class", "svgChartCanvas")
+				.attr("width", this.canvasWidth)
+				.attr("height", this.canvasHeight)
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			if(d3.select("div.tooltip").length > 0){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
 			}
 		},
 
 		processData: function(data){
 
-			this.data = data.map(function(d, i){
-				return {
-					"index": i,
-					"label": d.label,
-					"total": parseInt(d.total),
-					"dist": d.dist,
-					"phenotypes": d.phenotypes
-				}
-			});
+			// TODO: implement check dirty
+			this.data = data;
 		},
+
+		// TODO: implement update() function.
 
 		render: function(){
 
@@ -80,7 +75,7 @@ define("p3/widget/D3StackedBarChart", [
 			d3.selectAll("g.bar").remove();
 
 			// reset scale params
-			this.normalize = domQuery(".chart-wrapper .scale .active")[0].className.split(" ")[0] === "normalize" || false;
+			this.normalize = domQuery(".chart-wrapper nav .scale .active")[0].className.split(" ")[0] === "normalize" || false;
 			if(this.normalize){
 				this.maxValue = 100;
 			}else{
@@ -92,20 +87,17 @@ define("p3/widget/D3StackedBarChart", [
 			}
 
 			// reset sort condition
-			var sortToggle = domQuery(".chart-wrapper .sort li");
+			var sortToggle = domQuery(".chart-wrapper nav .sort li");
 			sortToggle.removeClass("active");
-			domClass.add(domQuery(".chart-wrapper .sort .label")[0], "active");
+			// domClass.add(domQuery(".chart-wrapper nav .sort .label")[0], "active");
 
 			// axis
-			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
-			this.pf_x_scale = d3.scale.linear().range([0, this.canvasSize.width]).domain([0, this.data.length]);
+			this.pf_y_scale = d3.scale.linear().range([0, this.canvasHeight]).domain([this.maxValue, 0]);
+			this.pf_x_scale = d3.scale.linear().range([0, this.canvasWidth]).domain([0, this.data.length]);
 
 			// draw bars
 			this.canvas.selectAll("g.bar").data(this.data).enter().append("g").attr("class", "bar");
 			this.bars = this.canvas.selectAll("g.bar").data(this.data);
-			this.tooltipLayer = d3.select("body").append("div")
-				.attr("class", "tooltip")
-				.style("opacity", 0);
 
 			var self = this;
 
@@ -120,7 +112,7 @@ define("p3/widget/D3StackedBarChart", [
 				.tickPadding(0).tickSize(0);
 
 			this.chart.append("g")
-				.attr("transform", lang.replace('translate({0},{1})', [this.drawTargetParams.margins[3], this.drawTargetParams.margins[0]]))
+				.attr("transform", lang.replace('translate({0},{1})', [this.margin.left, this.margin.top]))
 				.call(this.yAxis)
 				.attr("class", "y axis");
 
@@ -140,7 +132,7 @@ define("p3/widget/D3StackedBarChart", [
 					.attr("class", "block-" + index)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
 					.attr("x", function(d, i){
 						return self.barPosition(i)
@@ -157,7 +149,10 @@ define("p3/widget/D3StackedBarChart", [
 							.duration(200)
 							.style("opacity", .95);
 						// console.log(d);
-						var content = lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, d.phenotypes[index], d['dist'][index]]);
+
+						arguments[1] = index;
+						var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', d);
+
 						self.tooltipLayer.html(content)
 							.style("left", d3.event.pageX + "px")
 							.style("top", d3.event.pageY + "px")
@@ -176,12 +171,12 @@ define("p3/widget/D3StackedBarChart", [
 			this.bars.append("text").text(function(d){
 				return d.label
 			})
-				.attr("y", Math.round(this.canvasSize.height - 11))
+				.attr("y", Math.round(this.canvasHeight - 11))
 				.attr("x", function(d, i){
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.textPosition(i);
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
@@ -200,9 +195,9 @@ define("p3/widget/D3StackedBarChart", [
 		},
 		barHeight: function(value, total){
 			if(this.normalize){
-				return this.canvasSize.height - this.pf_y_scale((value / total) * 100);
+				return this.canvasHeight - this.pf_y_scale((value / total) * 100);
 			}else{
-				return this.canvasSize.height - this.pf_y_scale(value);
+				return this.canvasHeight - this.pf_y_scale(value);
 			}
 		},
 		scale: function(){
@@ -234,7 +229,7 @@ define("p3/widget/D3StackedBarChart", [
 					.transition().duration(600)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
@@ -298,14 +293,51 @@ define("p3/widget/D3StackedBarChart", [
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
 
 		},
 
-		renderLegend: function(legend){
+		renderNav: function(html){
+
+			domConstruct.place(html, domQuery(".chart-wrapper nav")[0], "only");
+
+			var self = this;
+			var scaleToggle = domQuery(".chart-wrapper nav .scale li");
+			var sortToggle = domQuery(".chart-wrapper nav .sort li");
+
+			// Set up the scale toggle
+			if(scaleToggle != null){
+				scaleToggle.on('click', function(evt){
+					scaleToggle.removeClass("active");
+					var target = evt.srcElement || evt.target;
+
+					self.normalize = target.className == "normalize";
+					domClass.add(target, "active");
+
+					self.scale(function(){
+						return self.sort();
+					});
+				});
+			}
+
+			// Set up the sort controls
+			if(sortToggle != null){
+				sortToggle.on('click', function(evt){
+					sortToggle.removeClass("active");
+					domClass.add(evt.srcElement || evt.target, "active");
+
+					return self.sort();
+				});
+			}
+		},
+
+		renderLegend: function(title, legend){
+
+			d3.select("p.legend").select("label").text(title);
+
 			d3.select("p.legend").selectAll("svg")
 				.data(legend)
 				.insert("circle")
@@ -320,51 +352,7 @@ define("p3/widget/D3StackedBarChart", [
 					return d
 				});
 		},
-		prepareSVGDrawTarget: function(params){
 
-			var chartSize = params.size || this.getContainerSize(params.target);
-			var chartMargin = params.margins || [0, 0, 0, 0];
-
-			var canvasSize = {
-				width: chartSize.width - chartMargin[1] - chartMargin[3],
-				height: chartSize.height - chartMargin[0] - chartMargin[2]
-			};
-
-			var chart = d3.select(".chart")
-				.insert("svg", ":first-child")
-				.attr("class", "svgChartContainer")
-				.attr("width", chartSize.width)
-				.attr("height", chartSize.height);
-
-			var canvas = chart.append("g")
-				.attr("class", "svgChartCanvas")
-				.attr("width", canvasSize.width)
-				.attr("height", canvasSize.height)
-				.attr("transform", "translate(" + chartMargin[3] + "," + chartMargin[0] + ")");
-
-			return {
-				"chart": chart,
-				"canvas": canvas,
-				"canvas_size": canvasSize,
-				"chart_size": chartSize
-			};
-		},
-		getContainerSize: function(){
-			var container = domQuery(".chart", this.node)[0] || null;
-
-			if(container){
-				return {
-					width: domStyle.get(container, "width"),
-					height: domStyle.get(container, "height")
-				};
-			}else{
-				console.error("Cannot find chart Dom Node");
-				return {
-					width: 0,
-					height: 0
-				};
-			}
-		},
 		resize: function(){
 			var self = this;
 			clearTimeout(this.resizer);
@@ -377,9 +365,9 @@ define("p3/widget/D3StackedBarChart", [
 			var container = domQuery(".chart", this.node)[0] || null;
 
 			var chartWidth = domStyle.get(container, "width");
-			var canvasWidth = chartWidth - this.drawTargetParams.margins[1] - this.drawTargetParams.margins[3];
+			var canvasWidth = chartWidth - this.margin.right - this.margin.left;
 
-			this.canvasSize.width = canvasWidth;
+			this.canvasWidth = canvasWidth;
 
 			// console.log("resize canvasWidth: ", canvasWidth);
 
@@ -412,7 +400,7 @@ define("p3/widget/D3StackedBarChart", [
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})

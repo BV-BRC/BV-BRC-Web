@@ -1,14 +1,48 @@
 define("p3/widget/viewer/DataType", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/when", "dojo/request", "dojo/string", "dojo/topic",
-	"dojo/dom-construct", "dojo/query", "dojo/dom-class",
+	"dojo/dom-construct", "dojo/query", "dojo/dom-class", "dojo/dom-style",
 	"dijit/layout/ContentPane", "dijit/_WidgetBase", "dijit/_TemplatedMixin",
 	"d3/d3",
-	"./Base", "../../util/PathJoin"
+	"./Base", "../../util/PathJoin", "../D3StackedBarChart", "../D3HistogramChart", "../D3HorizontalBarChart"
 ], function(declare, lang, when, request, String, Topic,
-			domConstruct, domQuery, domClass,
+			domConstruct, domQuery, domClass, domStyle,
 			ContentPane, WidgetBase, Templated,
 			d3,
-			ViewerBase, PathJoin){
+			ViewerBase, PathJoin, StackedBarChart, HistogramChart, HorizontalBarChart){
+
+	var pathwayNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Real Values</li>",
+				"<li class='normalize'>Normalize</li>",
+			"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Genus</li>",
+				"<li class='value'>Conserved</li>",
+			"</ul>"
+	].join("\n");
+
+	var proteinfamilyNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Real Values</li>",
+				"<li class='normalize'>Normalize</li>",
+			"</ul>",
+		"<span class='label'>Data Set</span>",
+			"<ul class='dataset'>",
+				"<li class='fvh active'>Functional vs. Hypothetical</li>",
+				"<li class='cva'>Core vs. Accessory</li>",
+		"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Genus</li>",
+			"</ul>",
+			"<ul class='sort'>",
+				"<li class='functional'>Functional</li>",
+				"<li class='hypothetical'>Hypothetical</li>",
+			"</ul>"
+	].join("\n");
 
 	var attributeTemplate = [
 		"<a class='left right-align-text attribute-line' href='{attr.link}'>",
@@ -67,23 +101,43 @@ define("p3/widget/viewer/DataType", [
 			return popularListUl;
 		},
 
+		_initialSelection: function(el){
+
+			var event;
+			if(document.createEvent) {
+				event = document.createEvent("HTMLEvents");
+				event.initEvent("mouseover", true, true);
+			}else{
+				event = document.createEventObject();
+				event.eventType = "mouseover";
+			}
+			event.eventName = "initialMouseOver";
+
+			if(document.createEvent){
+				el.dispatchEvent(event);
+			}else{
+				el.fireEvent("on" + event.eventType, event);
+			}
+		},
+
 		_activatePopularGenomeListTab: function(){
 			var links = domQuery(".data-box.popular-box .genome-link");
 			links.forEach(function(link){
 
 				link.addEventListener('click', function(evt){
-					var link = evt.srcElement.dataset.genomeHref;
-					// console.log(evt, link);
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
+
 					Topic.publish('/navigate', {href: link});
 				});
 				link.addEventListener('mouseover', function(evt){
-					// console.log(evt);
-					var targetTab = evt.srcElement.hash;
+					var target = evt.target || evt.srcElement;
+					var targetTab = target.hash;
 
 					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
 						domClass.remove(l, "ui-state-active");
 					});
-					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+					domClass.add(target.parentElement, "ui-state-active");
 
 					domQuery(".genome-data").forEach(function(panel){
 						if("#" + panel.id == targetTab){
@@ -94,6 +148,8 @@ define("p3/widget/viewer/DataType", [
 					});
 				});
 			});
+
+			this._initialSelection(links[0])
 		},
 
 		_setAntibioticResistanceAttr: function(data){
@@ -696,6 +752,33 @@ define("p3/widget/viewer/DataType", [
 			domConstruct.place(popularListNode, tabDiv);
 
 			this._activatePopularGenomeListTab();
+
+			// render pathway conservation chart
+			this._renderPathwayConservation(data['conservation']['data']);
+		},
+
+		_renderPathwayConservation: function(data){
+
+			var legend = ["80 ~ 100 %", "60 ~ 80 %", "40 ~ 60 %", "20 ~ 40 %", "< 20 %"];
+			var processed = data.map(function(d, idx){
+				return {
+					"index": idx,
+					"label": d.pathogen,
+					"total": d.total,
+					"tooltip": function(d, idx){
+						return lang.replace('Genus: {0}<br/>Conservation: {1}<br/>Count: {2}', [d.label, legend[idx], d.dist[idx]]);
+					},
+					"dist": d.dist
+				}
+			});
+
+			var targetNode = domQuery("#dlp-pathways-conservation")[0];
+			var pathwayChart = new StackedBarChart();
+			pathwayChart.init(targetNode);
+			pathwayChart.renderNav(pathwayNavBarHtml);
+			pathwayChart.renderLegend("Pathway Conservation Across %Genomes: ", legend);
+			pathwayChart.processData(processed);
+			pathwayChart.render();
 		},
 
 		_buildPathwaysPopularPanel: function(popularList){
@@ -737,6 +820,115 @@ define("p3/widget/viewer/DataType", [
 
 		_setProteinFamiliesAttr: function(data){
 
+			var popularList = data['popularGenomes']['popularList'];
+
+			var popularTabList = this._buildProteinFamiliesPopularPanel();
+			var popularListUl = this._buildProteinFamiliesPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			// render protein family distribution chart
+			this._renderProteinFamiliesDistribution(data['FIGfams']['data']);
+			// render popular genome chart
+			this._renderProteinFamiliesByGenus();
+
+			// this._activatePopularGenomeListTab();
+			this._activateProteinFamiliesPopularGenomeListTab();
+		},
+
+		_buildProteinFamiliesPopularGenomeList: function(popularList){
+
+			var template = [
+				"<li class='left'>",
+					"<a onmouseover=ProteinFamilyDistChart.update('{0}') data-genome-href='{1}' class='genome-link ui-tabs-anchor' href='#genome-tab{2}'>{3}</a>",
+					"<div class='arrow_far'></div>",
+				"</li>",
+				"<li class='right'>",
+					"<a onmouseover=ProteinFamilyDistChart.update('{4}') data-genome-href='{5}' class='genome-link ui-tabs-anchor' href='#genome-tab{6}'>{7}</a>",
+					"<div class='arrow'></div>",
+				"</li>"
+			].join("\n");
+
+			var rtn = ["<ul class='no-decoration genome-list tab-headers third'>"];
+			for (var i = 0, len = popularList.length / 2; i < len; i++){
+				var idxLeft = i;
+				var idxRight = i + 11;
+
+				rtn.push(lang.replace(template, [JSON.stringify(popularList[idxLeft].popularData), popularList[idxLeft].link, idxLeft, popularList[idxLeft].popularName, JSON.stringify(popularList[idxRight].popularData), popularList[idxRight].link, idxRight, popularList[idxRight].popularName]));
+			}
+			rtn.push("</ul>");
+
+			return rtn;
+		},
+		_activateProteinFamiliesPopularGenomeListTab: function(){
+			var links = domQuery(".data-box.popular-box .genome-link");
+			links.forEach(function(link){
+
+				link.addEventListener('click', function(evt){
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
+					Topic.publish('/navigate', {href: link});
+				});
+				link.addEventListener('mouseover', function(evt){
+					var target = evt.target || evt.srcElement;
+					// var targetTab = target.hash;
+
+					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
+						domClass.remove(l, "ui-state-active");
+					});
+					domClass.add(target.parentElement, "ui-state-active");
+				});
+			});
+
+			this._initialSelection(links[0]);
+		},
+
+		_buildProteinFamiliesPopularPanel: function(){
+
+			return [
+				"<div class='genome-data right half'>",
+					"<div id='dlp-proteinfamilies-dist-genus'>",
+					"</div>",
+				"</div>"];
+		},
+
+		_renderProteinFamiliesByGenus: function(){
+
+			window.ProteinFamilyDistChart = new HistogramChart();
+			window.ProteinFamilyDistChart.init("#dlp-proteinfamilies-dist-genus", "dlp");
+			window.ProteinFamilyDistChart.renderTitle("Conservation Across %Genomes", "# of Protein Families");
+		},
+
+		_renderProteinFamiliesDistribution: function(data){
+
+			var legend = ["Functional", "Hypothetical"];
+
+			var processed = data.map(function(datum, i){
+				return {
+					"index": i,
+					"label": datum.pathogen,
+					"genomes": datum.genomes,
+					"total": parseInt(datum.total),
+					"tooltip": function(d, idx){
+						return lang.replace('Genus: {0}<br/>Data: {1}<br/>Count: {2}', [d.label,legend[idx], d.dist[idx]])
+					},
+					"dist": [parseInt(datum.functional), parseInt(datum.hypothetical)]
+				};
+			});
+
+			var targetNode = domQuery("#dlp-proteinfamilies-dist-genera")[0];
+			var pfChart = new StackedBarChart();
+			pfChart.init(targetNode);
+			pfChart.renderNav(proteinfamilyNavBarHtml);
+			pfChart.renderLegend("Legend: ", legend);
+			pfChart.processData(processed);
+			pfChart.render();
 		},
 
 		_setSpecialtyGenesAttr: function(data){
@@ -797,7 +989,207 @@ define("p3/widget/viewer/DataType", [
 			// select genomes
 			var popularList = data['popularGenomes']['popularList'];
 
-			console.log(this.viewer, data);
+			var popularTabList = this._buildTranscriptomicsPopularPanel();
+			var popularListUl = this._buildTranscriptomicsPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			// render top 5 species
+			this._renderTranscriptomicsTopSpecies(data['topSpecies']['data']);
+
+			// render featured experiments
+			this._renderTranscriptomicsFeaturedExperiments(data['featuredExperiment']['data']);
+
+			// render select genomes
+			this._renderTranscriptomicsPopularPanelChart();
+
+			// this._activatePopularGenomeListTab();
+			this._activateTranscriptomicsPopularGenomeListTab();
+		},
+
+		_buildTranscriptomicsPopularGenomeList: function(popularList){
+
+			var popularListUl = ["<ul class='no-decoration genome-list tab-headers third'>"];
+
+			var template = [
+				"<li>",
+					"<a onmouseover=TranscriptomicsSelectGenome.update('{0}') class='genome-link' href='#genome-tab{1}' data-genome-href='{2}'>{3}</a>",
+					"<div class='arrow'></div>",
+				"</li>"
+			].join("\n");
+
+			popularList.forEach(function(genome, idx){
+				popularListUl.push(lang.replace(template, [encodeURIComponent(JSON.stringify(genome)), (idx + 1), genome.link, genome.popularName]));
+			});
+			popularListUl.push("</ul>");
+
+			return popularListUl;
+		},
+
+		_activateTranscriptomicsPopularGenomeListTab: function(){
+			var links = domQuery(".data-box.popular-box .genome-link");
+			links.forEach(function(link){
+
+				link.addEventListener('click', function(evt){
+					var target = evt.target || evt.srcElement;
+					var link = target.dataset.genomeHref;
+					Topic.publish('/navigate', {href: link});
+				});
+				link.addEventListener('mouseover', function(evt){
+					var target = evt.target || evt.srcElement;
+					// var targetTab = target.hash;
+
+					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
+						domClass.remove(l, "ui-state-active");
+					});
+					domClass.add(target.parentElement, "ui-state-active");
+				});
+			});
+
+			this._initialSelection(links[0]);
+		},
+
+		_renderTranscriptomicsPopularPanelChart: function(){
+
+			var self = this;
+
+			self.topGeneModificationChart = new HorizontalBarChart();
+			self.topGeneModificationChart.init("#dlp-transcriptomics-top-mutants", "dlp-tr-gm", {top: 0, bottom: 38, left: 145});
+			self.topGeneModificationChart.renderTitle("Experiments");
+			self.topExperimentConditionChart = new HorizontalBarChart();
+			self.topExperimentConditionChart.init("#dlp-transcriptomics-top-conditions", "dlp-tr-ec", {top: 0, bottom: 38, left: 145});
+			self.topExperimentConditionChart.renderTitle("Experiments");
+
+			window.TranscriptomicsSelectGenome = (function(){
+				return {
+					update: function(data){
+
+						var processed = JSON.parse(decodeURIComponent(data));
+
+						self.topGeneModificationChart.update(processed['GeneModifications']['data']);
+						self.topExperimentConditionChart.update(processed['ExperimentConditions']['data']);
+					}
+				}
+			})();
+		},
+
+		_buildTranscriptomicsPopularPanel: function(){
+
+			return [
+				"<div class='genome-data right half'>",
+					"<div id='dlp-transcriptomics-top-mutants'>",
+						"<b>Top 5 Gene Modifications</b>",
+					"</div>",
+					"<div id='dlp-transcriptomics-top-conditions'>",
+						"<b>Top 5 Experiment Conditions</b>",
+					"</div>",
+					"<p><a class='double-arrow-link' id='dlp-transcriptomics-linkout' href='ExperimentList?cType=genome&cId=83332.12&kw='>View All Experiment for This Genome</a></p>",
+				"</div>"
+			];
+		},
+
+		_renderTranscriptomicsTopSpecies: function(data){
+
+			// var chart = new HorizontalBarChart();
+			// chart.init("#dlp-transcriptomics-top-species", "dlp-tr-top-sp", {top: 0, bottom: 0, left: 10});
+			// chart.render(data);
+
+			var container = d3.select("#dlp-transcriptomics-top-species .chart");
+			var containerWidth = domStyle.get(container, "width") || 408;
+			var containerHeight = domStyle.get(container, "height") || 272;
+
+			var chart = d3.select(".chart")
+				.insert("svg", ":first-child")
+				.attr("class", "svgChartContainer")
+				.attr("width", containerWidth)
+				.attr("height", containerHeight);
+
+			var chartWidth = domStyle.get(chart, "width") || 408;
+			var chartHeight = domStyle.get(chart, "height") || 272;
+
+			var canvas = chart.append("g")
+				.attr("class", "svgChartCanvas")
+				.attr("width", chartWidth)
+				.attr("height", chartHeight);
+
+			var upperBound = d3.max(data, function(d, i) {
+				return d.count;
+			});
+			var xScale = d3.scale.linear().domain([0, upperBound]).range([0, chartWidth]);
+			var yScale = d3.scale.linear().domain([0, data.length]).range([0, chartHeight]);
+
+			var bars = canvas.selectAll("g.bar").data(data).enter().append("g");
+
+			// add rect bar
+			bars.append("rect").attr("class", function(d, i) {
+				return "bar-" + i;
+			}).attr("height", function(d, i) {
+				return 45;
+			}).attr("width", function(d, i) {
+				return xScale(d.count);
+			}).attr("y", function(d, i) {
+				return yScale(i);
+			}).attr("rx", 3).attr("ry", 3)
+				.on("click", function(d, i) {
+
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
+
+			// add text
+			bars.append("text").attr("class", "label1")
+				.attr("x", "10")
+				.attr("y", function(d, i) {
+					return yScale(i) + 20;
+				}).text(function(d) {
+				return d.label;
+			})
+				.on("click", function(d, i) {
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
+			bars.append("text").attr("class", "label2")
+				.attr("x", "10")
+				.attr("y", function(d, i) {
+					return yScale(i) + 38;
+				}).text(function(d) {
+				return d.count + " Experiments";
+			})
+				.on("click", function(d, i) {
+					var url = "/view/Taxonomy/2#view_tab=transcriptomics&filter=eq(organism," + encodeURIComponent(d.label) + ")";
+					Topic.publish("/navigate", {href: url});
+				});
+		},
+
+		_renderTranscriptomicsFeaturedExperiments: function(list){
+
+			var targetNode = domQuery("#dlp-transcriptomics-featured-experiments h3")[0];
+
+			var template = [
+				"<div class='far'>",
+					"<img src='/patric/images/global_experiment.png' alt='Experiment'>",
+					"<div class='exp-name'>",
+						"<a href='{exp.link}'>{exp.title}</a>",
+						"<div class='organism'>{exp.organism}</div>",
+						"<div>",
+							"<span>Accession: {exp.accession}</span>,",
+							"<span>PubMed: <a class='arrow-slate-e' href='http://www.ncbi.nlm.nih.gov/pubmed/{exp.pmid}' target='_blank'>{exp.pmid}</a></span>",
+						"</div>",
+					"</div>",
+				"</div>"
+			].join("\n");
+
+			var renderedList = list.map(function(exp){
+				return lang.replace(template, {exp: exp});
+			}).join("\n");
+
+			domConstruct.place(domConstruct.toDom(renderedList), targetNode, "after");
 		},
 
 		postCreate: function(){

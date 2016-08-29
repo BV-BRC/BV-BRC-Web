@@ -106,11 +106,12 @@ define("p3/widget/TaxonomyProfile", [
 		render_chart: function(){
 
 			if(!this.chart){
-				this.chart = new D3HorizontalBarChart(this.chartNode, "txProfile");
+				this.chart = new D3HorizontalBarChart();
+				this.chart.init(this.chartNode, "txProfile");
 				this.chart.render(this.data);
 			}else{
 
-				this.chart.render(this.data);
+				this.chart.update(this.data);
 			}
 		}
 		,

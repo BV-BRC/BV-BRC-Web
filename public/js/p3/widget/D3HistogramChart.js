@@ -1,4 +1,4 @@
-define("p3/widget/D3HorizontalBarChart", [
+define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
 	"d3/d3"
@@ -13,8 +13,8 @@ define("p3/widget/D3HorizontalBarChart", [
 			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "last");
 
 			this.nodeWidth = domStyle.get(this.node, "width");
-			this.nodeHeight = domStyle.get(this.node, "height") || 250;
-			this.margin = lang.mixin({top: 0, right: 10, bottom: 20, left: 250}, margin);
+			this.nodeHeight = domStyle.get(this.node, "height");
+			this.margin = lang.mixin({top: 10, right: 0, bottom: 50, left: 60}, margin);
 
 			this.canvas = d3.select(".chart." + className)
 				.insert("svg", ":first-child")
@@ -32,8 +32,7 @@ define("p3/widget/D3HorizontalBarChart", [
 		renderTitle: function(xAxisTitle, yAxisTitle){
 			if(xAxisTitle){
 				this.canvas.append("text")
-					.attr("transform", "translate(" + (this.nodeWidth / 2 - 20) + "," + (this.nodeHeight - 10) + ")")
-
+					.attr("transform", "translate(100," + (this.nodeHeight - 10) + ")")
 					.text(xAxisTitle);
 			}
 
@@ -50,6 +49,11 @@ define("p3/widget/D3HorizontalBarChart", [
 			// will use '{label} ({count})' if tooltip is omitted.
 		 */
 		render: function(data){
+
+			if(typeof data == "string"){
+				data = JSON.parse(data);
+			}
+
 			if(this.data !== data){
 				this.data = data;
 			}else{
@@ -68,28 +72,24 @@ define("p3/widget/D3HorizontalBarChart", [
 				return d.label;
 			});
 
-			this.y_scale = d3.scale.ordinal()
-				.rangeRoundBands([self.margin.top, (self.nodeHeight - self.margin.top - self.margin.bottom)], .3, 0)
+			this.x_scale = d3.scale.ordinal()
+				.rangeRoundBands([self.margin.left, (self.nodeWidth - self.margin.right - self.margin.left)], .3, 0)
 				.domain(labels);
-			this.y_scale_range = this.y_scale.range();
-			// console.log(this.y_scale.rangeBand(), this.y_scale_range);
+			this.x_scale_range = this.x_scale.range();
 
-			this.x_scale = d3.scale.linear()
-				.range([0, (self.nodeWidth - self.margin.right - self.margin.left)])
-				.domain([0, maxValue]);
+			this.y_scale = d3.scale.linear()
+				.range([0, (self.nodeHeight - self.margin.top - self.margin.bottom)])
+				.domain([maxValue, 0]);
 
 			this.yAxis = d3.svg.axis()
 				.scale(this.y_scale)
 				.orient("left")
-				.tickFormat(function(d){
-					return (d.length > 32) ? d.substr(0, 32) + '...' : d;
-				})
+				.tickFormat(d3.format(",.0d"))
 				.tickPadding(2).tickSize(1);
 
 			this.xAxis = d3.svg.axis()
 				.scale(this.x_scale)
 				.orient("bottom")
-				.tickFormat(d3.format(",.0d"))
 				.tickPadding(2).tickSize(1);
 
 			this.canvas.selectAll("g.axis").remove();
@@ -101,7 +101,7 @@ define("p3/widget/D3HorizontalBarChart", [
 				.attr("class", "y axis");
 
 			this.canvas.append("g")
-				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.nodeHeight - self.margin.bottom]))
+				.attr("transform", lang.replace("translate({0}, {1})", [0, self.nodeHeight - self.margin.bottom]))
 				.call(this.xAxis)
 				.attr("class", "x axis");
 
@@ -111,23 +111,23 @@ define("p3/widget/D3HorizontalBarChart", [
 				.data(data)
 				.enter()
 				.append("rect")
-				.attr("x", function(){
-					return self.margin.left;
+				.attr("x", function(d, i){
+					return self.x_scale_range[i];
 				})
 				.attr("y", function(d, i){
-					return self.y_scale_range[i] + self.margin.top;
+					return self.y_scale(d.count) + self.margin.top;
 				})
-				.attr("width", function(d){
-					return self.x_scale(d.count)
+				.attr("height", function(d){
+					return self.nodeHeight - self.margin.top - self.margin.bottom - self.y_scale(d.count)
 				})
-				.attr("height", self.y_scale.rangeBand())
+				.attr("width", self.x_scale.rangeBand())
 				.attr("fill", '#1976D2')
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
 						.duration(200)
 						.style("opacity", .95);
 
-					var content = (self.data[i].tooltip) ? self.data[i].tooltip.apply(this, arguments) : lang.replace('{label} ({count})', self.data[i]);
+					var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', self.data[i]);
 
 					self.tooltipLayer.html(content)
 						.style("left", d3.event.pageX + "px")
@@ -139,16 +139,12 @@ define("p3/widget/D3HorizontalBarChart", [
 						.style("opacity", 0)
 				});
 		},
-		resize: function(){
-			var self = this;
-			clearTimeout(this.resizer);
-
-			this.resizer = setTimeout(function(){
-				self.doResize()
-			}, 300);
-		},
 
 		update: function(data){
+			if(typeof data == "string"){
+				data = JSON.parse(data);
+			}
+
 			if(this.canvas.select("g.bars").selectAll("rect").length === 0){
 				this.render(data);
 				return;
@@ -166,9 +162,8 @@ define("p3/widget/D3HorizontalBarChart", [
 			});
 			var self = this;
 
-			this.x_scale.domain([0, maxValue]);
-			this.y_scale.domain(labels);
-			this.y_scale_range = this.y_scale.range();
+			this.x_scale.domain(labels);
+			this.y_scale.domain([maxValue, 0]);
 			this.xAxis.scale(this.x_scale);
 			this.yAxis.scale(this.y_scale);
 
@@ -176,14 +171,22 @@ define("p3/widget/D3HorizontalBarChart", [
 			this.canvas.select("g.y").transition().duration(600).call(this.yAxis);
 
 			this.canvas.select("g.bars").selectAll("rect").transition().duration(600)
-				.attr("width", function(d, i){
-					return (data[i] != undefined) ? self.x_scale(data[i].count) : 0;
+				.attr("height", function(d, i){
+					return self.nodeHeight - self.margin.top - self.margin.bottom - self.y_scale(data[i].count);
 				})
 				.attr("y", function(d, i){
-					return (data[i] != undefined) ? self.y_scale_range[i] + self.margin.top : 0;
-				});
+					return self.y_scale(data[i].count) + self.margin.top;
+				})
 		},
 
+		resize: function(){
+			var self = this;
+			clearTimeout(this.resizer);
+
+			this.resizer = setTimeout(function(){
+				self.doResize()
+			}, 300);
+		},
 		doResize: function(){
 			var self = this;
 
