@@ -3,12 +3,12 @@ define([
 	"dojo/dom-construct", "dojo/query", "dojo/dom-class",
 	"dijit/layout/ContentPane", "dijit/_WidgetBase", "dijit/_TemplatedMixin",
 	"d3/d3",
-	"./Base", "../../util/PathJoin", "../D3StackedBarChart", "../D3HistogramChart"
+	"./Base", "../../util/PathJoin", "../D3StackedBarChart", "../D3HistogramChart", "../D3HorizontalBarChart"
 ], function(declare, lang, when, request, String, Topic,
 			domConstruct, domQuery, domClass,
 			ContentPane, WidgetBase, Templated,
 			d3,
-			ViewerBase, PathJoin, Chart, HistogramChart){
+			ViewerBase, PathJoin, StackedBarChart, HistogramChart, HorizontalBarChart){
 
 	var pathwayNavBarHtml = [
 		"<span class='label'>Scale</span>",
@@ -751,7 +751,8 @@ define([
 			});
 
 			var targetNode = domQuery("#dlp-pathways-conservation")[0];
-			var pathwayChart = new Chart(targetNode);
+			var pathwayChart = new StackedBarChart();
+			pathwayChart.init(targetNode);
 			pathwayChart.renderNav(pathwayNavBarHtml);
 			pathwayChart.renderLegend("Pathway Conservation Across %Genomes: ", legend);
 			pathwayChart.processData(processed);
@@ -867,15 +868,14 @@ define([
 			return [
 				"<div class='genome-data right half'>",
 					"<div id='dlp-proteinfamilies-dist-genus'>",
-						"<div class='chart'></div>",
 					"</div>",
 				"</div>"];
 		},
 
 		_renderProteinFamiliesByGenus: function(){
-			var targetNode = domQuery("#dlp-proteinfamilies-dist-genus")[0];
 
-			window.ProteinFamilyDistChart = new HistogramChart(targetNode, "dlp");
+			window.ProteinFamilyDistChart = new HistogramChart();
+			window.ProteinFamilyDistChart.init("#dlp-proteinfamilies-dist-genus", "dlp");
 			window.ProteinFamilyDistChart.renderTitle("Conservation Across %Genomes", "# of Protein Families");
 		},
 
@@ -897,7 +897,8 @@ define([
 			});
 
 			var targetNode = domQuery("#dlp-proteinfamilies-dist-genera")[0];
-			var pfChart = new Chart(targetNode);
+			var pfChart = new StackedBarChart();
+			pfChart.init(targetNode);
 			pfChart.renderNav(proteinfamilyNavBarHtml);
 			pfChart.renderLegend("Legend: ", legend);
 			pfChart.processData(processed);
@@ -962,7 +963,134 @@ define([
 			// select genomes
 			var popularList = data['popularGenomes']['popularList'];
 
-			console.log(this.viewer, data);
+			var popularTabList = this._buildTranscriptomicsPopularPanel();
+			var popularListUl = this._buildTranscriptomicsPopularGenomeList(popularList);
+
+			var tabDiv = domQuery(".data-box.popular-box div.group")[0];
+
+			var popularTabNode = domConstruct.toDom(popularTabList.join(""));
+			var popularListNode = domConstruct.toDom(popularListUl.join(""));
+
+			domConstruct.place(popularTabNode, tabDiv);
+			domConstruct.place(popularListNode, tabDiv);
+
+			// this._activatePopularGenomeListTab();
+			this._activateTranscriptomicsPopularGenomeListTab();
+
+			// render top 5 species
+
+			// render featured experiments
+			this._renderTranscriptomicsFeaturedExperiments(data['featuredExperiment']['data']);
+
+			// render select genomes
+			this._renderTranscriptomicsPopularPanelChart();
+		},
+
+		_buildTranscriptomicsPopularGenomeList: function(popularList){
+
+			var popularListUl = ["<ul class='no-decoration genome-list tab-headers third'>"];
+
+			var template = [
+				"<li>",
+					"<a onmouseover=TranscriptomicsSelectGenome.update('{0}') class='genome-link' href='#genome-tab{1}'>{2}</a>",
+					"<div class='arrow'></div>",
+				"</li>"
+			].join("\n");
+
+			popularList.forEach(function(genome, idx){
+				popularListUl.push(lang.replace(template, [encodeURIComponent(JSON.stringify(genome)), (idx + 1), genome.popularName]));
+			});
+			popularListUl.push("</ul>");
+
+			return popularListUl;
+		},
+
+		_activateTranscriptomicsPopularGenomeListTab: function(){
+			var links = domQuery(".data-box.popular-box .genome-link");
+			links.forEach(function(link){
+
+				link.addEventListener('click', function(evt){
+					var link = evt.srcElement.dataset.genomeHref;
+					Topic.publish('/navigate', {href: link});
+				});
+				link.addEventListener('mouseover', function(evt){
+					var targetTab = evt.srcElement.hash;
+
+					domQuery(".data-box.popular-box .genome-list li").forEach(function(l){
+						domClass.remove(l, "ui-state-active");
+					});
+					domClass.add(evt.srcElement.parentElement, "ui-state-active");
+				});
+			});
+		},
+
+		_renderTranscriptomicsPopularPanelChart: function(){
+
+			var self = this;
+			// var gmTargetNode = domQuery("")[0];
+			// var ecTargetNode = domQuery("")[0];
+
+			self.topGeneModificationChart = new HorizontalBarChart();
+			self.topGeneModificationChart.init("#dlp-transcriptomics-top-mutants", "dlp-tr-gm", {top: 0, bottom: 38, left: 145});
+			self.topExperimentConditionChart = new HorizontalBarChart();
+			self.topExperimentConditionChart.init("#dlp-transcriptomics-top-conditions", "dlp-tr-ec", {top: 0, bottom: 38, left: 145});
+
+			window.TranscriptomicsSelectGenome = (function(){
+				return {
+					update: function(data){
+
+						var processed = JSON.parse(decodeURIComponent(data));
+
+						self.topGeneModificationChart.update(processed['GeneModifications']['data']);
+						self.topExperimentConditionChart.update(processed['ExperimentConditions']['data']);
+					}
+				}
+			})();
+		},
+
+		_buildTranscriptomicsPopularPanel: function(){
+
+			return [
+				"<div class='genome-data right half'>",
+					"<div id='dlp-transcriptomics-top-mutants'>",
+						"<b>Top 5 Gene Modifications</b>",
+					"</div>",
+					"<div id='dlp-transcriptomics-top-conditions'>",
+						"<b>Top 5 Experiment Conditions</b>",
+					"</div>",
+					"<p><a class='double-arrow-link' id='dlp-transcriptomics-linkout' href='ExperimentList?cType=genome&cId=83332.12&kw='>View All Experiment for This Genome</a></p>",
+				"</div>"
+			];
+		},
+
+		_renderTranscriptomicsTopSpecies: function(){
+
+			var targetNode = domQuery("#dlp-transcriptomics-top-species")
+		},
+
+		_renderTranscriptomicsFeaturedExperiments: function(list){
+
+			var targetNode = domQuery("#dlp-transcriptomics-featured-experiments h3")[0];
+
+			var template = [
+				"<div class='far'>",
+					"<img src='/patric/images/global_experiment.png' alt='Experiment'>",
+					"<div class='exp-name'>",
+						"<a href='{exp.link}'>{exp.title}</a>",
+						"<div class='organism'>{exp.organism}</div>",
+						"<div>",
+							"<span>Accession: {exp.accession}</span>,",
+							"<span>PubMed: <a class='arrow-slate-e' href='http://www.ncbi.nlm.nih.gov/pubmed/{exp.pmid}' target='_blank'>{exp.pmid}</a></span>",
+						"</div>",
+					"</div>",
+				"</div>"
+			].join("\n");
+
+			var renderedList = list.map(function(exp){
+				return lang.replace(template, {exp: exp});
+			}).join("\n");
+
+			domConstruct.place(domConstruct.toDom(renderedList), targetNode, "after");
 		},
 
 		postCreate: function(){

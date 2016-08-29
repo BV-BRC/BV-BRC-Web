@@ -4,6 +4,12 @@
   position: relative
 }
 
+.patric .dlp h2 {
+  color: #666666;
+  text-transform: uppercase;
+  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+}
+
 .patric .dlp h3 {
   font-size: 16px;
   line-height: 20px;
@@ -828,6 +834,24 @@ svg.definitions #tile1 line.function {
 #dlp-transcriptomics-top-species .bar-4 {
   fill: url(/portal/portal/patric/Transcriptomics#bar-4);
   cursor: pointer;
+}
+
+#dlp-transcriptomics-featured-experiments {
+  width:410px;
+  line-height: 1.6em;
+}
+
+#dlp-transcriptomics-featured-experiments img {
+  float: left;
+  padding: 3px 3px 0 3px;
+}
+
+#dlp-transcriptomics-featured-experiments .exp-name {
+  margin-left: 60px;
+}
+
+#dlp-transcriptomics-featured-experiments .organism {
+  color: #C60;
 }
 
 #dlp-transcriptomics-top-mutants .bar {

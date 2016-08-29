@@ -119,8 +119,8 @@ define([
 
 		render_chart: function(){
 			if(!this.chart){
-				this.chart = new D3StackedBarChart(this.chartNode);
-				domClass.add(this.chart.node, "amr");
+				this.chart = new D3StackedBarChart();
+				this.chart.init(this.chartNode, "amr");
 
 				var legend = Object.keys(phenotypeDef);
 				this.chart.renderNav(chartNavBarHtml);

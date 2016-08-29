@@ -12,21 +12,50 @@ define([
 		data: null,
 		templateString: Template,
 
-		constructor: function(target){
+		init: function(target, className, margin){
+			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
+
 			this.node = domConstruct.place(this.templateString, target, "only");
 
 			this.currentSort = "label";
 			this.ascendSort = true;
 			this.normalize = false;
 
-			this.drawTargetParams = {
-				target: this.node,
-				margins: [10, 0, 0, 40]
-			};
-			var drawTarget = this.prepareSVGDrawTarget(this.drawTargetParams);
-			this.chart = drawTarget.chart;
-			this.canvas = drawTarget.canvas;
-			this.canvasSize = drawTarget.canvas_size;
+			this.margin = margin = lang.mixin({top: 10, right: 0, bottom: 0, left: 40}, margin);
+
+			var container = domQuery(".chart", this.node)[0];
+
+			var containerWidth = domStyle.get(container, "width");
+			var containerHeight = domStyle.get(container, "height");
+
+			this.canvasWidth = containerWidth - margin.right - margin.left;
+			this.canvasHeight = containerHeight - margin.top - margin.bottom;
+
+			// console.log(containerWidth, containerHeight, this.canvasWidth, this.canvasHeight);
+
+			if(className){
+				d3.select(".chart-wrapper").attr("class", "chart-wrapper " + className);
+			}
+
+			this.chart = d3.select(".chart")
+				.insert("svg", ":first-child")
+				.attr("class", "svgChartContainer")
+				.attr("width", containerWidth)
+				.attr("height", containerHeight);
+
+			this.canvas = this.chart.append("g")
+				.attr("class", "svgChartCanvas")
+				.attr("width", this.canvasWidth)
+				.attr("height", this.canvasHeight)
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			if(d3.select("div.tooltip").length > 0){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+			}
 		},
 
 		processData: function(data){
@@ -34,6 +63,8 @@ define([
 			// TODO: implement check dirty
 			this.data = data;
 		},
+
+		// TODO: implement update() function.
 
 		render: function(){
 
@@ -59,15 +90,12 @@ define([
 			// domClass.add(domQuery(".chart-wrapper nav .sort .label")[0], "active");
 
 			// axis
-			this.pf_y_scale = d3.scale.linear().range([0, this.canvasSize.height]).domain([this.maxValue, 0]);
-			this.pf_x_scale = d3.scale.linear().range([0, this.canvasSize.width]).domain([0, this.data.length]);
+			this.pf_y_scale = d3.scale.linear().range([0, this.canvasHeight]).domain([this.maxValue, 0]);
+			this.pf_x_scale = d3.scale.linear().range([0, this.canvasWidth]).domain([0, this.data.length]);
 
 			// draw bars
 			this.canvas.selectAll("g.bar").data(this.data).enter().append("g").attr("class", "bar");
 			this.bars = this.canvas.selectAll("g.bar").data(this.data);
-			this.tooltipLayer = d3.select("body").append("div")
-				.attr("class", "tooltip")
-				.style("opacity", 0);
 
 			var self = this;
 
@@ -82,7 +110,7 @@ define([
 				.tickPadding(0).tickSize(0);
 
 			this.chart.append("g")
-				.attr("transform", lang.replace('translate({0},{1})', [this.drawTargetParams.margins[3], this.drawTargetParams.margins[0]]))
+				.attr("transform", lang.replace('translate({0},{1})', [this.margin.left, this.margin.top]))
 				.call(this.yAxis)
 				.attr("class", "y axis");
 
@@ -102,7 +130,7 @@ define([
 					.attr("class", "block-" + index)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
 					.attr("x", function(d, i){
 						return self.barPosition(i)
@@ -141,12 +169,12 @@ define([
 			this.bars.append("text").text(function(d){
 				return d.label
 			})
-				.attr("y", Math.round(this.canvasSize.height - 11))
+				.attr("y", Math.round(this.canvasHeight - 11))
 				.attr("x", function(d, i){
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.textPosition(i);
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
@@ -165,9 +193,9 @@ define([
 		},
 		barHeight: function(value, total){
 			if(this.normalize){
-				return this.canvasSize.height - this.pf_y_scale((value / total) * 100);
+				return this.canvasHeight - this.pf_y_scale((value / total) * 100);
 			}else{
-				return this.canvasSize.height - this.pf_y_scale(value);
+				return this.canvasHeight - this.pf_y_scale(value);
 			}
 		},
 		scale: function(){
@@ -199,7 +227,7 @@ define([
 					.transition().duration(600)
 					.attr("y", function(d){
 						var ancestorHeight = self.barHeight(d3.sum(d['dist'].slice(0, index)), d.total);
-						return Math.round(self.canvasSize.height - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
+						return Math.round(self.canvasHeight - self.barHeight(d['dist'][index], d.total) - ancestorHeight);
 					})
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
@@ -263,7 +291,7 @@ define([
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})
@@ -322,51 +350,7 @@ define([
 					return d
 				});
 		},
-		prepareSVGDrawTarget: function(params){
 
-			var chartSize = params.size || this.getContainerSize(params.target);
-			var chartMargin = params.margins || [0, 0, 0, 0];
-
-			var canvasSize = {
-				width: chartSize.width - chartMargin[1] - chartMargin[3],
-				height: chartSize.height - chartMargin[0] - chartMargin[2]
-			};
-
-			var chart = d3.select(".chart")
-				.insert("svg", ":first-child")
-				.attr("class", "svgChartContainer")
-				.attr("width", chartSize.width)
-				.attr("height", chartSize.height);
-
-			var canvas = chart.append("g")
-				.attr("class", "svgChartCanvas")
-				.attr("width", canvasSize.width)
-				.attr("height", canvasSize.height)
-				.attr("transform", "translate(" + chartMargin[3] + "," + chartMargin[0] + ")");
-
-			return {
-				"chart": chart,
-				"canvas": canvas,
-				"canvas_size": canvasSize,
-				"chart_size": chartSize
-			};
-		},
-		getContainerSize: function(){
-			var container = domQuery(".chart", this.node)[0] || null;
-
-			if(container){
-				return {
-					width: domStyle.get(container, "width"),
-					height: domStyle.get(container, "height")
-				};
-			}else{
-				console.error("Cannot find chart Dom Node");
-				return {
-					width: 0,
-					height: 0
-				};
-			}
-		},
 		resize: function(){
 			var self = this;
 			clearTimeout(this.resizer);
@@ -379,9 +363,9 @@ define([
 			var container = domQuery(".chart", this.node)[0] || null;
 
 			var chartWidth = domStyle.get(container, "width");
-			var canvasWidth = chartWidth - this.drawTargetParams.margins[1] - this.drawTargetParams.margins[3];
+			var canvasWidth = chartWidth - this.margin.right - this.margin.left;
 
-			this.canvasSize.width = canvasWidth;
+			this.canvasWidth = canvasWidth;
 
 			// console.log("resize canvasWidth: ", canvasWidth);
 
@@ -414,7 +398,7 @@ define([
 					return self.textPosition(i)
 				})
 				.attr("transform", function(d, i){
-					var y = Math.round(self.canvasSize.height - 11);
+					var y = Math.round(self.canvasHeight - 11);
 					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
 					return lang.replace('rotate(270, {0}, {1})', [x, y]);
 				})

@@ -7,32 +7,42 @@ define([
 			d3){
 
 	return declare([], {
-		constructor: function(target, className){
-			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "only");
+		init: function(target, className, margin){
+			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
+
+			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "last");
 
 			this.nodeWidth = domStyle.get(this.node, "width");
 			this.nodeHeight = domStyle.get(this.node, "height");
-			this.margin = {top: 10, right: 0, bottom: 50, left: 60};
+			this.margin = lang.mixin({top: 10, right: 0, bottom: 50, left: 60}, margin);
 
 			this.canvas = d3.select(".chart." + className)
 				.insert("svg", ":first-child")
 				.attr("width", this.nodeWidth)
 				.attr("height", this.nodeHeight);
 
-			this.tooltipLayer = d3.select("body").append("div")
-				.attr("class", "tooltip")
-				.style("opacity", 0);
+			if(d3.select("div.tooltip").length > 0){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+			}
 		},
 		renderTitle: function(xAxisTitle, yAxisTitle){
-			this.canvas.append("text")
-				.attr("transform", "translate(100," + (this.nodeHeight - 10) + ")")
-				.text(xAxisTitle);
+			if(xAxisTitle){
+				this.canvas.append("text")
+					.attr("transform", "translate(100," + (this.nodeHeight - 10) + ")")
+					.text(xAxisTitle);
+			}
 
-			this.canvas.append("text")
-				.attr("transform", "rotate(-90)")
-				.attr("x", 0 - (this.nodeWidth/2))
-				.attr("y", 10)
-				.text(yAxisTitle);
+			if(yAxisTitle){
+				this.canvas.append("text")
+					.attr("transform", "rotate(-90)")
+					.attr("x", 0 - (this.nodeWidth / 2))
+					.attr("y", 10)
+					.text(yAxisTitle);
+			}
 		},
 		/*
 			expect data:[{label: [string], tooltip: [string or func], count: [number]},,,]
