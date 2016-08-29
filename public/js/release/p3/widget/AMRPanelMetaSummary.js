@@ -13,6 +13,19 @@ define("p3/widget/AMRPanelMetaSummary", [
 		"Intermediate": 2
 	};
 
+	var chartNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Counts</li>",
+				"<li class='normalize'>Percent</li> ",
+			"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Name</li>",
+				"<li class='value'>Count</li>",
+			"</ul>"
+	].join("\n");
+
 	return declare([SummaryWidget], {
 		dataModel: "genome_amr",
 		query: "",
@@ -71,9 +84,14 @@ define("p3/widget/AMRPanelMetaSummary", [
 						return a + b;
 					});
 
+					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
+
 					chartData.push({
 						label: antibiotic,
-						phenotypes: ["Resistant", "Susceptible", "Intermediate"],
+						tooltip: function(d, idx){
+
+							return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d['dist'][idx]]);
+						},
 						total: total,
 						dist: dist
 					});
@@ -101,11 +119,12 @@ define("p3/widget/AMRPanelMetaSummary", [
 
 		render_chart: function(){
 			if(!this.chart){
-				this.chart = new D3StackedBarChart(this.chartNode);
-				domClass.add(this.chart.node, "amr");
+				this.chart = new D3StackedBarChart();
+				this.chart.init(this.chartNode, "amr");
 
 				var legend = Object.keys(phenotypeDef);
-				this.chart.renderLegend(legend);
+				this.chart.renderNav(chartNavBarHtml);
+				this.chart.renderLegend("", legend);
 				this.chart.processData(this.data);
 				this.chart.render();
 
