@@ -32,7 +32,8 @@ define([
 		renderTitle: function(xAxisTitle, yAxisTitle){
 			if(xAxisTitle){
 				this.canvas.append("text")
-					.attr("transform", "translate(100," + (this.nodeHeight - 10) + ")")
+					.attr("transform", "translate(" + (this.nodeWidth / 2 - 20) + "," + (this.nodeHeight - 10) + ")")
+
 					.text(xAxisTitle);
 			}
 
