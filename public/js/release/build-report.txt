@@ -1,4 +1,4 @@
-Build started: Mon Aug 29 2016 17:23:39 GMT-0500 (CDT)
+Build started: Tue Aug 30 2016 14:46:21 GMT-0500 (CDT)
 Build application version: 1.11.0-pre (NaN)
 Messages:
 info(100) Assumed module uses legacy loader API.
@@ -704,11 +704,11 @@ info(100) Assumed module uses legacy loader API.
 	module: phyloview/PhyloTree
 	module: phyloview/d3.v2.min
 info(103) Optimizing module complete.
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js (compile time:0.915s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.681s)
-	/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js (compile time:5.065s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.187s)
-	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js (compile time:11.008s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js (compile time:1.018s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js (compile time:4.305s)
+	/Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js (compile time:5.239s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js (compile time:5.31s)
+	/Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js (compile time:11.227s)
 info(106) Optimizing CSS.
 	file: /Users/hsyoo/dev/p3_web/public/js/dojo/_firebug/firebug.css
 	file: /Users/hsyoo/dev/p3_web/public/js/dojo/resources/dnd.css
@@ -2742,9 +2742,9 @@ p3/layer/globalWSObject:
 
 Optimizer Messages:
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.915s)
+Done (compile time:1.018s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.915s)
+Done (compile time:1.018s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2759,9 +2759,9 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.681s)
+Done (compile time:4.305s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.915s)
+Done (compile time:1.018s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2776,7 +2776,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.681s)
+Done (compile time:4.305s)
 /Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -2899,9 +2899,9 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.065s)
+Done (compile time:5.239s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.915s)
+Done (compile time:1.018s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -2916,7 +2916,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.681s)
+Done (compile time:4.305s)
 /Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3039,7 +3039,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.065s)
+Done (compile time:5.239s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3166,9 +3166,9 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.187s)
+Done (compile time:5.31s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/panels.js:
-Done (compile time:0.915s)
+Done (compile time:1.018s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/p3user.js:
 p3user.js.uncompressed.js:11: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 	new Date("X"); // workaround for #11279, new Date("") == NaN
@@ -3183,7 +3183,7 @@ p3user.js.uncompressed.js:5682: WARNING - unreachable code
 	      ^
 
 0 error(s), 3 warning(s)
-Done (compile time:4.681s)
+Done (compile time:4.305s)
 /Users/hsyoo/dev/p3_web/public/js/release/dojo/dojo.js:
 dojo.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3306,7 +3306,7 @@ dojo.js.uncompressed.js:15641: WARNING - unreachable code
 	         ^
 
 0 error(s), 30 warning(s)
-Done (compile time:5.065s)
+Done (compile time:5.239s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/globalWSObject.js:
 globalWSObject.js.uncompressed.js:148: WARNING - unreachable code
 	if( 0 ){
@@ -3433,7 +3433,7 @@ globalWSObject.js.uncompressed.js:17151: WARNING - unreachable code
 	      ^
 
 0 error(s), 31 warning(s)
-Done (compile time:5.187s)
+Done (compile time:5.31s)
 /Users/hsyoo/dev/p3_web/public/js/release/p3/layer/core.js:
 core.js.uncompressed.js:631: WARNING - unreachable code
 	}else if( 0 ){
@@ -3599,108 +3599,104 @@ core.js.uncompressed.js:73888: WARNING - Suspicious code. This code lacks side-e
 				item.hasOwnProperty('protein_id') ? opts.push(item.protein_id) : {};
 				                                                                 ^
 
-core.js.uncompressed.js:74145: WARNING - unreachable code
-		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
-		^
-
-core.js.uncompressed.js:76143: WARNING - unreachable code
+core.js.uncompressed.js:76163: WARNING - unreachable code
 				return;
 				^
 
-core.js.uncompressed.js:77238: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:77258: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 		return resul;t
 		             ^
 
-core.js.uncompressed.js:77238: WARNING - unreachable code
+core.js.uncompressed.js:77258: WARNING - unreachable code
 		return resul;t
 		             ^
 
-core.js.uncompressed.js:77907: WARNING - unreachable code
+core.js.uncompressed.js:77927: WARNING - unreachable code
 			 0 && console.log("FILTER: ", out)
 			 ^
 
-core.js.uncompressed.js:79617: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:79637: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(min_member_count) ? filter.min_member_count = min_member_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:79618: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:79638: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(max_member_count) ? filter.max_member_count = max_member_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:79620: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:79640: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(min_genome_count) ? filter.min_genome_count = min_genome_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:79621: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:79641: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 					                                                                        ^
 
-core.js.uncompressed.js:81076: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81141: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count !== family.genome_count ? skip = true : {};
 					                                                             ^
 
-core.js.uncompressed.js:81078: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81143: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count === family.genome_count ? skip = true : {};
 					                                                             ^
 
-core.js.uncompressed.js:81083: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81148: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count < pfState.min_member_count ? skip = true : {};
 					                                                                ^
 
-core.js.uncompressed.js:81086: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81151: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.feature_count > pfState.max_member_count ? skip = true : {};
 					                                                                ^
 
-core.js.uncompressed.js:81091: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81156: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.genome_count < pfState.min_genome_count ? skip = true : {};
 					                                                               ^
 
-core.js.uncompressed.js:81094: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:81159: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					family.genome_count > pfState.max_genome_count ? skip = true : {};
 					                                                               ^
 
-core.js.uncompressed.js:82384: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:82449: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 				if(hint == 'avatar'){
 				^
 
-core.js.uncompressed.js:87116: WARNING - unreachable code
+core.js.uncompressed.js:87181: WARNING - unreachable code
 			return this.maxOuterRadius * trackFrac;
 			^
 
-core.js.uncompressed.js:103623: WARNING - Suspicious code. The result of the 'void' operator is not being used.
+core.js.uncompressed.js:103688: WARNING - Suspicious code. The result of the 'void' operator is not being used.
         dojo.query(".dojoDndItemAnchor").connect("click" , function(){void(0);});
                                                                       ^
 
-core.js.uncompressed.js:103682: WARNING - Suspicious code. The result of the 'void' operator is not being used.
+core.js.uncompressed.js:103747: WARNING - Suspicious code. The result of the 'void' operator is not being used.
         dojo.query(".dojoDndItem").connect("click" , function(){void(0);});
                                                                 ^
 
-core.js.uncompressed.js:104883: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:104948: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 			if(this.uploadType === "html5"){ }
 			^
 
-core.js.uncompressed.js:105010: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:105075: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					if(typeof(xhr.statusText)){} // accessing this error throws an error. Awesomeness.
 					^
 
-core.js.uncompressed.js:110587: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:110652: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					(d.gene) ? content.push('Gene: ' + d.gene) : {};
 					                                             ^
 
-core.js.uncompressed.js:110983: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:111048: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(lr) ? (filter.upFold = lr, filter.downFold = -lr) : {};
 					                                                           ^
 
-core.js.uncompressed.js:110984: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
+core.js.uncompressed.js:111049: WARNING - Suspicious code. This code lacks side-effects. Is there a bug?
 					!isNaN(zs) ? (filter.upZscore = zs, filter.downZscore = -zs) : {};
 					                                                               ^
 
-core.js.uncompressed.js:111980: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
+core.js.uncompressed.js:112045: WARNING - Suspicious code. The result of the 'eq' operator is not being used.
 				for (i==0; i<myData.length; i++) {
 				     ^
 
-0 error(s), 66 warning(s)
-Done (compile time:11.008s)
+0 error(s), 65 warning(s)
+Done (compile time:11.227s)
 
 
 Has Features Detected
@@ -4631,4 +4627,4 @@ Has Features Detected
 Process finished normally
 	errors: 1
 	warnings: 86
-	build time: 77.01 seconds
+	build time: 77.005 seconds

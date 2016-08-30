@@ -74141,7 +74141,7 @@ define([
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-		return;
+
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
 		popup.close(idMappingTTDialog);
 	});
@@ -74370,7 +74370,7 @@ define([
 					tooltip: "Download Selection",
 					max:5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection,container){
 					 0 && console.log("this.currentContainerType: ", this.containerType);
@@ -74713,8 +74713,6 @@ define([
 				},
 				function(selection, containerWidget){
 
-					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					// new Dialog({content: idMappingTTDialog}).show();
 					var self = this;
 					var ids = [];
 					switch(containerWidget.containerType){
@@ -74835,9 +74833,9 @@ define([
 				false
 			], [
 				"ExperimentComparison",
-				"fa icon-experiments fa-2x",
+				"fa icon-selection-Experiment fa-2x",
 				{
-					label: "VIEW",
+					label: "EXPRMNT",
 					multiple: false,
 					validTypes: ["*"],
 					validContainerTypes: ["transcriptomics_experiment_data"],
@@ -74850,6 +74848,28 @@ define([
 						return exp.eid;
 					});
 					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+				},
+				false
+			], [
+				"TranscriptomicsExperimentList",
+				"fa icon-selection-ExperimentList fa-2x",
+				{
+					label: "EXPRMNTS",
+					multiple: true,
+					min: 2,
+					max: 5000,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment List"
+				},
+				function(selection){
+					//  0 && console.log("this.currentContainerType: ", this.currentContainerType, this);
+					//  0 && console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
+					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
 				},
 				false
 			], [
@@ -80664,38 +80684,33 @@ return declare("dojox.widget.Standby", [_Widget, _TemplatedMixin],{
 },
 'p3/widget/ProteinFamiliesGridContainer':function(){
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
 	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer"
-], function(declare, lang, on, Topic,
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
+], function(declare, lang, on, Topic, when, request,
 			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer){
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
+	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
+		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	].join("\n");
+
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-	var downloadTT = new TooltipDialog({
-		content: dfc, onMouseLeave: function(){
-			popup.close(downloadTT);
-		}
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel});
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		//  0 && console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		//  0 && console.log("selection: ", selection);
-		//  0 && console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
+	var downloadSelectionTT = new DownloadTooltipDialog({});
+	downloadSelectionTT.startup();
 
 	return declare([GridContainer], {
 		gridCtor: ProteinFamiliesGrid,
@@ -80740,7 +80755,7 @@ define([
 
 			this._set("state", state);
 		},
-
+/*
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -80762,7 +80777,54 @@ define([
 				true
 			]
 		]),
+*/
 		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"DownloadSelection",
+				"fa icon-download fa-2x",
+				{
+					label: "DWNLD",
+					multiple: true,
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Download Selection",
+					max:5000,
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					var self = this;
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(response){
+
+						self.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", response);
+						self.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", "feature_data");
+
+						setTimeout(lang.hitch(self, function(){
+							popup.open({
+								popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+								around: this.selectionActionBar._actions.DownloadSelection.button,
+								orient: ["below"]
+							});
+						}), 10);
+					});
+				},
+				false
+			],
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -80775,8 +80837,11 @@ define([
 					tooltipDialog: viewFASTATT
 				},
 				function(selection){
-					// TODO: pass selection and implement detail
-					 0 && console.log(selection);
+
+					viewFASTATT.selection = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))";
+
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,
@@ -113626,8 +113691,8 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}), // no selector for now.
-			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
-			genome_id: {label: 'Genome ID', field: 'genome_id'},
+			genome_name: {label: "Genome Name", field: "genome_name", hidden: true},
+			genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},
@@ -113898,9 +113963,9 @@ define([
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
 					data: {
-						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ')',
-						fq: 'annotation:PATRIC',
-						rows: refseqLocusTagList.length
+						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ') AND genome_id:' + state.feature.genome_id,
+						fq: 'annotation:PATRIC AND feature_type:CDS',
+						rows: 25000
 					}
 				}), function(res){
 
