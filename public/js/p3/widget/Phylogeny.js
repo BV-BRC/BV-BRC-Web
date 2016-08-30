@@ -14,10 +14,11 @@ define([
 		state: null,
 		taxon_id: null,
 		newick: null,
+        labels: null,
 		jsonTree: null,
 		tree: null,
 		apiServer: window.App.dataAPI,
-		phylogram: false,
+		phylogram: true,
 
 		postCreate: function(){
 			this.containerNode = this.canvasNode = domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
@@ -69,14 +70,18 @@ define([
 
 		onSetTaxonId: function(attr, oldVal, taxonId){
 			request.get(PathJoin(this.apiServer, "taxonomy", taxonId), {
-				headers: {accept: "application/newick"}
-			}).then(lang.hitch(this, function(newick){
+				headers: {accept: "application/newick+json"},
+                handleAs: "json"
+			}).then(lang.hitch(this, function(treeDat){
 				console.log("Set Newick");
-				if(!newick){
-					console.log("No Newick in Request Response");
+				if(!treeDat.tree){
+					console.log("No newick+json in Request Response");
 					return;
 				}
-				this.set('newick', newick);
+                if(treeDat.labels){
+                    this.set('labels', treeDat.labels);
+                }
+				this.set('newick', treeDat.tree);
 			}), function(err){
 				console.log("Error Retreiving newick for Taxon: ", err)
 			});
@@ -96,7 +101,12 @@ define([
 				});
 			}
 
-			this.tree.setTree(this.newick);
+            if( this.labels){
+			    this.tree.setTree(this.newick, this.labels, "Organism Names");
+            }
+            else{
+			    this.tree.setTree(this.newick, this.labels, "Organism Names");
+            }
 		},
 
 		setTreeType: function(treeType){
