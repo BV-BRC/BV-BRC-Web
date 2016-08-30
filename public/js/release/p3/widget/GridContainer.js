@@ -60,7 +60,7 @@ define("p3/widget/GridContainer", [
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-		return;
+
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
 		popup.close(idMappingTTDialog);
 	});
@@ -289,7 +289,7 @@ define("p3/widget/GridContainer", [
 					tooltip: "Download Selection",
 					max:5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection,container){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -632,8 +632,6 @@ define("p3/widget/GridContainer", [
 				},
 				function(selection, containerWidget){
 
-					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					// new Dialog({content: idMappingTTDialog}).show();
 					var self = this;
 					var ids = [];
 					switch(containerWidget.containerType){
@@ -754,9 +752,9 @@ define("p3/widget/GridContainer", [
 				false
 			], [
 				"ExperimentComparison",
-				"fa icon-experiments fa-2x",
+				"fa icon-selection-Experiment fa-2x",
 				{
-					label: "VIEW",
+					label: "EXPRMNT",
 					multiple: false,
 					validTypes: ["*"],
 					validContainerTypes: ["transcriptomics_experiment_data"],
@@ -769,6 +767,28 @@ define("p3/widget/GridContainer", [
 						return exp.eid;
 					});
 					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+				},
+				false
+			], [
+				"TranscriptomicsExperimentList",
+				"fa icon-selection-ExperimentList fa-2x",
+				{
+					label: "EXPRMNTS",
+					multiple: true,
+					min: 2,
+					max: 5000,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment List"
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
+					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
 				},
 				false
 			], [
