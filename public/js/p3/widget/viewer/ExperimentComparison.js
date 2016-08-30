@@ -16,7 +16,8 @@ define([
 		"eid": null,
 		apiServiceUrl: window.App.dataAPI,
 		perspectiveLabel: "Experiment View",
-		perspectiveIconClass: "icon-experiments",
+		//perspectiveIconClass: "icon-experiments",
+		perspectiveIconClass: "icon-selection-Experiment",
 		//paramsMap: "query",
 		defaultTab: "Overview",
 
