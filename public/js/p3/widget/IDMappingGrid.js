@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore"
+	"./PageGrid", "./formatter", "../store/IdMappingMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			Grid, formatter, Store){
