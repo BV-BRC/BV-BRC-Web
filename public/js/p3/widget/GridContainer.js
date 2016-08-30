@@ -750,9 +750,9 @@ define([
 				false
 			], [
 				"ExperimentComparison",
-				"fa icon-experiments fa-2x",
+				"fa icon-selection-Experiment fa-2x",
 				{
-					label: "VIEW",
+					label: "EXPRMNT",
 					multiple: false,
 					validTypes: ["*"],
 					validContainerTypes: ["transcriptomics_experiment_data"],
@@ -765,6 +765,28 @@ define([
 						return exp.eid;
 					});
 					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+				},
+				false
+			], [
+				"TranscriptomicsExperimentList",
+				"fa icon-selection-ExperimentList fa-2x",
+				{
+					label: "EXPRMNTS",
+					multiple: true,
+					min: 2,
+					max: 5000,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment List"
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
+					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
 				},
 				false
 			], [
