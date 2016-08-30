@@ -25653,7 +25653,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -74832,6 +74831,25 @@ define([
 						around: this.selectionActionBar._actions.idmapping.button,
 						orient: ["before-centered"]
 					});
+				},
+				false
+			], [
+				"ExperimentComparison",
+				"fa icon-experiments fa-2x",
+				{
+					label: "VIEW",
+					multiple: false,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment"
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
 				},
 				false
 			], [
