@@ -58,7 +58,7 @@ define([
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-		return;
+
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
 		popup.close(idMappingTTDialog);
 	});
@@ -630,8 +630,6 @@ define([
 				},
 				function(selection, containerWidget){
 
-					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					// new Dialog({content: idMappingTTDialog}).show();
 					var self = this;
 					var ids = [];
 					switch(containerWidget.containerType){
