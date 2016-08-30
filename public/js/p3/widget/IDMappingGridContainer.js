@@ -26,12 +26,10 @@ define([
 			if(!state){
 				return;
 			}
-			// console.log("PathwaySummaryGridContainer _setStateAttr: ", state);
 			if(this.grid){
-				// console.log("   call set state on this.grid: ", this.grid);
 				this.grid.set('state', state);
 			}else{
-				console.log("No Grid Yet (PathwaySummaryGridContainer)");
+				// console.log("No Grid Yet (IDMappingGridContainer)");
 			}
 
 			this._set("state", state);
