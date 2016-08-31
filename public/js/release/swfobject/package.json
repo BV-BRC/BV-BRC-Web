@@ -1,16 +1,8 @@
 {
   "_args": [
     [
-      {
-        "raw": "swfobject-amd@~2.3.1",
-        "scope": null,
-        "escapedName": "swfobject-amd",
-        "name": "swfobject-amd",
-        "rawSpec": "~2.3.1",
-        "spec": ">=2.3.1 <2.4.0",
-        "type": "range"
-      },
-      "/Users/hsyoo/dev/p3_web"
+      "swfobject-amd@~2.3.1",
+      "/Users/dmachi/work/PATRIC/p3_web"
     ]
   ],
   "_from": "swfobject-amd@>=2.3.1 <2.4.0",
@@ -20,17 +12,16 @@
   "_location": "/swfobject-amd",
   "_nodeVersion": "0.10.21",
   "_npmUser": {
-    "name": "henningm",
-    "email": "henning@morud.org"
+    "email": "henning@morud.org",
+    "name": "henningm"
   },
   "_npmVersion": "2.1.18",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "swfobject-amd@~2.3.1",
-    "scope": null,
-    "escapedName": "swfobject-amd",
     "name": "swfobject-amd",
+    "raw": "swfobject-amd@~2.3.1",
     "rawSpec": "~2.3.1",
+    "scope": null,
     "spec": ">=2.3.1 <2.4.0",
     "type": "range"
   },
@@ -41,7 +32,7 @@
   "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
   "_shrinkwrap": null,
   "_spec": "swfobject-amd@~2.3.1",
-  "_where": "/Users/hsyoo/dev/p3_web",
+  "_where": "/Users/dmachi/work/PATRIC/p3_web",
   "bugs": {
     "url": "https://github.com/HenningM/swfobject-amd/issues"
   },

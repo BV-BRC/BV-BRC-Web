@@ -845,7 +845,7 @@ define([
 								ids = response.map(function(d){
 									return d['feature_id']
 								});
-								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/?pathways=" + ids.join(','), target: "blank"});
 							});
 
 							return;
@@ -872,7 +872,7 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 									return;
 									break;
@@ -894,7 +894,7 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 
 									return;
@@ -917,7 +917,7 @@ define([
 							break;
 					}
 
-					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 				},
 				false
 

@@ -1,7 +1,7 @@
 define("p3/widget/IDMappingGrid", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"./PageGrid", "./formatter", "../store/IdMappingMemoryStore"
+	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			Grid, formatter, Store){
