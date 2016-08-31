@@ -5,7 +5,7 @@ define([
 	"dijit/form/DropDownButton", "dijit/DropDownMenu", "dijit/form/Button",
 	"dijit/MenuItem", "dijit/TooltipDialog", "dijit/popup", "./SelectionToGroup",
     "dijit/Dialog", "./ItemDetailPanel", "dojo/query", "FileSaver",
-    "./ActionBar", "./FilterContainerActionBar", "dijit/layout/BorderContainer",
+    "./ActionBar", "./ContainerActionBar", "dijit/layout/BorderContainer",
     "dijit/layout/ContentPane", "dojo/dom-class", "dojo/on"
 ], function(declare, PhyloTree, TreeNavSVG,
 			WidgetBase, request, domConstruct,
@@ -54,6 +54,13 @@ define([
 		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
 			this.containerPane = new ContentPane({region:"center"});//domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
+			this.containerActionBar = new ContainerActionBar({
+				region: "top",
+				splitter: false,
+                content: "",
+		        style: "height: 42px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;",
+				"className": "TextTabButtons"
+			});
 			this.selectionActionBar = new ActionBar({
 				region: "right",
 				layoutPriority: 4,
@@ -67,12 +74,13 @@ define([
 				splitter: true,
 				layoutPriority: 1
 			});
+			this.addChild(this.containerActionBar);
 			this.addChild(this.selectionActionBar);
 			this.addChild(this.containerPane);
 			//this.addChild(this.itemDetailPanel);
             //this.itemDetailPanel.startup();
 
-			var menuDiv = domConstruct.create("div", {}, this.containerPane.domNode);
+			var menuDiv = domConstruct.create("div", {}, this.containerActionBar.pathContainer);
 			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
 			var typeMenu = new DropDownMenu({style: "display: none;"});
 			typeMenu.addChild(new MenuItem({
@@ -127,6 +135,11 @@ define([
 
 		},
 
+        noData: function(){
+                domClass.add(this.typeButton.domNode, "dijitHidden");
+                this.treeDiv.innerHTML= "There is no tree currently available";
+        },
+
         onSelection: function(){
 
             var cur = this.selection.map(lang.hitch(this, function(selected){
@@ -136,6 +149,7 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
+            this.treeDiv.innerHTML= "Loading...";
 			console.log("Phylogeny onSetState: ", state);
 			if(!state){
 				return;
@@ -164,9 +178,10 @@ define([
                     this.set('labels', treeDat.labels);
                 }
 				this.set('newick', treeDat.tree);
-			}), function(err){
+			}), lang.hitch(this, function(err){
+                this.noData();
 				console.log("Error Retreiving newick for Taxon: ", err)
-			});
+			}));
 		},
 
 		processTree: function(){
@@ -174,7 +189,9 @@ define([
 				console.log("No Newick File To Render")
 				return;
 			}
+            domClass.remove(this.typeButton.domNode, "dijitHidden");
 			if(!this.tree){
+
 				this.tree = new TreeNavSVG({
                     selectionTarget: this
                 });
@@ -384,7 +401,7 @@ define([
         ],
 
 		setupActions: function(){
-			if(this.containerActionBar){
+			if(this.containerActionBar && this.containerActions){
 				this.containerActions.forEach(function(a){
 					this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 				}, this);
