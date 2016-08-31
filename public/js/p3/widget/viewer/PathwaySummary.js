@@ -11,16 +11,21 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		onSetState: function(attr, oldVal, state){
-//			 console.log("PathwaySummary onSetState", state);
+			 console.log("PathwaySummary onSetState", state);
 
 			if(!state){
 				return;
 			}
 
-			var parts = state.pathname.split("/");
-			var params = parts[parts.length - 1];
+			var params = {}
+			var qparts = state.search.split("&");
+			qparts.forEach(function(qp){
+				var parts = qp.split("=");
+				params[parts[0]]=parts[1].split(",");
+			})
+			
 
-			state.feature_ids = params.split(",");
+			state.feature_ids = params.features;
 
 			this.viewer.set('visible', true);
 			this.viewer.set('state', lang.mixin({},state));
