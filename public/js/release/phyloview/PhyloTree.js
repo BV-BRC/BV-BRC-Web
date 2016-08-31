@@ -176,21 +176,6 @@ window.PhyloTree = {
                         //try to parse out the genus and species name
                         node.id = node.n;
                         node.n = node.n.replace(/_/g, " ");
-                        var fields = node.n.split(" ");
-                        var genusIndex = 0;
-                        if(fields[0] == "Candidatus") {
-                            genusIndex++;
-                            node.prefix = fields[0];
-                        }
-                        node.genus = fields[genusIndex];
-                        var species = fields[genusIndex+1];
-                        node.species = species ? species : "";
-                        for(var i = 2; genusIndex+i < fields.length; i++) {
-                            species = species + " " + fields[genusIndex+i]
-                        }
-                        node.species_strain = species ? species: "";
-                        tmp_label.push(node.genus);
-                        tmp_label.push(node.species_strain);
                     } else {
                         node.id="inode"+nodeId;
                         node.n = ""+nodeId;
@@ -207,7 +192,7 @@ window.PhyloTree = {
                             return b.d - a.d;
                         });                        
                     } else {
-                        node.label = tmp_label.join(" ");
+                        node.label = node.n;
                         tree.labels[0][node.id]=node.label;
                         leafCount++;
                         node.ti = tipIndex++;
