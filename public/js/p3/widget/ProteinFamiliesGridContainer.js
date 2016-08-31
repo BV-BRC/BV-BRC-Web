@@ -1,36 +1,31 @@
 define([
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/on", "dojo/topic", "dojo/when", "dojo/request",
 	"dijit/popup", "dijit/TooltipDialog",
-	"./ProteinFamiliesGrid", "./GridContainer"
-], function(declare, lang, on, Topic,
+	"./ProteinFamiliesGrid", "./GridContainer", "./DownloadTooltipDialog", "../util/PathJoin"
+], function(declare, lang, on, Topic, when, request,
 			popup, TooltipDialog,
-			ProteinFamiliesGrid, GridContainer){
+			ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin){
 
-	var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div><hr><div class="wsActionTooltip" rel="dna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloaddna">Download FASTA DNA</div><div class="wsActionTooltip" rel="downloadprotein"> ';
+	var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
+		'<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
+	].join("\n");
+
 	var viewFASTATT = new TooltipDialog({
 		content: vfc, onMouseLeave: function(){
 			popup.close(viewFASTATT);
 		}
 	});
 
-	var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-	var downloadTT = new TooltipDialog({
-		content: dfc, onMouseLeave: function(){
-			popup.close(downloadTT);
-		}
+	on(viewFASTATT.domNode, "click", function(evt){
+		var rel = evt.target.attributes.rel.value;
+		var sel = viewFASTATT.selection;
+		delete viewFASTATT.selection;
+
+		Topic.publish("/navigate", {href: "/view/FASTA/" + rel + "/" + sel});
 	});
 
-	on(downloadTT.domNode, "div:click", function(evt){
-		var rel = evt.target.attributes.rel.value;
-		// console.log("REL: ", rel);
-		var selection = self.actionPanel.get('selection');
-		var dataType = (self.actionPanel.currentContainerWidget.containerType == "genome_group") ? "genome" : "genome_feature";
-		var currentQuery = self.actionPanel.currentContainerWidget.get('query');
-		// console.log("selection: ", selection);
-		// console.log("DownloadQuery: ", dataType, currentQuery);
-		window.open("/api/" + dataType + "/" + currentQuery + "&http_authorization=" + encodeURIComponent(window.App.authorizationToken) + "&http_accept=" + rel + "&http_download");
-		popup.close(downloadTT);
-	});
+	var downloadSelectionTT = new DownloadTooltipDialog({});
+	downloadSelectionTT.startup();
 
 	return declare([GridContainer], {
 		gridCtor: ProteinFamiliesGrid,
@@ -75,7 +70,7 @@ define([
 
 			this._set("state", state);
 		},
-
+/*
 		containerActions: GridContainer.prototype.containerActions.concat([
 			[
 				"DownloadTable",
@@ -97,7 +92,54 @@ define([
 				true
 			]
 		]),
+*/
 		selectionActions: GridContainer.prototype.selectionActions.concat([
+			[
+				"DownloadSelection",
+				"fa icon-download fa-2x",
+				{
+					label: "DWNLD",
+					multiple: true,
+					validTypes: ["*"],
+					ignoreDataType: true,
+					tooltip: "Download Selection",
+					max:5000,
+					tooltipDialog: downloadSelectionTT,
+					validContainerTypes: ["proteinfamily_data"]
+				},
+				function(selection){
+
+					var query = "and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))&select(feature_id)&limit(25000)";
+
+					var self = this;
+
+					when(request.post(PathJoin(window.App.dataAPI, '/genome_feature/'), {
+						handleAs: 'json',
+						headers: {
+							'Accept': "application/json",
+							'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+							'X-Requested-With': null,
+							'Authorization': (window.App.authorizationToken || "")
+						},
+						data: query
+					}), function(response){
+
+						self.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("selection", response);
+						self.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set("containerType", "feature_data");
+
+						setTimeout(lang.hitch(self, function(){
+							popup.open({
+								popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
+								around: this.selectionActionBar._actions.DownloadSelection.button,
+								orient: ["below"]
+							});
+						}), 10);
+					});
+				},
+				false
+			],
 			[
 				"ViewFASTA",
 				"fa icon-fasta fa-2x",
@@ -110,8 +152,11 @@ define([
 					tooltipDialog: viewFASTATT
 				},
 				function(selection){
-					// TODO: pass selection and implement detail
-					console.log(selection);
+
+					viewFASTATT.selection = "?and(in(genome_id,(" + this.pfState.genomeIds.join(',') + ")),in(" + this.pfState.familyType + "_id,(" + selection.map(function(s){
+							return s.family_id;
+						}).join(',') + ")))";
+
 					popup.open({
 						popup: this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog,
 						around: this.selectionActionBar._actions.ViewFASTA.button,

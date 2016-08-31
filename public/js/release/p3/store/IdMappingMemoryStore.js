@@ -1,4 +1,4 @@
-define("p3/store/IDMappingMemoryStore", [
+define("p3/store/IdMappingMemoryStore", [
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/request", "dojo/when", "dojo/Stateful", "dojo/topic", "dojo/promise/all",
 	"dojo/store/Memory", "dojo/store/util/QueryResults"
@@ -87,6 +87,12 @@ define("p3/store/IDMappingMemoryStore", [
 			var toId = this.state.toId;
 			var fromIdValue = this.state.fromIdValue.split(',');
 
+			var summary = {
+				total: fromIdValue.length,
+				found: 0,
+				type: toId
+			};
+
 			// console.log(this.state);
 
 			if(fromIdGroup === 'PATRIC'){
@@ -105,6 +111,9 @@ define("p3/store/IDMappingMemoryStore", [
 							sort: "genome_name asc,accession asc,start asc"
 						}
 					}), function(data){
+
+						summary.found = data.length;
+						Topic.publish("IDMapping", "updateHeader", summary);
 
 						_self.setData(data);
 						_self._loaded = true;
@@ -136,8 +145,19 @@ define("p3/store/IDMappingMemoryStore", [
 						giNumbers = features.map(function(d){
 							return d.gi;
 						}).filter(function(d){
-							return d !== null;
+							return d !== undefined && d > 0;
 						});
+
+						// console.log(giNumbers);
+
+						if(giNumbers.length === 0){
+							summary.found = 0;
+							Topic.publish("IDMapping", "updateHeader", summary);
+
+							_self.setData([]);
+							_self._loaded = true;
+							return true;
+						}
 
 						// console.log("giNumbers: ", giNumbers);
 						return when(request.post(_self.apiServer + '/id_ref/', {
@@ -155,6 +175,9 @@ define("p3/store/IDMappingMemoryStore", [
 						}), function(response){
 
 							if(response.length === 0){
+								summary.found = 0;
+								Topic.publish("IDMapping", "updateHeader", summary);
+
 								_self.setData([]);
 								_self._loaded = true;
 								return true;
@@ -164,7 +187,7 @@ define("p3/store/IDMappingMemoryStore", [
 								accessionGiMap[d['uniprotkb_accession']] = d['id_value'];
 							});
 
-							console.log(accessionGiMap);
+							// console.log(accessionGiMap);
 
 							return when(request.post(_self.apiServer + '/id_ref/', {
 								handleAs: 'json',
@@ -217,6 +240,9 @@ define("p3/store/IDMappingMemoryStore", [
 										}
 									}
 								});
+
+								summary.found = data.length;
+								Topic.publish("IDMapping", "updateHeader", summary);
 
 								_self.setData(data);
 								_self._loaded = true;
@@ -293,6 +319,9 @@ define("p3/store/IDMappingMemoryStore", [
 						return {d: d};
 					});
 					this._loadingDeferred = when(defUniprotKB2PATRIC(fromIdValue, accessionTargetMap), function(data){
+						summary.found = data.length;
+						Topic.publish("IDMapping", "updateHeader", summary);
+
 						_self.setData(data);
 						_self._loaded = true;
 						return true;
@@ -322,6 +351,9 @@ define("p3/store/IDMappingMemoryStore", [
 						});
 
 						return when(defUniprotKB2PATRIC(uniprotkbAccessionList, accessionTargetMap), function(data){
+							summary.found = data.length;
+							Topic.publish("IDMapping", "updateHeader", summary);
+
 							_self.setData(data);
 							_self._loaded = true;
 							return true;

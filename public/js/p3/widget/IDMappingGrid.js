@@ -1,7 +1,7 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
 	"dojo/on", "dojo/dom-class", "dojo/dom-construct", "dojo/aspect", "dojo/request", "dojo/topic",
-	"./PageGrid", "./formatter", "../store/IDMappingMemoryStore"
+	"./PageGrid", "./formatter", "../store/IdMappingMemoryStore"
 ], function(declare, lang, Deferred,
 			on, domClass, domConstruct, aspect, request, Topic,
 			Grid, formatter, Store){
@@ -18,22 +18,26 @@ define([
 		columns: {
 			// "Selection Checkboxes": selector({}),
 			genome_name: {label: 'Genome Name', field: 'genome_name'},
+			genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 			accession: {label: 'Accession', field: 'accession', hidden: true},
 			patric_id: {label: 'PATRIC ID', field: 'patric_id'},
 			refseq_locus_tag: {label: 'RefSeq Locus Tag', field: 'refseq_locus_tag'},
 			alt_locus_tag: {label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true},
 			target: {label: 'Target', field: 'target'},
-			gene: {label: 'Gene', field: 'gene'},
-			// genome_browser: {},
+
+			feature_id: {label: "Feature ID", field: "feature_id", hidden: true},
 			annotation: {label: 'Annotation', field: 'annotation', hidden: true},
 			feature_type: {label: 'Feature Type', field: 'feature_type', hidden: true},
 			start: {label: 'Start', field: 'start', hidden: true},
 			end: {label: 'End', field: 'end', hidden: true},
-			length_nt: {label: 'Length(NT)', field: 'na_length', hidden: true},
+			na_length: {label: 'Length(NT)', field: 'na_length', hidden: true},
 			strand: {label: 'Strand', field: 'strand', hidden: true},
-			figfam_id: {label: 'FIGfam ID', field: 'figfam_id'},
 			protein_id: {label: 'Protein ID', field: 'protein_id', hidden: true},
-			length_aa: {label: 'Length(AA)', field: 'aa_length', hidden: true},
+			figfam_id: {label: 'FIGfam ID', field: 'figfam_id', hidden: true},
+			plfam: {label: "PATRIC Local family", field: "plfam_id"},
+			pgfam: {label: "PATRIC Global family", field: "pgfam_id"},
+			aa_length: {label: 'Length(AA)', field: 'aa_length', hidden: true},
+			gene: {label: 'Gene', field: 'gene'},
 			product: {label: 'Product', field: 'product'}
 		},
 		constructor: function(options){
