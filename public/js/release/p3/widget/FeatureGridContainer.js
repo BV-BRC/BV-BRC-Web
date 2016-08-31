@@ -34,6 +34,7 @@ define("p3/widget/FeatureGridContainer", [
 		primaryKey: "feature_id",
 		maxDownloadSize: 25000,
 		defaultFilter: "and(eq(feature_type,%22CDS%22),eq(annotation,%22PATRIC%22))",
+		tooltip: 'The "Features" tab contains a list of Genomic Feature (e.g., CDS, rRNA, tRNA, etc) for genomes associated with the current view',
 		getFilterPanel: function(opts){
 
 		},

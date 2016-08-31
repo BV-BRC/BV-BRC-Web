@@ -19,8 +19,8 @@ define([
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}), // no selector for now.
-			genome_name: {label: "Genome Name", field: "genome_name", hidden: false},
-			genome_id: {label: 'Genome ID', field: 'genome_id'},
+			genome_name: {label: "Genome Name", field: "genome_name", hidden: true},
+			genome_id: {label: 'Genome ID', field: 'genome_id', hidden: true},
 			accession: {label: "Accession", field: "accession", hidden: true},
 			patric_id: {label: "PATRIC ID", field: "patric_id", hidden: false},
 			refseq_locus_tag: {label: "RefSeq Locus Tag", field: "refseq_locus_tag", hidden: false},

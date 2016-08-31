@@ -60,7 +60,7 @@ define("p3/widget/GridContainer", [
 		delete idMappingTTDialog.selection;
 
 		var toIdGroup = (["patric_id", "feature_id", "alt_locus_tag", "refseq_locus_tag", "protein_id", "gene_id", "gi"].indexOf(rel) > -1) ? "PATRIC" : "Other";
-		return;
+
 		Topic.publish("/navigate", {href: "/view/IDMapping/fromId=feature_id&fromIdGroup=PATRIC&fromIdValue=" + selection + "&toId=" + rel + "&toIdGroup=" + toIdGroup});
 		popup.close(idMappingTTDialog);
 	});
@@ -289,7 +289,7 @@ define("p3/widget/GridContainer", [
 					tooltip: "Download Selection",
 					max:5000,
 					tooltipDialog: downloadSelectionTT,
-					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "proteinfamily_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
+					validContainerTypes: ["genome_data", "sequence_data", "feature_data", "spgene_data", "transcriptomics_experiment_data", "transcriptomics_sample_data", "pathway_data", "transcriptomics_gene_data", "gene_expression_data"]
 				},
 				function(selection,container){
 					console.log("this.currentContainerType: ", this.containerType);
@@ -632,8 +632,6 @@ define("p3/widget/GridContainer", [
 				},
 				function(selection, containerWidget){
 
-					// new Dialog({content: "<p>This dialog will allow you to map from the ids of the selected items to another id type</p><br>IMPLEMENT ME!"}).show();
-					// new Dialog({content: idMappingTTDialog}).show();
 					var self = this;
 					var ids = [];
 					switch(containerWidget.containerType){
@@ -753,6 +751,47 @@ define("p3/widget/GridContainer", [
 				},
 				false
 			], [
+				"ExperimentComparison",
+				"fa icon-selection-Experiment fa-2x",
+				{
+					label: "EXPRMNT",
+					multiple: false,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment"
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+				},
+				false
+			], [
+				"TranscriptomicsExperimentList",
+				"fa icon-selection-ExperimentList fa-2x",
+				{
+					label: "EXPRMNTS",
+					multiple: true,
+					min: 2,
+					max: 5000,
+					validTypes: ["*"],
+					validContainerTypes: ["transcriptomics_experiment_data"],
+					tooltip: "View Experiment List"
+				},
+				function(selection){
+					// console.log("this.currentContainerType: ", this.currentContainerType, this);
+					// console.log("View Gene List", selection);
+					var experimentIdList = selection.map(function(exp){
+						return exp.eid;
+					});
+					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
+					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
+				},
+				false
+			], [
 				"ExperimentGeneList",
 				"fa icon-list-unordered fa-2x",
 				{
@@ -781,7 +820,7 @@ define("p3/widget/GridContainer", [
 				"fa icon-git-pull-request fa-2x",
 				{
 					label: "PTHWY", ignoreDataType: true, multiple: true, max:200, validTypes: ["*"], tooltip: "Pathway Summary",
-					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data", "pathway_summary_data"]
+					validContainerTypes: ["feature_data", "spgene_data", "transcriptomics_gene_data", "proteinfamily_data", "pathway_data"]
 				},
 				function(selection, containerWidget){
 
@@ -808,7 +847,7 @@ define("p3/widget/GridContainer", [
 								ids = response.map(function(d){
 									return d['feature_id']
 								});
-								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/?pathways=" + ids.join(','), target: "blank"});
 							});
 
 							return;
@@ -835,7 +874,7 @@ define("p3/widget/GridContainer", [
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 									return;
 									break;
@@ -857,7 +896,7 @@ define("p3/widget/GridContainer", [
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 
 									return;
@@ -872,11 +911,6 @@ define("p3/widget/GridContainer", [
 									break;
 							}
 							break;
-						case "pathway_summary_data":
-							selection.map(function(d){
-								ids = ids.concat(d['feature_ids']);
-							});
-							break;
 						default:
 							// feature_data or spgene_data
 							ids = selection.map(function(sel){
@@ -885,7 +919,7 @@ define("p3/widget/GridContainer", [
 							break;
 					}
 
-					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 				},
 				false
 

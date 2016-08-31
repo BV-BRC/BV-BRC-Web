@@ -13,10 +13,23 @@ define("p3/widget/AMRPanelMetaSummary", [
 		"Intermediate": 2
 	};
 
+	var chartNavBarHtml = [
+		"<span class='label'>Scale</span>",
+			"<ul class='scale'>",
+				"<li class='real active'>Counts</li>",
+				"<li class='normalize'>Percent</li> ",
+			"</ul>",
+		"<span class='label'>Order by</span>",
+			"<ul class='sort'>",
+				"<li class='label active'>Name</li>",
+				"<li class='value'>Count</li>",
+			"</ul>"
+	].join("\n");
+
 	return declare([SummaryWidget], {
 		dataModel: "genome_amr",
 		query: "",
-		baseQuery: "&in(resistant_phenotype,(Resistant,Susceptible,Intermediate))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)",
+		baseQuery: "&in(resistant_phenotype,(Resistant,Susceptible,Intermediate))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype,genome_id)),(mincount,1),(limit,-1))&json(nl,map)",
 		columns: [{
 			label: "Antibiotic",
 			field: "antibiotic"
@@ -32,7 +45,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 		}],
 		processData: function(data){
 
-			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['antibiotic,resistant_phenotype']){
+			if(!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['antibiotic,resistant_phenotype,genome_id']){
 				console.log("INVALID SUMMARY DATA", data);
 				return;
 			}
@@ -45,7 +58,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 				domClass.remove(this.domNode.parentNode, "hidden");
 			}
 
-			var antibiotic_data = data.facet_counts.facet_pivot['antibiotic,resistant_phenotype'];
+			var antibiotic_data = data.facet_counts.facet_pivot['antibiotic,resistant_phenotype,genome_id'];
 
 			var chartData = [];
 			var tableData = [];
@@ -56,7 +69,7 @@ define("p3/widget/AMRPanelMetaSummary", [
 					// process table data
 					var item = {antibiotic: antibiotic};
 					d.pivot.forEach(function(phenotype){
-						item[phenotype.value] = phenotype.count;
+						item[phenotype.value] = phenotype.pivot.length;
 					});
 					tableData.push(item);
 
@@ -64,16 +77,21 @@ define("p3/widget/AMRPanelMetaSummary", [
 					var dist = [0, 0, 0];
 					d.pivot.forEach(function(phenotype){
 						if(phenotypeDef.hasOwnProperty(phenotype.value)){
-							dist[phenotypeDef[phenotype.value]] = phenotype.count;
+							dist[phenotypeDef[phenotype.value]] = phenotype.pivot.length;
 						}
 					});
 					var total = dist.reduce(function(a, b){
 						return a + b;
 					});
 
+					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
+
 					chartData.push({
 						label: antibiotic,
-						phenotypes: ["Resistant", "Susceptible", "Intermediate"],
+						tooltip: function(d, idx){
+
+							return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d['dist'][idx]]);
+						},
 						total: total,
 						dist: dist
 					});
@@ -101,11 +119,12 @@ define("p3/widget/AMRPanelMetaSummary", [
 
 		render_chart: function(){
 			if(!this.chart){
-				this.chart = new D3StackedBarChart(this.chartNode);
-				domClass.add(this.chart.node, "amr");
+				this.chart = new D3StackedBarChart();
+				this.chart.init(this.chartNode, "amr");
 
 				var legend = Object.keys(phenotypeDef);
-				this.chart.renderLegend(legend);
+				this.chart.renderNav(chartNavBarHtml);
+				this.chart.renderLegend("", legend);
 				this.chart.processData(this.data);
 				this.chart.render();
 

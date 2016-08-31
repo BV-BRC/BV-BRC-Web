@@ -11,7 +11,6 @@ define("p3/store/PathwaySummaryMemoryStore", [
 		apiServer: window.App.dataServiceURL,
 		idProperty: "pathway_id",
 		state: null,
-		query: {},
 		constructor: function(options){
 			this._loaded = false;
 			if(options.apiServer){
@@ -90,7 +89,7 @@ define("p3/store/PathwaySummaryMemoryStore", [
 				rows: 25000,
 				facet: true,
 				'json.facet': '{stat:{field:{field:pathway_id,limit:-1,facet:{gene_count:"unique(feature_id)"}}}}'
-			}
+			};
 
 
 			this._loadingDeferred = when(request.post(_self.apiServer + '/pathway/', {
@@ -105,13 +104,22 @@ define("p3/store/PathwaySummaryMemoryStore", [
 			}), function(response){
 
 				var features = response.response.docs;
-				var facets = response.facets.stat.buckets;
 
 				if(features.length == 0){
+
+					var summary = {
+						total: _self.state.feature_ids.length,
+						found: 0,
+						pathways: 0
+					};
+					Topic.publish("PathwaySummary", "updateHeader", summary);
+
 					_self.setData([]);
 					_self._loaded = true;
 					return true;
 				}
+
+				var facets = response.facets.stat.buckets;
 
 				var featureIdMap = {};
 				var genomeIdMap = {};
@@ -186,7 +194,8 @@ define("p3/store/PathwaySummaryMemoryStore", [
 							pathway_name: pathwayNameMap[pathway_id],
 							genes_selected: genesSelected[pathway_id],
 							genes_annotated: genesAnnotated[pathway_id],
-							coverage: (genesSelected[pathway_id] / genesAnnotated[pathway_id] * 100).toFixed(0),
+							coverage: parseInt(genesSelected[pathway_id] / genesAnnotated[pathway_id] * 100),
+							genome_ids: Object.keys(genomeIdMap),
 							feature_ids: Object.keys(pathwayFeatureMap[pathway_id])
 						};
 
@@ -198,11 +207,12 @@ define("p3/store/PathwaySummaryMemoryStore", [
 						found: Object.keys(featureIdMap).length,
 						pathways: Object.keys(pathwayIdMap).length
 					};
-					// publish summary
+					// console.log("update header: ", summary);
+					Topic.publish("PathwaySummary", "updateHeader", summary);
 
 					_self.setData(data);
 					_self._loaded = true;
-					Topic.publish("ProteinFamilies", "hideLoadingMask");
+					// Topic.publish("ProteinFamilies", "hideLoadingMask");
 					return true;
 				}, function(err){
 					console.error("Error in ProteinFamiliesStore: ", err)

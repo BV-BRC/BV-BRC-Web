@@ -28,7 +28,17 @@ var defaults = {
 	enableDevAuth: false,
 	devAuthorizationToken: "",
 	devUser: false,
-	enableDevTools: false
+	enableDevTools: false,
+
+	reportProblemEmailAddress: "help@patricbrc.org",
+
+        "email": {
+                "localSendmail": false,
+                "defaultFrom": "PATRIC <do-not-reply@patricbrc.org>",
+                "defaultSender": "PATRIC <do-not-reply@patricbrc.org>",
+                "host": "",
+                "port":587
+        }
 };
 
 module.exports = nconf.argv().env().file("./p3-web.conf").defaults(defaults);

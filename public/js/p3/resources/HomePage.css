@@ -34,8 +34,9 @@
 .home h4 {
     font-size: 14px;
     line-height: 16px;
-    margin-bottom: 0.25em;
 }
+
+
 
 .home figure {
 	display: block;
@@ -49,6 +50,14 @@
 }
 .dlp-hp ul li {
     display: inline-table;
+}
+
+.tools h4 {
+	margin-top: 20px;
+}
+
+.tools h4:first-child {
+	margin-top: 4px;
 }
 
 .tools ul li {

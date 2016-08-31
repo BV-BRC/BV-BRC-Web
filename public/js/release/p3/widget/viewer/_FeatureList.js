@@ -1,9 +1,9 @@
 define("p3/widget/viewer/_FeatureList", [
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on",
+	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
 	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
 	"../PageGrid", "../formatter", "../FeatureGridContainer", "../SequenceGridContainer",
 	"../GenomeGridContainer", "../../util/PathJoin", "dojo/request", "dojo/_base/lang", "../FeatureListOverview"
-], function(declare, TabViewerBase, on,
+], function(declare, TabViewerBase, on, Topic,
 			domClass, ContentPane, domConstruct,
 			Grid, formatter, FeatureGridContainer, SequenceGridContainer,
 			GenomeGridContainer, PathJoin, xhr, lang, Overview){

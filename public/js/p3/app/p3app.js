@@ -61,6 +61,11 @@ define([
 			});
 			*/
 
+			Router.register("/remote", function(params, oldPath, newPath, state){
+				console.log("REMOTE WINDOW, WAIT FOR /navigate message");
+				window.postMessage("RemoteReady","*");
+			});
+
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
 				// console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath};

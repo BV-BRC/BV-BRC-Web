@@ -51,7 +51,7 @@ define([
 		apiServer: window.App.dataAPI,
 		phylogram: true,
 		selection: null,		
-
+		tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
 		startup: function(){
 			this.containerPane = new ContentPane({region:"center"});//domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
 			this.selectionActionBar = new ActionBar({

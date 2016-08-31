@@ -1,0 +1,22 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+	<div >
+
+		<div data-dojo-type="dijit/form/TextBox" name="subject" data-dojo-attach-point="content" style="display:block;margin-bottom:8px;width:600px;" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Problem subject must be provided',trim:true,placeHolder:'Problem Subject'"></div>
+		<div data-dojo-type="dijit/form/Textarea" name="content" data-dojo-attach-point="content" style="width:600px;height:250px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Problem description must be provided',trim:true,rows:20"></div>
+	</div>
+		<div class="workingMessage messageContainer">
+			Reporting Problem....
+		</div>
+
+		<div class="errorMessage messageContainer">
+			<div style="font-weight:900;font-size:1.1em;">There was an error submitting your problem report:</div>
+			<p data-dojo-attach-point="errorMessage">Error</p>
+		</div>
+		
+		<div style="margin:4px;margin-top:8px;text-align:right;">
+			<div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel</div>
+			<div data-dojo-attach-point="saveButton" type="submit" data-dojo-type="dijit/form/Button">Report Problem</div>
+		</div>	
+</form>
+

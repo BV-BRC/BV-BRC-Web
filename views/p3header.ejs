@@ -24,30 +24,30 @@
 
 
 	<% var services = [
-		{name: "Acinetobacter", href: "/view/Taxonomy/469"},
-		{name: "Bacillus", href: "/view/Taxonomy/1386"},
-		{name: "Bartonella", href: "/view/Taxonomy/773"},
-		{name: "Borellia", href: "/view/Taxonomy/138"},
-		{name: "Brucella", href: "/view/Taxonomy/234"},
-		{name: "Burkholderia", href: "/view/Taxonomy/32008"},
-		{name: "Campylobacter", href: "/view/Taxonomy/194"},
-		{name: "Chlamydia", href: "/view/Taxonomy/810"},
-		{name: "Clostridium", href: "/view/Taxonomy/1485"},
-		{name: "Coxiella", href: "/view/Taxonomy/776"},
-		{name: "Ehrlichia", href: "/view/Taxonomy/943"},
-		{name: "Escherichia", href: "/view/Taxonomy/561"},
-		{name: "Francisella", href: "/view/Taxonomy/262"},
-		{name: "Helicobacter", href: "/view/Taxonomy/209"},
-		{name: "Listeria", href: "/view/Taxonomy/1637"},
-		{name: "Mycobacterium", href: "/view/Taxonomy/1763"},
-		{name: "Pseudomonas", href: "/view/Taxonomy/286"},
-		{name: "Rickettsia", href: "/view/Taxonomy/780"},
-		{name: "Salmonella", href: "/view/Taxonomy/590"},
-		{name: "Shigella", href: "/view/Taxonomy/620"},
-		{name: "Staphylococcus", href: "/view/Taxonomy/1279"},
-		{name: "Streptococcus", href: "/view/Taxonomy/1301"},
-		{name: "Vibrio", href: "/view/Taxonomy/662"},
-		{name: "Yersinia", href: "/view/Taxonomy/629"}
+		{name: "Acinetobacter", href: "/view/Taxonomy/469#view_tab=overview"},
+		{name: "Bacillus", href: "/view/Taxonomy/1386#view_tab=overview"},
+		{name: "Bartonella", href: "/view/Taxonomy/773#view_tab=overview"},
+		{name: "Borellia", href: "/view/Taxonomy/138#view_tab=overview"},
+		{name: "Brucella", href: "/view/Taxonomy/234#view_tab=overview"},
+		{name: "Burkholderia", href: "/view/Taxonomy/32008#view_tab=overview"},
+		{name: "Campylobacter", href: "/view/Taxonomy/194#view_tab=overview"},
+		{name: "Chlamydia", href: "/view/Taxonomy/810#view_tab=overview"},
+		{name: "Clostridium", href: "/view/Taxonomy/1485#view_tab=overview"},
+		{name: "Coxiella", href: "/view/Taxonomy/776#view_tab=overview"},
+		{name: "Ehrlichia", href: "/view/Taxonomy/943#view_tab=overview"},
+		{name: "Escherichia", href: "/view/Taxonomy/561#view_tab=overview"},
+		{name: "Francisella", href: "/view/Taxonomy/262#view_tab=overview"},
+		{name: "Helicobacter", href: "/view/Taxonomy/209#view_tab=overview"},
+		{name: "Listeria", href: "/view/Taxonomy/1637#view_tab=overview"},
+		{name: "Mycobacterium", href: "/view/Taxonomy/1763#view_tab=overview"},
+		{name: "Pseudomonas", href: "/view/Taxonomy/286#view_tab=overview"},
+		{name: "Rickettsia", href: "/view/Taxonomy/780#view_tab=overview"},
+		{name: "Salmonella", href: "/view/Taxonomy/590#view_tab=overview"},
+		{name: "Shigella", href: "/view/Taxonomy/620#view_tab=overview"},
+		{name: "Staphylococcus", href: "/view/Taxonomy/1279#view_tab=overview"},
+		{name: "Streptococcus", href: "/view/Taxonomy/1301#view_tab=overview"},
+		{name: "Vibrio", href: "/view/Taxonomy/662#view_tab=overview"},
+		{name: "Yersinia", href: "/view/Taxonomy/629#view_tab=overview"}
 	] 
 
 
@@ -66,7 +66,7 @@
 			</td>
 			<td style="text-align:left;">
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Organisms</span>
+					<span>ORGANISMS</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
 							<table><tbody>
@@ -102,33 +102,40 @@
 
 
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Data</span>
+					<span>DATA</span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
 							<table><tbody>
 								<tr>
 									<td style='vertical-align: top;width:175px'>
 										<div class="menuHeader">Data Types</div>
-											<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>
+											<!--<div><i class="fa icon-caret-down fa-1x noHoverIcon"></i>&nbsp;Genomes</div>-->
 											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?keyword(*)">All Genomes</a></div>-->
-											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
+											<!--<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Reference%22)">Reference Genomes</a></div>
 											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?eq(reference_genome,%22Representative%22)">Representative Genomes</a></div>
 											<div style="padding-left:12px"><a class="navigationLink" href="/view/GenomeList/?or(eq(antimicrobial_resistance,%22Intermediate%22),eq(antimicrobial_resistance,%22Resistant%22),eq(antimicrobial_resistance,%22Susceptible%22))">Antibiotic Resistance</a></div>
 											<div><a class="navigationLink" href="/view/FeatureList/?keyword(*)">Genomic Features</a></div>
-											<div><a class="navigationLink" href="/view/SpecialtyGeneList/?keyword(*)">Specialty Genes</a></div>
+											<div><a class="navigationLink" href="/view/SpecialtyGeneList/?keyword(*)">Specialty Genes</a></div>-->
 											<!--<div><a class="navigationLink" href="/view/PathwayList/?keyword(*)">Pathways</a></div>-->
-											<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>
+											<!--<div><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?keyword(*)">Transcriptomics Experiments</a></div>-->
+											<div><a class="navigationLink" href="/view/DataType/AntibioticResistance">Antibiotic Resistance</a></div>
+											<div><a class="navigationLink" href="/view/DataType/Genomes">Genomes</a></div>
+											<div><a class="navigationLink" href="/view/DataType/GenomicFeatures">Genomic Features</a></div>
+											<div><a class="navigationLink" href="/view/DataType/Pathways">Pathways</a></div>
+											<div><a class="navigationLink" href="/view/DataType/ProteinFamilies">Protein Families</a></div>
+											<div><a class="navigationLink" href="/view/DataType/SpecialtyGenes">Specialty Genes</a></div>
+											<div><a class="navigationLink" href="/view/DataType/Transcriptomics">Transcriptomics</a></div>
 									</td>
 									<td style='width:5px;'></td>
 									<td style='vertical-align:top;width:200px;'>
 										<div class="menuHeader">Specialty Data Collections</div>
-										<div><a class="" href="http://enews.patricbrc.org/patric-collaborations/">PATRIC Collaborations</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/patric-dbps/">PATRIC DBPs</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/niaid-clinical-proteomics/">NIAID Clinical Proteomics</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/niaid-genome-sequencing/">NIAID Genome Sequencing</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/niaid-structural-genomics/">NIAID Structural Genomics</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/niaid-systems-biology/">NIAID Systems Biology</a></div>
-										<div><a class="" href="http://enews.patricbrc.org/niaid-functional-genomics/">NIAID Functional Genomics</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/patric-collaborations/" target="_blank">PATRIC Collaborations</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/patric-dbps/" target="_blank">PATRIC DBPs</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-clinical-proteomics/" target="_blank">NIAID Clinical Proteomics</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-genome-sequencing/" target="_blank">NIAID Genome Sequencing</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-structural-genomics/" target="_blank">NIAID Structural Genomics</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-systems-biology/" target="_blank">NIAID Systems Biology</a></div>
+										<div><a class="" href="http://enews.patricbrc.org/niaid-functional-genomics/" target="_blank">NIAID Functional Genomics</a></div>
 									</td>	
 								</tr>
 							</tbody></table>
@@ -136,7 +143,7 @@
 					</div>
 				</div>
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Workspaces</span>
+					<span>WORKSPACES</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
@@ -167,7 +174,7 @@
 										</div>-->
 
 									</td>
-									<td style="vertical-align:top;">
+									<td style="vertical-align:top;" class="ShowWithAuth">
 										<a class="navigationLink" href="/job/">Your Jobs</a>
 									</td>
 	
@@ -178,7 +185,7 @@
 				</div>
 	
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Services</span>
+					<span>SERVICES</span>
 	
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div >
@@ -188,7 +195,7 @@
 										<div class="menuHeader">Genomics</div>
 										<div><a class="navigationLink" href="/app/Assembly">Assembly</a></div>
 										<div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
-										<div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>
+										<!--<div><a class="navigationLink" href="/app/BLAST">BLAST</a></div>-->
 										<div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
 										<div><p> </p></div>
 										<div class="menuHeader">Transcriptomics</div>
@@ -222,14 +229,14 @@
 					</div>
 				</div>
 				<div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-					<span>Help</span>
+					<span>HELP</span>
 
 					<div data-dojo-type="p3/widget/TooltipDialog">
 						<div><a class="DialogButton" rel="quickstart:">PATRIC Quickstart</a></div>
 						<div><a class="" href="/content/Tutorials">Tutorials</a></div>
  						<div><a class="" href="/content/UserGuide">User Guides</a></div>
  						<hr>
-						<div><a class="" href="/content/ReportProblem">Report a Problem</a></div>
+						<div><a class="DialogButton" rel="reportProblem:">Report a Problem</a></div>
 						<div><a class="" href="/content/ContactUs">Contact Us</a></div>
 					</div>
 				</div>
@@ -249,7 +256,7 @@
 				<div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-bars fa-2x'" style="">
 					<span></span>
 					<div data-dojo-type="p3/widget/TooltipDialog">
-						<div><a class="TopMenuLink" href="http://enews.patricbrc.org/" title="News">PATRIC News</a>  </div>
+						<div><a class="TopMenuLink" href="http://enews.patricbrc.org/" title="News" target="_blank">PATRIC News</a>  </div>
 						<div><a class="TopMenuLink" href="/content/publications" title="Publications">Publications</a>  </div>
 						<hr>
 
@@ -261,7 +268,7 @@
 						<div><a class="TopMenuLink" href="/content/personnel" title="Personnel">Personnel</a></div>
 						<div><a class="TopMenuLink" href="/content/collaborators" title="Collaborators">Collaborators</a></div>
 						<div><a class="TopMenuLink" href="/content/related_sites" title="Related Sites">Related Sites</a></div>
-						<div><a class="TopMenuLink" href="https://github.com/cidvbi/PATRIC" title="System Architecture">System Architecture</a></div>
+						<div><a class="TopMenuLink" href="https://github.com/cidvbi/PATRIC" title="System Architecture" target="_blank">System Architecture</a></div>
 					</div>
 				</div>
 			</td>

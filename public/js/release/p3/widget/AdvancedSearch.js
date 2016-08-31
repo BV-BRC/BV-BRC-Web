@@ -33,7 +33,7 @@ define("p3/widget/AdvancedSearch", [
 				if (total==1){
 					return ['/view/Feature/',docs[0].feature_id,"#view_tab=overview"].join("");
 				}else{
-					return ['/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false"].join("");
+					return ['/view/FeatureList/?',this.state.search,"#view_tab=overview"].join("");
 				}
 			},
 			"taxonomy": function(docs,total){
@@ -53,7 +53,7 @@ define("p3/widget/AdvancedSearch", [
 			},
 			"transcriptomics_experiment": function(docs,total){
 				if (total==1){
-					return ['/view/TranscriptomicsExperiment/',docs[0].eid,"#view_tab=overview"].join("");
+					return ['/view/ExperimentComparison/',docs[0].eid, "#view_tab=overview"].join("");
 				}else{
 					return ['/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments"].join("");
 				}
@@ -136,7 +136,7 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 		formatgenome_feature: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=features&filter=false",'">Genome Features&nbsp;(', total, ")</div> </a>"];
+			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/FeatureList/?',this.state.search,"#view_tab=overview",'">Genome Features&nbsp;(', total, ")</div> </a>"];
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
 				out.push("<div class='resultHead'><a href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + "</a>");
@@ -191,10 +191,17 @@ define("p3/widget/AdvancedSearch", [
 		},
 
 		formattranscriptomics_experiment: function(docs,total){
-			var out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=features&filter=false",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
+			console.log("formattranscriptomics_experiment docs: ", docs);
+			var out;
+			if (total==1){
+				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/ExperimentComparison/',docs[0].eid,"#view_tab=overview",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];
+			} else if (total>1) {
+				out=["<div class=\"searchResultsContainer featureResults\">",'<div class="resultTypeHeader"><a href="/view/TranscriptomicsExperimentList/?',this.state.search,"#view_tab=experiments",'">Transcriptomics Experiments&nbsp;(', total, ")</div> </a>"];			
+			}
+			
 			docs.forEach(function(doc){
 				out.push("<div class='searchResult'>");
-				out.push("<div class='resultHead'><a href='/view/Experiment/" + doc.eid + "'>" + doc.title + "</a>");
+				out.push("<div class='resultHead'><a href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + "</a>");
 				out.push("</div>");
 				out.push("<div class='resultInfo'>" + doc.organism);
 

@@ -40,6 +40,7 @@ define([
 		enableFilterPanel: false,
 		dataModel: "taxonomy",
 		containerType: "taxonomy_data",
+		tooltip: 'The "Taxonomy" tab provides taxonomy subtree for the current taxon level',
 		onSetState: function(attr, oldState, state){
 			// console.log("GridContainer onSetState: ", state, " oldState:", oldState);
 			if(!state){

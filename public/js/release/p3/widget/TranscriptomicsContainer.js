@@ -16,6 +16,7 @@ define("p3/widget/TranscriptomicsContainer", [
 		containerActions: TranscriptomicsExperimentGridContainer.prototype.containerActions,
 		apiServer: window.App.dataAPI,
 		authorizationToken: window.App.authorizationToken,
+		tooltip: 'The "Transcriptomics" tab contains a list of Transcriptomics Experiment Data for genomes associated with the current view',
 		eids: null,
 		// _setQueryAttr: function(query){
 		// 	this.query = query;

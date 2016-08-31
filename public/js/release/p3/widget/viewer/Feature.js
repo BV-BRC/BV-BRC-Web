@@ -225,6 +225,7 @@ define("p3/widget/viewer/Feature", [
 				title: "Genome Browser",
 				id: this.viewer.id + "_genomeBrowser",
 				content: "Genome Browser",
+				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
 				state: lang.mixin({}, this.state)
 			});
 			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})

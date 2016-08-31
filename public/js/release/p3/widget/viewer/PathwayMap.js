@@ -1,8 +1,8 @@
 define("p3/widget/viewer/PathwayMap", [
-	"dojo/_base/declare", "dojo/_base/lang", "dojo/when", "dojo/request", "dojo/string",
+	"dojo/_base/declare", "dojo/_base/lang", "dojo/when", "dojo/request", "dojo/dom-construct",
 	"dijit/layout/ContentPane",
 	"./Base", "../../util/PathJoin", "../PathwayMapContainer"
-], function(declare, lang, when, request, String,
+], function(declare, lang, when, request, domConstruct,
 			ContentPane,
 			ViewerBase, PathJoin, PathwayMapContainer){
 	return declare([ViewerBase], {
@@ -10,7 +10,6 @@ define("p3/widget/viewer/PathwayMap", [
 		"query": null,
 		containerType: "transcriptomics_experiment",
 		apiServiceUrl: window.App.dataAPI,
-		headerTemplate: "<table><tr><td>Pathway ID: <td></td><td>${0}</td></tr><tr><td>Pathway Name: <td></td><td>${1}</td></tr><tr><td>Pathway Class: <td></td><td>${2}</td></tr></table>",
 
 		onSetState: function(attr, oldVal, state){
 			// console.log("PathwayMap onSetState", state);
@@ -36,6 +35,10 @@ define("p3/widget/viewer/PathwayMap", [
 				state.genome_ids = [state.genome_id];
 				this.viewer.set('visible', true);
 			}
+			else if(state.hasOwnProperty('genome_ids')){
+				state.genome_ids = state.genome_ids.split(',');
+				this.viewer.set('visible', true);
+			}
 			else if(state.hasOwnProperty('taxon_id')){
 				var self = this;
 				when(this.getGenomeIdsByTaxonId(state.taxon_id), function(genomeIds){
@@ -45,12 +48,7 @@ define("p3/widget/viewer/PathwayMap", [
 			}
 
 			// update header
-			this.buildHeaderContent(state.pathway_id)
-				.then(lang.hitch(this, function(content){
-					this.viewerHeader.set('content', content);
-				}));
-
-			// this.viewer.set('visible', true);
+			this.buildHeaderContent(state.pathway_id);
 		},
 
 		getGenomeIdsByTaxonId: function(taxon_id){
@@ -81,7 +79,7 @@ define("p3/widget/viewer/PathwayMap", [
 			}), function(response){
 				var p = response[0];
 
-				return String.substitute(self.headerTemplate, [p.pathway_id, p.pathway_name, p.pathway_class]);
+				self.queryNode.innerHTML = "<b>" + p.pathway_id + " | " + p.pathway_name + "</b>";
 			});
 		},
 
@@ -100,9 +98,22 @@ define("p3/widget/viewer/PathwayMap", [
 
 			this.viewerHeader = new ContentPane({
 				content: "",
-				region: "top",
-				style: "height: 60px"
+				region: "top"
 			});
+			var headerContent = domConstruct.create("div", {"class": "PerspectiveHeader"});
+			domConstruct.place(headerContent, this.viewerHeader.containerNode, "last");
+			domConstruct.create("i", {"class": "fa PerspectiveIcon icon-map-o"}, headerContent);
+			domConstruct.create("div", {
+				"class": "PerspectiveType",
+				innerHTML: "Pathway View"
+			}, headerContent);
+
+			this.queryNode = domConstruct.create("span", {"class": "PerspectiveQuery"}, headerContent);
+
+			// this.totalCountNode = domConstruct.create("span", {
+			// 	"class": "PerspectiveTotalCount",
+			// 	innerHTML: "( loading... )"
+			// }, headerContent);
 
 			this.addChild(this.viewerHeader);
 			this.addChild(this.viewer);

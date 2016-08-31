@@ -2,12 +2,13 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/dom-class", "dojo/request",
 	"dijit/_WidgetBase", "dijit/_WidgetsInTemplateMixin", "dijit/_TemplatedMixin",
-	"dojo/text!./templates/FeatureListOverview.html"
+	"dojo/text!./templates/FeatureListOverview.html","p3/widget/GenomeGroupInfoSummary",
+	"p3/widget/FunctionalProfile","p3/widget/TaxonomyProfile"
 
 ], function(declare, lang,
 			on, domClass, xhr,
 			WidgetBase, _WidgetsInTemplateMixin, Templated,
-			Template){
+			Template,GenomeGroupInfoSummary,FunctionalProfile,TaxonomyProfile){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "FeatureListOverview",

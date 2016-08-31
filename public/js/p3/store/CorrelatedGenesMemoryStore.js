@@ -156,9 +156,9 @@ define([
 						'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 					},
 					data: {
-						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ')',
-						fq: 'annotation:PATRIC',
-						rows: refseqLocusTagList.length
+						q: 'refseq_locus_tag:(' + refseqLocusTagList.join(' OR ') + ') AND genome_id:' + state.feature.genome_id,
+						fq: 'annotation:PATRIC AND feature_type:CDS',
+						rows: 25000
 					}
 				}), function(res){
 
