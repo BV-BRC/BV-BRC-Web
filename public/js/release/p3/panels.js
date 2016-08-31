@@ -8,6 +8,13 @@ define("p3/panels", [], function(){
 				content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
 			}
 		},
+		reportProblem: {
+			title: "Report Problem",
+			layer: "p3/layer/panels",
+			ctor: "p3/widget/ReportProblem",
+			requireAuth: false,
+			params: {}
+		},
 		CreateWorkspace: {
 			title: "Create Workspace",
 			layer: "p3/layer/panels",

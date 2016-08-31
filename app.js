@@ -12,6 +12,7 @@ var package = require("./package.json");
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var reportProblem = require('./routes/reportProblem')
 var workspace = require('./routes/workspace');
 var viewers = require('./routes/viewers');
 var remotePage= require('./routes/remotePage');
@@ -89,7 +90,8 @@ app.use(function(req, res, next){
 		dataServiceURL: config.get("dataServiceURL"),
 		enableDevTools: config.get("enableDevTools"),
 		accountURL: config.get("accountURL"),
-		appLabel: config.get("appLabel")
+		appLabel: config.get("appLabel"),
+		appVersion: package.version
 	};
 	console.log("Application Options: ", req.applicationOptions);
 	next();
@@ -127,6 +129,7 @@ app.use("/js/", express.static(path.join(__dirname, 'public/js/')));
 app.use("/patric/", express.static(path.join(__dirname, 'public/patric/')));
 app.use("/public/", express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
+app.post("/reportProblem", reportProblem);
 app.use("/workspace", workspace);
 app.use("/content", contentViewer);
 app.use("/remote", remotePage);
