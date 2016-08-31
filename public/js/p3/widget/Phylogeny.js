@@ -149,7 +149,7 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-            this.treeDiv.innerHTML= "Loading...";
+            //this.treeDiv.innerHTML= "Loading...";
 			console.log("Phylogeny onSetState: ", state);
 			if(!state){
 				return;
