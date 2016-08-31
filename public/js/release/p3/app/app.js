@@ -148,6 +148,16 @@ define("p3/app/app", [
 				// console.log("Open Dialog", type);
 			});
 
+			on(window,"message", function(msg){
+				if (msg && msg.data=="RemoteReady"){
+					return;
+				}
+				msg = JSON.parse(msg.data);
+				if (msg && msg.topic){
+					Topic.publish(msg.topic, msg.payload);
+				}
+			},"*")
+
 			Topic.subscribe("/navigate", function(msg){
 				//console.log("app.js handle /navigate msg");
 				//console.log("msg.href length: ", msg.href.length)
@@ -156,6 +166,19 @@ define("p3/app/app", [
 					return;
 				}
 
+				 if (msg.target && msg.target=="blank"){
+						var child = window.open('/remote', '_blank');
+						var handle = on(child,"message", function(cmsg){
+							if (cmsg && cmsg.data && cmsg.data=="RemoteReady") {
+								child.postMessage(JSON.stringify({
+									"topic": "/navigate",
+									"payload": {"href": msg.href}
+								}), "*")
+								handle.remove();
+							}
+						});
+						return;
+				}
 				Router.go(msg.href);
 			});
 

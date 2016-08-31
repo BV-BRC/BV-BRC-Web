@@ -847,7 +847,7 @@ define("p3/widget/GridContainer", [
 								ids = response.map(function(d){
 									return d['feature_id']
 								});
-								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/?pathways=" + ids.join(','), target: "blank"});
 							});
 
 							return;
@@ -874,7 +874,7 @@ define("p3/widget/GridContainer", [
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 									return;
 									break;
@@ -896,7 +896,7 @@ define("p3/widget/GridContainer", [
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 
 									return;
@@ -919,7 +919,7 @@ define("p3/widget/GridContainer", [
 							break;
 					}
 
-					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 				},
 				false
 

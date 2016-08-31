@@ -63,6 +63,11 @@ define([
 			});
 			*/
 
+			Router.register("/remote", function(params, oldPath, newPath, state){
+				 0 && console.log("REMOTE WINDOW, WAIT FOR /navigate message");
+				window.postMessage("RemoteReady","*");
+			});
+
 			Router.register("\/job(\/.*)", function(params, oldPath, newPath, state){
 				//  0 && console.log("Workspace URL Callback", params.newPath);
 				var newState = {href: params.newPath};
@@ -5030,6 +5035,16 @@ define([
 				//  0 && console.log("Open Dialog", type);
 			});
 
+			on(window,"message", function(msg){
+				if (msg && msg.data=="RemoteReady"){
+					return;
+				}
+				msg = JSON.parse(msg.data);
+				if (msg && msg.topic){
+					Topic.publish(msg.topic, msg.payload);
+				}
+			},"*")
+
 			Topic.subscribe("/navigate", function(msg){
 				// 0 && console.log("app.js handle /navigate msg");
 				// 0 && console.log("msg.href length: ", msg.href.length)
@@ -5038,6 +5053,19 @@ define([
 					return;
 				}
 
+				 if (msg.target && msg.target=="blank"){
+						var child = window.open('/remote', '_blank');
+						var handle = on(child,"message", function(cmsg){
+							if (cmsg && cmsg.data && cmsg.data=="RemoteReady") {
+								child.postMessage(JSON.stringify({
+									"topic": "/navigate",
+									"payload": {"href": msg.href}
+								}), "*")
+								handle.remove();
+							}
+						});
+						return;
+				}
 				Router.go(msg.href);
 			});
 
@@ -25653,6 +25681,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -74928,7 +74957,7 @@ define([
 								ids = response.map(function(d){
 									return d['feature_id']
 								});
-								Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+								Topic.publish("/navigate", {href: "/view/PathwaySummary/?pathways=" + ids.join(','), target: "blank"});
 							});
 
 							return;
@@ -74955,7 +74984,7 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 									return;
 									break;
@@ -74977,7 +75006,7 @@ define([
 										ids = response.map(function(d){
 											return d['feature_id']
 										});
-										Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+										Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 									});
 
 									return;
@@ -75000,7 +75029,7 @@ define([
 							break;
 					}
 
-					Topic.publish("/navigate", {href: "/view/PathwaySummary/" + ids.join(',')});
+					Topic.publish("/navigate", {href: "/view/PathwaySummary/?features=" + ids.join(','), target: "blank"});
 				},
 				false
 
