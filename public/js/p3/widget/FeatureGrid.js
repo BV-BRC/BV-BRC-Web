@@ -11,9 +11,11 @@ define([
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false},
-					{attribute: "accession", descending: false},
-					{attribute: "start", descending: false}]
+				sort: [{attribute: "score", descending: true}]
+
+//				sort: [{attribute: "genome_name", descending: false},
+//					{attribute: "accession", descending: false},
+//					{attribute: "start", descending: false}]
 			};
 			// console.log("this.queryOptions: ", this.queryOptions);
 		},

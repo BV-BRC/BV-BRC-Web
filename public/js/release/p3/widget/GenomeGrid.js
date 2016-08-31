@@ -12,7 +12,7 @@ define("p3/widget/GenomeGrid", [
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
-		defaultSortProperty: "genome_name",
+		defaultSortProperty: "score",
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		store: store,

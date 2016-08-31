@@ -56258,7 +56258,7 @@ define([
 		query: (this.query || ""),
 		apiToken: window.App.authorizationToken,
 		apiServer: window.App.dataAPI,
-		defaultSortProperty: "genome_name",
+		defaultSortProperty: "score",
 		dataModel: "genome",
 		primaryKey: "genome_id",
 		store: store,
@@ -77639,9 +77639,11 @@ define([
 	return declare([Grid], {
 		constructor: function(){
 			this.queryOptions = {
-				sort: [{attribute: "genome_name", descending: false},
-					{attribute: "accession", descending: false},
-					{attribute: "start", descending: false}]
+				sort: [{attribute: "score", descending: true}]
+
+//				sort: [{attribute: "genome_name", descending: false},
+//					{attribute: "accession", descending: false},
+//					{attribute: "start", descending: false}]
 			};
 			// console.log("this.queryOptions: ", this.queryOptions);
 		},
@@ -93028,7 +93030,7 @@ define([
 			});
 
 			this.browser = new GenomeBrowser({
-				title: "Browser",
+				title: "Genome Browser",
 				id: this.viewer.id + "_" + "browser",
 				state: lang.mixin({}, this.state),
 				tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser'
@@ -114479,12 +114481,13 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang",
 	"dojo/on", "dojo/dom-class", "dojo/request",
 	"dijit/_WidgetBase", "dijit/_WidgetsInTemplateMixin", "dijit/_TemplatedMixin",
-	"dojo/text!./templates/FeatureListOverview.html"
+	"dojo/text!./templates/FeatureListOverview.html","p3/widget/GenomeGroupInfoSummary",
+	"p3/widget/FunctionalProfile","p3/widget/TaxonomyProfile"
 
 ], function(declare, lang,
 			on, domClass, xhr,
 			WidgetBase, _WidgetsInTemplateMixin, Templated,
-			Template){
+			Template,GenomeGroupInfoSummary,FunctionalProfile,TaxonomyProfile){
 
 	return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
 		baseClass: "FeatureListOverview",
@@ -114528,6 +114531,480 @@ define([
 	});
 });
 
+},
+'p3/widget/GenomeGroupInfoSummary':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request", "dojo/when",
+	"./SummaryWidget", "../WorkspaceManager"
+
+], function(declare, lang,
+			domClass, domConstruct, on, xhr, when,
+			SummaryWidget, WorkspaceManager){
+
+	return declare([SummaryWidget], {
+		dataModel: "",
+		query: "",
+		baseQuery: "",
+		view: "table",
+		templateString: '<div class="SummaryWidget"><div data-dojo-attach-point="containerNode"><div class="tableNode" data-dojo-attach-point="tableNode"></div></div></div>',
+		columns: [],
+		_setStateAttr: function(state){
+
+			var self = this;
+			when(WorkspaceManager.getObject(state.ws_path, true), function(data){
+				self.set('groupInfo', data);
+			})
+		},
+
+		_setGroupInfoAttr: function(data){
+
+			domConstruct.empty(this.tableNode);
+
+			var table = domConstruct.create("table", {"class": "p3basic"}, this.tableNode);
+
+			var tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {innerHTML: "Name"}, tr);
+			domConstruct.create("td", {innerHTML: data.name}, tr);
+
+			tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {innerHTML: "Owner"}, tr);
+			domConstruct.create("td", {innerHTML: data.owner_id}, tr);
+
+			tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {innerHTML: "Members"}, tr);
+			domConstruct.create("td", {innerHTML: data.autoMeta.item_count}, tr);
+
+			tr = domConstruct.create("tr", {}, table);
+			domConstruct.create("td", {innerHTML: "Created"}, tr);
+			domConstruct.create("td", {innerHTML: data.creation_time}, tr);
+
+		},
+
+		onSetQuery: function(attr, oldVal, query){
+			// block default action
+		},
+
+		processData: function(res){
+		},
+
+		render_chart: function(){
+		},
+
+		render_table: function(){
+		}
+	})
+});
+
+},
+'p3/widget/FunctionalProfile':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
+	"./SummaryWidget", "../util/PathJoin", "./D3HorizontalBarChart"
+
+], function(declare, lang,
+			domClass, domConstruct, on, xhr,
+			SummaryWidget, PathJoin, D3HorizontalBarChart){
+
+	return declare([SummaryWidget], {
+		dataModel: "genome_feature",
+		query: "",
+		baseQuery: "&limit(1)&facet((field,product),(mincount,1),(sort,count),(limit,10))&json(nl,map)",
+		columns: [
+			{label: "Function", field: "label"},
+			{
+				label: "Genes", field: "count"
+			}
+		],
+		processData: function(res){
+
+			if(!res || !res.facet_counts || !res.facet_counts.facet_fields || !res.facet_counts.facet_fields.product){
+				console.error("INVALID SUMMARY DATA");
+				return;
+			}
+
+			var self = this;
+			var d = res.facet_counts.facet_fields.product; // now key-value pair
+			var data = Object.keys(d).map(function(key){
+				return {label:key, count: d[key]}
+			});
+
+			self.set('data', data);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				this.chart = new D3HorizontalBarChart();
+				this.chart.init(this.chartNode, "fnProfile");
+				this.chart.render(this.data);
+			}else{
+
+				this.chart.update(this.data);
+			}
+		},
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this.data);
+			this.grid.sort([{attribute: "count", descending: true}]);
+		}
+	})
+});
+},
+'p3/widget/D3HorizontalBarChart':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/dom-style",
+	"d3/d3"
+], function(declare, lang,
+			dom, domClass, domConstruct, domStyle,
+			d3){
+
+	return declare([], {
+		init: function(target, className, margin){
+			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
+
+			this.node = domConstruct.place('<div class="chart ' + className + '"></div>', target, "last");
+
+			this.nodeWidth = domStyle.get(this.node, "width");
+			this.nodeHeight = domStyle.get(this.node, "height") || 250;
+			this.margin = lang.mixin({top: 0, right: 10, bottom: 20, left: 250}, margin);
+
+			this.canvas = d3.select(".chart." + className)
+				.insert("svg", ":first-child")
+				.attr("width", this.nodeWidth)
+				.attr("height", this.nodeHeight);
+
+			if(d3.select("div.tooltip").length > 0){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+			}
+		},
+		renderTitle: function(xAxisTitle, yAxisTitle){
+			if(xAxisTitle){
+				this.canvas.append("text")
+					.attr("transform", "translate(" + (this.nodeWidth / 2 - 20) + "," + (this.nodeHeight - 10) + ")")
+
+					.text(xAxisTitle);
+			}
+
+			if(yAxisTitle){
+				this.canvas.append("text")
+					.attr("transform", "rotate(-90)")
+					.attr("x", 0 - (this.nodeWidth / 2))
+					.attr("y", 10)
+					.text(yAxisTitle);
+			}
+		},
+		/*
+			expect data:[{label: [string], tooltip: [string or func], count: [number]},,,]
+			// will use '{label} ({count})' if tooltip is omitted.
+		 */
+		render: function(data){
+			if(this.data !== data){
+				this.data = data;
+			}else{
+				return;
+			}
+
+			var self = this;
+
+			var maxValue = data.map(function(d){
+				return d.count;
+			})
+				.reduce(function(a, b){
+					return Math.max(a, b);
+				});
+			var labels = data.map(function(d){
+				return d.label;
+			});
+
+			this.y_scale = d3.scale.ordinal()
+				.rangeRoundBands([self.margin.top, (self.nodeHeight - self.margin.top - self.margin.bottom)], .3, 0)
+				.domain(labels);
+			this.y_scale_range = this.y_scale.range();
+			// console.log(this.y_scale.rangeBand(), this.y_scale_range);
+
+			this.x_scale = d3.scale.linear()
+				.range([0, (self.nodeWidth - self.margin.right - self.margin.left)])
+				.domain([0, maxValue]);
+
+			this.yAxis = d3.svg.axis()
+				.scale(this.y_scale)
+				.orient("left")
+				.tickFormat(function(d){
+					return (d.length > 32) ? d.substr(0, 32) + '...' : d;
+				})
+				.tickPadding(2).tickSize(1);
+
+			this.xAxis = d3.svg.axis()
+				.scale(this.x_scale)
+				.orient("bottom")
+				.tickFormat(d3.format(",.0d"))
+				.tickPadding(2).tickSize(1);
+
+			this.canvas.selectAll("g.axis").remove();
+			this.canvas.select("g.bars").remove();
+
+			this.canvas.append("g")
+				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.margin.top]))
+				.call(this.yAxis)
+				.attr("class", "y axis");
+
+			this.canvas.append("g")
+				.attr("transform", lang.replace("translate({0}, {1})", [self.margin.left, self.nodeHeight - self.margin.bottom]))
+				.call(this.xAxis)
+				.attr("class", "x axis");
+
+			this.canvas.append("g")
+				.attr("class", "bars")
+				.selectAll("rect")
+				.data(data)
+				.enter()
+				.append("rect")
+				.attr("x", function(){
+					return self.margin.left;
+				})
+				.attr("y", function(d, i){
+					return self.y_scale_range[i] + self.margin.top;
+				})
+				.attr("width", function(d){
+					return self.x_scale(d.count)
+				})
+				.attr("height", self.y_scale.rangeBand())
+				.attr("fill", '#1976D2')
+				.on("mouseover", function(d, i){
+					self.tooltipLayer.transition()
+						.duration(200)
+						.style("opacity", .95);
+
+					var content = (self.data[i].tooltip) ? self.data[i].tooltip.apply(this, arguments) : lang.replace('{label} ({count})', self.data[i]);
+
+					self.tooltipLayer.html(content)
+						.style("left", d3.event.pageX + "px")
+						.style("top", d3.event.pageY + "px")
+				})
+				.on("mouseout", function(){
+					self.tooltipLayer.transition()
+						.duration(500)
+						.style("opacity", 0)
+				});
+		},
+		resize: function(){
+			var self = this;
+			clearTimeout(this.resizer);
+
+			this.resizer = setTimeout(function(){
+				self.doResize()
+			}, 300);
+		},
+
+		update: function(data){
+			if(this.canvas.select("g.bars").selectAll("rect").length === 0){
+				this.render(data);
+				return;
+			}
+			this.data = data;
+
+			var maxValue = data.map(function(d){
+				return d.count;
+			})
+				.reduce(function(a, b){
+					return Math.max(a, b);
+				});
+			var labels = data.map(function(d){
+				return d.label;
+			});
+			var self = this;
+
+			this.x_scale.domain([0, maxValue]);
+			this.y_scale.domain(labels);
+			this.y_scale_range = this.y_scale.range();
+			this.xAxis.scale(this.x_scale);
+			this.yAxis.scale(this.y_scale);
+
+			this.canvas.select("g.x").transition().duration(600).call(this.xAxis);
+			this.canvas.select("g.y").transition().duration(600).call(this.yAxis);
+
+			this.canvas.select("g.bars").selectAll("rect").transition().duration(600)
+				.attr("width", function(d, i){
+					return (data[i] != undefined) ? self.x_scale(data[i].count) : 0;
+				})
+				.attr("y", function(d, i){
+					return (data[i] != undefined) ? self.y_scale_range[i] + self.margin.top : 0;
+				});
+		},
+
+		doResize: function(){
+			var self = this;
+
+			this.nodeWidth = domStyle.get(this.node, "width");
+
+			// update chart and canvas width
+			this.canvas.attr("width", this.nodeWidth);
+
+			// update axis
+			this.x_scale.range([0, (self.nodeWidth - self.margin.right - self.margin.left)]);
+			this.xAxis.scale(this.x_scale);
+			this.canvas.select("g.x").transition().call(this.xAxis);
+
+			// update bars
+			this.canvas.selectAll("rect").transition()
+				.attr("width", function(d){
+					return self.x_scale(d.count)
+				});
+		}
+	});
+});
+},
+'p3/widget/TaxonomyProfile':function(){
+define([
+	"dojo/_base/declare", "dojo/_base/lang",
+	"dojo/dom-class", "dojo/dom-construct", "dojo/on", "dojo/request",
+	"./SummaryWidget", "../util/PathJoin", "./D3HorizontalBarChart"
+
+], function(declare, lang,
+			domClass, domConstruct, on, xhr,
+			SummaryWidget, PathJoin, D3HorizontalBarChart){
+
+	return declare([SummaryWidget], {
+		dataModel: "genome_feature",
+		query: "",
+		baseQuery: "&limit(1)&facet((field,genome_id),(mincount,1),(limit,-1))&json(nl,map)",
+		columns: [
+			{label: "Taxon Level", field: "label"},
+			{
+				label: "Genes", field: "count"
+			}
+		],
+		// TODO:
+		// - make D3HorizonalBarChart modular and configurable
+		// - make the facet field dynamics (phylum, class, order, family, genus, species)
+		// - handle genome level profile
+		//
+		// onSetQuery: function(attr, oldVal, query){
+		// 	// console.log("SummaryWidget Query: ", this.query + this.baseQuery);
+		// 	return xhr.post(PathJoin(this.apiServiceUrl, this.dataModel) + "/", {
+		// 		handleAs: "json",
+		// 		headers: this.headers,
+		// 		data: this.query + this.baseQuery
+		// 	}).then(lang.hitch(this, "processData"));
+		// },
+		processData: function(data){
+
+			if(!data || !data.facet_counts || !data.facet_counts.facet_fields['genome_id']){
+				console.log("INVALID SUMMARY DATA", data);
+				return;
+			}
+
+			var genomeFreqMap = data.facet_counts.facet_fields.genome_id;
+			var genomeIds = Object.keys(genomeFreqMap);
+
+			xhr.post(PathJoin(this.apiServiceUrl, "/genome/") + "/", {
+				handleAs: "json",
+				headers: {
+					'Accept': "application/solr+json",
+					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
+					'X-Requested-With': null,
+					'Authorization': window.App.authorizationToken || ""
+				},
+				data: "in(genome_id,(" + genomeIds.join(",") + "))&limit(1)&facet((pivot,(species,genome_id)),(mincount,1),(limit,-1))&json(nl,map)"
+			}).then(lang.hitch(this, function(res){
+
+					var facet = res.facet_counts.facet_pivot['species,genome_id'];
+					// console.log("facet: ", facet);
+
+					var data = [];
+					var keyValueMap = {};
+
+					facet.forEach(function(d){
+						var key = d.value;
+						var count = 0;
+						if(d.pivot){
+							d.pivot.forEach(function(g){
+								// console.log(genomeFreqMap[g.value], g.count);
+								count += genomeFreqMap[g.value] * g.count;
+							})
+						}
+						// console.log(key, count);
+						keyValueMap[key] = count;
+					});
+					// console.log("keyValueMap: ", keyValueMap);
+
+					Object.keys(keyValueMap).forEach(function(key){
+						data.push({
+							label: key, count: keyValueMap[key]
+						});
+					});
+
+					var filtered = data.sort(function(a, b){
+						return b.count - a.count;
+					}).filter(function(d, i){
+						return i < 10;
+					});
+
+					// console.log("data: ", filtered);
+					this.set('data', filtered);
+				})
+			);
+		},
+
+		postCreate: function(){
+			this.inherited(arguments);
+
+			on(window, "resize", lang.hitch(this, "resize"));
+		},
+		resize: function(){
+			// console.log("resize is called in TaxonoyProfile");
+
+			if(this.chart){
+				this.chart.resize();
+			}
+			this.inherited(arguments);
+		},
+
+		render_chart: function(){
+
+			if(!this.chart){
+				this.chart = new D3HorizontalBarChart();
+				this.chart.init(this.chartNode, "txProfile");
+				this.chart.render(this.data);
+			}else{
+
+				this.chart.update(this.data);
+			}
+		}
+		,
+
+		render_table: function(){
+			this.inherited(arguments);
+
+			this.grid.refresh();
+			this.grid.renderArray(this.data);
+			this.grid.sort([{attribute: "count", descending: true}]);
+		}
+	})
+})
+;
 },
 'p3/widget/JobStatus':function(){
 define([

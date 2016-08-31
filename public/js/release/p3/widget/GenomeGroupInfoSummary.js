@@ -26,7 +26,7 @@ define("p3/widget/GenomeGroupInfoSummary", [
 
 			domConstruct.empty(this.tableNode);
 
-			var table = domConstruct.create("table", {class: "p3basic"}, this.tableNode);
+			var table = domConstruct.create("table", {"class": "p3basic"}, this.tableNode);
 
 			var tr = domConstruct.create("tr", {}, table);
 			domConstruct.create("td", {innerHTML: "Name"}, tr);
