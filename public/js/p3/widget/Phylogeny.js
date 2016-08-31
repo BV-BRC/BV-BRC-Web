@@ -394,8 +394,7 @@ define([
 				this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
 			}, this);
 
-		},
-
+		}
 
 	});
 });
