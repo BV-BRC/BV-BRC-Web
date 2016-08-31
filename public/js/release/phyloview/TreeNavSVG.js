@@ -77,10 +77,17 @@ define("phyloview/TreeNavSVG", [
     this.margin = {top: 10, right: 10, bottom: 10, left: 10};
     
     },
-    setTree : function(treeString) {
+    setTree : function(treeString, labelsInit, labelAliasInit) {
         _self=this;
+        labelsInit = typeof labelsInit !== 'undefined' ? labelsInit : null;
+        labelAliasInit = typeof labelAliasInit !== 'undefined' ? labelAliasInit : null;
+
         phylotree = new PhyloTree.PhyloTree(treeString);
         this.treeData = phylotree.getJSONTree();
+        if (labelsInit != null && labelAliasInit != null){
+            this.addLabels(labelsInit,labelAliasInit);
+            this.selectLabels(labelAliasInit);
+        }
 
         this.leafCount = phylotree.getLeafCount();
         this.maxNodeDepth = this.treeData.cx;
@@ -382,7 +389,7 @@ define("phyloview/TreeNavSVG", [
         .append("svg:tspan")
         .style("fill", function(d){
             var r = "";
-            var colorKey = d.genus + " " + d.species;
+            var colorKey = d.id; //d.genus + " " + d.species;
             if(_self.tipToColors[colorKey]) {
                 r = _self.tipToColors[colorKey][0];
             }            
@@ -670,7 +677,7 @@ define("phyloview/TreeNavSVG", [
         .append("svg:tspan")
         .style("fill", function(d){
             var r = "";
-            var colorKey = d.genus + " " + d.species;
+            var colorKey = d.id; //d.genus + " " + d.species;
             if(_self.tipToColors[colorKey]) {
                 r = _self.tipToColors[colorKey][0];
             }            
@@ -689,7 +696,7 @@ define("phyloview/TreeNavSVG", [
         .append("svg:tspan")
         .style("fill", function(d){
             var r = "";
-            var colorKey = d.genus + " " + d.species;
+            var colorKey = d.id; //d.genus + " " + d.species;
             if(_self.tipToColors[colorKey]) {
                 r = _self.tipToColors[colorKey][1];
             }
@@ -804,46 +811,44 @@ define("phyloview/TreeNavSVG", [
         },
 
         getGenusSpeciesSets: function(minToInclude) {
-                var genusSets = new Array();
-                var genusToSpecies = new Array();
-                var genusToSpeciesSeen = new Array();
-                var speciesSets = new Array();
-                var uniqueList = new Array();
+                var genusSets = {};
+                var genusToSpecies = {};
+                var genusToSpeciesSeen = {};
+                var uniqueList = [];
                               
-                var tipList = phylotree.getTipLabels();
+
+                Object.keys(this.treeData.labels[this.labelIndex]).forEach(lang.hitch(this, function(leafID){
                         //console.log("tips: " + tipList.length);
-	                for(var i = tipList.length-1; i >=0; i--) {
                         var genusIndex = 0;
                         //tipList[i] = tipList[i].replace(/_/g, " ");
                         //console.log(tipList[i]);
-                        var fields = tipList[i].split(" "); 
-                        if(fields[0] == "Candidatus") {
-                            genusIndex++;
-                        }
+                        var fields = this.treeData.labels[this.labelIndex][leafID].split(" "); 
                         var genus = fields[genusIndex];
-                        var species = genus;
+                        var speciesName = genus;
+
                         if(fields.length > 1) {  
-                                species = fields[genusIndex]+" "+fields[genusIndex+1];
+                                speciesName = fields[genusIndex]+"_"+fields[genusIndex+1];
                         }
                          
                         if(genusSets[genus] == undefined) {
                                 uniqueList.push(genus);
-                                genusSets[genus] = new Array();
-                                genusSets[genus].push(tipList[i]);
-                                genusToSpecies[genus] = new Array();
-                                genusToSpeciesSeen[genus] = new Array();
-                                genusToSpecies[genus].push(species);
-                                genusToSpeciesSeen[genus][species] = 1;
+                                genusSets[genus] = [];
+                                genusSets[genus].push(leafID);
+                                genusToSpecies[genus] = [];
+                                genusToSpeciesSeen[genus] = [];
+                                genusToSpecies[genus].push(leafID);
+                                genusToSpeciesSeen[genus][speciesName] = 1;
                         } else {
-                                genusSets[genus].push(tipList[i]);
-                                if(genusToSpeciesSeen[genus][species] == undefined) {
-                                        genusToSpecies[genus].push(species);
-                                        genusToSpeciesSeen[genus][species] = 1;
+                                genusSets[genus].push(leafID);
+                                if(genusToSpeciesSeen[genus][speciesName] == undefined) {
+                                        genusToSpecies[genus].push(leafID);
+                                        genusToSpeciesSeen[genus][speciesName] = 1;
                                 } else {
-                                        genusToSpeciesSeen[genus][species]++;
+                                        genusToSpecies[genus].push(leafID);
+                                        genusToSpeciesSeen[genus][speciesName]++;
                                 }
                         }
-                }
+                }));
                 
                 //sort genera by occurrence
                 function sortGeneraFunc(a, b) {
@@ -878,7 +883,7 @@ define("phyloview/TreeNavSVG", [
                 var genusToSpecies = genusSets[1];
                  
                 var rainbow = this.getRGBRainbow(commonGenera.length, 21);
-                var speciesToColor = new Array();
+                var speciesToColor = {};
                  
                 var length = Math.min(commonGenera.length, rainbow.length);
         
@@ -924,18 +929,6 @@ define("phyloview/TreeNavSVG", [
                                 }
                         }
 
-                }
-
-                var tipLabels = phylotree.getTipLabels();
-                for(var i = tipLabels.length-1; i >= 0; i--) {
-                        var fields = tipLabels[i].split("_");
-                        if(fields.length > 1) {
-                                var species = fields[0]+"_"+fields[1];
-                                var speciesColor = speciesToColor[species];
-                                if(speciesColor != undefined) {
-                                        this.setLabelColor(tipLabels[i], speciesColor);
-                                }
-                        }
                 }
              return speciesToColor;
         },
