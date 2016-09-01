@@ -16,7 +16,7 @@ define([
         rankAttrs: ["taxon_rank"],
         subStringAttrs: ["taxon_name"],
         promoteAttrs: ["taxon_name"],
-        boostQuery:["taxon_rank:superkingdom^7000000","taxon_rank:phylum^6000000","taxon_rank:class^5000000","taxon_rank:order^4000000","taxon_rank:family^3000000","taxon_rank:genus^2000000"],
+        boostQuery:["taxon_rank:(superkingdom)^7000000","taxon_rank:(phylum)^6000000","taxon_rank:(class)^5000000","taxon_rank:(order)^4000000","taxon_rank:(family)^3000000","taxon_rank:(genus)^2000000", "taxon_rank:(species)^1000000","taxon_rank:*"],
         intAttrs:["taxon_id"],
         rankList:["species","no rank","genus","subspecies","family","order","class","phylum","species group","suborder","varietas","species subgroup","subclass","subgenus","forma","superphylum","superkingdom","tribe","subfamily","subphylum"],
 		//query: "?&select(taxon_name)",
@@ -44,7 +44,7 @@ define([
 				console.log("Store Headers: ", _self.store.headers);
 				var q = "?q=";
                 var extraSearch=[];
-                var qString=query[_self.searchAttr].toString().replace(/\.\*|\[|\]/g,'');
+                var qString=query[_self.searchAttr].toString().replace(/\(|\)|\.|\*|\||\[|\]/g,'');
 
                 var rankParts=[];
                 _self.rankList.forEach(function(rank){
@@ -91,18 +91,20 @@ define([
                     q+=qString
                 }
 
-				if (_self.queryFilter) {
-					q+=_self.queryFilter
-				}
 
                 //pump up the volume on higher ranks
 				if (_self.boostQuery && _self.boostQuery.length>0) {
-                    q +='&defType=dismax'; //&bq='+_self.boostQuery.join(' OR ');
-                    q = q.replace("?q=","?q.alt=");
-                    _self.boostQuery.forEach(function(item){
-                        q += "&bq="+item
-                    });
+                    q+=" AND ("+_self.boostQuery.join(" OR ")+")"
+                    //q +='&defType=dismax'; //&bq='+_self.boostQuery.join(' OR ');
+                    //q = q.replace("?q=","?q.alt=");
+                   // _self.boostQuery.forEach(function(item){
+                   //     q += "&bq="+item
+                   // });
                 }
+
+				if (_self.queryFilter) {
+					q+=_self.queryFilter
+				}
 
 				if (_self.resultFields && _self.resultFields.length>0) {
 					q += "&fl=" + _self.resultFields.join(",");
