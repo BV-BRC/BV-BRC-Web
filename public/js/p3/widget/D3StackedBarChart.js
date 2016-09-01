@@ -49,7 +49,7 @@ define([
 				.attr("height", this.canvasHeight)
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			if(d3.select("div.tooltip").length > 0){
+			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
 			}else{
 				this.tooltipLayer = d3.select("body").append("div")
