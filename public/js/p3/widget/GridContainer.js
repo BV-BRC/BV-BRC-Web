@@ -775,7 +775,7 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+					Topic.publish("/navigate",{href: "/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview", target: "blank"});
 				},
 				false
 			], [
@@ -796,8 +796,8 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
-					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
+
+					Topic.publish("/navigate",{href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments", target: "blank"});
 				},
 				false
 			], [
@@ -818,9 +818,9 @@ define([
 						return exp.eid;
 					});
 					if(experimentIdList.length == 1){
-						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))", target: "blank"});
 					}else{
-						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))", target: "blank"});
 					}
 				},
 				false
