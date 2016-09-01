@@ -124,20 +124,29 @@ define([
 				q.push(state.search);
 			}
 
-			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+			// reset filters to default state if search is different
+			if (oldState && (state.search != oldState.search)){
+				oldState = {};
+			}
 
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+				// console.log("Filters Disabled By FALSE")
 			}else if(state.hashParams){
 				if(state.hashParams.filter){
+					// console.log("Using Filter from Hash Params: ", state.hashParams.filter);
 					q.push(state.hashParams.filter)
 				}else if(!oldState && this.defaultFilter){
+					// console.log("Using Default Filter as Hash Params Filter", this.defaultFilter)
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', lang.mixin({},state));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					// console.log("Using oldState HashParams Filter", oldState.hashParams.filter)
 					state.hashParams.filter = oldState.hashParams.filter;
 					this.set('state', lang.mixin({},state));
 					return;
 				}else if(this.defaultFilter){
+					// console.log("Fallthrough to default Filter: ", this.defaultFilter);
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', lang.mixin({},state));
 					return;
@@ -148,8 +157,10 @@ define([
 			}else{
 				state.hashParams = {}
 				if(!oldState && this.defaultFilter){
+					// console.log("No OldState or Provided Filters, use default: ", this.defaultFilter)
 					state.hashParams.filter = this.defaultFilter;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					// console.log("Fall through to oldState hashparams filter");
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				this.set('state', lang.mixin({},state));
@@ -157,7 +168,7 @@ define([
 			}
 
 			if(this.enableFilterPanel && this.filterPanel){
-				// console.log("GridContainer call filterPanel set state: ", state)
+				// console.log("GridContainer call filterPanel set state: ", state.hashParams.filter, state)
 				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
 			}
 
@@ -764,7 +775,7 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+					Topic.publish("/navigate",{href: "/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview", target: "blank"});
 				},
 				false
 			], [
@@ -785,8 +796,8 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
-					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
+
+					Topic.publish("/navigate",{href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments", target: "blank"});
 				},
 				false
 			], [
@@ -807,9 +818,9 @@ define([
 						return exp.eid;
 					});
 					if(experimentIdList.length == 1){
-						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))", target: "blank"});
 					}else{
-						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))", target: "blank"});
 					}
 				},
 				false

@@ -516,7 +516,7 @@ define([
 				// Topic.publish("ProteinFamilies", "showMembersGrid", query);
 
 				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
-				window.open("/view/FeatureList/" + query + "#view_tab=features");
+				Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 
 				_self.dialog.hide();
 			});

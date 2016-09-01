@@ -112,11 +112,11 @@ define("p3/widget/FilterContainerActionBar", [
 			// console.log("FilterContainerActionBar onSetState() ", state);
 
 
-			// if (oldState){
-			// 	console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
-			// }else{
-			// 	console.log("    OLD: No State");
-			// }
+			if (oldState){
+				// console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			}else{
+				// console.log("    OLD: No State");
+			}
 			// console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
 			var ov,nv;
@@ -154,10 +154,14 @@ define("p3/widget/FilterContainerActionBar", [
 			}
 
 			if(state && state.hashParams && state.hashParams.filter){
-				// console.log("state.hashParams.filter: ", state.hashParams.filter);
+				// console.log("_refresh() state.hashParams.filter: ", state.hashParams.filter);
 				if(state.hashParams.filter != "false"){
 					parsedFilter = parseQuery(state.hashParams.filter)
+					this._filter={};
 				}
+
+				// console.log("parsedFilter: ", parsedFilter);
+				// console.log("CALL _set(filter): ", state.hashParams.filter)
 				this._set("filter", state.hashParams.filter);
 			}
 			// console.log("Parsed Query: ", parsedQuery);
@@ -174,18 +178,28 @@ define("p3/widget/FilterContainerActionBar", [
 
 			this.set("query", state.search);
 
-			// console.log("parsedFilter.selected: ", parsedFilter.selected);
+			// console.log("_refresh() parsedFilter.selected: ", parsedFilter.selected);
 
 			// for each of the facet widgets, get updated facet counts and update the content.
+			var toClear=[]
 			Object.keys(this._ffWidgets).forEach(function(category){
-				// console.log("Category: ", category)
-				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
+				 // console.log("Category: ", category)
+				 	this._ffWidgets[category].clearSelection();
+					this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
 			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
 				parsedFilter.selected.forEach(function(sel){
-					// console.log("_setSelected FilterContaienrActionBar: ", selected)
+					// console.log("_setSelected FilterContaienrActionBar: ", sel)
+					if (sel.field && !this._filter[sel.field]){
+						this._filter[sel.field]=[];
+					}
+					var qval = "eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")";
+					if (this._filter[sel.field].indexOf(qval)<0){
+						this._filter[sel.field].push("eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")");
+					}
+
 					if(this._ffWidgets[sel.field]){
 						// console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value, true);
@@ -219,6 +233,15 @@ define("p3/widget/FilterContainerActionBar", [
 						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
 					}
 				}, this)
+
+				Object.keys(this._ffValueButtons).forEach(function(cat){
+					if (!parsedFilter || !parsedFilter.byCategory[cat]){
+						var b = this._ffValueButtons[cat];
+						b.destroy();
+						delete this._ffValueButtons[cat];
+					}
+				},this)
+
 			}else{
 				// console.log("DELETE __ffValueButtons")
 				Object.keys(this._ffValueButtons).forEach(function(cat){
@@ -303,7 +326,7 @@ define("p3/widget/FilterContainerActionBar", [
 						filter: _self.state.hashParams.filter
 					})
 				}else{
-					console.log("No Filters to set new anchor");
+					// console.log("No Filters to set new anchor");
 				}
 			};
 
@@ -420,13 +443,15 @@ define("p3/widget/FilterContainerActionBar", [
 			this.watch("state", lang.hitch(this, "onSetState"));
 
 			// this.watch("filter", lang.hitch(this,function(attr,oldVal,filter){
-			// 	console.log("Filter Updated: ", filter);
+				// console.log("Filter Updated: ", filter);
+				// console.log("this._filter: ", this._filter);
 			// }))
 			// this.keywordSearch.startup();
 
 			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
 
 				// console.log("UpdateFilterCategory EVT: ", evt);
+				// console.log("this._Filters: ",this._filter, "FilterContainerActionBar: ", this);
 
 				if(evt.category == "keywords"){
 					if(evt.value && (evt.value.charAt(0) == '"')){
@@ -438,9 +463,12 @@ define("p3/widget/FilterContainerActionBar", [
 						this._filterKeywords = val;
 					}
 				}else{
+					// console.log("Updating Category Filters: ", evt.category);
 					if(evt.filter){
+						// console.log("Fount evt.filter.  Set this._filter[" + evt.category + "]", evt.filter);
 						this._filter[evt.category] = evt.filter;
 					}else{
+						// console.log("Delete Filter for category: ", evt.category, this._filter[evt.category]);
 						delete this._filter[evt.category];
 						if(this._ffWidgets[evt.category]){
 							// console.log("toggle field: ", sel.value, " on ", sel.field);
@@ -454,6 +482,7 @@ define("p3/widget/FilterContainerActionBar", [
 				}
 
 				var cats = Object.keys(this._filter).filter(function(cat){
+					// console.log("Checking for cat: ", cat);
 					return this._filter[cat].length > 0
 				}, this);
 				// console.log("Categories: ", cats);
@@ -482,9 +511,9 @@ define("p3/widget/FilterContainerActionBar", [
 				}
 
 				var filter = "";
-
+				// console.log("Facet Categories: ", cats);
 				if(cats.length < 1){
-					// console.log("UpdateFilterCategory Se+t Filter to empty. fkws: ", fkws)
+					// console.log("UpdateFilterCategory Set Filter to empty. fkws: ", fkws)
 					if(fkws){
 						filter = fkws
 					}
@@ -498,7 +527,7 @@ define("p3/widget/FilterContainerActionBar", [
 						filter = this._filter[cats[0]];
 					}
 				}else{
-					// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+				    // console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 					var inner = cats.map(function(c){
 						return this._filter[c]
 					}, this).join(",")

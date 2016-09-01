@@ -320,7 +320,7 @@ define("p3/widget/PathwayMapHeatmapContainer", [
 				disabled: (featureIds.length === 0)
 			});
 			on(btnShowDetails.domNode, "click", function(){
-				window.open("/view/FeatureList/?in(feature_id,(" + featureIds + "))");
+				Topic.publish("/navigate", {href: "/view/FeatureList/?in(feature_id,(" + featureIds + "))", target: "blank"});
 			});
 
 			var btnAddToWorkspace = new Button({
