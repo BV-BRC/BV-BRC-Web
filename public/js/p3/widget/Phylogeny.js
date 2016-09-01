@@ -80,7 +80,8 @@ define([
 			//this.addChild(this.itemDetailPanel);
             //this.itemDetailPanel.startup();
 
-			var menuDiv = domConstruct.create("div", {}, this.containerActionBar.pathContainer);
+			var menuDiv = domConstruct.create("div", {style:"display: inline-block"}, this.containerActionBar.pathContainer);
+			this.treeHeader = domConstruct.create("div", {style:"margin-left: 20px; display: inline-block"}, this.containerActionBar.pathContainer);
 			var typeMenuDom = domConstruct.create("div", {}, menuDiv);
 			var typeMenu = new DropDownMenu({style: "display: none;"});
 			typeMenu.addChild(new MenuItem({
@@ -177,6 +178,20 @@ define([
                 if(treeDat.labels){
                     this.set('labels', treeDat.labels);
                 }
+                if(treeDat.info){
+                    headerParts=[];
+                    if(treeDat.info.taxon_name){
+                        headerParts.push(treeDat.info.taxon_name);
+                    }
+                    if(treeDat.info.taxon_rank){
+                        headerParts.push(treeDat.info.taxon_rank+" level tree");
+                    }
+                    if(treeDat.info.count){
+                        headerParts.push("("+String(treeDat.info.count)+" genomes)");
+                    }
+                    this.treeHeader.innerHTML=headerParts.join(" ");
+                }
+
 				this.set('newick', treeDat.tree);
 			}), lang.hitch(this, function(err){
                 this.noData();
