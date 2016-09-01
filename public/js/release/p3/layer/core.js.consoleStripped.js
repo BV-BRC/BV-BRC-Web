@@ -25688,6 +25688,7 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
+			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -74242,20 +74243,29 @@ define([
 				q.push(state.search);
 			}
 
-			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+			// reset filters to default state if search is different
+			if (oldState && (state.search != oldState.search)){
+				oldState = {};
+			}
 
+			if(state.hashParams && state.hashParams.filter && state.hashParams.filter == "false"){
+				//  0 && console.log("Filters Disabled By FALSE")
 			}else if(state.hashParams){
 				if(state.hashParams.filter){
+					//  0 && console.log("Using Filter from Hash Params: ", state.hashParams.filter);
 					q.push(state.hashParams.filter)
 				}else if(!oldState && this.defaultFilter){
+					//  0 && console.log("Using Default Filter as Hash Params Filter", this.defaultFilter)
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', lang.mixin({},state));
 					return;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					//  0 && console.log("Using oldState HashParams Filter", oldState.hashParams.filter)
 					state.hashParams.filter = oldState.hashParams.filter;
 					this.set('state', lang.mixin({},state));
 					return;
 				}else if(this.defaultFilter){
+					//  0 && console.log("Fallthrough to default Filter: ", this.defaultFilter);
 					state.hashParams.filter = this.defaultFilter;
 					this.set('state', lang.mixin({},state));
 					return;
@@ -74266,8 +74276,10 @@ define([
 			}else{
 				state.hashParams = {}
 				if(!oldState && this.defaultFilter){
+					//  0 && console.log("No OldState or Provided Filters, use default: ", this.defaultFilter)
 					state.hashParams.filter = this.defaultFilter;
 				}else if(oldState && oldState.hashParams && oldState.hashParams.filter){
+					//  0 && console.log("Fall through to oldState hashparams filter");
 					state.hashParams.filter = oldState.hashParams.filter
 				}
 				this.set('state', lang.mixin({},state));
@@ -74275,7 +74287,7 @@ define([
 			}
 
 			if(this.enableFilterPanel && this.filterPanel){
-				//  0 && console.log("GridContainer call filterPanel set state: ", state)
+				//  0 && console.log("GridContainer call filterPanel set state: ", state.hashParams.filter, state)
 				this.filterPanel.set("state", lang.mixin({},state,{hashParams: lang.mixin({},state.hashParams)}));
 			}
 
@@ -74882,7 +74894,7 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					window.open("/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview");
+					Topic.publish("/navigate",{href: "/view/ExperimentComparison/" + experimentIdList + "#view_tab=overview", target: "blank"});
 				},
 				false
 			], [
@@ -74903,8 +74915,8 @@ define([
 					var experimentIdList = selection.map(function(exp){
 						return exp.eid;
 					});
-					//Topic.publish("/navigate", {href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments"});
-					window.open("/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments");
+
+					Topic.publish("/navigate",{href: "/view/TranscriptomicsExperimentList/?in(eid,(" + experimentIdList.join(',') + "))#view_tab=experiments", target: "blank"});
 				},
 				false
 			], [
@@ -74925,9 +74937,9 @@ define([
 						return exp.eid;
 					});
 					if(experimentIdList.length == 1){
-						window.open("/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?eq(eid,(" + experimentIdList + "))", target: "blank"});
 					}else{
-						window.open("/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))");
+						Topic.publish("/navigate", {href: "/view/TranscriptomicsExperiment/?in(eid,(" + experimentIdList.join(',') + "))", target: "blank"});
 					}
 				},
 				false
@@ -75539,11 +75551,11 @@ define([
 			//  0 && console.log("FilterContainerActionBar onSetState() ", state);
 
 
-			// if (oldState){
-			// 	 0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
-			// }else{
-			// 	 0 && console.log("    OLD: No State");
-			// }
+			if (oldState){
+				//  0 && console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
+			}else{
+				//  0 && console.log("    OLD: No State");
+			}
 			//  0 && console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
 			var ov,nv;
@@ -75581,10 +75593,14 @@ define([
 			}
 
 			if(state && state.hashParams && state.hashParams.filter){
-				//  0 && console.log("state.hashParams.filter: ", state.hashParams.filter);
+				//  0 && console.log("_refresh() state.hashParams.filter: ", state.hashParams.filter);
 				if(state.hashParams.filter != "false"){
 					parsedFilter = parseQuery(state.hashParams.filter)
+					this._filter={};
 				}
+
+				//  0 && console.log("parsedFilter: ", parsedFilter);
+				//  0 && console.log("CALL _set(filter): ", state.hashParams.filter)
 				this._set("filter", state.hashParams.filter);
 			}
 			//  0 && console.log("Parsed Query: ", parsedQuery);
@@ -75601,18 +75617,28 @@ define([
 
 			this.set("query", state.search);
 
-			//  0 && console.log("parsedFilter.selected: ", parsedFilter.selected);
+			//  0 && console.log("_refresh() parsedFilter.selected: ", parsedFilter.selected);
 
 			// for each of the facet widgets, get updated facet counts and update the content.
+			var toClear=[]
 			Object.keys(this._ffWidgets).forEach(function(category){
-				//  0 && console.log("Category: ", category)
-				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
+				 //  0 && console.log("Category: ", category)
+				 	this._ffWidgets[category].clearSelection();
+					this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
 			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
 				parsedFilter.selected.forEach(function(sel){
-					//  0 && console.log("_setSelected FilterContaienrActionBar: ", selected)
+					//  0 && console.log("_setSelected FilterContaienrActionBar: ", sel)
+					if (sel.field && !this._filter[sel.field]){
+						this._filter[sel.field]=[];
+					}
+					var qval = "eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")";
+					if (this._filter[sel.field].indexOf(qval)<0){
+						this._filter[sel.field].push("eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")");
+					}
+
 					if(this._ffWidgets[sel.field]){
 						//  0 && console.log("toggle field: ", sel.value, " on ", sel.field);
 						this._ffWidgets[sel.field].toggle(sel.value, true);
@@ -75646,6 +75672,15 @@ define([
 						this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat])
 					}
 				}, this)
+
+				Object.keys(this._ffValueButtons).forEach(function(cat){
+					if (!parsedFilter || !parsedFilter.byCategory[cat]){
+						var b = this._ffValueButtons[cat];
+						b.destroy();
+						delete this._ffValueButtons[cat];
+					}
+				},this)
+
 			}else{
 				//  0 && console.log("DELETE __ffValueButtons")
 				Object.keys(this._ffValueButtons).forEach(function(cat){
@@ -75730,7 +75765,7 @@ define([
 						filter: _self.state.hashParams.filter
 					})
 				}else{
-					 0 && console.log("No Filters to set new anchor");
+					//  0 && console.log("No Filters to set new anchor");
 				}
 			};
 
@@ -75847,13 +75882,15 @@ define([
 			this.watch("state", lang.hitch(this, "onSetState"));
 
 			// this.watch("filter", lang.hitch(this,function(attr,oldVal,filter){
-			// 	 0 && console.log("Filter Updated: ", filter);
+				//  0 && console.log("Filter Updated: ", filter);
+				//  0 && console.log("this._filter: ", this._filter);
 			// }))
 			// this.keywordSearch.startup();
 
 			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
 
 				//  0 && console.log("UpdateFilterCategory EVT: ", evt);
+				//  0 && console.log("this._Filters: ",this._filter, "FilterContainerActionBar: ", this);
 
 				if(evt.category == "keywords"){
 					if(evt.value && (evt.value.charAt(0) == '"')){
@@ -75865,9 +75902,12 @@ define([
 						this._filterKeywords = val;
 					}
 				}else{
+					//  0 && console.log("Updating Category Filters: ", evt.category);
 					if(evt.filter){
+						//  0 && console.log("Fount evt.filter.  Set this._filter[" + evt.category + "]", evt.filter);
 						this._filter[evt.category] = evt.filter;
 					}else{
+						//  0 && console.log("Delete Filter for category: ", evt.category, this._filter[evt.category]);
 						delete this._filter[evt.category];
 						if(this._ffWidgets[evt.category]){
 							//  0 && console.log("toggle field: ", sel.value, " on ", sel.field);
@@ -75881,6 +75921,7 @@ define([
 				}
 
 				var cats = Object.keys(this._filter).filter(function(cat){
+					//  0 && console.log("Checking for cat: ", cat);
 					return this._filter[cat].length > 0
 				}, this);
 				//  0 && console.log("Categories: ", cats);
@@ -75909,9 +75950,9 @@ define([
 				}
 
 				var filter = "";
-
+				//  0 && console.log("Facet Categories: ", cats);
 				if(cats.length < 1){
-					//  0 && console.log("UpdateFilterCategory Se+t Filter to empty. fkws: ", fkws)
+					//  0 && console.log("UpdateFilterCategory Set Filter to empty. fkws: ", fkws)
 					if(fkws){
 						filter = fkws
 					}
@@ -75925,7 +75966,7 @@ define([
 						filter = this._filter[cats[0]];
 					}
 				}else{
-					//  0 && console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+				    //  0 && console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 					var inner = cats.map(function(c){
 						return this._filter[c]
 					}, this).join(",")
@@ -83783,7 +83824,7 @@ define([
 				// Topic.publish("ProteinFamilies", "showMembersGrid", query);
 
 				var query = "?in(feature_id,(" + features.map(function(d){ return d.feature_id; }) + "))";
-				window.open("/view/FeatureList/" + query + "#view_tab=features");
+				Topic.publish("/navigate", {href: "/view/FeatureList/" + query + "#view_tab=features", target: "blank"});
 
 				_self.dialog.hide();
 			});
@@ -88559,7 +88600,7 @@ define([
 		},
 */
 		render: function(){
-			// 0 && console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
+			 0 && console.log("this.visible: ",this.visible, " referenceTrack: ", this.referenceTrack);
 			if (this.visible){
 				//  0 && console.log("render() this.surface.groupIdx: ", this.surface.groupIdx)
 				this.renderBackground();
@@ -88581,13 +88622,13 @@ define([
 			var sections={}
 			data.forEach(function(d){
 				totalLength += d.length;
-				// 0 && console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
+				 0 && console.log("data :" , data , "Total: ", totalLength, " Contig Len: ", d.length);
 			})
 
 			var lastSectionEnd=270;
 
 			var deg = (360 - (this.gap*numSections))/totalLength;
-			// 0 && console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
+			 0 && console.log("this.gap: ", this.gap, " numSections: ", numSections, " deg: ", deg, " totalLength : ", totalLength);
 
 			var gap = (this.gap);
 			data.forEach(lang.hitch(this,function(d,index){
@@ -88600,7 +88641,7 @@ define([
 				var startRads = d.startAngle *Math.PI/180;
 				var rads = d.endAngle *Math.PI/180;
 				lastSectionEnd=(deg*d.length) + lastSectionEnd+gap;
-				// 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
+				 0 && console.log(d.name, " : ", "Degrees: ", deg, " Length: ", d.length, " trackWidth: ", trackWidth, " d: ", d, " startRads: ", startRads, " lastSectionEnd: ", lastSectionEnd, "SectionTrack Start: ", deg + lastSectionEnd, " End: ", ((deg*d.length)+lastSectionEnd))
 
 				var innerStart= {
 					x:  this.centerPoint.x + this.internalRadius * Math.cos(startRads),
@@ -88734,7 +88775,7 @@ define([
 				}	
 			}));
 
-			// 0 && console.log("Set Sections: ", sections);
+			 0 && console.log("Set Sections: ", sections);
 			this.set("sections", sections);
 
 		}
