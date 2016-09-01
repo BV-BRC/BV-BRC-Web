@@ -78,11 +78,10 @@ function mail(message,subject,options){
 
 function buildSubject(formBody){
 	var content=[]
-	content.push("[v" + formBody.appVersion + "]");
 	if (formBody.appLabel){
 		content.push("[" + formBody.appLabel + "]");
 	}
-	content.push("Problem Report: " + formBody.subject);
+	content.push(formBody.subject);
 
 	return content.join(" ");
 }
