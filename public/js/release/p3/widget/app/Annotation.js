@@ -69,7 +69,7 @@ define("p3/widget/app/Annotation", [
             var sci_item = this.scientific_nameWidget.get("item");
             var label_value = this.myLabelWidget.get("value");
             if(sci_item && sci_item.lineage_names.length > 0){
-                current_output_name.push(sci_item.lineage_names.slice(-1)[0]);
+                current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|\:/g,''));
             }
             if(label_value.length >0){
                 current_output_name.push(label_value);
