@@ -29,9 +29,13 @@ define([
 				.attr("d", "M2,2 L2,11 L10,6 L2,2")
 				.attr("style", "fill: #4f81bd;");
 
-			this.tooltipLayer = d3.select("body").append("div")
-				.attr("class", "tooltip")
-				.style("opacity", 0);
+			if(d3.select("div.tooltip")[0][0]){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+			}
 		},
 		render: function(data){
 			var self = this;

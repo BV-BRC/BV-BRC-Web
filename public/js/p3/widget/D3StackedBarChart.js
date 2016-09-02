@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style", "dojo/on",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style",
 	"d3/d3",
 	"dojo/text!./templates/D3StackedBarChart.html"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domQuery, domStyle, on,
+			dom, domClass, domConstruct, domQuery, domStyle,
 			d3,
 			Template){
 
@@ -49,7 +49,7 @@ define([
 				.attr("height", this.canvasHeight)
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			if(d3.select("div.tooltip").length > 0){
+			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
 			}else{
 				this.tooltipLayer = d3.select("body").append("div")
@@ -58,15 +58,12 @@ define([
 			}
 		},
 
-		processData: function(data){
-
-			// TODO: implement check dirty
-			this.data = data;
-		},
-
-		// TODO: implement update() function.
-
-		render: function(){
+		render: function(data){
+			if(this.data !== data){
+				this.data = data;
+			}else{
+				return;
+			}
 
 			// remove existing bars and yAxis
 			d3.select("g.y").remove();
@@ -74,20 +71,17 @@ define([
 
 			// reset scale params
 			this.normalize = domQuery(".chart-wrapper nav .scale .active")[0].className.split(" ")[0] === "normalize" || false;
-			if(this.normalize){
-				this.maxValue = 100;
-			}else{
-				this.maxValue = this.data.map(function(d){
-					return d.total || 0
-				}).reduce(function(a, b){
-					return Math.max(a, b)
-				});
-			}
+
+			this.maxValue = (this.normalize) ? 100 : this.data.map(function(d){
+				return d.total || 0
+			}).reduce(function(a, b){
+				return Math.max(a, b)
+			});
 
 			// reset sort condition
 			var sortToggle = domQuery(".chart-wrapper nav .sort li");
 			sortToggle.removeClass("active");
-			// domClass.add(domQuery(".chart-wrapper nav .sort .label")[0], "active");
+			domClass.add(domQuery(".chart-wrapper nav .sort .label")[0], "active");
 
 			// axis
 			this.pf_y_scale = d3.scale.linear().range([0, this.canvasHeight]).domain([this.maxValue, 0]);
@@ -182,6 +176,82 @@ define([
 
 		},
 
+		update: function(data){
+
+			if(typeof data == "string"){
+				data = JSON.parse(data);
+			}
+
+			if(this.canvas.select("g.bars").selectAll("rect").length === 0){
+				this.render(data);
+				return;
+			}
+
+			this.data = data;
+
+			this.maxValue = (this.normalize) ? 100 : this.data.map(function(d){
+				return d.total || 0
+			}).reduce(function(a, b){
+				return Math.max(a, b)
+			});
+			// console.log("maxValue: ", this.maxValue, "data length: ", this.data.length);
+
+			var self = this;
+
+			// update axis
+			this.pf_y_scale.domain([this.maxValue, 0]);
+			this.pf_x_scale.domain([0, this.data.length]);
+
+			this.yAxis.scale(this.pf_y_scale);
+			// this.xAxis.scale(this.pf_x_scale);
+			this.full_barWidth = self.pf_x_scale(1);
+			this.drawn_barWidth = this.full_barWidth * .525;
+			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+
+			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
+			// this.chart.select("g.x").transition().duration(600).call(this.xAxis);
+
+			// update bars
+			var series = [];
+			for(var index = 0; index < this.seriesSize; index++){
+				series.push(index);
+			}
+			series.forEach(function(index){
+				self.bars.select(lang.replace('rect.block-{0}', [index]))
+					.transition().duration(600)
+					.attr("y", function(d, i){
+						if(data[i] != undefined){
+							var ancestorHeight = self.barHeight(d3.sum(data[i]['dist'].slice(0, index)), data[i].total);
+							return Math.round(self.canvasHeight - self.barHeight(data[i]['dist'][index], data[i].total) - ancestorHeight);
+						}else{
+							return 0;
+						}
+					})
+					.attr("x", function(d, i){
+						return self.barPosition(i)
+					})
+					.attr("width", function(d, i){
+						return self.barWidth();
+					})
+					.attr("height", function(d, i){
+						return (data[i] != undefined) ? Math.round(self.barHeight(data[i]['dist'][index], data[i].total)) : 0;
+					});
+			});
+
+			this.bars.select("text").transition().duration(600)
+				.delay(function(d, i){
+					return 10 * i
+				})
+				.attr("x", function(d, i){
+					return self.textPosition(i)
+				})
+				.attr("transform", function(d, i){
+					var y = Math.round(self.canvasHeight - 11);
+					var x = self.pf_x_scale(i) + self.pf_x_scale(1) / 2;
+					return lang.replace('rotate(270, {0}, {1})', [x, y]);
+				})
+		},
+
 		textPosition: function(index){
 			return Math.floor((this.full_barWidth * index) + this.drawn_barWidth);
 		},
@@ -200,16 +270,12 @@ define([
 		},
 		scale: function(){
 
-			if(this.normalize){
-				this.maxValue = 100;
-			}else{
-				this.maxValue = this.data.map(function(d){
-					return d.total || 0
-				})
-					.reduce(function(a, b){
-						return Math.max(a, b)
-					});
-			}
+			this.maxValue = (this.normalize) ? 100 : this.data.map(function(d){
+				return d.total || 0
+			}).reduce(function(a, b){
+				return Math.max(a, b)
+			});
+
 			var self = this;
 
 			// update axis

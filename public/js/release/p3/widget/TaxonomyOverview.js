@@ -43,6 +43,7 @@ define("p3/widget/TaxonomyOverview", [
 
 			// widgets called by taxon_id
 			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
+			// sumWidgets = [];
 
 			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
 			// check whether we have extra filter

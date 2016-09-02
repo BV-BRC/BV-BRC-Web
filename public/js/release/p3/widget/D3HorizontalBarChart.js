@@ -21,7 +21,7 @@ define("p3/widget/D3HorizontalBarChart", [
 				.attr("width", this.nodeWidth)
 				.attr("height", this.nodeHeight);
 
-			if(d3.select("div.tooltip").length > 0){
+			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
 			}else{
 				this.tooltipLayer = d3.select("body").append("div")
