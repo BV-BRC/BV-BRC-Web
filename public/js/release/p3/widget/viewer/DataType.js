@@ -777,8 +777,7 @@ define("p3/widget/viewer/DataType", [
 			pathwayChart.init(targetNode);
 			pathwayChart.renderNav(pathwayNavBarHtml);
 			pathwayChart.renderLegend("Pathway Conservation Across %Genomes: ", legend);
-			pathwayChart.processData(processed);
-			pathwayChart.render();
+			pathwayChart.render(processed);
 		},
 
 		_buildPathwaysPopularPanel: function(popularList){
@@ -927,8 +926,7 @@ define("p3/widget/viewer/DataType", [
 			pfChart.init(targetNode);
 			pfChart.renderNav(proteinfamilyNavBarHtml);
 			pfChart.renderLegend("Legend: ", legend);
-			pfChart.processData(processed);
-			pfChart.render();
+			pfChart.render(processed);
 		},
 
 		_setSpecialtyGenesAttr: function(data){
