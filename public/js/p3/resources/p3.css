@@ -57,6 +57,9 @@ body.patric {
     color: #333333;
     font-size: .9em;
     font-weight: 200;
+}
+
+body.patric {
     min-width: 1024px;
 }
 
