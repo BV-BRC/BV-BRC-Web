@@ -88,6 +88,7 @@ app.use(function(req, res, next){
 	req.package = package;
 	req.applicationOptions = {
 		version: "3.0",
+		gaID: config.get("gaID") || false,
 		workspaceServiceURL: config.get("workspaceServiceURL"),
 		appServiceURL: config.get("appServiceURL"),
 		dataServiceURL: config.get("dataServiceURL"),
