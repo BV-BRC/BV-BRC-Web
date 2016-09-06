@@ -4,4 +4,19 @@
 		<% } else { %>
 			<link rel='stylesheet' href='/js/p3/resources/p3.css' />
 		<% } %>
+		<% if (request && request.applicationOptions.gaID) { %>
+			<script>
+				window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+				ga('create', '<%- request.applicationOptions.gaID %>', 'auto');
+
+				// Replace the following lines with the plugins you want to use.
+				ga('require', 'eventTracker');
+				ga('require', 'outboundLinkTracker');
+				ga('require', 'urlChangeTracker');
+
+				ga('send', 'pageview');
+			</script>
+			<script async src='https://www.google-analytics.com/analytics.js'></script>
+			<script async src='/js/autotrack/autotrack.js'></script>
+		<% } %>
 
