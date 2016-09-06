@@ -24364,6 +24364,10 @@ define([
 				}
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
+
+				if(window.ga){
+					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
+				}
 				console.log("Do Search: ", searchFilter, query);
 			}
 		},
