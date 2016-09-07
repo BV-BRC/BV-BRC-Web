@@ -7,6 +7,7 @@ define([
 			d3){
 
 	return declare([], {
+		maxBarWidth: 30,
 		init: function(target, className, margin){
 			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
 
@@ -74,6 +75,9 @@ define([
 			this.y_scale_range = this.y_scale.range();
 			// console.log(this.y_scale.rangeBand(), this.y_scale_range);
 
+			var barWidth = Math.max(1, 0.85 * Math.min(this.y_scale.rangeBand(), this.maxBarWidth));
+			var halfGap = Math.max(0, this.y_scale.rangeBand() - barWidth) / 2;
+
 			this.x_scale = d3.scale.linear()
 				.range([0, (self.nodeWidth - self.margin.right - self.margin.left)])
 				.domain([0, maxValue]);
@@ -115,12 +119,13 @@ define([
 					return self.margin.left;
 				})
 				.attr("y", function(d, i){
-					return self.y_scale_range[i] + self.margin.top;
+					// return self.y_scale_range[i] + self.margin.top;
+					return (self.y_scale(d.label) + halfGap) + self.margin.top - 1;
 				})
 				.attr("width", function(d){
 					return self.x_scale(d.count)
 				})
-				.attr("height", self.y_scale.rangeBand())
+				.attr("height", Math.min(self.y_scale.rangeBand(), self.maxBarWidth))
 				.attr("fill", '#1976D2')
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
