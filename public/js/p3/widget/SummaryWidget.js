@@ -54,6 +54,9 @@ define([
 		},
 
 		onSetData: function(attr, oldVal, data){
+			// hide loading
+			domClass.add(this.loadingNode, "hidden");
+
 			this["render_" + this.view]();
 		},
 
