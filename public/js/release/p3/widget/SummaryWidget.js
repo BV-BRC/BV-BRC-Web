@@ -1,5 +1,5 @@
 require({cache:{
-'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n"}});
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n"}});
 define("p3/widget/SummaryWidget", [
 	"dojo/_base/declare", "dijit/_WidgetBase", "dojo/on", "dojo/dom-geometry", "dojo/dom-style",
 	"dojo/dom-class", "dijit/_Templated", "dojo/text!./templates/SummaryWidget.html",
@@ -56,6 +56,9 @@ define("p3/widget/SummaryWidget", [
 		},
 
 		onSetData: function(attr, oldVal, data){
+			// hide loading
+			domClass.add(this.loadingNode, "hidden");
+
 			this["render_" + this.view]();
 		},
 

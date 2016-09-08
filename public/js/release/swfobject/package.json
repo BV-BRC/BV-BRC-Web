@@ -10,7 +10,7 @@
         "spec": ">=2.3.1 <2.4.0",
         "type": "range"
       },
-      "/Users/hsyoo/dev/p3_web"
+      "/Users/hyun/dev/p3_web"
     ]
   ],
   "_from": "swfobject-amd@>=2.3.1 <2.4.0",
@@ -41,7 +41,7 @@
   "_shasum": "f10c88499156aa76068acd9de851388cd4a708b8",
   "_shrinkwrap": null,
   "_spec": "swfobject-amd@~2.3.1",
-  "_where": "/Users/hsyoo/dev/p3_web",
+  "_where": "/Users/hyun/dev/p3_web",
   "bugs": {
     "url": "https://github.com/HenningM/swfobject-amd/issues"
   },
