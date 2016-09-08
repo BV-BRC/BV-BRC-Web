@@ -13,6 +13,7 @@ define("p3/widget/D3StackedBarChart", [
 	return declare([], {
 		data: null,
 		templateString: Template,
+		minBarWidth: 25,
 
 		init: function(target, className, margin){
 			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
@@ -89,15 +90,15 @@ define("p3/widget/D3StackedBarChart", [
 			this.pf_y_scale = d3.scale.linear().range([0, this.canvasHeight]).domain([this.maxValue, 0]);
 			this.pf_x_scale = d3.scale.linear().range([0, this.canvasWidth]).domain([0, this.data.length]);
 
+			this._resizeChart();
+
 			// draw bars
 			this.canvas.selectAll("g.bar").data(this.data).enter().append("g").attr("class", "bar");
 			this.bars = this.canvas.selectAll("g.bar").data(this.data);
 
 			var self = this;
 
-			this.full_barWidth = self.pf_x_scale(1);
-			this.drawn_barWidth = this.full_barWidth * .525;
-			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+			this._barWidth();
 
 			this.yAxis = d3.svg.axis()
 				.scale(this.pf_y_scale)
@@ -184,7 +185,7 @@ define("p3/widget/D3StackedBarChart", [
 				data = JSON.parse(data);
 			}
 
-			if(this.canvas.select("g.bars").selectAll("rect").length === 0){
+			if(this.canvas.select("g.bar").selectAll("rect").length === 0){
 				this.render(data);
 				return;
 			}
@@ -204,11 +205,11 @@ define("p3/widget/D3StackedBarChart", [
 			this.pf_y_scale.domain([this.maxValue, 0]);
 			this.pf_x_scale.domain([0, this.data.length]);
 
+			this._resizeChart();
+
 			this.yAxis.scale(this.pf_y_scale);
 			// this.xAxis.scale(this.pf_x_scale);
-			this.full_barWidth = self.pf_x_scale(1);
-			this.drawn_barWidth = this.full_barWidth * .525;
-			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+			this._barWidth();
 
 			this.chart.select("g.y").transition().duration(600).call(this.yAxis);
 			// this.chart.select("g.x").transition().duration(600).call(this.xAxis);
@@ -218,6 +219,39 @@ define("p3/widget/D3StackedBarChart", [
 			for(var index = 0; index < this.seriesSize; index++){
 				series.push(index);
 			}
+
+			//
+			var nodeCountDiff = this.data.length - this.bars[0].length;
+			if(nodeCountDiff > 0){
+
+				for(var i = 0; i < nodeCountDiff; i++){
+					this.canvas.insert("g").attr("class", "bar");
+				}
+				var newBars = this.canvas.selectAll("g.bar:empty");
+
+				series.forEach(function(index){
+					newBars.append("rect")
+						.attr("class", "block-" + index);
+				});
+				newBars.append("text")
+					.attr("y", Math.round(this.canvasHeight - 11))
+					.attr("x", function(d, i){
+						return self.textPosition(i)
+					})
+					.attr("transform", function(d, i){
+						var y = Math.round(self.canvasHeight - 11);
+						var x = self.textPosition(i);
+						return lang.replace('rotate(270, {0}, {1})', [x, y]);
+					})
+					.attr("dy", ".35em");
+			}else if (nodeCountDiff < 0){
+				// remove
+				// console.log(this.canvas.selectAll("g.bar:nth-last-child(-n + " + Math.abs(checkToAppend) + ")"));
+				this.canvas.selectAll("g.bar:nth-last-child(-n + " + Math.abs(nodeCountDiff) + ")").remove();
+			}
+
+			self.bars = this.canvas.selectAll("g.bar").data(this.data);
+
 			series.forEach(function(index){
 				self.bars.select(lang.replace('rect.block-{0}', [index]))
 					.transition().duration(600)
@@ -241,6 +275,9 @@ define("p3/widget/D3StackedBarChart", [
 			});
 
 			this.bars.select("text").transition().duration(600)
+				.text(function(d){
+					return d.label
+				})
 				.delay(function(d, i){
 					return 10 * i
 				})
@@ -254,8 +291,26 @@ define("p3/widget/D3StackedBarChart", [
 				})
 		},
 
+		_barWidth: function(){
+			this.full_barWidth = this.pf_x_scale(1);
+			this.drawn_barWidth = this.full_barWidth * .6;
+			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+		},
+
+		_resizeChart: function(){
+			if(this.pf_x_scale(1) < this.minBarWidth){
+				// too thin bar width
+				this.canvasWidth = this.minBarWidth * this.data.length;
+				var containerWidth = this.canvasWidth + this.margin.left + this.margin.right;
+				this.chart.attr("width", containerWidth);
+				this.canvas.attr("width", this.canvasWidth);
+
+				this.pf_x_scale.range([0, this.canvasWidth]);
+			}
+		},
+
 		textPosition: function(index){
-			return Math.floor((this.full_barWidth * index) + this.drawn_barWidth);
+			return Math.floor((this.full_barWidth * index) + this.drawn_barWidth - 2);
 		},
 		barPosition: function(index){
 			return Math.floor(this.full_barWidth * index + this.center_correction);
@@ -430,8 +485,8 @@ define("p3/widget/D3StackedBarChart", [
 		doResize: function(){
 			var container = domQuery(".chart", this.node)[0] || null;
 
-			var chartWidth = domStyle.get(container, "width");
-			var canvasWidth = chartWidth - this.margin.right - this.margin.left;
+			var containerWidth = domStyle.get(container, "width");
+			var canvasWidth = containerWidth - this.margin.right - this.margin.left;
 
 			this.canvasWidth = canvasWidth;
 
@@ -439,14 +494,14 @@ define("p3/widget/D3StackedBarChart", [
 
 			this.pf_x_scale.range([0, canvasWidth]);
 
+			this._resizeChart();
+
 			// update chart and canvas width
-			this.chart.attr("width", chartWidth);
+			this.chart.attr("width", containerWidth);
 			this.canvas.attr("width", canvasWidth);
 
 			// update bars
-			this.full_barWidth = this.pf_x_scale(1);
-			this.drawn_barWidth = this.full_barWidth * .525;
-			this.center_correction = (this.full_barWidth - this.drawn_barWidth) / 2;
+			this._barWidth();
 
 			var self = this;
 			for(var index = 0; index < this.seriesSize; index++){

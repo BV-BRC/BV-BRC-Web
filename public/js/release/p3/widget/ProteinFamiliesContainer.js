@@ -285,6 +285,8 @@ define("p3/widget/ProteinFamiliesContainer", [
 			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var defaultFilterValue = {
+				keyword: '',
+				perfectFamMatch: 'A',
 				min_member_count: null,
 				max_member_count: null,
 				min_genome_count: null,
@@ -294,10 +296,6 @@ define("p3/widget/ProteinFamiliesContainer", [
 			var btn_reset = new Button({
 				label: "Reset",
 				onClick: lang.hitch(this, function(){
-
-					// rb_plfam.reset();
-					// rb_pgfam.reset();
-					// rb_figfam.reset();
 
 					ta_keyword.set('value', '');
 
@@ -309,6 +307,11 @@ define("p3/widget/ProteinFamiliesContainer", [
 					tb_num_protein_family_max.set('value', '');
 					tb_num_genome_family_min.set('value', '');
 					tb_num_genome_family_max.set('value', '');
+
+					// reset store
+					this.pfState = lang.mixin(this.pfState, defaultFilterValue);
+					// console.log(this.pfState);
+					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
@@ -341,7 +344,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
-					console.log(this.pfState);
+					// console.log(this.pfState);
 					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});

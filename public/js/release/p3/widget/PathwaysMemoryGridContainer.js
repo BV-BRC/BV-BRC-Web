@@ -201,7 +201,8 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 						url['taxon_id'] = this.state.taxon_id;
 					}else if(this.state.hasOwnProperty('genome')){
 						url['genome_id'] = this.state.genome.genome_id;
-					}else if(this.state.hasOwnProperty('genome_ids')){
+					}
+					if(this.state.hasOwnProperty('genome_ids')){
 						url['genome_ids'] = this.state.genome_ids;
 					}
 
@@ -224,7 +225,7 @@ define("p3/widget/PathwaysMemoryGridContainer", [
 						return p + "=" + url[p]
 					}).join("&");
 					// console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params, target: "blank"});
 				},
 				false
 			]

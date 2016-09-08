@@ -1072,6 +1072,7 @@ define([
 
 						self.topGeneModificationChart.update(processed['GeneModifications']['data']);
 						self.topExperimentConditionChart.update(processed['ExperimentConditions']['data']);
+						domQuery('#dlp-transcriptomics-linkout')[0].href = processed.link;
 					}
 				}
 			})();
@@ -1087,7 +1088,7 @@ define([
 					"<div id='dlp-transcriptomics-top-conditions'>",
 						"<b>Top 5 Experiment Conditions</b>",
 					"</div>",
-					"<p><a class='double-arrow-link' id='dlp-transcriptomics-linkout' href='ExperimentList?cType=genome&cId=83332.12&kw='>View All Experiment for This Genome</a></p>",
+					"<p><a class='double-arrow-link' id='dlp-transcriptomics-linkout' href=''>View All Experiment for This Genome</a></p>",
 				"</div>"
 			];
 		},

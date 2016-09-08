@@ -78,7 +78,7 @@ define("p3/widget/PathwaySummaryGridContainer", [
 						return p + "=" + url[p]
 					}).join("&");
 					// console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params, target: "blank"});
 				},
 				false
 			]
