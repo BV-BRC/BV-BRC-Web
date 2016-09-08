@@ -52,6 +52,7 @@ define([
 
 				switch(key){
 					case "setFamilyType":
+						Topic.publish("ProteinFamilies", "showLoadingMask");
 						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamilies", "showMainGrid");
