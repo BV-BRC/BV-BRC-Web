@@ -202,7 +202,7 @@ define([
 			var _self = this;
 
 			if(!this.state || this.state.search == null){
-				console.log("No State, use empty data set for initial store");
+				// console.log("No State, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -704,7 +704,11 @@ define([
 
 			// cols - genes
 			//console.warn(this);
-			var data = this.query("", {});
+			var opts = {};
+			if(this.sort && this.sort.length > 0){
+				opts.sort = this.sort;
+			}
+			var data = this.query("", opts);
 
 			var geneOrderMap = {};
 			if(geneOrder !== [] && geneOrder.length > 0){

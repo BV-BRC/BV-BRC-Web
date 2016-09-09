@@ -325,7 +325,11 @@ define([
 
 			// cols - families
 			//console.warn(this);
-			var data = this.query("", {});
+			var opts = {};
+			if(this.sort && this.sort.length > 0){
+				opts.sort = this.sort;
+			}
+			var data = this.query("", opts);
 
 			var familyOrderMap = {};
 			if(familyOrder !== [] && familyOrder.length > 0){

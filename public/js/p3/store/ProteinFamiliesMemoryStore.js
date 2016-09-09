@@ -56,9 +56,6 @@ define([
 						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamilies", "showMainGrid");
-						// TODO: need to wait until data is loaded and update heatmap data
-						// self.currentData = self.getHeatmapData(self.pfState);
-						// Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "anchorByGenome":
 						self.anchorByGenome(value);
@@ -71,7 +68,6 @@ define([
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
-						// console.log("requestHeatmapData with ", value.genomeIds);
 						self.currentData = self.getHeatmapData(value);
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
