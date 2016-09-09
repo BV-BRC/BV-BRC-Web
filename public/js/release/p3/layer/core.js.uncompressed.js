@@ -80986,7 +80986,6 @@ define([
 		store: null,
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
-		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
@@ -81022,7 +81021,7 @@ define([
 		},
 		startup: function(){
 			var _self = this;
-
+/*
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
@@ -81033,6 +81032,11 @@ define([
 					cancelable: true
 				});
 				// console.log('after emit');
+			});
+*/
+
+			this.on("dgrid-sort", function(evt){
+				_self.store.query("", {sort: evt.sort});
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -81047,6 +81051,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
+/*
 			this.on("dgrid-deselect", function(evt){
 				//console.log("dgrid-deselect");
 				var newEvt = {
@@ -81058,7 +81063,7 @@ define([
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
-
+*/
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
@@ -81166,9 +81171,6 @@ define([
 						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamilies", "showMainGrid");
-						// TODO: need to wait until data is loaded and update heatmap data
-						// self.currentData = self.getHeatmapData(self.pfState);
-						// Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "anchorByGenome":
 						self.anchorByGenome(value);
@@ -81181,7 +81183,6 @@ define([
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
-						// console.log("requestHeatmapData with ", value.genomeIds);
 						self.currentData = self.getHeatmapData(value);
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
@@ -83484,6 +83485,7 @@ define([
 
 			// action buttons for heatmap viewer
 			this.containerActionBar = new ContainerActionBar({
+				baseClass: "BrowserHeader",
 				region: "top"
 			});
 			this.containerActions.forEach(function(a){

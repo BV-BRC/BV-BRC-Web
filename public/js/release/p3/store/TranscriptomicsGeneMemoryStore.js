@@ -202,7 +202,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 			var _self = this;
 
 			if(!this.state || this.state.search == null){
-				console.log("No State, use empty data set for initial store");
+				// console.log("No State, use empty data set for initial store");
 
 				//this is done as a deferred instead of returning an empty array
 				//in order to make it happen on the next tick.  Otherwise it
@@ -227,7 +227,7 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 				wsComparisonIds = wsComparisons[0].replace('wsComparisonId=','').split(',');
 			}
 
-			console.log(this.state.search, "wsExpIds: ", wsExpIds, "wsComparisonIds: ", wsComparisonIds);
+			// console.log(this.state.search, "wsExpIds: ", wsExpIds, "wsComparisonIds: ", wsComparisonIds);
 
 			if(wsExpIds){
 
@@ -235,7 +235,8 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 					var fileList = data.map(function(obj){
 						var files = {};
-						obj.autoMeta.output_files.forEach(function(d){
+						obj.autoMeta.output_files.forEach(function(arr){
+							var d = arr[0];
 							var file = d.substr(d.lastIndexOf('/') + 1);
 							var type = file.split('.')[0];
 							files[type] = d;
@@ -332,9 +333,9 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 							'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
 						},
 						data: {
-							q: /*(p3FeatureIdList.length > 0) ? 'feature_id:(' + p3FeatureIdList.join(' OR ') + ')' : ''
+							q: (p3FeatureIdList.length > 0) ? 'feature_id:(' + p3FeatureIdList.join(' OR ') + ')' : ''
 							+ (p3FeatureIdList.length > 0 && p2FeatureIdList.length > 0) ? ' OR ' : ''
-							+ */(p2FeatureIdList.length > 0) ? 'p2_feature_id:(' + p2FeatureIdList.join(' OR ') + ')' : '',
+							+ (p2FeatureIdList.length > 0) ? 'p2_feature_id:(' + p2FeatureIdList.join(' OR ') + ')' : '',
 							fl: 'feature_id,p2_feature_id,strand,product,accession,start,end,patric_id,alt_locus_tag,genome_name,gene',
 
 							rows: (p3FeatureIdList.length + p2FeatureIdList.length)
@@ -703,7 +704,11 @@ define("p3/store/TranscriptomicsGeneMemoryStore", [
 
 			// cols - genes
 			//console.warn(this);
-			var data = this.query("", {});
+			var opts = {};
+			if(this.sort && this.sort.length > 0){
+				opts.sort = this.sort;
+			}
+			var data = this.query("", opts);
 
 			var geneOrderMap = {};
 			if(geneOrder !== [] && geneOrder.length > 0){

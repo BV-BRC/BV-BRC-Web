@@ -161,6 +161,7 @@ define([
 
 			// action buttons for heatmap viewer
 			this.containerActionBar = new ContainerActionBar({
+				baseClass: "BrowserHeader",
 				region: "top"
 			});
 			this.containerActions.forEach(function(a){
