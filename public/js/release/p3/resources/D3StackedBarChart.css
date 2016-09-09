@@ -46,6 +46,7 @@
     font-size: 13px;
     fill: #263238; 
     pointer-events: none;
+    text-shadow: -1px -1px 5px #fff, 1px -1px 5px #fff, -1px 1px 5px #fff, 1px 1px 5px #fff;
 }
 .chart-wrapper .legend svg .bar0-sample {
     fill: #1f497d;
