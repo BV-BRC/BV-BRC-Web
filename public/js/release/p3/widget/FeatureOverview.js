@@ -282,8 +282,17 @@ define("p3/widget/FeatureOverview", [
 						{label: "Value", field: "value"},
 						{label: "Evidence Code", field: "evidence_code"},
 						{
+							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
+							if(val){
+								node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+							}
+						}
+						},
+						{
 							label: "Comment", field: "comment", renderCell: function(obj, val, node){
-							node.innerHTML = val;
+							if(val){
+								node.innerHTML = val;
+							}
 						}
 						}
 					]
