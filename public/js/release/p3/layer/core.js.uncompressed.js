@@ -14336,7 +14336,7 @@ define([], function(){
 			}
 		},
 		reportProblem: {
-			title: "Report Problem",
+			title: "Provide Feedback",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/ReportProblem",
 			requireAuth: false,
@@ -79563,6 +79563,7 @@ define([
 			// pgfam
 			var rb_pgfam = new RadioButton({
 				name: "familyType",
+				checked: true,
 				value: "pgfam"
 			});
 			rb_pgfam.on("click", function(){
@@ -79575,8 +79576,7 @@ define([
 			// figfam
 			var rb_figfam = new RadioButton({
 				name: "familyType",
-				value: "figfam",
-				checked: true
+				value: "figfam"
 			});
 			rb_figfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
