@@ -145,7 +145,7 @@ define([
 					// console.log(evt);
 					var target = evt.run.data[evt.index].link;
 					if(target){
-						var url = (window.location.href).replace(window.location.hash, target);
+						var url = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, target);
 						Topic.publish("/navigate", {href: url});
 					}
 				}
