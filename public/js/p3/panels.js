@@ -9,7 +9,7 @@ define([], function(){
 			}
 		},
 		reportProblem: {
-			title: "Report Problem",
+			title: "Provide Feedback",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/ReportProblem",
 			requireAuth: false,

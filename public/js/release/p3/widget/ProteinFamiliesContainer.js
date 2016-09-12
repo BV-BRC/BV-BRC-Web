@@ -174,6 +174,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			// pgfam
 			var rb_pgfam = new RadioButton({
 				name: "familyType",
+				checked: true,
 				value: "pgfam"
 			});
 			rb_pgfam.on("click", function(){
@@ -186,8 +187,7 @@ define("p3/widget/ProteinFamiliesContainer", [
 			// figfam
 			var rb_figfam = new RadioButton({
 				name: "familyType",
-				value: "figfam",
-				checked: true
+				value: "figfam"
 			});
 			rb_figfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
