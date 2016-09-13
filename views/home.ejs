@@ -11,8 +11,8 @@
 	] %>
 
 	<% var flows = [
+		{name: "NEW PATRIC WEBSITE", secondary: "BETA RELEASE", rel: "carousel_betasite", background: "#34698e"},
 		{name: "FIRST US CASE", secondary: "COLISTIN-RESISTANT E. COLI", rel: "carousel_news1", background: "#34698e"},
-		{name: "INVESTIGATING", secondary: "ANTIBIOTIC RESISTANCE", rel: "carousel_news2", background: "#34698e"},
 		{name: "ASSEMBLE AND ANNOTATE",secondary: "GENOMES", rel: "carousel_news3", background: "#34698e"},
 		{name: "SUPPORTING",secondary: "THE TB COMMUNITY", rel: "carousel_news4", background: "#34698e"}
 	] %>
@@ -103,10 +103,21 @@
 				</div>
 -->
 
+			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_betasite" class="CarouselContent showOnLoad dijitHidden">
+
+<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2016/09/Screen-Shot-2016-09-12-at-3.45.12-PM.png"><h2 class="xxxl sans-alternate upper highlight-e">PATRIC Beta Website Release</h2><h3 class="xl highlight-f upper far"></h3><p>A new Beta version of the PATRIC website has now been released and is available at <a class="moz-txt-link-freetext" href="https://www.beta.patricbrc.org/" target="_blank">https://www.beta.patricbrc.org/</a>. The Beta release is provided for formative evaluation purposes. <span class="">Your opinion is very valuable to us. You can participate by test-driving the Beta site and providing us feedback from the Help / Provide Feedback menu option.</span>
+
+The Beta site will become the new Production site in late November 2016. In the interim, the <i>current</i> Production version of the PATRIC website is still available at <a class="moz-txt-link-freetext" href="https://www.patricbrc.org/" target="_blank">https://www.patricbrc.org</a>.</p><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="https://www.beta.patricbrc.org/">Beta Site</a></p>
+		<br><br><br><br><br><br><br><br>
+</div>
+
+			</div>
+
+
 			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news1" class="CarouselContent showOnLoad dijitHidden">
 				<div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2016/05/Screen-Shot-2016-05-27-at-1.18.24-PM1.png"><h2 class="xxxl sans-alternate upper highlight-e">First US Case of E. Coli Resistant to Colistin</h2><h3 class="xl highlight-f upper far"></h3><p>The assembled genome of Colistin-resistant <em>E. coli</em> MRSN 388634 is now available in PATRIC <a href="/view/Genome/562.10576">here</a>. Sequence reads for MRSN388634 have been deposited in the NCBI Short Read Archive by researchers at the Walter Reed Army Institute of Research and Walter Reed National Military Medical Center under Accession number SRP075674. The authors report the presence of mcr-1 in an <em>E. coli</em> cultured from a patient with a urinary tract infection in the United States. The early version of the publication can be found at “<a href="http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf">http://aac.asm.org/content/early/2016/05/25/AAC.01103-16.full.pdf</a>”.A provisional assembly and annotation is provided in PATRIC using the PATRIC Genome Assembly and Genome Annotation services and can be accessed <a href="/view/Genome/562.10576">here</a>. We will provide the GenBank version of the assembly once the genome becomes available in GenBank. We would like to thank the members of the Walter Reed team for their early release of the data in the Short Read Archive.</p><br/><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/Genome/562.10576">Genome</a></p></div>
 			</div>
-
+	
 			<div data-dojo-type="dijit/layout/ContentPane" id="carousel_news2" class="CarouselContent showOnLoad dijitHidden">
 <div class="wrapper"><img class="right" src="http://enews.patricbrc.org/wp-content/uploads/2014/05/AR_carousel.jpg"><h2 class="xxxl sans-alternate upper highlight-e">Antibiotic Resistance Data</h2><h3 class="xl highlight-f upper far">for Infectious Disease Research</h3><p>Antibiotic Resistance refers to the ability of bacteria to develop resistance to antibiotics through gene mutation or acquisition of antibiotic resistance genes. &nbsp;PATRIC collects known antibiotic resistance genes from reputed external databases and publications and maps them to homologous genes using BLASTP, so you can easily find and analyze them with PATRIC tools. &nbsp;We also incorporate antibiotic susceptibility testing results as additional genome metadata.</p><br/><p><a class="button upper sans-alternate largest highlight avoid-arrow" href="/view/DataType/AntibioticResistance">Explore Data</a></p></div>
 			</div>
@@ -339,7 +350,6 @@
 							<p class="close">University of Chicago</p>
 							<p class="close">5801 South Ellis Avenue</p>
 							<p>Chicago, IL 60637-5418</p>
-							<a class="button" href="/content/ContactUs">Contact Us</a>
 						</div>
 					</div>
 					<div class="column" style="min-height: 143px;">
