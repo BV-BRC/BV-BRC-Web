@@ -145,7 +145,8 @@ define("p3/widget/GenomeMetaSummary", [
 					// console.log(evt);
 					var target = evt.run.data[evt.index].link;
 					if(target){
-						Topic.publish("/navigate", {href: window.location.pathname + target});
+						var url = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash, target);
+						Topic.publish("/navigate", {href: url});
 					}
 				}
 				else if(evt.type == "onmouseover"){

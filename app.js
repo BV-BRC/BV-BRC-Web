@@ -1,10 +1,13 @@
+var config = require("./config");
+if(config.get("newrelic_license_key")){
+	require('newrelic');
+}
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var config = require("./config");
 var session = require("express-session-unsigned");
 var RedisStore = require('connect-redis')(session);
 var passport = require('passport');
@@ -85,6 +88,7 @@ app.use(function(req, res, next){
 	req.package = package;
 	req.applicationOptions = {
 		version: "3.0",
+		gaID: config.get("gaID") || false,
 		workspaceServiceURL: config.get("workspaceServiceURL"),
 		appServiceURL: config.get("appServiceURL"),
 		dataServiceURL: config.get("dataServiceURL"),

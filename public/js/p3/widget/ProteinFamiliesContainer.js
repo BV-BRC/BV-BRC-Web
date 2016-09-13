@@ -174,6 +174,7 @@ define([
 			// pgfam
 			var rb_pgfam = new RadioButton({
 				name: "familyType",
+				checked: true,
 				value: "pgfam"
 			});
 			rb_pgfam.on("click", function(){
@@ -186,8 +187,7 @@ define([
 			// figfam
 			var rb_figfam = new RadioButton({
 				name: "familyType",
-				value: "figfam",
-				checked: true
+				value: "figfam"
 			});
 			rb_figfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
@@ -285,6 +285,8 @@ define([
 			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var defaultFilterValue = {
+				keyword: '',
+				perfectFamMatch: 'A',
 				min_member_count: null,
 				max_member_count: null,
 				min_genome_count: null,
@@ -294,10 +296,6 @@ define([
 			var btn_reset = new Button({
 				label: "Reset",
 				onClick: lang.hitch(this, function(){
-
-					// rb_plfam.reset();
-					// rb_pgfam.reset();
-					// rb_figfam.reset();
 
 					ta_keyword.set('value', '');
 
@@ -309,6 +307,11 @@ define([
 					tb_num_protein_family_max.set('value', '');
 					tb_num_genome_family_min.set('value', '');
 					tb_num_genome_family_max.set('value', '');
+
+					// reset store
+					this.pfState = lang.mixin(this.pfState, defaultFilterValue);
+					// console.log(this.pfState);
+					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
@@ -341,7 +344,7 @@ define([
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
-					console.log(this.pfState);
+					// console.log(this.pfState);
 					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});

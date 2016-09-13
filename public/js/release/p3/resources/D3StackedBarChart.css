@@ -1,4 +1,5 @@
-.chart-wrapper {
+.chart-wrapper.amr{
+    overflow-x: scroll;
 }
 .chart-wrapper .chart {
     padding-top: 24px;
@@ -21,17 +22,17 @@
     margin: 0 4px 0 14px;
 }
 .chart-wrapper.amr .legend svg .bar0-sample {
-    fill: #D32F2F;
+    fill: #E53935;
 }
 .chart-wrapper.amr .legend svg .bar1-sample {
-    fill: #4CAF50;
+    fill: #7CB342;
 }
 .chart-wrapper.amr .legend svg .bar2-sample {
     fill: #FFC107;
 }
 .chart-wrapper.amr rect.block-0 {
-    fill: #E53935; 
-    stroke: #D32F2F; 
+    fill: #F44336; 
+    stroke: #E53935; 
 }
 .chart-wrapper.amr rect.block-1 {
     fill: #8BC34A; 
@@ -45,6 +46,7 @@
     font-size: 13px;
     fill: #263238; 
     pointer-events: none;
+    text-shadow: -1px -1px 5px #fff, 1px -1px 5px #fff, -1px 1px 5px #fff, 1px 1px 5px #fff;
 }
 .chart-wrapper .legend svg .bar0-sample {
     fill: #1f497d;

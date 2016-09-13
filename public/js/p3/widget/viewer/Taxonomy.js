@@ -90,7 +90,7 @@ define([
 			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
 			state.search = state.search.replace(s, "");
 			if(state.search){
-				console.log("GENERATE ENGLISH QUERY for ", state.search, s);
+				// console.log("GENERATE ENGLISH QUERY for ", state.search, s);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
 				var sx = [s];
 				if(state.search && state.search != s){
@@ -260,6 +260,9 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
+						if(activeTab._firstView){
+							Topic.publish("ProteinFamilies", "showMainGrid");
+						}
 					}
 
 					if(activeQueryState){

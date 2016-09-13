@@ -866,6 +866,10 @@ define("p3/widget/GridContainer", [
 						case "pathway_data":
 
 							var queryContext = containerWidget.grid.store.state.search;
+							if(containerWidget.grid.store.state.hashParams.filter != "false"){
+								queryContext += "&" + containerWidget.grid.store.state.hashParams.filter;
+							}
+
 							switch(containerWidget.type){
 								case "pathway":
 									var pathway_ids = selection.map(function(d){

@@ -59,3 +59,6 @@
 [submodule "public/js/phyloview"]
 	path = public/js/phyloview
 	url = https://github.com/aswarren/phyloview
+[submodule "public/js/autotrack"]
+	path = public/js/autotrack
+	url = https://github.com/googleanalytics/autotrack.git

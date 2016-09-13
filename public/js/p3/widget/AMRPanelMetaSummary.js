@@ -125,12 +125,10 @@ define([
 				var legend = Object.keys(phenotypeDef);
 				this.chart.renderNav(chartNavBarHtml);
 				this.chart.renderLegend("", legend);
-				this.chart.processData(this.data);
-				this.chart.render();
+				this.chart.render(this.data);
 
 			}else{
-				this.chart.processData(this.data);
-				this.chart.render();
+				this.chart.update(this.data);
 			}
 		},
 

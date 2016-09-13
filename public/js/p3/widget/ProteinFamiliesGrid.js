@@ -15,7 +15,6 @@ define([
 		store: null,
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
-		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
@@ -51,7 +50,7 @@ define([
 		},
 		startup: function(){
 			var _self = this;
-
+/*
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				//console.log("dblclick row:", row);
@@ -62,6 +61,11 @@ define([
 					cancelable: true
 				});
 				// console.log('after emit');
+			});
+*/
+
+			this.on("dgrid-sort", function(evt){
+				_self.store.query("", {sort: evt.sort});
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -76,6 +80,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
+/*
 			this.on("dgrid-deselect", function(evt){
 				//console.log("dgrid-deselect");
 				var newEvt = {
@@ -87,7 +92,7 @@ define([
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
-
+*/
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);

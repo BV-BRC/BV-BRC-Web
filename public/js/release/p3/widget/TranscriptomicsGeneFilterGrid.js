@@ -47,7 +47,7 @@ define("p3/widget/TranscriptomicsGeneFilterGrid", [
 			present: selector({label: '', field: 'present', selectorType: 'radio'}, filterSelector),
 			absent: selector({label: '', field: 'absent', selectorType: 'radio'}, filterSelector),
 			mixed: selector({label: '', field: 'mixed', selectorType: 'radio'}, filterSelectorChecked),
-			source: {label: 'Source', field: 'source'},
+			source: {label: 'Source', field: 'source', hidden: true},
 			title: {label: 'Title', field: 'expname'},
 			strain: {label: 'Strain', field: 'strain'},
 			modification: {label: 'Modification', field: 'mutant'},

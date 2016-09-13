@@ -14336,7 +14336,7 @@ define([], function(){
 			}
 		},
 		reportProblem: {
-			title: "Report Problem",
+			title: "Provide Feedback",
 			layer: "p3/layer/panels",
 			ctor: "p3/widget/ReportProblem",
 			requireAuth: false,
@@ -24364,6 +24364,10 @@ define([
 				}
 
 				on.emit(this.domNode, "dialogAction", {action: "close",bubbles: true});
+
+				if(window.ga){
+					window.ga('send', 'pageview', '/search?keyword=' + encodeURIComponent(query) + "&cat=" + searchFilter);
+				}
 				 0 && console.log("Do Search: ", searchFilter, query);
 			}
 		},
@@ -25688,7 +25692,6 @@ define([
 				button.set('checked', true);
 			}
 			var container = registry.byId(this.containerId);
-			 0 && console.log("CONTAINER: ", container);
 			container.selectChild(page);
 		},
 
@@ -60065,6 +60068,9 @@ define([
 		},
 
 		onSetData: function(attr, oldVal, data){
+			// hide loading
+			domClass.add(this.loadingNode, "hidden");
+
 			this["render_" + this.view]();
 		},
 
@@ -74983,6 +74989,10 @@ define([
 						case "pathway_data":
 
 							var queryContext = containerWidget.grid.store.state.search;
+							if(containerWidget.grid.store.state.hashParams.filter != "false"){
+								queryContext += "&" + containerWidget.grid.store.state.hashParams.filter;
+							}
+
 							switch(containerWidget.type){
 								case "pathway":
 									var pathway_ids = selection.map(function(d){
@@ -78827,7 +78837,8 @@ define([
 						url['taxon_id'] = this.state.taxon_id;
 					}else if(this.state.hasOwnProperty('genome')){
 						url['genome_id'] = this.state.genome.genome_id;
-					}else if(this.state.hasOwnProperty('genome_ids')){
+					}
+					if(this.state.hasOwnProperty('genome_ids')){
 						url['genome_ids'] = this.state.genome_ids;
 					}
 
@@ -78850,7 +78861,7 @@ define([
 						return p + "=" + url[p]
 					}).join("&");
 					//  0 && console.log(params);
-					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params});
+					Topic.publish("/navigate", {href: "/view/PathwayMap/" + params, target: "blank"});
 				},
 				false
 			]
@@ -79552,6 +79563,7 @@ define([
 			// pgfam
 			var rb_pgfam = new RadioButton({
 				name: "familyType",
+				checked: true,
 				value: "pgfam"
 			});
 			rb_pgfam.on("click", function(){
@@ -79564,8 +79576,7 @@ define([
 			// figfam
 			var rb_figfam = new RadioButton({
 				name: "familyType",
-				value: "figfam",
-				checked: true
+				value: "figfam"
 			});
 			rb_figfam.on("click", function(){
 				Topic.publish("ProteinFamilies", "setFamilyType", "figfam")
@@ -79663,6 +79674,8 @@ define([
 			domConstruct.place("<br/><br/>", otherFilterPanel.containerNode, "last");
 
 			var defaultFilterValue = {
+				keyword: '',
+				perfectFamMatch: 'A',
 				min_member_count: null,
 				max_member_count: null,
 				min_genome_count: null,
@@ -79672,10 +79685,6 @@ define([
 			var btn_reset = new Button({
 				label: "Reset",
 				onClick: lang.hitch(this, function(){
-
-					// rb_plfam.reset();
-					// rb_pgfam.reset();
-					// rb_figfam.reset();
 
 					ta_keyword.set('value', '');
 
@@ -79687,6 +79696,11 @@ define([
 					tb_num_protein_family_max.set('value', '');
 					tb_num_genome_family_min.set('value', '');
 					tb_num_genome_family_max.set('value', '');
+
+					// reset store
+					this.pfState = lang.mixin(this.pfState, defaultFilterValue);
+					//  0 && console.log(this.pfState);
+					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});
 			domConstruct.place(btn_reset.domNode, otherFilterPanel.containerNode, "last");
@@ -79719,7 +79733,7 @@ define([
 					!isNaN(max_genome_count) ? filter.max_genome_count = max_genome_count : {};
 
 					this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
-					 0 && console.log(this.pfState);
+					//  0 && console.log(this.pfState);
 					Topic.publish("ProteinFamilies", "applyConditionFilter", this.pfState);
 				})
 			});
@@ -80972,7 +80986,6 @@ define([
 		store: null,
 		dataModel: "genome_feature",
 		primaryKey: "feature_id",
-		selectionModel: "extended",
 		deselectOnRefresh: true,
 		columns: {
 			// "Selection Checkboxes": selector({}),
@@ -81008,7 +81021,7 @@ define([
 		},
 		startup: function(){
 			var _self = this;
-
+/*
 			this.on(".dgrid-content .dgrid-row:dblclick", function(evt){
 				var row = _self.row(evt);
 				// 0 && console.log("dblclick row:", row);
@@ -81019,6 +81032,11 @@ define([
 					cancelable: true
 				});
 				//  0 && console.log('after emit');
+			});
+*/
+
+			this.on("dgrid-sort", function(evt){
+				_self.store.query("", {sort: evt.sort});
 			});
 
 			this.on("dgrid-select", function(evt){
@@ -81033,6 +81051,7 @@ define([
 				on.emit(_self.domNode, "select", newEvt);
 			});
 
+/*
 			this.on("dgrid-deselect", function(evt){
 				// 0 && console.log("dgrid-deselect");
 				var newEvt = {
@@ -81044,7 +81063,7 @@ define([
 				};
 				on.emit(_self.domNode, "deselect", newEvt);
 			});
-
+*/
 			aspect.before(_self, 'renderArray', function(results){
 				Deferred.when(results.total, function(x){
 					_self.set("totalRows", x);
@@ -81148,12 +81167,10 @@ define([
 
 				switch(key){
 					case "setFamilyType":
+						Topic.publish("ProteinFamilies", "showLoadingMask");
 						self.pfState.familyType = value;
 						self.reload();
 						Topic.publish("ProteinFamilies", "showMainGrid");
-						// TODO: need to wait until data is loaded and update heatmap data
-						// self.currentData = self.getHeatmapData(self.pfState);
-						// Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "anchorByGenome":
 						self.anchorByGenome(value);
@@ -81166,7 +81183,6 @@ define([
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
 					case "requestHeatmapData":
-						//  0 && console.log("requestHeatmapData with ", value.genomeIds);
 						self.currentData = self.getHeatmapData(value);
 						Topic.publish("ProteinFamilies", "updateHeatmapData", self.currentData);
 						break;
@@ -83469,6 +83485,7 @@ define([
 
 			// action buttons for heatmap viewer
 			this.containerActionBar = new ContainerActionBar({
+				baseClass: "BrowserHeader",
 				region: "top"
 			});
 			this.containerActions.forEach(function(a){
@@ -90469,7 +90486,7 @@ define([
 			var s = "eq(taxon_lineage_ids," + state.taxon_id + ")";
 			state.search = state.search.replace(s, "");
 			if(state.search){
-				 0 && console.log("GENERATE ENGLISH QUERY for ", state.search, s);
+				//  0 && console.log("GENERATE ENGLISH QUERY for ", state.search, s);
 				this.filteredTaxon = QueryToEnglish(state.search.replace(s, ""));
 				var sx = [s];
 				if(state.search && state.search != s){
@@ -90639,6 +90656,9 @@ define([
 
 					if(activeQueryState && active == "proteinFamilies"){
 						activeQueryState.search = "";
+						if(activeTab._firstView){
+							Topic.publish("ProteinFamilies", "showMainGrid");
+						}
 					}
 
 					if(activeQueryState){
@@ -93009,6 +93029,7 @@ define([
 
 			// widgets called by taxon_id
 			sumWidgets = ["rgSummaryWidget", "gmSummaryWidget"];
+			// sumWidgets = [];
 
 			var taxonQuery = "eq(taxon_lineage_ids," + state.taxon_id + ")";
 			// check whether we have extra filter
@@ -110768,8 +110789,17 @@ define([
 						{label: "Value", field: "value"},
 						{label: "Evidence Code", field: "evidence_code"},
 						{
+							label: "PubMed", field: "pmid", renderCell: function(obj, val, node){
+							if(val){
+								node.innerHTML = "<a href='//view.ncbi.nlm.nih.gov/pubmed/" + val + "' target='_blank'>" + val + "</a>";
+							}
+						}
+						},
+						{
 							label: "Comment", field: "comment", renderCell: function(obj, val, node){
-							node.innerHTML = val;
+							if(val){
+								node.innerHTML = val;
+							}
 						}
 						}
 					]
@@ -110920,9 +110950,13 @@ define([
 				.attr("d", "M2,2 L2,11 L10,6 L2,2")
 				.attr("style", "fill: #4f81bd;");
 
-			this.tooltipLayer = d3.select("body").append("div")
-				.attr("class", "tooltip")
-				.style("opacity", 0);
+			if(d3.select("div.tooltip")[0][0]){
+				this.tooltipLayer = d3.select("div.tooltip");
+			}else{
+				this.tooltipLayer = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("opacity", 0);
+			}
 		},
 		render: function(data){
 			var self = this;
@@ -114951,6 +114985,7 @@ define([
 			d3){
 
 	return declare([], {
+		maxBarWidth: 30,
 		init: function(target, className, margin){
 			target = (typeof target == "string") ? d3.select(target)[0][0] : target;
 
@@ -114965,7 +115000,7 @@ define([
 				.attr("width", this.nodeWidth)
 				.attr("height", this.nodeHeight);
 
-			if(d3.select("div.tooltip").length > 0){
+			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
 			}else{
 				this.tooltipLayer = d3.select("body").append("div")
@@ -115018,6 +115053,9 @@ define([
 			this.y_scale_range = this.y_scale.range();
 			//  0 && console.log(this.y_scale.rangeBand(), this.y_scale_range);
 
+			var barWidth = Math.max(1, 0.85 * Math.min(this.y_scale.rangeBand(), this.maxBarWidth));
+			var halfGap = Math.max(0, this.y_scale.rangeBand() - barWidth) / 2;
+
 			this.x_scale = d3.scale.linear()
 				.range([0, (self.nodeWidth - self.margin.right - self.margin.left)])
 				.domain([0, maxValue]);
@@ -115059,12 +115097,13 @@ define([
 					return self.margin.left;
 				})
 				.attr("y", function(d, i){
-					return self.y_scale_range[i] + self.margin.top;
+					// return self.y_scale_range[i] + self.margin.top;
+					return (self.y_scale(d.label) + halfGap) + self.margin.top - 1;
 				})
 				.attr("width", function(d){
 					return self.x_scale(d.count)
 				})
-				.attr("height", self.y_scale.rangeBand())
+				.attr("height", Math.min(self.y_scale.rangeBand(), self.maxBarWidth))
 				.attr("fill", '#1976D2')
 				.on("mouseover", function(d, i){
 					self.tooltipLayer.transition()
@@ -120840,7 +120879,7 @@ define([
 'url:p3/widget/templates/UploadStatus.html':"<div class=\"UploadStatusButton\">\n\t<div class=\"UploadStatusUpload\"><i class=\"DialogButton fa icon-upload fa\" style=\"font-size:1.5em;  vertical-align:middle;\" rel=\"Upload:\" ></i></div>\n\t<div data-dojo-attach-point=\"focusNode\" class=\"UploadStatusArea\">\n\t\t<span>Uploads</span>\n\t\t<div data-dojo-attach-point=\"uploadStatusCount\"class=\"UploadStatusCount\">\n\t\t\t<span class=\"UploadingComplete\" data-dojo-attach-point=\"completedUploadCountNode\">0</span><span class=\"UploadingActive\" data-dojo-attach-point=\"activeUploadCountNode\">0</span><span class=\"UploadingProgress dijitHidden\" data-dojo-attach-point=\"uploadingProgress\"></span>\n\t\t</div>\n\t</div>\n</div>\n",
 'url:p3/widget/templates/WorkspaceController.html':"<div>\n\t<span style=\"float:right;\">\n\t\t<div data-dojo-type=\"p3/widget/UploadStatus\" style=\"display:inline-block;\"></div>\n\t\t<div data-dojo-type=\"p3/widget/JobStatus\" style=\"display:inline-block;\"></div>\n\t</span>\n</div>\n ",
 'url:p3/widget/templates/GenomeOverview.html':"<div>\n    <div class=\"column-sub\">\n        <div class=\"section\">\n            <div data-dojo-attach-point=\"genomeSummaryNode\">\n                Loading Genome Summary...\n            </div>\n        </div>\n    </div>\n\n    <div class=\"column-prime\">\n        <div class=\"section hidden\">\n            <h3 class=\"close section-title\" title=\"Antimicrobial resistance data from antimicrobial susceptibility testing\"><span class=\"wrap\">Antimicrobial Resistance</span></h3>\n            <div class=\"apSummaryWidget\" data-dojo-attach-point=\"apSummaryWidget\"\n                 data-dojo-type=\"p3/widget/AMRPanelSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of genomic features annotated by PATRIC and GenBank/RefSeq\"><span class=\"wrap\">Genomic Features</span></h3>\n            <div data-dojo-attach-point=\"gfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/GenomeFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Summary of proteins by their functional attributes and protein family assignments\"><span class=\"wrap\">Protein Features</span></h3>\n            <div class=\"pfSummaryWidget\" data-dojo-attach-point=\"pfSummaryWidget\"\n                 data-dojo-type=\"p3/widget/ProteinFeatureSummary\"></div>\n        </div>\n\n        <div class=\"section\">\n            <h3 class=\"close section-title\" title=\"Genes of special interest to infectious disease researchers, such as virulence factors, antimicrobial resistance genes, human homologs, and potential drug targets\"><span class=\"wrap\">Specialty Genes</span></h3>\n            <div class=\"spgSummaryWidget\" data-dojo-attach-point=\"spgSummaryWidget\"\n                 data-dojo-type=\"p3/widget/SpecialtyGeneSummary\"></div>\n        </div>\n    </div>\n\n    <div class=\"column-opt\">\n        <div class=\"section\">\n            <div class=\"BrowserHeader right\">\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onAddGenome\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-object-group fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Add To Group</div>\n                </div>\n\n                <div class=\"ActionButtonWrapper\" data-dojo-attach-event=\"onclick:onDownload\" style=\"margin-top: 2px\">\n                    <div class=\"ActionButton fa icon-download fa-2x\"></div>\n                    <div class=\"ActionButtonText\">Download</div>\n                </div>\n            </div>\n            <div class=\"clear\"></div>\n<!--\n            <div class=\"SummaryWidget\">\n                <button data-dojo-attach-event=\"onclick:onAddGenome\">Add Genome to Group</button>\n                <button data-dojo-attach-event=\"onclick:onDownload\">Download Genome</button>\n            </div>\n-->\n        </div>\n        <div class=\"section\">\n            <h3 class=\"section-title close2x\" title=\"Recent PubMed articles relevant to the current context\"><span class=\"wrap\">Recent PubMed Articles</span></h3>\n            <div data-dojo-attach-point=\"pubmedSummaryNode\">\n                Loading...\n            </div>\n        </div>\n    </div>\n</div>\n",
-'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
+'url:p3/widget/templates/SummaryWidget.html':"<div class=\"SummaryWidget\">\n    <div class=\"actionButtons\" style=\"text-align: right\">\n        <div class=\"actionButtonsRadio\" data-dojo-attach-point=\"actionButtonsNode\" style=\"text-align: right\">\n            <i class=\"ChartButton fa icon-bar-chart fa-2x\" title=\"View Summary as Chart\"\n               data-dojo-attach-event=\"click:showChart\"></i>\n            <i class=\"TableButton fa icon-th-list fa-2x\" title=\"View Summary As Table\"\n               data-dojo-attach-event=\"click:showTable\"></i>\n        </div>\n    </div>\n    <div data-dojo-attach-point=\"containerNode\">\n        <div class=\"loadingNode\" data-dojo-attach-point=\"loadingNode\">Loading...</div>\n        <div class=\"chartNode\" data-dojo-attach-point=\"chartNode\"></div>\n        <div class=\"tableNode\" data-dojo-attach-point=\"tableNode\"></div>\n    </div>\n</div>\n",
 'url:dgrid/css/extensions/CompoundColumns.css':".dgrid-spacer-row{height:0;}.dgrid-spacer-row th{padding-top:0;padding-bottom:0;border-top:none;border-bottom:none;}#dgrid-css-extensions-CompoundColumns-loaded{display:none;}",
 'url:p3/widget/templates/FilterValueButton.html':"<div class=\"${baseClass}\">\n\t<div>\n\t\t<div class=\"selectedList\" data-dojo-attach-point=\"selectedNode\">\n\t\t</div>\n\t</div>\n\t<div class=\"fieldHeader\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t<tr>\n\t\t\t\t\t<td></td>\n\t\t\t\t\t<td class=\"fieldTitle\" data-dojo-attach-point=\"categoryNode\">\n\t\t\t\t\t\t${category}&nbsp;<i class=\"fa icon-x fa-1x\" style=\"vertical-align:middle;font-size:14px;margin-left:4px;\" data-dojo-attach-event=\"click:clearAll\"></i>\n\t\t\t\t\t</td>\n\t\t\t\t\t<td class=\"rightButtonContainer\"></td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>",
 'url:p3/widget/templates/TrackController.html':"<div style=\"text-align: center;\">\n\t<!-- <div data-dojo-type=\"dijit/form/Textbox\" style=\"width:98%;margin:auto;margin-top:2px;\"></div> -->\n\t<div style=\"font-size:1em;text-align:center;margin-bottom: 5px;\">AVAILABLE TRACKS</div>\n\n\t<table>\n\t\t<tbody data-dojo-attach-point=\"trackTable\">\n\n\t\t</tbody>\n\t</table>\n\n\t<button data-dojo-attach-event=\"click:saveSVG\">Export SVG Image</button>\n\t<div data-dojo-attach-point=\"exportContainer\"></div>\n</div>\n",
