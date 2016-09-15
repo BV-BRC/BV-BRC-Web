@@ -1,10 +1,10 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style", "dojo/topic",
 	"d3/d3",
 	"dojo/text!./templates/D3StackedBarChart.html"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domQuery, domStyle,
+			dom, domClass, domConstruct, domQuery, domStyle, Topic,
 			d3,
 			Template){
 
@@ -136,7 +136,19 @@ define([
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
 					})
-					//.on("click", {})
+					.on("click", function(d){
+						if(d.link){
+							var url;
+							if(typeof d.link == 'function'){
+								arguments[1] = index;
+								url = d.link.apply(this, arguments);
+							}else{
+								url = d.link;
+							}
+							// console.log(url);
+							Topic.publish("/navigate", {href: url})
+						}
+					})
 					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
 							.duration(200)
