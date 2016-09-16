@@ -73,7 +73,7 @@ define([
 		},
 
 		buildHeaderContent: function(){
-			return this.groupPath;
+			return (this.groupPath).split('Feature Groups/')[1];
 		},
 
 		createOverviewPanel: function(){
