@@ -26,23 +26,23 @@ define([
 
 			domConstruct.empty(this.tableNode);
 
-			var table = domConstruct.create("table", {"class": "p3basic"}, this.tableNode);
+			var table = domConstruct.create("table", {}, this.tableNode);
 
 			var tr = domConstruct.create("tr", {}, table);
-			domConstruct.create("td", {innerHTML: "Name"}, tr);
-			domConstruct.create("td", {innerHTML: data.name}, tr);
+			domConstruct.create("td", {innerHTML: "Name", "class": "DataItemProperty"}, tr);
+			domConstruct.create("td", {innerHTML: data.name, "class": "DataItemValue"}, tr);
 
 			tr = domConstruct.create("tr", {}, table);
-			domConstruct.create("td", {innerHTML: "Owner"}, tr);
-			domConstruct.create("td", {innerHTML: data.owner_id}, tr);
+			domConstruct.create("td", {innerHTML: "Owner", "class": "DataItemProperty"}, tr);
+			domConstruct.create("td", {innerHTML: data.owner_id, "class": "DataItemValue"}, tr);
 
 			tr = domConstruct.create("tr", {}, table);
-			domConstruct.create("td", {innerHTML: "Members"}, tr);
-			domConstruct.create("td", {innerHTML: data.autoMeta.item_count}, tr);
+			domConstruct.create("td", {innerHTML: "Members", "class": "DataItemProperty"}, tr);
+			domConstruct.create("td", {innerHTML: data.autoMeta.item_count, "class": "DataItemValue"}, tr);
 
 			tr = domConstruct.create("tr", {}, table);
-			domConstruct.create("td", {innerHTML: "Created"}, tr);
-			domConstruct.create("td", {innerHTML: data.creation_time}, tr);
+			domConstruct.create("td", {innerHTML: "Created", "class": "DataItemProperty"}, tr);
+			domConstruct.create("td", {innerHTML: data.creation_time, "class": "DataItemValue"}, tr);
 
 		},
 

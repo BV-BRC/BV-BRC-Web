@@ -66,7 +66,7 @@ define("p3/widget/WorkspaceBrowser", [
 				label: "VIEW",
 				validTypes: ["genome_group"],
 				multiple: false,
-				tooltip: "Switch to the Genome Group Perspective.",
+				tooltip: "Switch to the Genome Group View.",
 				pressAndHold: function(selection,button,opts,evt){
 					console.log("PressAndHold");
 					console.log("Selection: ", selection, selection[0])
@@ -93,7 +93,7 @@ define("p3/widget/WorkspaceBrowser", [
 				validTypes: ["genome_group"],
 				multiple: true,
 				min: 2,
-				tooltip: "Switch to the Genome List Perspective.",
+				tooltip: "Switch to the Genome List View.",
 				pressAndHold: function(selection,button,opts,evt){
 					console.log("PressAndHold");
 					console.log("Selection: ", selection, selection[0])
@@ -145,7 +145,7 @@ define("p3/widget/WorkspaceBrowser", [
 				label: "VIEW",
 				validTypes: ["feature_group"],
 				multiple: false,
-				tooltip: "Switch to the Feature Group Perspective.",
+				tooltip: "Switch to the Feature Group View.",
 				pressAndHold: function(selection,button,opts,evt){
 					console.log("PressAndHold");
 					console.log("Selection: ", selection, selection[0])
@@ -172,7 +172,7 @@ define("p3/widget/WorkspaceBrowser", [
 				validTypes: ["feature_group"],
 				multiple: true,
 				min: 2,
-				tooltip: "Switch to the Feature List Perspective.",
+				tooltip: "Switch to the Feature List View.",
 				pressAndHold: function(selection,button,opts,evt){
 					console.log("PressAndHold");
 					console.log("Selection: ", selection, selection[0])

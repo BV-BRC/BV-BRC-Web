@@ -6,7 +6,7 @@ define([
 	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer", "../ProteinFamiliesContainer",
 	"../DiseaseContainer", "../PublicationGridContainer", "../CircularViewerContainer",
 	"../TranscriptomicsContainer", "../InteractionsContainer", "../GenomeGridContainer",
-	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish","dijit/Dialog"
+	"../SequenceGridContainer", "../../util/PathJoin", "../../util/QueryToEnglish", "dijit/Dialog"
 ], function(declare, TabViewerBase, on, lang,
 			domClass, ContentPane, domConstruct, Topic,
 			formatter, TabContainer, GenomeOverview,
@@ -28,8 +28,11 @@ define([
 
 		warningContent: 'Some tabs below have been disabled due to the number of genomes in your current view.  To enable them, on the "Genomes" Tab below, use the SHOW FILTERS button ( <i class="fa icon-filter fa-1x" style="color:#333"></i> ) or the keywords input box to filter Genomes. When you are satisfied, click APPLY ( <i class="fa icon-apply-perspective-filter fa-1x" style="color:#333"></i> ) to restablish the page context.',
 		_setQueryAttr: function(query){
-			if (!query) { console.log("GENOME LIST SKIP EMPTY QUERY: ");  return; }
-			if (query && (query == this.query)){
+			if(!query){
+				console.log("GENOME LIST SKIP EMPTY QUERY: ");
+				return;
+			}
+			if(query && (query == this.query)){
 				return;
 			}
 			// console.log("GenomeList SetQuery: ", query, this);
@@ -42,9 +45,9 @@ define([
 			var _self = this;
 			// console.log('genomeList setQuery - this.query: ', this.query);
 
-			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList+1 + ")");
+			var url = PathJoin(this.apiServiceUrl, "genome", "?" + (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + 1 + ")");
 
-			xhr.post(PathJoin(this.apiServiceUrl, "genome"),{
+			xhr.post(PathJoin(this.apiServiceUrl, "genome"), {
 				headers: {
 					accept: "application/solr+json",
 					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
@@ -53,7 +56,7 @@ define([
 				},
 				handleAs: "json",
 				'Content-Type': "application/rqlquery+x-www-form-urlencoded",
-				data: (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList+1 + ")"
+				data: (this.query) + "&select(genome_id)&limit(" + this.maxGenomesPerList + 1 + ")"
 
 			}).then(function(res){
 				//console.log(" URL: ", url);
@@ -110,15 +113,18 @@ define([
 		},
 
 		onSetState: function(attr, oldVal, state){
-			 //console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
+			//console.log("GenomeList onSetState()  OLD: ", oldVal, " NEW: ", state);
 			this.inherited(arguments);
 			if(!state.genome_ids){
-				 //console.log("	NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
+				//console.log("	NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
 				if(state.search == oldVal.search){
 					//console.log("		Same Search")
 					//console.log("		OLD Genome_IDS: ", oldVal.genome_ids);
 					//console.log("INTERNAL STATE UPDATE")
-					this.set("state", lang.mixin({}, state, {genome_ids: oldVal.genome_ids, referenceGenomes:oldVal.referenceGenomes||[]}));
+					this.set("state", lang.mixin({}, state, {
+						genome_ids: oldVal.genome_ids,
+						referenceGenomes: oldVal.referenceGenomes || []
+					}));
 					return;
 				}else{
 					this.set("query", state.search);
@@ -127,7 +133,6 @@ define([
 				// console.log("SET QUERY: ", state.search);
 				this.set("query", state.search);
 			}
-
 
 			// this.inherited(arguments);
 
@@ -159,12 +164,14 @@ define([
 			}
 			switch(active){
 				case "genomes":
-					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({},this.state.hashParams)}));
+					activeTab.set("state", lang.mixin({}, this.state, {hashParams: lang.mixin({}, this.state.hashParams)}));
 					break;
 				default:
 					var activeQueryState;
 					var prop = "genome_id";
-					if (active == "transcriptomics"){ prop = "genome_ids"; }
+					if(active == "transcriptomics"){
+						prop = "genome_ids";
+					}
 					var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
 
 					console.log("ActiveTab.maxGenomeCount: ", activeTab.maxGenomeCount);
@@ -172,31 +179,55 @@ define([
 					var autoFilterMessage;
 					if(this.state && this.state.genome_ids){
 						console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
-						if (this.state.genome_ids.length <= activeMax){
+						if(this.state.genome_ids.length <= activeMax){
 							console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
-							activeQueryState = lang.mixin({}, this.state, {search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
-						} else if (this.state.referenceGenomes && this.state.referenceGenomes.length<=activeMax){
-							var ids = this.state.referenceGenomes.map(function(x){ return x.genome_id })
+							activeQueryState = lang.mixin({}, this.state, {
+								search: "in(" + prop + ",(" + this.state.genome_ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams)
+							});
+						}else if(this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax){
+							var ids = this.state.referenceGenomes.map(function(x){
+								return x.genome_id
+							})
 							console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
 							autoFilterMessage = "This tab has been filtered to view data limited to Reference and Representative Genomes in your view.";
-							activeQueryState = lang.mixin({}, this.state, {genome_ids:ids, autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + ids.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
-						} else if (this.state.referenceGenomes) {
-							var referenceOnly = this.state.referenceGenomes.filter(function(x){ return x.reference_genome=="Reference"}).map(function(x){ return x.genome_id })
-							console.log("USING ONLY REFERENCE GENOMES. Count: " +  referenceOnly.length);
-							if (!referenceOnly || referenceOnly.length<1 || referenceOnly.length > activeMax){
+							activeQueryState = lang.mixin({}, this.state, {
+								genome_ids: ids,
+								autoFilterMessage: autoFilterMessage,
+								search: "in(" + prop + ",(" + ids.join(",") + "))",
+								hashParams: lang.mixin({}, this.state.hashParams)
+							});
+						}else if(this.state.referenceGenomes){
+							var referenceOnly = this.state.referenceGenomes.filter(function(x){
+								return x.reference_genome == "Reference"
+							}).map(function(x){
+								return x.genome_id
+							})
+							console.log("USING ONLY REFERENCE GENOMES. Count: " + referenceOnly.length);
+							if(!referenceOnly || referenceOnly.length < 1 || referenceOnly.length > activeMax){
 								autoFilterMessage = "There are too many genomes in your view.  This tab will not show any data";
-								activeQueryState = lang.mixin({}, this.state, {genome_ids:[],autoFilterMessage: autoFilterMessage, search: "",hashParams: lang.mixin({},this.state.hashParams)});
-							}else if (referenceOnly.length<=activeMax){
+								activeQueryState = lang.mixin({}, this.state, {
+									genome_ids: [],
+									autoFilterMessage: autoFilterMessage,
+									search: "",
+									hashParams: lang.mixin({}, this.state.hashParams)
+								});
+							}else if(referenceOnly.length <= activeMax){
 								autoFilterMessage = "This tab has been filtered to view data limited to Reference Genomes in your view.";
-								activeQueryState = lang.mixin({}, this.state, {genome_ids:referenceOnly,autoFilterMessage: autoFilterMessage, search: "in(" + prop + ",(" + referenceOnly.join(",") + "))",hashParams: lang.mixin({},this.state.hashParams)});
+								activeQueryState = lang.mixin({}, this.state, {
+									genome_ids: referenceOnly,
+									autoFilterMessage: autoFilterMessage,
+									search: "in(" + prop + ",(" + referenceOnly.join(",") + "))",
+									hashParams: lang.mixin({}, this.state.hashParams)
+								});
 							}
 						}
 						// console.log("gidQueryState: ", gidQueryState);
 						// console.log("Active Query State: ", activeQueryState);
 					}
 
-					if (activeQueryState && active=="proteinFamilies"){
-						activeQueryState.search="";
+					if(activeQueryState && active == "proteinFamilies"){
+						activeQueryState.search = "";
 					}
 
 					if(activeQueryState){
@@ -222,7 +253,6 @@ define([
 			// console.log("onSetReferenceGenomes: ", referenceGenomes);
 			// this.set("state", lang.mixin({},this.state, {genome_ids: genome_ids}));
 
-
 			this.state.referenceGenomes = referenceGenomes;
 			this.setActivePanelState();
 		},
@@ -245,22 +275,6 @@ define([
 			this.watch("total_genomes", lang.hitch(this, "onSetTotalGenomes"));
 
 			this.overview = this.createOverviewPanel(this.state);
-			// this.totalCountNode = domConstruct.create("span", {innerHTML: "( loading... )"});
-			// this.queryNode = domConstruct.create("span", {});
-
-			// domConstruct.place(this.queryNode, this.viewHeader.containerNode, "last");
-			// domConstruct.place(this.totalCountNode, this.viewHeader.containerNode, "last");
-
-
-			// headerContent = domConstruct.create("div",{"class":"PerspectiveHeader", style:"padding:0px;"});
-			// domConstruct.place(headerContent, this.viewHeader.containerNode, "last");
-
-			// domConstruct.create("i", {"class": "fa PerspectiveIcon " + this.perspectiveIconClass},headerContent);
-			// this.perspectiveTypeNode = domConstruct.create("span",{"class": "PerspectiveType", innerHTML: this.perspectiveLabel},headerContent)
-			// domConstruct.create("br",{},headerContent);
-			// this.queryNode = domConstruct.create("span",{"class": "PerspectiveQuery"},headerContent)
-			// this.totalCountNode = domConstruct.create("span", {"class": "PerspectiveTotalCount", innerHTML: "( loading... )"},headerContent);;
-
 
 			this.genomes = new GenomeGridContainer({
 				title: "Genomes",
@@ -311,21 +325,19 @@ define([
 			this.viewer.addChild(this.pathways);
 			this.viewer.addChild(this.transcriptomics);
 
-			// on(this.domNode, "SetAnchor", lang.hitch(this, function(evt){
-			// 		evt.stopPropagation();
-			// 		console.log(this.id, " Call onSetAnchor " , this);
-			// 		this.onSetAnchor(evt);
-			// }));
-			if (localStorage){
+			if(localStorage){
 				var gs = localStorage.getItem(this.showQuickstartKey);
-				if (gs){
-					gs=JSON.parse(gs);
+				if(gs){
+					gs = JSON.parse(gs);
 				}
-				if (!gs){
+				if(!gs){
 
-					var dlg = new Dialog({title: "PATRIC Quickstart", content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'})
+					var dlg = new Dialog({
+						title: "PATRIC Quickstart",
+						content: '<video autoplay="true" src="/public/video/P3_QUICKSTART_V2.mp4" controls="controls" width="945"></video>'
+					})
 					dlg.show();
-					localStorage.setItem(this.showQuickstartKey,true);
+					localStorage.setItem(this.showQuickstartKey, true);
 				}
 
 			}
@@ -334,28 +346,9 @@ define([
 			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genomes ) ";
 
-			if (newVal>500){
-
+			if(newVal > 500){
 				this.getReferenceAndRepresentativeGenomes();
 			}
-
-			// var hasDisabled = false;
-			// var disabledTabs={};
-			// this.viewer.getChildren().forEach(function(child){
-			// 	if(child.maxGenomeCount && ((newVal > this.maxGenomesPerList) || (newVal > child.maxGenomeCount))){
-			// 		// console.log("\t\tDisable Child: ", child.id);
-			// 		hasDisabled = true;
-			// 		child.set("disabled", true);
-			// 	}else{
-			// 		child.set("disabled", false);
-			// 	}
-			// }, this);
-
-			// if(hasDisabled){
-			// 	this.showWarning();
-			// }else{
-			// 	this.hideWarning();
-			// }
 		},
 		hideWarning: function(){
 			if(this.warningPanel){
@@ -373,7 +366,7 @@ define([
 					layoutPriority: 3
 				});
 
-				var _self=this;
+				var _self = this;
 				on(this.warningPanel, ".close:click", function(){
 					_self.removeChild(_self.warningPanel);
 				})

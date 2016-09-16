@@ -74,7 +74,7 @@ define("p3/widget/viewer/GenomeGroup", [
 		},
 
 		buildHeaderContent: function(){
-			return this.groupPath;
+			return (this.groupPath).split('Genome Groups/')[1];
 		},
 
 		createOverviewPanel: function(){
