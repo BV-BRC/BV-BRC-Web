@@ -30,6 +30,9 @@
 .chart-wrapper.amr .legend svg .bar2-sample {
     fill: #FFC107;
 }
+.chart-wrapper.amr rect:hover {
+    cursor: pointer;
+}
 .chart-wrapper.amr rect.block-0 {
     fill: #F44336; 
     stroke: #E53935; 
@@ -64,7 +67,7 @@
     fill: #9bbb59;
 }
 .chart-wrapper rect {
-    strokes-width: 0;
+    stroke-width: 1px;
     shape-rendering: crispEdges;
     fill: #000;
 }

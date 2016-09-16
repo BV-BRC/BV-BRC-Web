@@ -2,11 +2,11 @@ require({cache:{
 'url:p3/widget/templates/D3StackedBarChart.html':"<div class=\"chart-wrapper\">\n    <nav>\n        <span class=\"label\">Scale</span>\n        <ul class=\"scale\">\n            <li class=\"real active\">Counts</li>\n            <li class=\"normalize\">Percent</li>\n        </ul>\n        <span class=\"label\">Order by</span>\n        <ul class=\"sort\">\n            <li class=\"label active\">Name</li>\n            <li class=\"value\">Count</li>\n        </ul>\n    </nav>\n    <!-- This is the div where the chart is actually drawn. -->\n    <div class=\"chart\"></div>\n    <!-- The bar chart looks for this legend. There\"s some SVG in here for the circles. -->\n    <p class=\"legend\">\n        <label></label>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n        <svg height=\"16\" width=\"16\"></svg>\n        <span></span>\n    </p>\n</div>"}});
 define("p3/widget/D3StackedBarChart", [
 	"dojo/_base/declare", "dojo/_base/lang",
-	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style",
+	"dojo/dom", "dojo/dom-class", "dojo/dom-construct", "dojo/query!css3", "dojo/dom-style", "dojo/topic",
 	"d3/d3",
 	"dojo/text!./templates/D3StackedBarChart.html"
 ], function(declare, lang,
-			dom, domClass, domConstruct, domQuery, domStyle,
+			dom, domClass, domConstruct, domQuery, domStyle, Topic,
 			d3,
 			Template){
 
@@ -138,7 +138,19 @@ define("p3/widget/D3StackedBarChart", [
 					.attr("height", function(d){
 						return Math.round(self.barHeight(d['dist'][index], d.total))
 					})
-					//.on("click", {})
+					.on("click", function(d){
+						if(d.link){
+							var url;
+							if(typeof d.link == 'function'){
+								arguments[1] = index;
+								url = d.link.apply(this, arguments);
+							}else{
+								url = d.link;
+							}
+							// console.log(url);
+							Topic.publish("/navigate", {href: url})
+						}
+					})
 					.on("mouseover", function(d){
 						self.tooltipLayer.transition()
 							.duration(200)

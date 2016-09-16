@@ -809,6 +809,10 @@ define("p3/widget/DataItemFormatter", [
 				text: 'assembly_accession',
 				link: 'http://www.ncbi.nlm.nih.gov/assembly/'
 			}, {
+				name: "SRA Accession",
+				text: "sra_accession",
+				link: "http://www.ncbi.nlm.nih.gov/sra/?term="
+			}, {
 				name: 'GenBank Accessions',
 				text: 'genbank_accessions',
 				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'

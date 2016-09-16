@@ -11,12 +11,59 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			TitlePane, registry, Form, RadioButton, Select, Button,
 			ContainerActionBar, HeatmapContainer, PathJoin){
 
+	var legend = [
+		'<div>',
+			'<h5>HeatMap Cells</h5>',
+			'<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
+			'<br>',
+				'<span class="heatmap-legend-entry black"></span>',
+				'<span class="heatmap-legend-label">0</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry yellow"></span>',
+				'<span class="heatmap-legend-label">1</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry orange"></span>',
+				'<span class="heatmap-legend-label">2</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry red"></span>',
+				'<span class="heatmap-legend-label">3+</span>',
+				'<div class="clear"></div>',
+		'</div>'
+	].join("\n");
+
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		pfState: null,
 		containerActions: [
+			[
+				"Legend",
+				"fa icon-bars fa-2x",
+				{label: "Legend", multiple: false, validTypes: ["*"]},
+				function(){
+					if(this.containerActionBar._actions.Legend.options.tooltipDialog == null){
+						this.tooltip_legend = new TooltipDialog({
+							content: legend
+						});
+						this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
+					}
+
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
+							around: this.containerActionBar._actions.Legend.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
+				},
+				true
+			],
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
@@ -169,7 +216,6 @@ define("p3/widget/ProteinFamiliesHeatmapContainer", [
 			}, this);
 			this.addChild(this.containerActionBar);
 
-			//TODO: add legend
 			this.addChild(new ContentPane({
 				region: "center",
 				content: "<div id='flashTarget'></div>",
