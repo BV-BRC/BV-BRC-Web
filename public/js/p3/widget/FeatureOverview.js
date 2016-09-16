@@ -266,8 +266,9 @@ define([
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 		_setFeatureViewerAttr: function(data){
-			new D3SingleGeneViewer(this.sgViewerNode)
-				.render(data);
+			var gene_viewer = new D3SingleGeneViewer();
+			gene_viewer.init(this.sgViewerNode);
+			gene_viewer.render(data);
 		},
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
@@ -350,7 +351,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;

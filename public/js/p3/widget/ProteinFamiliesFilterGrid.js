@@ -1,11 +1,11 @@
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
+	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/query", "dojo/dom-attr", "dojo/aspect", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/selector", "put-selector/put",
 	"../store/ArrangeableMemoryStore", "./Grid", "./formatter"
 ], function(declare, lang, Deferred,
-			on, request, domStyle, aspect, Topic,
+			on, request, domStyle, domQuery, domAttr, aspect, Topic,
 			BorderContainer, ContentPane,
 			selector, put,
 			Store, Grid, formatter){
@@ -174,6 +174,11 @@ define([
 
 			// increase grid width after rendering content-pane
 			domStyle.set(this.id, "width", "650px");
+			// set checkbox title after load
+			// console.log(domQuery(".field-present .dgrid-resize-header-container i"));
+			domAttr.set(domQuery(".field-present .dgrid-resize-header-container i")[0], "title", "Present in all families");
+			domAttr.set(domQuery(".field-absent .dgrid-resize-header-container i")[0], "title", "Absent in all families");
+			domAttr.set(domQuery(".field-mixed .dgrid-resize-header-container i")[0], "title", "Either/Mixed");
 		},
 		_setSort: function(sort){
 			this.inherited(arguments);

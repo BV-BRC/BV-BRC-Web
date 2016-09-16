@@ -1107,3 +1107,27 @@ body footer.main-footer ul.left {
   width: 99px;
 }
 
+.heatmap-legend-entry {
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin: 1px 10px 2px 0;
+    border: 1px solid rgba(0, 0, 0, .2);
+}
+.heatmap-legend-entry.black {
+    background: #000000;
+}
+.heatmap-legend-entry.yellow {
+    background: rgb(248, 214, 63);
+}
+.heatmap-legend-entry.orange {
+    background: rgb(242, 166, 43);
+}
+.heatmap-legend-entry.red {
+    background: rgb(251, 79, 40);
+}
+.heatmap-legend-label{
+    float: left;
+    white-space: nowrap;
+    line-height: 23px;
+}

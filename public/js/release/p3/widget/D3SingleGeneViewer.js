@@ -7,7 +7,7 @@ define("p3/widget/D3SingleGeneViewer", [
 			d3){
 
 	return declare([], {
-		constructor: function(target){
+		init: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
 			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
@@ -16,18 +16,6 @@ define("p3/widget/D3SingleGeneViewer", [
 				.insert("svg", ":first-child")
 				.attr("preserveAspectRatio", "xMidYMid meet")
 				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
-
-			this.canvas.insert("defs")
-				.append("marker")
-				.attr("id", "markerArrow")
-				.attr("markerWidth", "10")
-				.attr("markerHeight", "10")
-				.attr("refX", "2")
-				.attr("refY", "6")
-				.attr("orient", "auto")
-				.append("path")
-				.attr("d", "M2,2 L2,11 L10,6 L2,2")
-				.attr("style", "fill: #4f81bd;");
 
 			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
@@ -45,78 +33,117 @@ define("p3/widget/D3SingleGeneViewer", [
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
-			this.canvas.selectAll("g")
-				.data(data.features)
-				.enter()
-				.append("rect")
-				.attr("y", 50)
-				.attr("x", function(d){
-					return self.x_scale(d.start - data.firstStartPosition)
-				})
-				.attr("width", function(d){
-					return self.x_scale(d.na_length)
-				})
-				.attr("height", 15)
-				.attr("fill", function(d){
-					return (d.start === pinStart) ? '#E53935' : '#1976D2';
-				})
-				.on("mouseover", function(d){
-					self.tooltipLayer.transition()
-						.duration(200)
-						.style("opacity", .95);
+			// allocate groups
+			var groups = [];
+			groups.push({m:[], max:0});
 
-					var content = [];
-					content.push('PATRIC ID: ' + d.patric_id);
-					(d.gene) ? content.push('Gene: ' + d.gene) : {};
-					content.push("Feature type: " + d.feature_type);
-					content.push("Strand: " + d.strand);
-					content.push("Location: " + d.start + "..." + d.end);
-
-					self.tooltipLayer.html(content.join("<br/>"))
-						.style("left", d3.event.pageX + "px")
-						.style("top", d3.event.pageY + "px")
-				})
-				.on("mouseout", function(){
-					self.tooltipLayer.transition()
-						.duration(500)
-						.style("opacity", 0)
-				})
-			;
-
-			this.canvas.selectAll("path")
-				.data(data.features)
-				.enter()
-				.append("path")
-				.attr("d", function(d){
-					var ret = [];
-					var start, end;
-
-					if(d.strand === '+'){
-						start = self.x_scale(d.start - data.firstStartPosition);
-						end = self.x_scale(d.end - data.firstStartPosition) - 8;
-					}else{
-						start = self.x_scale(d.end - data.firstStartPosition);
-						end = self.x_scale(d.start - data.firstStartPosition) + 8;
+			data['features'].forEach(function(d){
+				for (var gIdx = 0; gIdx < groups.length; gIdx++){
+					var g = groups[gIdx];
+					if(g.max === 0){
+						// insert. init
+						g.m.push(d);
+						g.max = d.end;
+						break;
 					}
 
-					ret.push('M' + start + ',45');
-					ret.push('L' + end + ',45');
+					if (d.start <= g.max){
+						// seek another group or create another group
+						if(groups.length === gIdx+1){
+							groups.push({m: [], max: 0});
+						}
+					}
+					else {
+						// insert data in current group
+						g.m.push(d);
+						g.max = d.end;
+						break;
+					}
+				}
+			});
+			// console.log(data);
+			// console.log(groups);
 
-					return ret.join(' ');
-				})
-				.attr("style", "stroke: #6666ff; stroke-width: 1px; fill: #4f81bd; marker-end: url(#markerArrow);");
+			groups.forEach(function(g, gIdx){
+				// console.log(gIdx, g);
 
-			this.canvas.selectAll("text")
-				.data(data.features)
-				.enter()
-				.append("text")
-				.text(function(d){
-					return d.gene
-				})
-				.attr("y", 40)
-				.attr("x", function(d){
-					return self.x_scale(d.start - data.firstStartPosition)
-				});
+				self.canvas.append("g")
+					.attr("transform", function(){
+						return "translate(0, " + (30 + gIdx * 30) + ")";
+					})
+					.attr("class", "g" + gIdx)
+					.selectAll("g")
+					.data(g.m)
+					.enter()
+					.append("polyline")
+					.attr("points", function(d){
+						// console.log(d);
+						var start, middle, end, length;
+
+						if(d.strand == '+'){
+							start = self.x_scale(d.start - data.firstStartPosition);
+							length = self.x_scale(d.na_length);
+							middle = start + length - 12;
+							end = start + length;
+						}else{
+							start = self.x_scale(d.end - data.firstStartPosition);
+							length = self.x_scale(d.na_length);
+							middle = start - length + 12;
+							end = start - length;
+						}
+
+						var pos = [];
+						pos.push(start); pos.push(-6);
+						pos.push(start); pos.push(6);
+						pos.push(middle); pos.push(6);
+						pos.push(middle); pos.push(11);
+						pos.push(end); pos.push(0);
+						pos.push(middle); pos.push(-11);
+						pos.push(middle); pos.push(-6);
+						pos.push(start); pos.push(-6);
+
+						return pos.join(" ");
+					})
+					.attr("fill", function(d){
+						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+					})
+					.on("mouseover", function(d){
+						self.tooltipLayer.transition()
+							.duration(200)
+							.style("opacity", .95);
+
+						var content = [];
+						content.push('PATRIC ID: ' + d.patric_id);
+						(d.gene) ? content.push('Gene: ' + d.gene) : {};
+						content.push("Feature type: " + d.feature_type);
+						content.push("Strand: " + d.strand);
+						content.push("Location: " + d.start + "..." + d.end);
+
+						self.tooltipLayer.html(content.join("<br/>"))
+							.style("left", d3.event.pageX + "px")
+							.style("top", d3.event.pageY + "px")
+					})
+					.on("mouseout", function(){
+						self.tooltipLayer.transition()
+							.duration(500)
+							.style("opacity", 0)
+					});
+
+				self.canvas.select("g.g" + gIdx)
+					.selectAll("text")
+					.data(g.m)
+					.enter()
+					.append("text")
+					.text(function(d){
+						return d.gene
+					})
+					.attr("y", -9)
+					.attr("x", function(d){
+						// console.log(self.x_scale(d.start - data.firstStartPosition + d.na_length / 2));
+						return self.x_scale(d.start - data.firstStartPosition + d.na_length / 2) - 15;
+					});
+
+			});
 		}
 	});
 });

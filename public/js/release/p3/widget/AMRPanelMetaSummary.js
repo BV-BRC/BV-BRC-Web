@@ -85,12 +85,16 @@ define("p3/widget/AMRPanelMetaSummary", [
 					});
 
 					var phenotypes = ["Resistant", "Susceptible", "Intermediate"];
+					var linkBase = (window.location.href).split(window.location.hostname)[1].replace(window.location.hash,'');
 
 					chartData.push({
 						label: antibiotic,
 						tooltip: function(d, idx){
 
 							return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d['dist'][idx]]);
+						},
+						link: function(d, idx){
+							return lang.replace(linkBase + '#view_tab=genomes&filter=join(genome_amr,and(eq(antibiotic,{0}),eq(resistant_phenotype,{1})),genome_id)', [antibiotic, phenotypes[idx]]);
 						},
 						total: total,
 						dist: dist

@@ -37825,6 +37825,10 @@ define([
 				text: 'assembly_accession',
 				link: 'http://www.ncbi.nlm.nih.gov/assembly/'
 			}, {
+				name: "SRA Accession",
+				text: "sra_accession",
+				link: "http://www.ncbi.nlm.nih.gov/sra/?term="
+			}, {
 				name: 'GenBank Accessions',
 				text: 'genbank_accessions',
 				link: 'http://www.ncbi.nlm.nih.gov/nuccore/'
@@ -81124,7 +81128,7 @@ define([
 			ArrangeableMemoryStore){
 
 	var pfState = {
-		familyType: 'figfam', // default
+		familyType: 'pgfam', // default
 		heatmapAxis: '',
 		genomeIds: [],
 		genomeFilterStatus: {},
@@ -82116,12 +82120,12 @@ define([], function(){
 'p3/widget/ProteinFamiliesFilterGrid':function(){
 define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Deferred",
-	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/aspect", "dojo/topic",
+	"dojo/on", "dojo/request", "dojo/dom-style", "dojo/query", "dojo/dom-attr", "dojo/aspect", "dojo/topic",
 	"dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 	"dgrid/selector", "put-selector/put",
 	"../store/ArrangeableMemoryStore", "./Grid", "./formatter"
 ], function(declare, lang, Deferred,
-			on, request, domStyle, aspect, Topic,
+			on, request, domStyle, domQuery, domAttr, aspect, Topic,
 			BorderContainer, ContentPane,
 			selector, put,
 			Store, Grid, formatter){
@@ -82290,6 +82294,11 @@ define([
 
 			// increase grid width after rendering content-pane
 			domStyle.set(this.id, "width", "650px");
+			// set checkbox title after load
+			// console.log(domQuery(".field-present .dgrid-resize-header-container i"));
+			domAttr.set(domQuery(".field-present .dgrid-resize-header-container i")[0], "title", "Present in all families");
+			domAttr.set(domQuery(".field-absent .dgrid-resize-header-container i")[0], "title", "Absent in all families");
+			domAttr.set(domQuery(".field-mixed .dgrid-resize-header-container i")[0], "title", "Either/Mixed");
 		},
 		_setSort: function(sort){
 			this.inherited(arguments);
@@ -83335,12 +83344,59 @@ define([
 			TitlePane, registry, Form, RadioButton, Select, Button,
 			ContainerActionBar, HeatmapContainer, PathJoin){
 
+	var legend = [
+		'<div>',
+			'<h5>HeatMap Cells</h5>',
+			'<p>Cell color represents the number of proteins <br/> from a specific genome in a given protein family.</p>',
+			'<br>',
+				'<span class="heatmap-legend-entry black"></span>',
+				'<span class="heatmap-legend-label">0</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry yellow"></span>',
+				'<span class="heatmap-legend-label">1</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry orange"></span>',
+				'<span class="heatmap-legend-label">2</span>',
+				'<div class="clear"></div>',
+				'<span class="heatmap-legend-entry red"></span>',
+				'<span class="heatmap-legend-label">3+</span>',
+				'<div class="clear"></div>',
+		'</div>'
+	].join("\n");
+
 	return declare([BorderContainer, HeatmapContainer], {
 		gutters: false,
 		state: null,
 		visible: false,
 		pfState: null,
 		containerActions: [
+			[
+				"Legend",
+				"fa icon-bars fa-2x",
+				{label: "Legend", multiple: false, validTypes: ["*"]},
+				function(){
+					if(this.containerActionBar._actions.Legend.options.tooltipDialog == null){
+						this.tooltip_legend = new TooltipDialog({
+							content: legend
+						});
+						this.containerActionBar._actions.Legend.options.tooltipDialog = this.tooltip_legend;
+					}
+
+					if(this.isPopupOpen){
+						this.isPopupOpen = false;
+						popup.close();
+					}else {
+						popup.open({
+							parent: this,
+							popup: this.containerActionBar._actions.Legend.options.tooltipDialog,
+							around: this.containerActionBar._actions.Legend.button,
+							orient: ["below"]
+						});
+						this.isPopupOpen = true;
+					}
+				},
+				true
+			],
 			[
 				"Flip Axis",
 				"fa icon-rotate-left fa-2x",
@@ -83493,7 +83549,6 @@ define([
 			}, this);
 			this.addChild(this.containerActionBar);
 
-			//TODO: add legend
 			this.addChild(new ContentPane({
 				region: "center",
 				content: "<div id='flashTarget'></div>",
@@ -110775,8 +110830,9 @@ define([
 			domConstruct.place(ExternalItemFormatter(feature, "pubmed_data", {}), this.pubmedSummaryNode, "first");
 		},
 		_setFeatureViewerAttr: function(data){
-			new D3SingleGeneViewer(this.sgViewerNode)
-				.render(data);
+			var gene_viewer = new D3SingleGeneViewer();
+			gene_viewer.init(this.sgViewerNode);
+			gene_viewer.render(data);
 		},
 		_setFeatureCommentsAttr: function(data){
 			domClass.remove(this.featureCommentsNode.parentNode, "hidden");
@@ -110859,7 +110915,7 @@ define([
 			var centerPos = Math.ceil((this.feature.start + this.feature.end + 1) / 2);
 			var rangeStart = (centerPos >= 3000) ? (centerPos - 3000) : 0;
 			var rangeEnd = (centerPos + 3000);
-			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
+			var query = "?and(eq(genome_id," + this.feature.genome_id + "),eq(accession," + this.feature.accession + "),eq(annotation," + this.feature.annotation + "),gt(start," + rangeStart + "),lt(end," + rangeEnd + "))&select(feature_id,patric_id,strand,feature_type,start,end,na_length,gene)&sort(+start)";
 
 			xhr.get(PathJoin(this.apiServiceUrl, "/genome_feature/" + query), xhrOption).then(lang.hitch(this, function(data){
 				if(data.length === 0) return;
@@ -110928,7 +110984,7 @@ define([
 			d3){
 
 	return declare([], {
-		constructor: function(target){
+		init: function(target){
 			this.node = domConstruct.place('<div class="chart"></div>', target, "only");
 
 			this.nodeWidth = parseInt(domStyle.get(this.node, "width"));
@@ -110937,18 +110993,6 @@ define([
 				.insert("svg", ":first-child")
 				.attr("preserveAspectRatio", "xMidYMid meet")
 				.attr("viewBox", "-5 0 " + (this.nodeWidth - 10) + " 70");
-
-			this.canvas.insert("defs")
-				.append("marker")
-				.attr("id", "markerArrow")
-				.attr("markerWidth", "10")
-				.attr("markerHeight", "10")
-				.attr("refX", "2")
-				.attr("refY", "6")
-				.attr("orient", "auto")
-				.append("path")
-				.attr("d", "M2,2 L2,11 L10,6 L2,2")
-				.attr("style", "fill: #4f81bd;");
 
 			if(d3.select("div.tooltip")[0][0]){
 				this.tooltipLayer = d3.select("div.tooltip");
@@ -110966,78 +111010,117 @@ define([
 
 			this.x_scale = d3.scale.linear().range([0, self.nodeWidth]).domain([0, totalRange]);
 
-			this.canvas.selectAll("g")
-				.data(data.features)
-				.enter()
-				.append("rect")
-				.attr("y", 50)
-				.attr("x", function(d){
-					return self.x_scale(d.start - data.firstStartPosition)
-				})
-				.attr("width", function(d){
-					return self.x_scale(d.na_length)
-				})
-				.attr("height", 15)
-				.attr("fill", function(d){
-					return (d.start === pinStart) ? '#E53935' : '#1976D2';
-				})
-				.on("mouseover", function(d){
-					self.tooltipLayer.transition()
-						.duration(200)
-						.style("opacity", .95);
+			// allocate groups
+			var groups = [];
+			groups.push({m:[], max:0});
 
-					var content = [];
-					content.push('PATRIC ID: ' + d.patric_id);
-					(d.gene) ? content.push('Gene: ' + d.gene) : {};
-					content.push("Feature type: " + d.feature_type);
-					content.push("Strand: " + d.strand);
-					content.push("Location: " + d.start + "..." + d.end);
-
-					self.tooltipLayer.html(content.join("<br/>"))
-						.style("left", d3.event.pageX + "px")
-						.style("top", d3.event.pageY + "px")
-				})
-				.on("mouseout", function(){
-					self.tooltipLayer.transition()
-						.duration(500)
-						.style("opacity", 0)
-				})
-			;
-
-			this.canvas.selectAll("path")
-				.data(data.features)
-				.enter()
-				.append("path")
-				.attr("d", function(d){
-					var ret = [];
-					var start, end;
-
-					if(d.strand === '+'){
-						start = self.x_scale(d.start - data.firstStartPosition);
-						end = self.x_scale(d.end - data.firstStartPosition) - 8;
-					}else{
-						start = self.x_scale(d.end - data.firstStartPosition);
-						end = self.x_scale(d.start - data.firstStartPosition) + 8;
+			data['features'].forEach(function(d){
+				for (var gIdx = 0; gIdx < groups.length; gIdx++){
+					var g = groups[gIdx];
+					if(g.max === 0){
+						// insert. init
+						g.m.push(d);
+						g.max = d.end;
+						break;
 					}
 
-					ret.push('M' + start + ',45');
-					ret.push('L' + end + ',45');
+					if (d.start <= g.max){
+						// seek another group or create another group
+						if(groups.length === gIdx+1){
+							groups.push({m: [], max: 0});
+						}
+					}
+					else {
+						// insert data in current group
+						g.m.push(d);
+						g.max = d.end;
+						break;
+					}
+				}
+			});
+			// console.log(data);
+			// console.log(groups);
 
-					return ret.join(' ');
-				})
-				.attr("style", "stroke: #6666ff; stroke-width: 1px; fill: #4f81bd; marker-end: url(#markerArrow);");
+			groups.forEach(function(g, gIdx){
+				// console.log(gIdx, g);
 
-			this.canvas.selectAll("text")
-				.data(data.features)
-				.enter()
-				.append("text")
-				.text(function(d){
-					return d.gene
-				})
-				.attr("y", 40)
-				.attr("x", function(d){
-					return self.x_scale(d.start - data.firstStartPosition)
-				});
+				self.canvas.append("g")
+					.attr("transform", function(){
+						return "translate(0, " + (30 + gIdx * 30) + ")";
+					})
+					.attr("class", "g" + gIdx)
+					.selectAll("g")
+					.data(g.m)
+					.enter()
+					.append("polyline")
+					.attr("points", function(d){
+						// console.log(d);
+						var start, middle, end, length;
+
+						if(d.strand == '+'){
+							start = self.x_scale(d.start - data.firstStartPosition);
+							length = self.x_scale(d.na_length);
+							middle = start + length - 12;
+							end = start + length;
+						}else{
+							start = self.x_scale(d.end - data.firstStartPosition);
+							length = self.x_scale(d.na_length);
+							middle = start - length + 12;
+							end = start - length;
+						}
+
+						var pos = [];
+						pos.push(start); pos.push(-6);
+						pos.push(start); pos.push(6);
+						pos.push(middle); pos.push(6);
+						pos.push(middle); pos.push(11);
+						pos.push(end); pos.push(0);
+						pos.push(middle); pos.push(-11);
+						pos.push(middle); pos.push(-6);
+						pos.push(start); pos.push(-6);
+
+						return pos.join(" ");
+					})
+					.attr("fill", function(d){
+						return (d.start === pinStart) ? '#E53935' : '#1976D2';
+					})
+					.on("mouseover", function(d){
+						self.tooltipLayer.transition()
+							.duration(200)
+							.style("opacity", .95);
+
+						var content = [];
+						content.push('PATRIC ID: ' + d.patric_id);
+						(d.gene) ? content.push('Gene: ' + d.gene) : {};
+						content.push("Feature type: " + d.feature_type);
+						content.push("Strand: " + d.strand);
+						content.push("Location: " + d.start + "..." + d.end);
+
+						self.tooltipLayer.html(content.join("<br/>"))
+							.style("left", d3.event.pageX + "px")
+							.style("top", d3.event.pageY + "px")
+					})
+					.on("mouseout", function(){
+						self.tooltipLayer.transition()
+							.duration(500)
+							.style("opacity", 0)
+					});
+
+				self.canvas.select("g.g" + gIdx)
+					.selectAll("text")
+					.data(g.m)
+					.enter()
+					.append("text")
+					.text(function(d){
+						return d.gene
+					})
+					.attr("y", -9)
+					.attr("x", function(d){
+						// console.log(self.x_scale(d.start - data.firstStartPosition + d.na_length / 2));
+						return self.x_scale(d.start - data.firstStartPosition + d.na_length / 2) - 15;
+					});
+
+			});
 		}
 	});
 });

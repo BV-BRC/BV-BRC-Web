@@ -32,6 +32,10 @@
     fill: #FFC107;
 }
 
+.chart-wrapper.amr rect:hover {
+    cursor: pointer;
+}
+
 .chart-wrapper.amr rect.block-0 {
     fill: #F44336; /* red 500 for resistant */
     stroke: #E53935; /* red 600 */
@@ -70,7 +74,7 @@
     fill: #9bbb59;
 }
 .chart-wrapper rect {
-    strokes-width: 0;
+    stroke-width: 1px;
     shape-rendering: crispEdges;
     fill: #000;
 }

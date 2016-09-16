@@ -86,7 +86,6 @@ define([
 			}, this);
 			this.addChild(this.containerActionBar);
 
-			//TODO: add legend
 			this.addChild(new ContentPane({
 				region: "center",
 				content: "<div id='flashTarget'></div>",

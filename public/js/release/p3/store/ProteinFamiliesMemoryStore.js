@@ -9,7 +9,7 @@ define("p3/store/ProteinFamiliesMemoryStore", [
 			ArrangeableMemoryStore){
 
 	var pfState = {
-		familyType: 'figfam', // default
+		familyType: 'pgfam', // default
 		heatmapAxis: '',
 		genomeIds: [],
 		genomeFilterStatus: {},
