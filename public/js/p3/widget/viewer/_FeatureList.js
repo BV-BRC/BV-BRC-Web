@@ -15,7 +15,7 @@ define([
 		paramsMap: "query",
 		total_features: 0,
 		warningContent: 'Your query returned too many results for detailed analysis.',
-		perspectiveLabel: "Feature List Perspective",
+		perspectiveLabel: "Feature List View",
 		perspectiveIconClass: "icon-selection-FeatureList",
 		_setQueryAttr: function(query){
 
@@ -94,7 +94,7 @@ define([
 			var activeTab = this[active];
 
 			if(!activeTab){
-				console.log("ACTIVE TAB NOT FOUND: ", active);
+				// console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 
@@ -119,11 +119,11 @@ define([
 					}
 					break;
 			}
-			console.log("Set Active State COMPLETE");
+			// console.log("Set Active State COMPLETE");
 		},
 
 		onSetFeatureIds: function(attr, oldVal, genome_ids){
-			console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
+			// console.log("onSetGenomeIds: ", genome_ids, this.feature_ids, this.state.feature_ids);
 			this.state.feature_ids = feature_ids;
 			this.setActivePanelState();
 		},
@@ -151,45 +151,12 @@ define([
 				tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
 				disabled: false
 			});
-			// this.sequences = new SequenceGridContainer({
-			// 	title: "Sequences",
-			// 	id: this.viewer.id + "_" + "sequences",
-			// 	state: this.state,
-			// 	disable: true
-			// });
-
-			// this.genomes = new GenomeGridContainer({
-			// 	title: "Genomes",
-			// 	id: this.viewer.id + "_" + "genomes",
-			// 	state: this.state,
-			// 	disable: true
-			// });
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.features);
-			// this.viewer.addChild(this.sequences);
-			// this.viewer.addChild(this.genomes);
-
 		},
 		onSetTotalFeatures: function(attr, oldVal, newVal){
-			// console.log("ON SET TOTAL GENOMES: ", newVal);
 			this.totalCountNode.innerHTML = " ( " + newVal + " Genome Features ) ";
-			// var hasDisabled = false;
-
-			// this.viewer.getChildren().forEach(function(child){
-			// 	if(child && child.maxGenomeCount && (newVal > child.maxGenomeCount)){
-			// 		hasDisabled = true;
-			// 		child.set("disabled", true);
-			// 	}else{
-			// 		child.set("disabled", false);
-			// 	}
-			// });
-
-			// if(hasDisabled){
-			// 	this.showWarning();
-			// }else{
-			// 	this.hideWarning();
-			// }
 		},
 		hideWarning: function(){
 			if(this.warningPanel){
