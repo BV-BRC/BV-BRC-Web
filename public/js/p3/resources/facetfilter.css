@@ -5,14 +5,13 @@
 }
 
 .FacetFilter {
-/*	border: 1px solid #aaa;*/
 	border-radius: 4px;
 	color: #ccc;
 	margin-top: 4px;
 	margin-left: 4px;
 	display: inline-block;
 	overflow: hidden;
-	padding: 0px;
+	padding: 0;
 	white-space: nowrap;
 	vertical-align: top;
 	max-width: 350px;
@@ -69,7 +68,7 @@
 /*	border: 1px solid #bbb;*/
 	overflow: hidden;
 	display: inline-block;
-	padding: 0px;
+	padding: 0;
 	font-size: 1em;
 	margin-bottom: 1px;
 	margin-left: 4px;
@@ -80,7 +79,7 @@
 
 .ValueWrapper {
 	display: inline-block;
-	whitespace: nowrap;
+	white-space: nowrap;
 	font-size: .85em;
 	font-weight: 100;
 	padding: 2px;
@@ -105,14 +104,13 @@
 }
 
 .selectedList {
-	margin: 0px;
-	padding: 0px;
-	whitespace: nowrap;
+	padding: 0;
+	white-space: nowrap;
 	background: #ffcb00;
 	color: #333;
 	text-align: center;
 	min-height: 21px;
-	margin-bottom: 2px;
+	margin: 0 0 2px;
 }
 
 .fieldHeader {

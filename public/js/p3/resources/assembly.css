@@ -1,13 +1,9 @@
 .appshadow{
 	border: 1px solid #aaa;
-/*box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--webkit-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--moz-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;
--o-box-shadow: inset 1px 0px 18px 0px #ABABAB,1px 5px 5px 1px #DDDDDD;*/
 }
 
 .appsetup{
-margin-top:0px;
+margin-top:0;
 padding:15px 50px 10px 10px;
 text-align: right;
 background-color: #F0F1F3;
@@ -67,7 +63,7 @@ table.assemblyblocks td{vertical-align:top;}
 table.librarytable.disabled{
     opacity: 0.4; /* Real browsers */
     filter: alpha(opacity = 60);
-    font-color: #ccc;
+    color: #ccc;
 }
 
 .apphelp a{
@@ -123,7 +119,7 @@ background-color: #F0F1F3;
 background-color: #F0F1F3;
 margin: 0 0 10px 10px;
 width: auto;
-padding: 5px 0px 10px 10px;
+padding: 5px 0 10px 10px;
 text-align: left;
 }
 
@@ -145,7 +141,7 @@ line-height: .8;
 width: 40px;
 text-align: center;
 padding: auto;
-margin:5px 0px 5px 5px;
+margin:5px 0 5px 5px;
 }
 
 .readbuttons{
@@ -166,7 +162,7 @@ div.infobox i{color: rgb(52, 105, 142);}
 
 label.appboxlabel {
 text-align:left;
-margin: 10px 0 10px 0px;
+margin: 10px 0 10px 0;
 font-size: 14px;
 line-height: 16px;
 text-transform: none;
@@ -240,5 +236,5 @@ font-size: 12px;
     margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px; 
+    right: 0;
 }

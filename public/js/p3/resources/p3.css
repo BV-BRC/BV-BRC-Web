@@ -31,7 +31,7 @@
 @import url("//fonts.googleapis.com/css?family=Didact+Gothic");
 
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section, summary, blockquote, q, th, td, caption, table,
+footer, header, menu, nav, section, summary, blockquote, q, th, td, caption, table,
 div, span, object, iframe, p,
 pre, a, abbr, acronym, address,
 code, del, dfn, em, img,
@@ -91,8 +91,8 @@ iframe  {
 .layoutContainer {
     width: 100%;
     height: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 
@@ -102,9 +102,7 @@ iframe  {
 
 .layer {
     width: 925px;
-    margin: auto;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px auto;
     z-index: 10;
 }
 
@@ -143,11 +141,11 @@ TD.HomeServiceLink {
 }
 .HomeServiceLink {
     height: 75px;
-    border:0px;
+    /*border:0px;*/
     border: 1px solid transparent;
     border-left: #87b934 1px solid;
     border-right: #2a5d40 1px solid;
-    margin: 0px;
+    margin: 0;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
@@ -163,16 +161,13 @@ TD.HomeServiceLink {
 }
 
 .HomeServiceLink:hover {
-/*    border-color: #629821;*/
-/*    box-shadow: 0px 0px 24px orange;*/
 }
 
 .HomeServiceLink H3,
 .HomeServiceLink H4 {
   margin: 0;
-  padding:0px;
-  padding-left: 15px;
-  border: 0;
+    padding: 0 0 0 15px;
+    border: 0;
   font-size: 14px;
   font-family: "Didact Gothic",Arial, Helvetica, sans-serif; 
   font-weight: 100;
@@ -188,7 +183,6 @@ TD.HomeServiceLink {
 
 
 table.p3basic {
-    /*font-size: 11px;*/
     border-collapse: separate;
     empty-cells: hide;
     border-bottom: #d3d3d3 1px solid;
@@ -218,12 +212,12 @@ table tr.even td {
 }
 
 .claro .dijitDialog {
-    perspective: 2000;
-    -webkit-perspective: 2000;
+    perspective: 2000px;
+    -webkit-perspective: 2000px;
 }
 
 .claro .flippableDialog.dijitDialog {
-    border: 0px;
+    border: 0;
     box-shadow: 0 0 0;
     -webkit-box-shadow: 0 0 0;
     overflow: visible;
@@ -232,13 +226,12 @@ table tr.even td {
 .claro .flippableDialog.dijitDialog .flipper {
     border: 1px solid #759dc0;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
-    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0.25);
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 
 .claro .flipped .flipper {
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg);
-    /*	-webkit-backface-visiblity: hidden;*/
 }
 
 .flipper {
@@ -264,14 +257,14 @@ table tr.even td {
     left: 0;
     right: 0;
     bottom: 0;
-    border: 0px;
+    border: 0;
 
 }
 
 .claro .dijitDialog .backpane {
     background: #fff;
     padding: 8px;
-    margin: 0px;
+    margin: 0;
 }
 
 .claro .dijitDialog .dijitDialogTitleBar,
@@ -299,8 +292,8 @@ table tr.even td {
 .ActionBar {
     background: #76a72d; /*#34698e;#333;*/
     border-left: 1px solid #777;
-    /*	box-shadow: 0px 0px 2px;
-        -webkit-box-shadow: 0px 0px 2px;*/
+    /*	box-shadow: 0 0 2px;
+        -webkit-box-shadow: 0 0 2px;*/
     overflow: hidden;
     padding-top: 6px;
     margin-right: -4px;
@@ -330,8 +323,7 @@ table tr.even td {
 .fileUploadButton {
     position: relative;
     overflow: hidden;
-    margin: auto;
-    margin-bottom: 8px;
+    margin: auto auto 8px;
     width: 90%;
     border: 1px solid #333;
     cursor: pointer;
@@ -387,37 +379,35 @@ table tr.even td {
 }
 
 .UserProfileForm Table {
-    border: 0px;
+    border: 0;
     width: 100%;
 }
 
 .RegistrationForm TD,
 .UserProfileForm TD {
-    border: 0px;
-    padding: 4px;
-    padding-left: 0px;
-    padding-bottom: 8px;
+    border: 0;
+    padding: 4px 4px 8px 0;
 }
 
 .RegistrationForm TH,
 .UserProfileForm TH {
     font-size: .85em;
-    border: 0px;
-    pading: 4px;
+    border: 0;
+    padding: 4px;
 }
 
 .GlobalSearch .dijitSelect,
 .GlobalSearch .dijitTextBox {
-    margin: 0px;
-    border: 0px;
+    margin: 0;
+    border: 0;
     border-radius: 4px;
 }
 
 .GlobalSearch > table {
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     border-collapse: collapse;
-    border-spacing: 0px;
+    border-spacing: 0;
     width: 100%;
     border-radius: 4px;
 }
@@ -425,21 +415,19 @@ table tr.even td {
 .GlobalSearch {
     border-radius: 4px;
     background: #fff;
-    padding: 0px;
+    padding: 0;
 }
 
 body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
-    background-image: none;
     border-top: 5px solid #629821;
-    background: #fff;
+    background: #fff none;
     padding-top: 2px;
     transition-duration: 0s;
 }
 
 body.patric .dijitTabContainerTop-tabs .dijitTabActive,
 body.patric .dijitTabContainerTop-tabs .dijitTabHover {
-    background-image: none;
-    background-color: #dfe4ff;
+    background: #dfe4ff none;
     color: #000;
     transition-duration: 0s;
 }
@@ -450,13 +438,12 @@ body.patric .dijitTabContainerTop-tabs .dijitTabActive {
 }
 
 body.patric.claro .dijitTabDisabled {
-    background-color: #f5f5f5;
-    background-image: none;
+    background: #f5f5f5 none;
     color: #d9d9d9;
 }
 
 .TextTabButtons {
-    margin: 0px;
+    margin: 0;
     padding: 4px;
     background: #eee;
     border-bottom: 1px solid #bbb;
@@ -469,15 +456,11 @@ body.patric.claro .dijitTabDisabled {
 
 .TextTabButtons .dijitTab,
 .TextTabButtons .dijitToggleButton .dijitButtonNode {
-    border: 0px;
-    background: transparent;
+    border: 0;
     background-color: inherit;
     box-shadow: none;
-    border-radius: 0px;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: 3px;
-    margin-bottom: 3px;
+    border-radius: 0;
+    margin: 3px 15px;
 }
 
 .claro .dijitTab:first-child {
@@ -499,14 +482,14 @@ body.patric.claro .dijitTabDisabled {
 
 .dgrid .dgrid-selector {
     width: 20px;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     text-align: center;
 }
 
 .dgrid .dgrid-selector > * {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     vertical-align: middle;
 }
 
@@ -528,7 +511,7 @@ div.overview {
     background: #eee;
 
     border-style: solid;
-    border-width: 1px 0px 1px 0px;
+    border-width: 1px 0 1px 0;
     border-color: #555;
 
     text-align: center;
@@ -536,7 +519,7 @@ div.overview {
 }
 
 .jbrowse > .dijitContentPane {
-    padding: 0px;
+    padding: 0;
 }
 
 .navbox {
@@ -617,7 +600,7 @@ div.tooltip {
     padding: 10px;
     font: 15px sans-serif;
     background: lightsteelblue;
-    border: 0px;
+    border: 0;
     border-radius: 4px;
     pointer-events: none;
 }
@@ -763,10 +746,10 @@ table {
 	*/
 
     background: #34598e;
-    border-radius: 0px;
+    border-radius: 0;
     text-align: left;
     box-shadow: none;
-    padding-left: 0px;
+    padding-left: 0;
     margin-top: 12px;
 }
 
@@ -858,7 +841,7 @@ div.pubmed ul li {
 .dgrid ::-webkit-scrollbar-thumb {
     background: #333;
     border-radius: 1ex;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
 }
 
 
@@ -880,7 +863,7 @@ div.pubmed ul li {
 	margin:4px;
     background: #f9ff85;
     padding:4px;
-    border:0px solid #aaa;
+    border:0 solid #aaa;
     border-radius:4px;
     font-weight:200;
 }
@@ -890,7 +873,7 @@ div.pubmed ul li {
     text-align:left;
     margin: 0 4px;
     padding:4px;
-    border:0px solid #aaa;
+    border:0 solid #aaa;
     border-radius:4px;
 }
 
@@ -1003,8 +986,8 @@ a.icon-left {
   display: inline-block;
   line-height: 16px;
   padding-left: 25px;
-  background-position: left center;
-  background-repeat: no-repeat; }
+    background: no-repeat left center;
+}
 
 
 h1,h2,h3,h4,h5,h6 {
@@ -1071,7 +1054,7 @@ body footer.main-footer {
   background-image: -ms-linear-gradient(#09456f, #34698e);
   background-image: linear-gradient(#09456f, #34698e);
   border-top: #227194;
-  padding: 12px 0px 30px 0px;
+  padding: 12px 0 30px 0;
   min-height:165px;
 }
 
@@ -1081,7 +1064,6 @@ footer.main-footer .container {
 footer.main-footer .container .column {
   display: inline;
   float: left;
-  margin-right: 17px;
   width: 229px;
   border-left: #547f9d 1px solid;
   margin-right: -1px;
@@ -1092,7 +1074,7 @@ footer.main-footer .container .column {
 }
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
-  padding: 0px 15px;
+  padding: 0 15px;
 }
   body footer.main-footer .container .column.last {
   display: inline;
