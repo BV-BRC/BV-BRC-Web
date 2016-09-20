@@ -55,15 +55,15 @@ app.use(passport.session());
 if(config.get("enableDevAuth")){
 	app.use(function(req, res, next){
 		var user = config.get("devUser");
-		console.log("Dev User: ", user, req.isAuthenticated, req.isAuthenticated());
+		// console.log("Dev User: ", user, req.isAuthenticated, req.isAuthenticated());
 		if(user && (!req.isAuthenticated || !req.isAuthenticated() )){
-			console.log("Auto Login Dev User");
+			// console.log("Auto Login Dev User");
 			req.login(user, function(err){
-				console.log("login user: ", user);
+				// console.log("login user: ", user);
 				if(err){
 					return next(err);
 				}
-				console.log("Dev User logged in.  Setup Session");
+				// console.log("Dev User logged in.  Setup Session");
 				if(user && req.session){
 					delete user.password;
 					req.session.userProfile = user;
@@ -80,8 +80,8 @@ if(config.get("enableDevAuth")){
 }
 
 app.use(function(req, res, next){
-	console.log("Config.production: ", config.production);
-	console.log("Session Data: ", req.session);
+	// console.log("Config.production: ", config.production);
+	// console.log("Session Data: ", req.session);
 	req.config = config;
 	req.production = config.get("production") || false;
 	req.productionLayers = ["p3/layer/core"];
@@ -97,7 +97,7 @@ app.use(function(req, res, next){
 		appLabel: config.get("appLabel"),
 		appVersion: package.version
 	};
-	console.log("Application Options: ", req.applicationOptions);
+	// console.log("Application Options: ", req.applicationOptions);
 	next();
 });
 

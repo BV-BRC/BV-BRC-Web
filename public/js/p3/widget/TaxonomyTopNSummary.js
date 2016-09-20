@@ -23,7 +23,7 @@ define([
 		startup: function(){
 			this.inherited(arguments);
 			when(this.store.query(this.query + "&limit(" + this.count + ")"), lang.hitch(this,function(results){
-				console.log("Results: ", results)
+				// console.log("Results: ", results)
 				this.renderArray(results);
 			}))
 
