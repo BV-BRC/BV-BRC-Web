@@ -78,8 +78,7 @@ define([
 	}
 
 	return declare([ContainerActionBar], {
-		/* style: "height: 55px; margin-left:-1px; margin-right: 1px;overflow:hidden;", */
-		style: "height: 52px; margin:0px;padding:0px; overflow: hidden;",
+		style: "height: 52px; margin:0px; padding:0px; overflow: hidden;",
 		minimized: true,
 		minSize: 52,
 		absoluteMinSize: 52,
@@ -107,34 +106,35 @@ define([
 		},
 		onSetState: function(attr, oldState, state){
 			// console.log("FilterContainerActionBar onSetState: ", JSON.stringify(state,null,4))
-			if (!state) { return; }
+			if(!state){
+				return;
+			}
 			state.search = (state.search && (state.search.charAt(0) == "?")) ? state.search.substr(1) : (state.search || "");
 			// console.log("FilterContainerActionBar onSetState() ", state);
 
-
-			if (oldState){
+			if(oldState){
 				// console.log("    OLD: ", oldState.search, " Filter: ", (oldState.hashParams?oldState.hashParams.filter:null));
 			}else{
 				// console.log("    OLD: No State");
 			}
 			// console.log("    NEW: ", state.search, " Filter: ", (state.hashParams?state.hashParams.filter:null));
 
-			var ov,nv;
-			if (oldState){
+			var ov, nv;
+			if(oldState){
 				ov = oldState.search;
-				if (oldState.hashParams && oldState.hashParams.filter){
+				if(oldState.hashParams && oldState.hashParams.filter){
 					ov = ov + oldState.hashParams.filter;
 				}
 			}
 
-			if (state){
+			if(state){
 				nv = state.search;
-				if (state.hashParams && state.hashParams.filter){
+				if(state.hashParams && state.hashParams.filter){
 					nv = nv + state.hashParams.filter;
 				}
 			}
 
-			if (ov!=nv){
+			if(ov != nv){
 				this._refresh();
 			}
 		},
@@ -157,7 +157,7 @@ define([
 				// console.log("_refresh() state.hashParams.filter: ", state.hashParams.filter);
 				if(state.hashParams.filter != "false"){
 					parsedFilter = parseQuery(state.hashParams.filter)
-					this._filter={};
+					this._filter = {};
 				}
 
 				// console.log("parsedFilter: ", parsedFilter);
@@ -181,22 +181,22 @@ define([
 			// console.log("_refresh() parsedFilter.selected: ", parsedFilter.selected);
 
 			// for each of the facet widgets, get updated facet counts and update the content.
-			var toClear=[]
+			var toClear = []
 			Object.keys(this._ffWidgets).forEach(function(category){
-				 // console.log("Category: ", category)
-				 	this._ffWidgets[category].clearSelection();
-					this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
+				// console.log("Category: ", category)
+				this._ffWidgets[category].clearSelection();
+				this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : [])
 			}, this);
 
 			// for each of the selected items in the filter, toggle the item on in  ffWidgets
 			if(parsedFilter && parsedFilter.selected){
 				parsedFilter.selected.forEach(function(sel){
 					// console.log("_setSelected FilterContaienrActionBar: ", sel)
-					if (sel.field && !this._filter[sel.field]){
-						this._filter[sel.field]=[];
+					if(sel.field && !this._filter[sel.field]){
+						this._filter[sel.field] = [];
 					}
 					var qval = "eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")";
-					if (this._filter[sel.field].indexOf(qval)<0){
+					if(this._filter[sel.field].indexOf(qval) < 0){
 						this._filter[sel.field].push("eq(" + sel.field + "," + encodeURIComponent(sel.value) + ")");
 					}
 
@@ -235,12 +235,12 @@ define([
 				}, this)
 
 				Object.keys(this._ffValueButtons).forEach(function(cat){
-					if (!parsedFilter || !parsedFilter.byCategory[cat]){
+					if(!parsedFilter || !parsedFilter.byCategory[cat]){
 						var b = this._ffValueButtons[cat];
 						b.destroy();
 						delete this._ffValueButtons[cat];
 					}
-				},this)
+				}, this)
 
 			}else{
 				// console.log("DELETE __ffValueButtons")
@@ -261,8 +261,7 @@ define([
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			// domConstruct.destroy(this.pathContainer);
-			//this.pathContainer = domConstruct.create("div", {style: {display: "inline-block","padding-top":"8px"}},this.domNode);
+
 			domConstruct.destroy(this.pathContainer);
 			this.smallContentNode = domConstruct.create("div", {
 				"class": "minFilterView",
@@ -305,21 +304,13 @@ define([
 					"white-space": "nowrap"
 				}
 			}, tr);
-			// var str = domConstruct.create("tr",{},table);
-			// var std = domConstruct.create("td",{"colspan": 3,style: {padding: "0px",margin:"0px"}},str);
-			// var tfb1 = domConstruct.create("div",{style: {"text-align":"center"}},std);
-			// var tfb = domConstruct.create("div", {style: {display: "inline-block","border":"1px solid #aaa", width: "100px", "font-size":".75em","margin": "auto"},innerHTML: "SHOW FILTERS"}, tfb1)
 
-			// this.containerNode = domConstruct.create("span", {"class": "ActionButtonContainer"}, this.smallContentNode);
-			// domConstruct.place(this.containerNode, this.smallContentNode, "first");
 			var _self = this;
 			var setAnchor = function(){
 				var q = _self.query;
 				// console.log("Anchor: ", this.state)
 				if(_self.state && _self.state.hashParams && _self.state.hashParams.filter){
 
-					// q = "and(" + q + "," + this.filter + ")";
-					// console.log("New Anchor Query:",q)
 					on.emit(this.domNode, "SetAnchor", {
 						bubbles: true,
 						cancelable: true,
@@ -373,7 +364,6 @@ define([
 					"overflow-x": "auto"
 				}
 			}, this.domNode)
-			//this.fullViewContentNode = domConstruct.create("div", {style: {}}, this.fullViewNode)
 
 			// this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
 			on(this.fullViewNode, "mousewheel", function(event){
@@ -414,19 +404,16 @@ define([
 				"class": "dijitHidden fa icon-x fa-1x",
 				style: {"vertical-align": "bottom", "font-size": "14px", "margin-left": "4px"},
 				innerHTML: ""
-			}, kbot)
+			}, kbot);
 
 			on(clear, "click", lang.hitch(this, function(){
 				this.keywordSearch.set('value', '');
-			}))
-			//var label = domConstruct.create("span", {innerHTML: "<i style='margin-top:-4px' class='fa icon-x fa-1x'></i>", style: {"font-size": "14px", "margin-bottom": "-1px","padding": "0px", "margin-left": "4px", "color": "#333"}}, kbot);
+			}));
+
 			this.keywordSearch = Textbox({style: "width: 300px;"})
 
 			this.keywordSearch.on("change", lang.hitch(this, function(val){
-				// console.log("Keyword Search Change", arguments)
-				// console.log("this.keywordSearch.domNode", this.keywordSearch.domNode);
-				// var val = val.split(" ").map(function(v) { return encodeURIComponent(v) })
-				// console.log("WOULD EMIT: keywords : ", val);
+
 				if(val){
 					domClass.remove(clear, "dijitHidden");
 				}else{
@@ -442,16 +429,7 @@ define([
 			domConstruct.place(this.keywordSearch.domNode, ktop, "last");
 			this.watch("state", lang.hitch(this, "onSetState"));
 
-			// this.watch("filter", lang.hitch(this,function(attr,oldVal,filter){
-				// console.log("Filter Updated: ", filter);
-				// console.log("this._filter: ", this._filter);
-			// }))
-			// this.keywordSearch.startup();
-
 			on(this.domNode, "UpdateFilterCategory", lang.hitch(this, function(evt){
-
-				// console.log("UpdateFilterCategory EVT: ", evt);
-				// console.log("this._Filters: ",this._filter, "FilterContainerActionBar: ", this);
 
 				if(evt.category == "keywords"){
 					if(evt.value && (evt.value.charAt(0) == '"')){
@@ -493,7 +471,7 @@ define([
 				// 		}
 				// },this)
 				// console.log("this._filterKeywords: ", this._filterKeywords, typeof this._filterKeywords);
-				var fkws = []
+				var fkws = [];
 				if(this._filterKeywords){
 					this._filterKeywords.forEach(function(fk){
 						if(fk){
@@ -527,10 +505,10 @@ define([
 						filter = this._filter[cats[0]];
 					}
 				}else{
-				    // console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
+					// console.log("UpdateFilterCategory set filter to ", "and(" + cats.map(function(c){ return this._filter[c] },this).join(",") +")")
 					var inner = cats.map(function(c){
 						return this._filter[c]
-					}, this).join(",")
+					}, this).join(",");
 					if(this._filterKeywords){
 						filter = "and(" + inner + "," + fkws + ")"
 					}else{
@@ -568,7 +546,7 @@ define([
 				if(c != category){
 					return true;
 				}
-			})
+			});
 
 			// console.log("scats: ", scats)
 			var ffilter = [];
@@ -590,7 +568,7 @@ define([
 					}
 				}
 			}, this);
-			// console.log("ffilter: ", ffilter)
+
 			if(ffilter.length < 1){
 				ffilter = "";
 			}else if(ffilter.length == 1){
@@ -598,9 +576,8 @@ define([
 			}else{
 				ffilter = "and(" + ffilter.join(",") + ")";
 			}
-			// console.log("ffilter final: ", ffilter)
-			var q = []
-			// console.log("this.query: ", this.query);
+
+			var q = [];
 
 			if(this.query){
 				q.push((this.query && (this.query.charAt(0) == "?")) ? this.query.substr(1) : this.query);
@@ -618,10 +595,11 @@ define([
 			// console.log("Internal Query: ", q);
 			this.getFacets("?" + q, [category]).then(lang.hitch(this, function(r){
 				// console.log("Facet Results: ",r);
-				if (!r) { return; 
+				if(!r){
+					return;
 				}
 				w.set("data", r[category]);
-			}))
+			}));
 			// console.log(" Facet Query: ", ffilter)
 		},
 
@@ -719,8 +697,12 @@ define([
 
 		_setQueryAttr: function(query){
 			// console.log("_setQueryAttr: ", query)
-			if (!query) {  return; }
-			if (query == this.query){return; }
+			if(!query){
+				return;
+			}
+			if(query == this.query){
+				return;
+			}
 			this._set("query", query)
 			this.getFacets(query).then(lang.hitch(this, function(facets){
 				// console.log("_setQuery got facets: ", facets)
@@ -749,7 +731,7 @@ define([
 
 		getFacets: function(query, facetFields){
 			// console.log("getFacets: ", query);
-			if (!query || query=="?"){
+			if(!query || query == "?"){
 				var def = new Deferred();
 				def.resolve(false);
 				return def.promise;
@@ -800,7 +782,7 @@ define([
 				return;
 
 			}, function(err){
-				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: "+ url);
+				console.error("XHR Error with Facet Request  " + idx + ". There was an error retreiving facets from: " + url);
 				return err;
 			}))
 		},
@@ -813,7 +795,7 @@ define([
 			this.set("facetFields", this.facetFields);
 			//this.set("facets", this.facets);
 			//this.set("selected", this.selected);
-			if (this.state){
+			if(this.state){
 				this.onSetState('state', "", this.state);
 			}
 

@@ -1,16 +1,10 @@
 define([
-	"dojo/_base/declare", "./TabViewerBase", "dojo/on", "dojo/topic",
-	"dojo/dom-class", "dijit/layout/ContentPane", "dojo/dom-construct",
-	"../formatter", "../TabContainer", "../FeatureOverview",
-	"dojo/request", "dojo/_base/lang",
-	"../ActionBar", "../ContainerActionBar", "../PathwaysContainer",
-	"../TranscriptomicsContainer", "../CorrelatedGenesContainer", "../../util/PathJoin"
-], function(declare, TabViewerBase, on, Topic,
-			domClass, ContentPane, domConstruct,
-			formatter, TabContainer, FeatureOverview,
-			xhr, lang,
-			ActionBar, ContainerActionBar, PathwaysContainer,
-			TranscriptomicsContainer, CorrelatedGenesContainer, PathJoin){
+	"dojo/_base/declare", "./TabViewerBase",
+	"dijit/layout/ContentPane",
+	"../CorrelatedGenesContainer"
+], function(declare, TabViewerBase,
+			ContentPane,
+			CorrelatedGenesContainer){
 	return declare([TabViewerBase], {
 		"baseClass": "FeatureGroup",
 		"disabled": false,
@@ -24,44 +18,13 @@ define([
 			if(!id){
 				return;
 			}
-			var state = this.state = this.state || {};
+			this.state = this.state || {};
 			this.patric_id = id;
 			this.state.patric_id = id;
-			/*
-			xhr.get(PathJoin(this.apiServiceUrl,"sp_gene", id), {
-				headers: {
-					accept: "application/json",
-					'X-Requested-With': null,
-					'Authorization': (window.App.authorizationToken || "")
-				},
-				handleAs: "json"
-			}).then(lang.hitch(this, function(feature){
-				this.set("feature", feature)
-			}));
-
-			var activeQueryState = lang.mixin({}, this.state, {search: "eq(feature_id," + id + ")"});
-			var active = (state && state.hashParams && state.hashParams.view_tab) ? state.hashParams.view_tab : "overview";
-			var activeTab = this[active];
-
-			switch(active){
-				case "overview":
-				case "correlatedGenes":
-					break;
-				//case "pathways":
-				//	activeTab.set("state", state);
-				//	break;
-				//case "transcriptomics":
-				//	activeTab.set("state", lang.mixin({}, this.state, {search: "eq(genome_ids," + id + ")"}))
-				//	break;
-				default:
-					activeTab.set("state", activeQueryState);
-					break;
-			}
-			*/
 		},
 
 		onSetState: function(attr, oldVal, state){
-			var parts = this.state.pathname.split("/");
+			// var parts = this.state.pathname.split("/");
 			//this.set("feature_id", parts[parts.length - 1]);
 
 			if(!state){
@@ -129,8 +92,6 @@ define([
 				id: this.viewer.id + "_genomeBrowser",
 				content: "Genome Browser"
 			});
-			// this.compareRegionViewer=new ContentPane({title: "Compare Region Viewer", id: this.viewer.id + "_compareRegionViewer", content: "CompareRegionViewer"})
-			// this.pathways=new ContentPane({title: "Pathways", id: this.viewer.id + "_pathways", content: "Pathways"});
 
 			this.transcriptomics = new ContentPane({
 				title: "Transcriptomics",
@@ -145,7 +106,6 @@ define([
 
 			this.viewer.addChild(this.overview);
 			this.viewer.addChild(this.genomeBrowser);
-			// this.viewer.addChild(this.compareRegionViewer);
 			this.viewer.addChild(this.transcriptomics);
 			this.viewer.addChild(this.correlatedGenes);
 		}

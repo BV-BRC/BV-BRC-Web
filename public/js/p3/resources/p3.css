@@ -1113,3 +1113,12 @@ body footer.main-footer ul.left {
     white-space: nowrap;
     line-height: 23px;
 }
+
+.WarningBanner {
+    background: #f9ff85;
+    text-align: center;
+    margin: 0 4px 0;
+    padding:4px;
+    border:0 solid #aaa;
+    border-radius:4px;
+}
