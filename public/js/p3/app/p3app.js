@@ -1,6 +1,6 @@
 define([
 	"dojo/_base/declare",
-	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct",
+	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "dojo/query",
 	"dijit/registry", "dojo/request", "dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest", "dojox/widget/Toaster",
@@ -9,7 +9,7 @@ define([
 	"../jsonrpc", "../panels", "../WorkspaceManager", "dojo/keys",
 	"dijit/Dialog"
 ], function(declare,
-			Topic, on, dom, domClass, domAttr, domConstruct,
+			Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
 			Registry, xhr, lang,
 			Deferred,
 			JsonRest, Toaster,
@@ -46,6 +46,38 @@ define([
 				}
 			});
 
+			// listening document.title change event
+			var titleEl = document.getElementsByTagName("title")[0];
+			var docEl = document.documentElement;
+
+			if (docEl && docEl.addEventListener) {
+				docEl.addEventListener("DOMSubtreeModified", function(evt) {
+					var t = evt.target;
+					if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
+						onDocumentTitleChanged();
+					}
+				}, false);
+			} else {
+				document.onpropertychange = function() {
+					if (window.event.propertyName == "title") {
+						onDocumentTitleChanged();
+					}
+				};
+			}
+
+			var onDocumentTitleChanged = function(){
+				// var meta = document.getElementsByTagName("meta[name='Keyword']");
+				var meta = domQuery("meta[name='Keywords']")[0];
+				if(meta){
+					meta.content = "PATRIC," + (document.title).replace("::", ",");
+				}
+				if(window.ga){
+					console.log("document title changed to", document.title);
+					ga('set', 'title', document.title);
+					ga('send', 'pageview');
+				}
+			};
+
 			/*
 			Router.register("\/$", function(params, oldPath, newPath, state){
 				console.log("HOME route", params.newPath);
@@ -78,16 +110,17 @@ define([
 				newState.value = path;
 				newState.set = "path";
 				newState.requireAuth = true;
+				newState.pageTitle = 'PATRIC Jobs';
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
 			Router.register("\/search/(.*)", function(params, oldPath, newPath, state){
-				console.log("Search Route: ", arguments);
+				// console.log("Search Route: ", arguments);
 				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/AdvancedSearch";
 				newState.requireAuth = false;
-				console.log("Navigate to ", newState);
+				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
@@ -119,6 +152,7 @@ define([
 				newState.value=_self.dataAPI + "/content/" +  path;
 				newState.set = "href";
 				newState.requireAuth = false;
+				newState.pageTitle = 'PATRIC';
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -139,6 +173,7 @@ define([
 				newState.value = path;
 				newState.set = "path";
 				newState.requireAuth = false;
+				newState.pageTitle = "PATRIC Workspace";
 				// console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});

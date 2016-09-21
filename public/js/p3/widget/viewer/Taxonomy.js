@@ -272,6 +272,14 @@ define([
 					}
 					break;
 			}
+
+			if(this.taxonomy){
+				var pageTitle = this.taxonomy.taxon_name + "::Taxonomy " + activeTab.title;
+				// console.log("Taxonomy setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		buildHeaderContent: function(taxon){
