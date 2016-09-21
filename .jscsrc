@@ -1,0 +1,9 @@
+{
+    "disallowSpacesInFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    "requireSpaceAfterComma": {"allExcept": ["trailing"]},
+    "requireSemicolons": false,
+    "validateIndentation": { "value": "\t", "allExcept": ["comments", "emptyLines"] }
+}
