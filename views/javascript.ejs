@@ -1,40 +1,38 @@
-
-                <script>
-                        dojoConfig = {
-                                parseOnLoad: false,
-				packages: [
-					{ name: 'lazyload', location: "../lazyload",main: 'lazyload' },
-					{ name: 'jDataView', location: '../jDataView/src', main: 'jdataview' },
-					{ name: "FileSaver", location: "../FileSaver", main: "FileSaver"}
-				]
-                        }
-                </script>
-                <script type="text/javascript" src="/js/msa/msa.min.js"></script>
-                <% if (request&&request.production){ %>
-                        <script src="/js/<%- request.package.version %>/dojo/dojo.js"></script>
-                        <script>
-                        require(<%- JSON.stringify(request.productionLayers) %>, function(){
-                <% } else { %>
-                        <script src="/js/dojo/dojo.js"></script>
-                        <script>
+<script>
+    dojoConfig = {
+        parseOnLoad: false,
+        packages: [
+            {name: 'lazyload', location: "../lazyload", main: 'lazyload'},
+            {name: 'jDataView', location: '../jDataView/src', main: 'jdataview'},
+            {name: "FileSaver", location: "../FileSaver", main: "FileSaver"}
+        ]
+    }
+</script>
+<script type="text/javascript" src="/js/msa/msa.min.js"></script>
+<% if (request && request.production){ %>
+    <script src="/js/<%- request.package.version %>/dojo/dojo.js"></script>
+    <script>
+        require(<%- JSON.stringify(request.productionLayers) %>, function(){
+<% } else { %>
+    <script src = "/js/dojo/dojo.js"></script>
+    <script>
+<% } %>
+        require(["<%= request.applicationModule %>"], function(App){
+            appOpts = <%- JSON.stringify(request.applicationOptions || {}) %>;
+            appOpts.workspaceAPI = "<%= request.applicationOptions.workspaceServiceURL %>";
+            appOpts.serviceAPI = "<%= request.applicationOptions.appServiceURL %>";
+            appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
+            <% if (request && request.session) { %>
+                <% if (request.session.userProfile) { %>
+            appOpts.authorizationToken = "<%- (request && request.session) ? (request.session.authorizationToken || request.session.accessToken) : "" %>";
                 <% } %>
-			console.log("DOJO CONFIG: ", dojo.config);
-                        require(["<%= request.applicationModule %>"],function(App){
-                                appOpts=<%- JSON.stringify(request.applicationOptions || {}) %>
-                                appOpts.workspaceAPI = "<%- request.applicationOptions.workspaceServiceURL %>";
-                                appOpts.serviceAPI= "<%- request.applicationOptions.appServiceURL %>";
-                                appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
-				<% if (request && request.session) { %>
-					<% if (request.session.userProfile) %>
-	                                appOpts.authorizationToken = "<%- (request&&request.session)?(request.session.authorizationToken || request.session.accessToken):"" %>";
-
-					<% if (request.session.userProfile) { %>
-						appOpts.user = <%- JSON.stringify(request.session.userProfile) %>;
-					<% } %>
-				<% } %>
-				window.App = new App(appOpts);
-                        });
-                <% if (request&&request.production){ %>
-                        });
+                <% if (request.session.userProfile) { %>
+            appOpts.user = <%- JSON.stringify(request.session.userProfile) %>;
                 <% } %>
-                </script>
+            <% } %>
+            window.App = new App(appOpts);
+        });
+    <% if (request && request.production){ %>
+    });
+<% } %>
+</script>
