@@ -11,7 +11,7 @@
     
 }
 .Phylogeny g.node {
-    font-family: Verdana, Helvetica;
+    font-family: Verdana, Helvetica, sans-serif;
     font-size: 12px;
     font-weight: normal;
 }

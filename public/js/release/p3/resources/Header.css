@@ -1,13 +1,13 @@
 
 .patric .HeaderBar {
 	width: 100%;
-	border: 0px;
-	margin:0px;
-	padding: 0px;
-	top: 0px;
+	border: 0;
+	margin: 0;
+	padding: 0;
+	top: 0;
 	z-index: 100;
 	overflow: visible;
-	box-shadow: 4px 0px 4px;
+	box-shadow: 4px 0 4px;
 	border-bottom: 1px solid #333;
 }
 .TopMenuBar {
@@ -17,9 +17,8 @@
 	background: black;
 	color: #efefef;
 	text-align: right;
-	margin:0px;
-	padding-right: 4px;
-	padding:2px;
+	margin: 0;
+	padding: 2px;
 }
 .RegistrationButton,
 .LoginButton {
@@ -27,8 +26,7 @@
 }
 .patric.claro .authLinks .dijitButtonNode,
 .patric.claro .authLinks .dijitButtonNode {
-    background-image: none;
-	background:#f7ffba;
+	background: #f7ffba none;
 }
 .patric.claro .P3Header  .dijitButtonHover .dijitButtonNode {
 	background-color: #E8FFBA;
@@ -78,9 +76,9 @@
 .P3Header {
 	width: 100%;
     height: 35px;
-	background: #34698e; 
-	padding:0px;
-	margin-top:0px;
+	background: #34698e;
+	padding: 0;
+	margin-top: 0;
 	border-top: 1px solid #999;
 	overflow:hidden;
 }
@@ -91,7 +89,7 @@
 }
 .P3Header .p3LogoImage {
 	height:16px;
-	padding:0px;
+	padding: 0;
 	margin-left:4px;
 	margin-right:-95px;
 }
@@ -110,30 +108,28 @@
 	color: #efefef;
 	font-weight: 500;
 	cursor: pointer;
-	border: 0px;
+	border: 0;
 	box-shadow: 0 0 0;
-	margin: 0px;
+	margin: 0;
 }
 .claro .topMenuButtonIcon.dijitDropDownButton{
-	margin:0px;
-	margin-top:4px;
+	margin: 4px 0 0;
 }
 .claro .topMenuButton.dijitDropDownButton {
-	margin:0px;
-	margin-top:10px;
+	margin: 10px 0 0;
 }
 .claro .topMenuButtonIcon .dijitArrowButtonInner {
 	display: none;
 }
 .claro .topMenuButton .dijitArrowButtonInner {
-	margin:0px;
+	margin: 0;
 }
 .P3Header .logo:hover,
 .topMenuButton:hover{
 	color: orange;
 }
 .claro .topMenuButton .dijitButtonText {
-	padding: 0px;
+	padding: 0;
 }
 .patric .P3Header .TopMenuLink,
 .patric .P3Header .TopMenuLink:visited,
@@ -160,6 +156,6 @@
 .FlowBoxArrow {
 	margin: 4px; 
 	width:100%; 
-	border: 0px;
+	border: 0;
 	font-size: .5em;
 }

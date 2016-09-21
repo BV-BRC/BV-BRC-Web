@@ -25,7 +25,7 @@
 	border-bottom-right-radius: 4px;
 	left: 0;
 	top: 120px;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 	width: 300px;
 }
 .RightDrawer {
@@ -35,7 +35,7 @@
 	border-bottom-left-radius: 4px;
 	right: 0;
 	top: 10%;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 }
 .TopDrawer {
 	position: absolute;
@@ -47,7 +47,7 @@
 	margin-top:-2px;
 	border-bottom-right-radius: 4px;
 	border-bottom-left-radius: 4px;
-	box-shadow: 0px 4px 10px;
+	box-shadow: 0 4px 10px;
 }
 .BottomDrawer {
 	position: absolute;
@@ -59,7 +59,7 @@
 	margin-bottom:-2px;
 	border-top-right-radius: 4px;
 	border-top-left-radius: 4px;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 }
 .LeftDrawer .handle .fa:hover  {
 	color: orange;
@@ -74,10 +74,10 @@
 	right: 0;
 	margin-right: -33px;
 	top: 10px;
-	border-top-left-radius: 0px;
-	border-bottom-left-radius: 0px;
-	box-shadow: 4px 0px 10px;
-	border-left: 0px;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	box-shadow: 4px 0 10px;
+	border-left: 0;
 	text-align: center;
 	color: #fff;
 }
@@ -86,10 +86,10 @@
 	float: left;
 	margin-left: -16px;
 	top: 100px;
-	border-top-right-radius: 0px;
-	border-bottom-right-radius: 0px;
-	box-shadow: -4px 0px 10px;
-	border-right: 0px;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: -4px 0 10px;
+	border-right: 0;
 }
 .BottomDrawer > .handle {
 	position: absolute;
@@ -98,9 +98,9 @@
 	width: 75px;
 	height: 15px;
 	top:0;
-	border-bottom-right-radius: 0px;
-	border-bottom-left-radius: 0px;
-	box-shadow: 0px -4px 10px;
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
+	box-shadow: 0 -4px 10px;
 }
 .TopDrawer > .handle {
 	position: absolute;
@@ -109,19 +109,19 @@
 	width: 75px;
 	height: 15px;
 	bottom:0;
-	border-top-right-radius: 0px;
-	border-top-left-radius: 0px;
-	box-shadow: 0px 4px 10px;
+	border-top-right-radius: 0;
+	border-top-left-radius: 0;
+	box-shadow: 0 4px 10px;
 }
 .LeftDrawer.Closed,
 .RightDrawer.Closed {
-	width: 0px;
-	box-shadow: 0px 0px 0px;
+	width: 0;
+	box-shadow: 0 0 0;
 }
 .BottomDrawer.Closed,
 .TopDrawer.Closed {
-	height: 0px;
-	box-shadow: 0px 0px 0px;
+	height: 0;
+	box-shadow: 0 0 0;
 }
 .Drawer.Closed .PanelContainer {
 	display: none;
@@ -131,12 +131,10 @@
 	font-size: 1.5em;
 	height: 50px;
 	width: 50px;
-	vertical-align: left;
-	margin-left: -50px;;
+	
+	margin-left: -50px;
 	margin-top: -20px;
 	overflow: visible;
-	-webkit-transform:rotate(90deg); 
-*/
 }
 .RightDrawer .handle > div {
 	text-align: center;
@@ -145,9 +143,7 @@
 	vertical-align: bottom;
 	margin-right: -60px;
 	overflow: visible;
-	text-align: center;
 	transform:rotate(-90deg);
 	-ms-transform:rotate(-90deg); 
 	-webkit-transform:rotate(-90deg); 
 }
-       

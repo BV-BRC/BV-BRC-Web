@@ -81,6 +81,14 @@ define("p3/widget/viewer/Genome", [
 					}
 					break;
 			}
+
+			if(this.genome){
+				var pageTitle = this.genome.genome_name + "::Genome " + activeTab.title;
+				// console.log("Genome setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		buildHeaderContent: function(genome){

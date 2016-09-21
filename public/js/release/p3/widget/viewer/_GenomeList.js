@@ -152,7 +152,7 @@ define("p3/widget/viewer/_GenomeList", [
 		},
 
 		setActivePanelState: function(){
-			console.log("setActivePanelState()");
+
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
 			// console.log("Active: ", active, "state: ", JSON.stringify(this.state));
 
@@ -239,7 +239,14 @@ define("p3/widget/viewer/_GenomeList", [
 					}
 					break;
 			}
-			// console.log("Set Active State COMPLETE");
+
+			if(activeTab){
+				var pageTitle = "Genome List " + activeTab.title;
+				// console.log("Genome List setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){

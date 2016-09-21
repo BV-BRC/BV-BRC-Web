@@ -101,7 +101,7 @@ define("p3/widget/app/AppBase", [
 				return;
 			}
 			this.inherited(arguments);
-			var state = this.get("state")
+			var state = this.get("state");
 			if((state == "Incomplete") || (state == "Error")){
 				this.submitButton.set("disabled", true);
 			}
@@ -116,6 +116,10 @@ define("p3/widget/app/AppBase", [
 
 			if(!this.showCancel && this.cancelButton){
 				domClass.add(this.cancelButton.domNode, "dijitHidden");
+			}
+
+			if(this.pageTitle){
+				window.document.title = this.pageTitle;
 			}
 
 			this.gethelp();

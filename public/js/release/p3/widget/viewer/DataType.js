@@ -72,6 +72,8 @@ define("p3/widget/viewer/DataType", [
 
 			this.dataType = dataType;
 
+			window.document.title = dataType;
+
 			when(request.get(PathJoin(this.apiServiceUrl, "content/dlp/", dataType), {
 				handleAs: "html"
 			}), lang.hitch(this, function(content){

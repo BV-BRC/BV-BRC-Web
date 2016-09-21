@@ -5675,7 +5675,6 @@ table {  font-size:100%; }
 .icon-x:before {
   content: "\e997";
 }
-* makes the font 33% larger relative to the icon container */
 .fa-lg {
   font-size: 1.33333333em;
   line-height: 0.75em;
@@ -8824,13 +8823,13 @@ background-color: #FF00FF;
 }
 .patric .HeaderBar {
 	width: 100%;
-	border: 0px;
-	margin:0px;
-	padding: 0px;
-	top: 0px;
+	border: 0;
+	margin: 0;
+	padding: 0;
+	top: 0;
 	z-index: 100;
 	overflow: visible;
-	box-shadow: 4px 0px 4px;
+	box-shadow: 4px 0 4px;
 	border-bottom: 1px solid #333;
 }
 .TopMenuBar {
@@ -8840,9 +8839,8 @@ background-color: #FF00FF;
 	background: black;
 	color: #efefef;
 	text-align: right;
-	margin:0px;
-	padding-right: 4px;
-	padding:2px;
+	margin: 0;
+	padding: 2px;
 }
 .RegistrationButton,
 .LoginButton {
@@ -8850,8 +8848,7 @@ background-color: #FF00FF;
 }
 .patric.claro .authLinks .dijitButtonNode,
 .patric.claro .authLinks .dijitButtonNode {
-    background-image: none;
-	background:#f7ffba;
+	background: #f7ffba none;
 }
 .patric.claro .P3Header  .dijitButtonHover .dijitButtonNode {
 	background-color: #E8FFBA;
@@ -8901,9 +8898,9 @@ background-color: #FF00FF;
 .P3Header {
 	width: 100%;
     height: 35px;
-	background: #34698e; 
-	padding:0px;
-	margin-top:0px;
+	background: #34698e;
+	padding: 0;
+	margin-top: 0;
 	border-top: 1px solid #999;
 	overflow:hidden;
 }
@@ -8914,7 +8911,7 @@ background-color: #FF00FF;
 }
 .P3Header .p3LogoImage {
 	height:16px;
-	padding:0px;
+	padding: 0;
 	margin-left:4px;
 	margin-right:-95px;
 }
@@ -8933,30 +8930,28 @@ background-color: #FF00FF;
 	color: #efefef;
 	font-weight: 500;
 	cursor: pointer;
-	border: 0px;
+	border: 0;
 	box-shadow: 0 0 0;
-	margin: 0px;
+	margin: 0;
 }
 .claro .topMenuButtonIcon.dijitDropDownButton{
-	margin:0px;
-	margin-top:4px;
+	margin: 4px 0 0;
 }
 .claro .topMenuButton.dijitDropDownButton {
-	margin:0px;
-	margin-top:10px;
+	margin: 10px 0 0;
 }
 .claro .topMenuButtonIcon .dijitArrowButtonInner {
 	display: none;
 }
 .claro .topMenuButton .dijitArrowButtonInner {
-	margin:0px;
+	margin: 0;
 }
 .P3Header .logo:hover,
 .topMenuButton:hover{
 	color: orange;
 }
 .claro .topMenuButton .dijitButtonText {
-	padding: 0px;
+	padding: 0;
 }
 .patric .P3Header .TopMenuLink,
 .patric .P3Header .TopMenuLink:visited,
@@ -8983,7 +8978,7 @@ background-color: #FF00FF;
 .FlowBoxArrow {
 	margin: 4px; 
 	width:100%; 
-	border: 0px;
+	border: 0;
 	font-size: .5em;
 }
 .carousel {
@@ -9046,7 +9041,7 @@ background-color: #FF00FF;
 	border-bottom-right-radius: 4px;
 	left: 0;
 	top: 120px;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 	width: 300px;
 }
 .RightDrawer {
@@ -9056,7 +9051,7 @@ background-color: #FF00FF;
 	border-bottom-left-radius: 4px;
 	right: 0;
 	top: 10%;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 }
 .TopDrawer {
 	position: absolute;
@@ -9068,7 +9063,7 @@ background-color: #FF00FF;
 	margin-top:-2px;
 	border-bottom-right-radius: 4px;
 	border-bottom-left-radius: 4px;
-	box-shadow: 0px 4px 10px;
+	box-shadow: 0 4px 10px;
 }
 .BottomDrawer {
 	position: absolute;
@@ -9080,7 +9075,7 @@ background-color: #FF00FF;
 	margin-bottom:-2px;
 	border-top-right-radius: 4px;
 	border-top-left-radius: 4px;
-	box-shadow: 0px 0px 10px;
+	box-shadow: 0 0 10px;
 }
 .LeftDrawer .handle .fa:hover  {
 	color: orange;
@@ -9095,10 +9090,10 @@ background-color: #FF00FF;
 	right: 0;
 	margin-right: -33px;
 	top: 10px;
-	border-top-left-radius: 0px;
-	border-bottom-left-radius: 0px;
-	box-shadow: 4px 0px 10px;
-	border-left: 0px;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	box-shadow: 4px 0 10px;
+	border-left: 0;
 	text-align: center;
 	color: #fff;
 }
@@ -9107,10 +9102,10 @@ background-color: #FF00FF;
 	float: left;
 	margin-left: -16px;
 	top: 100px;
-	border-top-right-radius: 0px;
-	border-bottom-right-radius: 0px;
-	box-shadow: -4px 0px 10px;
-	border-right: 0px;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: -4px 0 10px;
+	border-right: 0;
 }
 .BottomDrawer > .handle {
 	position: absolute;
@@ -9119,9 +9114,9 @@ background-color: #FF00FF;
 	width: 75px;
 	height: 15px;
 	top:0;
-	border-bottom-right-radius: 0px;
-	border-bottom-left-radius: 0px;
-	box-shadow: 0px -4px 10px;
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
+	box-shadow: 0 -4px 10px;
 }
 .TopDrawer > .handle {
 	position: absolute;
@@ -9130,19 +9125,19 @@ background-color: #FF00FF;
 	width: 75px;
 	height: 15px;
 	bottom:0;
-	border-top-right-radius: 0px;
-	border-top-left-radius: 0px;
-	box-shadow: 0px 4px 10px;
+	border-top-right-radius: 0;
+	border-top-left-radius: 0;
+	box-shadow: 0 4px 10px;
 }
 .LeftDrawer.Closed,
 .RightDrawer.Closed {
-	width: 0px;
-	box-shadow: 0px 0px 0px;
+	width: 0;
+	box-shadow: 0 0 0;
 }
 .BottomDrawer.Closed,
 .TopDrawer.Closed {
-	height: 0px;
-	box-shadow: 0px 0px 0px;
+	height: 0;
+	box-shadow: 0 0 0;
 }
 .Drawer.Closed .PanelContainer {
 	display: none;
@@ -9152,12 +9147,10 @@ background-color: #FF00FF;
 	font-size: 1.5em;
 	height: 50px;
 	width: 50px;
-	vertical-align: left;
-	margin-left: -50px;;
+	
+	margin-left: -50px;
 	margin-top: -20px;
 	overflow: visible;
-	-webkit-transform:rotate(90deg); 
-*/
 }
 .RightDrawer .handle > div {
 	text-align: center;
@@ -9166,12 +9159,10 @@ background-color: #FF00FF;
 	vertical-align: bottom;
 	margin-right: -60px;
 	overflow: visible;
-	text-align: center;
 	transform:rotate(-90deg);
 	-ms-transform:rotate(-90deg); 
 	-webkit-transform:rotate(-90deg); 
 }
-       
 .WorkspaceController,
 .WorkspaceGlobalController {
 	padding: 4px;
@@ -9181,7 +9172,7 @@ background-color: #FF00FF;
 	border-top: #227194;
 }
 .BrowserHeader {
-	padding:0px;
+	padding: 0;
 	vertical-align:bottom;
 }
 a.HelpLink {
@@ -9202,8 +9193,7 @@ a.HelpLink:active {
 }
 .wsBreadCrumb {
 	font-size:1.2em;
-	margin:2px;
-	margin-left: 4px;
+	margin: 2px 2px 2px 4px;
 	font-weight: 600;
 	padding:2px;
 	color: #134d75;
@@ -9235,14 +9225,13 @@ color:#fff;font-weight:600;background:#34698e;
 }
 .UploadingButton {
 	display: inline-block;
-	margin: 2px;
-	margin-right: 4px;
+	margin: 2px 4px 2px 2px;
 	padding:2px;
 	border: 1px solid gray;
 }
 .TypeContainer {
 	display: inline-block;
-	width: 80;
+	width: 80px;
 	font-size:.65em;
 	border:1px solid gray;
 	padding:4px;
@@ -9269,9 +9258,8 @@ color:#fff;font-weight:600;background:#34698e;
 	color:#333;
 	padding:4px;
 	margin-left: -1px;
-	border-left: 0px solid #888;
+	border-left: 0 solid #888;
 	border-top: 2px solid #76a72d; 
-	
 	overflow: auto;
 }
 .ItemTypeIcon {
@@ -9293,7 +9281,7 @@ color:#fff;font-weight:600;background:#34698e;
 	text-align: center;
 }
 .WorkspaceExplorerView .dgrid-cell {
-	border: 0px;
+	border: 0;
 }
 .wsItemName {
 	white-space: nowrap;
@@ -9302,8 +9290,8 @@ th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreation
 	border-right: 1px solid #C0C0C0;
 }
 th.dgrid-cell.wsItemType {
-	border-right: 0px;
-	padding-left:0px;
+	border-right: 0;
+	padding-left: 0;
 }
 .dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
@@ -9335,7 +9323,9 @@ th.dgrid-cell.wsItemType {
 	color:#fff;margin:2px;padding:2px
 }
 .UploadStatusArea > SPAN {
-	color:#fff;margin:2px;padding:2px;margin-left:0px;padding-left:0px;
+	color:#fff;
+	margin: 2px 2px 2px 0;
+	padding: 2px 2px 2px 0;
 }
 .UploadStatusArea{
 	cursor: pointer;
@@ -9343,7 +9333,8 @@ th.dgrid-cell.wsItemType {
 }
 .UploadStatusUpload{
 	display:inline-block;
-	margin:2px;padding:2px;margin-right:0px;padding-right:0px;	
+	margin: 2px 0 2px 2px;
+	padding: 2px 0 2px 2px;
 }
 .UploadStatusUpload .fa {
 	color: #ddd;
@@ -9355,13 +9346,13 @@ th.dgrid-cell.wsItemType {
 .JobsComplete,
 .UploadingComplete{
 	color: blue;
-	margin:0px;
+	margin: 0;
 }
 .JobsRunning,
 .UploadingProgress,
 .UploadingActive{
 	color: green;
-	margin:0px;
+	margin: 0;
 }
 .JobsRunning::before,
 .JobsQueued::before,
@@ -9376,11 +9367,11 @@ th.dgrid-cell.wsItemType {
 }
 .JobsQueued {
 	color: orange;
-	margin: 0px;
+	margin: 0;
 }
 .JobsSuspended {
 	color: red;
-	margin:0px;
+	margin: 0;
 }
 .ActionButtonWrapper {
 	font-size: 1.1em;
@@ -9402,17 +9393,14 @@ th.dgrid-cell.wsItemType {
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;
-	padding-top:0px;
+	padding-top: 0;
 	margin-top: 4px;
 	vertical-align: bottom;
 	bottom: 2px;
 }
 .ActionButtonWrapper .ActionButton.fa {
-	margin:0px;
 	color: #fff;
-	margin: 5px;
-	margin-top: 2px;
-	margin-bottom: 2px;
+	margin: 2px 5px;
 }
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
@@ -9426,7 +9414,7 @@ th.dgrid-cell.wsItemType {
 .ActionButtonText {
 	font-size: .6em;
 	color: #fff;
-	margin: 0px;
+	margin: 0;
 	text-align:center;
 	white-space: normal;
 	overflow: hidden;
@@ -9442,7 +9430,7 @@ th.dgrid-cell.wsItemType {
 }
 .GeneExpFilterPanel .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
-	color: #345698e;	
+	color: #34698e;
 }
 .ActionButtonWrapper:hover {
 	border: 1px solid #fff;
@@ -9451,12 +9439,12 @@ th.dgrid-cell.wsItemType {
 }
 .BrowserHeader .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
-	color: #345698e;	
+	color: #34698e;
 }
 .BrowserHeader .ActionButtonWrapper {
         margin-top: -3px;
         margin-left: 2px;
-	color: #345698e;
+	color: #34698e;
 	border: 1px solid #fff;
 	width: 58px;
 	vertical-align: bottom;
@@ -9546,23 +9534,20 @@ th.dgrid-cell.wsItemType {
 	background: #efefef;
 	vertical-align: top;
 	color: #333;
-	margin: 0px;
 	padding: 4px;
 	float:left;
 	height:22px;
 	border-radius:5px;
 	border:#d3d3d3 1px solid;
 	display:inline-block;
-	margin-right:4px;
+	margin: 0 4px 0 0;
 }
 .PanelForm {
 	overflow: auto;
 }
 .PanelForm .messageContainer{
 	text-align: center;
-	margin: 4px;
-	margin-left: auto;
-	margin-right: auto;
+	margin: 4px auto;
 	padding: 4px;
 	border: 1px solid green;
 	display: none;
@@ -9592,7 +9577,9 @@ th.dgrid-cell.wsItemType {
 .App {
 }
 .App .TitleSection {
-	width:420px;margin:auto;margin-top:10px;padding:10px;
+	width:420px;
+	margin: 10px auto auto;
+	padding:10px;
 }
 .App LABEL {
 	font-size: .65em;
@@ -9602,7 +9589,7 @@ th.dgrid-cell.wsItemType {
 	border: 1px solid #aaa;
 }
 .appsetup{
-margin-top:0px;
+margin-top:0;
 padding:15px 50px 10px 10px;
 text-align: right;
 background-color: #F0F1F3;
@@ -9653,7 +9640,7 @@ table.assemblyblocks td{vertical-align:top;}
 table.librarytable.disabled{
     opacity: 0.4; 
     filter: alpha(opacity = 60);
-    font-color: #ccc;
+    color: #ccc;
 }
 .apphelp a{
     text-decoration: underline;
@@ -9698,7 +9685,7 @@ background-color: #F0F1F3;
 background-color: #F0F1F3;
 margin: 0 0 10px 10px;
 width: auto;
-padding: 5px 0px 10px 10px;
+padding: 5px 0 10px 10px;
 text-align: left;
 }
 .approwsegment{
@@ -9715,7 +9702,7 @@ line-height: .8;
 width: 40px;
 text-align: center;
 padding: auto;
-margin:5px 0px 5px 5px;
+margin:5px 0 5px 5px;
 }
 .readbuttons{
 text-align: left;
@@ -9729,7 +9716,7 @@ vertical-align:middle;
 div.infobox i{color: rgb(52, 105, 142);}
 label.appboxlabel {
 text-align:left;
-margin: 10px 0 10px 0px;
+margin: 10px 0 10px 0;
 font-size: 14px;
 line-height: 16px;
 text-transform: none;
@@ -9800,7 +9787,7 @@ font-size: 12px;
     margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px; 
+    right: 0;
 }
 .Phylogeny a:link, a:visited {
     color:black;
@@ -9814,7 +9801,7 @@ font-size: 12px;
     
 }
 .Phylogeny g.node {
-    font-family: Verdana, Helvetica;
+    font-family: Verdana, Helvetica, sans-serif;
     font-size: 12px;
     font-weight: normal;
 }
@@ -9883,7 +9870,7 @@ font-size: 12px;
 	margin-left: 4px;
 	display: inline-block;
 	overflow: hidden;
-	padding: 0px;
+	padding: 0;
 	white-space: nowrap;
 	vertical-align: top;
 	max-width: 350px;
@@ -9930,7 +9917,7 @@ font-size: 12px;
 .FilteredValueButton {
 	overflow: hidden;
 	display: inline-block;
-	padding: 0px;
+	padding: 0;
 	font-size: 1em;
 	margin-bottom: 1px;
 	margin-left: 4px;
@@ -9940,7 +9927,7 @@ font-size: 12px;
 }
 .ValueWrapper {
 	display: inline-block;
-	whitespace: nowrap;
+	white-space: nowrap;
 	font-size: .85em;
 	font-weight: 100;
 	padding: 2px;
@@ -9960,14 +9947,13 @@ font-size: 12px;
 	cursor: pointer;
 }
 .selectedList {
-	margin: 0px;
-	padding: 0px;
-	whitespace: nowrap;
+	padding: 0;
+	white-space: nowrap;
 	background: #ffcb00;
 	color: #333;
 	text-align: center;
 	min-height: 21px;
-	margin-bottom: 2px;
+	margin: 0 0 2px;
 }
 .fieldHeader {
 	font-size: 0.75em;
@@ -10015,10 +10001,10 @@ font-size: 12px;
 .dgrid-column-status_indicator.dgrid-cell{
     text-align: right;
     padding-right: 5px;
-    border-right: 0px;
+    border-right: 0;
 }
 .dgrid-column-status.dgrid-cell{
-    border-left: 0px;
+    border-left: 0;
 }
 .SummaryWidget {
     margin: 4px;
@@ -10452,10 +10438,10 @@ TH.dgrid-cell.field-feature_type {
 }
 .home .section-title-b {
     background: #c3c3c3;
-    border-radius: 0px;
+    border-radius: 0;
     text-align: left;
     box-shadow: none;
-    padding-left: 0px;
+    padding-left: 0;
     margin-top: 12px;
 }
 .section-title span.wrap {
@@ -10470,7 +10456,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .homeBottomSection {
 	background: #fff;
-	margin-top: 0px;
+	margin-top: 0;
 	padding:4px;
 }
 .home h2 {
@@ -10482,12 +10468,12 @@ TH.dgrid-cell.field-feature_type {
 }
 .home figure {
 	display: block;
-	margin: 0px;
-	padding: 0px;
+	margin: 0;
+	padding: 0;
 	vertical-align: top;
 }
 .home ul {
-	margin:0px;
+	margin: 0;
 }
 .dlp-hp ul li {
     display: inline-table;
@@ -10577,11 +10563,11 @@ TH.dgrid-cell.field-feature_type {
   display: none;
 }
 .patric .dlp .tabbed ul.tab-headers {
-  margin: 0px 0px -1px 0px;
-  padding: 0px;
+  margin: 0 0 -1px 0;
+  padding: 0;
 }
 .patric .dlp .tabbed ul.tab-headers li {
-  margin: 0px 8px 0px 0px;
+  margin: 0 8px 0 0;
   background: #dbe8ee;
   border: #dbe3e5 1px solid;
   padding: 10px;
@@ -10600,7 +10586,7 @@ TH.dgrid-cell.field-feature_type {
 }
 .data-box {
   padding: 20px;
-  margin: 0px 0px 40px 0px;
+  margin: 0 0 40px 0;
   background: #f4f4f4;
   border: #dbe3e5 1px solid;
   -webkit-box-shadow: #c3c3c3 2px 2px 10px;
@@ -10612,7 +10598,7 @@ TH.dgrid-cell.field-feature_type {
   color: #fff;
   font-weight: normal;
   padding: 6px 15px 6px 28px;
-  margin: 0px 0px 20px -28px;
+  margin: 0 0 20px -28px;
   display: inline-block;
   position: relative;
 }
@@ -10620,7 +10606,7 @@ TH.dgrid-cell.field-feature_type {
   background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
   position: absolute;
   bottom: -9px;
-  left: 0px;
+  left: 0;
   width: 8px;
   height: 9px;
 }
@@ -10656,13 +10642,11 @@ TH.dgrid-cell.field-feature_type {
   text-indent: -119988px;
   overflow: hidden;
   text-align: left;
-  background-image: url(/patric/images/arrow-popular-genomes.png);
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
+  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
   height: 36px;
   width: 18px;
   position: absolute;
-  top: 0px;
+  top: 0;
   right: -119px;
   display: none;
 }
@@ -10670,13 +10654,11 @@ TH.dgrid-cell.field-feature_type {
   text-indent: -119988px;
   overflow: hidden;
   text-align: left;
-  background-image: url(/patric/images/arrow-popular-genomes.png);
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
+  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
   height: 36px;
   width: 18px;
   position: absolute;
-  top: 0px;
+  top: 0;
   right: -270px;
   display: none;
 }
@@ -10700,9 +10682,8 @@ TH.dgrid-cell.field-feature_type {
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item .genome-data-icon {
   height: 57px;
   width: 64px;
-  margin: 0px 5px 20px 0px;
-  background-position: top left;
-  background-repeat: no-repeat;
+  margin: 0 5px 20px 0;
+  background: no-repeat top left;
 }
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item:hover .genome-data-icon {
   background-position: bottom left;
@@ -10952,7 +10933,7 @@ TH.dgrid-cell.field-feature_type {
 }
 #dlp-features-data li {
 	margin-left: 10px;
-	padding-left: 0px;
+	padding-left: 0;
 	list-style-type: circle;
 }
 #dlp-features-data .data-box  {
@@ -11220,7 +11201,7 @@ TH.dgrid-cell.field-feature_type {
   height: 140px;
 }
 .bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section, summary, blockquote, q, th, td, caption, table,
+footer, header, menu, nav, section, summary, blockquote, q, th, td, caption, table,
 div, span, object, iframe, p,
 pre, a, abbr, acronym, address,
 code, del, dfn, em, img,
@@ -11273,8 +11254,8 @@ iframe  {
 .layoutContainer {
     width: 100%;
     height: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 .claro .dijitTabPaneWrapper {
@@ -11282,9 +11263,7 @@ iframe  {
 }
 .layer {
     width: 925px;
-    margin: auto;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px auto;
     z-index: 10;
 }
 .layer > H1 {
@@ -11315,11 +11294,11 @@ TD.HomeServiceLink {
 }
 .HomeServiceLink {
     height: 75px;
-    border:0px;
+    
     border: 1px solid transparent;
     border-left: #87b934 1px solid;
     border-right: #2a5d40 1px solid;
-    margin: 0px;
+    margin: 0;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
@@ -11337,9 +11316,8 @@ TD.HomeServiceLink {
 .HomeServiceLink H3,
 .HomeServiceLink H4 {
   margin: 0;
-  padding:0px;
-  padding-left: 15px;
-  border: 0;
+    padding: 0 0 0 15px;
+    border: 0;
   font-size: 14px;
   font-family: "Didact Gothic",Arial, Helvetica, sans-serif; 
   font-weight: 100;
@@ -11352,7 +11330,6 @@ TD.HomeServiceLink {
 	line-height: 14px;
 }
 table.p3basic {
-    
     border-collapse: separate;
     empty-cells: hide;
     border-bottom: #d3d3d3 1px solid;
@@ -11377,11 +11354,11 @@ table tr.even td {
     background: #efefef;
 }
 .claro .dijitDialog {
-    perspective: 2000;
-    -webkit-perspective: 2000;
+    perspective: 2000px;
+    -webkit-perspective: 2000px;
 }
 .claro .flippableDialog.dijitDialog {
-    border: 0px;
+    border: 0;
     box-shadow: 0 0 0;
     -webkit-box-shadow: 0 0 0;
     overflow: visible;
@@ -11389,12 +11366,11 @@ table tr.even td {
 .claro .flippableDialog.dijitDialog .flipper {
     border: 1px solid #759dc0;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
-    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0.25);
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 .claro .flipped .flipper {
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg);
-    
 }
 .flipper {
     transition: transform 1s;
@@ -11417,12 +11393,12 @@ table tr.even td {
     left: 0;
     right: 0;
     bottom: 0;
-    border: 0px;
+    border: 0;
 }
 .claro .dijitDialog .backpane {
     background: #fff;
     padding: 8px;
-    margin: 0px;
+    margin: 0;
 }
 .claro .dijitDialog .dijitDialogTitleBar,
 .claro .dijitDialog .dijitDialogPaneContent {
@@ -11472,8 +11448,7 @@ table tr.even td {
 .fileUploadButton {
     position: relative;
     overflow: hidden;
-    margin: auto;
-    margin-bottom: 8px;
+    margin: auto auto 8px;
     width: 90%;
     border: 1px solid #333;
     cursor: pointer;
@@ -11519,52 +11494,48 @@ table tr.even td {
     margin: auto;
 }
 .UserProfileForm Table {
-    border: 0px;
+    border: 0;
     width: 100%;
 }
 .RegistrationForm TD,
 .UserProfileForm TD {
-    border: 0px;
-    padding: 4px;
-    padding-left: 0px;
-    padding-bottom: 8px;
+    border: 0;
+    padding: 4px 4px 8px 0;
 }
 .RegistrationForm TH,
 .UserProfileForm TH {
     font-size: .85em;
-    border: 0px;
-    pading: 4px;
+    border: 0;
+    padding: 4px;
 }
 .GlobalSearch .dijitSelect,
 .GlobalSearch .dijitTextBox {
-    margin: 0px;
-    border: 0px;
+    margin: 0;
+    border: 0;
     border-radius: 4px;
 }
 .GlobalSearch > table {
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     border-collapse: collapse;
-    border-spacing: 0px;
+    border-spacing: 0;
     width: 100%;
     border-radius: 4px;
 }
 .GlobalSearch {
     border-radius: 4px;
     background: #fff;
-    padding: 0px;
+    padding: 0;
 }
 body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
-    background-image: none;
     border-top: 5px solid #629821;
-    background: #fff;
+    background: #fff none;
     padding-top: 2px;
     transition-duration: 0s;
 }
 body.patric .dijitTabContainerTop-tabs .dijitTabActive,
 body.patric .dijitTabContainerTop-tabs .dijitTabHover {
-    background-image: none;
-    background-color: #dfe4ff;
+    background: #dfe4ff none;
     color: #000;
     transition-duration: 0s;
 }
@@ -11573,12 +11544,11 @@ body.patric .dijitTabContainerTop-tabs .dijitTabActive {
     transition-duration: 0s;
 }
 body.patric.claro .dijitTabDisabled {
-    background-color: #f5f5f5;
-    background-image: none;
+    background: #f5f5f5 none;
     color: #d9d9d9;
 }
 .TextTabButtons {
-    margin: 0px;
+    margin: 0;
     padding: 4px;
     background: #eee;
     border-bottom: 1px solid #bbb;
@@ -11589,15 +11559,11 @@ body.patric.claro .dijitTabDisabled {
 }
 .TextTabButtons .dijitTab,
 .TextTabButtons .dijitToggleButton .dijitButtonNode {
-    border: 0px;
-    background: transparent;
+    border: 0;
     background-color: inherit;
     box-shadow: none;
-    border-radius: 0px;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: 3px;
-    margin-bottom: 3px;
+    border-radius: 0;
+    margin: 3px 15px;
 }
 .claro .dijitTab:first-child {
     margin-left: 10px;
@@ -11614,13 +11580,13 @@ body.patric.claro .dijitTabDisabled {
 }
 .dgrid .dgrid-selector {
     width: 20px;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     text-align: center;
 }
 .dgrid .dgrid-selector > * {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     vertical-align: middle;
 }
 .dgrid-selector INPUT {
@@ -11639,13 +11605,13 @@ div.overview {
     overflow: hidden;
     background: #eee;
     border-style: solid;
-    border-width: 1px 0px 1px 0px;
+    border-width: 1px 0 1px 0;
     border-color: #555;
     text-align: center;
     cursor: crosshair;
 }
 .jbrowse > .dijitContentPane {
-    padding: 0px;
+    padding: 0;
 }
 .navbox {
     font-size: .85em;
@@ -11791,10 +11757,10 @@ table {
 .section-title {
 	
     background: #34598e;
-    border-radius: 0px;
+    border-radius: 0;
     text-align: left;
     box-shadow: none;
-    padding-left: 0px;
+    padding-left: 0;
     margin-top: 12px;
 }
 .menuHeader {
@@ -11868,7 +11834,7 @@ div.pubmed ul li {
 .dgrid ::-webkit-scrollbar-thumb {
     background: #333;
     border-radius: 1ex;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
 }
 .FacetFilter ::-webkit-scrollbar-thumb{
 	background: #333;
@@ -11885,7 +11851,7 @@ div.pubmed ul li {
 	margin:4px;
     background: #f9ff85;
     padding:4px;
-    border:0px solid #aaa;
+    border:0 solid #aaa;
     border-radius:4px;
     font-weight:200;
 }
@@ -11894,7 +11860,7 @@ div.pubmed ul li {
     text-align:left;
     margin: 0 4px;
     padding:4px;
-    border:0px solid #aaa;
+    border:0 solid #aaa;
     border-radius:4px;
 }
 .patric .fa.icon-caret-down.noHoverIcon:hover{
@@ -11975,8 +11941,8 @@ a.icon-left {
   display: inline-block;
   line-height: 16px;
   padding-left: 25px;
-  background-position: left center;
-  background-repeat: no-repeat; }
+    background: no-repeat left center;
+}
 h1,h2,h3,h4,h5,h6 {
 	font-weight: 100;
 }
@@ -12028,7 +11994,7 @@ body footer.main-footer {
   background-image: -ms-linear-gradient(#09456f, #34698e);
   background-image: linear-gradient(#09456f, #34698e);
   border-top: #227194;
-  padding: 12px 0px 30px 0px;
+  padding: 12px 0 30px 0;
   min-height:165px;
 }
 footer.main-footer .container {
@@ -12037,7 +12003,6 @@ footer.main-footer .container {
 footer.main-footer .container .column {
   display: inline;
   float: left;
-  margin-right: 17px;
   width: 229px;
   border-left: #547f9d 1px solid;
   margin-right: -1px;
@@ -12048,7 +12013,7 @@ footer.main-footer .container .column {
 }
 body footer.main-footer .container .column .wrapper {
   overflow: hidden;
-  padding: 0px 15px;
+  padding: 0 15px;
 }
   body footer.main-footer .container .column.last {
   display: inline;
