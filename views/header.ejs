@@ -1,4 +1,4 @@
-		<title><%= (request&&request.local&&request.local.title)?request.local.title:"" %></title>
+		<title><%=(title)?title:"PATRIC" %></title>
 		<% if (request && request.production) { %>
 			<link rel='stylesheet' href='/js/<%- request.package.version %>/p3/resources/p3.css' />
 		<% } else { %>
@@ -19,4 +19,5 @@
 			<script async src='https://www.google-analytics.com/analytics.js'></script>
 			<script async src='/js/autotrack/autotrack.js'></script>
 		<% } %>
+		<meta name="Keywords" content="PATRIC, Pathosystems Resource Integration Center"/>
 

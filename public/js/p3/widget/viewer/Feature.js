@@ -86,6 +86,14 @@ define([
 					}
 					break;
 			}
+
+			if(this.feature){
+				var pageTitle = this.feature.patric_id + "::Feature " + activeTab.title;
+				// console.log("Feature setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetState: function(attr, oldState, state){

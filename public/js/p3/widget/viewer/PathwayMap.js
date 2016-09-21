@@ -49,6 +49,9 @@ define([
 
 			// update header
 			this.buildHeaderContent(state.pathway_id);
+
+			// update page title
+			window.document.title = 'Pathway Map';
 		},
 
 		getGenomeIdsByTaxonId: function(taxon_id){

@@ -11,24 +11,26 @@ define([
 		apiServiceUrl: window.App.dataAPI,
 
 		onSetState: function(attr, oldVal, state){
-			 console.log("PathwaySummary onSetState", state);
+			// console.log("PathwaySummary onSetState", state);
 
 			if(!state){
 				return;
 			}
 
-			var params = {}
+			var params = {};
 			var qparts = state.search.split("&");
 			qparts.forEach(function(qp){
 				var parts = qp.split("=");
-				params[parts[0]]=parts[1].split(",");
-			})
-			
+				params[parts[0]] = parts[1].split(",");
+			});
 
 			state.feature_ids = params.features;
 
 			this.viewer.set('visible', true);
-			this.viewer.set('state', lang.mixin({},state));
+			this.viewer.set('state', lang.mixin({}, state));
+
+			// update page title
+			window.document.title = 'Pathway Summary';
 		},
 
 		constructor: function(){

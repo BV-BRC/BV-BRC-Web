@@ -51,11 +51,6 @@ define([
 				return;
 			}
 			switch(active){
-				// case "transcriptomics":
-				// 	var groupPath = encodeURIComponent("/" + this.groupPath);
-				//
-				// 	activeTab.set("state", lang.mixin({}, this.state, {search: "in(feature_id,FeatureGroup(" + groupPath + "))"}));
-				// 	break;
 				default:
 					var activeQueryState;
 					// if(this.state && this.state.feature_ids){
@@ -69,6 +64,14 @@ define([
 						console.warn("MISSING activeQueryState for PANEL: " + active);
 					}
 					break;
+			}
+
+			if(activeTab){
+				var pageTitle = "Feature Group " + activeTab.title;
+				// console.log("Feature Group: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
 			}
 		},
 

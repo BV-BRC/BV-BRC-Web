@@ -2,7 +2,7 @@ require({cache:{
 'p3/app/p3app':function(){
 define([
 	"dojo/_base/declare",
-	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct",
+	"dojo/topic", "dojo/on", "dojo/dom", "dojo/dom-class", "dojo/dom-attr", "dojo/dom-construct", "dojo/query",
 	"dijit/registry", "dojo/request", "dojo/_base/lang",
 	"dojo/_base/Deferred",
 	"dojo/store/JsonRest", "dojox/widget/Toaster",
@@ -11,7 +11,7 @@ define([
 	"../jsonrpc", "../panels", "../WorkspaceManager", "dojo/keys",
 	"dijit/Dialog"
 ], function(declare,
-			Topic, on, dom, domClass, domAttr, domConstruct,
+			Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
 			Registry, xhr, lang,
 			Deferred,
 			JsonRest, Toaster,
@@ -48,6 +48,38 @@ define([
 				}
 			});
 
+			// listening document.title change event
+			var titleEl = document.getElementsByTagName("title")[0];
+			var docEl = document.documentElement;
+
+			if (docEl && docEl.addEventListener) {
+				docEl.addEventListener("DOMSubtreeModified", function(evt) {
+					var t = evt.target;
+					if (t === titleEl || (t.parentNode && t.parentNode === titleEl)) {
+						onDocumentTitleChanged();
+					}
+				}, false);
+			} else {
+				document.onpropertychange = function() {
+					if (window.event.propertyName == "title") {
+						onDocumentTitleChanged();
+					}
+				};
+			}
+
+			var onDocumentTitleChanged = function(){
+				// var meta = document.getElementsByTagName("meta[name='Keyword']");
+				var meta = domQuery("meta[name='Keywords']")[0];
+				if(meta){
+					meta.content = "PATRIC," + (document.title).replace("::", ",");
+				}
+				if(window.ga){
+					 0 && console.log("document title changed to", document.title);
+					ga('set', 'title', document.title);
+					ga('send', 'pageview');
+				}
+			};
+
 			/*
 			Router.register("\/$", function(params, oldPath, newPath, state){
 				 0 && console.log("HOME route", params.newPath);
@@ -80,16 +112,17 @@ define([
 				newState.value = path;
 				newState.set = "path";
 				newState.requireAuth = true;
+				newState.pageTitle = 'PATRIC Jobs';
 				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
 			Router.register("\/search/(.*)", function(params, oldPath, newPath, state){
-				 0 && console.log("Search Route: ", arguments);
+				//  0 && console.log("Search Route: ", arguments);
 				var newState = getState(params, oldPath);
 				newState.widgetClass = "p3/widget/AdvancedSearch";
 				newState.requireAuth = false;
-				 0 && console.log("Navigate to ", newState);
+				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
 
@@ -121,6 +154,7 @@ define([
 				newState.value=_self.dataAPI + "/content/" +  path;
 				newState.set = "href";
 				newState.requireAuth = false;
+				newState.pageTitle = 'PATRIC';
 				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -141,6 +175,7 @@ define([
 				newState.value = path;
 				newState.set = "path";
 				newState.requireAuth = false;
+				newState.pageTitle = "PATRIC Workspace";
 				//  0 && console.log("Navigate to ", newState);
 				_self.navigate(newState);
 			});
@@ -5331,6 +5366,9 @@ define([
 				if(msg.id){
 					msg.href = msg.id;
 				}
+			}
+			if(msg.pageTitle){
+				window.document.title = msg.pageTitle;
 			}
 			// }else{
 			// 	if ((msg.href==(window.location.pathname + window.location.search)) ||
@@ -59141,7 +59179,7 @@ define([
 		},
 
 		setActivePanelState: function(){
-			 0 && console.log("setActivePanelState()");
+
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;
 			//  0 && console.log("Active: ", active, "state: ", JSON.stringify(this.state));
 
@@ -59228,7 +59266,14 @@ define([
 					}
 					break;
 			}
-			//  0 && console.log("Set Active State COMPLETE");
+
+			if(activeTab){
+				var pageTitle = "Genome List " + activeTab.title;
+				//  0 && console.log("Genome List setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetGenomeIds: function(attr, oldVal, genome_ids){
@@ -90065,6 +90110,7 @@ define([
 		"baseClass": "Annotation",
 		templateString: Template,
 		applicationName: "GenomeAnnotation",
+		pageTitle: "Genome Annotation Service",
 		required: true,
 		genera_four: ["Acholeplasma","Entomoplasma","Hepatoplasma","Hodgkinia","Mesoplasma","Mycoplasma","Spiroplasma","Ureaplasma"],
 		code_four: false,
@@ -90266,7 +90312,7 @@ define([
 				return;
 			}
 			this.inherited(arguments);
-			var state = this.get("state")
+			var state = this.get("state");
 			if((state == "Incomplete") || (state == "Error")){
 				this.submitButton.set("disabled", true);
 			}
@@ -90281,6 +90327,10 @@ define([
 
 			if(!this.showCancel && this.cancelButton){
 				domClass.add(this.cancelButton.domNode, "dijitHidden");
+			}
+
+			if(this.pageTitle){
+				window.document.title = this.pageTitle;
 			}
 
 			this.gethelp();
@@ -90715,6 +90765,14 @@ define([
 						 0 && console.warn("MISSING activeQueryState for PANEL: " + active);
 					}
 					break;
+			}
+
+			if(this.taxonomy){
+				var pageTitle = this.taxonomy.taxon_name + "::Taxonomy " + activeTab.title;
+				//  0 && console.log("Taxonomy setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
 			}
 		},
 
@@ -93239,6 +93297,14 @@ define([
 						 0 && console.log("Missing Active Query State for: ", active)
 					}
 					break;
+			}
+
+			if(this.genome){
+				var pageTitle = this.genome.genome_name + "::Genome " + activeTab.title;
+				//  0 && console.log("Genome setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
 			}
 		},
 
@@ -110391,6 +110457,14 @@ define([
 					}
 					break;
 			}
+
+			if(this.feature){
+				var pageTitle = this.feature.patric_id + "::Feature " + activeTab.title;
+				//  0 && console.log("Feature setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetState: function(attr, oldState, state){
@@ -114697,12 +114771,10 @@ define([
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			//  0 && console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				//  0 && console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 
@@ -114713,11 +114785,7 @@ define([
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						//  0 && console.log("Found Genome_IDS in state object");
 						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
-						//  0 && console.log("gidQueryState: ", gidQueryState);
-						//  0 && console.log("Active Query State: ", activeQueryState);
-
 					}
 
 					if(activeQueryState){
@@ -114727,7 +114795,14 @@ define([
 					}
 					break;
 			}
-			//  0 && console.log("Set Active State COMPLETE");
+			 0 && console.log(active, this.state);
+			if(activeTab){
+				var pageTitle = "Feature List " + activeTab.title;
+				//  0 && console.log("Feature List: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetFeatureIds: function(attr, oldVal, genome_ids){

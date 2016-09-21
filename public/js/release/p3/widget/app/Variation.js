@@ -18,6 +18,7 @@ define("p3/widget/app/Variation", [
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Variation",
+		pageTitle: "Variation Service",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 7,

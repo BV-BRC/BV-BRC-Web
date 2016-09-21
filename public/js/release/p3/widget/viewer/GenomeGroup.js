@@ -71,6 +71,14 @@ define("p3/widget/viewer/GenomeGroup", [
 					}
 					break;
 			}
+
+			if(activeTab){
+				var pageTitle = "Genome Group " + activeTab.title;
+				// console.log("Genome Group setActivePanelState: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		buildHeaderContent: function(){

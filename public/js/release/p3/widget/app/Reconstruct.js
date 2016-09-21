@@ -15,6 +15,7 @@ define("p3/widget/app/Reconstruct", [
 		baseClass: "Modeling",
 		templateString: Template,
 		applicationName: "ModelReconstruction",
+		pageTitle: "Reconstruct Metabolic Model",
 		required: true,
 		code_four: false,
 		constructor: function(){

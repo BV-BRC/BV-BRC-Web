@@ -32,11 +32,11 @@
   display: none;
 }
 .patric .dlp .tabbed ul.tab-headers {
-  margin: 0px 0px -1px 0px;
-  padding: 0px;
+  margin: 0 0 -1px 0;
+  padding: 0;
 }
 .patric .dlp .tabbed ul.tab-headers li {
-  margin: 0px 8px 0px 0px;
+  margin: 0 8px 0 0;
   background: #dbe8ee;
   border: #dbe3e5 1px solid;
   padding: 10px;
@@ -55,7 +55,7 @@
 }
 .data-box {
   padding: 20px;
-  margin: 0px 0px 40px 0px;
+  margin: 0 0 40px 0;
   background: #f4f4f4;
   border: #dbe3e5 1px solid;
   -webkit-box-shadow: #c3c3c3 2px 2px 10px;
@@ -67,7 +67,7 @@
   color: #fff;
   font-weight: normal;
   padding: 6px 15px 6px 28px;
-  margin: 0px 0px 20px -28px;
+  margin: 0 0 20px -28px;
   display: inline-block;
   position: relative;
 }
@@ -75,7 +75,7 @@
   background: url(/patric/images/ribbon-title-wrap.png) no-repeat top left;
   position: absolute;
   bottom: -9px;
-  left: 0px;
+  left: 0;
   width: 8px;
   height: 9px;
 }
@@ -111,13 +111,11 @@
   text-indent: -119988px;
   overflow: hidden;
   text-align: left;
-  background-image: url(/patric/images/arrow-popular-genomes.png);
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
+  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
   height: 36px;
   width: 18px;
   position: absolute;
-  top: 0px;
+  top: 0;
   right: -119px;
   display: none;
 }
@@ -125,13 +123,11 @@
   text-indent: -119988px;
   overflow: hidden;
   text-align: left;
-  background-image: url(/patric/images/arrow-popular-genomes.png);
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
+  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
   height: 36px;
   width: 18px;
   position: absolute;
-  top: 0px;
+  top: 0;
   right: -270px;
   display: none;
 }
@@ -155,9 +151,8 @@
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item .genome-data-icon {
   height: 57px;
   width: 64px;
-  margin: 0px 5px 20px 0px;
-  background-position: top left;
-  background-repeat: no-repeat;
+  margin: 0 5px 20px 0;
+  background: no-repeat top left;
 }
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item:hover .genome-data-icon {
   background-position: bottom left;
@@ -407,7 +402,7 @@
 }
 #dlp-features-data li {
 	margin-left: 10px;
-	padding-left: 0px;
+	padding-left: 0;
 	list-style-type: circle;
 }
 #dlp-features-data .data-box  {

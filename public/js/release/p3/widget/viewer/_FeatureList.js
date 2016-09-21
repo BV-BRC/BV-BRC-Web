@@ -89,12 +89,10 @@ define("p3/widget/viewer/_FeatureList", [
 		setActivePanelState: function(){
 
 			var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : "overview";
-			// console.log("Active: ", active, "state: ", this.state);
 
 			var activeTab = this[active];
 
 			if(!activeTab){
-				// console.log("ACTIVE TAB NOT FOUND: ", active);
 				return;
 			}
 
@@ -105,11 +103,7 @@ define("p3/widget/viewer/_FeatureList", [
 				default:
 					var activeQueryState;
 					if(this.state && this.state.genome_ids){
-						// console.log("Found Genome_IDS in state object");
 						activeQueryState = lang.mixin({}, this.state, {search: "in(genome_id,(" + this.state.genome_ids.join(",") + "))"});
-						// console.log("gidQueryState: ", gidQueryState);
-						// console.log("Active Query State: ", activeQueryState);
-
 					}
 
 					if(activeQueryState){
@@ -119,7 +113,14 @@ define("p3/widget/viewer/_FeatureList", [
 					}
 					break;
 			}
-			// console.log("Set Active State COMPLETE");
+			console.log(active, this.state);
+			if(activeTab){
+				var pageTitle = "Feature List " + activeTab.title;
+				// console.log("Feature List: ", pageTitle);
+				if(window.document.title !== pageTitle){
+					window.document.title = pageTitle;
+				}
+			}
 		},
 
 		onSetFeatureIds: function(attr, oldVal, genome_ids){

@@ -3,10 +3,10 @@
 }
 .home .section-title-b {
     background: #c3c3c3;
-    border-radius: 0px;
+    border-radius: 0;
     text-align: left;
     box-shadow: none;
-    padding-left: 0px;
+    padding-left: 0;
     margin-top: 12px;
 }
 
@@ -23,7 +23,7 @@
 
 .homeBottomSection {
 	background: #fff;
-	margin-top: 0px;
+	margin-top: 0;
 	padding:4px;
 }
 
@@ -40,13 +40,13 @@
 
 .home figure {
 	display: block;
-	margin: 0px;
-	padding: 0px;
+	margin: 0;
+	padding: 0;
 	vertical-align: top;
 }
 
 .home ul {
-	margin:0px;
+	margin: 0;
 }
 .dlp-hp ul li {
     display: inline-table;

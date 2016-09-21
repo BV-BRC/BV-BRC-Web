@@ -445,6 +445,9 @@ define([
 					msg.href = msg.id;
 				}
 			}
+			if(msg.pageTitle){
+				window.document.title = msg.pageTitle;
+			}
 			// }else{
 			// 	if ((msg.href==(window.location.pathname + window.location.search)) ||
 			// 		(msg.href==window.location.href)) {

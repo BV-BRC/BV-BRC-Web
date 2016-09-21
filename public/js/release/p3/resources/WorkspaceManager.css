@@ -7,7 +7,7 @@
 	border-top: #227194;
 }
 .BrowserHeader {
-	padding:0px;
+	padding: 0;
 	vertical-align:bottom;
 }
 a.HelpLink {
@@ -28,8 +28,7 @@ a.HelpLink:active {
 }
 .wsBreadCrumb {
 	font-size:1.2em;
-	margin:2px;
-	margin-left: 4px;
+	margin: 2px 2px 2px 4px;
 	font-weight: 600;
 	padding:2px;
 	color: #134d75;
@@ -61,14 +60,13 @@ color:#fff;font-weight:600;background:#34698e;
 }
 .UploadingButton {
 	display: inline-block;
-	margin: 2px;
-	margin-right: 4px;
+	margin: 2px 4px 2px 2px;
 	padding:2px;
 	border: 1px solid gray;
 }
 .TypeContainer {
 	display: inline-block;
-	width: 80;
+	width: 80px;
 	font-size:.65em;
 	border:1px solid gray;
 	padding:4px;
@@ -95,9 +93,8 @@ color:#fff;font-weight:600;background:#34698e;
 	color:#333;
 	padding:4px;
 	margin-left: -1px;
-	border-left: 0px solid #888;
+	border-left: 0 solid #888;
 	border-top: 2px solid #76a72d; 
-	
 	overflow: auto;
 }
 .ItemTypeIcon {
@@ -119,7 +116,7 @@ color:#fff;font-weight:600;background:#34698e;
 	text-align: center;
 }
 .WorkspaceExplorerView .dgrid-cell {
-	border: 0px;
+	border: 0;
 }
 .wsItemName {
 	white-space: nowrap;
@@ -128,8 +125,8 @@ th.dgrid-cell.wsItemName, th.dgrid-cell.wsItemSize, th.dgrid-cell.wsItemCreation
 	border-right: 1px solid #C0C0C0;
 }
 th.dgrid-cell.wsItemType {
-	border-right: 0px;
-	padding-left:0px;
+	border-right: 0;
+	padding-left: 0;
 }
 .dgrid-cell.wsItemName, .dgrid-cell.wsItemSize, .dgrid-cell.wsItemCreationTime, .dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
@@ -161,7 +158,9 @@ th.dgrid-cell.wsItemType {
 	color:#fff;margin:2px;padding:2px
 }
 .UploadStatusArea > SPAN {
-	color:#fff;margin:2px;padding:2px;margin-left:0px;padding-left:0px;
+	color:#fff;
+	margin: 2px 2px 2px 0;
+	padding: 2px 2px 2px 0;
 }
 .UploadStatusArea{
 	cursor: pointer;
@@ -169,7 +168,8 @@ th.dgrid-cell.wsItemType {
 }
 .UploadStatusUpload{
 	display:inline-block;
-	margin:2px;padding:2px;margin-right:0px;padding-right:0px;	
+	margin: 2px 0 2px 2px;
+	padding: 2px 0 2px 2px;
 }
 .UploadStatusUpload .fa {
 	color: #ddd;
@@ -181,13 +181,13 @@ th.dgrid-cell.wsItemType {
 .JobsComplete,
 .UploadingComplete{
 	color: blue;
-	margin:0px;
+	margin: 0;
 }
 .JobsRunning,
 .UploadingProgress,
 .UploadingActive{
 	color: green;
-	margin:0px;
+	margin: 0;
 }
 .JobsRunning::before,
 .JobsQueued::before,
@@ -202,11 +202,11 @@ th.dgrid-cell.wsItemType {
 }
 .JobsQueued {
 	color: orange;
-	margin: 0px;
+	margin: 0;
 }
 .JobsSuspended {
 	color: red;
-	margin:0px;
+	margin: 0;
 }
 .ActionButtonWrapper {
 	font-size: 1.1em;
@@ -228,17 +228,14 @@ th.dgrid-cell.wsItemType {
 .ActionButtonContainer {
 	float: left;
 	font-size:.85em;
-	padding-top:0px;
+	padding-top: 0;
 	margin-top: 4px;
 	vertical-align: bottom;
 	bottom: 2px;
 }
 .ActionButtonWrapper .ActionButton.fa {
-	margin:0px;
 	color: #fff;
-	margin: 5px;
-	margin-top: 2px;
-	margin-bottom: 2px;
+	margin: 2px 5px;
 }
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
@@ -252,7 +249,7 @@ th.dgrid-cell.wsItemType {
 .ActionButtonText {
 	font-size: .6em;
 	color: #fff;
-	margin: 0px;
+	margin: 0;
 	text-align:center;
 	white-space: normal;
 	overflow: hidden;
@@ -268,7 +265,7 @@ th.dgrid-cell.wsItemType {
 }
 .GeneExpFilterPanel .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
-	color: #345698e;	
+	color: #34698e;
 }
 .ActionButtonWrapper:hover {
 	border: 1px solid #fff;
@@ -277,12 +274,12 @@ th.dgrid-cell.wsItemType {
 }
 .BrowserHeader .ActionButtonWrapper:hover {
 	border: 1px solid #34698e;
-	color: #345698e;	
+	color: #34698e;
 }
 .BrowserHeader .ActionButtonWrapper {
         margin-top: -3px;
         margin-left: 2px;
-	color: #345698e;
+	color: #34698e;
 	border: 1px solid #fff;
 	width: 58px;
 	vertical-align: bottom;
@@ -372,12 +369,11 @@ th.dgrid-cell.wsItemType {
 	background: #efefef;
 	vertical-align: top;
 	color: #333;
-	margin: 0px;
 	padding: 4px;
 	float:left;
 	height:22px;
 	border-radius:5px;
 	border:#d3d3d3 1px solid;
 	display:inline-block;
-	margin-right:4px;
+	margin: 0 4px 0 0;
 }

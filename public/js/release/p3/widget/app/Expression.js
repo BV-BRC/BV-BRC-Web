@@ -11,6 +11,7 @@ define("p3/widget/app/Expression", [
 		"baseClass": "Expression",
 		templateString: Template,
 		applicationName: "DifferentialExpression",
+		pageTitle: "Differential Expression Import",
 		defaultPath: "",
 		constructor: function(){
 			this._selfSet = true;
