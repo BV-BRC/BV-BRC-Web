@@ -15,6 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "RNASeq",
+		pageTitle: "RNA-Seq Analysis",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 11,

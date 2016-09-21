@@ -15,6 +15,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "GenomeComparison",
+		pageTitle: "Proteome Comparison",
 		defaultPath: "",
 		startingRows: 9,
 		maxGenomes: 9,

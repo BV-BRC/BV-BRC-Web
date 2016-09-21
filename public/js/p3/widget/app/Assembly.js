@@ -11,6 +11,7 @@ define([
 			query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager){
 	return declare([AppBase], {
 		"baseClass": "App Assembly",
+		pageTitle: "Genome Assembly Service",
 		templateString: Template,
 		applicationName: "GenomeAssembly",
 		libraryData: null,

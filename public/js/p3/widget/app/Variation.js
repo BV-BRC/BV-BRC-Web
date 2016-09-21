@@ -16,6 +16,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "Variation",
+		pageTitle: "Variation Service",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 7,

@@ -13,6 +13,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "ComparativePathway",
+		pageTitle: "Comparative Pathway Tool",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 8,

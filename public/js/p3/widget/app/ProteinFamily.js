@@ -13,6 +13,7 @@ define([
 		"baseClass": "App Assembly",
 		templateString: Template,
 		applicationName: "ProteinFamily",
+		pageTitle: "Protein Family Sorter",
 		libraryData: null,
 		defaultPath: "",
 		startingRows: 8,
