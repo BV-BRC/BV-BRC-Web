@@ -24,6 +24,20 @@ define([
 
 		startup: function(){
 			this.emptyTable(this.genomeTable, this.startingRows);
+
+			on(this.advanced, 'click', lang.hitch(this, function(){
+				this.advrow.turnedOn = (this.advrow.style.display != 'none');
+				if(!this.advrow.turnedOn){
+					this.advrow.turnedOn = true;
+					this.advrow.style.display = 'block';
+					this.advicon.className = "fa icon-caret-left fa-1";
+				}
+				else{
+					this.advrow.turnedOn = false;
+					this.advrow.style.display = 'none';
+					this.advicon.className = "fa icon-caret-down fa-1";
+				}
+			}));
 		},
 
 		validate: function(){
@@ -289,9 +303,9 @@ define([
 			}
 		},
 
-		//onChangeDatabase: function(val){
-		//	this.validate();
-		//},
+		onChangeDatabase: function(val){
+			this.validate();
+		},
 		//onChangeOrganism: function(val){
 		//	this.validate();
 		//},
