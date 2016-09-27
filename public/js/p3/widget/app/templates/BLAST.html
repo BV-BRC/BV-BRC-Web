@@ -9,107 +9,108 @@
         <div style="width: 700px; margin:auto;">
             <div class="appbox appshadow">
                 <div class="headerrow" style="margin-bottom: 7px">
-                    <label for="sequence" class="appboxlabel">Sequence</label>
+                    <label class="appboxlabel">Sequence</label>
                 </div>
-                <textarea id="sequence" style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
-                     data-dojo-attach-point="sequence"
-                     data-dojo-type="dijit/form/Textarea"
-                     data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.'"
-                     data-dojo-attach-event="onChange:onChangeSequence"></textarea>
+                <textarea name="sequence"
+                          style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
+                          data-dojo-attach-point="sequence"
+                          data-dojo-type="dijit/form/Textarea"
+                          data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.'"
+                          data-dojo-attach-event="onChange:onChangeSequence"></textarea>
+                <div class="form_msg_warning" data-dojo-attach-point="sequence_message"></div>
+
+                <div class="headerrow" style="margin-bottom: 7px">
+                    <label class="appboxlabel">Program</label>
+                </div>
+                <select name="program" style="margin-left:10px; width:96%"
+                        data-dojo-type="dijit/form/Select"
+                        data-dojo-attach-event="onChange:onChangeProgram"
+                        data-dojo-attach-point="program">
+                </select>
+                <div class="form_msg_warning" data-dojo-attach-point="program_message"></div>
 
                 <div class="headerrow" style="margin: 16px 0 7px 0">
-                    <label for="database" class="appboxlabel">Database</label>
+                    <label class="appboxlabel">Database</label>
                 </div>
-                <select id="database" style="width:96%; margin-left:10px"
+                <select name="database" style="width:96%; margin-left:10px"
                         data-dojo-type="dijit/form/Select"
                         data-dojo-attach-event="onChange:onChangeDatabase"
                         data-dojo-attach-point="database">
-                    <option value="nr.faa">Non-redundant protein sequences (NR-faa)</option>
-                    <option value="nr.ffn">Non-redundant gene sequences (NR-ffn)</option>
-                    <option value="">Search within select genomes</option>
-                    <option value="">Search within select genome group</option>
-                    <option value="">Search within select taxonomy</option>
                 </select>
-                <div></div>
+                <div class="form_msg_warning" data-dojo-attach-point="database_message"></div>
             </div>
 
             <div class="approw" style="text-align:center">
                 <div class="approwsegment" data-dojo-attach-point="advanced">
                     <label class="largelabel">Advanced options</label>
                     <div class="iconbox" style="margin-left:0">
-                        <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
                     </div>
                 </div>
             </div>
 
-            <div data-dojo-attach-point="advrow" style="display: none">
+            <div data-dojo-attach-point="advancedOptions" style="display: none">
                 <div class="appbox appshadow">
                     <div class="left half" style="vertical-align: top">
                         <label class="paramlabel">Add Genomes to Search: </label>
                         <div data-dojo-attach-event="onChange:onSuggestNameChange"
                              data-dojo-type="p3/widget/GenomeNameSelector"
                              data-dojo-attach-point="genome_id"
-                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'"
+                             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551', disabled:true"
                              style="width:310px;">
                         </div>
                         <div style="width:17px; display:inline-block;">
-                            <i data-dojo-attach-event="click:onAddGenome" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                            <i data-dojo-attach-event="click:onAddGenome"
+                               class="fa icon-arrow-circle-o-right fa-lg"></i>
                         </div>
                     </div>
                     <div class="left half">
-                        <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable" style='width:330px;'>
+                        <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable"
+                               style='width:330px;'>
                             <tbody data-dojo-attach-point="genomeTableBody"></tbody>
                         </table>
                     </div>
                     <div class="clear"></div>
-                 </div>
+                    <div class="form_msg_warning" data-dojo-attach-point="genome_id_message"></div>
+                </div>
 
                 <div class="appbox appshadow">
-                    <label for="genome_group" class="paramlabel">Select genome group: </label><br/>
-                    <select id="genome_group" style="width: 650px"
-                        data-dojo-type="dijit/form/Select"
-                        data-dojo-attach-point="genome_group">
+                    <label class="paramlabel">Select genome group: </label><br/>
+                    <select name="genome_group" style="width: 650px"
+                            data-dojo-type="dijit/form/Select"
+                            data-dojo-props="disabled:true"
+                            data-dojo-attach-point="genome_group">
                     </select>
                 </div>
 
                 <div class="appbox appshadow">
-                    <label for="taxon" class="paramlabel">Select taxonomy: </label><br/>
-                    <select id="taxon" style="width: 650px"
+                    <label class="paramlabel">Select Taxon: </label><br/>
+                    <select name="taxon" style="width: 650px"
                             data-dojo-type="dijit/form/Select"
+                            data-dojo-props="disabled:true"
                             data-dojo-attach-point="taxonomy">
                     </select>
+                </div>
+
+                <div class="appbox appshadow">
+                    <label class="paramlabel">Search for: </label><br/>
+                    <select name="search_for" style="width:250px"
+                            data-dojo-type="dijit/form/Select"
+                            data-dojo-props="disabled:true"
+                            data-dojo-attach-point="search_for">
+                        <option value="contigs">Genomic sequences (contigs)</option>
+                        <option value="features" selected="selected">Genomic features (genes or proteins)</option>
+                    </select>
+                    <div class="form_msg_warning" data-dojo-attach-point="search_for_message"></div>
                 </div>
 
                 <div class="appbox appshadow">
                     <div class="headerrow">
                         <label class="appboxlabel">BLAST Parameters</label>
                     </div>
-                    <label for="search_for" class="paramlabel">Search for: </label><br/>
-                    <select id="search_for" style="width:200px"
-                        data-dojo-type="dijit/form/Select"
-                        data-dojo-attach-point="search_for">
-                        <option value="contigs">Genomic sequences (contigs)</option>
-                        <option value="features" selected="selected">Genomic features (genes or proteins)</option>
-                    </select>
-
-                    <br/>
-
-                    <label for="program" class="paramlabel">Program: </label><br/>
-                    <select id="program" style="width:442px"
-                            data-dojo-type="dijit/form/Select"
-                            data-dojo-attach-point="program">
-                        <option value="blastn">blastn - search a nucleotide database using a nucleotide query</option>
-                        <option value="blastp">blastp - search protein database using a protein query</option>
-                        <option value="blastx">blastx - search protein database using a translated nucleotide query</option>
-                        <option value="tblastn">tblastn - search translated nucleotide database using a protein query</option>
-                        <option value="tblastx">tblastx - search translated nucleotide database using a translated nucleotide query</option>
-                    </select>
-
-                    <br>
-
                     <div class="left third">
-                        <label for="max_target" class="paramlabel">Max hits: </label><br/>
-                        <select id="max_target" style="width: 100px"
+                        <label class="paramlabel">Max hits: </label><br/>
+                        <select name="max_target" style="width: 100px"
                                 data-dojo-type="dijit/form/Select"
                                 data-dojo-attach-point="max_hits">
                             <option value="1">1</option>
@@ -121,8 +122,8 @@
                     </div>
 
                     <div class="left third">
-                        <label for="threshold" class="paramlabel">E value threshold: </label><br/>
-                        <input id="threshold" type="text" value="10" style="width:50px"
+                        <label class="paramlabel">E value threshold: </label><br/>
+                        <input name="threshold" type="text" value="10" style="width:50px"
                                data-dojo-type="dijit/form/TextBox"
                                data-dojo-attach-point="evalue">
                     </div>
@@ -133,14 +134,13 @@
             <div data-dojo-type="dijit/form/Button"
                  data-dojo-attach-point="mapButton"
                  data-dojo-attach-event="onClick:submit"
-                 data-dojo-props="disabled:false">
+                 data-dojo-props="disabled:true">
                 Search
             </div>
         </div>
     </div>
 
-    <div id="blast_result_wrapper">
-        <div id="blast_result"></div>
-    </div>
+    <br/>
+    <div class="blast_result_wrapper"></div>
 </form>
 

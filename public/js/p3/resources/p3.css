@@ -1122,3 +1122,8 @@ body footer.main-footer ul.left {
     border:0 solid #aaa;
     border-radius:4px;
 }
+
+.form_msg_warning {
+    font-weight: bold;
+    color: #E53935;
+}
