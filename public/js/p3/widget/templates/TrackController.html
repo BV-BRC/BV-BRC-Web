@@ -23,7 +23,7 @@
 				<option value="+">forward</option>
 				<option value="-">reverse</option>
 			</select>
-			<input required type="text" style="width:30%; margin-left:2px;" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-props="intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'" data-dojo-type="dijit/form/ValidationTextBox" id="keyword" name="keyword" data-dojo-attach-point="keyword_box"/>
+			<input required type="text" style="width:30%; margin-left:2px;" data-dojo-attach-event="onChange:validateCustomSelection" data-dojo-props="intermediateChanges:true,promptMessage:'Enter keywords. For examples, secretion, membrane, transposon',missingMessage:'Keyword must be provided. For examples, secretion, membrane, transposon OR transposase OR insertion OR mobile',trim:true,placeHolder:'Keyword'" data-dojo-type="dijit/form/ValidationTextBox" id="keyword" name="keyword" data-dojo-attach-point="keyword_box"/>
 			<button style="margin-left:2px" data-dojo-type="dijit/form/Button"  data-dojo-attach-event="onClick:onAddCustomTrack" data-dojo-attach-point="customTrackButton" data-dojo-props="disabled:true">+</button>
 	</div>
 <!--

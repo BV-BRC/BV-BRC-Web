@@ -372,7 +372,7 @@ define([
 				filter = filter +  ")and(eq(annotation,PATRIC)" + type_query + strand_query + ")";
 				if(key === "addCustomTrack") {
 					console.log("CircularViewerContainer addCustomTrack", value);
-					this.addFeatureTrack("Custom track " + value.index, "Custom track type: " + value.type + " strand: " + value.strand + " keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
+					this.addFeatureTrack("Custom track " + value.index, "Custom track - type: " + value.type + ", strand: " + value.strand + ", keyword: " + value.keyword, this.state.genome_ids[0], filter, specific_strand, custom_colors[(value.index-1)%custom_colors.length], null);						
 				}
 			}));			
 		},
