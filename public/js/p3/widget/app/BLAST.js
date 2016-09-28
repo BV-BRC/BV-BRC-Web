@@ -504,6 +504,7 @@ define([
 				return;
 			}
 			this.sequence_message.innerHTML = '';
+			this.program.set('disabled', false);
 
 			var sequence_type = this.isNucleotideFastaSequence(val) ? NA : AA;
 			this.program.removeOption(ProgramDefs);
@@ -515,6 +516,8 @@ define([
 
 		onChangeProgram: function(val){
 			// console.log("onChangeProgram: [", val, "]");
+
+			this.database.set('disabled', false);
 
 			var validDatabaseTypes = ProgramDefs.find(function(p){
 				return p.value === val

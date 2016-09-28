@@ -15,7 +15,7 @@
                           style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                           data-dojo-attach-point="sequence"
                           data-dojo-type="dijit/form/Textarea"
-                          data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.'"
+                          data-dojo-props="rows:13, placeholder:'Enter a query nucleotide or protein sequence to search. Multiple query sequences are currently not supported.', intermediateChanges:true"
                           data-dojo-attach-event="onChange:onChangeSequence"></textarea>
                 <div class="form_msg_warning" data-dojo-attach-point="sequence_message"></div>
 
@@ -25,6 +25,7 @@
                 <select name="program" style="margin-left:10px; width:96%"
                         data-dojo-type="dijit/form/Select"
                         data-dojo-attach-event="onChange:onChangeProgram"
+                        data-dojo-props="disabled:true"
                         data-dojo-attach-point="program">
                 </select>
                 <div class="form_msg_warning" data-dojo-attach-point="program_message"></div>
@@ -35,6 +36,7 @@
                 <select name="database" style="width:96%; margin-left:10px"
                         data-dojo-type="dijit/form/Select"
                         data-dojo-attach-event="onChange:onChangeDatabase"
+                        data-dojo-props="disabled:true"
                         data-dojo-attach-point="database">
                 </select>
                 <div class="form_msg_warning" data-dojo-attach-point="database_message"></div>
