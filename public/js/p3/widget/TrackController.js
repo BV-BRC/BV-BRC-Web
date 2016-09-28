@@ -1,12 +1,13 @@
 define([
 	"dojo/_base/declare", "dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojo/topic",
 	"dojo/dom-construct", "dojo/_base/lang", "dojo/dom-geometry", "dojo/dom-style", "dojo/text!./templates/TrackController.html",
-	"./ColorPicker", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when", "FileSaver"
+	"./ColorPicker", "dijit/popup","dijit/TooltipDialog", "dojo/on", "dojo/dom-class", 'dijit/Dialog', "dojo/dom", "dojo/when", "FileSaver"
 ], function(declare, WidgetBase, Templated, WidgetsInTemplate, Topic,
 			domConstruct, lang, domGeometry, domStyle, Template,
-			ColorPicker, on, domClass, Dialog, dom, when, saveAs){
+			ColorPicker, popup,TooltipDialog, on, domClass, Dialog, dom, when, saveAs){
 	return declare([WidgetBase, Templated, WidgetsInTemplate], {
 		templateString: Template,
+		customTrackIndex: 0,
 		postCreate: function(){
 			this.inherited(arguments);
 			dom.setSelectable(this.domNode, false);
@@ -26,6 +27,37 @@ define([
 				//domConstruct.place(e,this.exportContainer,"first");
 			}
 		},
+
+        validateCustomSelection: function(){
+			var type = this.track_type_select.get('value');
+			var strand = this.track_strand_select.get('value');
+			var keyword = this.keyword_box.get('value');
+			if (type && strand && keyword) {
+			    this.customTrackButton.set("disabled", false);
+			}
+			
+            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+		},
+		
+		onAddCustomTrack: function(){
+			var type = this.track_type_select.get('value');
+			var strand = this.track_strand_select.get('value');
+			var keyword = this.keyword_box.get('value');			
+		    this.customTrackButton.set("disabled", true);
+		    
+		    this.customTrackIndex ++;
+		    var customTrackSelection = {
+						index: this.customTrackIndex,
+						type: type,
+						strand: strand,
+						keyword: keyword
+			};
+			Topic.publish("/Notification", {message: "Adding a custom track", type: "message"});
+            Topic.publish("CircularView", "addCustomTrack", customTrackSelection);
+            
+            console.log("onAddCustomTrack: type =, strand =, keyword =", type, strand, keyword);
+		},
+
 		onAddTrack: function(event){
 			if(!this.viewer){
 				this.viewer = event.track.viewer;
@@ -73,7 +105,24 @@ define([
 				event.track.set("foregroundColor", color)
 			});
 
-			domConstruct.create("td", {innerHTML: event.track.title}, tr)
+			var tdinfo = domConstruct.create("td", {innerHTML: event.track.title}, tr);
+			if (event.track.title_tooltip) {
+                var titleTT = new TooltipDialog({
+                    content: event.track.title_tooltip, 
+                    onMouseLeave: function(){
+                        popup.close(titleTT);
+                    }
+                });
+
+                on(tdinfo, 'mouseover', function(){
+                    popup.open({
+                        popup: titleTT,
+                        around: tdinfo,
+                        orient: ["below"]                    
+                    });
+                });	
+            }  
+    		
 			var td = domConstruct.create('td', {
 				style: {
 					"word-wrap": "nowrap",
